@@ -107,6 +107,9 @@ class PublicURLTest(ZulipTestCase):
             "azuread",
             "email",
             "remoteuser",
+            # The endpoint is generated dynamically based on the configuration of the OIDC backend,
+            # so it can't be tested here.
+            "openid connect",
         ]:  # We do not have configerror pages for AzureAD and Email.
             auth_types.remove(auth)
 

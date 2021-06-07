@@ -1,5 +1,4 @@
 # Library code for use in management commands
-import signal
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any, Dict, List, Optional
 
@@ -29,11 +28,6 @@ def check_config() -> None:
             pass
 
         raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
-
-
-def sleep_forever() -> None:
-    while True:  # nocoverage
-        signal.pause()
 
 
 class ZulipBaseCommand(BaseCommand):

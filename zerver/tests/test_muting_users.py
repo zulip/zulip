@@ -26,7 +26,7 @@ class MutedUsersTests(ZulipTestCase):
             self.assert_json_success(result)
 
         muted_users = get_user_mutes(hamlet)
-        self.assertEqual(len(muted_users), 1)
+        self.assert_length(muted_users, 1)
 
         self.assertDictEqual(
             muted_users[0],
@@ -101,7 +101,7 @@ class MutedUsersTests(ZulipTestCase):
                 "event_type", "event_time", "extra_data"
             )
         )
-        self.assertEqual(len(audit_log_entries), 1)
+        self.assert_length(audit_log_entries, 1)
         audit_log_entry = audit_log_entries[0]
         self.assertEqual(
             audit_log_entry,
@@ -152,7 +152,7 @@ class MutedUsersTests(ZulipTestCase):
             .values_list("event_type", "event_time", "extra_data")
             .order_by("id")
         )
-        self.assertEqual(len(audit_log_entries), 2)
+        self.assert_length(audit_log_entries, 2)
         audit_log_entry = audit_log_entries[1]
         self.assertEqual(
             audit_log_entry,

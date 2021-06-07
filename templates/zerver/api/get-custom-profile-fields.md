@@ -1,4 +1,4 @@
-# Get all custom profile fields
+{generate_api_title(/realm/profile_fields:get)}
 
 {generate_api_description(/realm/profile_fields:get)}
 

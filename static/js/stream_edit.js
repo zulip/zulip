@@ -418,7 +418,12 @@ function show_subscription_settings(sub) {
         simplebar_container: $(".subscriber_list_container"),
     });
 
-    const opts = {source: get_users_for_subscriber_typeahead, stream: true, user_group: true};
+    const opts = {
+        user_source: get_users_for_subscriber_typeahead,
+        stream: true,
+        user_group: true,
+        user: true,
+    };
     pill_typeahead.set_up(sub_settings.find(".input"), pill_widget, opts);
 }
 
@@ -803,7 +808,7 @@ export function initialize() {
     );
 
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
             submit_add_subscriber_form(e);
         }

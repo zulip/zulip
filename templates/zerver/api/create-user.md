@@ -1,4 +1,4 @@
-# Create a user
+{generate_api_title(/users:post)}
 
 {generate_api_description(/users:post)}
 

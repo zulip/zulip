@@ -54,6 +54,16 @@ as well as those mentioned in the
 * `--postgresql-version`: Sets the version of PostgreSQL that will be
   installed.  We currently support PostgreSQL 10, 11, 12, and 13.
 
+* `--postgresql-database-name=exampledbname`: With this option, you
+  can customize the default database name. If you do not set this. The
+  default database name will be `zulip`. This setting can only be set
+  on the first install.
+
+* `--postgresql-database-user=exampledbuser`: With this option, you
+  can customize the default database user. If you do not set this. The
+  default database user will be `zulip`. This setting can only be set
+  on the first install.
+
 * `--postgresql-missing-dictionaries`: Set
   `postgresql.missing_dictionaries` ([docs][doc-settings]) in the
   Zulip settings, which omits some configuration needed for full-text
@@ -67,6 +77,13 @@ as well as those mentioned in the
 
 * `--no-overwrite-settings`: This option preserves existing
   `/etc/zulip` configuration files.
+
+## Installing on an existing server
+
+Zulip's installation process assumes it is the only application
+running on the server; though installing alongside other applications
+is not recommended, we do have [some notes on the
+process](../production/install-existing-server.md).
 
 ## Running Zulip's service dependencies on different machines
 

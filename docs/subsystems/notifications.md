@@ -32,7 +32,7 @@ as follows:
   table's `flags` structure, which is in turn passed into
   `send_event` for each user receiving the message.
   * Data about user configuration relevant to the message, such as
-  `push_notify_user_ids` and `stream_notify_user_ids`, are included
+  `online_push_user_ids` and `stream_notify_user_ids`, are included
   alongside `flags` in the per-user data structure.
   * The `presence_idle_user_ids` set, containing the subset of
   recipient users who are mentioned, are PM recipients, have alert
@@ -74,7 +74,7 @@ as follows:
     `DELETE /events/{queue_id}` request).
   * The `receiver_is_off_zulip` check is effectively repeated when
     event queues are garbage-collected (in `missedmessage_hook`) by
-    looking for whether the queue being garbage-collectee was the only
+    looking for whether the queue being garbage-collected was the only
     one; this second check solves the hard disconnect problem, resulting in
     notifications for these hard-disconnect cases usually coming 10
     minutes late.

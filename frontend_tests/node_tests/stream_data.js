@@ -88,9 +88,12 @@ test("basics", () => {
     assert(!stream_data.is_subscribed("Denmark"));
     assert(!stream_data.is_subscribed("Rome"));
 
-    assert(stream_data.get_stream_privacy_policy(test.stream_id), "public");
-    assert(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
-    assert(stream_data.get_stream_privacy_policy(denmark.stream_id), "invite-only-public-history");
+    assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
+    assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
+    assert.equal(
+        stream_data.get_stream_privacy_policy(denmark.stream_id),
+        "invite-only-public-history",
+    );
 
     assert(stream_data.get_invite_only("social"));
     assert(!stream_data.get_invite_only("unknown"));
@@ -415,8 +418,8 @@ test("delete_sub", () => {
     stream_data.add_sub(canada);
 
     assert(stream_data.is_subscribed("Canada"));
-    assert(stream_data.get_sub("Canada").stream_id, canada.stream_id);
-    assert(sub_store.get(canada.stream_id).name, "Canada");
+    assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
+    assert.equal(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
     assert(!stream_data.is_subscribed("Canada"));

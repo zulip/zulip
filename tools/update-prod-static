@@ -16,7 +16,9 @@ from django.conf import settings
 # check for the venv
 from lib import sanity_check
 from scripts.lib.node_cache import setup_node_modules
-from scripts.lib.zulip_tools import run
+from scripts.lib.zulip_tools import assert_not_running_as_root, run
+
+assert_not_running_as_root()
 
 sanity_check.check_venv(__file__)
 

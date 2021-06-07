@@ -42,6 +42,7 @@ paths:
   /fetch_api_key:
     post:
       operationId: fetch_api_key
+      summary: Fetch an API key (production)
       tags: ["authentication"]
       description: |
         This API endpoint is used by clients such as the Zulip mobile and
@@ -99,6 +100,7 @@ paths:
   /dev_fetch_api_key:
     post:
       operationId: dev_fetch_api_key
+      summary: Fetch an API key (development only)
       tags: ["authentication"]
       description: |
         For easy testing of mobile apps and other clients and against Zulip
@@ -132,12 +134,20 @@ paths:
   /events:
     get:
       operationId: get_events
+      summary: Get events from an event queue
       tags: ["real_time_events"]
       description: |
         `GET {{ api_url }}/v1/events`
 
         This endpoint allows you to receive new events from
         [a registered event queue](/api/register-queue).
+
+        Long-lived clients should use the
+        `event_queue_longpoll_timeout_seconds` property returned by
+        `POST /register` as the client-side HTTP request timeout for
+        calls to this endpoint.  It is guaranteed to be higher than
+        heartbeat frequency and should be respected by clients to
+        avoid breaking when heartbeat frequency increases.
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
@@ -393,6 +403,21 @@ paths:
                                             - 300
                                             - 400
                                             - 600
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When billing role of a user changes.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_billing_admin:
+                                          type: boolean
+                                          description: |
+                                            A boolean specifying whether the user is now a billing administrator.
+
+                                            **Changes**: New in Zulip 5.0 (feature level 73).
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -815,6 +840,7 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
+                                      "is_billing_admin": false,
                                       "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
@@ -1085,6 +1111,14 @@ paths:
                                     Currently always true for public streams (i.e. invite_only=False implies
                                     history_public_to_subscribers=True), but clients should not make that
                                     assumption, as we may change that behavior in the future.
+                                is_web_public:
+                                  type: boolean
+                                  description: |
+                                    Note: Only present if the changed property was `invite_only`.
+
+                                    Whether the stream's history is now readable by web-public visitors.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 71).
                               additionalProperties: false
                               example:
                                 {
@@ -1093,6 +1127,7 @@ paths:
                                   "property": "invite_only",
                                   "value": true,
                                   "history_public_to_subscribers": true,
+                                  "is_web_public": false,
                                   "stream_id": 11,
                                   "name": "test_stream",
                                   "id": 0,
@@ -3303,6 +3338,7 @@ paths:
                                         * 2 = members only
                                         * 3 = administrators only
                                         * 4 = nobody (though note that administrators can change this setting).
+                                        * 5 = moderators only
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -3510,10 +3546,6 @@ paths:
 
                                         * "D" means the logo is the default Zulip logo.
                                         * "U" means uploaded by an organization administrator.
-                                    max_logo_file_size:
-                                      type: integer
-                                      description: |
-                                        The maximum file size allowed for the uploaded organization logos.
                                     bot_domain:
                                       type: string
                                       description: |
@@ -3818,6 +3850,7 @@ paths:
                 $ref: "#/components/schemas/BadEventQueueIdError"
     delete:
       operationId: delete_queue
+      summary: Delete an event queue
       tags: ["real_time_events"]
       description: |
         Delete a previously registered queue.
@@ -3841,6 +3874,7 @@ paths:
   /get_stream_id:
     get:
       operationId: get_stream_id
+      summary: Get stream ID
       tags: ["streams"]
       description: |
         Get the unique ID of a given stream.
@@ -3888,6 +3922,7 @@ paths:
   /mark_all_as_read:
     post:
       operationId: mark_all_as_read
+      summary: Mark all messages as read
       tags: ["messages"]
       description: |
         Marks all of the current user's unread messages as read.
@@ -3903,6 +3938,7 @@ paths:
   /mark_stream_as_read:
     post:
       operationId: mark_stream_as_read
+      summary: Mark messages in a stream as read
       tags: ["messages"]
       description: |
         Mark all the unread messages in a stream as read.
@@ -3925,6 +3961,7 @@ paths:
   /mark_topic_as_read:
     post:
       operationId: mark_topic_as_read
+      summary: Mark messages in a topic as read
       tags: ["messages"]
       description: |
         Mark all the unread messages in a topic as read.
@@ -3955,6 +3992,7 @@ paths:
   /attachments:
     get:
       operationId: get_attachments
+      summary: Get attachments
       tags: ["users"]
       description: |
         Fetch metadata on files uploaded by the requesting user.
@@ -4008,6 +4046,7 @@ paths:
   /messages:
     get:
       operationId: get_messages
+      summary: Get messages
       tags: ["messages"]
       description: |
         Fetch message history from a Zulip server.
@@ -4250,6 +4289,7 @@ paths:
                       }
     post:
       operationId: send_message
+      summary: Send a message
       tags: ["messages"]
       description: |
         Send a stream or a private message.
@@ -4285,7 +4325,19 @@ paths:
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
-        - $ref: "#/components/parameters/Topic"
+        - name: topic
+          in: query
+          description: |
+            The topic of the message. Only required for stream messages
+            (`type="stream"`), ignored otherwise.
+
+            Maximum length of 60 characters.
+
+            **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+            this as `subject`, which is currently a deprecated alias.
+          schema:
+            type: string
+          example: Castle
         - name: queue_id
           in: query
           schema:
@@ -4353,6 +4405,7 @@ paths:
   /messages/{message_id}/history:
     get:
       operationId: get_message_history
+      summary: Get a message's edit history
       tags: ["messages"]
       description: |
         Fetch the message edit history of a previously edited message.
@@ -4460,6 +4513,7 @@ paths:
   /messages/flags:
     post:
       operationId: update_message_flags
+      summary: Update personal message flags
       tags: ["messages"]
       description: |
         Add or remove personal message flags like `read` and `starred`
@@ -4525,6 +4579,7 @@ paths:
   /messages/render:
     post:
       operationId: render_message
+      summary: Render message
       tags: ["messages"]
       description: |
         Render a message to HTML.
@@ -4557,6 +4612,7 @@ paths:
   /messages/{message_id}/reactions:
     post:
       operationId: add_reaction
+      summary: Add an emoji reaction
       tags: ["messages"]
       description: |
         Add an [emoji reaction](/help/emoji-reactions) to a message.
@@ -4599,6 +4655,7 @@ paths:
 
     delete:
       operationId: remove_reaction
+      summary: Remove an emoji reaction
       tags: ["messages"]
       description: |
         Remove an [emoji reaction](/help/emoji-reactions) from a message.
@@ -4640,6 +4697,7 @@ paths:
   /messages/matches_narrow:
     get:
       operationId: check_messages_match_narrow
+      summary: Check if messages match a narrow
       tags: ["messages"]
       description: |
         Check whether a set of messages match a [narrow](/api/construct-narrow).
@@ -4736,6 +4794,7 @@ paths:
   /messages/{message_id}:
     get:
       operationId: get_raw_message
+      summary: Get a message's raw Markdown
       tags: ["messages"]
       description: |
         Get the raw content of a message.
@@ -4778,6 +4837,7 @@ paths:
                 $ref: "#/components/schemas/InvalidMessageError"
     patch:
       operationId: update_message
+      summary: Edit a message
       tags: ["messages"]
       description: |
         Edit/update the content or topic of a message.
@@ -4788,7 +4848,20 @@ paths:
         message you wish you update.
       parameters:
         - $ref: "#/components/parameters/MessageId"
-        - $ref: "#/components/parameters/Topic"
+        - name: topic
+          in: query
+          description: |
+            The topic to move the message(s) to, to request changing the topic.
+            Should only be sent when changing the topic, and will throw an error
+            if the target message is not a stream message.
+
+            Maximum length of 60 characters.
+
+            **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+            this as `subject`, which is currently a deprecated alias.
+          schema:
+            type: string
+          example: Castle
         - name: propagate_mode
           in: query
           description: |
@@ -4834,7 +4907,11 @@ paths:
         - name: stream_id
           in: query
           description: |
-            The ID of the stream to access.
+            The stream ID to move the message(s) to, to request moving
+            messages to another stream.
+
+            Should only be sent when changing the stream, and will throw an error
+            if the target message is not a stream message.
           schema:
             type: integer
           example: 42
@@ -4868,6 +4945,7 @@ paths:
                       }
     delete:
       operationId: delete_message
+      summary: Delete a message
       tags: ["messages"]
       description: |
         Permanently delete a message.
@@ -4904,6 +4982,7 @@ paths:
   /user_uploads:
     post:
       operationId: upload_file
+      summary: Upload a file
       tags: ["messages"]
       description: |
         Upload a single file and get the corresponding URI.
@@ -4953,6 +5032,7 @@ paths:
   /user_uploads/{realm_id_str}/{filename}:
     get:
       operationId: get_file_temporary_url
+      summary: Get public temporary URL
       tags: ["messages"]
       description: |
         Get a temporary URL for access to the file that doesn't require authentication.
@@ -5000,6 +5080,7 @@ paths:
   /users:
     get:
       operationId: get_users
+      summary: Get all users
       tags: ["users"]
       description: |
         Retrieve details on all users in the organization.  Optionally
@@ -5041,6 +5122,7 @@ paths:
                               "email": "AARON@zulip.com",
                               "is_admin": false,
                               "is_owner": false,
+                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
@@ -5085,6 +5167,7 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
+                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
@@ -5100,6 +5183,7 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
+                              "is_billing_admin": false,
                               "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
@@ -5110,6 +5194,7 @@ paths:
                       }
     post:
       operationId: create_user
+      summary: Create a user
       tags: ["users"]
       description: |
         {!can-create-users-only.md!}
@@ -5177,6 +5262,7 @@ paths:
   /users/{user_id}/reactivate:
     post:
       operationId: reactivate_user
+      summary: Reactivate a user
       tags: ["users"]
       description: |
         {!api-admin-only.md!}
@@ -5201,6 +5287,7 @@ paths:
   /users/{user_id_or_email}/presence:
     get:
       operationId: get_user_presence
+      summary: Get user presence
       tags: ["users"]
       description: |
         Get the presence status for a specific user.
@@ -5288,6 +5375,7 @@ paths:
   /users/me:
     get:
       operationId: get_own_user
+      summary: Get own user
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
@@ -5344,6 +5432,14 @@ paths:
                           an organization owner.
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
+                        example: false
+                      is_billing_admin:
+                        type: boolean
+                        description: |
+                          A boolean indicating if the requesting user is
+                          a billing administrator.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
                         example: false
                       role:
                         type: integer
@@ -5434,6 +5530,7 @@ paths:
                         "is_owner": false,
                         "role": 200,
                         "is_guest": false,
+                        "is_billing_admin": false,
                         "is_bot": false,
                         "is_active": true,
                         "timezone": "",
@@ -5471,6 +5568,7 @@ paths:
                       }
     delete:
       operationId: deactivate_own_user
+      summary: Deactivate own user
       tags: ["users"]
       description: |
         Deactivates the user's account.  See also the administrative endpoint for
@@ -5503,6 +5601,7 @@ paths:
   /users/me/{stream_id}/topics:
     get:
       operationId: get_stream_topics
+      summary: Get topics in a stream
       tags: ["streams"]
       description: |
         Get all the topics in a specific stream
@@ -5565,6 +5664,7 @@ paths:
   /users/me/subscriptions:
     get:
       operationId: get_subscriptions
+      summary: Get subscribed streams
       tags: ["streams"]
       description: |
         Get all streams that the user is subscribed to.
@@ -5637,6 +5737,7 @@ paths:
                       }
     post:
       operationId: subscribe
+      summary: Subscribe to a stream
       tags: ["streams"]
       description: |
         Subscribe one or more users to one or more streams.
@@ -5755,6 +5856,7 @@ paths:
                           }
     patch:
       operationId: update_subscriptions
+      summary: Update subscriptions
       tags: ["streams"]
       description: |
         Update which streams you are are subscribed to.
@@ -5871,6 +5973,7 @@ paths:
                       }
     delete:
       operationId: unsubscribe
+      summary: Unsubscribe from a stream
       tags: ["streams"]
       description: |
         Unsubscribe yourself or other users from one or more streams.
@@ -5933,6 +6036,7 @@ paths:
   /users/me/subscriptions/muted_topics:
     patch:
       operationId: mute_topic
+      summary: Topic muting
       tags: ["streams"]
       description: |
         This endpoint mutes/unmutes a topic within a stream that the current
@@ -6002,6 +6106,7 @@ paths:
   /users/me/muted_users/{muted_user_id}:
     post:
       operationId: mute_user
+      summary: Mute a user
       tags: ["users"]
       description: |
         This endpoint [mutes a user](/help/mute-a-user).  Messages sent by users
@@ -6063,6 +6168,7 @@ paths:
                           {"msg": "User already muted", "result": "error"}
     delete:
       operationId: unmute_user
+      summary: Unmute a user
       tags: ["users"]
       description: |
         This endpoint unmutes a user.
@@ -6097,6 +6203,7 @@ paths:
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get_subscription_status
+      summary: Get subscription status
       tags: ["streams"]
       description: |
         Check whether a user is subscribed to a stream.
@@ -6128,6 +6235,7 @@ paths:
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload_custom_emoji
+      summary: Upload custom emoji
       tags: ["server_and_organizations"]
       description: |
         This endpoint is used to upload a custom emoji for use in the user's
@@ -6164,6 +6272,7 @@ paths:
   /realm/emoji:
     get:
       operationId: get_custom_emoji
+      summary: Get all custom emoji
       tags: ["server_and_organizations"]
       description: |
         Get all the custom emoji in the user's organization.
@@ -6207,6 +6316,7 @@ paths:
   /realm/profile_fields:
     get:
       operationId: get_custom_profile_fields
+      summary: Get all custom profile fields
       tags: ["server_and_organizations"]
       description: |
         Get all the [custom profile fields](/help/add-custom-profile-fields)
@@ -6306,6 +6416,7 @@ paths:
                       }
     patch:
       operationId: reorder_custom_profile_fields
+      summary: Reorder custom profile fields
       tags: ["server_and_organizations"]
       description: |
         {!api-admin-only.md!}
@@ -6342,6 +6453,7 @@ paths:
                 $ref: "#/components/schemas/JsonSuccess"
     post:
       operationId: create_custom_profile_field
+      summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
         {!api-admin-only.md!}
@@ -6425,6 +6537,7 @@ paths:
   /users/me/subscriptions/properties:
     post:
       operationId: update_subscription_settings
+      summary: Update subscription settings
       tags: ["streams"]
       description: |
         This endpoint is used to update the user's personal settings for the
@@ -6560,6 +6673,7 @@ paths:
   /users/{email}:
     get:
       operationId: get_user_by_email
+      summary: Get a user by email
       tags: ["users"]
       description: |
         Fetch details for a single user in the organization given a Zulip display
@@ -6640,6 +6754,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -6649,6 +6764,7 @@ paths:
   /users/{user_id}:
     get:
       operationId: get_user
+      summary: Get a user
       tags: ["users"]
       description: |
         Fetch details for a single user in the organization.
@@ -6715,6 +6831,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -6723,6 +6840,7 @@ paths:
                       }
     patch:
       operationId: update_user
+      summary: Update a user
       tags: ["users"]
       description: |
         {!api-admin-only.md!}
@@ -6803,6 +6921,7 @@ paths:
 
     delete:
       operationId: deactivate_user
+      summary: Deactivate a user
       tags: ["users"]
       description: |
         {!api-admin-only.md!}
@@ -6838,6 +6957,7 @@ paths:
   /realm/linkifiers:
     get:
       operationId: get_linkifiers
+      summary: Get linkifiers
       tags: ["server_and_organizations"]
       description: |
         List all of an organization's configured
@@ -6899,6 +7019,7 @@ paths:
   /realm/filters:
     post:
       operationId: add_linkifier
+      summary: Add a linkifier
       tags: ["server_and_organizations"]
       description: |
         Configure [linkifiers](/help/add-a-custom-linkifier),
@@ -6929,6 +7050,7 @@ paths:
   /realm/filters/{filter_id}:
     delete:
       operationId: remove_linkifier
+      summary: Remove a linkifier
       tags: ["server_and_organizations"]
       description: |
         Remove [linkifiers](/help/add-a-custom-linkifier), regular
@@ -6954,6 +7076,7 @@ paths:
                 $ref: "#/components/schemas/JsonSuccess"
     patch:
       operationId: update_linkifier
+      summary: Update a linkifier
       tags: ["server_and_organizations"]
       description: |
         Update a [linkifier](/help/add-a-custom-linkifier), regular
@@ -6983,7 +7106,8 @@ paths:
                 $ref: "#/components/schemas/JsonSuccess"
   /realm/playgrounds:
     post:
-      operationId: add_realm_playground
+      operationId: add_code_playground
+      summary: Add a code playground
       tags: ["server_and_organizations"]
       description: |
         Configure [code playgrounds](/help/code-blocks#code-playgrounds) for the organization.
@@ -7039,7 +7163,8 @@ paths:
                     example: {"id": 1, "result": "success", "msg": ""}
   /realm/playgrounds/{playground_id}:
     delete:
-      operationId: remove_realm_playground
+      operationId: remove_code_playground
+      summary: Remove a code playground
       tags: ["server_and_organizations"]
       description: |
         Remove a [code playground](/help/code-blocks#code-playgrounds) previously
@@ -7067,6 +7192,7 @@ paths:
   /register:
     post:
       operationId: register_queue
+      summary: Register an event queue
       tags: ["real_time_events"]
       description: |
         This powerful endpoint can be used to register a Zulip "event queue"
@@ -7368,6 +7494,17 @@ paths:
                             id or email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
+                      server_timestamp:
+                        type: number
+                        description: |
+                          Present if `presence` is present in `fetch_event_types`.
+
+                          The time when the server fetched the
+                          `presences` data included in the response.
+                          Matches the similar field in presence
+                          responses.
+
+                          **Changes**: New in Zulip 5.0 (feature level 70).
                       realm_domains:
                         type: array
                         description: |
@@ -8261,6 +8398,7 @@ paths:
                           * 2 = members only
                           * 3 = administrators only
                           * 4 = nobody (though note that administrators can change this setting).
+                          * 5 = moderators only
                       realm_email_changes_disabled:
                         type: boolean
                         description: |
@@ -8508,13 +8646,16 @@ paths:
 
                           * "G" means generated by Gravatar (the default).
                           * "U" means uploaded by an organization administrator.
-                      max_icon_file_size:
+                      max_icon_file_size_mib:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The maximum file size allowed for the organization's
                           icon.  Useful for UI allowing editing the organization's icon.
+
+                          **Changes**: New in Zulip 5.0 (feature level 72).  Previously,
+                          this was called `max_icon_file_size`.
                       realm_logo_url:
                         type: string
                         description: |
@@ -8553,12 +8694,15 @@ paths:
 
                           * "D" means the logo is the default Zulip logo.
                           * "U" means uploaded by an organization administrator.
-                      max_logo_file_size:
+                      max_logo_file_size_mib:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The maximum file size allowed for the uploaded organization logos.
+
+                          **Changes**: New in Zulip 5.0 (feature level 72).  Previously,
+                          this was called `max_logo_file_size`.
                       realm_bot_domain:
                         type: string
                         description: |
@@ -8651,7 +8795,7 @@ paths:
                           Whether push notifications are enabled for this organization.  Typically
                           `false` for self-hosted servers that have not configured the
                           [Mobile push notifications service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
-                      realm_upload_quota:
+                      realm_upload_quota_mib:
                         type: integer
                         nullable: true
                         description: |
@@ -8663,6 +8807,9 @@ paths:
                           in the API only for display purposes.
 
                           Null if there is no limit.
+
+                          **Changes**: New in Zulip 5.0 (feature level 72).  Previously,
+                          this was called `realm_upload_quota`.
                       realm_plan_type:
                         type: integer
                         description: |
@@ -8836,6 +8983,29 @@ paths:
                           Whether the server allows name changes.  Similar to
                           `realm_name_changes_disabled` but based on the `NAME_CHANGES_DISABLED`
                           Zulip server level setting.
+                      server_needs_upgrade:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the server is running an old version based on the Zulip
+                          [server release lifecycle](https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag),
+                          such that the web app will display to the current user a prominent warning.
+
+                          **Changes**: New in Zulip 5.0 (feature level 74).
+                      event_queue_longpoll_timeout_seconds:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Recommended client-side HTTP request timeout for [`GET /events`](/api/get-events) calls.
+                          This is guaranteed to be somewhat greater than the heartbeat frequency. It is important
+                          that clients respect this parameter, so that increases in the heartbeat frequency do not
+                          break clients.
+
+                          **Changes**: New in Zulip 5.0 (feature level 74). Previously,
+                          this was hardcoded to 90 seconds, and clients should use that as a fallback
+                          value when interacting with servers where this field is not present.
                       realm_notifications_stream_id:
                         type: integer
                         description: |
@@ -8939,6 +9109,14 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is an [organization owner](/help/roles-and-permissions).
+                      is_billing_admin:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is a billing administrator.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
                       is_moderator:
                         type: boolean
                         description: |
@@ -9010,6 +9188,7 @@ paths:
                                 full_name: {}
                                 is_admin: {}
                                 is_owner: {}
+                                is_billing_admin: {}
                                 role: {}
                                 bot_type: {}
                                 user_id: {}
@@ -9047,6 +9226,7 @@ paths:
   /server_settings:
     get:
       operationId: get_server_settings
+      summary: Get server settings
       tags: ["server_and_organizations"]
       description: |
         Fetch global settings for a Zulip server.
@@ -9126,6 +9306,10 @@ paths:
                           saml:
                             description: |
                               Whether the user can authenticate using SAML.
+                            type: boolean
+                          openid connect:
+                            description: |
+                              Whether the user can authenticate using OpenID Connect.
                             type: boolean
                       external_authentication_methods:
                         type: array
@@ -9283,6 +9467,7 @@ paths:
   /settings/notifications:
     patch:
       operationId: update_notification_settings
+      summary: Update notification settings
       tags: ["users"]
       description: |
         This endpoint is used to edit the user's global notification settings.
@@ -9517,6 +9702,7 @@ paths:
   /settings/display:
     patch:
       operationId: update_display_settings
+      summary: Update display settings
       tags: ["users"]
       description: |
         This endpoint is used to edit the current user's user interface settings.
@@ -9751,6 +9937,7 @@ paths:
   /streams:
     get:
       operationId: get_streams
+      summary: Get all streams
       tags: ["streams"]
       description: |
         Get all streams that the user has access to.
@@ -9906,6 +10093,7 @@ paths:
   /streams/{stream_id}:
     delete:
       operationId: archive_stream
+      summary: Archive a stream
       tags: ["streams"]
       description: |
         [Archive the stream](/help/archive-a-stream) with the ID `stream_id`.
@@ -9937,6 +10125,7 @@ paths:
                       }
     patch:
       operationId: update_stream
+      summary: Update a stream
       tags: ["streams"]
       description: |
         Configure the stream with the ID `stream_id`.  This endpoint supports
@@ -10022,6 +10211,7 @@ paths:
   /typing:
     post:
       operationId: set_typing_status
+      summary: Set "typing" status
       tags: ["users"]
       description: |
         Notify other users whether the current user is typing a message.
@@ -10130,6 +10320,7 @@ paths:
   /user_groups/create:
     post:
       operationId: create_user_group
+      summary: Create a user group
       tags: ["users"]
       description: |
         Create a new [user group](/help/user-groups).
@@ -10190,6 +10381,7 @@ paths:
   /user_groups/{user_group_id}/members:
     post:
       operationId: update_user_group_members
+      summary: Update user group members
       tags: ["users"]
       description: |
         Update the members of a [user group](/help/user-groups).
@@ -10227,6 +10419,7 @@ paths:
   /user_groups/{user_group_id}:
     patch:
       operationId: update_user_group
+      summary: Update a user group
       tags: ["users"]
       description: |
         Update the name or description of a [user group](/help/user-groups).
@@ -10269,6 +10462,7 @@ paths:
                       }
     delete:
       operationId: remove_user_group
+      summary: Delete a user group
       tags: ["users"]
       description: |
         Delete a [user group](/help/user-groups).
@@ -10303,6 +10497,7 @@ paths:
   /user_groups:
     get:
       operationId: get_user_groups
+      summary: Get user groups
       tags: ["users"]
       description: |
         Fetches all of the user groups in the organization.
@@ -10387,6 +10582,7 @@ paths:
   /rest-error-handling:
     post:
       operationId: rest_error_handling
+      summary: Error handling
       tags: ["real_time_events"]
       description: |
         Common error to many endpoints
@@ -10413,6 +10609,7 @@ paths:
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
+      summary: Outgoing webhooks
       tags: ["webhooks"]
       description: |
         Outgoing webhooks allows to build or set up Zulip integrations which are
@@ -10516,6 +10713,7 @@ paths:
     get:
       tags: ["streams"]
       operationId: create_big_blue_button_video_call
+      summary: Create Big Blue Button video call
       description: |
         Create a video call URL for a Big Blue Button video call.
         Requires Big Blue Button to be configured on the Zulip server.
@@ -11685,6 +11883,7 @@ components:
             full_name: {}
             is_admin: {}
             is_owner: {}
+            is_billing_admin: {}
             role: {}
             bot_type: {}
             user_id: {}
@@ -11743,6 +11942,12 @@ components:
             If true, is_admin will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
+        is_billing_admin:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a billing administrator.
+
+            **Changes**: New in Zulip 5.0 (feature level 73).
         role:
           type: integer
           enum:
@@ -12159,20 +12364,6 @@ components:
         type: integer
       example: 1
       required: true
-    Topic:
-      name: topic
-      in: query
-      description: |
-        The topic of the message. Only required for stream messages
-        (`type="stream"`), ignored otherwise.
-
-        Maximum length of 60 characters.
-
-        **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
-        this as `subject`, which is currently a deprecated alias.
-      schema:
-        type: string
-      example: Castle
     QueueId:
       name: queue_id
       in: query

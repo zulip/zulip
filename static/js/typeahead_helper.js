@@ -251,6 +251,24 @@ export function compare_by_popularity(lang_a, lang_b) {
     return util.strcmp(lang_a, lang_b);
 }
 
+function retain_unique_language_aliases(matches) {
+    // We make the typeahead a little more nicer but only showing one alias per language.
+    // For example if the user searches for prefix "j", then the typeahead list should contain
+    // "javascript" only, and not "js" and "javascript".
+    const seen_aliases = new Set();
+    const unique_aliases = [];
+    for (const lang of matches) {
+        // The matched list is already sorted based on popularity and has exact matches
+        // at the top, so we don't need to worry about sorting again.
+        const canonical_name = _.get(pygments_data.langs, [lang, "pretty_name"], lang);
+        if (!seen_aliases.has(canonical_name)) {
+            seen_aliases.add(canonical_name);
+            unique_aliases.push(lang);
+        }
+    }
+    return unique_aliases;
+}
+
 export function sort_languages(matches, query) {
     const results = typeahead.triage(query, matches);
 
@@ -266,17 +284,17 @@ export function sort_languages(matches, query) {
 
     // Languages that have the query somewhere in their name
     results.rest = results.rest.sort(compare_by_popularity);
-    return results.matches.concat(results.rest);
+    return retain_unique_language_aliases(results.matches.concat(results.rest));
 }
 
-export function sort_recipients(
+export function sort_recipients({
     users,
     query,
     current_stream,
     current_topic,
     groups = [],
     max_num_items = 20,
-) {
+}) {
     function sort_relevance(items) {
         return sort_people_for_relevance(items, current_stream, current_topic);
     }

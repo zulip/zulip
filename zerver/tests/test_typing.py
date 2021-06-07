@@ -3,7 +3,7 @@ from typing import Any, List, Mapping
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured, tornado_redirected_to_list
+from zerver.lib.test_helpers import queries_captured
 from zerver.models import Huddle, get_huddle_hash
 
 
@@ -149,12 +149,12 @@ class TypingHappyPathTestPMs(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
-            with tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 4)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 4)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -186,11 +186,11 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         )
 
         with queries_captured() as queries:
-            with tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 5)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 5)
 
         # We should not be adding new Huddles just because
         # a user started typing in the compose box.  Let's
@@ -219,7 +219,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_emails = {email}
         expected_recipient_ids = {user.id}
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 user,
                 "/api/v1/typing",
@@ -229,7 +229,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
                 },
             )
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -260,11 +260,11 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -289,7 +289,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_ids = {user.id}
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             params = dict(
                 to=orjson.dumps([user.id]).decode(),
                 op="stop",
@@ -297,7 +297,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             result = self.api_post(user, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -323,7 +323,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_ids = {user.id for user in expected_recipients}
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             params = dict(
                 to=orjson.dumps([recipient.id]).decode(),
                 op="stop",
@@ -331,7 +331,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -367,11 +367,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
-            with tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 5)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 5)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -403,11 +403,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
-            with tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 5)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 5)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])

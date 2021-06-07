@@ -190,9 +190,9 @@ export function handle_enter(textarea, e) {
 let nextFocus = false;
 
 function handle_keydown(e) {
-    const code = e.keyCode || e.which;
+    const key = e.key;
 
-    if (code === 13 || (code === 9 && !e.shiftKey)) {
+    if (key === "Enter" || (key === "Tab" && !e.shiftKey)) {
         // Enter key or Tab key
         let target_sel;
 
@@ -206,7 +206,7 @@ function handle_keydown(e) {
         const on_compose = target_sel === "#compose-textarea";
 
         if (on_compose) {
-            if (code === 9) {
+            if (key === "Tab") {
                 // This if branch is only here to make Tab+Enter work on Safari,
                 // which does not make <button>s tab-accessible by default
                 // (even if we were to set tabindex=0).
@@ -244,11 +244,9 @@ function handle_keydown(e) {
 }
 
 function handle_keyup(e) {
-    const code = e.keyCode || e.which;
-
     if (
         // Enter key or Tab key
-        (code === 13 || (code === 9 && !e.shiftKey)) &&
+        (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) &&
         nextFocus
     ) {
         nextFocus.trigger("focus");
@@ -423,7 +421,6 @@ export const slash_commands = [
 export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
-        want_groups: !is_silent,
         filter_pills: false,
         ...opts,
     };
@@ -433,7 +430,6 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
 export function get_pm_people(query) {
     const opts = {
         want_broadcast: false,
-        want_groups: true,
         filter_pills: true,
     };
     return get_person_suggestions(query, opts);
@@ -460,13 +456,7 @@ export function get_person_suggestions(query, opts) {
         return persons.filter((item) => query_matches_person(query, item));
     }
 
-    let groups;
-
-    if (opts.want_groups) {
-        groups = user_groups.get_realm_user_groups();
-    } else {
-        groups = [];
-    }
+    const groups = user_groups.get_realm_user_groups();
 
     const filtered_groups = groups.filter((item) => query_matches_name_description(query, item));
 
@@ -504,14 +494,14 @@ export function get_person_suggestions(query, opts) {
         filtered_persons = filter_persons(people.get_realm_users());
     }
 
-    return typeahead_helper.sort_recipients(
-        filtered_persons,
+    return typeahead_helper.sort_recipients({
+        users: filtered_persons,
         query,
-        opts.stream,
-        opts.topic,
-        filtered_groups,
+        current_stream: opts.stream,
+        current_topic: opts.topic,
+        groups: filtered_groups,
         max_num_items,
-    );
+    });
 }
 
 export function get_stream_topic_data(hacky_this) {
@@ -827,7 +817,9 @@ export function content_typeahead_selected(item, event) {
                 beginning = beginning.slice(0, -1);
             }
             if (user_groups.is_user_group(item)) {
-                beginning += "@*" + item.name + "* ";
+                let user_group_mention_text = is_silent ? "@_*" : "@*";
+                user_group_mention_text += item.name + "* ";
+                beginning += user_group_mention_text;
                 // We could theoretically warn folks if they are
                 // mentioning a user group that literally has zero
                 // members where we are posting to, but we don't have
@@ -1005,7 +997,7 @@ function get_header_html() {
             tip_text = $t({defaultMessage: "Press > for list of topics"});
             break;
         case "silent_mention":
-            tip_text = $t({defaultMessage: "User will not be notified"});
+            tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
         case "syntax":
             if (page_params.realm_default_code_block_language !== null) {

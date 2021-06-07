@@ -108,8 +108,8 @@ export function toggle(opts) {
     keydown_util.handle({
         elem: meta.$ind_tab,
         handlers: {
-            left_arrow: maybe_go_left,
-            right_arrow: maybe_go_right,
+            ArrowLeft: maybe_go_left,
+            ArrowRight: maybe_go_right,
         },
     });
 

@@ -1,9 +1,8 @@
-from typing import Any, Dict, Set
+from typing import Any, Dict, List, Mapping, Set
 
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import EventInfo, capture_event
 from zerver.lib.user_status import get_user_info_dict, update_user_status
 from zerver.models import UserProfile, UserStatus, get_client
 
@@ -139,6 +138,15 @@ class UserStatusTest(ZulipTestCase):
         away_user_ids = get_away_user_ids(realm_id=realm_id)
         self.assertEqual(away_user_ids, {cordelia.id})
 
+    def update_status_and_assert_event(
+        self, payload: Dict[str, Any], expected_event: Dict[str, Any]
+    ) -> None:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+        self.assertEqual(events[0]["event"], expected_event)
+
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
         realm_id = hamlet.realm_id
@@ -156,54 +164,33 @@ class UserStatusTest(ZulipTestCase):
         result = self.client_post("/json/users/me/status", payload)
         self.assert_json_error(result, "status_text is too long (limit: 60 characters)")
 
-        payload = dict(
-            away=orjson.dumps(True).decode(),
-            status_text="on vacation",
+        self.update_status_and_assert_event(
+            payload=dict(
+                away=orjson.dumps(True).decode(),
+                status_text="on vacation",
+            ),
+            expected_event=dict(
+                type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
+            ),
         )
-
-        event_info = EventInfo()
-        with capture_event(event_info):
-            result = self.client_post("/json/users/me/status", payload)
-        self.assert_json_success(result)
-
-        self.assertEqual(
-            event_info.payload,
-            dict(type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"),
-        )
-
         self.assertEqual(
             user_info(hamlet),
             dict(away=True, status_text="on vacation"),
         )
 
         # Now revoke "away" status.
-        payload = dict(away=orjson.dumps(False).decode())
-
-        event_info = EventInfo()
-        with capture_event(event_info):
-            result = self.client_post("/json/users/me/status", payload)
-        self.assert_json_success(result)
-
-        self.assertEqual(
-            event_info.payload,
-            dict(type="user_status", user_id=hamlet.id, away=False),
+        self.update_status_and_assert_event(
+            payload=dict(away=orjson.dumps(False).decode()),
+            expected_event=dict(type="user_status", user_id=hamlet.id, away=False),
         )
-
         away_user_ids = get_away_user_ids(realm_id=realm_id)
         self.assertEqual(away_user_ids, set())
 
         # And now just update your info.
         # The server will trim the whitespace here.
-        payload = dict(status_text="   in office  ")
-
-        event_info = EventInfo()
-        with capture_event(event_info):
-            result = self.client_post("/json/users/me/status", payload)
-        self.assert_json_success(result)
-
-        self.assertEqual(
-            event_info.payload,
-            dict(type="user_status", user_id=hamlet.id, status_text="in office"),
+        self.update_status_and_assert_event(
+            payload=dict(status_text="   in office  "),
+            expected_event=dict(type="user_status", user_id=hamlet.id, status_text="in office"),
         )
 
         self.assertEqual(
@@ -212,52 +199,28 @@ class UserStatusTest(ZulipTestCase):
         )
 
         # And finally clear your info.
-        payload = dict(status_text="")
-
-        event_info = EventInfo()
-        with capture_event(event_info):
-            result = self.client_post("/json/users/me/status", payload)
-        self.assert_json_success(result)
-
-        self.assertEqual(
-            event_info.payload,
-            dict(type="user_status", user_id=hamlet.id, status_text=""),
+        self.update_status_and_assert_event(
+            payload=dict(status_text=""),
+            expected_event=dict(type="user_status", user_id=hamlet.id, status_text=""),
         )
-
         self.assertEqual(
             get_user_info_dict(realm_id=realm_id),
             {},
         )
 
         # Turn on "away" status again.
-        payload = dict(away=orjson.dumps(True).decode())
-
-        event_info = EventInfo()
-        with capture_event(event_info):
-            result = self.client_post("/json/users/me/status", payload)
-        self.assert_json_success(result)
-
-        self.assertEqual(
-            event_info.payload,
-            dict(type="user_status", user_id=hamlet.id, away=True),
+        self.update_status_and_assert_event(
+            payload=dict(away=orjson.dumps(True).decode()),
+            expected_event=dict(type="user_status", user_id=hamlet.id, away=True),
         )
-
         away_user_ids = get_away_user_ids(realm_id=realm_id)
         self.assertEqual(away_user_ids, {hamlet.id})
 
         # And set status text while away.
-        payload = dict(status_text="   at the beach  ")
-
-        event_info = EventInfo()
-        with capture_event(event_info):
-            result = self.client_post("/json/users/me/status", payload)
-        self.assert_json_success(result)
-
-        self.assertEqual(
-            event_info.payload,
-            dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
+        self.update_status_and_assert_event(
+            payload=dict(status_text="   at the beach  "),
+            expected_event=dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
         )
-
         self.assertEqual(
             user_info(hamlet),
             dict(status_text="at the beach", away=True),

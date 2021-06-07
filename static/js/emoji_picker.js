@@ -272,8 +272,7 @@ function is_composition(emoji) {
 }
 
 function process_enter_while_filtering(e) {
-    if (e.keyCode === 13) {
-        // Enter key
+    if (e.key === "Enter") {
         e.preventDefault();
         const first_emoji = get_rendered_emoji(0, 0);
         if (first_emoji) {

@@ -11,16 +11,6 @@ export function random_id() {
 }
 
 export function create(opts) {
-    // a dictionary of the key codes that are associated with each key
-    // to make if/else more human readable.
-    const KEY = {
-        ENTER: 13,
-        BACKSPACE: 8,
-        LEFT_ARROW: 37,
-        RIGHT_ARROW: 39,
-        COMMA: 188,
-    };
-
     if (!opts.container) {
         blueslip.error("Pill needs container.");
         return undefined;
@@ -247,9 +237,7 @@ export function create(opts) {
 
     {
         store.$parent.on("keydown", ".input", (e) => {
-            const char = e.keyCode || e.charCode;
-
-            if (char === KEY.ENTER) {
+            if (e.key === "Enter") {
                 // regardless of the value of the input, the ENTER keyword
                 // should be ignored in favor of keeping content to one line
                 // always.
@@ -278,7 +266,7 @@ export function create(opts) {
             // if the user backspaces and there is input, just do normal char
             // deletion, otherwise delete the last pill in the sequence.
             if (
-                char === KEY.BACKSPACE &&
+                e.key === "Backspace" &&
                 (funcs.value(e.target).length === 0 || window.getSelection().anchorOffset === 0)
             ) {
                 e.preventDefault();
@@ -291,13 +279,13 @@ export function create(opts) {
             // should switch to focus the last pill in the list.
             // the rest of the events then will be taken care of in the function
             // below that handles events on the ".pill" class.
-            if (char === KEY.LEFT_ARROW && window.getSelection().anchorOffset === 0) {
+            if (e.key === "ArrowLeft" && window.getSelection().anchorOffset === 0) {
                 store.$parent.find(".pill").last().trigger("focus");
             }
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (char === KEY.COMMA) {
+            if (e.key === ",") {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim()) !== false) {
@@ -312,18 +300,16 @@ export function create(opts) {
         // handle events while hovering on ".pill" elements.
         // the three primary events are next, previous, and delete.
         store.$parent.on("keydown", ".pill", (e) => {
-            const char = e.keyCode || e.charCode;
-
             const $pill = store.$parent.find(".pill:focus");
 
-            switch (char) {
-                case KEY.LEFT_ARROW:
+            switch (e.key) {
+                case "ArrowLeft":
                     $pill.prev().trigger("focus");
                     break;
-                case KEY.RIGHT_ARROW:
+                case "ArrowRight":
                     $pill.next().trigger("focus");
                     break;
-                case KEY.BACKSPACE: {
+                case "Backspace": {
                     const $next = $pill.next();
                     const id = $pill.data("id");
                     funcs.removePill(id);

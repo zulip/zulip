@@ -293,6 +293,7 @@ function generate_topic_data(topic_info_array) {
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
         data.push({
             other_senders_count: 0,
+            other_sender_names: "",
             invite_only: false,
             is_web_public: true,
             last_msg_time: "Just now",
@@ -338,6 +339,8 @@ function stub_out_filter_buttons() {
 
 function test(label, f) {
     run_test(label, (override) => {
+        $(".header").css = () => {};
+
         messages = sample_messages.map((message) => ({...message}));
         f(override);
     });

@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
+import time
 from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
@@ -21,6 +22,7 @@ from zerver.lib.actions import (
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
@@ -49,7 +51,6 @@ from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
@@ -80,7 +81,7 @@ def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
     state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
-    state["max_logo_file_size"] = settings.MAX_LOGO_FILE_SIZE
+    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE_MIB
 
 
 def always_want(msg_type: str) -> bool:
@@ -177,8 +178,31 @@ def fetch_initial_state_data(
         state["presences"] = (
             {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
         )
+        # Send server_timestamp, to match the format of `GET /presence` requests.
+        state["server_timestamp"] = time.time()
 
     if want("realm"):
+        # The realm bundle includes both realm properties and server
+        # properties, since it's rare that one would one one and not
+        # the other. We expect most clients to want it.
+        #
+        # A note on naming: For some settings, one could imagine
+        # having a server-level value and a realm-level value (with
+        # the server value serving as the default for the realm
+        # value). For such settings, we prefer the following naming
+        # scheme:
+        #
+        # * realm_inline_image_preview (current realm setting)
+        # * server_inline_image_preview (server-level default)
+        #
+        # In situations where for backwards-compatibility reasons we
+        # have an unadorned name, we should arrange that clients using
+        # that unadorned name work correctly (i.e. that should be the
+        # currently active setting, not a server-level default).
+        #
+        # Other settings, which are just server-level settings or data
+        # about the version of Zulip, can be named without prefixes,
+        # e.g. giphy_rating_options or development_environment.
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
@@ -187,10 +211,10 @@ def fetch_initial_state_data(
         # fit into that framework.
         state["realm_authentication_methods"] = realm.authentication_methods_dict()
 
-        # We pretend these features are disabled because guests can't
-        # access them.  In the future, we may want to move this logic
-        # to the frontends, so that we can correctly display what
-        # these fields are in the settings.
+        # We pretend these features are disabled because anonymous
+        # users can't access them.  In the future, we may want to move
+        # this logic to the frontends, so that we can correctly
+        # display what these fields are in the settings.
         state["realm_allow_message_editing"] = (
             False if user_profile is None else realm.allow_message_editing
         )
@@ -201,6 +225,7 @@ def fetch_initial_state_data(
             False if user_profile is None else realm.allow_message_deleting
         )
 
+        # TODO: Can we delete these lines?  They seem to be in property_types...
         state["realm_message_content_edit_limit_seconds"] = realm.message_content_edit_limit_seconds
         state[
             "realm_message_content_delete_limit_seconds"
@@ -215,38 +240,55 @@ def fetch_initial_state_data(
         # future choose to move this logic to the frontend.
         state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
+        # Important: Encode units in the client-facing API name.
+        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
+        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
+        state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
+        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
+
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
-        state["max_icon_file_size"] = settings.MAX_ICON_FILE_SIZE
         add_realm_logo_fields(state, realm)
-        state["realm_bot_domain"] = realm.get_bot_domain()
+
         state["realm_uri"] = realm.uri
+        state["realm_bot_domain"] = realm.get_bot_domain()
         state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
+
         state["realm_digest_emails_enabled"] = (
             realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         )
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["realm_email_auth_enabled"] = email_auth_enabled(realm)
         state["realm_password_auth_enabled"] = password_auth_enabled(realm)
-        state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_upload_quota"] = realm.upload_quota_bytes()
+
+        state["server_generation"] = settings.SERVER_GENERATION
+        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
+        state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
-        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
-        state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
-        state["development_environment"] = settings.DEVELOPMENT
-        state["server_generation"] = settings.SERVER_GENERATION
+
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
-        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
-        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+
+        state["server_needs_upgrade"] = is_outdated_server(user_profile)
+        state[
+            "event_queue_longpoll_timeout_seconds"
+        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+
+        # TODO: Should these have the realm prefix replaced with server_?
+        state["realm_push_notifications_enabled"] = push_notifications_enabled()
+        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
+
+        if settings.JITSI_SERVER_URL is not None:
+            state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
+        else:  # nocoverage
+            state["jitsi_server_url"] = None
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
@@ -263,7 +305,7 @@ def fetch_initial_state_data(
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
-        state["max_message_length"] = MAX_MESSAGE_LENGTH
+        state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -303,6 +345,7 @@ def fetch_initial_state_data(
             # restrictions apply to these users as well, and it lets
             # us avoid unnecessary conditionals.
             role=UserProfile.ROLE_GUEST,
+            is_billing_admin=False,
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
@@ -339,6 +382,7 @@ def fetch_initial_state_data(
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
+        state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["enter_sends"] = settings_user.enter_sends
         state["email"] = settings_user.email
@@ -635,7 +679,7 @@ def apply_event(
                             user_profile, include_all_active=user_profile.is_realm_admin
                         )
 
-                for field in ["delivery_email", "email", "full_name"]:
+                for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -670,6 +714,8 @@ def apply_event(
                         p["is_admin"] = is_administrator_role(person["role"])
                         p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                         p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
+                    if "is_billing_admin" in person:
+                        p["is_billing_admin"] = person["is_billing_admin"]
                     if "custom_profile_field" in person:
                         custom_field_id = person["custom_profile_field"]["id"]
                         custom_field_new_value = person["custom_profile_field"]["value"]
@@ -769,7 +815,7 @@ def apply_event(
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
-                state["realm_upload_quota"] = event["extra_data"]["upload_quota"]
+                state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
                 "create_stream_policy": "can_create_streams",

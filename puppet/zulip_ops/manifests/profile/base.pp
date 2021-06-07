@@ -2,16 +2,21 @@ class zulip_ops::profile::base {
   include zulip::profile::base
   include zulip_ops::munin_node
   include zulip_ops::ksplice_uptrack
+  include zulip_ops::firewall
+  include zulip_ops::teleport::node
 
-  $org_base_packages = [# Management for our systems
+  zulip_ops::firewall_allow { 'ssh': order => '10'}
+
+  $org_base_packages = [
+    # Standard kernel, not AWS', so ksplice works
+    'linux-image-virtual',
+    # Management for our systems
     'openssh-server',
     'mosh',
     # package management
     'aptitude',
     # SSL certificates
     'certbot',
-    # Security
-    'iptables-persistent',
     # For managing our current Debian packages
     'debian-goodies',
     # Needed for zulip-ec2-configure-network-interfaces
@@ -30,6 +35,12 @@ class zulip_ops::profile::base {
     'nagios-plugins-contrib',
   ]
   zulip::safepackage { $org_base_packages: ensure => 'installed' }
+
+  # Uninstall the AWS kernel, but only after we install the usual one
+  package { 'linux-image-aws':
+    ensure  => absent,
+    require => Package['linux-image-virtual'],
+  }
 
   # Add system users here
   $users = []
@@ -177,30 +188,5 @@ class zulip_ops::profile::base {
     ensure  => absent,
     force   => true,
     recurse => true,
-  }
-
-  file { '/etc/iptables/rules.v4':
-    ensure  => file,
-    mode    => '0600',
-    content => template('zulip_ops/iptables/rules.v4.erb'),
-    require => Package['iptables-persistent'],
-  }
-  service { 'netfilter-persistent':
-    ensure     => running,
-
-    # Because there is no running process for this service, the normal status
-    # checks fail.  Because Puppet then thinks the service has been manually
-    # stopped, it won't restart it.  This fake status command will trick Puppet
-    # into thinking the service is *always* running (which in a way it is, as
-    # iptables is part of the kernel.)
-    hasstatus  => true,
-    status     => '/bin/true',
-
-    # Under Debian, the "restart" parameter does not reload the rules, so tell
-    # Puppet to fall back to stop/start, which does work.
-    hasrestart => false,
-
-    require    => Package['iptables-persistent'],
-    subscribe  => File['/etc/iptables/rules.v4'],
   }
 }

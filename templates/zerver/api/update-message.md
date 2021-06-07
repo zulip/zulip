@@ -1,4 +1,4 @@
-# Edit a message
+{generate_api_title(/messages/{message_id}:patch)}
 
 {generate_api_description(/messages/{message_id}:patch)}
 

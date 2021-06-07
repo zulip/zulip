@@ -1038,7 +1038,7 @@ def send_messages(messages: List[Message]) -> None:
     settings.USING_RABBITMQ = False
     message_dict_list = []
     for message in messages:
-        message_dict = build_message_send_dict({"message": message})
+        message_dict = build_message_send_dict(message=message)
         message_dict_list.append(message_dict)
     do_send_messages(message_dict_list)
     bulk_create_reactions(messages)

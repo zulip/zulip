@@ -17,8 +17,9 @@ from zerver.lib.actions import (
     do_change_plan_type,
     do_create_user,
 )
+from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.home import LAST_SERVER_UPGRADE_TIME, get_furthest_read_time, is_outdated_server
+from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
@@ -57,7 +58,6 @@ class HomeTest(ZulipTestCase):
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
-        "debug_mode",
         "default_language",
         "default_language_name",
         "default_view",
@@ -83,19 +83,19 @@ class HomeTest(ZulipTestCase):
         "enable_stream_email_notifications",
         "enable_stream_push_notifications",
         "enter_sends",
+        "event_queue_longpoll_timeout_seconds",
         "first_in_realm",
         "fluid_layout_width",
         "full_name",
         "furthest_read_time",
         "giphy_api_key",
         "giphy_rating_options",
-        "has_mobile_devices",
         "has_zoom_token",
         "high_contrast_mode",
         "hotspots",
-        "initial_servertime",
         "insecure_desktop_app",
         "is_admin",
+        "is_billing_admin",
         "is_guest",
         "is_moderator",
         "is_owner",
@@ -108,8 +108,8 @@ class HomeTest(ZulipTestCase):
         "login_page",
         "max_avatar_file_size_mib",
         "max_file_upload_size_mib",
-        "max_icon_file_size",
-        "max_logo_file_size",
+        "max_icon_file_size_mib",
+        "max_logo_file_size_mib",
         "max_message_id",
         "max_message_length",
         "max_stream_description_length",
@@ -127,7 +127,6 @@ class HomeTest(ZulipTestCase):
         "password_min_guesses",
         "password_min_length",
         "pm_content_in_desktop_notifications",
-        "poll_timeout",
         "presence_enabled",
         "presences",
         "prompt_for_invites",
@@ -197,7 +196,7 @@ class HomeTest(ZulipTestCase):
         "realm_push_notifications_enabled",
         "realm_send_welcome_emails",
         "realm_signup_notifications_stream_id",
-        "realm_upload_quota",
+        "realm_upload_quota_mib",
         "realm_uri",
         "realm_user_group_edit_policy",
         "realm_user_groups",
@@ -207,7 +206,6 @@ class HomeTest(ZulipTestCase):
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
         "request_language",
-        "root_domain_uri",
         "save_stacktraces",
         "search_pills_enabled",
         "server_avatar_changes_disabled",
@@ -216,6 +214,7 @@ class HomeTest(ZulipTestCase):
         "server_inline_url_embed_preview",
         "server_name_changes_disabled",
         "server_needs_upgrade",
+        "server_timestamp",
         "settings_send_digest_emails",
         "starred_message_counts",
         "starred_messages",
@@ -276,7 +275,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 40)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode("utf-8")
@@ -356,7 +355,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 38)
+            self.assert_length(queries, 37)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -387,7 +386,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 36)
+        self.assert_length(queries2, 35)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode("utf-8")
@@ -609,7 +608,7 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn(defunct_user.id, active_ids)
 
         cross_bots = page_params["cross_realm_bots"]
-        self.assertEqual(len(cross_bots), 3)
+        self.assert_length(cross_bots, 3)
         cross_bots.sort(key=lambda d: d["email"])
         for cross_bot in cross_bots:
             # These are either nondeterministic or boring
@@ -638,6 +637,7 @@ class HomeTest(ZulipTestCase):
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
+                        is_billing_admin=False,
                         role=email_gateway_bot.role,
                         is_cross_realm_bot=True,
                         is_guest=False,
@@ -653,6 +653,7 @@ class HomeTest(ZulipTestCase):
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
+                        is_billing_admin=False,
                         role=notification_bot.role,
                         is_cross_realm_bot=True,
                         is_guest=False,
@@ -668,6 +669,7 @@ class HomeTest(ZulipTestCase):
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
+                        is_billing_admin=False,
                         role=welcome_bot.role,
                         is_cross_realm_bot=True,
                         is_guest=False,
@@ -895,17 +897,17 @@ class HomeTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=pytz.utc)
-        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=10)):
+        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=10)):
             self.assertEqual(is_outdated_server(iago), False)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
 
-        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=397)):
+        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=397)):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), True)
             self.assertEqual(is_outdated_server(None), True)
 
-        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=380)):
+        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=380)):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)

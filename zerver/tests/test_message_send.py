@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional, Set
+from typing import Any, List, Mapping, Optional, Set
 from unittest import mock
 
 import orjson
@@ -48,7 +48,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Message,
     Realm,
@@ -522,7 +521,7 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assertEqual(len(recent_conversations), 1)
+        self.assert_length(recent_conversations, 1)
         recent_conversation = list(recent_conversations.values())[0]
         recipient_id = list(recent_conversations.keys())[0]
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
@@ -542,7 +541,7 @@ class MessagePOSTTest(ZulipTestCase):
         self_message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assertEqual(len(recent_conversations), 2)
+        self.assert_length(recent_conversations, 2)
         recent_conversation = recent_conversations[recipient_id]
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
         self.assertEqual(recent_conversation["max_message_id"], message_id)
@@ -900,12 +899,14 @@ class MessagePOSTTest(ZulipTestCase):
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content, "  I like whitespace at the end!")
 
+    @override_settings(MAX_MESSAGE_LENGTH=25)
     def test_long_message(self) -> None:
         """
         Sending a message longer than the maximum message length succeeds but is
         truncated.
         """
         self.login("hamlet")
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {
             "type": "stream",
@@ -1552,7 +1553,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
-            message_dict = build_message_send_dict({"message": message})
+            message_dict = build_message_send_dict(message=message)
             do_send_messages([message_dict])
 
         before_um_count = UserMessage.objects.count()
@@ -1660,14 +1661,14 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
-        with mock.patch("zerver.lib.actions.send_event") as m:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             self.send_stream_message(
                 user,
                 stream_name,
                 content=content,
             )
-        self.assertEqual(m.call_count, 1)
-        users = m.call_args[0][2]
+        users = events[0]["users"]
         user_ids = {u["id"] for u in users}
         return user_ids
 
@@ -1946,10 +1947,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertIn(message2_id, msg_data["huddle_dict"].keys())
 
         # only these two messages are present in msg_data
-        self.assertEqual(len(msg_data["huddle_dict"].keys()), 2)
+        self.assert_length(msg_data["huddle_dict"].keys(), 2)
 
         recent_conversations = get_recent_private_conversations(users[1])
-        self.assertEqual(len(recent_conversations), 1)
+        self.assert_length(recent_conversations, 1)
         recent_conversation = list(recent_conversations.values())[0]
         self.assertEqual(
             set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}

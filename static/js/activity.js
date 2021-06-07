@@ -76,7 +76,13 @@ export function update_dom_with_unread_counts(counts) {
     }
 }
 
-function mark_client_idle() {
+export function clear_for_testing() {
+    user_cursor = undefined;
+    user_filter = undefined;
+    client_is_active = false;
+}
+
+export function mark_client_idle() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
@@ -210,7 +216,8 @@ export function send_presence_to_server(want_redraw) {
     });
 }
 
-function mark_client_active() {
+export function mark_client_active() {
+    // exported for testing
     if (!client_is_active) {
         client_is_active = true;
         send_presence_to_server(false);
@@ -319,15 +326,15 @@ export function set_cursor_and_filter() {
     keydown_util.handle({
         elem: $input,
         handlers: {
-            enter_key() {
+            Enter() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow() {
+            ArrowUp() {
                 user_cursor.prev();
                 return true;
             },
-            down_arrow() {
+            ArrowDown() {
                 user_cursor.next();
                 return true;
             },

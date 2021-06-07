@@ -380,14 +380,36 @@ def get_signed_upload_url(path: str) -> str:
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
         self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
-        network_location = urllib.parse.urlparse(
-            self.avatar_bucket.meta.client.meta.endpoint_url
-        ).netloc
-        self.avatar_bucket_url = f"https://{self.avatar_bucket.name}.{network_location}"
-
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
+
+    def get_public_upload_url(
+        self,
+        key: str,
+    ) -> str:
+        # Return the public URL for a key in the S3 Avatar bucket.
+        # For Amazon S3 itself, this will return the following:
+        #     f"https://{self.avatar_bucket.name}.{network_location}/{key}"
+        #
+        # However, we need this function to properly handle S3 style
+        # file upload backends that Zulip supports, which can have a
+        # different URL format. Configuring no signature and providing
+        # no access key makes `generate_presigned_url` just return the
+        # normal public URL for a key.
+        config = Config(signature_version=botocore.UNSIGNED)
+        return self.session.client(
+            "s3",
+            region_name=settings.S3_REGION,
+            endpoint_url=settings.S3_ENDPOINT_URL,
+            config=config,
+        ).generate_presigned_url(
+            ClientMethod="get_object",
+            Params={
+                "Bucket": self.avatar_bucket.name,
+                "Key": key,
+            },
+            ExpiresIn=0,
+        )
 
     def delete_file_from_s3(self, path_id: str, bucket: ServiceResource) -> bool:
         key = bucket.Object(path_id)
@@ -512,12 +534,14 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         medium_suffix = "-medium.png" if medium else ""
+        public_url = self.get_public_upload_url(f"{hash_key}{medium_suffix}")
+
         # ?x=x allows templates to append additional parameters with &s
-        return f"{self.avatar_bucket_url}/{hash_key}{medium_suffix}?x=x"
+        return public_url + "?x=x"
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         # export_path has a leading /
-        return f"{self.avatar_bucket_url}{export_path}"
+        return self.get_public_upload_url(export_path[1:])
 
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join(str(realm.id), "realm")
@@ -547,8 +571,8 @@ class S3UploadBackend(ZulipUploadBackend):
         # that users use gravatar.)
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        # ?x=x allows templates to append additional parameters with &s
-        return f"{self.avatar_bucket_url}/{realm_id}/realm/icon.png?version={version}"
+        public_url = self.get_public_upload_url(f"{realm_id}/realm/icon.png")
+        return public_url + f"?version={version}"
 
     def upload_realm_logo_image(
         self, logo_file: File, user_profile: UserProfile, night: bool
@@ -581,12 +605,12 @@ class S3UploadBackend(ZulipUploadBackend):
         # that users use gravatar.)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         if not night:
             file_name = "logo.png"
         else:
             file_name = "night_logo.png"
-        return f"{self.avatar_bucket_url}/{realm_id}/realm/{file_name}?version={version}"
+        public_url = self.get_public_upload_url(f"{realm_id}/realm/{file_name}")
+        return public_url + f"?version={version}"
 
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
         # BUG: The else case should be user_avatar_path(user_profile) + ".png".
@@ -640,7 +664,7 @@ class S3UploadBackend(ZulipUploadBackend):
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm_id, emoji_file_name=emoji_file_name
         )
-        return f"{self.avatar_bucket_url}/{emoji_path}"
+        return self.get_public_upload_url(emoji_path)
 
     def upload_export_tarball(
         self,
@@ -655,22 +679,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         key.upload_file(tarball_path, Callback=percent_callback)
 
-        session = botocore.session.get_session()
-        config = Config(signature_version=botocore.UNSIGNED)
-
-        public_url = session.create_client(
-            "s3",
-            region_name=settings.S3_REGION,
-            endpoint_url=settings.S3_ENDPOINT_URL,
-            config=config,
-        ).generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": self.avatar_bucket.name,
-                "Key": key.key,
-            },
-            ExpiresIn=0,
-        )
+        public_url = self.get_public_upload_url(key.key)
         return public_url
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:

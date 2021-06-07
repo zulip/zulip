@@ -1,4 +1,4 @@
-# Send a message
+{generate_api_title(/messages:post)}
 
 {generate_api_description(/messages:post)}
 

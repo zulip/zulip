@@ -58,7 +58,7 @@ class TestBuildEmail(ZulipTestCase):
                         from_address=overly_long_address,
                         language="en",
                     )
-        self.assertEqual(len(info_log.records), 2)
+        self.assert_length(info_log.records, 2)
         self.assertEqual(
             info_log.output[0], f"INFO:{logger.name}:Sending password_reset email to {mail.to}"
         )
@@ -85,7 +85,7 @@ class TestBuildEmail(ZulipTestCase):
                         from_address=address,
                         language="en",
                     )
-        self.assertEqual(len(info_log.records), 2)
+        self.assert_length(info_log.records, 2)
         self.assertEqual(
             info_log.output[0], f"INFO:{logger.name}:Sending password_reset email to {[hamlet]}"
         )
@@ -163,7 +163,7 @@ class TestSendEmail(ZulipTestCase):
                             from_address=FromAddress.NOREPLY,
                             language="en",
                         )
-                self.assertEqual(len(info_log.records), 2)
+                self.assert_length(info_log.records, 2)
                 self.assertEqual(
                     info_log.output[0],
                     f"INFO:{logger.name}:Sending password_reset email to {mail.to}",

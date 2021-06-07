@@ -1,4 +1,4 @@
-# Subscribe to a stream
+{generate_api_title(/users/me/subscriptions:post)}
 
 {generate_api_description(/users/me/subscriptions:post)}
 

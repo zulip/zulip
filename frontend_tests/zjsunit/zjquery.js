@@ -174,7 +174,6 @@ function make_new_elem(selector, opts) {
     let html = "never-been-set";
     let text = "never-been-set";
     let value;
-    let css;
     let shown = false;
     let height;
 
@@ -200,13 +199,6 @@ function make_new_elem(selector, opts) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
-            return self;
-        },
-        css(...args) {
-            if (args.length === 0) {
-                return css || {};
-            }
-            [css] = args;
             return self;
         },
         data(name, val) {
@@ -428,6 +420,11 @@ function make_new_elem(selector, opts) {
                 yield child;
             }
         };
+
+        for (const [i, child] of opts.children.entries()) {
+            self[i] = child;
+        }
+
         self.length = opts.children.length;
     }
 
@@ -436,6 +433,8 @@ function make_new_elem(selector, opts) {
     }
 
     self.selector = selector;
+
+    self.__zjquery = true;
 
     return self;
 }

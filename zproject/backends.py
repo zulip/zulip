@@ -43,6 +43,7 @@ from social_core.backends.base import BaseAuth
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
+from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.backends.saml import SAMLAuth, SAMLIdentityProvider
 from social_core.exceptions import (
     AuthCanceled,
@@ -736,36 +737,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 continue
             values_by_var_name[var_name] = value
 
-        fields_by_var_name: Dict[str, CustomProfileField] = {}
-        custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
-        for field in custom_profile_fields:
-            var_name = "_".join(field.name.lower().split(" "))
-            fields_by_var_name[var_name] = field
-
-        existing_values = {}
-        for data in user_profile.profile_data:
-            var_name = "_".join(data["name"].lower().split(" "))
-            existing_values[var_name] = data["value"]
-
-        profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
-        for var_name, value in values_by_var_name.items():
-            try:
-                field = fields_by_var_name[var_name]
-            except KeyError:
-                raise ZulipLDAPException(f"Custom profile field with name {var_name} not found.")
-            if existing_values.get(var_name) == value:
-                continue
-            try:
-                validate_user_custom_profile_field(user_profile.realm.id, field, value)
-            except ValidationError as error:
-                raise ZulipLDAPException(f"Invalid data for {var_name} field: {error.message}")
-            profile_data.append(
-                {
-                    "id": field.id,
-                    "value": value,
-                }
-            )
-        do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+        try:
+            sync_user_profile_custom_fields(user_profile, values_by_var_name)
+        except SyncUserException as e:
+            raise ZulipLDAPException(str(e)) from e
 
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
@@ -1230,6 +1205,45 @@ class ExternalAuthResult:
 
     class InvalidTokenError(Exception):
         pass
+
+
+class SyncUserException(Exception):
+    pass
+
+
+def sync_user_profile_custom_fields(
+    user_profile: UserProfile, custom_field_name_to_value: Dict[str, Any]
+) -> None:
+    fields_by_var_name: Dict[str, CustomProfileField] = {}
+    custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
+    for field in custom_profile_fields:
+        var_name = "_".join(field.name.lower().split(" "))
+        fields_by_var_name[var_name] = field
+
+    existing_values = {}
+    for data in user_profile.profile_data:
+        var_name = "_".join(data["name"].lower().split(" "))
+        existing_values[var_name] = data["value"]
+
+    profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
+    for var_name, value in custom_field_name_to_value.items():
+        try:
+            field = fields_by_var_name[var_name]
+        except KeyError:
+            raise SyncUserException(f"Custom profile field with name {var_name} not found.")
+        if existing_values.get(var_name) == value:
+            continue
+        try:
+            validate_user_custom_profile_field(user_profile.realm.id, field, value)
+        except ValidationError as error:
+            raise SyncUserException(f"Invalid data for {var_name} field: {error.message}")
+        profile_data.append(
+            {
+                "id": field.id,
+                "value": value,
+            }
+        )
+    do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
 
 
 @external_auth_method
@@ -2261,6 +2275,56 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             result.append(saml_dict)
 
         return result
+
+
+@external_auth_method
+class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
+    name = "oidc"
+    auth_backend_name = "OpenID Connect"
+    sort_order = 100
+
+    # Hack: We don't yet support multiple IdPs, but we want this
+    # module to import if nothing has been configured yet.
+    settings_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [{}])[0]
+
+    display_icon = settings_dict.get("display_icon")
+    display_name = settings_dict.get("display_name", "OIDC")
+
+    full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
+
+    # Discovery endpoint for the superclass to read all the appropriate
+    # configuration from.
+    OIDC_ENDPOINT = settings_dict.get("oidc_url")
+
+    def get_key_and_secret(self) -> Tuple[str, str]:
+        client_id = self.settings_dict.get("client_id", "")
+        secret = self.settings_dict.get("secret", "")
+        return client_id, secret
+
+    @classmethod
+    def check_config(cls) -> bool:
+        if len(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.keys()) != 1:
+            # Only one IdP supported for now.
+            return False
+
+        mandatory_config_keys = ["oidc_url", "client_id", "secret"]
+        idp_config_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values())[0]
+        if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+            return False
+
+        return True
+
+    @classmethod
+    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+        return [
+            dict(
+                name=f"oidc:{cls.name}",
+                display_name=cls.display_name,
+                display_icon=cls.display_icon,
+                login_url=reverse("login-social", args=(cls.name,)),
+                signup_url=reverse("signup-social", args=(cls.name,)),
+            )
+        ]
 
 
 def validate_otp_params(

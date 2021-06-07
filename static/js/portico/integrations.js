@@ -303,7 +303,7 @@ function toggle_categories_dropdown() {
 
 function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
-        if (e.which === 13 && e.target.value !== "") {
+        if (e.key === "Enter" && e.target.value !== "") {
             for (const integration_element of $(".integration-lozenges").children()) {
                 const integration = $(integration_element).find(".integration-lozenge");
 

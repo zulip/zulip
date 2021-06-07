@@ -48,16 +48,11 @@ from typing_extensions import TypedDict
 from zerver.lib import mention as mention
 from zerver.lib.cache import NotFoundInCache, cache_with_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import (
-    codepoint_to_name,
-    emoticon_regex,
-    name_to_codepoint,
-    translate_emoticons,
-)
+from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
+from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
@@ -67,7 +62,6 @@ from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Message,
     Realm,
     UserGroup,
@@ -621,9 +615,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_TO_PREVIEW = 3
     INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
 
-    def __init__(self, md: markdown.Markdown) -> None:
-        markdown.treeprocessors.Treeprocessor.__init__(self, md)
-
     def add_a(
         self,
         root: Element,
@@ -834,7 +825,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 image_info = {}
             image_info["is_image"] = True
             parsed_url_list = list(parsed_url)
-            parsed_url_list[4] = "dl=1"  # Replaces query
+            parsed_url_list[4] = "raw=1"  # Replaces query
             image_info["image"] = urllib.parse.urlunparse(parsed_url_list)
 
             return image_info
@@ -914,7 +905,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         This works by using the URLs, user_mentions and media data from
         the twitter API and searching for Unicode emojis in the text using
-        `unicode_emoji_regex`.
+        `UNICODE_EMOJI_RE`.
 
         The first step is finding the locations of the URLs, mentions, media and
         emoji in the text. For each match we build a dictionary with type, the start
@@ -973,7 +964,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     }
                 )
         # Build dicts for emojis
-        for match in re.finditer(unicode_emoji_regex, text, re.IGNORECASE):
+        for match in re.finditer(UNICODE_EMOJI_RE, text, re.IGNORECASE):
             orig_syntax = match.group("syntax")
             codepoint = unicode_emoji_to_codepoint(orig_syntax)
             if codepoint in codepoint_to_name:
@@ -1368,6 +1359,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                             found_url.family.child.text = text
 
 
+class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
+
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group("time")
@@ -1422,7 +1422,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
 # \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
 # \u3000-\u303f         - CJK Symbols and Punctuation
 # \u3200-\u32ff         - Enclosed CJK Letters and Months
-unicode_emoji_regex = (
+UNICODE_EMOJI_RE = (
     "(?P<syntax>["
     "\U0001F100-\U0001F64F"
     "\U0001F680-\U0001F6FF"
@@ -1683,7 +1683,6 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
-    mention_re = re.compile(mention.find_mentions)
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[str]) -> None:
@@ -1713,7 +1712,9 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
-        line = re.sub(self.mention_re, lambda m: "@_{}".format(m.group("match")), line)
+        line = mention.MENTIONS_RE.sub(lambda m: "@_**{}**".format(m.group("match")), line)
+        # Silence all the user group mentions inside blockquotes
+        line = mention.USER_GROUP_MENTIONS_RE.sub(lambda m: "@_*{}*".format(m.group("match")), line)
 
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
@@ -1798,11 +1799,11 @@ class LinkifierPattern(markdown.inlinepatterns.Pattern):
         self,
         source_pattern: str,
         format_string: str,
-        markdown_instance: Optional[markdown.Markdown] = None,
+        md: Optional[markdown.Markdown] = None,
     ) -> None:
         self.pattern = prepare_linkifier_pattern(source_pattern)
         self.format_string = format_string
-        markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
+        super().__init__(self.pattern, md)
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
         db_data = self.md.zulip_db_data
@@ -1813,20 +1814,14 @@ class LinkifierPattern(markdown.inlinepatterns.Pattern):
         )
 
 
-class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
+class UserMentionPattern(CompiledInlineProcessor):
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
-        match = m.group("match")
+        name = m.group("match")
         silent = m.group("silent") == "_"
-
         db_data = self.md.zulip_db_data
         if self.md.zulip_message and db_data is not None:
-            if match.startswith("**") and match.endswith("**"):
-                name = match[2:-2]
-            else:
-                return None, None, None
-
             wildcard = mention.user_mention_matches_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
@@ -1873,18 +1868,19 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
+class UserGroupMentionPattern(CompiledInlineProcessor):
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
-        match = m.group(1)
+        name = m.group("match")
+        silent = m.group("silent") == "_"
         db_data = self.md.zulip_db_data
 
         if self.md.zulip_message and db_data is not None:
-            name = extract_user_group(match)
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
-                self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
+                if not silent:
+                    self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1893,22 +1889,19 @@ class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
                 return None, None, None
 
             el = Element("span")
-            el.set("class", "user-group-mention")
             el.set("data-user-group-id", user_group_id)
-            text = f"@{name}"
+            if silent:
+                el.set("class", "user-group-mention silent")
+                text = f"{name}"
+            else:
+                el.set("class", "user-group-mention")
+                text = f"@{name}"
             el.text = markdown.util.AtomicString(text)
             return el, m.start(), m.end()
         return None, None, None
 
 
-class StreamPattern(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
-        # This is similar to the superclass's small __init__ function,
-        # but we skip the compilation step and let the caller give us
-        # a compiled regex.
-        self.compiled_re = compiled_re
-        self.md = md
-
+class StreamPattern(CompiledInlineProcessor):
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -1941,14 +1934,7 @@ class StreamPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class StreamTopicPattern(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
-        # This is similar to the superclass's small __init__ function,
-        # but we skip the compilation step and let the caller give us
-        # a compiled regex.
-        self.compiled_re = compiled_re
-        self.md = md
-
+class StreamTopicPattern(CompiledInlineProcessor):
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -2223,7 +2209,7 @@ class Markdown(markdown.Markdown):
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
-        reg.register(UserMentionPattern(mention.find_mentions, self), "usermention", 95)
+        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
         reg.register(
             Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B", self), "tex", 90
         )
@@ -2231,7 +2217,7 @@ class Markdown(markdown.Markdown):
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(r"<time:(?P<time>[^>]*?)>"), "timestamp", 75)
         reg.register(
-            UserGroupMentionPattern(mention.user_group_mentions, self), "usergroupmention", 65
+            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
@@ -2247,9 +2233,9 @@ class Markdown(markdown.Markdown):
             markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), "not_strong", 20
         )
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
-        reg.register(EmoticonTranslation(emoticon_regex, self), "translate_emoticons", 10)
+        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
         # We get priority 5 from 'nl2br' extension
-        reg.register(UnicodeEmoji(unicode_emoji_regex), "unicodeemoji", 0)
+        reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
         return reg
 
     def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
@@ -2625,9 +2611,10 @@ def do_convert(
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
-        if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
+        if len(rendered_content) > MAX_MESSAGE_LENGTH * 100:
             raise MarkdownRenderingException(
-                f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 10} characters (message {logging_message_id})"
+                f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
             )
         return rendered_content
     except Exception:

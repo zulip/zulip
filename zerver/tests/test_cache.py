@@ -35,7 +35,7 @@ class AppsTest(ZulipTestCase):
                 flush_cache(Mock())
                 mock.assert_called_once()
             self.assertEqual(m.output, ["INFO:root:Clearing memcached cache after migrations"])
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
 
 
 class CacheKeyValidationTest(ZulipTestCase):
@@ -91,7 +91,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             with queries_captured() as queries:
                 result = get_user_function_with_bad_cache_keys(hamlet.id)
 
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
             self.assertEqual(result, hamlet)
             self.assert_length(queries, 1)
             mock_set.assert_not_called()
@@ -110,7 +110,7 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             with queries_captured() as queries:
                 result = get_user_function_with_bad_cache_keys(hamlet.id)
 
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
             self.assertEqual(result, hamlet)
             self.assert_length(queries, 1)
             mock_set.assert_not_called()
@@ -198,7 +198,7 @@ class GetCacheWithKeyDecoratorTest(ZulipTestCase):
         with self.assertLogs(level="WARNING") as m:
             with self.assertRaises(NotFoundInCache):
                 get_user_function_with_bad_cache_keys(hamlet.id)
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
 
 
 class SafeCacheFunctionsTest(ZulipTestCase):
@@ -222,7 +222,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
                 "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
 
         with self.assertLogs(level="WARNING") as m:
             result = safe_cache_get_many(list(items.keys()))
@@ -231,7 +231,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
                 "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
 
     def test_safe_cache_functions_with_good_and_bad_keys(self) -> None:
         bad_items = {"SafeFunctionsTest:\nbadkey1": 1, "SafeFunctionsTest:\nbadkey2": 2}
@@ -244,7 +244,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
                 "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
 
         with self.assertLogs(level="WARNING") as m:
             result = safe_cache_get_many(list(items.keys()))
@@ -253,7 +253,7 @@ class SafeCacheFunctionsTest(ZulipTestCase):
                 "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
                 m.output[0],
             )
-            self.assertEqual(len(m.output), 1)
+            self.assert_length(m.output, 1)
 
 
 class BotCacheKeyTest(ZulipTestCase):

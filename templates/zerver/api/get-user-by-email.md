@@ -1,4 +1,4 @@
-# Get a user by email
+{generate_api_title(/users/{email}:get)}
 
 {generate_api_description(/users/{email}:get)}
 

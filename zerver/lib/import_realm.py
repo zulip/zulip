@@ -1056,7 +1056,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             event_type=RealmAuditLog.REALM_CREATED,
             event_time=realm.date_created,
             # Mark these as backfilled, since they weren't created
-            # when the realm was actaully created, and thus do not
+            # when the realm was actually created, and thus do not
             # have the creating user associated with them.
             backfilled=True,
         )

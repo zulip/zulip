@@ -32,6 +32,7 @@ from scripts.lib.zulip_tools import (
     get_config_file,
     get_tornado_ports,
     parse_os_release,
+    run_psql_as_postgres,
     su_to_zulip,
 )
 
@@ -137,13 +138,9 @@ if os.path.exists("/etc/init.d/postgresql"):
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
-    subprocess.check_call(
-        [
-            "su",
-            "postgres",
-            "-c",
-            'psql -v ON_ERROR_STOP=1 zulip -c "DROP EXTENSION IF EXISTS tsearch_extras;"',
-        ]
+    run_psql_as_postgres(
+        config_file=config_file,
+        sql_query="DROP EXTENSION IF EXISTS tsearch_extras;",
     )
     subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 

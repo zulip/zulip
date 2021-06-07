@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as people from "./people";
 import * as stream_pill from "./stream_pill";
@@ -21,27 +22,47 @@ function group_matcher(query, item) {
 }
 
 export function set_up(input, pills, opts) {
-    let source = opts.source;
-    if (!opts.source) {
-        source = () => user_pill.typeahead_source(pills);
+    if (!opts.user && !opts.user_group && !opts.stream) {
+        blueslip.error("Unspecified possible item types");
+        return;
     }
     const include_streams = (query) => opts.stream && query.trim().startsWith("#");
     const include_user_groups = opts.user_group;
+    const include_users = opts.user;
+
+    let user_source;
+    if (opts.user_source) {
+        user_source = opts.user_source;
+    }
 
     input.typeahead({
         items: 5,
         fixed: true,
         dropup: true,
         source() {
+            let source = [];
             if (include_streams(this.query)) {
+                // If query starts with # we expect,
+                // only stream suggestions so we simply
+                // return stream source.
                 return stream_pill.typeahead_source(pills);
             }
 
             if (include_user_groups) {
-                return user_group_pill.typeahead_source(pills).concat(source());
+                source = source.concat(user_group_pill.typeahead_source(pills));
             }
 
-            return source();
+            if (include_users) {
+                if (user_source !== undefined) {
+                    // If user_source is specified in opts, it
+                    // is given priority. Otherwise we use
+                    // default user_pill.typeahead_source.
+                    source = source.concat(user_source());
+                } else {
+                    source = source.concat(user_pill.typeahead_source(pills));
+                }
+            }
+            return source;
         },
         highlighter(item) {
             if (include_streams(this.query)) {
@@ -70,8 +91,9 @@ export function set_up(input, pills, opts) {
             return person_matcher(query, item);
         },
         sorter(matches) {
-            if (include_streams(this.query)) {
-                return typeahead_helper.sort_streams(matches, this.query.trim().slice(1));
+            const query = this.query;
+            if (include_streams(query)) {
+                return typeahead_helper.sort_streams(matches, query.trim().slice(1));
             }
 
             const users = matches.filter((ele) => people.is_known_user(ele));
@@ -79,14 +101,14 @@ export function set_up(input, pills, opts) {
             if (include_user_groups) {
                 groups = matches.filter((ele) => user_groups.is_user_group(ele));
             }
-            return typeahead_helper.sort_recipients(
+            return typeahead_helper.sort_recipients({
                 users,
-                this.query,
-                "",
-                undefined,
+                query,
+                current_stream: "",
+                current_topic: undefined,
                 groups,
-                undefined,
-            );
+                max_num_items: undefined,
+            });
         },
         updater(item) {
             if (include_streams(this.query)) {

@@ -21,7 +21,11 @@ mock_esm("../../static/js/giphy", {
     hide_giphy_popover: noop,
 });
 const message_lists = mock_esm("../../static/js/message_lists", {
-    current: {},
+    current: {
+        view: {
+            message_containers: {},
+        },
+    },
 });
 mock_esm("../../static/js/message_viewport", {
     height: () => 500,
@@ -167,7 +171,8 @@ test_ui("sender_hover", (override) => {
                     user_time: undefined,
                     user_type: $t({defaultMessage: "Member"}),
                     user_circle_class: "user_circle_empty",
-                    user_last_seen_time_status: "translated: More than 2 weeks ago",
+                    user_last_seen_time_status:
+                        "translated: Last active: translated: More than 2 weeks ago",
                     pm_with_uri: "#narrow/pm-with/42-alice",
                     sent_by_uri: "#narrow/sender/42-alice",
                     private_message_class: "respond_personal_button",
@@ -228,6 +233,13 @@ test_ui("actions_popover", (override) => {
     message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
+    };
+
+    message_lists.current.view.message_containers.get = (msg_id) => {
+        assert.equal(msg_id, message.id);
+        return {
+            is_hidden: false,
+        };
     };
 
     override(message_edit, "get_editability", () => 4);

@@ -90,6 +90,7 @@ const realm_admin = {
     is_admin: true,
     is_guest: false,
     is_moderator: false,
+    is_billing_admin: true,
     is_bot: false,
     role: 200,
 };
@@ -102,6 +103,7 @@ const guest = {
     is_admin: false,
     is_guest: true,
     is_moderator: false,
+    is_billing_admin: false,
     is_bot: false,
     role: 600,
 };
@@ -114,6 +116,7 @@ const realm_owner = {
     is_admin: true,
     is_guest: false,
     is_moderator: false,
+    is_billing_admin: false,
     is_bot: false,
     role: 100,
 };
@@ -133,6 +136,7 @@ const moderator = {
     is_owner: false,
     is_admin: false,
     is_guest: false,
+    is_billing_admin: false,
     is_moderator: true,
     is_bot: false,
     role: 300,
@@ -231,6 +235,18 @@ const plain_noah = {
     email: "otheremnoa@example.com",
     user_id: 1201,
     full_name: "Nooaah Emerson",
+};
+
+const all1 = {
+    email: "all1@example.com",
+    user_id: 1202,
+    full_name: "all",
+};
+
+const all2 = {
+    email: "all2@example.com",
+    user_id: 1203,
+    full_name: "all",
 };
 
 // This is for error checking--never actually
@@ -1014,6 +1030,16 @@ test_people("get_mention_syntax", () => {
     assert.equal(people.get_mention_syntax("Stephen King", 601), "@**Stephen King|601**");
     assert.equal(people.get_mention_syntax("Stephen King", 602), "@**Stephen King|602**");
     assert.equal(people.get_mention_syntax("Maria Athens", 603), "@**Maria Athens**");
+
+    // Following tests handle a special case when `full_name` matches with a wildcard.
+    //
+    // At this point, there is no duplicate full name, `all`, so we should still get
+    // mention syntax with `user_id` appended to it.
+    people.add_active_user(all1);
+    assert.equal(people.get_mention_syntax("all", 1202), "@**all|1202**");
+
+    people.add_active_user(all2);
+    assert.equal(people.get_mention_syntax("all", 1203), "@**all|1203**");
 });
 
 test_people("initialize", () => {

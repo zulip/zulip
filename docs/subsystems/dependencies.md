@@ -256,6 +256,14 @@ wrapper to access the desired version conveniently and efficiently
 `/srv/zulip-yarn`.  We don't do anything special to try to manage
 multiple versions of `yarn`.
 
+## Puppet packages
+
+Third-party puppet modules are downloaded from the Puppet Forge into
+subdirectories under `/srv/zulip-puppet-cache`, hashed based on their
+versions; the latest is always symlinked as
+`/srv/zulip-puppet-cache/current`.  `zulip-puppet-apply` installs
+these dependencies immediately before they are needed.
+
 ## Other third-party and generated files
 
 In this section, we discuss the other third-party dependencies,

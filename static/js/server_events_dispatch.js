@@ -14,7 +14,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
-import * as markdown from "./markdown";
+import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
@@ -22,11 +22,11 @@ import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as panels from "./panels";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reactions from "./reactions";
@@ -290,7 +290,7 @@ export function dispatch_normal_event(event) {
             if (page_params.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
-                panels.show_profile_incomplete(panels.check_profile_incomplete());
+                navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
             }
             break;
         }
@@ -333,7 +333,7 @@ export function dispatch_normal_event(event) {
 
         case "realm_linkifiers":
             page_params.realm_linkifiers = event.realm_linkifiers;
-            markdown.update_linkifier_rules(page_params.realm_linkifiers);
+            linkifiers.update_linkifier_rules(page_params.realm_linkifiers);
             settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
             break;
 

@@ -634,6 +634,7 @@ class StripeTest(StripeTestCase):
             "Your plan will renew on",
             "January 2, 2013",
             f"${80 * self.seat_count}.00",
+            f"Billing email: <strong>{user.email}</strong>",
             "Visa ending in 4242",
             "Update card",
         ]:
@@ -771,6 +772,7 @@ class StripeTest(StripeTestCase):
             "Your plan will renew on",
             "January 2, 2013",
             "$9,840.00",  # 9840 = 80 * 123
+            f"Billing email: <strong>{user.email}</strong>",
             "Billed by invoice",
             "You can only increase the number of licenses.",
             "Number of licenses",
@@ -878,6 +880,7 @@ class StripeTest(StripeTestCase):
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
+                f"Billing email: <strong>{user.email}</strong>",
                 "Visa ending in 4242",
                 "Update card",
             ]:
@@ -1078,6 +1081,7 @@ class StripeTest(StripeTestCase):
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"{80 * 123:,.2f}",
+                f"Billing email: <strong>{user.email}</strong>",
                 "Billed by invoice",
             ]:
                 self.assert_in_response(substring, response)
@@ -1293,7 +1297,7 @@ class StripeTest(StripeTestCase):
             m.output[0],
             f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {hamlet.realm.id}> id> trying to upgrade, but has an active subscription",
         )
-        self.assertEqual(len(m.output), 1)
+        self.assert_length(m.output, 1)
 
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
@@ -1435,10 +1439,10 @@ class StripeTest(StripeTestCase):
         self.assertEqual(customer.sponsorship_pending, True)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 1)
+        self.assert_length(outbox, 1)
 
         for message in outbox:
-            self.assertEqual(len(message.to), 1)
+            self.assert_length(message.to, 1)
             self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
             self.assertEqual(message.subject, "Sponsorship request (Open-source) for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
@@ -1949,7 +1953,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
         self.assertEqual(annual_plan.invoiced_through, None)
         annual_ledger_entries = LicenseLedger.objects.filter(plan=annual_plan).order_by("id")
-        self.assertEqual(len(annual_ledger_entries), 2)
+        self.assert_length(annual_ledger_entries, 2)
         self.assertEqual(annual_ledger_entries[0].is_renewal, True)
         self.assertEqual(
             annual_ledger_entries.values_list("licenses", "licenses_at_next_renewal")[0], (20, 20)
@@ -1968,7 +1972,7 @@ class StripeTest(StripeTestCase):
         invoice_plans_as_needed(self.next_month)
 
         annual_ledger_entries = LicenseLedger.objects.filter(plan=annual_plan).order_by("id")
-        self.assertEqual(len(annual_ledger_entries), 2)
+        self.assert_length(annual_ledger_entries, 2)
         annual_plan.refresh_from_db()
         self.assertEqual(annual_plan.invoicing_status, CustomerPlan.DONE)
         self.assertEqual(annual_plan.invoiced_through, annual_ledger_entries[1])
@@ -2124,7 +2128,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_plan.billing_cycle_anchor, self.next_month)
         self.assertEqual(annual_plan.next_invoice_date, self.next_month)
         annual_ledger_entries = LicenseLedger.objects.filter(plan=annual_plan).order_by("id")
-        self.assertEqual(len(annual_ledger_entries), 1)
+        self.assert_length(annual_ledger_entries, 1)
         self.assertEqual(annual_ledger_entries[0].is_renewal, True)
         self.assertEqual(
             annual_ledger_entries.values_list("licenses", "licenses_at_next_renewal")[0],
@@ -2641,7 +2645,7 @@ class StripeTest(StripeTestCase):
 
         self.assertEqual(void_all_open_invoices(iago.realm), 1)
         invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
-        self.assertEqual(len(invoices), 1)
+        self.assert_length(invoices, 1)
         for invoice in invoices:
             self.assertEqual(invoice.status, "void")
 
@@ -2776,7 +2780,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         json_endpoints = {
             word.strip("\"'()[],$") for word in string_with_all_endpoints.split() if "json/" in word
         }
-        self.assertEqual(len(json_endpoints), 4)
+        self.assert_length(json_endpoints, 4)
 
 
 class BillingHelpersTest(ZulipTestCase):

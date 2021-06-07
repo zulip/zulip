@@ -299,8 +299,9 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = N
         customer, created = Customer.objects.update_or_create(
             realm=realm, defaults={"stripe_customer_id": stripe_customer.id}
         )
-        user.is_billing_admin = True
-        user.save(update_fields=["is_billing_admin"])
+        from zerver.lib.actions import do_make_user_billing_admin
+
+        do_make_user_billing_admin(user)
     return customer
 
 

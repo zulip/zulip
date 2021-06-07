@@ -320,7 +320,7 @@ run_test("drafts closed w/other overlay", (override) => {
 
 run_test("drafts closed launch", (override) => {
     override(overlays, "is_active", () => false);
-    assert_mapping("d", drafts, "launch");
+    assert_mapping("d", browser_history, "go_to_location");
 });
 
 run_test("misc", () => {

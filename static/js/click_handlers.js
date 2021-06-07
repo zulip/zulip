@@ -244,6 +244,11 @@ export function initialize() {
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
+        // Hide actions popover to keep its options
+        // in sync with revealed/hidden state of
+        // muted user's message.
+        popovers.hide_actions_popover();
+
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
@@ -266,7 +271,7 @@ export function initialize() {
 
     $(".user-status-value").on("click", (e) => {
         e.stopPropagation();
-        const user_status_value = $(e.currentTarget).attr("data-user-status-value");
+        const user_status_value = $(e.currentTarget).text();
         $("input.user_status").val(user_status_value);
         user_status_ui.toggle_clear_message_button();
         user_status_ui.update_button();
@@ -694,7 +699,7 @@ export function initialize() {
         browser_history.go_to_location("streams/subscribed");
     });
 
-    $("#streams_filter_icon").on("click", (e) => {
+    $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
     });
@@ -753,7 +758,7 @@ export function initialize() {
 
     // Don't focus links on middle click.
     $("body").on("mouseup", "a", (e) => {
-        if (e.which === 2) {
+        if (e.button === 1) {
             // middle click
             e.target.blur();
         }
@@ -777,12 +782,12 @@ export function initialize() {
         $(document).on("keydown", ".editable-section", function (e) {
             e.stopPropagation();
             // Cancel editing description if Escape key is pressed.
-            if (e.which === 27) {
+            if (e.key === "Escape") {
                 $("[data-finish-editing='.stream-description-editable']").hide();
                 $(this).attr("contenteditable", false);
                 $(this).text($(this).attr("data-prev-text"));
                 $("[data-make-editable]").html("");
-            } else if (e.which === 13) {
+            } else if (e.key === "Enter") {
                 $(this).siblings(".checkmark").trigger("click");
             }
         });

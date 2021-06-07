@@ -280,7 +280,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         received_count = UserMessage.objects.filter(
             user_profile__in=users, message_id=message_id
         ).count()
-        self.assertEqual(len(users), received_count)
+        self.assert_length(users, received_count)
 
         # Verify that deactivated users are NOT caught up if
         # AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off
@@ -349,7 +349,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             long_term_idle_user,
         )
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1].content, message)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, message_id)
@@ -401,7 +401,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             add_missing_messages(long_term_idle_user)
         self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1], sent_message)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, sent_message.id)
@@ -418,7 +418,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             add_missing_messages(long_term_idle_user)
         self.assert_length(queries, 7)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1], sent_message)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, sent_message.id)
@@ -443,7 +443,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             add_missing_messages(long_term_idle_user)
         self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
         long_term_idle_user.refresh_from_db()
@@ -475,7 +475,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             add_missing_messages(long_term_idle_user)
         self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
         long_term_idle_user.refresh_from_db()
@@ -511,7 +511,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assert_length(queries, 4)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         # No new UserMessage rows should have been created.
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count)
 
         # Note: At this point in this test we have long_term_idle_user
         # unsubscribed from the 'Denmark' stream.
@@ -537,7 +537,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             add_missing_messages(long_term_idle_user)
         self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
         long_term_idle_user.refresh_from_db()
@@ -575,7 +575,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             add_missing_messages(long_term_idle_user)
         self.assert_length(queries, 10)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + num_new_messages)
+        self.assert_length(idle_user_msg_list, idle_user_msg_count + num_new_messages)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, message_ids[-1])
 
@@ -619,7 +619,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         def assert_um_count(user: UserProfile, count: int) -> None:
             user_messages = get_user_messages(user)
-            self.assertEqual(len(user_messages), count)
+            self.assert_length(user_messages, count)
 
         def assert_last_um_content(user: UserProfile, content: str, negate: bool = False) -> None:
             user_messages = get_user_messages(user)

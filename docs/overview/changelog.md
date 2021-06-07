@@ -17,15 +17,30 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+### 4.3 -- 2021-06-02
+
+- Fixed exception when upgrading older servers with the
+  `JITSI_SERVER_URL` setting set to `None` to disable Jitsi.
+- Fixed GIPHY integration dropdown appearing when the server
+  doesn't have a GIPHY API key configured.
+- The GIPHY API library is no longer loaded for users who are not
+  actively using the GIPHY integration.
+- Improved formatting for Grafana integration.
+- Fixed previews of Dropbox image links.
+- Fixed support for storing avatars/emoji in non-S3 upload backends.
+- Fixed an overly strict database constaint for code playgrounds.
+- Tagged user status strings for translation.
+- Updated translation data from Transifex.
+
 ### 4.2 -- 2021-05-13
 
-- Fix exception in purge-old-deployments when upgrading on
+- Fixed exception in purge-old-deployments when upgrading on
   a system that has never upgraded using Git.
-- Fix installation from a directory readable only by root.
+- Fixed installation from a directory readable only by root.
 
 ### 4.1 -- 2021-05-13
 
-- Fix exception upgrading to the 4.x series from older releases.
+- Fixed exception upgrading to the 4.x series from older releases.
 
 ### 4.0 -- 2021-05-13
 

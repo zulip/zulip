@@ -387,12 +387,16 @@ export function update_messages(events) {
                 pre_edit_topic = msg.topic;
                 post_edit_topic = pre_edit_topic;
             }
-            const args = [event.stream_id, pre_edit_topic, post_edit_topic, new_stream_id];
+
+            // new_stream_id is undefined if this is only a topic edit.
+            const post_edit_stream_id = new_stream_id || event.stream_id;
+
+            const args = [event.stream_id, pre_edit_topic, post_edit_topic, post_edit_stream_id];
             recent_senders.process_topic_edit({
                 message_ids: event.message_ids,
                 old_stream_id: event.stream_id,
                 old_topic: pre_edit_topic,
-                new_stream_id,
+                new_stream_id: post_edit_stream_id,
                 new_topic: post_edit_topic,
             });
             recent_topics.process_topic_edit(...args);

@@ -56,7 +56,7 @@ li.show-more-topics {
 }
 
 #streams_inline_cog,
-#streams_filter_icon {
+.streams_filter_icon {
     float: right;
     opacity: 0.5;
     font-size: 13px;
@@ -506,6 +506,10 @@ li.expanded_private_message {
     padding-left: $far_left_gutter_size;
     cursor: pointer;
     margin-top: 3px;
+}
+
+.stream-list-filter {
+    width: 236px;
 }
 
 .zero_count {

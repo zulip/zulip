@@ -51,7 +51,14 @@ const muting = zrequire("muting");
 
 let next_timestamp = 1500000000;
 
-run_test("msg_edited_vars", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        muting.set_muted_users([]);
+        f(override);
+    });
+}
+
+test("msg_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
     // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`
     // is not false; Tests for three different kinds of messages:
@@ -122,7 +129,7 @@ run_test("msg_edited_vars", () => {
     })();
 });
 
-run_test("muted_message_vars", () => {
+test("muted_message_vars", () => {
     // This verifies that the variables for muted/hidden messages are set
     // correctly.
 
@@ -196,7 +203,7 @@ run_test("muted_message_vars", () => {
         assert.equal(result[1].contains_mention, false);
 
         // Now, reveal the hidden messages.
-        const is_revealed = true;
+        let is_revealed = true;
         result = calculate_variables(list, messages, is_revealed);
 
         // Check that `is_hidden` is false and `include_sender` is true on all messages.
@@ -210,10 +217,26 @@ run_test("muted_message_vars", () => {
 
         // Additionally test that, `contains_mention` is true on that message which has a mention.
         assert.equal(result[1].contains_mention, true);
+
+        // Now test rehiding muted user's messsage
+        is_revealed = false;
+        result = calculate_variables(list, messages, is_revealed);
+
+        // Check that `is_hidden` is false and `include_sender` is false on all messages.
+        assert.equal(result[0].is_hidden, true);
+        assert.equal(result[1].is_hidden, true);
+        assert.equal(result[2].is_hidden, true);
+
+        assert.equal(result[0].include_sender, false);
+        assert.equal(result[1].include_sender, false);
+        assert.equal(result[2].include_sender, false);
+
+        // Additionally test that, `contains_mention` is false on that message which has a mention.
+        assert.equal(result[1].contains_mention, false);
     })();
 });
 
-run_test("merge_message_groups", () => {
+test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
@@ -509,7 +532,7 @@ run_test("merge_message_groups", () => {
 // where new messages added via local echo have a different date from
 // the older messages.
 
-run_test("render_windows", () => {
+test("render_windows", () => {
     // We only render up to 400 messages at a time in our message list,
     // and we only change the window (which is a range, really, with
     // start/end) when the pointer moves outside of the window or close

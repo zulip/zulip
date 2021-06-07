@@ -123,11 +123,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         key = request.POST.get("key", default="")
         confirmation = Confirmation.objects.get(confirmation_key=key)
     except Confirmation.DoesNotExist:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
     prereg_user = confirmation.content_object
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
@@ -534,7 +534,10 @@ def send_confirm_registration_email(
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
         language=language,
-        context={"activate_url": activation_url},
+        context={
+            "create_realm": (realm is None),
+            "activate_url": activation_url,
+        },
         realm=realm,
     )
 

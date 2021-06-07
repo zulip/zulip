@@ -1,4 +1,4 @@
-# Add a linkifier
+{generate_api_title(/realm/filters:post)}
 
 {generate_api_description(/realm/filters:post)}
 

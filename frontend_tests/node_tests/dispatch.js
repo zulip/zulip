@@ -28,7 +28,7 @@ const bot_data = mock_esm("../../static/js/bot_data");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
-const markdown = mock_esm("../../static/js/markdown");
+const linkifiers = mock_esm("../../static/js/linkifiers");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_events = mock_esm("../../static/js/message_events");
 const message_list = mock_esm("../../static/js/message_list");
@@ -514,7 +514,7 @@ run_test("realm_emoji", (override) => {
 
     // Make sure our UI modules all got dispatched the same simple way.
     for (const stub of ui_stubs) {
-        assert(stub.num_calls, 1);
+        assert.equal(stub.num_calls, 1);
         assert.equal(stub.last_call_args.length, 0);
     }
 });
@@ -523,7 +523,7 @@ run_test("realm_linkifiers", (override) => {
     const event = event_fixtures.realm_linkifiers;
     page_params.realm_linkifiers = [];
     override(settings_linkifiers, "populate_linkifiers", noop);
-    override(markdown, "update_linkifier_rules", noop);
+    override(linkifiers, "update_linkifier_rules", noop);
     dispatch(event);
     assert_same(page_params.realm_linkifiers, event.realm_linkifiers);
 });
@@ -716,7 +716,7 @@ run_test("update_display_settings", (override) => {
         override(night_mode, "enable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        assert(page_params.color_scheme, 2);
+        assert.equal(page_params.color_scheme, 2);
     }
 
     {
@@ -726,14 +726,14 @@ run_test("update_display_settings", (override) => {
         override(night_mode, "disable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        assert(page_params.color_scheme, 3);
+        assert.equal(page_params.color_scheme, 3);
     }
 
     {
         event = event_fixtures.update_display_settings__default_view_recent_topics;
         page_params.default_view = "all_messages";
         dispatch(event);
-        assert(page_params.default_view, "recent_topics");
+        assert.equal(page_params.default_view, "recent_topics");
     }
 
     {
@@ -750,7 +750,7 @@ run_test("update_display_settings", (override) => {
         override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        assert(page_params.color_scheme, 1);
+        assert.equal(page_params.color_scheme, 1);
     }
 
     {

@@ -25,6 +25,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/tests/test_new_users.py",
     "zerver/tests/test_email_mirror.py",
     "zerver/tests/test_email_notifications.py",
+    # This uses subject in authentication protocols sense:
+    "zerver/tests/test_auth_backends.py",
     # These are tied more to our API than our DB model.
     "zerver/openapi/python_examples.py",
     "zerver/tests/test_openapi.py",
@@ -266,6 +268,12 @@ python_rules = RuleList(
             "description": "Use assertEqual, not assertEquals (which is deprecated).",
             "good_lines": ["assertEqual(1, 2)"],
             "bad_lines": ["assertEquals(1, 2)"],
+        },
+        {
+            "pattern": "assertEqual[(]len[(][^ ]*[)],",
+            "description": "Use the assert_length helper instead of assertEqual(len(..), ..).",
+            "good_lines": ["assert_length(data, 2)"],
+            "bad_lines": ["assertEqual(len(data), 2)"],
         },
         {
             "pattern": r"#\s*type:\s*ignore(?!\[[^][]+\] +# +\S)",

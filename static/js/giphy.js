@@ -1,5 +1,3 @@
-import {renderGrid} from "@giphy/js-components";
-import {GiphyFetch} from "@giphy/js-fetch-api";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -14,7 +12,7 @@ import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 
-const giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
+let giphy_fetch;
 let search_term = "";
 let gifs_grid;
 let active_popover_element;
@@ -44,7 +42,10 @@ const APPROX_HEIGHT = 350;
 const APPROX_WIDTH = 300;
 
 export function update_giphy_rating() {
-    if (page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id) {
+    if (
+        page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id ||
+        page_params.giphy_api_key === ""
+    ) {
         $(".compose_giphy_link").hide();
     } else {
         $(".compose_giphy_link").show();
@@ -65,21 +66,28 @@ function get_rating() {
     return "g";
 }
 
-function fetchGifs(offset) {
-    const config = {
-        offset,
-        limit: 25,
-        rating: get_rating(),
-        // We don't pass random_id here, for privacy reasons.
-    };
-    if (search_term === "") {
-        // Get the trending gifs by default.
-        return giphy_fetch.trending(config);
-    }
-    return giphy_fetch.search(search_term, config);
-}
+async function renderGIPHYGrid(targetEl) {
+    const {renderGrid} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-components");
+    const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
 
-function renderGIPHYGrid(targetEl) {
+    if (giphy_fetch === undefined) {
+        giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
+    }
+
+    function fetchGifs(offset) {
+        const config = {
+            offset,
+            limit: 25,
+            rating: get_rating(),
+            // We don't pass random_id here, for privacy reasons.
+        };
+        if (search_term === "") {
+            // Get the trending gifs by default.
+            return giphy_fetch.trending(config);
+        }
+        return giphy_fetch.search(search_term, config);
+    }
+
     const render = () =>
         // See https://github.com/Giphy/giphy-js/blob/master/packages/components/README.md#grid
         // for detailed documentation.
@@ -133,7 +141,7 @@ function renderGIPHYGrid(targetEl) {
     };
 }
 
-function update_grid_with_search_term() {
+async function update_grid_with_search_term() {
     if (!gifs_grid) {
         return;
     }
@@ -144,7 +152,7 @@ function update_grid_with_search_term() {
     if (search_elem.length) {
         search_term = search_elem[0].value;
         gifs_grid.remove();
-        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
+        gifs_grid = await renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
         return;
     }
 
@@ -202,10 +210,10 @@ export function initialize() {
     $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
     $("body").on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
 
-    $("body").on("click", "#giphy_search_clear", (e) => {
+    $("body").on("click", "#giphy_search_clear", async (e) => {
         e.stopPropagation();
         $("#giphy-search-query").val("");
-        update_grid_with_search_term();
+        await update_grid_with_search_term();
     });
 
     $("body").on("click", ".compose_gif_icon", (e) => {
@@ -244,10 +252,10 @@ export function initialize() {
         // It takes about 1s for the popover to show; So,
         // we wait for popover to display before rendering GIFs
         // in it, otherwise popover is rendered with empty content.
-        const popover_observer = new MutationObserver(() => {
+        const popover_observer = new MutationObserver(async () => {
             if ($("#giphy_grid_in_popover .giphy-content").is(":visible")) {
-                gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
                 popover_observer.disconnect();
+                gifs_grid = await renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
             }
         });
         const opts = {attributes: false, childList: true, characterData: false, subtree: true};

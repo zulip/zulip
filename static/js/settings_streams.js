@@ -110,7 +110,7 @@ export function build_page() {
     update_default_streams_table();
 
     $(".create_default_stream").on("keypress", (e) => {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
             const default_stream_input = $(".create_default_stream");

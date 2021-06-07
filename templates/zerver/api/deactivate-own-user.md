@@ -1,4 +1,4 @@
-# Deactivate own user
+{generate_api_title(/users/me:delete)}
 
 {generate_api_description(/users/me:delete)}
 

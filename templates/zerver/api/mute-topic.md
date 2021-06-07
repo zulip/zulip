@@ -1,4 +1,4 @@
-# Topic muting
+{generate_api_title(/users/me/subscriptions/muted_topics:patch)}
 
 {generate_api_description(/users/me/subscriptions/muted_topics:patch)}
 

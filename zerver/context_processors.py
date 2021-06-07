@@ -30,7 +30,7 @@ from zproject.backends import (
 )
 
 DEFAULT_PAGE_PARAMS = {
-    "debug_mode": settings.DEBUG,
+    "development_environment": settings.DEVELOPMENT,
     "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
 }
 

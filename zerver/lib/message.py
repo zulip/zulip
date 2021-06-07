@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import ahocorasick
 import orjson
+from django.conf import settings
 from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
@@ -38,7 +39,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Message,
     Reaction,
@@ -90,12 +90,12 @@ class UnreadMessagesResult(TypedDict):
 class SendMessageRequest:
     message: Message
     stream: Optional[Stream]
-    local_id: Optional[int]
-    sender_queue_id: Optional[int]
+    local_id: Optional[str]
+    sender_queue_id: Optional[str]
     realm: Realm
     mention_data: MentionData
     active_user_ids: Set[int]
-    push_notify_user_ids: Set[int]
+    online_push_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
@@ -129,7 +129,7 @@ def normalize_body(body: str) -> str:
         raise JsonableError(_("Message must not be empty"))
     if "\x00" in body:
         raise JsonableError(_("Message must not contain null bytes"))
-    return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
+    return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 
 def truncate_topic(topic: str) -> str:
@@ -655,7 +655,9 @@ class ReactionDict:
 
 
 def access_message(
-    user_profile: UserProfile, message_id: int
+    user_profile: UserProfile,
+    message_id: int,
+    lock_message: bool = False,
 ) -> Tuple[Message, Optional[UserMessage]]:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -664,9 +666,21 @@ def access_message(
 
     We produce consistent, boring error messages to avoid leaking any
     information from a security perspective.
+
+    The lock_message parameter should be passed by callers that are
+    planning to modify the Message object. This will use the SQL
+    `SELECT FOR UPDATE` feature to ensure that other processes cannot
+    delete the message during the current transaction, which is
+    important to prevent rare race conditions. Callers must only
+    pass lock_message when inside a @transaction.atomic block.
     """
     try:
-        message = Message.objects.select_related().get(id=message_id)
+        base_query = Message.objects.select_related()
+        if lock_message:
+            # We want to lock only the `Message` row, and not the related fields
+            # because the `Message` row only has a possibility of races.
+            base_query = base_query.select_for_update(of=("self",))
+        message = base_query.get(id=message_id)
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
@@ -688,7 +702,7 @@ def has_message_access(
     """
     Returns whether a user has access to a given message.
 
-    * The user_message parameter must be provded if the user has a UserMessage
+    * The user_message parameter must be provided if the user has a UserMessage
       row for the target message.
     * The optional stream parameter is validated; is_subscribed is not.
     """

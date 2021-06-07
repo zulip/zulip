@@ -7,6 +7,7 @@ import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
 
 import * as blueslip from "./blueslip";
+import * as linkifiers from "./linkifiers";
 import * as message_store from "./message_store";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -22,9 +23,6 @@ import * as message_store from "./message_store";
 // See the call to markdown.initialize() in ui_init
 // for example usage.
 let helpers;
-
-const linkifier_map = new Map();
-let linkifier_list = [];
 
 // Regexes that match some of our common backend-only Markdown syntax
 const backend_only_markdown_re = [
@@ -88,6 +86,7 @@ export function contains_backend_only_syntax(content) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
+    const linkifier_list = linkifiers.linkifier_list;
     const false_linkifier_match = linkifier_list.find((re) => {
         const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
@@ -102,8 +101,18 @@ export function apply_markdown(message) {
     const options = {
         userMentionHandler(mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
-                message.mentioned = true;
-                return `<span class="user-mention" data-user-id="*">@${_.escape(mention)}</span>`;
+                let classes;
+                let display_text;
+                if (silently) {
+                    classes = "user-mention silent";
+                    display_text = mention;
+                } else {
+                    message.mentioned = true;
+                    display_text = "@" + mention;
+                    classes = "user-mention";
+                }
+
+                return `<span class="${classes}" data-user-id="*">${_.escape(display_text)}</span>`;
             }
 
             let full_name;
@@ -166,42 +175,65 @@ export function apply_markdown(message) {
             // flags on the message itself that get used by the message
             // view code and possibly our filtering code.
 
-            if (helpers.my_user_id() === user_id && !silently) {
-                message.mentioned = true;
-                message.mentioned_me_directly = true;
-            }
-            let str = "";
-            if (silently) {
-                str += `<span class="user-mention silent" data-user-id="${_.escape(user_id)}">`;
-            } else {
-                str += `<span class="user-mention" data-user-id="${_.escape(user_id)}">@`;
-            }
-
             // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
             // show in the pill.
-            const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
-            return `${str}${_.escape(actual_full_name)}</span>`;
+            let display_text = helpers.get_actual_name_from_user_id(user_id);
+            let classes;
+            if (silently) {
+                classes = "user-mention silent";
+            } else {
+                if (helpers.my_user_id() === user_id) {
+                    message.mentioned = true;
+                    message.mentioned_me_directly = true;
+                }
+                classes = "user-mention";
+                display_text = "@" + display_text;
+            }
+
+            return `<span class="${classes}" data-user-id="${_.escape(user_id)}">${_.escape(
+                display_text,
+            )}</span>`;
         },
-        groupMentionHandler(name) {
+        groupMentionHandler(name, silently) {
             const group = helpers.get_user_group_from_name(name);
             if (group !== undefined) {
-                if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
-                    message.mentioned = true;
+                let display_text;
+                let classes;
+                if (silently) {
+                    display_text = group.name;
+                    classes = "user-group-mention silent";
+                } else {
+                    display_text = "@" + group.name;
+                    classes = "user-group-mention";
+                    if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
+                        message.mentioned = true;
+                    }
                 }
-                return `<span class="user-group-mention" data-user-group-id="${_.escape(
+
+                return `<span class="${classes}" data-user-group-id="${_.escape(
                     group.id,
-                )}">@${_.escape(group.name)}</span>`;
+                )}">${_.escape(display_text)}</span>`;
             }
             return undefined;
         },
         silencedMentionHandler(quote) {
             // Silence quoted mentions.
-            const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
+            const user_mention_re = /<span[^>]*user-mention[^>]*data-user-id="(\d+|\*)"[^>]*>@/gm;
             quote = quote.replace(user_mention_re, (match) => {
                 match = match.replace(/"user-mention"/g, '"user-mention silent"');
                 match = match.replace(/>@/g, ">");
                 return match;
             });
+
+            // Silence quoted user group mentions.
+            const user_group_re =
+                /<span[^>]*user-group-mention[^>]*data-user-group-id="\d+"[^>]*>@/gm;
+            quote = quote.replace(user_group_re, (match) => {
+                match = match.replace(/"user-group-mention"/g, '"user-group-mention silent"');
+                match = match.replace(/>@/g, ">");
+                return match;
+            });
+
             // In most cases, if you are being mentioned in the message you're quoting, you wouldn't
             // mention yourself outside of the blockquote (and, above it). If that you do that, the
             // following mentioned status is false; the backend rendering is authoritative and the
@@ -223,6 +255,7 @@ export function add_topic_links(message) {
     }
     const topic = message.topic;
     const links = [];
+    const linkifier_list = linkifiers.linkifier_list;
 
     for (const linkifier of linkifier_list) {
         const pattern = linkifier.pattern;
@@ -359,20 +392,6 @@ function handleStreamTopic(stream_name, topic) {
     )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
 }
 
-function handleLinkifier(pattern, matches) {
-    let url = linkifier_map.get(pattern);
-
-    let current_group = 1;
-
-    for (const match of matches) {
-        const back_ref = "\\" + current_group;
-        url = url.replace(back_ref, match);
-        current_group += 1;
-    }
-
-    return url;
-}
-
 function handleTex(tex, fullmatch) {
     try {
         return katex.renderToString(tex);
@@ -386,90 +405,7 @@ function handleTex(tex, fullmatch) {
     }
 }
 
-function python_to_js_linkifier(pattern, url) {
-    // Converts a python named-group regex to a javascript-compatible numbered
-    // group regex... with a regex!
-    const named_group_re = /\(?P<([^>]+?)>/g;
-    let match = named_group_re.exec(pattern);
-    let current_group = 1;
-    while (match) {
-        const name = match[1];
-        // Replace named group with regular matching group
-        pattern = pattern.replace("(?P<" + name + ">", "(");
-        // Replace named reference in URL to numbered reference
-        url = url.replace("%(" + name + ")s", "\\" + current_group);
-
-        // Reset the RegExp state
-        named_group_re.lastIndex = 0;
-        match = named_group_re.exec(pattern);
-
-        current_group += 1;
-    }
-    // Convert any python in-regex flags to RegExp flags
-    let js_flags = "g";
-    const inline_flag_re = /\(\?([Limsux]+)\)/;
-    match = inline_flag_re.exec(pattern);
-
-    // JS regexes only support i (case insensitivity) and m (multiline)
-    // flags, so keep those and ignore the rest
-    if (match) {
-        const py_flags = match[1].split("");
-
-        for (const flag of py_flags) {
-            if ("im".includes(flag)) {
-                js_flags += flag;
-            }
-        }
-
-        pattern = pattern.replace(inline_flag_re, "");
-    }
-    // Ideally we should have been checking that linkifiers
-    // begin with certain characters but since there is no
-    // support for negative lookbehind in javascript, we check
-    // for this condition in `contains_backend_only_syntax()`
-    // function. If the condition is satisfied then the message
-    // is rendered locally, otherwise, we return false there and
-    // message is rendered on the backend which has proper support
-    // for negative lookbehind.
-    pattern = pattern + /(?!\w)/.source;
-    let final_regex = null;
-    try {
-        final_regex = new RegExp(pattern, js_flags);
-    } catch (error) {
-        // We have an error computing the generated regex syntax.
-        // We'll ignore this linkifier for now, but log this
-        // failure for debugging later.
-        blueslip.error("python_to_js_linkifier: " + error.message);
-    }
-    return [final_regex, url];
-}
-
-export function update_linkifier_rules(linkifiers) {
-    // Update the marked parser with our particular set of linkifiers
-    linkifier_map.clear();
-    linkifier_list = [];
-
-    const marked_rules = [];
-
-    for (const linkifier of linkifiers) {
-        const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
-        if (!regex) {
-            // Skip any linkifiers that could not be converted
-            continue;
-        }
-
-        linkifier_map.set(regex, final_url);
-        linkifier_list.push({
-            pattern: regex,
-            url_format: final_url,
-        });
-        marked_rules.push(regex);
-    }
-
-    marked.InlineLexer.rules.zulip.linkifiers = marked_rules;
-}
-
-export function initialize(linkifiers, helper_config) {
+export function initialize(helper_config) {
     helpers = helper_config;
 
     function disable_markdown_regex(rules, name) {
@@ -528,8 +464,6 @@ export function initialize(linkifiers, helper_config) {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");
 
-    update_linkifier_rules(linkifiers);
-
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape
     fenced_code.set_stash_func((html) => marked.stashHtml(html, true));
@@ -547,7 +481,6 @@ export function initialize(linkifiers, helper_config) {
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,
-        linkifierHandler: handleLinkifier,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
         renderer: r,

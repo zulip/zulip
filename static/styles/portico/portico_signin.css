@@ -663,7 +663,9 @@ html {
 
 button.login-social-button {
     width: 328px;
+    height: auto;
     padding-left: 35px;
+    line-height: 1;
 
     background-size: auto 60%;
     background-repeat: no-repeat;
@@ -802,6 +804,15 @@ button#register_auth_button_gitlab {
         margin: 25px auto 30px;
         width: 330px;
         border-radius: 4px;
+    }
+
+    .register-button .loader {
+        display: none;
+        vertical-align: top;
+        position: relative;
+        height: 30px;
+        margin-top: -10px;
+        top: 5px;
     }
 
     #id_team_subdomain.subdomain {

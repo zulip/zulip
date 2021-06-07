@@ -753,8 +753,8 @@ def missedmessage_hook(
         if not private_message:
             stream_name = event["message"]["display_recipient"]
 
-        # Since one is by definition idle, we don't need to check always_push_notify
-        always_push_notify = False
+        # Since one is by definition idle, we don't need to check online_push_enabled
+        online_push_enabled = False
         # Since we just GC'd the last event queue, the user is definitely idle.
         idle = True
 
@@ -773,7 +773,7 @@ def missedmessage_hook(
             stream_push_notify,
             stream_email_notify,
             stream_name,
-            always_push_notify,
+            online_push_enabled,
             idle,
             already_notified,
         )
@@ -799,7 +799,7 @@ def maybe_enqueue_notifications(
     stream_push_notify: bool,
     stream_email_notify: bool,
     stream_name: Optional[str],
-    always_push_notify: bool,
+    online_push_enabled: bool,
     idle: bool,
     already_notified: Dict[str, bool],
 ) -> Dict[str, bool]:
@@ -812,7 +812,7 @@ def maybe_enqueue_notifications(
     """
     notified: Dict[str, bool] = {}
 
-    if (idle or always_push_notify) and (
+    if (idle or online_push_enabled) and (
         private_message or mentioned or wildcard_mention_notify or stream_push_notify
     ):
         notice = build_offline_notification(user_profile_id, message_id)
@@ -968,7 +968,17 @@ def process_message_event(
             idle = receiver_is_off_zulip(user_profile_id) or (
                 user_profile_id in presence_idle_user_ids
             )
-            always_push_notify = user_data.get("always_push_notify", False)
+
+            # TODO/compatibility: Translation code for the rename of
+            # `always_push_notify` to `online_push_enabled`.  Remove this
+            # when one can no longer directly upgrade from 4.x to master.
+            if "online_push_enabled" in user_data:
+                online_push_enabled = user_data["online_push_enabled"]
+            elif "always_push_notify" in user_data:
+                online_push_enabled = user_data["always_push_notify"]
+            else:
+                online_push_enabled = False
+
             stream_name = event_template.get("stream_name")
 
             result: Dict[str, Any] = {}
@@ -981,7 +991,7 @@ def process_message_event(
                 stream_push_notify,
                 stream_email_notify,
                 stream_name,
-                always_push_notify,
+                online_push_enabled,
                 idle,
                 {},
             )
@@ -1102,7 +1112,15 @@ def process_message_update_event(
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
-    push_notify_user_ids = set(event_template.pop("push_notify_user_ids", []))
+
+    # TODO/compatibility: Translation code for the rename of
+    # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
+    # when one can no longer directly upgrade from 4.x to master.
+    online_push_user_ids = set()
+    if "online_push_user_ids" in event_template:
+        online_push_user_ids = set(event_template.pop("online_push_user_ids"))
+    elif "push_notify_user_ids" in event_template:
+        online_push_user_ids = set(event_template.pop("push_notify_user_ids"))
 
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
@@ -1128,7 +1146,7 @@ def process_message_update_event(
             presence_idle_user_ids=presence_idle_user_ids,
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
-            push_notify_user_ids=push_notify_user_ids,
+            online_push_user_ids=online_push_user_ids,
         )
 
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1148,7 +1166,7 @@ def maybe_enqueue_notifications_for_message_update(
     presence_idle_user_ids: Set[int],
     stream_push_user_ids: Set[int],
     stream_email_user_ids: Set[int],
-    push_notify_user_ids: Set[int],
+    online_push_user_ids: Set[int],
 ) -> None:
     private_message = stream_name is None
 
@@ -1187,7 +1205,7 @@ def maybe_enqueue_notifications_for_message_update(
     # We can have newly mentioned people in an updated message.
     mentioned = user_profile_id in mention_user_ids
 
-    always_push_notify = user_profile_id in push_notify_user_ids
+    online_push_enabled = user_profile_id in online_push_user_ids
 
     idle = (user_profile_id in presence_idle_user_ids) or receiver_is_off_zulip(user_profile_id)
 
@@ -1200,7 +1218,7 @@ def maybe_enqueue_notifications_for_message_update(
         stream_push_notify=stream_push_notify,
         stream_email_notify=stream_email_notify,
         stream_name=stream_name,
-        always_push_notify=always_push_notify,
+        online_push_enabled=online_push_enabled,
         idle=idle,
         already_notified={},
     )

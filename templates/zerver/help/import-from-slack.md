@@ -102,6 +102,13 @@ root domain. Replace the last line above with the following, after replacing
 ./manage.py import <subdomain> converted_slack_data
 ```
 
+### Remove the Slack app used for export
+
+Once the import is complete, you should delete [the Slack
+app](https://api.slack.com/apps) (and thus API token) that you created
+in the earlier step.  This will prevent the token from being used to
+access your Slack instance in the future.
+
 {!import-login.md!}
 
 ## Caveats

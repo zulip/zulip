@@ -374,6 +374,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "Dev": True,
             "SAML": True,
             "GitLab": False,
+            "OpenID Connect": False,
         }
 
         do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)
@@ -493,7 +494,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=user,
             event_time__gte=test_start,
         )
-        self.assertEqual(len(audit_entries), 1)
+        self.assert_length(audit_entries, 1)
         self.assertEqual(icon_source, realm.icon_source)
         self.assertEqual(
             audit_entries.first().extra_data, "{'icon_source': 'G', 'icon_version': 2}"

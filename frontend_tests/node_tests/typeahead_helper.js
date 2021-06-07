@@ -253,12 +253,12 @@ test("sort_streams", (override) => {
 test("sort_languages", () => {
     Object.assign(pygments_data, {
         langs: {
-            python: {priority: 40},
-            javscript: {priority: 50},
-            php: {priority: 38},
-            pascal: {priority: 29},
-            perl: {priority: 22},
-            css: {priority: 0},
+            python: {priority: 26},
+            javscript: {priority: 27},
+            php: {priority: 16},
+            pascal: {priority: 15},
+            perl: {priority: 3},
+            css: {priority: 21},
         },
     });
 
@@ -269,7 +269,7 @@ test("sort_languages", () => {
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
 
     // Test if popularity between two languages are the same
-    pygments_data.langs.php = {priority: 40};
+    pygments_data.langs.php = {priority: 26};
     test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 
@@ -283,24 +283,30 @@ test("sort_languages", () => {
     Object.assign(pygments_data, actual_pygments_data);
     test_langs = ["j", "java", "javascript", "js"];
 
-    // Sort acccording to priority only.
+    // Sort according to priority only.
     test_langs = th.sort_languages(test_langs, "jav");
-    assert.deepEqual(test_langs, ["javascript", "java", "js", "j"]);
+    assert.deepEqual(test_langs, ["javascript", "java", "j"]);
 
     // Push exact matches to top, regardless of priority
     test_langs = th.sort_languages(test_langs, "java");
-    assert.deepEqual(test_langs, ["java", "javascript", "js", "j"]);
+    assert.deepEqual(test_langs, ["java", "javascript", "j"]);
     test_langs = th.sort_languages(test_langs, "j");
-    assert.deepEqual(test_langs, ["j", "javascript", "java", "js"]);
+    assert.deepEqual(test_langs, ["j", "javascript", "java"]);
+
+    // (Only one alias should be shown per language
+    // (i.e searching for "js" shouldn't show "javascript")
+    test_langs = ["js", "javascript", "java"];
+    test_langs = th.sort_languages(test_langs, "js");
+    assert.deepEqual(test_langs, ["js", "java"]);
 });
 
 function get_typeahead_result(query, current_stream, current_topic) {
-    const result = th.sort_recipients(
-        people.get_realm_users(),
+    const result = th.sort_recipients({
+        users: people.get_realm_users(),
         query,
         current_stream,
         current_topic,
-    );
+    });
     return result.map((person) => person.email);
 }
 
@@ -405,7 +411,12 @@ test("sort_recipients all mention", () => {
     // Test person email is "all" or "everyone"
     const test_objs = matches.concat([all_obj]);
 
-    const results = th.sort_recipients(test_objs, "a", "Linux", "Linux topic");
+    const results = th.sort_recipients({
+        users: test_objs,
+        query: "a",
+        current_stream: "Linux",
+        current_topic: "Linux topic",
+    });
 
     assertSameEmails(results, [all_obj, a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman]);
 });
@@ -461,7 +472,12 @@ test("sort_recipients pm counts", () => {
 test("sort_recipients dup bots", () => {
     const dup_objects = matches.concat([a_bot]);
 
-    const recipients = th.sort_recipients(dup_objects, "b", "", "");
+    const recipients = th.sort_recipients({
+        users: dup_objects,
+        query: "b",
+        current_stream: "",
+        current_topic: "",
+    });
     const recipients_email = recipients.map((person) => person.email);
     const expected = [
         "b_user_1@zulip.net",
@@ -482,7 +498,12 @@ test("sort_recipients dup alls", () => {
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
 
-    const recipients = th.sort_recipients(test_objs, "a", "Linux", "Linux topic");
+    const recipients = th.sort_recipients({
+        users: test_objs,
+        query: "a",
+        current_stream: "Linux",
+        current_topic: "Linux topic",
+    });
 
     const expected = [all_obj, all_obj, a_user];
     assertSameEmails(recipients, expected);
@@ -491,7 +512,12 @@ test("sort_recipients dup alls", () => {
 test("sort_recipients subscribers", () => {
     // b_user_2 is a subscriber and b_user_1 is not.
     const small_matches = [b_user_2, b_user_1];
-    const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev topic");
+    const recipients = th.sort_recipients({
+        users: small_matches,
+        query: "b",
+        current_stream: "Dev",
+        current_topic: "Dev topic",
+    });
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_2@zulip.net", "b_user_1@zulip.net"];
     assert.deepEqual(recipients_email, expected);
@@ -501,7 +527,12 @@ test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribered to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
-    const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux topic");
+    const recipients = th.sort_recipients({
+        users: small_matches,
+        query: "b",
+        current_stream: "Linux",
+        current_topic: "Linux topic",
+    });
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_3@zulip.net", "b_user_2@zulip.net"];
     assert.deepEqual(recipients_email, expected);

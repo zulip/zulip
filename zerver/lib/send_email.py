@@ -434,7 +434,7 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
         # This state doesn't make sense, so something must be mutating,
         # or in the process of deleting, the object. We assume it will bring
         # things to a correct state, and we just do nothing except logging this event.
-        logger.warning("ScheduledEmail id %s has empty users and address attributes.", email.id)
+        logger.error("ScheduledEmail id %s has empty users and address attributes.", email.id)
         return
 
     if user_ids:

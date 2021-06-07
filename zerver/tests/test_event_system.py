@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 from unittest import mock
 
 import orjson
@@ -335,7 +335,7 @@ class GetEventsTest(ZulipTestCase):
         )
         recipient_events = orjson.loads(recipient_result.content)["events"]
         self.assert_json_success(recipient_result)
-        self.assertEqual(len(recipient_events), 2)
+        self.assert_length(recipient_events, 2)
         self.assertEqual(recipient_events[0]["type"], "message")
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
@@ -574,7 +574,7 @@ class ClientDescriptorsTest(ZulipTestCase):
             users=[],
         )
 
-        self.assertEqual(len(client_info), 1)
+        self.assert_length(client_info, 1)
 
         dct = client_info[client.event_queue.id]
         self.assertEqual(dct["client"].apply_markdown, True)
@@ -629,7 +629,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 ],
             )
 
-            self.assertEqual(len(client_info), 0)
+            self.assert_length(client_info, 0)
 
             client_info = get_client_info_for_message_event(
                 message_event,
@@ -638,7 +638,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                     dict(id=hamlet.id, flags=["mentioned"]),
                 ],
             )
-            self.assertEqual(len(client_info), 1)
+            self.assert_length(client_info, 1)
 
             dct = client_info[client.event_queue.id]
             self.assertEqual(dct["client"].apply_markdown, apply_markdown)
@@ -877,7 +877,7 @@ class RestartEventsTest(ZulipTestCase):
         # may decide to write a deeper test in the future
         # that exercises the finish_handler.
         virtual_events = client.event_queue.virtual_events
-        self.assertEqual(len(virtual_events), 1)
+        self.assert_length(virtual_events, 1)
         restart_event = virtual_events["restart"]
 
         check_restart_event("restart_event", restart_event)
@@ -1123,18 +1123,18 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
 class TestUserPresenceUpdatesDisabled(ZulipTestCase):
     def test_presence_events_diabled_on_larger_realm(self) -> None:
         # First check that normally the mocked function gets called.
-        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             do_update_user_presence(
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
                 UserPresence.ACTIVE,
             )
-        mock_send_event.assert_called_once()
 
         # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
         # amount of active users, send_event doesn't get called.
-        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
             with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
                 do_update_user_presence(
                     self.example_user("hamlet"),
@@ -1142,4 +1142,3 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
                     timezone_now(),
                     UserPresence.ACTIVE,
                 )
-        mock_send_event.assert_not_called()

@@ -1,4 +1,4 @@
-# Unsubscribe from a stream
+{generate_api_title(/users/me/subscriptions:delete)}
 
 {generate_api_description(/users/me/subscriptions:delete)}
 

@@ -58,6 +58,7 @@ class zulip_ops::profile::nagios {
     ],
     notify  => Service['apache2'],
   }
+  zulip_ops::teleport::application{ 'nagios': port => '3000' }
 
   file { '/etc/nagios3/conf.d/contacts.cfg':
     require => Package[nagios3],
@@ -97,7 +98,8 @@ class zulip_ops::profile::nagios {
     ensure => running,
   }
 
-  file { [ '/etc/nagios3/conf.d/extinfo_nagios2.cfg',
+  file { [
+    '/etc/nagios3/conf.d/extinfo_nagios2.cfg',
     '/etc/nagios3/conf.d/services_nagios2.cfg',
     '/etc/nagios3/conf.d/contacts_nagios2.cfg',
     '/etc/nagios3/conf.d/hostgroups_nagios2.cfg',

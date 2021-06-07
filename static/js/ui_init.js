@@ -28,6 +28,7 @@ import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
+import * as linkifiers from "./linkifiers";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
@@ -37,11 +38,11 @@ import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
 import * as muting from "./muting";
+import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as presence from "./presence";
@@ -445,7 +446,7 @@ export function initialize_everything() {
 
     const pm_conversations_params = pop_fields("recent_private_conversations");
 
-    const presence_params = pop_fields("presences", "initial_servertime");
+    const presence_params = pop_fields("presences", "server_timestamp");
 
     const stream_data_params = pop_fields(
         "subscriptions",
@@ -470,7 +471,7 @@ export function initialize_everything() {
     people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
-    panels.initialize();
+    navbar_alerts.initialize();
     compose_closed_ui.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
@@ -503,7 +504,8 @@ export function initialize_everything() {
         realm_emoji: emoji_params.realm_emoji,
         emoji_codes: generated_emoji_codes,
     });
-    markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
+    markdown.initialize(markdown_config.get_helpers());
+    linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();

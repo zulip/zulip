@@ -13,19 +13,18 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
+from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import (
     build_page_params_for_home_page_load,
     get_billing_info,
     get_user_permission_info,
     promote_sponsoring_zulip_in_realm,
 )
-from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
-from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.views.portico import hello_view
 
 
@@ -195,14 +194,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # The current tutorial doesn't super make sense for logged-out users.
         needs_tutorial = False
 
-    has_mobile_devices = user_profile is not None and num_push_devices_for_user(user_profile) > 0
-
     queue_id, page_params = build_page_params_for_home_page_load(
         request=request,
         user_profile=user_profile,
         realm=realm,
         insecure_desktop_app=insecure_desktop_app,
-        has_mobile_devices=has_mobile_devices,
         narrow=narrow,
         narrow_stream=narrow_stream,
         narrow_topic=narrow_topic,

@@ -59,6 +59,13 @@ class zulip_ops::profile::zmirror {
     source  => 'puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror',
   }
 
+  # Allow the relevant UDP ports
+  concat::fragment { 'iptables-zmirror':
+    target => '/etc/iptables/rules.v4',
+    source => 'puppet:///modules/zulip_ops/iptables/zmirror',
+    order  => '20',
+  }
+
   # TODO: Do the rest of our setup, which includes at least:
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
   # Putting tabbott/extra's keytab on the system at /home/zulip/tabbott.extra.keytab

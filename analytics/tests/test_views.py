@@ -978,7 +978,7 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertIn(
             "request for sponsored hosting has been approved", messages[0].message.content
         )
-        self.assertEqual(len(messages), 1)
+        self.assert_length(messages, 1)
 
     def test_activate_or_deactivate_realm(self) -> None:
         cordelia = self.example_user("cordelia")

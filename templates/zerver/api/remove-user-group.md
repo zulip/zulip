@@ -1,4 +1,4 @@
-# Delete a user group
+{generate_api_title(/user_groups/{user_group_id}:delete)}
 
 {generate_api_description(/user_groups/{user_group_id}:delete)}
 

@@ -24,7 +24,13 @@ from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
 
-from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.models import (
+    Confirmation,
+    ConfirmationKeyException,
+    MultiuseInvite,
+    create_confirmation_link,
+    get_object_from_key,
+)
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
 from zerver.decorator import do_login, log_view_func, process_client, require_post
@@ -63,6 +69,7 @@ from zproject.backends import (
     AppleAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
+    GenericOpenIdConnectBackend,
     SAMLAuthBackend,
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
@@ -158,14 +165,18 @@ def maybe_send_to_registration(
             request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
         )
 
+    multiuse_obj: Optional[MultiuseInvite] = None
+    from_multiuse_invite = False
     if multiuse_object_key:
         from_multiuse_invite = True
-        multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
+        try:
+            multiuse_obj = get_object_from_key(multiuse_object_key, Confirmation.MULTIUSE_INVITE)
+        except ConfirmationKeyException:
+            return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+
         realm = multiuse_obj.realm
         invited_as = multiuse_obj.invited_as
     else:
-        from_multiuse_invite = False
-        multiuse_obj = None
         try:
             realm = get_realm(get_subdomain(request))
         except Realm.DoesNotExist:
@@ -550,6 +561,8 @@ def start_social_login(
 
     if backend == "apple" and not AppleAuthBackend.check_config():
         return config_error(request, "apple")
+    if backend == "oidc" and not GenericOpenIdConnectBackend.check_config():
+        return config_error(request, "oidc")
 
     # TODO: Add AzureAD also.
     if backend in ["github", "google", "gitlab"]:
@@ -987,6 +1000,8 @@ def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse
         "smtp": {"error_name": "smtp_error"},
         "remote_user_backend_disabled": {"error_name": "remoteuser_error_backend_disabled"},
         "remote_user_header_missing": {"error_name": "remoteuser_error_remote_user_header_missing"},
+        # TODO: Improve the config error page for OIDC.
+        "oidc": {"error_name": "oidc_error"},
     }
 
     return render(request, "zerver/config_error.html", contexts[error_category_name])

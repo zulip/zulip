@@ -379,10 +379,6 @@ def do_send_missedmessage_events_reply_in_zulip(
     """
     from zerver.context_processors import common_context
 
-    # Disabled missedmessage emails internally
-    if not user_profile.enable_offline_email_notifications:
-        return
-
     recipients = {
         (msg["message"].recipient_id, msg["message"].topic_name()) for msg in missed_messages
     }

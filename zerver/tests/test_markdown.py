@@ -48,7 +48,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Message,
     RealmEmoji,
     RealmFilter,
@@ -426,7 +425,7 @@ class MarkdownTest(ZulipTestCase):
         for name, test in format_tests.items():
             with self.subTest(markdown_test_case=name):
                 # Check that there aren't any unexpected keys as those are often typos
-                self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+                self.assert_length(set(test.keys()) - valid_keys, 0)
                 # Ignore tests if specified
                 if test.get("ignore", False):
                     continue  # nocoverage
@@ -711,7 +710,7 @@ class MarkdownTest(ZulipTestCase):
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
         ret = image_preview_enabled()
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         settings.INLINE_IMAGE_PREVIEW = True
 
@@ -720,22 +719,22 @@ class MarkdownTest(ZulipTestCase):
         realm = message.get_realm()
 
         ret = image_preview_enabled()
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         ret = image_preview_enabled(message, realm)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(message)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(message, realm, no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         ret = image_preview_enabled(message, no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_url_embed_preview_enabled(self) -> None:
@@ -748,23 +747,23 @@ class MarkdownTest(ZulipTestCase):
         realm.save(update_fields=["inline_url_embed_preview"])
 
         ret = url_embed_preview_enabled()
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         settings.INLINE_URL_EMBED_PREVIEW = True
 
         ret = url_embed_preview_enabled()
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         ret = url_embed_preview_enabled(message, realm)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
         ret = url_embed_preview_enabled(message)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = url_embed_preview_enabled(message, no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
     def test_inline_dropbox(self) -> None:
         msg = "Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG"
@@ -778,7 +777,7 @@ class MarkdownTest(ZulipTestCase):
 
         self.assertEqual(
             converted,
-            f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="{get_camo_url("https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?dl=1")}"></a></div>""",
+            f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="{get_camo_url("https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?raw=1")}"></a></div>""",
         )
 
         msg = "Look at my hilarious drawing folder: https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl="
@@ -1344,14 +1343,14 @@ class MarkdownTest(ZulipTestCase):
             converted_topic = topic_links(realm.id, content)
             if should_have_converted:
                 self.assertTrue("https://trac.example.com" in converted)
-                self.assertEqual(len(converted_topic), 1)
+                self.assert_length(converted_topic, 1)
                 self.assertEqual(
                     converted_topic[0],
                     {"url": "https://trac.example.com/ticket/123", "text": "#123"},
                 )
             else:
                 self.assertTrue("https://trac.example.com" not in converted)
-                self.assertEqual(len(converted_topic), 0)
+                self.assert_length(converted_topic, 0)
 
         assert_conversion("Hello #123 World")
         assert_conversion("Hello #123World", False)
@@ -2308,6 +2307,7 @@ class MarkdownTest(ZulipTestCase):
         update_message_and_check_flag("@*support* edited", True)
         update_message_and_check_flag("edited", False)
         update_message_and_check_flag("@*support*", True)
+        update_message_and_check_flag("@_*support*", False)
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2316,6 +2316,40 @@ class MarkdownTest(ZulipTestCase):
         content = "Hey @*Nonexistent group*"
         self.assertEqual(render_markdown(msg, content), "<p>Hey @<em>Nonexistent group</em></p>")
         self.assertEqual(msg.mentions_user_group_ids, set())
+
+    def test_user_group_silent_mention(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        support = self.create_user_group_for_test("support")
+
+        content = "We'll add you to @_*support* user group."
+        self.assertEqual(
+            render_markdown(msg, content),
+            "<p>We'll add you to "
+            f'<span class="user-group-mention silent" data-user-group-id="{support.id}">support</span>'
+            " user group.</p>",
+        )
+
+        self.assertEqual(msg.mentions_user_group_ids, set())
+
+    def test_user_group_mention_in_quotes(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        backend = self.create_user_group_for_test("backend")
+
+        def assert_silent_mention(content: str) -> None:
+            expected = (
+                "<blockquote>\n<p>"
+                f'<span class="user-group-mention silent" data-user-group-id="{backend.id}">backend</span>'
+                "</p>\n</blockquote>"
+            )
+            self.assertEqual(render_markdown(msg, content), expected)
+            self.assertEqual(msg.mentions_user_group_ids, set())
+
+        assert_silent_mention("> @*backend*")
+        assert_silent_mention("> @_*backend*")
+        assert_silent_mention("```quote\n@*backend*\n```")
+        assert_silent_mention("```quote\n@_*backend*\n```")
 
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
@@ -2713,10 +2747,11 @@ class MarkdownErrorTests(ZulipTestCase):
             with self.assertRaises(JsonableError):
                 self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
+    @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
-        """A rendered message with an ultra-long length (> 10 * MAX_MESSAGE_LENGTH)
+        """A rendered message with an ultra-long length (> 100 * MAX_MESSAGE_LENGTH)
         throws an exception"""
-        msg = "mock rendered message\n" * MAX_MESSAGE_LENGTH
+        msg = "mock rendered message\n" * 10 * settings.MAX_MESSAGE_LENGTH
 
         with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"

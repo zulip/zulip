@@ -7,6 +7,7 @@ import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
@@ -15,9 +16,9 @@ import * as message_view_header from "./message_view_header";
 import * as muting from "./muting";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
-import * as panels from "./panels";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
@@ -33,6 +34,7 @@ let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
+const MAX_EXTRA_SENDERS = 10;
 
 // Use this to set the focused element.
 //
@@ -317,6 +319,21 @@ function format_topic(topic_data) {
     const senders = all_senders.slice(-MAX_AVATAR);
     const senders_info = people.sender_info_for_recent_topics_row(senders);
 
+    // Collect extra senders fullname for tooltip.
+    const extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
+    const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
+    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
+
+    if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
+        // We display only 10 extra senders in tooltips,
+        // and just display remaining number of senders.
+        const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
+        displayed_other_names.push(
+            $t({defaultMessage: `and {remaining_senders} other(s).`}, {remaining_senders}),
+        );
+    }
+    const other_sender_names = displayed_other_names.join("<br/>");
+
     return {
         // stream info
         stream_id,
@@ -333,6 +350,7 @@ function format_topic(topic_data) {
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
+        other_sender_names,
         muted,
         topic_muted,
         participated: topic_data.participated,
@@ -676,7 +694,7 @@ export function hide() {
     // remains on search box even after it is hidden. We
     // forcefully blur it so that focus returns to the visible
     // focused element.
-    $("#recent_topics_search").blur();
+    $("#recent_topics_search").trigger("blur");
 
     $("#message_view_header_underpadding").show();
     $(".header").css("padding-bottom", "10px");
@@ -689,7 +707,7 @@ export function hide() {
 
     // Fixes misaligned message_view and hidden
     // floating_recipient_bar.
-    panels.resize_app();
+    navbar_alerts.resize_app();
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.

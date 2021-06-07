@@ -93,6 +93,10 @@ export const email_address_visibility_values = {
     //     code: 2,
     //     description: $t({defaultMessage: "Members and admins"}),
     // },
+    moderators: {
+        code: 5,
+        description: $t({defaultMessage: "Admins and moderators"}),
+    },
     admins_only: {
         code: 3,
         description: $t({defaultMessage: "Admins only"}),

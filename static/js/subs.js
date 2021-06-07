@@ -284,7 +284,8 @@ export function remove_stream(stream_id) {
     }
 }
 
-export function update_settings_for_subscribed(sub) {
+export function update_settings_for_subscribed(slim_sub) {
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
         `.subscription_settings[data-stream-id='${CSS.escape(
@@ -638,7 +639,7 @@ export function setup_page(callback) {
         // streams, either explicitly via user_can_create_streams, or
         // implicitly because page_params.realm_is_zephyr_mirror_realm.
         $("#stream_filter input[type='text']").on("keypress", (e) => {
-            if (e.which !== 13) {
+            if (e.key !== "Enter") {
                 return;
             }
 

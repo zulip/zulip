@@ -101,9 +101,9 @@ class EmailChangeTestCase(ZulipTestCase):
         data = {"email": "hamlet-new@zulip.com"}
         self.login("hamlet")
         url = "/json/settings"
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assert_in_success_response(["Check your email for a confirmation link."], result)
         email_message = mail.outbox[0]
         self.assertEqual(
@@ -141,7 +141,7 @@ class EmailChangeTestCase(ZulipTestCase):
         )
         url = "/json/settings"
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Email address changes are disabled in this organization.", result)
         # Realm admins can change their email address even setting is disabled.
@@ -158,7 +158,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
         url = "/json/settings"
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Already has an account", result)
 
@@ -167,9 +167,9 @@ class EmailChangeTestCase(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         url = "/json/settings"
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assert_in_success_response(["Check your email for a confirmation link."], result)
         email_message = mail.outbox[0]
         self.assertEqual(

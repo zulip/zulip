@@ -13,7 +13,7 @@ have the following effects:
 
 * All messages sent by muted users, including the name, profile
   picture, and message content, are hidden behind a **Click here to
-  reveal** banner.
+  reveal** banner. A revealed message can later be [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
 
 * Muted users are hidden from [**Private
   messages**](/help/private-messages) in the left sidebar and the list
@@ -65,6 +65,16 @@ have the following effects:
 1. Click **Mute this user**.
 
 1. On the confirmation popup, click **Confirm**.
+
+{end_tabs}
+
+### Re-hide a message that has been revealed
+
+{start_tabs}
+
+{!message-actions-menu.md!}
+
+3. Click **Hide muted message again**.
 
 {end_tabs}
 

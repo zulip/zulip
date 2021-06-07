@@ -43,6 +43,9 @@ const admin_settings_label = {
         defaultMessage: "Prevent users from changing their email address",
     }),
     realm_avatar_changes_disabled: $t({defaultMessage: "Prevent users from changing their avatar"}),
+    realm_invite_required: $t({
+        defaultMessage: "Invitations are required for joining this organization",
+    }),
 };
 
 function insert_tip_box() {
@@ -64,6 +67,7 @@ export function build_page() {
         realm_name: page_params.realm_name,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         giphy_rating_options: page_params.giphy_rating_options,
+        giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
@@ -71,12 +75,8 @@ export function build_page() {
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
         realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
-        realm_create_stream_policy: page_params.realm_create_stream_policy,
-        realm_invite_to_stream_policy: page_params.realm_invite_to_stream_policy,
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         USER_GROUP_EDIT_POLICY_MEMBERS: 1,
-        realm_private_message_policy: page_params.realm_private_message_policy,
-        realm_wildcard_mention_policy: page_params.realm_wildcard_mention_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
@@ -125,6 +125,7 @@ export function build_page() {
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+        realm_invite_required: page_params.realm_invite_required,
         ...settings_org.get_organization_settings_options(),
     };
 
@@ -132,6 +133,12 @@ export function build_page() {
         // If no night mode logo is specified but a day mode one is,
         // use the day mode one.  See also similar code in realm_logo.js.
         options.realm_night_logo_url = options.realm_logo_url;
+    }
+
+    options.giphy_help_link = "/help/animated-gifs-from-giphy";
+    if (options.giphy_api_key_empty) {
+        options.giphy_help_link =
+            "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
     }
 
     const rendered_admin_tab = render_admin_tab(options);

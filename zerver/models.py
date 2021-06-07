@@ -90,7 +90,6 @@ from zerver.lib.validator import (
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
-MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
@@ -199,6 +198,7 @@ class Realm(models.Model):
         "SAML",
         "GitLab",
         "Apple",
+        "OpenID Connect",
     ]
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
@@ -326,6 +326,7 @@ class Realm(models.Model):
     EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
     EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
     EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
+    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
     email_address_visibility: int = models.PositiveSmallIntegerField(
         default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
     )
@@ -335,6 +336,7 @@ class Realm(models.Model):
         ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
         EMAIL_ADDRESS_VISIBILITY_ADMINS,
         EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
     ]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -1038,7 +1040,7 @@ class RealmPlayground(models.Model):
     )
 
     class Meta:
-        unique_together = (("realm", "name"),)
+        unique_together = (("realm", "pygments_language", "name"),)
 
     def __str__(self) -> str:
         return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
@@ -1658,12 +1660,8 @@ def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_offline_email_notifications and not user_profile.is_bot
 
 
-def receives_online_notifications(user_profile: UserProfile) -> bool:
+def receives_online_push_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_online_push_notifications and not user_profile.is_bot
-
-
-def receives_stream_notifications(user_profile: UserProfile) -> bool:
-    return user_profile.enable_stream_push_notifications and not user_profile.is_bot
 
 
 def remote_user_to_email(remote_user: str) -> str:

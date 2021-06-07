@@ -1,4 +1,4 @@
-# Set "typing" status
+{generate_api_title(/typing:post)}
 
 {generate_api_description(/typing:post)}
 

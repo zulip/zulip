@@ -1,4 +1,4 @@
-# Get all custom emoji
+{generate_api_title(/realm/emoji:get)}
 
 {generate_api_description(/realm/emoji:get)}
 

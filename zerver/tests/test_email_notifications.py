@@ -21,7 +21,13 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import ScheduledEmail, UserProfile, get_realm, get_stream
+from zerver.models import (
+    ScheduledEmail,
+    UserProfile,
+    get_realm,
+    get_stream,
+    receives_offline_email_notifications,
+)
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -41,10 +47,10 @@ class TestCustomEmails(ZulipTestCase):
                 "dry_run": False,
             },
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, email_subject)
-        self.assertEqual(len(msg.reply_to), 1)
+        self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
 
@@ -60,7 +66,7 @@ class TestCustomEmails(ZulipTestCase):
                 "dry_run": False,
             },
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, "Test subject")
         self.assertFalse(msg.reply_to)
@@ -145,7 +151,7 @@ class TestCustomEmails(ZulipTestCase):
                 "dry_run": False,
             },
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
 
     def test_send_custom_email_dry_run(self) -> None:
@@ -165,7 +171,7 @@ class TestCustomEmails(ZulipTestCase):
                     "dry_run": True,
                 },
             )
-            self.assertEqual(len(mail.outbox), 0)
+            self.assert_length(mail.outbox, 0)
 
 
 class TestFollowupEmails(ZulipTestCase):
@@ -217,7 +223,7 @@ class TestFollowupEmails(ZulipTestCase):
             user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
-            self.assertEqual(len(scheduled_emails), 2)
+            self.assert_length(scheduled_emails, 2)
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(
@@ -243,7 +249,7 @@ class TestFollowupEmails(ZulipTestCase):
             user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
-            self.assertEqual(len(scheduled_emails), 2)
+            self.assert_length(scheduled_emails, 2)
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser")
@@ -266,7 +272,7 @@ class TestFollowupEmails(ZulipTestCase):
             user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
-            self.assertEqual(len(scheduled_emails), 2)
+            self.assert_length(scheduled_emails, 2)
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
@@ -293,7 +299,7 @@ class TestFollowupEmails(ZulipTestCase):
         enqueue_welcome_emails(cordelia)
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         # Cordelia has account in more than 1 realm so day2 email should not be sent
-        self.assertEqual(len(scheduled_emails), 1)
+        self.assert_length(scheduled_emails, 1)
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["template_prefix"], "zerver/emails/followup_day1")
 
@@ -332,13 +338,13 @@ class TestMissedMessages(ZulipTestCase):
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
         from_email = str(Address(display_name="Zulip notifications", addr_spec=FromAddress.NOREPLY))
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         if send_as_user:
             from_email = f'"{othello.full_name}" <{othello.email}>'
         self.assertEqual(self.email_envelope_from(msg), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertEqual(self.email_display_from(msg), from_email)
         self.assertEqual(msg.subject, email_subject)
-        self.assertEqual(len(msg.reply_to), 1)
+        self.assert_length(msg.reply_to, 1)
         self.assertIn(msg.reply_to[0], reply_to_emails)
         if verify_html_body:
             for text in verify_body_include:
@@ -642,7 +648,7 @@ class TestMissedMessages(ZulipTestCase):
         )
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
     def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
@@ -658,7 +664,7 @@ class TestMissedMessages(ZulipTestCase):
         )
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
     def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
@@ -678,9 +684,9 @@ class TestMissedMessages(ZulipTestCase):
         )
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         handle_missedmessage_emails(iago.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
     def test_realm_name_in_notifications(self) -> None:
         # Test with realm_name_in_notifications for hamlet disabled.
@@ -956,7 +962,7 @@ class TestMissedMessages(ZulipTestCase):
                 {"message_id": msg_id_2},
             ],
         )
-        self.assertEqual(len(mail.outbox), 2)
+        self.assert_length(mail.outbox, 2)
         email_subject = "PMs with Othello, the Moor of Venice"
         self.assertEqual(mail.outbox[0].subject, email_subject)
         email_subject = "PMs with Iago"
@@ -974,7 +980,7 @@ class TestMissedMessages(ZulipTestCase):
                 {"message_id": msg_id_2, "trigger": "stream_email_notify"},
             ],
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         email_subject = "#Denmark > test"
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
@@ -993,7 +999,7 @@ class TestMissedMessages(ZulipTestCase):
                 {"message_id": msg_id_2, "trigger": "mentioned"},
             ],
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         email_subject = "#Denmark > test"
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
@@ -1021,7 +1027,7 @@ class TestMissedMessages(ZulipTestCase):
             ],
         )
 
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertEqual(mail.outbox[0].subject, "#private_stream > test")  # email subject
         email_text = mail.outbox[0].message().as_string()
         self.assertNotIn("Before subscribing", email_text)
@@ -1049,7 +1055,7 @@ class TestMissedMessages(ZulipTestCase):
                 {"message_id": msg_id_3, "trigger": "stream_email_notify"},
             ],
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         email_subject = "#Denmark > test"
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
@@ -1068,7 +1074,7 @@ class TestMissedMessages(ZulipTestCase):
                 {"message_id": msg_id_2, "trigger": "stream_email_notify"},
             ],
         )
-        self.assertEqual(len(mail.outbox), 2)
+        self.assert_length(mail.outbox, 2)
         email_subjects = {mail.outbox[0].subject, mail.outbox[1].subject}
         valid_email_subjects = {"#Denmark > test", "#Denmark > test2"}
         self.assertEqual(email_subjects, valid_email_subjects)
@@ -1212,3 +1218,37 @@ class TestMissedMessages(ZulipTestCase):
             + 'title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
+
+
+class TestReceivesNotificationsFunctions(ZulipTestCase):
+    def test_receivers_offline_notifications_when_user_is_a_bot(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_bot = True
+
+        hamlet.enable_offline_email_notifications = True
+        self.assertFalse(receives_offline_email_notifications(hamlet))
+
+        hamlet.enable_offline_email_notifications = False
+        self.assertFalse(receives_offline_email_notifications(hamlet))
+
+        hamlet.enable_offline_email_notifications = True
+        self.assertFalse(receives_offline_email_notifications(hamlet))
+
+        hamlet.enable_offline_email_notifications = False
+        self.assertFalse(receives_offline_email_notifications(hamlet))
+
+    def test_receivers_offline_notifications_when_user_is_not_a_bot(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_bot = False
+
+        hamlet.enable_offline_email_notifications = True
+        self.assertTrue(receives_offline_email_notifications(hamlet))
+
+        hamlet.enable_offline_email_notifications = False
+        self.assertFalse(receives_offline_email_notifications(hamlet))
+
+        hamlet.enable_offline_email_notifications = True
+        self.assertTrue(receives_offline_email_notifications(hamlet))
+
+        hamlet.enable_offline_email_notifications = False
+        self.assertFalse(receives_offline_email_notifications(hamlet))

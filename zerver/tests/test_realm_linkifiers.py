@@ -17,7 +17,7 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_get("/json/realm/linkifiers")
         self.assert_json_success(result)
         linkifiers = result.json()["linkifiers"]
-        self.assertEqual(len(linkifiers), 1)
+        self.assert_length(linkifiers, 1)
         self.assertEqual(linkifiers[0]["pattern"], "#(?P<id>[123])")
         self.assertEqual(linkifiers[0]["url_format"], "https://realm.com/my_realm_filter/%(id)s")
 
@@ -147,7 +147,7 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_get("/json/realm/linkifiers")
         self.assert_json_success(result)
         linkifier = result.json()["linkifiers"]
-        self.assertEqual(len(linkifier), 1)
+        self.assert_length(linkifier, 1)
         self.assertEqual(linkifier[0]["pattern"], "#(?P<id>[0-9]+)")
         self.assertEqual(
             linkifier[0]["url_format"], "https://realm.com/my_realm_filter/issues/%(id)s"

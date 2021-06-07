@@ -58,6 +58,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_delete_messages,
     do_invite_users,
+    do_make_user_billing_admin,
     do_mark_hotspot_as_read,
     do_mute_topic,
     do_mute_user,
@@ -275,7 +276,13 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
         )
-        action()
+
+        # We want even those `send_event` calls which have been hooked to
+        # `transaction.on_commit` to execute in tests.
+        # See the comment in `ZulipTestCase.tornado_redirected_to_list`.
+        with self.captureOnCommitCallbacks(execute=True):
+            action()
+
         events = client.event_queue.contents()
         content = {
             "queue_id": "123.12",
@@ -286,7 +293,7 @@ class BaseAction(ZulipTestCase):
             "result": "success",
         }
         validate_against_openapi_schema(content, "/events", "get", "200", display_brief_error=True)
-        self.assertEqual(len(events), num_events)
+        self.assert_length(events, num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = orjson.dumps(initial_state)
@@ -342,6 +349,8 @@ class BaseAction(ZulipTestCase):
             state["unsubscribed"] = {u["name"]: u for u in state["unsubscribed"]}
             if "realm_bots" in state:
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
+            # Since time is different for every call, just fix the value
+            state["server_timestamp"] = 0
 
         normalize(state1)
         normalize(state2)
@@ -1287,6 +1296,18 @@ class NormalActionsTest(BaseAction):
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
+    def test_change_is_billing_admin(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        events = self.verify_action(lambda: do_make_user_billing_admin(self.user_profile))
+        check_realm_user_update("events[0]", events[0], "is_billing_admin")
+        self.assertEqual(events[0]["person"]["is_billing_admin"], True)
+
     def test_change_is_owner(self) -> None:
         reset_emails_in_zulip_realm()
 
@@ -2139,7 +2160,7 @@ class SubscribeActionTest(BaseAction):
             action, include_subscribers=include_subscribers, include_streams=False, num_events=2
         )
         check_subscription_remove("events[0]", events[0])
-        self.assertEqual(len(events[0]["subscriptions"]), 1)
+        self.assert_length(events[0]["subscriptions"], 1)
         self.assertEqual(
             events[0]["subscriptions"][0]["name"],
             "test_stream",

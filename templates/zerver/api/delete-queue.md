@@ -1,4 +1,4 @@
-# Delete an event queue
+{generate_api_title(/events:delete)}
 
 {generate_api_description(/events:delete)}
 

@@ -420,7 +420,12 @@ it as follows:
     3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
        and the corresponding private key in `/etc/zulip/saml/zulip-private-key.key`. Note that
        the certificate should be the single X.509 certificate for the server, not a full chain of
-       trust, which consists of multiple certificates.
+       trust, which consists of multiple certificates. The private key cannot be encrypted
+       with a password, as then Zulip will not be able to load it. An example pair can be
+       generated using:
+       ```
+       openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key -out zulip-cert.crt -days 365 -nodes
+       ```
     4. Set the proper permissions on these files and directories:
 
     ```
@@ -668,6 +673,19 @@ domain for your server).
 [apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
 [outgoing-email]: ../production/email.md
+
+## OpenID Connect
+
+Starting with Zulip 5.0, Zulip can be integrated with any OpenID
+Connect (OIDC) authentication provider.  You can configure it by
+enabling `zproject.backends.GenericOpenIdConnectBackend` in
+`AUTHENTICATION_BACKENDS` and following the steps outlined in the
+comment documentation in `/etc/zulip/settings.py`.
+
+Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single backend
+
+The Return URL to authorize with the provider is
+`https://yourzulipdomain.example.com/complete/oidc/`.
 
 ## Adding more authentication backends
 

@@ -127,6 +127,9 @@
             "parserOptions": {
                 "project": "tsconfig.json"
             },
+            "globals": {
+                "JQuery": false
+            },
             "rules": {
                 // Disable base rule to avoid conflict
                 "no-duplicate-imports": "off",
@@ -175,6 +178,7 @@
                 "window": false
             },
             "rules": {
+                "new-cap": "off",
                 "no-sync": "off"
             }
         },

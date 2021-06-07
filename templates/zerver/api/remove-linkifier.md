@@ -1,4 +1,4 @@
-# Remove a linkifier
+{generate_api_title(/realm/filters/{filter_id}:delete)}
 
 {generate_api_description(/realm/filters/{filter_id}:delete)}
 

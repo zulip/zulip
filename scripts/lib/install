@@ -28,6 +28,10 @@ Options:
       install process; used when this command is run once in a highly-controlled
       environment to produce an image which is used elsewhere.  Uncommon.
 
+  --postgresql-database-name=zulip
+      Sets the PostgreSQL database name.
+  --postgresql-database-user=zulip
+      Sets the PostgreSQL database user.
   --postgresql-version=13
       Sets the version of PostgreSQL that will be installed.
   --postgresql-missing-dictionaries
@@ -47,7 +51,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -80,7 +84,16 @@ while true; do
             SELF_SIGNED_CERT=1
             shift
             ;;
-
+        --postgresql-database-name)
+            POSTGRESQL_DATABASE_NAME="$2"
+            shift
+            shift
+            ;;
+        --postgresql-database-user)
+            POSTGRESQL_DATABASE_USER="$2"
+            shift
+            shift
+            ;;
         --postgresql-version)
             POSTGRESQL_VERSION="$2"
             shift
@@ -416,6 +429,14 @@ EOF
         crudini --del /etc/zulip/zulip.conf postgresql
     fi
 
+    if [ -n "$POSTGRESQL_DATABASE_NAME" ]; then
+        crudini --set /etc/zulip/zulip.conf postgresql database_name "$POSTGRESQL_DATABASE_NAME"
+    fi
+
+    if [ -n "$POSTGRESQL_DATABASE_USER" ]; then
+        crudini --set /etc/zulip/zulip.conf postgresql database_user "$POSTGRESQL_DATABASE_USER"
+    fi
+
     # Note: there are four dpkg-query outputs to consider:
     #
     # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
@@ -524,11 +545,13 @@ if has_class "zulip::app_frontend_base"; then
 fi
 
 # Set up a basic .gitconfig for the 'zulip' user
-(
-    cd / # Make sure the current working directory is readable by zulip
-    su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
-    su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
-)
+if [ -n "$ZULIP_ADMINISTRATOR" ]; then
+    (
+        cd / # Make sure the current working directory is readable by zulip
+        su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
+        su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
+    )
+fi
 
 if [ -n "$NO_INIT_DB" ]; then
     set +x

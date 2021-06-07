@@ -97,6 +97,10 @@ SOCIAL_AUTH_APPLE_TEAM = get_secret("social_auth_apple_team", development_only=T
 SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
+# Generic OpenID Connect:
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Dict[str, Optional[str]]] = {}
+SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
+
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 
@@ -122,6 +126,7 @@ LOGGING_SHOW_PID = False
 SENTRY_DSN: Optional[str] = None
 
 # File uploads and avatars
+# TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
 DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
 DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
 S3_AVATAR_BUCKET = ""
@@ -303,10 +308,10 @@ ZULIP_IOS_APP_ID = "org.zulip.Zulip"
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
-MAX_AVATAR_FILE_SIZE = 5
-MAX_ICON_FILE_SIZE = 5
-MAX_LOGO_FILE_SIZE = 5
-MAX_EMOJI_FILE_SIZE = 5
+MAX_AVATAR_FILE_SIZE_MIB = 5
+MAX_ICON_FILE_SIZE_MIB = 5
+MAX_LOGO_FILE_SIZE_MIB = 5
+MAX_EMOJI_FILE_SIZE_MIB = 5
 
 # Limits to help prevent spam, in particular by sending invitations.
 #
@@ -325,13 +330,6 @@ INVITES_NEW_REALM_DAYS = 7
 REGISTER_LINK_DISABLED: Optional[bool] = None
 LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
-
-# Controls if the server should run certain jobs like deliver_scheduled_emails or
-# deliver_scheduled_messages. This setting in long term is meant for
-# handling jobs for which we don't have a means of establishing a locking
-# mechanism that works with multiple servers running these jobs.
-# TODO: We should rename this setting so that it reflects its purpose actively.
-EMAIL_DELIVERER_DISABLED = False
 
 # What domains to treat like the root domain
 # "auth" is by default a reserved subdomain for the use by python-social-auth.
@@ -454,3 +452,8 @@ SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 18
 
 # How long servers have to respond to outgoing webhook requests
 OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
+
+# Maximum length of message content allowed.
+# Any message content exceeding this limit will be truncated.
+# See: `_internal_prep_message` function in zerver/lib/actions.py.
+MAX_MESSAGE_LENGTH = 10000

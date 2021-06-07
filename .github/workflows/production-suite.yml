@@ -113,24 +113,28 @@ jobs:
           # Base images are built using `tools/ci/Dockerfile.template`.
           # The comments at the top explain how to build and upload these images.
           - docker_image: zulip/ci:bionic
-            name: Bionic production install
+            name: Bionic production install with custom db name and user
             is_bionic: true
             os: bionic
+            install-command: /tmp/production-install --test-custom-db
 
           - docker_image: zulip/ci:focal
             name: Focal production install
             is_focal: true
             os: focal
+            install-command: /tmp/production-install
 
           - docker_image: zulip/ci:buster
             name: Buster production install
             is_buster: true
             os: buster
+            install-command: /tmp/production-install
 
           - docker_image: zulip/ci:bullseye
             name: Bullseye production install
             is_bullseye: true
             os: bullseye
+            install-command: /tmp/production-install
 
     name: ${{ matrix.name  }}
     container: ${{ matrix.docker_image }}
@@ -181,7 +185,7 @@ jobs:
       - name: Install production
         run: |
           sudo service rabbitmq-server restart
-          sudo /tmp/production-install
+          sudo ${{ matrix.install-command }}
 
       - name: Verify install
         run: sudo /tmp/production-verify

@@ -56,6 +56,9 @@ if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*u
     echo
     echo "DEBUG: printing Zulip server's tornado log:"
     cat /var/log/zulip/tornado.log
+    echo
+    echo "DEBUG: printing process_fts_updates log:"
+    cat /var/log/zulip/fts-updates.log
     exit 1
 fi
 
@@ -123,7 +126,7 @@ echo
 echo "Now running additional Nagios tests"
 echo
 if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
-    || ! su zulip -c /usr/lib/nagios/plugins/zulip_postgresql/check_fts_update_log; then # || \
+    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check"; then # || \
     #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
     set +x
     echo

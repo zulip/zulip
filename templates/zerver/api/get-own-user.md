@@ -1,4 +1,4 @@
-# Get own user
+{generate_api_title(/users/me:get)}
 
 {generate_api_description(/users/me:get)}
 

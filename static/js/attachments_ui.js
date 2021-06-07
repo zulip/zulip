@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
-import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
+import render_uploaded_files_list from "../templates/settings/uploaded_files_list.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
@@ -30,20 +30,20 @@ export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
 }
 
 export function percentage_used_space(uploads_size) {
-    if (page_params.realm_upload_quota === null) {
+    if (page_params.realm_upload_quota_mib === null) {
         return null;
     }
-    return ((100 * uploads_size) / page_params.realm_upload_quota).toFixed(1);
+    return ((100 * uploads_size) / page_params.realm_upload_quota_mib).toFixed(1);
 }
 
 function set_upload_space_stats() {
-    if (page_params.realm_upload_quota === null) {
+    if (page_params.realm_upload_quota_mib === null) {
         return;
     }
     const args = {
         show_upgrade_message: page_params.realm_plan_type === 2,
         percent_used: percentage_used_space(upload_space_used),
-        upload_quota: bytes_to_size(page_params.realm_upload_quota, true),
+        upload_quota: bytes_to_size(page_params.realm_upload_quota_mib, true),
     };
     const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);

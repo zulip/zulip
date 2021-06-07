@@ -1,4 +1,4 @@
-# Get a message's edit history
+{generate_api_title(/messages/{message_id}/history:get)}
 
 {generate_api_description(/messages/{message_id}/history:get)}
 

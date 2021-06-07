@@ -1,4 +1,4 @@
-# Update display settings
+{generate_api_title(/settings/display:patch)}
 
 {generate_api_description(/settings/display:patch)}
 

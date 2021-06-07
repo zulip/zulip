@@ -141,7 +141,7 @@ class TestEncodeDecode(ZulipTestCase):
         parts = msg_string.split("+")
         # Stream name should be completely stripped to '', so msg_string
         # should only have the email_token in it.
-        self.assertEqual(len(parts), 1)
+        self.assert_length(parts, 1)
 
         # Correctly decode the resulting address that doesn't have the stream name:
         token, show_sender = decode_email_address(email_address)

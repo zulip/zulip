@@ -85,3 +85,7 @@ the UI will be frozen as the time you enabled this setting.
 Note that because this setting works by making your availability stop
 updating, you'll still appear to other users as active for a few
 minutes after disabling updates to your availability.
+
+## Typing notifications
+
+Zulip displays typing notifications in private messages.

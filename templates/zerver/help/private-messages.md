@@ -39,3 +39,7 @@ There are several ways to access an existing PM or group PM.
   able to select PMs or group PMs with that user.
 * Open the compose box, and enter in a (list of) users. Type `Ctrl + .` (or
   `Cmd + .` on a mac) to open that conversation.
+
+## Related articles
+
+* [Typing notifications](/help/status-and-availability#typing-notifications)

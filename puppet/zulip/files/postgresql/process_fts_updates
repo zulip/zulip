@@ -6,21 +6,25 @@
 # message ID to the `fts_update_log` table.  In the background, this
 # program processes `fts_update_log`, updating the PostgreSQL full-text
 # search column search_tsvector in the main zerver_message.
-import sys
-
-# We want to use a virtualenv in production, which will be in /home/zulip/deployments/current.
-# So we should add that path to sys.path and then call setup_path.
-# But this file is also used in development, where the above path will not exist.
-# So `from scripts.lib.setup_path import setup_path` will raise an ImportError.
-# In development, we just want to skip this step since we know that virtualenv will already be in use.
-# So catch the ImportError and do nothing.
-sys.path.append("/home/zulip/deployments/current")
-try:
-    from scripts.lib.setup_path import setup_path
-
-    setup_path()
-except ImportError:
-    pass
+#
+# There are three cases this has to cover:
+#
+# 1. Running in development, with a venv but no
+#    /home/zulip/deployments/current nor /etc/zulip/zulip.conf
+#
+# 2. Running in production, with postgresql on the same machine as the
+#    frontend, with a venv and both /home/zulip/deployments/current
+#    and /etc/zulip/zulip.conf
+#
+# 3. Running in production, on a postgresql machine which is not the
+#    frontend, with a /etc/zulip/zulip.conf but no venv nor
+#    /home/zulip/deployments/current
+#
+# Because of case (3), we cannot rely on functions from outside this
+# file (e.g. provided by scripts.lib.zulip_tools).  For case (1),
+# however, we wish to import `zerver.settings` since we have no
+# /etc/zulip/zulip.conf to read, and that case _requires_ loading the
+# venv.
 
 import argparse
 import configparser
@@ -37,6 +41,7 @@ BATCH_SIZE = 1000
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true")
+parser.add_argument("--nagios-check", action="store_true")
 options = parser.parse_args()
 
 logging.Formatter.converter = time.gmtime
@@ -80,51 +85,78 @@ def am_master(cursor: psycopg2.extensions.cursor) -> bool:
     return not cursor.fetchall()[0][0]
 
 
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str = "",
+) -> str:
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
+
 pg_args = {}
 
-# Path to the root of the Zulip codebase in production
-sys.path.insert(0, "/home/zulip/deployments/current")
-# Path to the root of the Zulip codebase in development
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+USING_PGROONGA = False
 try:
+    # Case (1); we insert the path to the development root.
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+    # Case (2) could take this branch if it set up the venv first, but
+    # there is no reason to unnecessarily bring in the Django
+    # dependency; it will fall into the path below due the venv not
+    # being configured.
     os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
     from django.conf import settings
 
-    if settings.REMOTE_POSTGRES_HOST != "":
-        pg_args["host"] = settings.REMOTE_POSTGRES_HOST
-    if settings.REMOTE_POSTGRES_PORT != "":
-        pg_args["port"] = settings.REMOTE_POSTGRES_PORT
-    USING_PGROONGA = settings.USING_PGROONGA
-except ImportError:
-    # process_fts_updates also supports running locally on a remote
-    # PostgreSQL server; in that case, one can just connect to localhost
-    USING_PGROONGA = False
-
-# Since we don't want a hard dependency on being able to access the
-# Zulip settings (as we may not be running on a server that has that
-# data), we determine whether we're using PGroonga using
-# /etc/zulip/zulip.conf.
-#
-# However, we still also check the `USING_PGROONGA` variable, since
-# that's all we have in development.
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-if config_file.has_option("machine", "pgroonga"):
-    USING_PGROONGA = True
-
-if "host" in pg_args:
-    pg_args["password"] = ""
-    if settings.DATABASES["default"]["PASSWORD"] is not None:
-        pg_args["password"] = settings.DATABASES["default"]["PASSWORD"]
+    pg_args["host"] = settings.DATABASES["default"]["HOST"]
+    pg_args["port"] = settings.DATABASES["default"].get("PORT")
+    pg_args["password"] = settings.DATABASES["default"].get("PASSWORD")
     pg_args["user"] = settings.DATABASES["default"]["USER"]
     pg_args["dbname"] = settings.DATABASES["default"]["NAME"]
-    if settings.REMOTE_POSTGRES_SSLMODE != "":
-        pg_args["sslmode"] = settings.REMOTE_POSTGRES_SSLMODE
-    else:
-        pg_args["sslmode"] = "verify-full"
+    pg_args["sslmode"] = settings.DATABASES["default"]["OPTIONS"].get("sslmode")
     pg_args["connect_timeout"] = "600"
-else:
+    USING_PGROONGA = settings.USING_PGROONGA
+except ImportError:
+    # Case (2) and (3); we know that the PostgreSQL server is on this
+    # host.
     pg_args["user"] = "zulip"
+
+    config_file = configparser.RawConfigParser()
+    config_file.read("/etc/zulip/zulip.conf")
+
+    if config_file.has_option("machine", "pgroonga"):
+        USING_PGROONGA = True
+
+    pg_args["user"] = get_config(config_file, "postgresql", "database_user", "zulip")
+    if pg_args["user"] != "zulip":
+        secrets_file = configparser.RawConfigParser()
+        secrets_file.read("/etc/zulip/zulip-secrets.conf")
+        pg_args["password"] = get_config(secrets_file, "secrets", "postgres_password")
+        pg_args["host"] = "localhost"
+    pg_args["dbname"] = get_config(config_file, "postgresql", "database_name", "zulip")
+
+
+if options.nagios_check:
+    conn = psycopg2.connect(**pg_args)
+    cursor = conn.cursor()
+    cursor.execute("SELECT count(*) FROM fts_update_log")
+    num = cursor.fetchall()[0][0]
+
+    # nagios exit codes
+    states = {
+        "OK": 0,
+        "WARNING": 1,
+        "CRITICAL": 2,
+        "UNKNOWN": 3,
+    }
+
+    state = "OK"
+    if num > 5:
+        state = "CRITICAL"
+    print(f"{state}: {num} rows in fts_update_log table")
+    exit(states[state])
+
 
 conn = None
 

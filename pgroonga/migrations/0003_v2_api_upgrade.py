@@ -11,6 +11,16 @@ class Migration(migrations.Migration):
 
     database_setting = settings.DATABASES["default"]
     operations = [
+        # This migration does the following things:
+        # * Undoes the `search_path` changes from the original migration 0001,
+        #   which are no longer necessary with the modern PGroonga API.
+        #   (Note that we've deleted those changes from the current version of the
+        #    0001 migration).
+        # * Drops a legacy-format v1 index if present (will be only if upgrading
+        #   an old server).
+        # * Does a CREATE INDEX CONCURRENTLY to add a PGroonga v2 search index
+        #   on the message.search_pgroonga column (which was populated in
+        #   migration 0002).
         migrations.RunSQL(
             [
                 (
@@ -20,7 +30,7 @@ EXECUTE format('ALTER ROLE %%I SET search_path TO %%L,public', %(USER)s, %(SCHEM
 
 SET search_path = %(SCHEMA)s,public;
 
-DROP INDEX zerver_message_search_pgroonga;
+DROP INDEX IF EXISTS zerver_message_search_pgroonga;
 END$$
 """,
                     database_setting,
@@ -39,7 +49,7 @@ EXECUTE format('ALTER ROLE %%I SET search_path TO %%L,public,pgroonga,pg_catalog
 
 SET search_path = %(SCHEMA)s,public,pgroonga,pg_catalog;
 
-DROP INDEX zerver_message_search_pgroonga;
+DROP INDEX IF EXISTS zerver_message_search_pgroonga;
 END$$
 """,
                     database_setting,

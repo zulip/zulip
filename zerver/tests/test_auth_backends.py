@@ -103,6 +103,7 @@ from zproject.backends import (
     EmailAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
+    GenericOpenIdConnectBackend,
     GitHubAuthBackend,
     GitLabAuthBackend,
     GoogleAuthBackend,
@@ -882,7 +883,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
         return result
 
-    def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         return json.dumps(
             {
                 "access_token": "foobar",
@@ -970,7 +971,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 self.ACCESS_TOKEN_URL,
                 match_querystring=False,
                 status=200,
-                body=self.generate_access_url_payload(account_data_dict),
+                body=self.generate_access_token_url_payload(account_data_dict),
             )
             requests_mock.add(
                 requests_mock.GET,
@@ -1138,7 +1139,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def test_social_auth_mobile_success(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
         )
@@ -1172,7 +1173,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     def test_social_auth_desktop_success(self) -> None:
@@ -1437,6 +1438,27 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         self.stage_two_of_registration(
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
         )
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_with_invalid_multiuse_invite(self) -> None:
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+
+        multiuse_object_key = "invalid"
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain=subdomain,
+            is_signup=True,
+            expect_choose_email_screen=True,
+            multiuse_object_key=multiuse_object_key,
+        )
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result.url)
+
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("The registration link has expired or is not valid.", result)
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
@@ -2512,12 +2534,13 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             requests_mock.GET,
             self.BACKEND_CLASS.JWK_URL,
             status=200,
-            json=json.loads(settings.APPLE_JWK),
+            json=json.loads(settings.EXAMPLE_JWK),
         )
 
-    def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
-        # The ACCESS_TOKEN_URL endpoint works a bit different in standard Oauth2,
-        # where the token_data_dict contains some essential data. we add that data here.
+    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+        # The ACCESS_TOKEN_URL endpoint works a bit different than in standard Oauth2,
+        # and here, similarly to OIDC, id_token is also returned in the response.
+        # In Apple auth, all the user information is carried in the id_token.
         return json.dumps(
             {
                 "access_token": "foobar",
@@ -2711,7 +2734,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
                 requests_mock.GET,
                 self.BACKEND_CLASS.JWK_URL,
                 status=200,
-                json=json.loads(settings.APPLE_JWK),
+                json=json.loads(settings.EXAMPLE_JWK),
             )
             yield
 
@@ -2805,6 +2828,159 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         /login/social/apple/ endpoint which isn't even a part of the native flow.
         """
         pass
+
+
+class GenericOpenIdConnectTest(SocialAuthBase):
+    __unittest_skip__ = False
+
+    BACKEND_CLASS = GenericOpenIdConnectBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
+    LOGIN_URL = "/accounts/login/social/oidc"
+    SIGNUP_URL = "/accounts/register/social/oidc"
+
+    BASE_OIDC_URL = "https://example.com/api/openid"
+    AUTHORIZATION_URL = f"{BASE_OIDC_URL}/authorize"
+    ACCESS_TOKEN_URL = f"{BASE_OIDC_URL}/token"
+    JWKS_URL = f"{BASE_OIDC_URL}/jwks"
+    USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
+    AUTH_FINISH_URL = "/complete/oidc/"
+    CONFIG_ERROR_URL = "/config-error/oidc"
+
+    def social_auth_test(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> HttpResponse:
+        # Example payload of the discovery endpoint (with appropriate values filled
+        # in to match our test setup).
+        # All the attributes below are REQUIRED per OIDC specification:
+        # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+        # or at least required for the `code` flow with userinfo - that this implementation uses.
+        # Other flows are not supported right now.
+        idp_discovery_endpoint_payload_dict = {
+            "issuer": self.BASE_OIDC_URL,
+            "authorization_endpoint": self.AUTHORIZATION_URL,
+            "token_endpoint": self.ACCESS_TOKEN_URL,
+            "userinfo_endpoint": self.USER_INFO_URL,
+            "response_types_supported": [
+                "code",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token",
+            ],
+            "jwks_uri": self.JWKS_URL,
+            "id_token_signing_alg_values_supported": ["HS256", "RS256"],
+            "subject_types_supported": ["public"],
+        }
+
+        # We need to run the social_auth_test procedure with a mock response set up for the
+        # OIDC discovery endpoint as that's the first thing requested by the server when a user
+        # starts trying to authenticate.
+        with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
+            requests_mock.add(
+                requests_mock.GET,
+                f"{self.BASE_OIDC_URL}/.well-known/openid-configuration",
+                match_querystring=False,
+                status=200,
+                body=json.dumps(idp_discovery_endpoint_payload_dict),
+            )
+            result = super().social_auth_test(*args, **kwargs)
+
+        return result
+
+    def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        # Trying to generate a (access_token, id_token) pair here in tests that would
+        # successfully pass validation by validate_and_return_id_token is impractical
+        # and unnecessary (see python-social-auth implementation of the method for
+        # how the validation works).
+        # We can simply mock the method to make it succeed and return an empty dict, because
+        # the return value is not used for anything.
+        with mock.patch.object(
+            GenericOpenIdConnectBackend, "validate_and_return_id_token", return_value={}
+        ):
+            return super().social_auth_test_finish(*args, **kwargs)
+
+    def register_extra_endpoints(
+        self,
+        requests_mock: responses.RequestsMock,
+        account_data_dict: Dict[str, str],
+        **extra_data: Any,
+    ) -> None:
+        requests_mock.add(
+            requests_mock.GET,
+            self.JWKS_URL,
+            status=200,
+            json=json.loads(settings.EXAMPLE_JWK),
+        )
+
+    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+        return json.dumps(
+            {
+                "access_token": "foobar",
+                "expires_in": time.time() + 60 * 5,
+                "id_token": "abcd1234",
+                "token_type": "bearer",
+            }
+        )
+
+    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+        return dict(
+            email=email,
+            name=name,
+            nickname="somenickname",
+            given_name=name.split(" ")[0],
+            family_name=name.split(" ")[1],
+        )
+
+    def test_social_auth_no_key(self) -> None:
+        """
+        Requires overriding because client key/secret are configured
+        in a different way than default for social auth backends.
+        """
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+
+        mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idp_config_dict = list(mock_oidc_setting_dict.values())[0]
+        del idp_config_dict["client_id"]
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
+            result = self.social_auth_test(
+                account_data_dict, subdomain="zulip", next="/user_uploads/image"
+            )
+            self.assert_in_success_response(["Configuration error", "OpenID Connect"], result)
+
+    def test_too_many_idps(self) -> None:
+        """
+        Only one IdP is supported for now.
+        """
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+
+        mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idp_config_dict = list(mock_oidc_setting_dict.values())[0]
+        mock_oidc_setting_dict["secondprovider"] = idp_config_dict
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
+            result = self.social_auth_test(
+                account_data_dict, subdomain="zulip", next="/user_uploads/image"
+            )
+            self.assert_in_success_response(["Configuration error", "OpenID Connect"], result)
+
+    def test_config_error_development(self) -> None:
+        """
+        This test is redundant for now, as test_social_auth_no_key already
+        tests this basic case, since this backend doesn't yet have more
+        comprehensive config_error pages.
+        """
+        return
+
+    def test_config_error_production(self) -> None:
+        """
+        This test is redundant for now, as test_social_auth_no_key already
+        tests this basic case, since this backend doesn't yet have more
+        comprehensive config_error pages.
+        """
+        return
 
 
 class GitHubAuthBackendTest(SocialAuthBase):
@@ -3401,7 +3577,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
         )
@@ -3442,7 +3618,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     def test_google_auth_enabled(self) -> None:
@@ -4525,7 +4701,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
@@ -4574,7 +4750,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
@@ -4944,7 +5120,7 @@ class ZulipLDAPTestCase(ZulipTestCase):
 class TestLDAP(ZulipLDAPTestCase):
     def test_generate_dev_ldap_dir(self) -> None:
         ldap_dir = generate_dev_ldap_dir("A", 10)
-        self.assertEqual(len(ldap_dir), 10)
+        self.assert_length(ldap_dir, 10)
         regex = re.compile(
             r"(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)"
         )
@@ -4956,14 +5132,14 @@ class TestLDAP(ZulipLDAPTestCase):
             )
 
         ldap_dir = generate_dev_ldap_dir("b", 9)
-        self.assertEqual(len(ldap_dir), 9)
+        self.assert_length(ldap_dir, 9)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
             self.assertCountEqual(list(value.keys()), [*common_attrs, "uid", "jpegPhoto"])
 
         ldap_dir = generate_dev_ldap_dir("c", 8)
-        self.assertEqual(len(ldap_dir), 8)
+        self.assert_length(ldap_dir, 8)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
@@ -5754,7 +5930,7 @@ class TestQueryLDAP(ZulipLDAPTestCase):
             }
         ):
             values = query_ldap(self.example_email("hamlet"))
-        self.assertEqual(len(values), 4)
+        self.assert_length(values, 4)
         self.assertIn("full_name: King Hamlet", values)
         self.assertIn("avatar: (An avatar image file)", values)
         self.assertIn("custom_profile_field__birthday: 1900-09-08", values)
@@ -5766,7 +5942,7 @@ class TestQueryLDAP(ZulipLDAPTestCase):
             # This will look up the user by email in our test dictionary,
             # should successfully find hamlet's LDAP entry.
             values = query_ldap(self.example_email("hamlet"))
-        self.assertEqual(len(values), 2)
+        self.assert_length(values, 2)
         self.assertIn("full_name: King Hamlet", values)
         self.assertIn("email: hamlet@zulip.com", values)
 

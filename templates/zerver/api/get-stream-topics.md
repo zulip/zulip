@@ -1,4 +1,4 @@
-# Get topics in a stream
+{generate_api_title(/users/me/{stream_id}/topics:get)}
 
 {generate_api_description(/users/me/{stream_id}/topics:get)}
 

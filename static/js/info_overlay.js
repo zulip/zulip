@@ -195,8 +195,8 @@ export function set_up_toggler() {
         keydown_util.handle({
             elem: modal,
             handlers: {
-                left_arrow: toggler.maybe_go_left,
-                right_arrow: toggler.maybe_go_right,
+                ArrowLeft: toggler.maybe_go_left,
+                ArrowRight: toggler.maybe_go_right,
             },
         });
     }

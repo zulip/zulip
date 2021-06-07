@@ -1,4 +1,4 @@
-# Render message
+{generate_api_title(/messages/render:post)}
 
 {generate_api_description(/messages/render:post)}
 

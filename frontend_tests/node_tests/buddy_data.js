@@ -505,11 +505,14 @@ test("user_last_seen_time_status", (override) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
     page_params.realm_is_zephyr_mirror_realm = true;
-    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "translated: Unknown");
+    assert.equal(
+        buddy_data.user_last_seen_time_status(old_user.user_id),
+        "translated: Last active: translated: Unknown",
+    );
     page_params.realm_is_zephyr_mirror_realm = false;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: More than 2 weeks ago",
+        "translated: Last active: translated: More than 2 weeks ago",
     );
 
     override(presence, "last_active_date", (user_id) => {
@@ -522,7 +525,13 @@ test("user_last_seen_time_status", (override) => {
         return "May 12";
     });
 
-    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "May 12");
+    assert.equal(
+        buddy_data.user_last_seen_time_status(old_user.user_id),
+        "translated: Last active: May 12",
+    );
+
+    set_presence(selma.user_id, "idle");
+    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
 test("get_items_for_users", () => {

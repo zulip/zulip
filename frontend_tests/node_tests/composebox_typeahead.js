@@ -421,6 +421,20 @@ test("content_typeahead_selected", (override) => {
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = "@back";
+    fake_this.token = "back";
+    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    });
+    expected_value = "@*Backend* ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "@*back";
+    fake_this.token = "back";
+    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    expected_value = "@*Backend* ";
+    assert.equal(actual_value, expected_value);
+
     // silent mention
     fake_this.completing = "silent_mention";
     function unexpected_warn() {
@@ -454,18 +468,18 @@ test("content_typeahead_selected", (override) => {
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
-    fake_this.query = "@back";
+    fake_this.query = "@_back";
     fake_this.token = "back";
     with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     });
-    expected_value = "@*Backend* ";
+    expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
 
-    fake_this.query = "@*back";
+    fake_this.query = "@_*back";
     fake_this.token = "back";
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
-    expected_value = "@*Backend* ";
+    expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/m";
@@ -743,12 +757,12 @@ test("initialize", (override) => {
         assert.equal(matcher(query, deactivated_user), true);
 
         function sorter(query, people) {
-            return typeahead_helper.sort_recipients(
-                people,
+            return typeahead_helper.sort_recipients({
+                users: people,
                 query,
-                compose_state.stream_name(),
-                compose_state.topic(),
-            );
+                current_stream: compose_state.stream_name(),
+                current_topic: compose_state.topic(),
+            });
         }
 
         // The sorter's output has the items that match the query from the
@@ -985,7 +999,7 @@ test("initialize", (override) => {
     // handle_keydown()
     let event = {
         type: "keydown",
-        keyCode: 13,
+        key: "Enter",
         target: {
             id: "stream_message_recipient_stream",
         },
@@ -1002,8 +1016,7 @@ test("initialize", (override) => {
     $("#compose-textarea").data = stub_typeahead_hidden;
     $("form#send_message_form").trigger(event);
 
-    event.keyCode = undefined;
-    event.which = 9;
+    event.key = "Tab";
     event.shiftKey = false;
     event.target.id = "subject";
     $("form#send_message_form").trigger(event);
@@ -1023,7 +1036,7 @@ test("initialize", (override) => {
     });
     $("#compose-textarea").caret = noop;
 
-    event.keyCode = 13;
+    event.key = "Enter";
     event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
@@ -1054,13 +1067,13 @@ test("initialize", (override) => {
     event.target.id = "private_message_recipient";
     $("form#send_message_form").trigger(event);
 
-    event.keyCode = 42;
+    event.key = "a";
     $("form#send_message_form").trigger(event);
 
     // handle_keyup()
     event = {
         type: "keydown",
-        keyCode: 13,
+        key: "Enter",
         target: {
             id: "stream_message_recipient_stream",
         },
@@ -1072,11 +1085,10 @@ test("initialize", (override) => {
     $("#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";
     $("form#send_message_form").trigger(event);
-    event.keyCode = undefined;
-    event.which = 9;
+    event.key = "Tab";
     event.shiftKey = false;
     $("form#send_message_form").trigger(event);
-    event.keyCode = 42;
+    event.key = "a";
     $("form#send_message_form").trigger(event);
 
     // select_on_focus()
@@ -1431,7 +1443,7 @@ test("filter_and_sort_mentions (silent)", () => {
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, [alice, hal]);
+    assert.deepEqual(suggestions, [alice, hal, call_center]);
 });
 
 test("typeahead_results", () => {
@@ -1561,7 +1573,6 @@ test("muted users excluded from results", () => {
     // mentions typeaheads, so we need only test once.
     let results;
     const opts = {
-        want_groups: false,
         want_broadcast: true,
     };
 
@@ -1574,7 +1585,8 @@ test("muted users excluded from results", () => {
     results = ct.get_person_suggestions("corde", opts);
     assert.deepEqual(results, []);
 
-    // Make sure our muting logic doesn't break wildcard mentions.
+    // Make sure our muting logic doesn't break wildcard mentions
+    // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
-    assert.deepEqual(results, [mention_all]);
+    assert.deepEqual(results, [mention_all, call_center]);
 });

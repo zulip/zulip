@@ -1163,7 +1163,7 @@ export class MessageListView {
         header.replaceWith(rendered_recipient_row);
     }
 
-    _rerender_message(message_container, message_content_edited, is_revealed) {
+    _rerender_message(message_container, {message_content_edited, is_revealed}) {
         const row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
@@ -1183,7 +1183,18 @@ export class MessageListView {
 
     reveal_hidden_message(message_id) {
         const message_container = this.message_containers.get(message_id);
-        this._rerender_message(message_container, false, true);
+        this._rerender_message(message_container, {
+            message_content_edited: false,
+            is_revealed: true,
+        });
+    }
+
+    hide_revealed_message(message_id) {
+        const message_container = this.message_containers.get(message_id);
+        this._rerender_message(message_container, {
+            message_content_edited: false,
+            is_revealed: false,
+        });
     }
 
     rerender_messages(messages, message_content_edited) {
@@ -1207,7 +1218,7 @@ export class MessageListView {
                 message_groups.push(current_group);
                 current_group = [];
             }
-            this._rerender_message(message_container, message_content_edited);
+            this._rerender_message(message_container, {message_content_edited, is_revealed: false});
         }
 
         if (current_group.length !== 0) {

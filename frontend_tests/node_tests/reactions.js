@@ -909,12 +909,7 @@ test("process_reaction_click", (override) => {
     const message = {...sample_message};
     override(message_store, "get", () => message);
 
-    let expected_reaction_info = {
-        reaction_type: "unicode_emoji",
-        emoji_code: "1f3b1",
-    };
-
-    expected_reaction_info = {
+    const expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_name: "smile",
         emoji_code: "1f642",

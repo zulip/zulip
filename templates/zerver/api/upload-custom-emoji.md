@@ -1,4 +1,4 @@
-# Upload custom emoji
+{generate_api_title(/realm/emoji/{emoji_name}:post)}
 
 {generate_api_description(/realm/emoji/{emoji_name}:post)}
 
@@ -32,8 +32,8 @@ handles emoji).
 ## Maximum file size
 
 The maximum file size for uploads can be configured by the
-administrator of the Zulip server by setting `MAX_EMOJI_FILE_SIZE`
-in the [server's settings][1]. `MAX_EMOJI_FILE_SIZE` defaults
+administrator of the Zulip server by setting `MAX_EMOJI_FILE_SIZE_MIB`
+in the [server's settings][1]. `MAX_EMOJI_FILE_SIZE_MIB` defaults
 to 5MB.
 
 [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings

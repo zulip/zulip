@@ -289,7 +289,7 @@ function compose_not_subscribed_error(error_html, bad_input) {
 
 export function clear_compose_box() {
     $("#compose-textarea").val("").trigger("focus");
-    drafts.delete_draft_after_send();
+    drafts.delete_active_draft();
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop("disabled", false);
@@ -821,10 +821,14 @@ export function validate() {
 }
 
 export function handle_keydown(event, textarea) {
-    const code = event.keyCode || event.which;
-    const isBold = code === 66;
-    const isItalic = code === 73 && !event.shiftKey;
-    const isLink = code === 76 && event.shiftKey;
+    // The event.key property will have uppercase letter if
+    // the "Shift + <key>" combo was used or the Caps Lock
+    // key was on. We turn to key to lowercase so the keybindings
+    // work regardless of whether Caps Lock was on or not.
+    const key = event.key.toLowerCase();
+    const isBold = key === "b";
+    const isItalic = key === "i" && !event.shiftKey;
+    const isLink = key === "l" && event.shiftKey;
 
     // detect Cmd and Ctrl key
     const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
@@ -1086,7 +1090,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
     }
 }
 
-export function initialize() {
+export function render_compose_box() {
     const $compose = $("#compose");
     $compose.append(
         render_compose({
@@ -1095,6 +1099,10 @@ export function initialize() {
             giphy_enabled: giphy.is_giphy_enabled(),
         }),
     );
+}
+
+export function initialize() {
+    render_compose_box();
 
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
