@@ -5,6 +5,7 @@
 # definitions and validate that Zulip's implementation matches what is
 # described in our documentation.
 
+import json
 import os
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -206,6 +207,47 @@ def get_schema(endpoint: str, method: str, status_code: str) -> Dict[str, Any]:
 def get_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> Dict[str, Any]:
     """Fetch a fixture from the full spec object."""
     return get_schema(endpoint, method, status_code)["example"]
+
+
+def get_openapi_fixture_description(endpoint: str, method: str, status_code: str = "200") -> str:
+    """Fetch a fixture from the full spec object."""
+    return get_schema(endpoint, method, status_code)["description"]
+
+
+def generate_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> List[str]:
+    """Generate fixture to be rendered"""
+    fixture = []
+    if status_code not in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]:
+        subschema_count = 0
+    elif (
+        "oneOf"
+        in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+            "content"
+        ]["application/json"]["schema"]
+    ):
+        subschema_count = len(
+            openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+                "content"
+            ]["application/json"]["schema"]["oneOf"]
+        )
+    else:
+        subschema_count = 1
+    for subschema_index in range(subschema_count):
+        if subschema_count != 1:
+            subschema_status_code = status_code + "_" + str(subschema_index)
+        else:
+            subschema_status_code = status_code
+        fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
+        fixture_description = (
+            get_openapi_fixture_description(endpoint, method, subschema_status_code).strip() + ":"
+        )
+        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(",", ": "))
+
+        fixture.extend(fixture_description.splitlines())
+        fixture.append("``` json")
+        fixture.extend(fixture_json.splitlines())
+        fixture.append("```")
+    return fixture
 
 
 def get_openapi_description(endpoint: str, method: str) -> str:
