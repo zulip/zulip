@@ -7273,18 +7273,18 @@ def try_add_realm_default_custom_profile_field(
     realm: Realm, field_subtype: str
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
-    field = CustomProfileField(
+    custom_profile_field = CustomProfileField(
         realm=realm,
         name=field_data["name"],
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
         hint=field_data["hint"],
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
     )
-    field.save()
-    field.order = field.id
-    field.save(update_fields=["order"])
+    custom_profile_field.save()
+    custom_profile_field.order = custom_profile_field.id
+    custom_profile_field.save(update_fields=["order"])
     notify_realm_custom_profile_fields(realm)
-    return field
+    return custom_profile_field
 
 
 def try_add_realm_custom_profile_field(
@@ -7294,19 +7294,19 @@ def try_add_realm_custom_profile_field(
     hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
 ) -> CustomProfileField:
-    field = CustomProfileField(realm=realm, name=name, field_type=field_type)
-    field.hint = hint
+    custom_profile_field = CustomProfileField(realm=realm, name=name, field_type=field_type)
+    custom_profile_field.hint = hint
     if (
-        field.field_type == CustomProfileField.SELECT
-        or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
+        custom_profile_field.field_type == CustomProfileField.SELECT
+        or custom_profile_field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
-        field.field_data = orjson.dumps(field_data or {}).decode()
+        custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
-    field.save()
-    field.order = field.id
-    field.save(update_fields=["order"])
+    custom_profile_field.save()
+    custom_profile_field.order = custom_profile_field.id
+    custom_profile_field.save(update_fields=["order"])
     notify_realm_custom_profile_fields(realm)
-    return field
+    return custom_profile_field
 
 
 def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField) -> None:
@@ -7342,13 +7342,13 @@ def try_update_realm_custom_profile_field(
 
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
-    fields = CustomProfileField.objects.filter(realm=realm)
-    for field in fields:
-        if field.id not in order_mapping:
+    custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
+    for custom_profile_field in custom_profile_fields:
+        if custom_profile_field.id not in order_mapping:
             raise JsonableError(_("Invalid order mapping."))
-    for field in fields:
-        field.order = order_mapping[field.id]
-        field.save(update_fields=["order"])
+    for custom_profile_field in custom_profile_fields:
+        custom_profile_field.order = order_mapping[custom_profile_field.id]
+        custom_profile_field.save(update_fields=["order"])
     notify_realm_custom_profile_fields(realm)
 
 
@@ -7372,21 +7372,23 @@ def do_update_user_custom_profile_data_if_changed(
     data: List[Dict[str, Union[int, str, List[int]]]],
 ) -> None:
     with transaction.atomic():
-        for field in data:
+        for custom_profile_field in data:
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
-                user_profile=user_profile, field_id=field["id"]
+                user_profile=user_profile, field_id=custom_profile_field["id"]
             )
 
-            if not created and field_value.value == str(field["value"]):
+            if not created and field_value.value == str(custom_profile_field["value"]):
                 # If the field value isn't actually being changed to a different one,
                 # we have nothing to do here for this field.
                 # Note: field_value.value is a TextField() so we need to cast field['value']
                 # to a string for the comparison in this if.
                 continue
 
-            field_value.value = field["value"]
+            field_value.value = custom_profile_field["value"]
             if field_value.field.is_renderable():
-                field_value.rendered_value = render_stream_description(str(field["value"]))
+                field_value.rendered_value = render_stream_description(
+                    str(custom_profile_field["value"])
+                )
                 field_value.save(update_fields=["value", "rendered_value"])
             else:
                 field_value.save(update_fields=["value"])
@@ -7403,12 +7405,19 @@ def do_update_user_custom_profile_data_if_changed(
 
 def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:
     try:
-        field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
-        field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
+        custom_profile_field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
+        field_value = CustomProfileFieldValue.objects.get(
+            field=custom_profile_field, user_profile=user_profile
+        )
         field_value.delete()
         notify_user_update_custom_profile_data(
             user_profile,
-            {"id": field_id, "value": None, "rendered_value": None, "type": field.field_type},
+            {
+                "id": field_id,
+                "value": None,
+                "rendered_value": None,
+                "type": custom_profile_field.field_type,
+            },
         )
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
