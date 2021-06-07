@@ -37,6 +37,7 @@ cp -a \
     tools/ci/success-http-headers.template.debian.txt \
     tools/ci/production-install \
     tools/ci/production-verify \
+    tools/ci/production-upgrade \
     tools/ci/production-upgrade-pg \
     tools/ci/production-extract-tarball \
     tools/ci/send-failure-message \
