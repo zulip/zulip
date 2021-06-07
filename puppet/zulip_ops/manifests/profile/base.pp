@@ -42,9 +42,6 @@ class zulip_ops::profile::base {
     require => Package['linux-image-virtual'],
   }
 
-  # Add system users here
-  $users = []
-
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure => file,
     mode   => '0644',
