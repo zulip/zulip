@@ -6,7 +6,9 @@
     <a class="invite-user-link" href="#invite"><i class="fa fa-user-plus" aria-hidden="true"></i>{{t "Invite more users" }}</a>
     {{/if}}
     <div>
-        <h3 class="inline-block">{{t "Invites" }}</h3>
+        <h3 class="inline-block">{{t "Invites" }}
+            {{> ../help_link_widget link="/help/invite-new-users" }}
+        </h3>
         <input type="text" class="search" placeholder="{{t 'Filter invites' }}" aria-label="{{t 'Filter invites' }}"/>
         <div class="alert-notification" id="invites-field-status"></div>
     </div>

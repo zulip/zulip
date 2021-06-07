@@ -1,5 +1,7 @@
 <div id="admin-user-list" class="settings-section" data-name="user-list-admin">
-    <h3 class="inline-block">{{t "Users" }}</h3>
+    <h3 class="inline-block">{{t "Users" }}
+        {{> ../help_link_widget link="/help/change-a-users-role" }}
+    </h3>
 
     <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
     <div class="alert-notification" id="user-field-status"></div>

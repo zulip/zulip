@@ -13,7 +13,9 @@
     <form id="create_alert_word_form" class="form-horizontal">
         <div class="add-new-alert-word-box grey-box">
             <div class="new-alert-word-form">
-                <h4 class="new-alert-word-section-title settings-section-title no-padding">{{t "Add a new alert word"}}</h4>
+                <h4 class="new-alert-word-section-title settings-section-title no-padding">{{t "Add a new alert word"}}
+                    {{> ../help_link_widget link="/help/add-an-alert-word" }}
+                </h4>
                 <div class="new-alert-word-form">
                     <div class="input-group">
                         <label for="create_alert_word_name">{{t "New alert word" }}</label>

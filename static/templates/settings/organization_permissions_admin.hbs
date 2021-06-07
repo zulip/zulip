@@ -3,7 +3,9 @@
 
         <div id="org-org-join" class="org-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Joining the organization" }}</h3>
+                <h3>{{t "Joining the organization" }}
+                    {{> ../help_link_widget link="/help/join-a-zulip-organization" }}
+                </h3>
                 {{> settings_save_discard_widget section_name="org-join" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">

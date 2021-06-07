@@ -3,7 +3,9 @@
         <div id="user-lang-settings">
             <!-- this is inline block so that the alert notification can sit beside
             it. If there's not an alert, don't make it inline-block. -->
-            <h3 class="inline-block">{{t "Language settings" }}</h3>
+            <h3 class="inline-block">{{t "Language settings" }}
+                {{> ../help_link_widget link="/help/change-your-language" }}
+            </h3>
             <div class="alert-notification" id="language-settings-status"></div>
 
             <div class="input-group">

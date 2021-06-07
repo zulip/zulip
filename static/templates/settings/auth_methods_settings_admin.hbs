@@ -5,7 +5,9 @@
     <form class="form-horizontal admin-realm-form org-authentications-form">
         <div id="org-auth_settings" class="admin-table-wrapper org-subsection-parent">
             <div class ="subsection-header">
-                <h3>{{t "Authentication methods" }}</h3>
+                <h3>{{t "Authentication methods" }}
+                    {{> ../help_link_widget link="/help/configure-authentication-methods" }}
+                </h3>
                 {{> settings_save_discard_widget section_name="auth_settings" }}
             </div>
 

@@ -8,7 +8,9 @@
     <form class="form-horizontal admin-emoji-form {{#unless can_add_emojis}}hide{{/unless}}">
         <div class="add-new-emoji-box grey-box">
             <div class="new-emoji-form">
-                <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}</div>
+                <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}
+                    {{> ../help_link_widget link="/help/add-custom-emoji" }}
+                </div>
                 <div class="alert" id="admin-emoji-status"></div>
                 <div class="inline-block">
                     <label for="emoji_name">{{t "Emoji name" }}</label>

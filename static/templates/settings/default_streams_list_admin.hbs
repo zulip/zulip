@@ -8,7 +8,9 @@
         <div class="add-new-default-stream-box grey-box">
             <div class="wrapper">
                 <div class="alert" id="admin-default-stream-status"></div>
-                <div class="settings-section-title">{{t "Add new default stream" }}</div>
+                <div class="settings-section-title">{{t "Add new default stream" }}
+                    {{> ../help_link_widget link="/help/set-default-streams-for-new-users" }}
+                </div>
                 <div class="inline-block" id="default_stream_inputs">
                     <label for="default_stream_name">{{t "Stream name" }}</label>
                     <input class="create_default_stream" type="text" placeholder="{{t 'Stream name' }}" name="stream_name" autocomplete="off" />

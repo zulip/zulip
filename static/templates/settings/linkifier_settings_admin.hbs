@@ -45,7 +45,9 @@
         <form class="form-horizontal admin-linkifier-form">
             <div class="add-new-linkifier-box grey-box">
                 <div class="new-linkifier-form wrapper">
-                    <div class="settings-section-title new-linkifier-section-title">{{t "Add a new linkifier" }}</div>
+                    <div class="settings-section-title new-linkifier-section-title">{{t "Add a new linkifier" }}
+                        {{> ../help_link_widget link="/help/add-a-custom-linkifier" }}
+                    </div>
                     <div class="alert" id="admin-linkifier-status"></div>
                     <div class="control-group">
                         <label for="linkifier_pattern" class="control-label">{{t "Pattern" }}</label>

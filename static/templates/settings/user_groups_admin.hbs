@@ -18,7 +18,9 @@
         <form class="form-horizontal admin-user-group-form">
             <div class="add-new-user-group-box grey-box">
                 <div class="new-user-group-form">
-                    <div class="settings-section-title new-user-group-section-title no-padding">{{t "Add a new user group" }}</div>
+                    <div class="settings-section-title new-user-group-section-title no-padding">{{t "Add a new user group" }}
+                        {{> ../help_link_widget link="/help/user-groups" }}
+                    </div>
                     <div class="alert" id="admin-user-group-status"></div>
                     <div class="inline-block">
                         <label for="user_group_name">{{t "Name" }}</label>
