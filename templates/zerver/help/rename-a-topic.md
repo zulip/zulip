@@ -6,7 +6,7 @@ stream to another, or move a subset of messages to a topic from one
 stream to another.
 
 Organization administrators can
-[turn off community topic editing](/help/community-topic-edits), or turn off
+[configure who can edit topics](/help/configure-who-can-edit-topics), or turn off
 message editing entirely. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.

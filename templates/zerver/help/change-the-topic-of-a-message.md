@@ -5,7 +5,7 @@ keeping messages organized even if some users are still learning how to use
 topics effectively.
 
 Organization administrators can
-[turn off community topic editing](/help/community-topic-edits), or turn off
+[configure who can edit topics](/help/configure-who-can-edit-topics), or turn off
 message editing entirely. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.

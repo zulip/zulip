@@ -102,7 +102,7 @@ expert teaching other users how to use Zulip.
   exclusively **for at least a week** to make an effective trial;
   stragglers will result in everyone having a bad experience.
 
-* If [community topic edits](/help/community-topic-edits) are enabled,
+* If [everyone is allowed to edit topics](/help/configure-who-can-edit-topics),
   encourage a few people to help rename topics for the first few days, while
   everyone is still getting used to the new conversation model.
 
