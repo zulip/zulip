@@ -25,15 +25,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/messages/{message_id}:delete|fixture(200)}
 
-An example JSON response for when the specified message does not exist:
-
-{generate_code_example|/messages/{message_id}:delete|fixture(400_0)}
-
-An example JSON response for when the user making the query does not
-have permission to delete the message:
-
-{generate_code_example|/messages/{message_id}:delete|fixture(400_1)}
+{generate_code_example|/messages/{message_id}:delete|fixture(400)}

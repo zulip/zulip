@@ -38,22 +38,6 @@ the `principals` parameter, like so:
 
 #### Example response
 
-A typical successful JSON response may look like:
+{generate_code_example|/users/me/subscriptions:post|fixture(200)}
 
-{generate_code_example|/users/me/subscriptions:post|fixture(200_0)}
-
-A typical successful JSON response when the user is already subscribed to
-the streams specified:
-
-{generate_code_example|/users/me/subscriptions:post|fixture(200_1)}
-
-A typical response for when the requesting user does not have access to
-a private stream and `authorization_errors_fatal` is `True`:
-
-{generate_code_example|/users/me/subscriptions:post|fixture(400_0)}
-
-
-A typical response for when the requesting user does not have access to
-a private stream and `authorization_errors_fatal` is `False`:
-
-{generate_code_example|/users/me/subscriptions:post|fixture(400_1)}
+{generate_code_example|/users/me/subscriptions:post|fixture(400)}

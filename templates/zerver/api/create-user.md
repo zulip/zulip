@@ -33,11 +33,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users:post|fixture(200)}
-
-A typical JSON response for when another user with the same
-email address already exists in the realm:
 
 {generate_code_example|/users:post|fixture(400)}

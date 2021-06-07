@@ -38,11 +38,6 @@ You only have permission to edit a message if:
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/messages/{message_id}:patch|fixture(200)}
-
-A typical JSON response for when one doesn't have the permission to
-edit a particular message:
 
 {generate_code_example|/messages/{message_id}:patch|fixture(400)}

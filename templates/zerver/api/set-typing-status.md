@@ -29,6 +29,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/typing:post|fixture(200)}
+
+{generate_code_example|/typing:post|fixture(400)}

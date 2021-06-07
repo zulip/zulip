@@ -33,6 +33,6 @@ You may pass the `client_gravatar` or `include_custom_profile_fields` query para
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/{user_id}:get|fixture(200)}
+
+{generate_code_example|/users/{user_id}:get|fixture(400)}

@@ -39,6 +39,6 @@ response, for two reasons:
 
 #### Example response
 
-A typical successful JSON response for a single-organization server may look like:
-
 {generate_code_example|/server_settings:get|fixture(200)}
+
+{generate_code_example|/server_settings:get|fixture(400)}

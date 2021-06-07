@@ -37,10 +37,6 @@ was edited, `prev_content`, `prev_rendered_content`, and
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/messages/{message_id}/history:get|fixture(200)}
-
-An example JSON response for when the specified message does not exist:
 
 {generate_code_example|/messages/{message_id}/history:get|fixture(400)}

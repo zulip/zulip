@@ -23,10 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/user_groups/{user_group_id}:patch|fixture(200)}
-
-An example JSON response when the user group ID is invalid:
 
 {generate_code_example|/user_groups/{user_group_id}:patch|fixture(400)}

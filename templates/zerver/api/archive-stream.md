@@ -25,10 +25,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/streams/{stream_id}:delete|fixture(200)}
-
-An example JSON response for when the supplied stream does not exist:
 
 {generate_code_example|/streams/{stream_id}:delete|fixture(400)}

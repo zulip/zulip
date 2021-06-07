@@ -33,11 +33,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/me/{stream_id}/topics:get|fixture(200)}
-
-An example JSON response for when the user is attempting to fetch the topics
-of a non-existing stream (or also a private stream they don't have access to):
 
 {generate_code_example|/users/me/{stream_id}/topics:get|fixture(400)}

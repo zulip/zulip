@@ -28,6 +28,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/realm/profile_fields:patch|fixture(200)}
+
+{generate_code_example|/realm/profile_fields:patch|fixture(400)}
