@@ -19,8 +19,8 @@ from markdown.preprocessors import Preprocessor
 
 import zerver.openapi.python_examples
 from zerver.openapi.openapi import (
+    generate_openapi_fixture,
     get_openapi_description,
-    get_openapi_fixture,
     get_openapi_summary,
     openapi_spec,
 )
@@ -443,17 +443,8 @@ class APICodeExamplesPreprocessor(Preprocessor):
         return lines
 
     def render_fixture(self, function: str, name: Optional[str] = None) -> List[str]:
-        fixture = []
-
         path, method = function.rsplit(":", 1)
-        fixture_dict = get_openapi_fixture(path, method, name)
-        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(",", ": "))
-
-        fixture.append("``` json")
-        fixture.extend(fixture_json.splitlines())
-        fixture.append("```")
-
-        return fixture
+        return generate_openapi_fixture(path, method, name)
 
 
 class APIDescriptionPreprocessor(Preprocessor):
