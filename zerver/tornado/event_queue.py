@@ -42,7 +42,6 @@ from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
-from zerver.models import UserProfile
 from zerver.tornado.autoreload import add_reload_hook
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
@@ -1158,7 +1157,7 @@ def process_message_update_event(
 
 
 def maybe_enqueue_notifications_for_message_update(
-    user_profile_id: UserProfile,
+    user_profile_id: int,
     message_id: int,
     private_message: bool,
     mentioned: bool,
