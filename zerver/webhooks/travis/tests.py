@@ -8,6 +8,11 @@ class TravisHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = "travis"
     TOPIC = "builds"
+    EXPECTED_MESSAGE = """
+Author: josh_mandel
+Build status: Passed :thumbs_up:
+Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
+""".strip()
 
     def test_travis_message(self) -> None:
         """
@@ -16,17 +21,11 @@ class TravisHookTests(WebhookTestCase):
         The subject describes the repo and Stash "project". The
         content describes the commits pushed.
         """
-        expected_message = (
-            "Author: josh_mandel\nBuild status: Passed :thumbs_up:\n"
-            "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
-            "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
-            "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"
-        )
 
         self.check_webhook(
             "build",
             self.TOPIC,
-            expected_message,
+            self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -43,17 +42,11 @@ class TravisHookTests(WebhookTestCase):
 
     def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
         self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
-        expected_message = (
-            "Author: josh_mandel\nBuild status: Passed :thumbs_up:\n"
-            "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
-            "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
-            "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"
-        )
 
         self.check_webhook(
             "pull_request",
             self.TOPIC,
-            expected_message,
+            self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
