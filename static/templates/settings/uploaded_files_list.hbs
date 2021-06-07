@@ -19,15 +19,13 @@
     </td>
     <td>{{ size_str }}</td>
     <td class="actions">
-        <span class="edit-attachment-buttons">
-            <a type="submit" href="/user_uploads/{{path_id}}" class="btn no-style" title="{{t 'Download file' }}" id="download_attachment" download>
+        <span class="edit-attachment-buttons tippy-zulip-tooltip" data-tippy-content="{{t 'Download file' }}" data-tippy-placement="top" aria-label="{{t 'Download file' }}">
+            <a type="submit" href="/user_uploads/{{path_id}}" class="btn" id="download_attachment" download>
                 <i class="fa fa-download sea-green" aria-hidden="true"></i>
             </a>
         </span>
-        <span class="edit-attachment-buttons">
-            <button type="submit"
-              class="button small no-style remove-attachment"
-              title="{{t 'Delete file' }}" data-attachment="{{id}}">
+        <span class="edit-attachment-buttons tippy-zulip-tooltip" data-tippy-content="{{t 'Delete file' }}" data-tippy-placement="top" aria-label="{{t 'Delete file' }}">
+            <button type="submit" class="button small no-style remove-attachment" data-attachment="{{id}}">
                 <i class="fa fa-trash-o" aria-hidden="true"></i>
             </button>
         </span>

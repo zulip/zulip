@@ -8,11 +8,11 @@
     </td>
     {{#if ../can_modify}}
     <td class="no-select actions">
-        <button class="button small edit btn-warning" data-linkifier-id="{{id}}" title="{{t 'Edit' }}" aria-label="{{t 'Edit' }}">
-            <i class="fa fa-pencil"></i>
+        <button class="button small edit btn-warning tippy-zulip-tooltip" data-linkifier-id="{{id}}" data-tippy-content="{{t 'Edit' }}" data-tippy-placement="top" aria-label="{{t 'Edit' }}">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>
-        <button class="button small delete btn-danger" data-linkifier-id="{{id}}" title="{{t 'Delete' }}" aria-label="{{t 'Delete' }}">
-            <i class="fa fa-trash-o"></i>
+        <button class="button small delete btn-danger tippy-zulip-tooltip" data-linkifier-id="{{id}}" data-tippy-content="{{t 'Delete' }}" data-tippy-placement="top" aria-label="{{t 'Delete' }}">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </td>
     {{/if}}

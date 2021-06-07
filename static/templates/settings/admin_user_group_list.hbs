@@ -9,11 +9,11 @@
             <img class="checkmark" src="/static/images/checkbox-green.svg" />
             {{t 'Saved' }}
         </button>
-        <button class="button save-status btn-danger small">
-            <i class="fa fa-undo" aria-label="{{t 'Delete' }}" title="{{t 'Delete' }}"></i>
+        <button class="button save-status btn-danger small tippy-zulip-tooltip" data-tippy-content="{{t 'Undo' }}" data-tippy-placement="top" aria-label="{{t 'Undo' }}">
+            <i class="fa fa-undo" aria-hidden="true"></i>
         </button>
-        <button class="button rounded small delete btn-danger">
-            <i class="fa fa-trash-o" aria-label="{{t 'Delete' }}" title="{{t 'Delete' }}"></i>
+        <button class="button rounded small delete btn-danger tippy-zulip-tooltip" data-tippy-content="{{t 'Delete' }}" data-tippy-placement="top" aria-label="{{t 'Delete' }}">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </h4>
     <p class="subscribers">{{t 'Subscribers' }}</p>

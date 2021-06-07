@@ -1,7 +1,9 @@
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}">
     <td>
         <span class="user_name" >{{full_name}} {{#if is_current_user}}<span class="my_user_status">{{t '(you)' }}</span>{{/if}}</span>
-        <i class="fa fa-ban deactivated-user-icon" title="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
+        <span class="tippy-zulip-tooltip" {{#if is_active}}style="display: none;"{{/if}} data-tippy-content="{{t 'User is deactivated' }}" aria-label="{{t 'User is deactivated' }}">
+            <i class="fa fa-ban deactivated-user-icon" aria-hidden="true"></i>
+        </span>
     </td>
     {{#if display_email}}
     <td>
@@ -34,15 +36,15 @@
     {{#if can_modify}}
     <td class="actions">
         <span class="user-status-settings">
-            <button class="button rounded small btn-warning open-user-form" {{#unless is_active}}style="display: none;"{{/unless}} title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
+            <button class="button rounded small btn-warning open-user-form tippy-zulip-tooltip" {{#unless is_active}}style="display: none;"{{/unless}} data-user-id="{{user_id}}" data-tippy-content="{{t 'Edit user' }}" data-tippy-placement="top" aria-label="{{t 'Edit user' }}">
                 <i class="fa fa-pencil" aria-hidden="true"></i>
             </button>
             {{#if is_active}}
-            <button title="{{t 'Deactivate' }}" class="button rounded small deactivate btn-danger" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
+            <button class="button rounded small deactivate btn-danger tippy-zulip-tooltip" {{#if cannot_deactivate}}disabled="disabled"{{/if}} data-tippy-content="{{t 'Deactivate user' }}" data-tippy-placement="top" aria-label="{{t 'Deactivate user' }}">
                 <i class="fa fa-user-times" aria-hidden="true"></i>
             </button>
             {{else}}
-            <button title="{{t 'Reactivate' }}" class="button rounded small reactivate btn-warning">
+            <button class="button rounded small reactivate btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Reactivate user' }}" data-tippy-placement="top" aria-label="{{t 'Reactivate user' }}">
                 <i class="fa fa-user-plus" aria-hidden="true"></i>
             </button>
             {{/if}}

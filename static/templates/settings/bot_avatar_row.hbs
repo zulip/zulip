@@ -5,16 +5,16 @@
             <div class="name">{{name}}</div>
             {{#if is_active}}
             <div class="edit-bot-buttons">
-                <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
+                <button type="submit" class="btn open_edit_bot_form tippy-zulip-tooltip" data-sidebar-form="edit-bot" data-email="{{email}}" data-tippy-content="{{t 'Edit bot' }}" data-tippy-placement="top" aria-label="{{t 'Edit bot' }}">
                     <i class="fa fa-pencil blue" aria-hidden="true"></i>
                 </button>
-                <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc" title="{{t 'Download zuliprc' }}" data-email="{{email}}">
+                <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc tippy-zulip-tooltip" data-email="{{email}}" data-tippy-content="{{t 'Download zuliprc' }}" data-tippy-placement="top" aria-label="{{t 'Download zuliprc' }}">
                     <i class="fa fa-download sea-green" aria-hidden="true"></i>
                 </a>
-                <button type="submit" id="copy_zuliprc" class="btn copy_zuliprc" title="{{t 'Copy zuliprc' }}">
-                    <i class="fa fa-clipboard copy-gold"></i>
+                <button type="submit" id="copy_zuliprc" class="btn copy_zuliprc tippy-zulip-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}" data-tippy-placement="top" aria-label="{{t 'Copy zuliprc' }}">
+                    <i class="fa fa-clipboard copy-gold" aria-hidden="true"></i>
                 </button>
-                <button type="submit" class="btn delete_bot" title="{{t 'Delete bot' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="btn delete_bot tippy-zulip-tooltip" data-user-id="{{user_id}}" data-tippy-content="{{t 'Delete bot' }}" data-tippy-placement="top" aria-label="{{t 'Delete bot' }}">
                     <i class="fa fa-trash-o danger-red" aria-hidden="true"></i>
                 </button>
             </div>
