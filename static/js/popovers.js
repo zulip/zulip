@@ -14,6 +14,7 @@ import render_user_info_popover_content from "../templates/user_info_popover_con
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
@@ -44,6 +45,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_popover from "./stream_popover";
+import * as unread_ops from "./unread_ops";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -453,6 +455,8 @@ export function toggle_actions_popover(element, id) {
         const can_unmute_topic =
             message.stream && topic && muted_topics.is_topic_muted(message.stream_id, topic);
 
+        const should_display_mark_as_unread = !message.unread;
+
         const should_display_edit_history_option =
             message.edit_history &&
             message.edit_history.some(
@@ -495,6 +499,7 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item,
             can_mute_topic,
             can_unmute_topic,
+            should_display_mark_as_unread,
             should_display_collapse,
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
@@ -1029,6 +1034,16 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = target.data("popover");
+    });
+
+    $("body").on("click", ".mark_as_unread", (e) => {
+        hide_actions_popover();
+        const message_id = $(e.currentTarget).data("message-id");
+
+        unread_ops.mark_as_unread_from_here(message_id);
+
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".respond_button", (e) => {

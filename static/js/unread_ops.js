@@ -39,6 +39,19 @@ function process_newly_read_message(message, options) {
     recent_topics_ui.update_topic_unread_count(message);
 }
 
+export function mark_as_unread_from_here(message_id) {
+    const message_ids = message_lists.current.ids_greater_or_equal_than(message_id);
+
+    console.info("marking as unread:", message_ids);
+
+    message_lists.current.prevent_reading()
+    message_flags.mark_as_unread({message_ids});
+}
+
+export function resume_reading() {
+    message_lists.current.resume_reading();
+}
+
 export function process_read_messages_event(message_ids) {
     /*
         This code has a lot in common with notify_server_messages_read,
@@ -69,6 +82,33 @@ export function process_read_messages_event(message_ids) {
             process_newly_read_message(message, options);
         }
     }
+
+    unread_ui.update_unread_counts();
+}
+
+export function process_unread_messages_event(message_ids) {
+    // This is the reverse of  process_unread_messages_event.
+    message_ids = unread.get_read_message_ids(message_ids);
+    if (message_ids.length === 0) {
+        return;
+    }
+
+    if (message_lists.current === message_list.narrowed) {
+        unread.set_messages_read_in_narrow(false);
+    }
+
+    for (const message_id of message_ids) {
+
+        const message = message_store.get(message_id);
+
+        if (message) {
+            message.unread = true;
+            unread.process_loaded_messages([message]);
+            recent_topics_ui.update_topic_unread_count(message);
+        }
+    }
+
+    message_lists.current.rerender_view();
 
     unread_ui.update_unread_counts();
 }

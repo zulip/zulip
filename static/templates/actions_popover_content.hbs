@@ -27,6 +27,15 @@
     </li>
     {{/if}}
 
+    {{#if should_display_mark_as_unread}}
+        <li>
+            <a href="#" class="mark_as_unread" data-message-id="{{message_id}}">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                {{t "Mark as unread from here (m)" }}
+            </a>
+        </li>
+    {{/if}}
+
     {{#if should_display_reminder_option}}
     <li>
         <a href="#" class='reminder_button' data-message-id="{{message_id}}">
