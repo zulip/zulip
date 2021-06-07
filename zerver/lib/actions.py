@@ -5,7 +5,7 @@ import logging
 import os
 import time
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from operator import itemgetter
 from typing import (
     AbstractSet,
@@ -5308,6 +5308,16 @@ def do_update_user_status(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+@dataclass
+class ReadMessagesEvent:
+    messages: List[int]
+    all: bool
+    type: str = field(default="update_message_flags", init=False)
+    op: str = field(default="add", init=False)
+    operation: str = field(default="add", init=False)
+    flag: str = field(default="read", init=False)
+
+
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event("bankruptcy")
 
@@ -5332,13 +5342,11 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = dict(
-        type="update_message_flags",
-        op="add",
-        operation="add",
-        flag="read",
-        messages=[],  # we don't send messages, since the client reloads anyway
-        all=True,
+    event = asdict(
+        ReadMessagesEvent(
+            messages=[],  # we don't send messages, since the client reloads anyway
+            all=True,
+        )
     )
     event_time = timezone_now()
 
@@ -5385,13 +5393,11 @@ def do_mark_stream_messages_as_read(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = dict(
-        type="update_message_flags",
-        op="add",
-        operation="add",
-        flag="read",
-        messages=message_ids,
-        all=False,
+    event = asdict(
+        ReadMessagesEvent(
+            messages=message_ids,
+            all=False,
+        )
     )
     event_time = timezone_now()
 
@@ -5425,13 +5431,11 @@ def do_mark_muted_user_messages_as_read(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = dict(
-        type="update_message_flags",
-        op="add",
-        operation="add",
-        flag="read",
-        messages=message_ids,
-        all=False,
+    event = asdict(
+        ReadMessagesEvent(
+            messages=message_ids,
+            all=False,
+        )
     )
     event_time = timezone_now()
 
