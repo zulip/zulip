@@ -3,11 +3,12 @@
 # See https://goteleport.com/docs/application-access/
 define zulip_ops::teleport::application (
   $port,
+  $description = '',
   $order = '50',
 ) {
   concat::fragment { "teleport_app_${name}":
     target  => '/etc/teleport_node.yaml',
     order   => $order,
-    content => "    - name: ${name}\n      uri: http://127.0.0.1:${port}\n",
+    content => template('zulip_ops/teleport_app.yaml.template.erb'),
   }
 }
