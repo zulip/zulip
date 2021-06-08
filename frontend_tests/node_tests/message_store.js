@@ -230,7 +230,7 @@ test("errors", () => {
     with_field(
         pm_conversations,
         "set_partner",
-        () => assert(false),
+        () => assert.fail(),
         () => {
             pm_conversations.process_message(message);
         },
