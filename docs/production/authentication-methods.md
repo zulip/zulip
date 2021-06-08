@@ -252,9 +252,6 @@ Other fields you may want to sync from LDAP include:
   automatic deactivation for how to do that properly).
 * String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
-* [Coming soon][custom-profile-fields-ldap]: Support for syncing
-  [custom profile fields](https://zulip.com/help/add-custom-profile-fields)
-  from your LDAP database.
 
 You can look at the [full list of fields][models-py] in the Zulip user
 model; search for `class UserProfile`, but the above should cover all
@@ -262,7 +259,6 @@ the fields that would be useful to sync from your LDAP databases.
 
 [models-py]: https://github.com/zulip/zulip/blob/master/zerver/models.py
 [django-auth-booleans]: https://django-auth-ldap.readthedocs.io/en/latest/users.html#easy-attributes
-[custom-profile-fields-ldap]: https://github.com/zulip/zulip/issues/10976
 
 ### Multiple LDAP searches
 
