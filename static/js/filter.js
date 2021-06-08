@@ -550,9 +550,9 @@ export class Filter {
                 case "streams-public":
                     return "/#narrow/streams/public";
                 case "pm-with":
-                    // join is used to transform the array to a comma separated string
                     return (
-                        "/#narrow/pm-with/" + people.emails_to_slug(this.operands("pm-with").join())
+                        "/#narrow/pm-with/" +
+                        people.emails_to_slug(this.operands("pm-with").join(","))
                     );
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions

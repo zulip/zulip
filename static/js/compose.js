@@ -770,14 +770,14 @@ function validate_private_message() {
 
     let context = {};
     if (invalid_recipients.length === 1) {
-        context = {recipient: invalid_recipients.join()};
+        context = {recipient: invalid_recipients.join(",")};
         compose_error(
             $t_html({defaultMessage: "The recipient {recipient} is not valid"}, context),
             $("#private_message_recipient"),
         );
         return false;
     } else if (invalid_recipients.length > 1) {
-        context = {recipients: invalid_recipients.join()};
+        context = {recipients: invalid_recipients.join(",")};
         compose_error(
             $t_html({defaultMessage: "The recipients {recipients} are not valid"}, context),
             $("#private_message_recipient"),
