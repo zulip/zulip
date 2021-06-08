@@ -740,7 +740,7 @@ run_test("update_display_settings", (override) => {
         event = event_fixtures.update_display_settings__default_view_all_messages;
         page_params.default_view = "recent_topics";
         dispatch(event);
-        assert(page_params.default_view, "all_messages");
+        assert.equal(page_params.default_view, "all_messages");
     }
 
     {
