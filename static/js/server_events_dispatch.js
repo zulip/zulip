@@ -183,7 +183,6 @@ export function dispatch_normal_event(event) {
             const realm_settings = {
                 add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
                 allow_edit_history: noop,
-                allow_message_deleting: noop,
                 allow_message_editing: noop,
                 edit_topic_policy: noop,
                 user_group_edit_policy: noop,
@@ -193,6 +192,7 @@ export function dispatch_normal_event(event) {
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
+                delete_own_message_policy: noop,
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,

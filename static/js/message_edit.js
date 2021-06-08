@@ -28,6 +28,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -167,7 +168,10 @@ export function get_deletability(message) {
     if (message.locally_echoed) {
         return false;
     }
-    if (!page_params.realm_allow_message_deleting) {
+    if (
+        page_params.realm_delete_own_message_policy ===
+        settings_config.delete_own_message_policy_values.by_admins_only.code
+    ) {
         return false;
     }
 

@@ -11,6 +11,13 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 101**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced
+  the `allow_message_deleting` boolean field with an integer field
+  `delete_own_message_policy` defining which roles can delete messages
+  they had sent.
+
 **Feature level 100**
 
 * [`POST /register`](/api/register-queue), [`GET

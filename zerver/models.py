@@ -367,7 +367,13 @@ class Realm(models.Model):
     # some other actions.
     waiting_period_threshold: int = models.PositiveIntegerField(default=0)
 
-    allow_message_deleting: bool = models.BooleanField(default=False)
+    DELETE_OWN_MESSAGE_POLICY_TYPES = [
+        POLICY_EVERYONE,
+        POLICY_ADMINS_ONLY,
+    ]
+
+    delete_own_message_policy: bool = models.PositiveSmallIntegerField(default=POLICY_ADMINS_ONLY)
+
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
@@ -602,7 +608,6 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
-        allow_message_deleting=bool,
         bot_creation_policy=int,
         create_stream_policy=int,
         invite_to_stream_policy=int,
@@ -634,6 +639,7 @@ class Realm(models.Model):
         default_code_block_language=(str, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
         wildcard_mention_policy=int,
+        delete_own_message_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]

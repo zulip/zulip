@@ -109,6 +109,9 @@ export function get_organization_settings_options() {
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
+    options.delete_own_message_policy_values = get_sorted_options_list(
+        settings_config.delete_own_message_policy_values,
+    );
     return options;
 }
 
@@ -159,9 +162,6 @@ function get_property_value(property_name) {
     }
 
     if (property_name === "realm_msg_delete_limit_setting") {
-        if (!page_params.realm_allow_message_deleting) {
-            return "never";
-        }
         if (page_params.realm_message_content_delete_limit_seconds === null) {
             return "any_time";
         }
@@ -247,6 +247,24 @@ function set_msg_edit_limit_dropdown() {
         value === "custom_limit",
     );
     settings_ui.disable_sub_setting_onchange(value !== "never", "id_realm_edit_topic_policy", true);
+}
+
+function set_delete_own_message_policy_dropdown() {
+    const value = get_property_value("realm_delete_own_message_policy");
+    $("#id_realm_delete_own_message_policy").val(value);
+    settings_ui.disable_sub_setting_onchange(
+        value !== settings_config.delete_own_message_policy_values.by_admins_only.code,
+        "id_realm_msg_delete_limit_setting",
+        true,
+    );
+    const limit_value = get_property_value("realm_msg_delete_limit_setting");
+    if (limit_value === "custom_limit") {
+        settings_ui.disable_sub_setting_onchange(
+            value !== settings_config.delete_own_message_policy_values.by_admins_only.code,
+            "id_realm_message_content_delete_limit_minutes",
+            true,
+        );
+    }
 }
 
 function set_msg_delete_limit_dropdown() {
@@ -374,6 +392,9 @@ function update_dependent_subsettings(property_name) {
         case "realm_message_content_delete_limit_minutes":
             set_msg_delete_limit_dropdown();
             break;
+        case "realm_delete_own_message_policy":
+            set_delete_own_message_policy_dropdown();
+            break;
         case "realm_org_join_restrictions":
             set_org_join_restrictions_dropdown();
             break;
@@ -456,9 +477,6 @@ export function sync_realm_settings(property) {
             break;
         case "message_content_delete_limit_seconds":
             property = "message_content_delete_limit_minutes";
-            break;
-        case "allow_message_deleting":
-            property = "msg_delete_limit_setting";
             break;
     }
     const element = $(`#id_realm_${CSS.escape(property)}`);
@@ -689,6 +707,7 @@ export function build_page() {
     set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_delete_limit_dropdown();
+    set_delete_own_message_policy_dropdown();
     set_message_retention_setting_dropdown();
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visiblity();
@@ -774,13 +793,7 @@ export function build_page() {
                 }
                 const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
                 switch (delete_limit_setting_value) {
-                    case "never": {
-                        data.allow_message_deleting = false;
-
-                        break;
-                    }
                     case "any_time": {
-                        data.allow_message_deleting = true;
                         data.message_content_delete_limit_seconds = JSON.stringify("unlimited");
 
                         break;
@@ -789,18 +802,17 @@ export function build_page() {
                         data.message_content_delete_limit_seconds = parse_time_limit(
                             $("#id_realm_message_content_delete_limit_minutes"),
                         );
-                        data.allow_message_deleting = true;
 
                         break;
                     }
                     default: {
-                        data.allow_message_deleting = true;
                         data.message_content_delete_limit_seconds =
                             settings_config.msg_delete_limit_dropdown_values.get(
                                 delete_limit_setting_value,
                             ).seconds;
                     }
                 }
+                data.delete_own_message_policy = $("#id_realm_delete_own_message_policy").val();
                 break;
             }
             case "notifications":

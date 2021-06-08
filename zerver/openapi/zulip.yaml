@@ -10336,12 +10336,20 @@ paths:
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
-                      realm_allow_message_deleting:
-                        type: boolean
+                      realm_delete_own_message_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether messages can be deleted in this Zulip organization.
+                          The policy defining which users can delete
+                          messages that they had sent.
+
+                          - 2 = admins only
+                          - 5 = everyone
+
+                          **Changes**: New in Zulip 5.0 (feature level 101), replacing the
+                          previous `allow_message_deleting` boolean;
+                          `true` corresponded to `everyone`, and `false` to `admins only`.
                       realm_bot_creation_policy:
                         type: integer
                         description: |

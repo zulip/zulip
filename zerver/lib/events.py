@@ -238,8 +238,8 @@ def fetch_initial_state_data(
         state["realm_edit_topic_policy"] = (
             Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
-        state["realm_allow_message_deleting"] = (
-            False if user_profile is None else realm.allow_message_deleting
+        state["realm_delete_own_message_policy"] = (
+            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
         )
 
         # TODO: Can we delete these lines?  They seem to be in property_types...

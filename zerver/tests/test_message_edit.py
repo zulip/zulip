@@ -2142,13 +2142,13 @@ class DeleteMessageTest(ZulipTestCase):
 
     def test_delete_message_by_user(self) -> None:
         def set_message_deleting_params(
-            allow_message_deleting: bool, message_content_delete_limit_seconds: Union[int, str]
+            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
         ) -> None:
             self.login("iago")
             result = self.client_patch(
                 "/json/realm",
                 {
-                    "allow_message_deleting": orjson.dumps(allow_message_deleting).decode(),
+                    "delete_own_message_policy": delete_own_message_policy,
                     "message_content_delete_limit_seconds": orjson.dumps(
                         message_content_delete_limit_seconds
                     ).decode(),
@@ -2172,7 +2172,7 @@ class DeleteMessageTest(ZulipTestCase):
             return result
 
         # Test if message deleting is not allowed(default).
-        set_message_deleting_params(False, "unlimited")
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         msg_id = self.send_stream_message(hamlet, "Scotland")
@@ -2188,7 +2188,7 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if message deleting is allowed.
         # Test if time limit is None(no limit).
-        set_message_deleting_params(True, "unlimited")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Scotland")
         message = Message.objects.get(id=msg_id)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
@@ -2201,7 +2201,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test if time limit is non-zero.
-        set_message_deleting_params(True, 240)
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Scotland")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
