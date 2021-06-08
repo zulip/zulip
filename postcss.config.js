@@ -1,6 +1,6 @@
 "use strict";
 
-const {media_breakpoints} = require("./static/js/css_variables.js");
+const {media_breakpoints} = require("./static/js/css_variables");
 
 module.exports = {
     plugins: {
