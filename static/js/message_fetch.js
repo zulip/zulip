@@ -185,7 +185,7 @@ export function load_messages(opts) {
         // floating point temporary IDs, which is intended to be a.
         // completely client-side detail.  We need to round these to
         // the nearest integer before sending a request to the server.
-        opts.anchor = opts.anchor.toFixed();
+        opts.anchor = opts.anchor.toFixed(0);
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
