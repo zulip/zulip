@@ -28,6 +28,44 @@ body.night-mode {
         }
     }
 
+    /* Extend the 'light-border' TippyJS theme, which is intended for
+       popovers/menus that should use default background colors, to use
+       our night theme colors in Zulip's night theme.
+     */
+    .tippy-box[data-theme~="light-border"] {
+        .tippy-content a {
+            color: hsl(236, 33%, 90%);
+        }
+        &[data-placement^="top"] {
+            > .tippy-arrow {
+                &::before {
+                    border-top-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+        &[data-placement^="bottom"] {
+            > .tippy-arrow {
+                &::before {
+                    border-bottom-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+        &[data-placement^="left"] {
+            > .tippy-arrow {
+                &::before {
+                    border-left-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+        &[data-placement^="right"] {
+            > .tippy-arrow {
+                &::before {
+                    border-right-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,
@@ -316,6 +354,7 @@ on a dark background, and don't change the dark labels dark either. */
         box-shadow: 0 0 30px hsl(212, 32%, 7%);
     }
 
+    .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
     .dropdown .dropdown-menu,
     .popover,

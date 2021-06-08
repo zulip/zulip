@@ -88,7 +88,7 @@ nagios_check_command=/usr/lib/nagios/plugins/check_nagios /var/cache/nagios3/sta
 # authentication (bad idea), while any other value will make them
 # use the authentication functions (the default).
 
-use_authentication=1
+use_authentication=0
 
 
 
@@ -129,7 +129,7 @@ use_ssl_authentication=0
 # not use authorization.  You may use an asterisk (*) to
 # authorize any user who has authenticated to the web server.
 
-authorized_for_system_information=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_system_information=*
 
 
 
@@ -141,7 +141,7 @@ authorized_for_system_information=nagiosadmin,<%= @nagios_format_users %>
 # an asterisk (*) to authorize any user who has authenticated
 # to the web server.
 
-authorized_for_configuration_information=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_configuration_information=*
 
 
 
@@ -154,7 +154,7 @@ authorized_for_configuration_information=nagiosadmin,<%= @nagios_format_users %>
 # You may use an asterisk (*) to authorize any user who has
 # authenticated to the web server.
 
-authorized_for_system_commands=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_system_commands=*
 
 
 
@@ -167,8 +167,8 @@ authorized_for_system_commands=nagiosadmin,<%= @nagios_format_users %>
 # to authorize any user who has authenticated to the web server.
 
 
-authorized_for_all_services=nagiosadmin,<%= @nagios_format_users %>
-authorized_for_all_hosts=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_all_services=*
+authorized_for_all_hosts=*
 
 
 
@@ -181,8 +181,8 @@ authorized_for_all_hosts=nagiosadmin,<%= @nagios_format_users %>
 # authorization).  You may use an asterisk (*) to authorize any
 # user who has authenticated to the web server.
 
-authorized_for_all_service_commands=nagiosadmin,<%= @nagios_format_users %>
-authorized_for_all_host_commands=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_all_service_commands=*
+authorized_for_all_host_commands=*
 
 
 

@@ -1,15 +1,11 @@
 import calendar
-import datetime
-import os
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-import pytz
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import translation
-from django.utils.timezone import now as timezone_now
 from two_factor.utils import default_device
 
 from zerver.lib.events import do_events_register
@@ -37,41 +33,6 @@ class UserPermissionInfo:
     is_realm_admin: bool
     is_realm_owner: bool
     show_webathena: bool
-
-
-# LAST_SERVER_UPGRADE_TIME is the last time the server had a version deployed.
-if settings.PRODUCTION:  # nocoverage
-    timestamp = os.path.basename(os.path.abspath(settings.DEPLOY_ROOT))
-    LAST_SERVER_UPGRADE_TIME = datetime.datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
-        tzinfo=pytz.utc
-    )
-else:
-    LAST_SERVER_UPGRADE_TIME = timezone_now()
-
-
-def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
-    # Release tarballs are unpacked via `tar -xf`, which means the
-    # `mtime` on files in them is preserved from when the release
-    # tarball was built.  Checking this allows us to catch cases where
-    # someone has upgraded in the last year but to a release more than
-    # a year old.
-    git_version_path = os.path.join(settings.DEPLOY_ROOT, "version.py")
-    release_build_time = datetime.datetime.utcfromtimestamp(
-        os.path.getmtime(git_version_path)
-    ).replace(tzinfo=pytz.utc)
-
-    version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
-    deadline = version_no_newer_than + datetime.timedelta(
-        days=settings.SERVER_UPGRADE_NAG_DEADLINE_DAYS
-    )
-
-    if user_profile is None or not user_profile.is_realm_admin:
-        # Administrators get warned at the deadline; all users 30 days later.
-        deadline = deadline + datetime.timedelta(days=30)
-
-    if timezone_now() > deadline:
-        return True
-    return False
 
 
 def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[float]:
@@ -222,9 +183,7 @@ def build_page_params_for_home_page_load(
     page_params = dict(
         ## Server settings.
         test_suite=settings.TEST_SUITE,
-        poll_timeout=settings.POLL_TIMEOUT,
         insecure_desktop_app=insecure_desktop_app,
-        server_needs_upgrade=is_outdated_server(user_profile),
         login_page=settings.HOME_NOT_LOGGED_IN,
         save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email=settings.WARN_NO_EMAIL,

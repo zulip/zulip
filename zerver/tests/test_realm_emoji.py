@@ -207,7 +207,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_emoji_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file("img.png") as fp:
-            with self.settings(MAX_EMOJI_FILE_SIZE=0):
+            with self.settings(MAX_EMOJI_FILE_SIZE_MIB=0):
                 result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 

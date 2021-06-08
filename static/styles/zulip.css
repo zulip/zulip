@@ -280,6 +280,9 @@ p.n-margin {
     position: relative;
 
     .alert {
+        /* Since alerts are only rendered into the DOM when they are first
+           displayed, display: block is the right default for this setting. */
+        display: block;
         margin: 0;
         padding-top: 12px;
         padding-bottom: 12px;

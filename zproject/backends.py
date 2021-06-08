@@ -737,36 +737,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 continue
             values_by_var_name[var_name] = value
 
-        fields_by_var_name: Dict[str, CustomProfileField] = {}
-        custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
-        for field in custom_profile_fields:
-            var_name = "_".join(field.name.lower().split(" "))
-            fields_by_var_name[var_name] = field
-
-        existing_values = {}
-        for data in user_profile.profile_data:
-            var_name = "_".join(data["name"].lower().split(" "))
-            existing_values[var_name] = data["value"]
-
-        profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
-        for var_name, value in values_by_var_name.items():
-            try:
-                field = fields_by_var_name[var_name]
-            except KeyError:
-                raise ZulipLDAPException(f"Custom profile field with name {var_name} not found.")
-            if existing_values.get(var_name) == value:
-                continue
-            try:
-                validate_user_custom_profile_field(user_profile.realm.id, field, value)
-            except ValidationError as error:
-                raise ZulipLDAPException(f"Invalid data for {var_name} field: {error.message}")
-            profile_data.append(
-                {
-                    "id": field.id,
-                    "value": value,
-                }
-            )
-        do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+        try:
+            sync_user_profile_custom_fields(user_profile, values_by_var_name)
+        except SyncUserException as e:
+            raise ZulipLDAPException(str(e)) from e
 
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
@@ -1231,6 +1205,45 @@ class ExternalAuthResult:
 
     class InvalidTokenError(Exception):
         pass
+
+
+class SyncUserException(Exception):
+    pass
+
+
+def sync_user_profile_custom_fields(
+    user_profile: UserProfile, custom_field_name_to_value: Dict[str, Any]
+) -> None:
+    fields_by_var_name: Dict[str, CustomProfileField] = {}
+    custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
+    for field in custom_profile_fields:
+        var_name = "_".join(field.name.lower().split(" "))
+        fields_by_var_name[var_name] = field
+
+    existing_values = {}
+    for data in user_profile.profile_data:
+        var_name = "_".join(data["name"].lower().split(" "))
+        existing_values[var_name] = data["value"]
+
+    profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
+    for var_name, value in custom_field_name_to_value.items():
+        try:
+            field = fields_by_var_name[var_name]
+        except KeyError:
+            raise SyncUserException(f"Custom profile field with name {var_name} not found.")
+        if existing_values.get(var_name) == value:
+            continue
+        try:
+            validate_user_custom_profile_field(user_profile.realm.id, field, value)
+        except ValidationError as error:
+            raise SyncUserException(f"Invalid data for {var_name} field: {error.message}")
+        profile_data.append(
+            {
+                "id": field.id,
+                "value": value,
+            }
+        )
+    do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
 
 
 @external_auth_method

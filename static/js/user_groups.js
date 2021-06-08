@@ -92,3 +92,9 @@ export function initialize(params) {
 export function is_user_group(item) {
     return item.members !== undefined;
 }
+
+export function get_user_groups_of_user(user_id) {
+    const user_groups_realm = get_realm_user_groups();
+    const groups_of_user = user_groups_realm.filter((group) => is_member_of(group.id, user_id));
+    return groups_of_user;
+}

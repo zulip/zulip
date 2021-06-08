@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from zerver.lib.actions import (
     do_change_stream_post_policy,
     do_change_user_role,
+    do_delete_messages,
     do_set_realm_property,
     do_update_message,
     get_topic_messages,
@@ -879,7 +880,9 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(True, 0, True)
         do_edit_message_assert_success(id_, "E")
         self.login("cordelia")
-        do_edit_message_assert_error(id_, "F", "The time limit for editing this message has passed")
+        do_edit_message_assert_error(
+            id_, "F", "The time limit for editing this message's topic has passed"
+        )
 
         # anyone should be able to edit "no topic" indefinitely
         message.set_topic_name("(no topic)")
@@ -1528,6 +1531,48 @@ class EditMessageTest(EditMessageTestCase):
         )
         check_move_message_to_stream(UserProfile.ROLE_MEMBER)
 
+    def test_move_message_to_stream_with_topic_editing_not_allowed(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "othello", "old_stream_1", "new_stream_1", "test"
+        )
+
+        realm = user_profile.realm
+        realm.allow_community_topic_editing = False
+        realm.save()
+        self.login("cordelia")
+
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+                "topic": "new topic",
+            },
+        )
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+
     def test_move_message_to_stream_and_topic(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -1991,3 +2036,20 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
+    def test_delete_event_sent_after_transaction_commits(self) -> None:
+        """
+        Tests that `send_event` is hooked to `transaction.on_commit`. This is important, because
+        we don't want to end up holding locks on message rows for too long if the event queue runs
+        into a problem.
+        """
+        hamlet = self.example_user("hamlet")
+        self.send_stream_message(hamlet, "Scotland")
+        message = self.get_last_message()
+
+        with self.tornado_redirected_to_list([], expected_num_events=1):
+            with mock.patch("zerver.lib.actions.send_event") as m:
+                m.side_effect = AssertionError(
+                    "Events should be sent only after the transaction commits."
+                )
+                do_delete_messages(hamlet.realm, [message])

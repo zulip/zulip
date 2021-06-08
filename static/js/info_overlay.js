@@ -9,7 +9,6 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
-import * as popovers from "./popovers";
 import * as rendered_markdown from "./rendered_markdown";
 import * as ui from "./ui";
 import * as util from "./util";
@@ -227,14 +226,4 @@ export function show(target) {
     if (target) {
         toggler.goto(target);
     }
-}
-
-export function maybe_show_keyboard_shortcuts() {
-    if (overlays.is_active()) {
-        return;
-    }
-    if (popovers.any_active()) {
-        return;
-    }
-    show("keyboard-shortcuts");
 }

@@ -6,6 +6,7 @@ import render_new_stream_users from "../templates/new_stream_users.hbs";
 import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -430,23 +431,24 @@ export function set_up_handlers() {
         }
 
         if (principals.length >= 50) {
-            const invites_warning_modal = render_subscription_invites_warning_modal({
+            const modal_parent = $("#subscription_overlay");
+            const html_body = render_subscription_invites_warning_modal({
                 stream_name,
                 count: principals.length,
             });
-            $("#stream-creation").append(invites_warning_modal);
+
+            confirm_dialog.launch({
+                parent: modal_parent,
+                html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
+                html_body,
+                html_yes_button: $t_html({defaultMessage: "Confirm"}),
+                on_click: () => {
+                    create_stream();
+                },
+            });
         } else {
             create_stream();
         }
-    });
-
-    container.on("click", ".close-invites-warning-modal", () => {
-        $("#invites-warning-overlay").remove();
-    });
-
-    container.on("click", ".confirm-invites-warning-modal", () => {
-        create_stream();
-        $("#invites-warning-overlay").remove();
     });
 
     container.on("input", "#create_stream_name", () => {
@@ -483,7 +485,7 @@ export function set_up_handlers() {
     // Do not allow the user to enter newline characters while typing out the
     // stream's description during it's creation.
     container.on("keydown", "#create_stream_description", (e) => {
-        if ((e.keyCode || e.which) === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
         }
     });

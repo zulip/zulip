@@ -58,6 +58,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_delete_messages,
     do_invite_users,
+    do_make_user_billing_admin,
     do_mark_hotspot_as_read,
     do_mute_topic,
     do_mute_user,
@@ -275,7 +276,13 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
         )
-        action()
+
+        # We want even those `send_event` calls which have been hooked to
+        # `transaction.on_commit` to execute in tests.
+        # See the comment in `ZulipTestCase.tornado_redirected_to_list`.
+        with self.captureOnCommitCallbacks(execute=True):
+            action()
+
         events = client.event_queue.contents()
         content = {
             "queue_id": "123.12",
@@ -1288,6 +1295,18 @@ class NormalActionsTest(BaseAction):
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
+
+    def test_change_is_billing_admin(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        events = self.verify_action(lambda: do_make_user_billing_admin(self.user_profile))
+        check_realm_user_update("events[0]", events[0], "is_billing_admin")
+        self.assertEqual(events[0]["person"]["is_billing_admin"], True)
 
     def test_change_is_owner(self) -> None:
         reset_emails_in_zulip_realm()

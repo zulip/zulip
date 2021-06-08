@@ -2769,8 +2769,13 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        # Check confirmation email has the correct subject and body, extract
+        # confirmation link and visit it
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email,
+            email_subject_contains="Create your Zulip organization",
+            email_body_contains="You have requested a new Zulip organization",
+        )
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 

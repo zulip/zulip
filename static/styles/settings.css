@@ -1150,7 +1150,8 @@ input[type="checkbox"] {
         min-width: 80px;
         line-height: 16px;
 
-        &:hover {
+        &:hover,
+        &:focus {
             background-color: hsl(0, 0%, 100%);
             border: 1px solid hsl(0, 0%, 61%);
             color: hsl(0, 0%, 18%);
@@ -1165,7 +1166,8 @@ input[type="checkbox"] {
             color: hsl(0, 0%, 100%);
             border: 1px solid hsl(155, 30%, 50%);
 
-            &:hover {
+            &:hover,
+            &:focus {
                 background-color: hsl(166, 35%, 57%);
                 border: 1px solid hsl(166, 35%, 57%);
             }
@@ -1587,14 +1589,14 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #id_realm_user_group_edit_policy,
 #id_realm_email_address_visibility,
 #id_realm_wildcard_mention_policy,
-#id_realm_move_messages_between_streams_policy {
+#id_realm_move_messages_between_streams_policy,
+#id_realm_invite_to_realm_policy {
     width: 250px;
 }
 
 #id_realm_bot_creation_policy,
 #id_realm_giphy_rating,
-#id_realm_org_join_restrictions,
-#id_realm_user_invite_restriction {
+#id_realm_org_join_restrictions {
     width: 100%;
 }
 

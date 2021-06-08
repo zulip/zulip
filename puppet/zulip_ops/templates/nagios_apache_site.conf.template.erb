@@ -1,15 +1,5 @@
-<VirtualHost *:80>
-    ServerName nagios.<%= @default_host_domain %>
-    Redirect permanent / https://nagios.<%= @default_host_domain %>/
-</VirtualHost>
-
-<VirtualHost *:443>
-    ServerName nagios.<%= @default_host_domain %>
-
-    SSLEngine on
-    SSLCertificateFile /etc/letsencrypt/live/nagios.<%= @default_host_domain %>/cert.pem
-    SSLCertificateChainFile /etc/letsencrypt/live/nagios.<%= @default_host_domain %>/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/nagios.<%= @default_host_domain %>/privkey.pem
+<VirtualHost 127.0.0.1>
+    ServerName nagios.teleport.<%= @default_host_domain %>
 
     Header add Strict-Transport-Security "max-age=15768000"
     Header add X-Frame-Options DENY
@@ -23,15 +13,11 @@
     # Where the HTML pages live
     Alias /nagios3 /usr/share/nagios3/htdocs
 
-    RedirectMatch ^/?$ https://nagios.<%= @default_host_domain %>/cgi-bin/nagios3/status.cgi?host=all
-
     <Location "/">
-        AuthType Digest
-        AuthName "monitoring"
-        AuthDigestProvider file
-        AuthUserFile /etc/apache2/users/monitoring
-        Require valid-user
+        Require all granted
     </Location>
+
+    RedirectMatch ^/?$ https://nagios.teleport.<%= @default_host_domain %>/cgi-bin/nagios3/status.cgi?host=all
 
     <DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
         Options FollowSymLinks

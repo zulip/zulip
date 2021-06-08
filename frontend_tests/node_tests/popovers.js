@@ -171,7 +171,8 @@ test_ui("sender_hover", (override) => {
                     user_time: undefined,
                     user_type: $t({defaultMessage: "Member"}),
                     user_circle_class: "user_circle_empty",
-                    user_last_seen_time_status: "translated: More than 2 weeks ago",
+                    user_last_seen_time_status:
+                        "translated: Last active: translated: More than 2 weeks ago",
                     pm_with_uri: "#narrow/pm-with/42-alice",
                     sent_by_uri: "#narrow/sender/42-alice",
                     private_message_class: "respond_personal_button",

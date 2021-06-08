@@ -111,7 +111,7 @@ run_test("add_alert_word_keypress", (override) => {
 
     const event = {
         preventDefault: () => {},
-        which: 13,
+        key: "Enter",
         target: "#create_alert_word_name",
     };
 

@@ -8,17 +8,15 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
-                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction" class="prop-element">
-                        <option value="no_invite_required">{{t "No. Members and admins can send invitations." }}</option>
-                        <option value="no_invite_required_by_full_members">{{t "No. Only full members and admins can send invitations." }}</option>
-                        <option value="no_invite_required_by_moderators_only">{{t "No. Only moderators and admins can send invitations." }}</option>
-                        <option value="no_invite_required_by_admins_only">{{t "No. Only admins can send invitations." }}</option>
-                        <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
-                        <option value="by_full_members">{{t "Yes. Only full members and admins can send invitations."}}</option>
-                        <option value="by_moderators_only">{{t "Yes. Only moderators and admins can send invitations." }}</option>
-                        <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
+                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}</label>
+                    <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
+                    {{> settings_checkbox
+                      setting_name="realm_invite_required"
+                      prefix="id_"
+                      is_checked=realm_invite_required
+                      label=admin_settings_label.realm_invite_required}}
                 </div>
 
                 <div class="input-group">
@@ -115,6 +113,71 @@
                         {{> dropdown_options_widget option_values=wildcard_mention_policy_values}}
                     </select>
                 </div>
+            </div>
+        </div>
+
+        <div id="org-msg-editing" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message editing" }}
+                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="msg-editing" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Allow message editing" }}</label>
+                    <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element">
+                        {{#each msg_edit_limit_dropdown_values}}
+                        <option value="{{0}}">{{1.text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                          name="realm_message_content_edit_limit_minutes"
+                          class="admin-realm-time-limit-input prop-element"
+                          autocomplete="off"
+                          value="{{ realm_message_content_edit_limit_minutes }}"/>
+                    </div>
+                </div>
+
+                {{> settings_checkbox
+                  setting_name="realm_allow_community_topic_editing"
+                  prefix="id_"
+                  is_checked=realm_allow_community_topic_editing
+                  label=admin_settings_label.realm_allow_community_topic_editing}}
+
+                {{> settings_checkbox
+                  setting_name="realm_allow_edit_history"
+                  prefix="id_"
+                  is_checked=realm_allow_edit_history
+                  label=admin_settings_label.realm_allow_edit_history}}
+
+                <div class="input-group">
+                    <label for="realm_msg_delete_limit_setting" class="dropdown-title">
+                        {{t "Allow message deleting" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip tippy-zulip-tooltip"
+                          aria-hidden="true" data-tippy-content="{{t 'Administrators can always delete any message.' }}"></i>
+                    </label>
+                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
+                        {{#each msg_delete_limit_dropdown_values}}
+                        <option value="{{0}}">{{1.text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                          name="realm_message_content_delete_limit_minutes"
+                          class="admin-realm-time-limit-input prop-element"
+                          autocomplete="off"
+                          value="{{ realm_message_content_delete_limit_minutes }}"/>
+                    </div>
+                </div>
+
                 <div class="input-group">
                     <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages between streams" }}
                     </label>

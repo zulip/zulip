@@ -192,11 +192,11 @@ run_test("initialize", () => {
     assert.equal(keydown(ev), undefined);
     assert(!default_prevented);
 
-    ev.which = 13;
+    ev.key = "Enter";
     assert.equal(keydown(ev), undefined);
     assert(!default_prevented);
 
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => true;
     assert.equal(keydown(ev), undefined);
     assert(default_prevented);
@@ -235,21 +235,21 @@ run_test("initialize", () => {
     ];
     _setup("");
 
-    ev.which = 15;
+    ev.key = "a";
     search_query_box.is = () => false;
     searchbox_form.trigger(ev);
 
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => false;
     searchbox_form.trigger(ev);
 
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
     assert(is_blurred);
@@ -262,7 +262,7 @@ run_test("initialize", () => {
     assert(!search_button.prop("disabled"));
 
     _setup("ver");
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
     assert(is_blurred);
@@ -287,10 +287,20 @@ run_test("initiate_search", () => {
         is_searchbox_text_selected = true;
     });
 
+    let searchbox_css_args;
+
+    $("#searchbox").css = (args) => {
+        searchbox_css_args = args;
+    };
+
     search.initiate_search();
     assert(typeahead_forced_open);
     assert(is_searchbox_text_selected);
     assert.equal($("#search_query").val(), "ver");
+
+    assert.deepEqual(searchbox_css_args, {
+        "box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)",
+    });
 
     // test that we append space for user convenience
     narrow_state.filter = () => ({is_search: () => false});

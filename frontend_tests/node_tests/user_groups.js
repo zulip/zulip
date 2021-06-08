@@ -17,6 +17,8 @@ run_test("user_groups", () => {
 
     const params = {};
     params.realm_user_groups = [students];
+    const user_id_not_in_any_group = 0;
+    const user_id_part_of_a_group = 2;
 
     user_groups.initialize(params);
     assert.equal(user_groups.get_user_group_from_id(students.id), students);
@@ -70,6 +72,13 @@ run_test("user_groups", () => {
     assert.equal(user_groups_array.length, 2);
     assert.equal(user_groups_array[1].name, "Everyone");
     assert.equal(user_groups_array[0].name, "new admins");
+
+    const groups_of_users = user_groups.get_user_groups_of_user(user_id_part_of_a_group);
+    assert.equal(groups_of_users.length, 1);
+    assert.equal(groups_of_users[0].name, "Everyone");
+
+    const groups_of_users_nomatch = user_groups.get_user_groups_of_user(user_id_not_in_any_group);
+    assert.equal(groups_of_users_nomatch.length, 0);
 
     assert(!user_groups.is_member_of(admins.id, 4));
     assert(user_groups.is_member_of(admins.id, 3));

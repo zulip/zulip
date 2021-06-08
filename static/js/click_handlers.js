@@ -758,7 +758,7 @@ export function initialize() {
 
     // Don't focus links on middle click.
     $("body").on("mouseup", "a", (e) => {
-        if (e.which === 2) {
+        if (e.button === 1) {
             // middle click
             e.target.blur();
         }
@@ -782,12 +782,12 @@ export function initialize() {
         $(document).on("keydown", ".editable-section", function (e) {
             e.stopPropagation();
             // Cancel editing description if Escape key is pressed.
-            if (e.which === 27) {
+            if (e.key === "Escape") {
                 $("[data-finish-editing='.stream-description-editable']").hide();
                 $(this).attr("contenteditable", false);
                 $(this).text($(this).attr("data-prev-text"));
                 $("[data-make-editable]").html("");
-            } else if (e.which === 13) {
+            } else if (e.key === "Enter") {
                 $(this).siblings(".checkmark").trigger("click");
             }
         });
@@ -912,6 +912,10 @@ export function initialize() {
     $("body").on("hidden.bs.modal", () => {
         // Enable mouse events for the background as the modal closes.
         overlays.enable_background_mouse_events();
+
+        // TODO: Remove this once Bootstrap is upgraded.
+        // See: https://github.com/zulip/zulip/pull/18720
+        $(".modal.in").removeClass("in");
     });
 
     // MAIN CLICK HANDLER

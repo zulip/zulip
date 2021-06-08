@@ -372,7 +372,7 @@ export function set_up() {
     });
 
     $("#user-groups").on("keypress", ".user-group h4 > span", (e) => {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
         }
     });

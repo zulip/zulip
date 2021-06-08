@@ -489,6 +489,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
+            is_billing_admin: false,
             role: 400,
             is_bot: false,
             is_guest: false,

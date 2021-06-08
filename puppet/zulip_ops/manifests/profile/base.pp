@@ -3,6 +3,7 @@ class zulip_ops::profile::base {
   include zulip_ops::munin_node
   include zulip_ops::ksplice_uptrack
   include zulip_ops::firewall
+  include zulip_ops::teleport::node
 
   zulip_ops::firewall_allow { 'ssh': order => '10'}
 
@@ -40,9 +41,6 @@ class zulip_ops::profile::base {
     ensure  => absent,
     require => Package['linux-image-virtual'],
   }
-
-  # Add system users here
-  $users = []
 
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure => file,

@@ -597,7 +597,7 @@ test_ui("on_events", (override) => {
         const handler = $("#user-groups").get_on_handler("keypress", ".user-group h4 > span");
         let default_action_for_enter_stopped = false;
         const event = {
-            which: 13,
+            key: "Enter",
             preventDefault() {
                 default_action_for_enter_stopped = true;
             },

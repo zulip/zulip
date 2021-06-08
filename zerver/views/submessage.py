@@ -1,4 +1,5 @@
 import orjson
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -10,6 +11,8 @@ from zerver.lib.validator import check_int
 from zerver.models import UserProfile
 
 
+# transaction.atomic is required since we use FOR UPDATE queries in access_message.
+@transaction.atomic
 @has_request_variables
 def process_submessage(
     request: HttpRequest,
@@ -18,7 +21,7 @@ def process_submessage(
     msg_type: str = REQ(),
     content: str = REQ(),
 ) -> HttpResponse:
-    message, user_message = access_message(user_profile, message_id)
+    message, user_message = access_message(user_profile, message_id, lock_message=True)
 
     try:
         orjson.loads(content)

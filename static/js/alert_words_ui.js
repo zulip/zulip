@@ -97,9 +97,8 @@ export function set_up_alert_words() {
     });
 
     $("#create_alert_word_form").on("keypress", "#create_alert_word_name", (event) => {
-        const key = event.which;
-        // Handle Enter (13) as "add".
-        if (key === 13) {
+        // Handle Enter as "add".
+        if (event.key === "Enter") {
             event.preventDefault();
             const word = $(event.target).val();
             add_alert_word(word);
