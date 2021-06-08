@@ -1292,6 +1292,27 @@ Output:
 
         self.assert_length(lst, expected_num_events)
 
+    def get_maybe_enqueue_notifications_parameters(self, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Returns a dictionary with the passed parameters, after filling up the
+        missing data with default values, for testing what was passed to the
+        `maybe_enqueue_notifications` method.
+        """
+        parameters: Dict[str, Any] = dict(
+            private_message=False,
+            mentioned=False,
+            wildcard_mention_notify=False,
+            stream_push_notify=False,
+            stream_email_notify=False,
+            stream_name=None,
+            online_push_enabled=False,
+            idle=True,
+            already_notified={"email_notified": False, "push_notified": False},
+        )
+
+        # Values from `kwargs` will replace those from `parameters`
+        return {**parameters, **kwargs}
+
 
 class WebhookTestCase(ZulipTestCase):
     """
