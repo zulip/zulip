@@ -24,13 +24,17 @@ class MissedMessageNotificationsTest(ZulipTestCase):
     """Tests the logic for when missed-message notifications
     should be triggered, based on user settings"""
 
-    def check_will_notify(self, *args: Any, **kwargs: Any) -> Tuple[str, str]:
+    def check_will_notify(self, **kwargs: Any) -> Tuple[str, str]:
+        hamlet = self.example_user("hamlet")
+        kwargs["user_profile_id"] = hamlet.id
+        kwargs["message_id"] = 32
+
         email_notice = None
         mobile_notice = None
         with mock_queue_publish(
             "zerver.tornado.event_queue.queue_json_publish"
         ) as mock_queue_json_publish:
-            notified = maybe_enqueue_notifications(*args, **kwargs)
+            notified = maybe_enqueue_notifications(**kwargs)
             for entry in mock_queue_json_publish.call_args_list:
                 args = entry[0]
                 if args[0] == "missedmessage_mobile_notifications":
@@ -50,13 +54,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         return email_notice, mobile_notice
 
     def test_enqueue_notifications(self) -> None:
-        user_profile = self.example_user("hamlet")
-        message_id = 32
-
         # Boring message doesn't send a notice
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -72,8 +71,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Private message sends a notice
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=True,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -90,8 +87,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Private message won't double-send either notice if we've
         # already sent notices before.
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=True,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -109,8 +104,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         self.assertTrue(mobile_notice is None)
 
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=True,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -129,8 +122,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Mention sends a notice
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=True,
             wildcard_mention_notify=False,
@@ -148,8 +139,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # direct mention, whether the notice is actually delivered is
         # determined later, in the email/push notification code)
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=False,
             wildcard_mention_notify=True,
@@ -165,8 +154,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # stream_push_notify pushes but doesn't email
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -182,8 +169,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # stream_email_notify emails but doesn't push
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -199,8 +184,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Private message doesn't send a notice if not idle
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=True,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -216,8 +199,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Mention doesn't send a notice if not idle
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=True,
             wildcard_mention_notify=False,
@@ -233,8 +214,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Wildcard mention doesn't send a notice if not idle
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=False,
             wildcard_mention_notify=True,
@@ -250,8 +229,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Private message sends push but not email if not idle but online_push_enabled
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=True,
             mentioned=False,
             wildcard_mention_notify=False,
@@ -267,8 +244,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         # Stream message sends push but not email if not idle but online_push_enabled
         email_notice, mobile_notice = self.check_will_notify(
-            user_profile.id,
-            message_id,
             private_message=False,
             mentioned=False,
             wildcard_mention_notify=False,
