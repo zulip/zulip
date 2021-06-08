@@ -279,20 +279,10 @@ run_test("move_array_elements_to_front", () => {
         "something@zulip.com",
     ];
     const emails_actual = util.move_array_elements_to_front(emails, emails_selection);
-    let i;
-    assert(strings_no_selection.length === strings.length);
-    for (i = 0; i < strings_no_selection.length; i += 1) {
-        assert(strings_no_selection[i] === strings[i]);
-    }
-    assert(strings_no_array.length === 0);
-    assert(strings_actual.length === strings_expected.length);
-    for (i = 0; i < strings_actual.length; i += 1) {
-        assert(strings_actual[i] === strings_expected[i]);
-    }
-    assert(emails_actual.length === emails_expected.length);
-    for (i = 0; i < emails_actual.length; i += 1) {
-        assert(emails_actual[i] === emails_expected[i]);
-    }
+    assert.deepEqual(strings_no_selection, strings);
+    assert.deepEqual(strings_no_array, []);
+    assert.deepEqual(strings_actual, strings_expected);
+    assert.deepEqual(emails_actual, emails_expected);
 });
 
 run_test("clean_user_content_links", () => {
