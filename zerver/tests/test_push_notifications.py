@@ -1312,7 +1312,7 @@ class TestAPNs(PushNotificationTest):
         """
         import zerver.lib.push_notifications
 
-        zerver.lib.push_notifications._apns_client_initialized = False
+        zerver.lib.push_notifications.get_apns_client.cache_clear()
         try:
             with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch(
                 "apns2.client.APNsClient"
@@ -1320,10 +1320,9 @@ class TestAPNs(PushNotificationTest):
                 client = get_apns_client()
                 self.assertEqual(mock_client.return_value, client)
         finally:
-            # Reset the values set by `get_apns_client` so that we don't
+            # Reset the cache for `get_apns_client` so that we don't
             # leak changes to the rest of the world.
-            zerver.lib.push_notifications._apns_client_initialized = False
-            zerver.lib.push_notifications._apns_client = None
+            zerver.lib.push_notifications.get_apns_client.cache_clear()
 
     def test_not_configured(self) -> None:
         self.setup_apns_tokens()
