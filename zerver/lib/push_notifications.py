@@ -1,9 +1,10 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import asyncio
 import base64
 import logging
 import re
-import time
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -38,7 +39,7 @@ from zerver.models import (
 )
 
 if TYPE_CHECKING:
-    from apns2.client import APNsClient
+    import aioapns
 
 logger = logging.getLogger(__name__)
 
@@ -61,11 +62,17 @@ def hex_to_b64(data: str) -> str:
 #
 
 
+@dataclass
+class APNsContext:
+    apns: "aioapns.APNs"
+    loop: asyncio.AbstractEventLoop
+
+
 @lru_cache(maxsize=None)
-def get_apns_client() -> "Optional[APNsClient]":
+def get_apns_context() -> Optional[APNsContext]:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
-    from apns2.client import APNsClient
+    import aioapns
 
     if settings.APNS_CERT_FILE is None:
         return None
@@ -73,12 +80,18 @@ def get_apns_client() -> "Optional[APNsClient]":
     # NB if called concurrently, this will make excess connections.
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
-    return APNsClient(credentials=settings.APNS_CERT_FILE, use_sandbox=settings.APNS_SANDBOX)
+    loop = asyncio.new_event_loop()
+    apns = aioapns.APNs(
+        client_cert=settings.APNS_CERT_FILE,
+        topic=settings.APNS_TOPIC,
+        loop=loop,
+        use_sandbox=settings.APNS_SANDBOX,
+    )
+    return APNsContext(apns=apns, loop=loop)
 
 
 def apns_enabled() -> bool:
-    client = get_apns_client()
-    return client is not None
+    return get_apns_context() is not None
 
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -120,11 +133,11 @@ def send_apple_push_notification(
     # import time; since these are only needed in the push
     # notification queue worker, it's best to only import them in the
     # code that needs them.
-    from apns2.payload import Payload as APNsPayload
-    from hyper.http20.exceptions import HTTP20Error
+    import aioapns
+    import aioapns.exceptions
 
-    client = get_apns_client()
-    if client is None:
+    apns_context = get_apns_context()
+    if apns_context is None:
         logger.debug(
             "APNs: Dropping a notification because nothing configured.  "
             "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
@@ -138,36 +151,28 @@ def send_apple_push_notification(
         DeviceTokenClass = PushDeviceToken
 
     logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
-    payload = APNsPayload(**modernize_apns_payload(payload_data))
-    expiration = int(time.time() + 24 * 3600)
+    message = {"aps": modernize_apns_payload(payload_data)}
     retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
+        request = aioapns.NotificationRequest(
+            device_token=device.token, message=message, time_to_live=24 * 3600
+        )
 
-        def attempt_send() -> Optional[str]:
-            assert client is not None
+        async def attempt_send() -> Optional[str]:
+            assert apns_context is not None
             try:
-                stream_id = client.send_notification_async(
-                    device.token, payload, topic=settings.APNS_TOPIC, expiration=expiration
-                )
-                return client.get_notification_result(stream_id)
-            except HTTP20Error as e:
+                result = await apns_context.apns.send_notification(request)
+                return "Success" if result.is_successful else result.description
+            except aioapns.exceptions.ConnectionClosed as e:  # nocoverage
                 logger.warning(
-                    "APNs: HTTP error sending for user %d to device %s: %s",
+                    "APNs: ConnectionClosed sending for user %d to device %s: %s",
                     user_id,
                     device.token,
                     e.__class__.__name__,
                 )
                 return None
-            except BrokenPipeError as e:
-                logger.warning(
-                    "APNs: BrokenPipeError sending for user %d to device %s: %s",
-                    user_id,
-                    device.token,
-                    e.__class__.__name__,
-                )
-                return None
-            except ConnectionError as e:  # nocoverage
+            except aioapns.exceptions.ConnectionError as e:  # nocoverage
                 logger.warning(
                     "APNs: ConnectionError sending for user %d to device %s: %s",
                     user_id,
@@ -176,17 +181,13 @@ def send_apple_push_notification(
                 )
                 return None
 
-        result = attempt_send()
+        result = apns_context.loop.run_until_complete(attempt_send())
         while result is None and retries_left > 0:
             retries_left -= 1
-            result = attempt_send()
+            result = apns_context.loop.run_until_complete(attempt_send())
         if result is None:
             result = "HTTP error, retries exhausted"
 
-        if result[0] == "Unregistered":
-            # For some reason, "Unregistered" result values have a
-            # different format, as a tuple of the pair ("Unregistered", 12345132131).
-            result = result[0]
         if result == "Success":
             logger.info("APNs: Success sending for user %d to device %s", user_id, device.token)
         elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:

@@ -7,9 +7,8 @@
 #
 # For details, see requirements/README.md .
 #
-apns2==0.7.2 \
-    --hash=sha256:4f2dae8c608961d1768f734acb1d0809a60ac71a0cdcca60f46529b73f20fb34 \
-    --hash=sha256:f64a50181d0206a02943c835814a34fc1b1e12914931b74269a0f0fb4f39fd45
+aioapns==1.12 \
+    --hash=sha256:263e36188bb218105c35bcbfde9252d78780805168fa2071d3f40b08bee14b17
     # via -r requirements/common.in
 argon2-cffi==20.1.0 \
     --hash=sha256:05a8ac07c7026542377e38389638a8a1e9b78f1cd8439cd7493b39f08dd75fbf \
@@ -186,7 +185,6 @@ cryptography==3.4.7 \
     --hash=sha256:ee77aa129f481be46f8d92a1a7db57269a2f23052d5f2433b4621bb457081cc9
     # via
     #   -r requirements/common.in
-    #   apns2
     #   pyopenssl
     #   requests
     #   social-auth-core
@@ -286,10 +284,10 @@ ecdsa==0.17.0 \
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
     # via python-twitter
-h2==2.6.2 \
-    --hash=sha256:93cbd1013a2218539af05cdf9fc37b786655b93bbc94f5296b7dabd1c5cadf41 \
-    --hash=sha256:af35878673c83a44afbc12b13ac91a489da2819b5dc1e11768f3c2406f740fe9
-    # via hyper
+h2==3.2.0 \
+    --hash=sha256:61e0f6601fa709f35cdb730863b4e5ec7ad449792add80d1410d4174ed139af5 \
+    --hash=sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14
+    # via aioapns
 hpack==3.0.0 \
     --hash=sha256:0edd79eda27a53ba5be2dfabf3b15780928a0dff6eb0c60a3d6767720e970c89 \
     --hash=sha256:8eec9c1f4bfae3408a3f30500261f7e6a65912dc138526ea054f9ad98892e9d2
@@ -304,16 +302,10 @@ html5lib==1.1 \
     --hash=sha256:0d78f8fde1c230e99fe37986a60526d7049ed4bf8a9fadbad5f00e22e58e041d \
     --hash=sha256:b2e5b40261e20f354d198eae92afc10d750afb487ed5e50f9c4eaf07c184146f
     # via talon-core
-hyper==0.7.0 \
-    --hash=sha256:069514f54231fb7b5df2fb910a114663a83306d5296f588fffcb0a9be19407fc \
-    --hash=sha256:12c82eacd122a659673484c1ea0d34576430afbe5aa6b8f63fe37fcb06a2458c
-    # via apns2
-hyperframe==3.2.0 \
-    --hash=sha256:05f0e063e117c16fcdd13c12c93a4424a2c40668abfac3bb419a10f57698204e \
-    --hash=sha256:4dcab11967482d400853b396d042038e4c492a15a5d2f57259e2b5f89a32f755
-    # via
-    #   h2
-    #   hyper
+hyperframe==5.2.0 \
+    --hash=sha256:5187962cb16dcc078f23cb5a4b110098d546c3f41ff2d4038a9896893bbd0b40 \
+    --hash=sha256:a9f5c17f2cc3c719b917c4f33ed1c61bd1f8dfac4b1bd23b7c80b3400971b41f
+    # via h2
 idna==2.10 \
     --hash=sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6 \
     --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0
@@ -672,7 +664,7 @@ pyjwt==1.7.1 \
     --hash=sha256:8d59a976fb773f3e6a39c85636357c4f0e242707394cadadd9814f5cbaa20e96
     # via
     #   -r requirements/common.in
-    #   apns2
+    #   aioapns
     #   social-auth-core
     #   twilio
 pyoembed==0.1.2 \
@@ -681,7 +673,9 @@ pyoembed==0.1.2 \
 pyopenssl==20.0.1 \
     --hash=sha256:4c231c759543ba02560fcd2480c48dcec4dae34c9da7d3747c508227e0624b51 \
     --hash=sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b
-    # via requests
+    # via
+    #   aioapns
+    #   requests
 pyrsistent==0.18.0 \
     --hash=sha256:097b96f129dd36a8c9e33594e7ebb151b1515eb52cceb08474c10a5479e799f2 \
     --hash=sha256:2aaf19dc8ce517a8653746d98e962ef480ff34b6bc563fc067be6401ffb457c7 \

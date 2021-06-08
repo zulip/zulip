@@ -100,7 +100,7 @@ tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 orjson
 
 # Needed for iOS push notifications
-apns2
+aioapns==1.*  # 2.0 needs PyJWT 2: https://github.com/twilio/twilio-python/issues/556
 
 python-twitter
 
@@ -130,7 +130,7 @@ py3dns
 
 # Install Python Social Auth
 social-auth-app-django
-social-auth-core[azuread,openidconnect,saml]<4.0.3  # 4.0.3 needs PyJWT 2: https://github.com/Pr0Ger/PyAPNs2/pull/122, https://github.com/twilio/twilio-python/issues/556
+social-auth-core[azuread,openidconnect,saml]<4.0.3  # 4.0.3 needs PyJWT 2: https://github.com/twilio/twilio-python/issues/556
 
 # For encrypting a login token to the desktop app
 cryptography
