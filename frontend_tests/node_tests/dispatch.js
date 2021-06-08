@@ -109,7 +109,7 @@ emoji.initialize({realm_emoji, emoji_codes});
 function assert_same(actual, expected) {
     // This helper prevents us from getting false positives
     // where actual and expected are both undefined.
-    assert(expected !== undefined);
+    assert.notEqual(expected, undefined);
     assert.deepEqual(actual, expected);
 }
 

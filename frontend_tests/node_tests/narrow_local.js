@@ -44,15 +44,15 @@ function test_with(fixture) {
         },
         empty: () => fixture.empty,
         all_messages: () => {
-            assert(fixture.all_messages !== undefined);
+            assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
         first: () => {
-            assert(fixture.all_messages !== undefined);
+            assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages[0];
         },
         last: () => {
-            assert(fixture.all_messages !== undefined);
+            assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages[fixture.all_messages.length - 1];
         },
     };
