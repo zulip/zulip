@@ -698,6 +698,7 @@ export function change_state(section) {
     if (section === "new") {
         if (!page_params.is_guest) {
             do_open_create_stream();
+            show_right_section();
         } else {
             toggler.goto("subscribed");
         }
@@ -723,6 +724,7 @@ export function change_state(section) {
         if (page_params.is_guest && !stream_data.id_is_subscribed(stream_id)) {
             toggler.goto("subscribed");
         } else {
+            show_right_section();
             switch_to_stream_row(stream_id);
         }
         return;
