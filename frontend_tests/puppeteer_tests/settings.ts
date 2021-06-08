@@ -90,12 +90,12 @@ async function test_get_api_key(page: Page): Promise<void> {
 
     await page.waitForSelector("#show_api_key", {visible: true});
     const api_key = await common.get_text_from_selector(page, "#api_key_value");
-    assert(/[\dA-Za-z]{32}/.test(api_key), "Incorrect API key format.");
+    assert.match(api_key, /[\dA-Za-z]{32}/, "Incorrect API key format.");
 
     const download_zuliprc_selector = "#download_zuliprc";
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
-    assert(zuliprc_regex.test(zuliprc_decoded_url), "Incorrect zuliprc file");
+    assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc file");
     await page.click("#api_key_modal .close");
     await common.wait_for_modal_to_close(page);
 }
@@ -121,8 +121,9 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await page.click(download_zuliprc_selector);
 
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
-    assert(
-        outgoing_webhook_zuliprc_regex.test(zuliprc_decoded_url),
+    assert.match(
+        zuliprc_decoded_url,
+        outgoing_webhook_zuliprc_regex,
         "Incorrect outgoing webhook bot zulirc format",
     );
 }
@@ -147,7 +148,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
-    assert(zuliprc_regex.test(zuliprc_decoded_url), "Incorrect zuliprc format for bot.");
+    assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc format for bot.");
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
@@ -159,7 +160,7 @@ async function test_botserverrc(page: Page): Promise<void> {
     );
     const botserverrc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
-    assert(botserverrc_regex.test(botserverrc_decoded_url), "Incorrect botserverrc format.");
+    assert.match(botserverrc_decoded_url, botserverrc_regex, "Incorrect botserverrc format.");
 }
 
 async function test_edit_bot_form(page: Page): Promise<void> {
