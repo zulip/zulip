@@ -2,7 +2,7 @@ import datetime
 from typing import Any, Dict, List, Optional
 
 import orjson
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -143,13 +143,18 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     return
 
 
+@transaction.atomic
 @has_request_variables
 def delete_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-    message, ignored_user_message = access_message(user_profile, message_id)
+    # We lock the `Message` object to ensure that any transactions modifying the `Message` object
+    # concurrently are serialized properly with deleting the message; this prevents a deadlock
+    # that would otherwise happen because of the other transaction holding a lock on the `Message`
+    # row.
+    message, ignored_user_message = access_message(user_profile, message_id, lock_message=True)
     validate_can_delete_message(user_profile, message)
     try:
         do_delete_messages(user_profile.realm, [message])

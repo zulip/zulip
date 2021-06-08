@@ -988,12 +988,12 @@ else:
 
 LOGIN_REDIRECT_URL = "/"
 
-# Client-side polling timeout for get_events, in milliseconds.
+# Client-side polling timeout for get_events, in seconds.
 # We configure this here so that the client test suite can override it.
 # We already kill the connection server-side with heartbeat events,
 # but it's good to have a safety.  This value should be greater than
 # (HEARTBEAT_MIN_FREQ_SECS + 10)
-POLL_TIMEOUT = 90 * 1000
+EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS = 90
 
 ########################################################################
 # SSO AND LDAP SETTINGS

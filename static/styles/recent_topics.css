@@ -298,6 +298,11 @@
             thead .last_msg_time_header {
                 display: none;
             }
+
+            .recent_topic_actions {
+                margin-right: 5px;
+                font-size: 15px;
+            }
         }
     }
 }

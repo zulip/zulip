@@ -168,23 +168,23 @@ class MutedUsersTests(ZulipTestCase):
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
 
-        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia)))
-        self.assertEqual(set(), get_muting_users(cordelia))
-        self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia))[0])
+        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia.id)))
+        self.assertEqual(set(), get_muting_users(cordelia.id))
+        self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia.id))[0])
 
         url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
-        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia)))
-        self.assertEqual({hamlet.id}, get_muting_users(cordelia))
-        self.assertEqual({hamlet.id}, cache_get(get_muting_users_cache_key(cordelia))[0])
+        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia.id)))
+        self.assertEqual({hamlet.id}, get_muting_users(cordelia.id))
+        self.assertEqual({hamlet.id}, cache_get(get_muting_users_cache_key(cordelia.id))[0])
 
         url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
         result = self.api_delete(hamlet, url)
         self.assert_json_success(result)
-        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia)))
-        self.assertEqual(set(), get_muting_users(cordelia))
-        self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia))[0])
+        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia.id)))
+        self.assertEqual(set(), get_muting_users(cordelia.id))
+        self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia.id))[0])
 
     def assert_usermessage_read_flag(self, user: UserProfile, message: int, flag: bool) -> None:
         usermesaage = UserMessage.objects.get(

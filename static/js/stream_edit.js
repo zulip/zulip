@@ -808,7 +808,7 @@ export function initialize() {
     );
 
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
             submit_add_subscriber_form(e);
         }

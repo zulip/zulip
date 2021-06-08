@@ -71,7 +71,6 @@ class CommonUtils {
                 ],
                 // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
                 // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
-                // @ts-expect-error: Because of https://github.com/puppeteer/puppeteer/issues/6885
                 defaultViewport: null,
                 headless: true,
             });
@@ -485,6 +484,13 @@ class CommonUtils {
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         );
         await entry!.click();
+    }
+
+    async wait_for_modal_to_close(page: Page): Promise<void> {
+        // This function will ensure that the mouse events are enabled for the background for further tests.
+        await page.waitForFunction(
+            () => document.querySelector(".overlay.show")?.getAttribute("style") === null,
+        );
     }
 
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {

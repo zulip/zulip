@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Any, Dict, Sequence
 from unittest import mock, skipUnless
 from urllib.parse import urlsplit
@@ -105,19 +106,25 @@ class DocPageTest(ZulipTestCase):
                 )
 
     def test_api_doc_endpoints(self) -> None:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        api_docs_dir = os.path.join(current_dir, "..", "..", "templates/zerver/api/")
-        files = os.listdir(api_docs_dir)
+        # We extract the set of /api/ endpoints to check by parsing
+        # the /api/ page sidebar for links starting with /api/.
+        api_page_raw = str((self.client_get("/api/").content))
+        ENDPOINT_REGEXP = re.compile(r"href=\"/api/\s*(.*?)\"")
+        endpoint_list_set = set(re.findall(ENDPOINT_REGEXP, api_page_raw))
+        endpoint_list = [f"/api/{endpoint}" for endpoint in endpoint_list_set]
+        # Validate that the parsing logic isn't broken, since if it
+        # broke, the below would become a noop.
+        self.assertTrue(len(endpoint_list) > 70)
 
-        def _filter_func(fp: str) -> bool:
-            ignored_files = ["sidebar_index.md", "index.md", "missing.md"]
-            return fp.endswith(".md") and not fp.startswith(".") and fp not in ignored_files
-
-        files = list(filter(_filter_func, files))
-
-        for f in files:
-            endpoint = f"/api/{os.path.splitext(f)[0]}"
+        for endpoint in endpoint_list:
             self._test(endpoint, "", doc_html_str=True)
+
+        result = self.client_get(
+            "/api/nonexistent-page",
+            follow=True,
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(result.status_code, 404)
 
     def test_doc_endpoints(self) -> None:
         self._test("/api/", "The Zulip API")

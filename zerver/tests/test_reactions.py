@@ -4,7 +4,11 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_invite_only, do_make_stream_web_public
+from zerver.lib.actions import (
+    do_change_stream_invite_only,
+    do_make_stream_web_public,
+    notify_reaction_update,
+)
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import extract_message_dict
@@ -1023,6 +1027,10 @@ class ReactionAPIEventTest(EmojiReactionBase):
         }
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
+            with mock.patch("zerver.lib.actions.send_event") as m:
+                m.side_effect = AssertionError(
+                    "Events should be sent only after the transaction commits!"
+                )
             self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
 
         event = events[0]["event"]
@@ -1084,3 +1092,27 @@ class ReactionAPIEventTest(EmojiReactionBase):
         self.assertEqual(event["emoji_name"], reaction_info["emoji_name"])
         self.assertEqual(event["emoji_code"], reaction_info["emoji_code"])
         self.assertEqual(event["reaction_type"], reaction_info["reaction_type"])
+
+    def test_events_sent_after_transaction_commits(self) -> None:
+        """
+        Tests that `send_event` is hooked to `transaction.on_commit`. This is important, because
+        we don't want to end up holding locks on message rows for too long if the event queue runs
+        into a problem.
+        """
+        hamlet = self.example_user("hamlet")
+        self.send_stream_message(hamlet, "Scotland")
+        message = self.get_last_message()
+        reaction = Reaction(
+            user_profile=hamlet,
+            message=message,
+            emoji_name="whatever",
+            emoji_code="whatever",
+            reaction_type="whatever",
+        )
+
+        with self.tornado_redirected_to_list([], expected_num_events=1):
+            with mock.patch("zerver.lib.actions.send_event") as m:
+                m.side_effect = AssertionError(
+                    "Events should be sent only after the transaction commits."
+                )
+                notify_reaction_update(hamlet, message, reaction, "stuff")

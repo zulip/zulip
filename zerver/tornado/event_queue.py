@@ -42,7 +42,6 @@ from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
-from zerver.models import UserProfile
 from zerver.tornado.autoreload import add_reload_hook
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
@@ -1139,14 +1138,15 @@ def process_message_update_event(
         maybe_enqueue_notifications_for_message_update(
             user_profile_id=user_profile_id,
             message_id=message_id,
-            stream_name=stream_name,
-            prior_mention_user_ids=prior_mention_user_ids,
-            mention_user_ids=mention_user_ids,
+            private_message=(stream_name is None),
+            mentioned=(user_profile_id in mention_user_ids),
             wildcard_mention_notify=wildcard_mention_notify,
-            presence_idle_user_ids=presence_idle_user_ids,
-            stream_push_user_ids=stream_push_user_ids,
-            stream_email_user_ids=stream_email_user_ids,
-            online_push_user_ids=online_push_user_ids,
+            stream_push_notify=(user_profile_id in stream_push_user_ids),
+            stream_email_notify=(user_profile_id in stream_email_user_ids),
+            stream_name=stream_name,
+            online_push_enabled=(user_profile_id in online_push_user_ids),
+            presence_idle=(user_profile_id in presence_idle_user_ids),
+            prior_mentioned=(user_profile_id in prior_mention_user_ids),
         )
 
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1157,25 +1157,24 @@ def process_message_update_event(
 
 
 def maybe_enqueue_notifications_for_message_update(
-    user_profile_id: UserProfile,
+    user_profile_id: int,
     message_id: int,
-    stream_name: Optional[str],
-    prior_mention_user_ids: Set[int],
-    mention_user_ids: Set[int],
+    private_message: bool,
+    mentioned: bool,
     wildcard_mention_notify: bool,
-    presence_idle_user_ids: Set[int],
-    stream_push_user_ids: Set[int],
-    stream_email_user_ids: Set[int],
-    online_push_user_ids: Set[int],
+    stream_push_notify: bool,
+    stream_email_notify: bool,
+    stream_name: Optional[str],
+    online_push_enabled: bool,
+    presence_idle: bool,
+    prior_mentioned: bool,
 ) -> None:
-    private_message = stream_name is None
-
     if private_message:
         # We don't do offline notifications for PMs, because
         # we already notified the user of the original message
         return
 
-    if user_profile_id in prior_mention_user_ids:
+    if prior_mentioned:
         # Don't spam people with duplicate mentions.  This is
         # especially important considering that most message
         # edits are simple typo corrections.
@@ -1191,9 +1190,6 @@ def maybe_enqueue_notifications_for_message_update(
         # without extending the UserMessage data model.
         return
 
-    stream_push_notify = user_profile_id in stream_push_user_ids
-    stream_email_notify = user_profile_id in stream_email_user_ids
-
     if stream_push_notify or stream_email_notify:
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
@@ -1202,12 +1198,7 @@ def maybe_enqueue_notifications_for_message_update(
         # model.
         return
 
-    # We can have newly mentioned people in an updated message.
-    mentioned = user_profile_id in mention_user_ids
-
-    online_push_enabled = user_profile_id in online_push_user_ids
-
-    idle = (user_profile_id in presence_idle_user_ids) or receiver_is_off_zulip(user_profile_id)
+    idle = presence_idle or receiver_is_off_zulip(user_profile_id)
 
     maybe_enqueue_notifications(
         user_profile_id=user_profile_id,

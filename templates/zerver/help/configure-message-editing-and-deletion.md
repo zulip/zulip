@@ -55,7 +55,7 @@ You can access the message editing and deletion settings as follows.
 
 {start_tabs}
 
-{settings_tab|organization-settings}
+{settings_tab|organization-permissions}
 
 4. Under **Message editing**, configure **Allow message editing**,
    **Users can edit the topic of any message**, and **Allow message deleting**.
@@ -73,7 +73,7 @@ streams.  You can configure which roles have permission to do so:
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, configure **Who can move messages between streams**.
+2. Under **Message editing**, configure **Who can move messages between streams**.
 
 {!save-changes.md!}
 

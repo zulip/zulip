@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from zerver.lib.management import ZulipBaseCommand
@@ -27,6 +28,15 @@ realms used for testing; consider using deactivate_realm instead."""
         message_count = Message.objects.filter(sender__realm=realm).count()
 
         print(f"This realm has {user_count} users and {message_count} messages.\n")
+
+        if settings.BILLING_ENABLED:
+            # Deleting a Realm object also deletes associating billing
+            # metadata in an invariant-violating way, so we should
+            # never use this tool for a realm with billing setup.
+            from corporate.models import get_customer_by_realm
+
+            if get_customer_by_realm(realm):
+                raise CommandError("This realm has had a billing relationship associated with it!")
 
         print(
             "This command will \033[91mPERMANENTLY DELETE\033[0m all data for this realm.  "

@@ -90,7 +90,6 @@ from zerver.lib.validator import (
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
-MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
@@ -1297,8 +1296,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
     COLOR_SCHEME_LIGHT = 3
-    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_NIGHT, COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_LIGHT]
-    color_scheme: int = models.PositiveSmallIntegerField(default=COLOR_SCHEME_NIGHT)
+    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
+    color_scheme: int = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -1661,12 +1660,8 @@ def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_offline_email_notifications and not user_profile.is_bot
 
 
-def receives_online_notifications(user_profile: UserProfile) -> bool:
+def receives_online_push_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_online_push_notifications and not user_profile.is_bot
-
-
-def receives_stream_notifications(user_profile: UserProfile) -> bool:
-    return user_profile.enable_stream_push_notifications and not user_profile.is_bot
 
 
 def remote_user_to_email(remote_user: str) -> str:

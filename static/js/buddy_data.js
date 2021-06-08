@@ -145,22 +145,31 @@ export function user_last_seen_time_status(user_id) {
         return $t({defaultMessage: "Active now"});
     }
 
-    if (page_params.realm_is_zephyr_mirror_realm) {
-        // We don't send presence data to clients in Zephyr mirroring realms
-        return $t({defaultMessage: "Unknown"});
+    if (status === "idle") {
+        // When we complete our presence API rewrite to have the data
+        // plumbed, we may want to change this to also mention when
+        // they were last active.
+        return $t({defaultMessage: "Idle"});
     }
 
-    // There are situations where the client has incomplete presence
-    // history on a user.  This can happen when users are deactivated,
-    // or when they just haven't been present in a long time (and we
-    // may have queries on presence that go back only N weeks).
-    //
-    // We give the somewhat vague status of "Unknown" for these users.
     const last_active_date = presence.last_active_date(user_id);
-    if (last_active_date === undefined) {
-        return $t({defaultMessage: "More than 2 weeks ago"});
+    let last_seen;
+    if (page_params.realm_is_zephyr_mirror_realm) {
+        // We don't send presence data to clients in Zephyr mirroring realms
+        last_seen = $t({defaultMessage: "Unknown"});
+    } else if (last_active_date === undefined) {
+        // There are situations where the client has incomplete presence
+        // history on a user.  This can happen when users are deactivated,
+        // or when they just haven't been present in a long time (and we
+        // may have queries on presence that go back only N weeks).
+        //
+        // We give this vague status for such users; we will get to
+        // delete this code when we finish rewriting the presence API.
+        last_seen = $t({defaultMessage: "More than 2 weeks ago"});
+    } else {
+        last_seen = timerender.last_seen_status_from_date(last_active_date);
     }
-    return timerender.last_seen_status_from_date(last_active_date);
+    return $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
 }
 
 export function info_for(user_id) {
@@ -179,15 +188,6 @@ export function info_for(user_id) {
         user_circle_class,
         user_circle_status,
     };
-}
-
-function get_last_seen(active_status, last_seen) {
-    if (active_status === "active") {
-        return last_seen;
-    }
-
-    const last_seen_text = $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
-    return last_seen_text;
 }
 
 export function get_title_data(user_ids_string, is_group) {
@@ -230,7 +230,6 @@ export function get_title_data(user_ids_string, is_group) {
 
     // For buddy list and individual PMS.  Since is_group=False, it's
     // a single, human, user.
-    const active_status = presence.get_status(user_id);
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
 
@@ -239,7 +238,7 @@ export function get_title_data(user_ids_string, is_group) {
         return {
             first_line: person.full_name,
             second_line: user_status.get_status_text(user_id),
-            third_line: get_last_seen(active_status, last_seen),
+            third_line: last_seen,
             show_you: is_my_user,
         };
     }
@@ -247,7 +246,7 @@ export function get_title_data(user_ids_string, is_group) {
     // Users does not have a status.
     return {
         first_line: person.full_name,
-        second_line: get_last_seen(active_status, last_seen),
+        second_line: last_seen,
         third_line: "",
         show_you: is_my_user,
     };

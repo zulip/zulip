@@ -13,6 +13,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
+from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import (
     build_page_params_for_home_page_load,
     get_billing_info,
@@ -24,7 +25,6 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
-from zerver.views.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.views.portico import hello_view
 
 

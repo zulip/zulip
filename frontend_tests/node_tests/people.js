@@ -90,6 +90,7 @@ const realm_admin = {
     is_admin: true,
     is_guest: false,
     is_moderator: false,
+    is_billing_admin: true,
     is_bot: false,
     role: 200,
 };
@@ -102,6 +103,7 @@ const guest = {
     is_admin: false,
     is_guest: true,
     is_moderator: false,
+    is_billing_admin: false,
     is_bot: false,
     role: 600,
 };
@@ -114,6 +116,7 @@ const realm_owner = {
     is_admin: true,
     is_guest: false,
     is_moderator: false,
+    is_billing_admin: false,
     is_bot: false,
     role: 100,
 };
@@ -133,6 +136,7 @@ const moderator = {
     is_owner: false,
     is_admin: false,
     is_guest: false,
+    is_billing_admin: false,
     is_moderator: true,
     is_bot: false,
     role: 300,

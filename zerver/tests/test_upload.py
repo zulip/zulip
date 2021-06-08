@@ -1238,7 +1238,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_avatar_upload_file_size_error(self) -> None:
         self.login("hamlet")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_AVATAR_FILE_SIZE=0):
+            with self.settings(MAX_AVATAR_FILE_SIZE_MIB=0):
                 result = self.client_post("/json/users/me/avatar", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
@@ -1416,7 +1416,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_realm_icon_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_ICON_FILE_SIZE=0):
+            with self.settings(MAX_ICON_FILE_SIZE_MIB=0):
                 result = self.client_post("/json/realm/icon", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
@@ -1601,7 +1601,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_logo_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_LOGO_FILE_SIZE=0):
+            with self.settings(MAX_LOGO_FILE_SIZE_MIB=0):
                 result = self.client_post(
                     "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
                 )

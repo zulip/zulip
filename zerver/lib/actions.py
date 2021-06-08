@@ -5,7 +5,7 @@ import logging
 import os
 import time
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from operator import itemgetter
 from typing import (
     AbstractSet,
@@ -187,7 +187,6 @@ from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions, is_widget_message
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Attachment,
     Client,
     CustomProfileField,
@@ -1863,7 +1862,7 @@ def do_send_messages(
             mentioned_user_ids = send_request.message.mentions_user_ids
 
             # Extend the set with users who have muted the sender.
-            mark_as_read_for_users = get_muting_users(send_request.message.sender)
+            mark_as_read_for_users = get_muting_users(send_request.message.sender_id)
             mark_as_read_for_users.update(mark_as_read)
 
             user_messages = create_user_messages(
@@ -2142,6 +2141,10 @@ def do_add_submessage(
     msg_type: str,
     content: str,
 ) -> None:
+    """Should be called while holding a SELECT FOR UPDATE lock
+    (e.g. via access_message(..., lock_message=True)) on the
+    Message row, to prevent race conditions.
+    """
     submessage = SubMessage(
         sender_id=sender_id,
         message_id=message_id,
@@ -2161,7 +2164,7 @@ def do_add_submessage(
     ums = UserMessage.objects.filter(message_id=message_id)
     target_user_ids = [um.user_profile_id for um in ums]
 
-    send_event(realm, event, target_user_ids)
+    transaction.on_commit(lambda: send_event(realm, event, target_user_ids))
 
 
 def notify_reaction_update(
@@ -2212,7 +2215,7 @@ def notify_reaction_update(
         stream = Stream.objects.get(id=stream_id)
         user_ids |= subscriber_ids_with_stream_history_access(stream)
 
-    send_event(user_profile.realm, event, list(user_ids))
+    transaction.on_commit(lambda: send_event(user_profile.realm, event, list(user_ids)))
 
 
 def do_add_reaction(
@@ -2222,6 +2225,11 @@ def do_add_reaction(
     emoji_code: str,
     reaction_type: str,
 ) -> None:
+    """Should be called while holding a SELECT FOR UPDATE lock
+    (e.g. via access_message(..., lock_message=True)) on the
+    Message row, to prevent race conditions.
+    """
+
     reaction = Reaction(
         user_profile=user_profile,
         message=message,
@@ -2229,13 +2237,8 @@ def do_add_reaction(
         emoji_code=emoji_code,
         reaction_type=reaction_type,
     )
-    try:
-        reaction.save()
-    except django.db.utils.IntegrityError:  # nocoverage
-        # This can happen when a race results in the check in views
-        # code not catching an attempt to double-add a reaction, or
-        # perhaps if the emoji_name/emoji_code mapping is busted.
-        raise JsonableError(_("Reaction already exists."))
+
+    reaction.save()
 
     notify_reaction_update(user_profile, message, reaction, "add")
 
@@ -2247,7 +2250,7 @@ def check_add_reaction(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
-    message, user_message = access_message(user_profile, message_id)
+    message, user_message = access_message(user_profile, message_id, lock_message=True)
 
     if emoji_code is None:
         # The emoji_code argument is only required for rare corner
@@ -2313,6 +2316,10 @@ def check_add_reaction(
 def do_remove_reaction(
     user_profile: UserProfile, message: Message, emoji_code: str, reaction_type: str
 ) -> None:
+    """Should be called while holding a SELECT FOR UPDATE lock
+    (e.g. via access_message(..., lock_message=True)) on the
+    Message row, to prevent race conditions.
+    """
     reaction = Reaction.objects.filter(
         user_profile=user_profile,
         message=message,
@@ -2320,6 +2327,7 @@ def do_remove_reaction(
         reaction_type=reaction_type,
     ).get()
     reaction.delete()
+
     notify_reaction_update(user_profile, message, reaction, "remove")
 
 
@@ -2736,6 +2744,43 @@ def validate_message_edit_payload(
         raise JsonableError(_("Widgets cannot be edited."))
 
 
+def can_edit_content_or_topic(
+    message: Message,
+    user_profile: UserProfile,
+    is_no_topic_msg: bool,
+    content: Optional[str] = None,
+    topic_name: Optional[str] = None,
+) -> bool:
+    # You have permission to edit the message (both content and topic) if you sent it.
+    if message.sender_id == user_profile.id:
+        return True
+
+    # You cannot edit the content of message sent by someone else.
+    if content is not None:
+        return False
+
+    # If no topic change is requested, we're done.
+    if topic_name is None:  # nocoverage
+        return True
+
+    # The following cases are the various reasons a user might be
+    # allowed to edit topics.
+
+    # We allow anyone to edit (no topic) messages to help tend them.
+    if is_no_topic_msg:
+        return True
+
+    # Organization administrators can always edit topics
+    if user_profile.is_realm_admin:
+        return True
+
+    # The community_topic_editing setting controls normal users editing topics.
+    if user_profile.realm.allow_community_topic_editing:
+        return True
+
+    return False
+
+
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
@@ -2766,22 +2811,11 @@ def check_update_message(
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
-    # You only have permission to edit a message if:
-    # you change this value also change those two parameters in message_edit.js.
-    # 1. You sent it, OR:
-    # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin, OR:
-    # 4. This is a topic-only edit and your realm allows users to edit topics.
-    if message.sender == user_profile:
-        pass
-    elif (content is None) and (
-        is_no_topic_msg
-        or user_profile.is_realm_admin
-        or user_profile.realm.allow_community_topic_editing
-    ):
-        pass
-    else:
-        raise JsonableError(_("You don't have permission to edit this message"))
+    if content is not None or topic_name is not None:
+        if not can_edit_content_or_topic(
+            message, user_profile, is_no_topic_msg, content, topic_name
+        ):
+            raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
@@ -2799,14 +2833,14 @@ def check_update_message(
     # sent the message, they are not the admin, and the time limit for editing
     # topics is passed, raise an error.
     if (
-        content is None
+        topic_name is not None
         and message.sender != user_profile
         and not user_profile.is_realm_admin
         and not is_no_topic_msg
     ):
         deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message has passed"))
+            raise JsonableError(_("The time limit for editing this message's topic has passed"))
 
     rendered_content = None
     links_for_embed: Set[str] = set()
@@ -3197,7 +3231,7 @@ def _internal_prep_message(
     Call do_send_messages with a list of the return values of this method.
     """
     # Remove any null bytes from the content
-    if len(content) > MAX_MESSAGE_LENGTH:
+    if len(content) > settings.MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 
     # If we have a stream name, and the stream doesn't exist, we
@@ -4560,6 +4594,15 @@ def do_change_user_role(
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
+def do_make_user_billing_admin(user_profile: UserProfile) -> None:
+    user_profile.is_billing_admin = True
+    user_profile.save(update_fields=["is_billing_admin"])
+    event = dict(
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=True)
+    )
+    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+
+
 def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
     user_profile.can_forge_sender = value
     user_profile.save(update_fields=["can_forge_sender"])
@@ -5265,6 +5308,16 @@ def do_update_user_status(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+@dataclass
+class ReadMessagesEvent:
+    messages: List[int]
+    all: bool
+    type: str = field(default="update_message_flags", init=False)
+    op: str = field(default="add", init=False)
+    operation: str = field(default="add", init=False)
+    flag: str = field(default="read", init=False)
+
+
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event("bankruptcy")
 
@@ -5289,13 +5342,11 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = dict(
-        type="update_message_flags",
-        op="add",
-        operation="add",
-        flag="read",
-        messages=[],  # we don't send messages, since the client reloads anyway
-        all=True,
+    event = asdict(
+        ReadMessagesEvent(
+            messages=[],  # we don't send messages, since the client reloads anyway
+            all=True,
+        )
     )
     event_time = timezone_now()
 
@@ -5342,13 +5393,11 @@ def do_mark_stream_messages_as_read(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = dict(
-        type="update_message_flags",
-        op="add",
-        operation="add",
-        flag="read",
-        messages=message_ids,
-        all=False,
+    event = asdict(
+        ReadMessagesEvent(
+            messages=message_ids,
+            all=False,
+        )
     )
     event_time = timezone_now()
 
@@ -5382,13 +5431,11 @@ def do_mark_muted_user_messages_as_read(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
-    event = dict(
-        type="update_message_flags",
-        op="add",
-        operation="add",
-        flag="read",
-        messages=message_ids,
-        all=False,
+    event = asdict(
+        ReadMessagesEvent(
+            messages=message_ids,
+            all=False,
+        )
     )
     event_time = timezone_now()
 
@@ -6122,7 +6169,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
 
     event["message_type"] = message_type
-    send_event(realm, event, users_to_notify)
+    transaction.on_commit(lambda: send_event(realm, event, users_to_notify))
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
@@ -7230,18 +7277,18 @@ def try_add_realm_default_custom_profile_field(
     realm: Realm, field_subtype: str
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
-    field = CustomProfileField(
+    custom_profile_field = CustomProfileField(
         realm=realm,
         name=field_data["name"],
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
         hint=field_data["hint"],
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
     )
-    field.save()
-    field.order = field.id
-    field.save(update_fields=["order"])
+    custom_profile_field.save()
+    custom_profile_field.order = custom_profile_field.id
+    custom_profile_field.save(update_fields=["order"])
     notify_realm_custom_profile_fields(realm)
-    return field
+    return custom_profile_field
 
 
 def try_add_realm_custom_profile_field(
@@ -7251,19 +7298,19 @@ def try_add_realm_custom_profile_field(
     hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
 ) -> CustomProfileField:
-    field = CustomProfileField(realm=realm, name=name, field_type=field_type)
-    field.hint = hint
+    custom_profile_field = CustomProfileField(realm=realm, name=name, field_type=field_type)
+    custom_profile_field.hint = hint
     if (
-        field.field_type == CustomProfileField.SELECT
-        or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
+        custom_profile_field.field_type == CustomProfileField.SELECT
+        or custom_profile_field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
-        field.field_data = orjson.dumps(field_data or {}).decode()
+        custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
-    field.save()
-    field.order = field.id
-    field.save(update_fields=["order"])
+    custom_profile_field.save()
+    custom_profile_field.order = custom_profile_field.id
+    custom_profile_field.save(update_fields=["order"])
     notify_realm_custom_profile_fields(realm)
-    return field
+    return custom_profile_field
 
 
 def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField) -> None:
@@ -7299,13 +7346,13 @@ def try_update_realm_custom_profile_field(
 
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
-    fields = CustomProfileField.objects.filter(realm=realm)
-    for field in fields:
-        if field.id not in order_mapping:
+    custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
+    for custom_profile_field in custom_profile_fields:
+        if custom_profile_field.id not in order_mapping:
             raise JsonableError(_("Invalid order mapping."))
-    for field in fields:
-        field.order = order_mapping[field.id]
-        field.save(update_fields=["order"])
+    for custom_profile_field in custom_profile_fields:
+        custom_profile_field.order = order_mapping[custom_profile_field.id]
+        custom_profile_field.save(update_fields=["order"])
     notify_realm_custom_profile_fields(realm)
 
 
@@ -7329,21 +7376,23 @@ def do_update_user_custom_profile_data_if_changed(
     data: List[Dict[str, Union[int, str, List[int]]]],
 ) -> None:
     with transaction.atomic():
-        for field in data:
+        for custom_profile_field in data:
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
-                user_profile=user_profile, field_id=field["id"]
+                user_profile=user_profile, field_id=custom_profile_field["id"]
             )
 
-            if not created and field_value.value == str(field["value"]):
+            if not created and field_value.value == str(custom_profile_field["value"]):
                 # If the field value isn't actually being changed to a different one,
                 # we have nothing to do here for this field.
                 # Note: field_value.value is a TextField() so we need to cast field['value']
                 # to a string for the comparison in this if.
                 continue
 
-            field_value.value = field["value"]
+            field_value.value = custom_profile_field["value"]
             if field_value.field.is_renderable():
-                field_value.rendered_value = render_stream_description(str(field["value"]))
+                field_value.rendered_value = render_stream_description(
+                    str(custom_profile_field["value"])
+                )
                 field_value.save(update_fields=["value", "rendered_value"])
             else:
                 field_value.save(update_fields=["value"])
@@ -7360,12 +7409,19 @@ def do_update_user_custom_profile_data_if_changed(
 
 def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:
     try:
-        field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
-        field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
+        custom_profile_field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
+        field_value = CustomProfileFieldValue.objects.get(
+            field=custom_profile_field, user_profile=user_profile
+        )
         field_value.delete()
         notify_user_update_custom_profile_data(
             user_profile,
-            {"id": field_id, "value": None, "rendered_value": None, "type": field.field_type},
+            {
+                "id": field_id,
+                "value": None,
+                "rendered_value": None,
+                "type": custom_profile_field.field_type,
+            },
         )
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))

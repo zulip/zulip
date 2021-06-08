@@ -237,12 +237,9 @@ run_test("arrows on pills", () => {
 
     function test_key(c) {
         key_handler({
-            charCode: c,
+            key: c,
         });
     }
-
-    const LEFT_ARROW = 37;
-    const RIGHT_ARROW = 39;
 
     let prev_focused = false;
     let next_focused = false;
@@ -269,10 +266,10 @@ run_test("arrows on pills", () => {
     // We use the same stub to test both arrows, since we don't
     // actually cause any real state changes here.  We stub out
     // the only interaction, which is to move the focus.
-    test_key(LEFT_ARROW);
+    test_key("ArrowLeft");
     assert(prev_focused);
 
-    test_key(RIGHT_ARROW);
+    test_key("ArrowRight");
     assert(next_focused);
 });
 
@@ -284,7 +281,6 @@ run_test("left arrow on input", () => {
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    const LEFT_ARROW = 37;
     const key_handler = container.get_on_handler("keydown", ".input");
 
     let last_pill_focused = false;
@@ -300,7 +296,7 @@ run_test("left arrow on input", () => {
     });
 
     key_handler({
-        keyCode: LEFT_ARROW,
+        key: "ArrowLeft",
     });
 
     assert(last_pill_focused);
@@ -318,13 +314,12 @@ run_test("comma", () => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const COMMA = 188;
     const key_handler = container.get_on_handler("keydown", ".input");
 
     pill_input.text(" yel");
 
     key_handler({
-        keyCode: COMMA,
+        key: ",",
         preventDefault: noop,
     });
 
@@ -333,7 +328,7 @@ run_test("comma", () => {
     pill_input.text(" yellow");
 
     key_handler({
-        keyCode: COMMA,
+        key: ",",
         preventDefault: noop,
     });
 
@@ -351,11 +346,10 @@ run_test("Enter key with text", () => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const ENTER = 13;
     const key_handler = container.get_on_handler("keydown", ".input");
 
     key_handler({
-        keyCode: ENTER,
+        key: "Enter",
         preventDefault: noop,
         stopPropagation: noop,
         target: {
@@ -425,11 +419,10 @@ run_test("insert_remove", (override) => {
         pill.$element.remove = set_colored_removed_func(pill.item.display_value);
     }
 
-    const BACKSPACE = 8;
     let key_handler = container.get_on_handler("keydown", ".input");
 
     key_handler({
-        keyCode: BACKSPACE,
+        key: "Backspace",
         target: {
             textContent: "",
         },
@@ -463,7 +456,7 @@ run_test("insert_remove", (override) => {
 
     key_handler = container.get_on_handler("keydown", ".pill");
     key_handler({
-        keyCode: BACKSPACE,
+        key: "Backspace",
         preventDefault: noop,
     });
 

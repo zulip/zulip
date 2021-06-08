@@ -142,11 +142,11 @@ run_test("initialize", (override) => {
     let confirm_license_modal_shown = false;
     override(helpers, "is_valid_input", () => true);
     $("#confirm-licenses-modal").modal = (action) => {
-        assert(action, "show");
+        assert.equal(action, "show");
         confirm_license_modal_shown = true;
     };
     $("#licensechange-input-section").data = (key) => {
-        assert(key, "licenses");
+        assert.equal(key, "licenses");
         return 20;
     };
     $("#new_licenses_input").val = () => 15;

@@ -48,7 +48,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Message,
     RealmEmoji,
     RealmFilter,
@@ -711,7 +710,7 @@ class MarkdownTest(ZulipTestCase):
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
         ret = image_preview_enabled()
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         settings.INLINE_IMAGE_PREVIEW = True
 
@@ -720,22 +719,22 @@ class MarkdownTest(ZulipTestCase):
         realm = message.get_realm()
 
         ret = image_preview_enabled()
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         ret = image_preview_enabled(message, realm)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(message)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(message, realm, no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         ret = image_preview_enabled(message, no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_url_embed_preview_enabled(self) -> None:
@@ -748,23 +747,23 @@ class MarkdownTest(ZulipTestCase):
         realm.save(update_fields=["inline_url_embed_preview"])
 
         ret = url_embed_preview_enabled()
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         settings.INLINE_URL_EMBED_PREVIEW = True
 
         ret = url_embed_preview_enabled()
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = image_preview_enabled(no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
         ret = url_embed_preview_enabled(message, realm)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
         ret = url_embed_preview_enabled(message)
-        self.assertEqual(ret, True)
+        self.assertTrue(ret)
 
         ret = url_embed_preview_enabled(message, no_previews=True)
-        self.assertEqual(ret, False)
+        self.assertFalse(ret)
 
     def test_inline_dropbox(self) -> None:
         msg = "Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG"
@@ -2748,10 +2747,11 @@ class MarkdownErrorTests(ZulipTestCase):
             with self.assertRaises(JsonableError):
                 self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
+    @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
-        """A rendered message with an ultra-long length (> 10 * MAX_MESSAGE_LENGTH)
+        """A rendered message with an ultra-long length (> 100 * MAX_MESSAGE_LENGTH)
         throws an exception"""
-        msg = "mock rendered message\n" * MAX_MESSAGE_LENGTH
+        msg = "mock rendered message\n" * 10 * settings.MAX_MESSAGE_LENGTH
 
         with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"

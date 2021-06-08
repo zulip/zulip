@@ -649,6 +649,8 @@ Output:
         email_address: str,
         *,
         url_pattern: Optional[str] = None,
+        email_subject_contains: Optional[str] = None,
+        email_body_contains: Optional[str] = None,
     ) -> str:
         from django.core.mail import outbox
 
@@ -661,6 +663,13 @@ Output:
             ):
                 match = re.search(url_pattern, message.body)
                 assert match is not None
+
+                if email_subject_contains:
+                    self.assertIn(email_subject_contains, message.subject)
+
+                if email_body_contains:
+                    self.assertIn(email_body_contains, message.body)
+
                 [confirmation_url] = match.groups()
                 return confirmation_url
         else:
@@ -1263,13 +1272,22 @@ Output:
     ) -> Iterator[None]:
         lst.clear()
         real_event_queue_process_notification = django_tornado_api.process_notification
-        django_tornado_api.process_notification = lambda notice: lst.append(notice)
+
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        yield
+        django_tornado_api.process_notification = lambda notice: lst.append(notice)
+
+        # Some `send_event` calls need to be executed only after the current transaction
+        # commits (using `on_commit` hooks). Because the transaction in Django tests never
+        # commits (rather, gets rolled back after the test completes), such events would
+        # never be sent in tests, and we would be unable to verify them. Hence, we use
+        # this helper to make sure the `send_event` calls actually run.
+        with self.captureOnCommitCallbacks(execute=True):
+            yield
+
         django_tornado_api.process_notification = real_event_queue_process_notification
 
         self.assert_length(lst, expected_num_events)

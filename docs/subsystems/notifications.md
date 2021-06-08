@@ -74,7 +74,7 @@ as follows:
     `DELETE /events/{queue_id}` request).
   * The `receiver_is_off_zulip` check is effectively repeated when
     event queues are garbage-collected (in `missedmessage_hook`) by
-    looking for whether the queue being garbage-collectee was the only
+    looking for whether the queue being garbage-collected was the only
     one; this second check solves the hard disconnect problem, resulting in
     notifications for these hard-disconnect cases usually coming 10
     minutes late.

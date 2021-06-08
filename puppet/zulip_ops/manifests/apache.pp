@@ -14,23 +14,6 @@ class zulip_ops::apache {
     notify  => Service['apache2'],
   }
 
-  file { '/etc/apache2/users/':
-    ensure  => directory,
-    require => Package['apache2'],
-    owner   => 'www-data',
-    group   => 'www-data',
-    mode    => '0600',
-  }
-
-  file { '/etc/apache2/users/monitoring':
-    ensure  => file,
-    require => File['/etc/apache2/users/'],
-    owner   => 'www-data',
-    group   => 'www-data',
-    mode    => '0600',
-    source  => 'puppet:///modules/zulip_ops/apache/users',
-  }
-
   file { '/etc/apache2/certs/':
     ensure  => directory,
     require => Package['apache2'],

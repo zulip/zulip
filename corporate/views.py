@@ -44,6 +44,7 @@ from zerver.decorator import (
     require_organization_member,
     zulip_login_required,
 )
+from zerver.lib.actions import do_make_user_billing_admin
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -260,8 +261,7 @@ def sponsorship(
     )
 
     update_sponsorship_status(realm, True, acting_user=user)
-    user.is_billing_admin = True
-    user.save(update_fields=["is_billing_admin"])
+    do_make_user_billing_admin(user)
 
     return json_success()
 

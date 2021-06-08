@@ -155,8 +155,8 @@ $(() => {
         "focusout keydown",
         function (e) {
             // check if it is the "focusout" or if it is a keydown, then check if
-            // the keycode was the one for "enter" (13).
-            if (e.type === "focusout" || e.which === 13) {
+            // the keycode was the one for "Enter".
+            if (e.type === "focusout" || e.key === "Enter") {
                 $(this).val($(this).val().trim());
             }
         },

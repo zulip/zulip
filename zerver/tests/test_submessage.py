@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Mapping
+from unittest import mock
 
+from zerver.lib.actions import do_add_submessage
 from zerver.lib.message import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, SubMessage
@@ -147,3 +149,19 @@ class TestBasics(ZulipTestCase):
             sender_id=cordelia.id,
         )
         self.assertEqual(row, expected_data)
+
+    def test_submessage_event_sent_after_transaction_commits(self) -> None:
+        """
+        Tests that `send_event` is hooked to `transaction.on_commit`. This is important, because
+        we don't want to end up holding locks on message rows for too long if the event queue runs
+        into a problem.
+        """
+        hamlet = self.example_user("hamlet")
+        message_id = self.send_stream_message(hamlet, "Scotland")
+
+        with self.tornado_redirected_to_list([], expected_num_events=1):
+            with mock.patch("zerver.lib.actions.send_event") as m:
+                m.side_effect = AssertionError(
+                    "Events should be sent only after the transaction commits."
+                )
+                do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")

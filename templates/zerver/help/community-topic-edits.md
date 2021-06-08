@@ -17,7 +17,7 @@ for details.
 
 {start_tabs}
 
-{settings_tab|organization-settings}
+{settings_tab|organization-permissions}
 
 2. Under **Message editing**, uncheck **Users can edit the topic of any message**.
 

@@ -106,7 +106,7 @@ class MarkdownDirectoryView(ApiURLView):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
             # Strip the header and then use the first line to get the article title
-            if self.path_template == "/zerver/api/%s.md" and first_line[0] != "#":
+            if self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
                 api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1].replace("-", "_")
                 endpoint_path, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_path, endpoint_method)

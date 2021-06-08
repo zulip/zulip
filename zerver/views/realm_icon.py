@@ -19,10 +19,10 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
         return json_error(_("You must upload exactly one icon."))
 
     icon_file = list(request.FILES.values())[0]
-    if (settings.MAX_ICON_FILE_SIZE * 1024 * 1024) < icon_file.size:
+    if (settings.MAX_ICON_FILE_SIZE_MIB * 1024 * 1024) < icon_file.size:
         return json_error(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_ICON_FILE_SIZE,
+                settings.MAX_ICON_FILE_SIZE_MIB,
             )
         )
     upload_icon_image(icon_file, user_profile)

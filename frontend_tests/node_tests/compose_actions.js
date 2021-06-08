@@ -94,6 +94,10 @@ function override_private_message_recipient(override) {
 
 function test(label, f) {
     run_test(label, (override) => {
+        // We don't test the css calls; we just skip over them.
+        $("#compose").css = () => {};
+        $(".new_message_textarea").css = () => {};
+
         people.init();
         compose_state.set_message_type(false);
         f(override);

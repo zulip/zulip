@@ -180,49 +180,6 @@ function get_property_value(property_name) {
         return "no_restriction";
     }
 
-    if (property_name === "realm_user_invite_restriction") {
-        if (!page_params.realm_invite_required) {
-            if (
-                page_params.realm_invite_to_realm_policy ===
-                settings_config.common_policy_values.by_admins_only.code
-            ) {
-                return "no_invite_required_by_admins_only";
-            }
-            if (
-                page_params.realm_invite_to_realm_policy ===
-                settings_config.common_policy_values.by_moderators_only.code
-            ) {
-                return "no_invite_required_by_moderators_only";
-            }
-            if (
-                page_params.realm_invite_to_realm_policy ===
-                settings_config.common_policy_values.by_full_members.code
-            ) {
-                return "no_invite_required_by_full_members";
-            }
-            return "no_invite_required";
-        }
-        if (
-            page_params.realm_invite_to_realm_policy ===
-            settings_config.common_policy_values.by_admins_only.code
-        ) {
-            return "by_admins_only";
-        }
-        if (
-            page_params.realm_invite_to_realm_policy ===
-            settings_config.common_policy_values.by_moderators_only.code
-        ) {
-            return "by_moderators_only";
-        }
-        if (
-            page_params.realm_invite_to_realm_policy ===
-            settings_config.common_policy_values.by_full_members.code
-        ) {
-            return "by_full_members";
-        }
-        return "by_anyone";
-    }
-
     if (property_name === "realm_default_twenty_four_hour_time") {
         return JSON.stringify(page_params[property_name]);
     }
@@ -245,7 +202,7 @@ const simple_dropdown_properties = [
     "realm_user_group_edit_policy",
     "realm_private_message_policy",
     "realm_add_emoji_by_admins_only",
-    "realm_user_invite_restriction",
+    "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
 ];
@@ -501,10 +458,6 @@ export function sync_realm_settings(property) {
             break;
         case "allow_message_deleting":
             property = "msg_delete_limit_setting";
-            break;
-        case "invite_required":
-        case "invite_to_realm_policy":
-            property = "user_invite_restriction";
             break;
     }
     const element = $(`#id_realm_${CSS.escape(property)}`);
@@ -763,19 +716,15 @@ export function build_page() {
         return undefined;
     });
 
-    $(".organization").on(
-        "click",
-        ".subsection-header .subsection-changes-discard .button",
-        (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            for (const elem of get_subsection_property_elements(e.target)) {
-                discard_property_element_changes(elem);
-            }
-            const save_btn_controls = $(e.target).closest(".save-button-controls");
-            change_save_button_state(save_btn_controls, "discarded");
-        },
-    );
+    $(".organization").on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        for (const elem of get_subsection_property_elements(e.target)) {
+            discard_property_element_changes(elem);
+        }
+        const save_btn_controls = $(e.target).closest(".save-button-controls");
+        change_save_button_state(save_btn_controls, "discarded");
+    });
 
     save_organization_settings = function (data, save_button) {
         const subsection_parent = save_button.closest(".org-subsection-parent");
@@ -900,49 +849,6 @@ export function build_page() {
                         break;
                 }
 
-                const user_invite_restriction = $("#id_realm_user_invite_restriction").val();
-                switch (user_invite_restriction) {
-                    case "no_invite_required":
-                        data.invite_required = false;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_members.code;
-                        break;
-                    case "no_invite_required_by_admins_only":
-                        data.invite_required = false;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_admins_only.code;
-                        break;
-                    case "no_invite_required_by_moderators_only":
-                        data.invite_required = false;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_moderators_only.code;
-                        break;
-                    case "no_invite_required_by_full_members":
-                        data.invite_required = false;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_full_members.code;
-                        break;
-                    case "by_admins_only":
-                        data.invite_required = true;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_admins_only.code;
-                        break;
-                    case "by_moderators_only":
-                        data.invite_required = true;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_moderators_only.code;
-                        break;
-                    case "by_full_members":
-                        data.invite_required = true;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_full_members.code;
-                        break;
-                    default:
-                        data.invite_required = true;
-                        data.invite_to_realm_policy =
-                            settings_config.common_policy_values.by_members.code;
-                }
-
                 const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();
                 switch (waiting_period_threshold) {
                     case "none":
@@ -992,7 +898,7 @@ export function build_page() {
         return data;
     }
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save .button", (e) => {
+    $(".organization").on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
@@ -1009,7 +915,7 @@ export function build_page() {
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
-        if (e.keyCode === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
             $(e.target)
                 .closest(".org-subsection-parent")

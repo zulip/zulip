@@ -32,10 +32,10 @@ def upload_emoji(
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one file."))
     emoji_file = list(request.FILES.values())[0]
-    if (settings.MAX_EMOJI_FILE_SIZE * 1024 * 1024) < emoji_file.size:
+    if (settings.MAX_EMOJI_FILE_SIZE_MIB * 1024 * 1024) < emoji_file.size:
         return json_error(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_EMOJI_FILE_SIZE,
+                settings.MAX_EMOJI_FILE_SIZE_MIB,
             )
         )
 

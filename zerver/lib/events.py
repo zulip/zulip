@@ -22,6 +22,7 @@ from zerver.lib.actions import (
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
@@ -50,7 +51,6 @@ from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
@@ -81,7 +81,7 @@ def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
     state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
-    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE
+    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE_MIB
 
 
 def always_want(msg_type: str) -> bool:
@@ -241,9 +241,9 @@ def fetch_initial_state_data(
         state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
         # Important: Encode units in the client-facing API name.
-        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
+        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
-        state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE
+        state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
         state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
 
         state["realm_icon_url"] = realm_icon_url(realm)
@@ -276,6 +276,11 @@ def fetch_initial_state_data(
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
+        state["server_needs_upgrade"] = is_outdated_server(user_profile)
+        state[
+            "event_queue_longpoll_timeout_seconds"
+        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+
         # TODO: Should these have the realm prefix replaced with server_?
         state["realm_push_notifications_enabled"] = push_notifications_enabled()
         state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
@@ -300,7 +305,7 @@ def fetch_initial_state_data(
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
-        state["max_message_length"] = MAX_MESSAGE_LENGTH
+        state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -340,6 +345,7 @@ def fetch_initial_state_data(
             # restrictions apply to these users as well, and it lets
             # us avoid unnecessary conditionals.
             role=UserProfile.ROLE_GUEST,
+            is_billing_admin=False,
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
@@ -376,6 +382,7 @@ def fetch_initial_state_data(
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
+        state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["enter_sends"] = settings_user.enter_sends
         state["email"] = settings_user.email
@@ -672,7 +679,7 @@ def apply_event(
                             user_profile, include_all_active=user_profile.is_realm_admin
                         )
 
-                for field in ["delivery_email", "email", "full_name"]:
+                for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -707,6 +714,8 @@ def apply_event(
                         p["is_admin"] = is_administrator_role(person["role"])
                         p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                         p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
+                    if "is_billing_admin" in person:
+                        p["is_billing_admin"] = person["is_billing_admin"]
                     if "custom_profile_field" in person:
                         custom_field_id = person["custom_profile_field"]["id"]
                         custom_field_new_value = person["custom_profile_field"]["value"]

@@ -57,6 +57,7 @@ const me = {
     user_id: 30,
     full_name: "Me Myself",
     is_admin: true,
+    role: settings_config.user_role_values.member.code,
 };
 
 function initialize() {
@@ -83,14 +84,14 @@ run_test("updates", () => {
     });
     person = people.get_by_email(isaac.email);
     assert(person.is_guest);
-    assert(person.role, settings_config.user_role_values.guest.code);
+    assert.equal(person.role, settings_config.user_role_values.guest.code);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.member.code,
     });
     person = people.get_by_email(isaac.email);
     assert(!person.is_guest);
-    assert(person.role, settings_config.user_role_values.member.code);
+    assert.equal(person.role, settings_config.user_role_values.member.code);
 
     user_events.update_person({
         user_id: isaac.user_id,
@@ -98,7 +99,7 @@ run_test("updates", () => {
     });
     person = people.get_by_email(isaac.email);
     assert.equal(person.is_moderator, true);
-    assert(person.role, settings_config.user_role_values.moderator.code);
+    assert.equal(person.role, settings_config.user_role_values.moderator.code);
 
     user_events.update_person({
         user_id: isaac.user_id,
@@ -108,7 +109,7 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Isaac Newton");
     assert.equal(person.is_moderator, false);
     assert.equal(person.is_admin, true);
-    assert(person.role, settings_config.user_role_values.admin.code);
+    assert.equal(person.role, settings_config.user_role_values.admin.code);
 
     user_events.update_person({
         user_id: isaac.user_id,
@@ -116,7 +117,27 @@ run_test("updates", () => {
     });
     assert.equal(person.is_admin, true);
     assert.equal(person.is_owner, true);
-    assert(person.role, settings_config.user_role_values.owner.code);
+    assert.equal(person.role, settings_config.user_role_values.owner.code);
+
+    user_events.update_person({user_id: me.user_id, is_billing_admin: true});
+    person = people.get_by_email(me.email);
+    assert(person.is_billing_admin);
+    assert.equal(person.role, settings_config.user_role_values.member.code);
+    assert(page_params.is_billing_admin);
+
+    user_events.update_person({user_id: me.user_id, is_billing_admin: false});
+    person = people.get_by_email(me.email);
+    assert.equal(person.user_id, me.user_id);
+    assert(!person.is_billing_admin);
+    assert.equal(person.role, settings_config.user_role_values.member.code);
+    assert(!page_params.is_billing_admin);
+
+    user_events.update_person({user_id: isaac.user_id, is_billing_admin: false});
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.user_id, isaac.user_id);
+    assert(!person.is_billing_admin);
+    assert.equal(person.role, settings_config.user_role_values.owner.code);
+    assert(!page_params.is_billing_admin);
 
     let user_id;
     let full_name;

@@ -141,6 +141,13 @@ paths:
 
         This endpoint allows you to receive new events from
         [a registered event queue](/api/register-queue).
+
+        Long-lived clients should use the
+        `event_queue_longpoll_timeout_seconds` property returned by
+        `POST /register` as the client-side HTTP request timeout for
+        calls to this endpoint.  It is guaranteed to be higher than
+        heartbeat frequency and should be respected by clients to
+        avoid breaking when heartbeat frequency increases.
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
@@ -396,6 +403,21 @@ paths:
                                             - 300
                                             - 400
                                             - 600
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When billing role of a user changes.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_billing_admin:
+                                          type: boolean
+                                          description: |
+                                            A boolean specifying whether the user is now a billing administrator.
+
+                                            **Changes**: New in Zulip 5.0 (feature level 73).
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -818,6 +840,7 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
+                                      "is_billing_admin": false,
                                       "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
@@ -4302,7 +4325,19 @@ paths:
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
-        - $ref: "#/components/parameters/Topic"
+        - name: topic
+          in: query
+          description: |
+            The topic of the message. Only required for stream messages
+            (`type="stream"`), ignored otherwise.
+
+            Maximum length of 60 characters.
+
+            **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+            this as `subject`, which is currently a deprecated alias.
+          schema:
+            type: string
+          example: Castle
         - name: queue_id
           in: query
           schema:
@@ -4813,7 +4848,20 @@ paths:
         message you wish you update.
       parameters:
         - $ref: "#/components/parameters/MessageId"
-        - $ref: "#/components/parameters/Topic"
+        - name: topic
+          in: query
+          description: |
+            The topic to move the message(s) to, to request changing the topic.
+            Should only be sent when changing the topic, and will throw an error
+            if the target message is not a stream message.
+
+            Maximum length of 60 characters.
+
+            **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+            this as `subject`, which is currently a deprecated alias.
+          schema:
+            type: string
+          example: Castle
         - name: propagate_mode
           in: query
           description: |
@@ -4859,7 +4907,11 @@ paths:
         - name: stream_id
           in: query
           description: |
-            The stream ID to move the message(s) to, if moving to another stream.
+            The stream ID to move the message(s) to, to request moving
+            messages to another stream.
+
+            Should only be sent when changing the stream, and will throw an error
+            if the target message is not a stream message.
           schema:
             type: integer
           example: 42
@@ -5070,6 +5122,7 @@ paths:
                               "email": "AARON@zulip.com",
                               "is_admin": false,
                               "is_owner": false,
+                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
@@ -5114,6 +5167,7 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
+                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
@@ -5129,6 +5183,7 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
+                              "is_billing_admin": false,
                               "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
@@ -5378,6 +5433,14 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
                         example: false
+                      is_billing_admin:
+                        type: boolean
+                        description: |
+                          A boolean indicating if the requesting user is
+                          a billing administrator.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
+                        example: false
                       role:
                         type: integer
                         enum:
@@ -5467,6 +5530,7 @@ paths:
                         "is_owner": false,
                         "role": 200,
                         "is_guest": false,
+                        "is_billing_admin": false,
                         "is_bot": false,
                         "is_active": true,
                         "timezone": "",
@@ -6690,6 +6754,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -6766,6 +6831,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -8917,6 +8983,29 @@ paths:
                           Whether the server allows name changes.  Similar to
                           `realm_name_changes_disabled` but based on the `NAME_CHANGES_DISABLED`
                           Zulip server level setting.
+                      server_needs_upgrade:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the server is running an old version based on the Zulip
+                          [server release lifecycle](https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag),
+                          such that the web app will display to the current user a prominent warning.
+
+                          **Changes**: New in Zulip 5.0 (feature level 74).
+                      event_queue_longpoll_timeout_seconds:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Recommended client-side HTTP request timeout for [`GET /events`](/api/get-events) calls.
+                          This is guaranteed to be somewhat greater than the heartbeat frequency. It is important
+                          that clients respect this parameter, so that increases in the heartbeat frequency do not
+                          break clients.
+
+                          **Changes**: New in Zulip 5.0 (feature level 74). Previously,
+                          this was hardcoded to 90 seconds, and clients should use that as a fallback
+                          value when interacting with servers where this field is not present.
                       realm_notifications_stream_id:
                         type: integer
                         description: |
@@ -9020,6 +9109,14 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is an [organization owner](/help/roles-and-permissions).
+                      is_billing_admin:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is a billing administrator.
+
+                          **Changes**: New in Zulip 5.0 (feature level 73).
                       is_moderator:
                         type: boolean
                         description: |
@@ -9091,6 +9188,7 @@ paths:
                                 full_name: {}
                                 is_admin: {}
                                 is_owner: {}
+                                is_billing_admin: {}
                                 role: {}
                                 bot_type: {}
                                 user_id: {}
@@ -11785,6 +11883,7 @@ components:
             full_name: {}
             is_admin: {}
             is_owner: {}
+            is_billing_admin: {}
             role: {}
             bot_type: {}
             user_id: {}
@@ -11843,6 +11942,12 @@ components:
             If true, is_admin will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
+        is_billing_admin:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a billing administrator.
+
+            **Changes**: New in Zulip 5.0 (feature level 73).
         role:
           type: integer
           enum:
@@ -12259,20 +12364,6 @@ components:
         type: integer
       example: 1
       required: true
-    Topic:
-      name: topic
-      in: query
-      description: |
-        The topic of the message. Only required for stream messages
-        (`type="stream"`), ignored otherwise.
-
-        Maximum length of 60 characters.
-
-        **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
-        this as `subject`, which is currently a deprecated alias.
-      schema:
-        type: string
-      example: Castle
     QueueId:
       name: queue_id
       in: query

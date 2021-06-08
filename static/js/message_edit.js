@@ -236,9 +236,8 @@ export function end_if_focused_on_message_row_edit() {
 }
 
 function handle_message_row_edit_keydown(e) {
-    const code = e.keyCode || e.which;
-    switch (code) {
-        case 13:
+    switch (e.key) {
+        case "Enter":
             if ($(e.target).hasClass("message_edit_content")) {
                 // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
@@ -269,7 +268,7 @@ function handle_message_row_edit_keydown(e) {
                 e.preventDefault();
             }
             return;
-        case 27: // Handle escape keys in the message_edit form.
+        case "Escape": // Handle escape keys in the message_edit form.
             end_if_focused_on_message_row_edit();
             e.stopPropagation();
             e.preventDefault();
@@ -281,15 +280,14 @@ function handle_message_row_edit_keydown(e) {
 
 function handle_inline_topic_edit_keydown(e) {
     let row;
-    const code = e.keyCode || e.which;
-    switch (code) {
-        case 13: // Handle Enter key in the recipient bar/inline topic edit form
+    switch (e.key) {
+        case "Enter": // Handle Enter key in the recipient bar/inline topic edit form
             row = $(e.target).closest(".recipient_row");
             save_inline_topic_edit(row);
             e.stopPropagation();
             e.preventDefault();
             return;
-        case 27: // handle Esc
+        case "Escape": // handle Esc
             end_if_focused_on_inline_topic_edit();
             e.stopPropagation();
             e.preventDefault();
@@ -338,8 +336,6 @@ function edit_message(row, raw_content) {
     // zerver.lib.actions.check_update_message
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
-    const is_editable =
-        editability === editability_types.TOPIC_ONLY || editability === editability_types.FULL;
     const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
@@ -347,10 +343,14 @@ function edit_message(row, raw_content) {
         file_upload_enabled = true;
     }
 
-    const show_edit_stream =
+    const is_stream_editable =
         message.is_stream && settings_data.user_can_move_messages_between_streams();
+    const is_editable =
+        editability === editability_types.TOPIC_ONLY ||
+        editability === editability_types.FULL ||
+        is_stream_editable;
     // current message's stream has been already been added and selected in handlebar
-    const available_streams = show_edit_stream
+    const available_streams = is_stream_editable
         ? stream_data.subscribed_subs().filter((s) => s.stream_id !== message.stream_id)
         : null;
 
@@ -366,7 +366,7 @@ function edit_message(row, raw_content) {
             content: raw_content,
             file_upload_enabled,
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
-            show_edit_stream,
+            is_stream_editable,
             available_streams,
             stream_id: message.stream_id,
             stream_name: message.stream,

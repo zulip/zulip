@@ -75,7 +75,7 @@ is helpful to distinguish deliberate non-responses from bugs.)
 Here's an example of the JSON your server should respond with if
 you would not like to send a response message:
 
-```
+```json
 {
     "response_not_required": true
 }
@@ -84,7 +84,7 @@ you would not like to send a response message:
 Here's an example of the JSON your server should respond with if
 you would like to send a response message:
 
-```
+```json
 {
     "content": "Hey, we just received **something** from Zulip!"
 }

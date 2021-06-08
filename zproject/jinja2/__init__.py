@@ -30,7 +30,7 @@ def environment(**options: Any) -> Environment:
         webpack_entry=webpack_entry,
     )
 
-    env.install_gettext_translations(translation, True)
+    env.install_gettext_translations(translation, True)  # type: ignore[attr-defined] # Added by jinja2.ext.i18n
 
     env.filters["slugify"] = slugify
     env.filters["pluralize"] = pluralize
@@ -38,7 +38,7 @@ def environment(**options: Any) -> Environment:
     env.filters["device_action"] = device_action
     env.filters["timesince"] = timesince
 
-    env.policies["json.dumps_function"] = json_dumps  # type: ignore[attr-defined] # type annotation will be fixed in Jinja2 3.0.0
-    env.policies["json.dumps_kwargs"] = {}  # type: ignore[attr-defined] # type annotation will be fixed in Jinja2 3.0.0
+    env.policies["json.dumps_function"] = json_dumps
+    env.policies["json.dumps_kwargs"] = {}
 
     return env
