@@ -3413,8 +3413,8 @@ paths:
                                       description: |
                                         Whether or not this organization is configured to send the standard Zulip
                                         [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
-                                    ? message_content_allowed_in_email_notifications
-                                    : type: boolean
+                                    message_content_allowed_in_email_notifications:
+                                      type: boolean
                                       description: |
                                         Whether notification emails in this organization are allowed to
                                         contain Zulip the message content, or simply indicate that a new
