@@ -189,7 +189,11 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                         const out = new CleanCSS({sourceMap: true}).minify({
                             [filename]: {styles, sourceMap},
                         });
-                        return {css: out.styles, map: out.sourceMap, warnings: out.warnings};
+                        return {
+                            css: out.styles,
+                            map: out.sourceMap.toString(),
+                            warnings: out.warnings,
+                        };
                     },
                 }),
                 new TerserPlugin({
