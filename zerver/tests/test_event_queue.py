@@ -29,6 +29,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         kwargs["user_profile_id"] = hamlet.id
         kwargs["message_id"] = 32
 
+        # Fill up the parameters which weren't sent with defaults.
+        kwargs = self.get_maybe_enqueue_notifications_parameters(**kwargs)
+
         email_notice = None
         mobile_notice = None
         with mock_queue_publish(
@@ -55,198 +58,82 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
     def test_enqueue_notifications(self) -> None:
         # Boring message doesn't send a notice
-        email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={},
-        )
+        email_notice, mobile_notice = self.check_will_notify()
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
 
         # Private message sends a notice
-        email_notice, mobile_notice = self.check_will_notify(
-            private_message=True,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=True,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={},
-        )
+        email_notice, mobile_notice = self.check_will_notify(private_message=True)
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is not None)
 
         # Private message won't double-send either notice if we've
         # already sent notices before.
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=True,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={
-                "push_notified": True,
-                "email_notified": False,
-            },
+            private_message=True, already_notified={"push_notified": True, "email_notified": False}
         )
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is None)
 
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=True,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={
-                "push_notified": False,
-                "email_notified": True,
-            },
+            private_message=True, already_notified={"push_notified": False, "email_notified": True}
         )
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
 
         # Mention sends a notice
-        email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=True,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={},
-        )
+        email_notice, mobile_notice = self.check_will_notify(mentioned=True)
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is not None)
 
         # Wildcard mention triggers both email and push notices (Like a
         # direct mention, whether the notice is actually delivered is
         # determined later, in the email/push notification code)
-        email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=True,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={},
-        )
+        email_notice, mobile_notice = self.check_will_notify(wildcard_mention_notify=True)
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is not None)
 
         # stream_push_notify pushes but doesn't email
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=True,
-            stream_email_notify=False,
-            stream_name="Denmark",
-            online_push_enabled=False,
-            idle=True,
-            already_notified={},
+            stream_push_notify=True, stream_name="Denmark"
         )
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
 
         # stream_email_notify emails but doesn't push
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=True,
-            stream_name="Denmark",
-            online_push_enabled=False,
-            idle=True,
-            already_notified={},
+            stream_email_notify=True, stream_name="Denmark"
         )
         self.assertTrue(email_notice is not None)
         self.assertTrue(mobile_notice is None)
 
         # Private message doesn't send a notice if not idle
-        email_notice, mobile_notice = self.check_will_notify(
-            private_message=True,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=True,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=False,
-            already_notified={},
-        )
+        email_notice, mobile_notice = self.check_will_notify(private_message=True, idle=False)
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
 
         # Mention doesn't send a notice if not idle
-        email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=True,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=False,
-            already_notified={},
-        )
+        email_notice, mobile_notice = self.check_will_notify(mentioned=True, idle=False)
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
 
         # Wildcard mention doesn't send a notice if not idle
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=True,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=False,
-            already_notified={},
+            wildcard_mention_notify=True, idle=False
         )
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
 
         # Private message sends push but not email if not idle but online_push_enabled
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=True,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=True,
-            stream_name=None,
-            online_push_enabled=True,
-            idle=False,
-            already_notified={},
+            private_message=True, online_push_enabled=True, idle=False
         )
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
 
-        # Stream message sends push but not email if not idle but online_push_enabled
+        # Stream message sends push (if enabled for that stream) but not email if not
+        # idle but online_push_enabled
         email_notice, mobile_notice = self.check_will_notify(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
             stream_push_notify=True,
             stream_email_notify=True,
             stream_name="Denmark",
