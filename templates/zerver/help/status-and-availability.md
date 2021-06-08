@@ -63,6 +63,8 @@ unavailable).
 
 {end_tabs}
 
+You can use the same menu to mark yourself available again as well.
+
 ## Disable updating availability
 
 Zulip supports the privacy option of never updating the availability
