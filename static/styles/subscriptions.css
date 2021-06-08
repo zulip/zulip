@@ -190,10 +190,6 @@
     transition: all 0.2s ease;
     padding-bottom: 0;
     padding-top: 0;
-
-    &:hover {
-        color: hsl(0, 0%, 27%);
-    }
 }
 
 #create_stream_description {
