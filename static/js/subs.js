@@ -747,7 +747,11 @@ export function launch(section) {
         change_state(section);
     });
     if (!get_active_data().id) {
-        $("#search_stream_name").trigger("focus");
+        if (section === "new") {
+            $("#create_stream_name").trigger("focus");
+        } else {
+            $("#search_stream_name").trigger("focus");
+        }
     }
 }
 
