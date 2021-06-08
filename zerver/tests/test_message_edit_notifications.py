@@ -184,17 +184,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         cordelia = self.example_user("cordelia")
-        expected_enqueue_kwargs = dict(
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_profile_id=cordelia.id,
             message_id=message_id,
-            private_message=False,
             mentioned=True,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
             stream_name="Scotland",
-            online_push_enabled=False,
-            idle=True,
             already_notified={},
         )
 
@@ -317,14 +311,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = notification_message_data["message_id"]
         info = notification_message_data["info"]
 
-        expected_enqueue_kwargs = dict(
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_profile_id=cordelia.id,
             message_id=message_id,
-            private_message=False,
             mentioned=True,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=True,
             idle=False,
@@ -355,14 +345,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = notification_message_data["message_id"]
         info = notification_message_data["info"]
 
-        expected_enqueue_kwargs = dict(
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_profile_id=cordelia.id,
             message_id=message_id,
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=True,
             idle=False,
@@ -395,17 +380,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = notification_message_data["message_id"]
         info = notification_message_data["info"]
 
-        expected_enqueue_kwargs = dict(
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_profile_id=cordelia.id,
             message_id=message_id,
-            private_message=False,
             mentioned=True,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
             stream_name="Scotland",
-            online_push_enabled=False,
-            idle=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -431,17 +410,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = notification_message_data["message_id"]
         info = notification_message_data["info"]
 
-        expected_enqueue_kwargs = dict(
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_profile_id=cordelia.id,
             message_id=message_id,
-            private_message=False,
-            mentioned=False,
             wildcard_mention_notify=True,
-            stream_push_notify=False,
-            stream_email_notify=False,
             stream_name="Scotland",
-            online_push_enabled=False,
-            idle=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -492,16 +465,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = notification_message_data["message_id"]
         info = notification_message_data["info"]
 
-        expected_enqueue_kwargs = dict(
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_profile_id=cordelia.id,
             message_id=message_id,
-            private_message=False,
             mentioned=True,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
             stream_name="Scotland",
-            online_push_enabled=False,
             idle=False,
             already_notified={},
         )
