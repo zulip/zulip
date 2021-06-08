@@ -3486,6 +3486,8 @@ def bulk_get_subscriber_user_ids(
         stream_id = stream_dict["id"]
         is_subscribed = stream_id in subscribed_stream_ids
 
+        if stream_dict.get("recipient_id") is None:
+            continue
         try:
             validate_user_access_to_subscribers_helper(
                 user_profile,
