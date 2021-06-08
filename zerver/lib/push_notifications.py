@@ -4,6 +4,7 @@ import base64
 import logging
 import re
 import time
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import gcm
@@ -59,26 +60,20 @@ def hex_to_b64(data: str) -> str:
 # Sending to APNs, for iOS
 #
 
-_apns_client: Optional["APNsClient"] = None
-_apns_client_initialized = False
 
-
+@lru_cache(maxsize=None)
 def get_apns_client() -> "Optional[APNsClient]":
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
     from apns2.client import APNsClient
 
-    global _apns_client, _apns_client_initialized
-    if not _apns_client_initialized:
-        # NB if called concurrently, this will make excess connections.
-        # That's a little sloppy, but harmless unless a server gets
-        # hammered with a ton of these all at once after startup.
-        if settings.APNS_CERT_FILE is not None:
-            _apns_client = APNsClient(
-                credentials=settings.APNS_CERT_FILE, use_sandbox=settings.APNS_SANDBOX
-            )
-        _apns_client_initialized = True
-    return _apns_client
+    if settings.APNS_CERT_FILE is None:
+        return None
+
+    # NB if called concurrently, this will make excess connections.
+    # That's a little sloppy, but harmless unless a server gets
+    # hammered with a ton of these all at once after startup.
+    return APNsClient(credentials=settings.APNS_CERT_FILE, use_sandbox=settings.APNS_SANDBOX)
 
 
 def apns_enabled() -> bool:
