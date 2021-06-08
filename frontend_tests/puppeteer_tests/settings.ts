@@ -171,7 +171,10 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
     const name_field_selector = edit_form_selector + " [name=bot_name]";
-    assert(common.get_text_from_selector(page, name_field_selector), "Bot 1");
+    assert.equal(
+        await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
+        "Bot 1",
+    );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot one"});
     const save_btn_selector = edit_form_selector + " .edit_bot_button";
@@ -195,7 +198,10 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
     const name_field_selector = edit_form_selector + " [name=bot_name]";
-    assert(common.get_text_from_selector(page, name_field_selector), "Bot one");
+    assert.equal(
+        await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
+        "Bot one",
+    );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
     const save_btn_selector = edit_form_selector + " .edit_bot_button";
