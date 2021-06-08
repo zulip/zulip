@@ -40,6 +40,7 @@ import * as settings_toggle from "./settings_toggle";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
+import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_status_ui from "./user_status_ui";
@@ -693,6 +694,8 @@ export function initialize() {
     });
 
     // LEFT SIDEBAR
+
+    $("body").on("click", "#clear_search_topic_button", topic_list.clear_topic_search);
 
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
