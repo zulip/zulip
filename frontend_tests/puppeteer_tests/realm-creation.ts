@@ -46,7 +46,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
     const text_in_pitch = await page.evaluate(
         () => document.querySelector(".pitch p")!.textContent,
     );
-    assert(text_in_pitch === "You’re almost there! We just need you to do one last thing.");
+    assert.equal(text_in_pitch, "You’re almost there! We just need you to do one last thing.");
 
     // fill the form.
     const params = {
