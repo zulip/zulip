@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import datetime
 import itertools
@@ -30,13 +31,14 @@ from zerver.lib.actions import (
     do_update_message_flags,
 )
 from zerver.lib.push_notifications import (
+    APNsContext,
     DeviceToken,
     absolute_avatar_url,
     b64_to_hex,
     datetime_to_timestamp,
     get_apns_badge_count,
     get_apns_badge_count_future,
-    get_apns_client,
+    get_apns_context,
     get_display_recipient,
     get_message_payload_apns,
     get_message_payload_gcm,
@@ -745,8 +747,8 @@ class PushNotificationTest(BouncerTestCase):
     @contextmanager
     def mock_apns(self) -> Iterator[mock.MagicMock]:
         mock_apns = mock.Mock()
-        with mock.patch("zerver.lib.push_notifications.get_apns_client") as mock_get:
-            mock_get.return_value = mock_apns
+        with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
+            mock_get.return_value = APNsContext(apns=mock_apns, loop=asyncio.new_event_loop())
             yield mock_apns
 
     def setup_apns_tokens(self) -> None:
@@ -832,7 +834,10 @@ class HandlePushNotificationTest(PushNotificationTest):
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
             ]
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
-            mock_apns.get_notification_result.return_value = "Success"
+            result = mock.Mock()
+            result.is_successful = True
+            mock_apns.send_notification.return_value = asyncio.Future()
+            mock_apns.send_notification.return_value.set_result(result)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 mock_info.assert_any_call(
@@ -878,8 +883,11 @@ class HandlePushNotificationTest(PushNotificationTest):
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
             ]
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
-
-            mock_apns.get_notification_result.return_value = ("Unregistered", 1234567)
+            result = mock.Mock()
+            result.is_successful = False
+            result.description = "Unregistered"
+            mock_apns.send_notification.return_value = asyncio.Future()
+            mock_apns.send_notification.return_value.set_result(result)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 mock_info.assert_any_call(
@@ -1305,28 +1313,27 @@ class TestAPNs(PushNotificationTest):
             devices = self.devices()
         send_apple_push_notification(self.user_profile.id, devices, payload_data)
 
-    def test_get_apns_client(self) -> None:
+    def test_get_apns_context(self) -> None:
         """This test is pretty hacky, and needs to carefully reset the state
         it modifies in order to avoid leaking state that can lead to
         nondeterministic results for other tests.
         """
         import zerver.lib.push_notifications
 
-        zerver.lib.push_notifications.get_apns_client.cache_clear()
+        zerver.lib.push_notifications.get_apns_context.cache_clear()
         try:
-            with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch(
-                "apns2.client.APNsClient"
-            ) as mock_client:
-                client = get_apns_client()
-                self.assertEqual(mock_client.return_value, client)
+            with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch("aioapns.APNs") as mock_apns:
+                apns_context = get_apns_context()
+                assert apns_context is not None
+                self.assertEqual(mock_apns.return_value, apns_context.apns)
         finally:
-            # Reset the cache for `get_apns_client` so that we don't
+            # Reset the cache for `get_apns_context` so that we don't
             # leak changes to the rest of the world.
-            zerver.lib.push_notifications.get_apns_client.cache_clear()
+            zerver.lib.push_notifications.get_apns_context.cache_clear()
 
     def test_not_configured(self) -> None:
         self.setup_apns_tokens()
-        with mock.patch("zerver.lib.push_notifications.get_apns_client") as mock_get, mock.patch(
+        with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get, mock.patch(
             "zerver.lib.push_notifications.logger"
         ) as mock_logging:
             mock_get.return_value = None
@@ -1349,7 +1356,10 @@ class TestAPNs(PushNotificationTest):
         with self.mock_apns() as mock_apns, mock.patch(
             "zerver.lib.push_notifications.logger"
         ) as mock_logging:
-            mock_apns.get_notification_result.return_value = "Success"
+            result = mock.Mock()
+            result.is_successful = True
+            mock_apns.send_notification.return_value = asyncio.Future()
+            mock_apns.send_notification.return_value.set_result(result)
             self.send()
             mock_logging.warning.assert_not_called()
             for device in self.devices():
@@ -1360,21 +1370,27 @@ class TestAPNs(PushNotificationTest):
                 )
 
     def test_http_retry(self) -> None:
-        import hyper
+        import aioapns
 
         self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, mock.patch(
             "zerver.lib.push_notifications.logger"
         ) as mock_logging:
-            mock_apns.get_notification_result.side_effect = itertools.chain(
-                [hyper.http20.exceptions.StreamResetError()], itertools.repeat("Success")
+            exception: asyncio.Future[object] = asyncio.Future()
+            exception.set_exception(aioapns.exceptions.ConnectionError())
+            result = mock.Mock()
+            result.is_successful = True
+            future: asyncio.Future[object] = asyncio.Future()
+            future.set_result(result)
+            mock_apns.send_notification.side_effect = itertools.chain(
+                [exception], itertools.repeat(future)
             )
             self.send()
             mock_logging.warning.assert_called_once_with(
-                "APNs: HTTP error sending for user %d to device %s: %s",
+                "APNs: ConnectionError sending for user %d to device %s: %s",
                 self.user_profile.id,
                 self.devices()[0].token,
-                "StreamResetError",
+                "ConnectionError",
             )
             for device in self.devices():
                 mock_logging.info.assert_any_call(
@@ -1383,20 +1399,28 @@ class TestAPNs(PushNotificationTest):
                     device.token,
                 )
 
-    def test_http_retry_pipefail(self) -> None:
+    def test_http_retry_closed(self) -> None:
+        import aioapns
+
         self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, mock.patch(
             "zerver.lib.push_notifications.logger"
         ) as mock_logging:
-            mock_apns.get_notification_result.side_effect = itertools.chain(
-                [BrokenPipeError()], itertools.repeat("Success")
+            exception: asyncio.Future[object] = asyncio.Future()
+            exception.set_exception(aioapns.exceptions.ConnectionClosed())
+            result = mock.Mock()
+            result.is_successful = True
+            future: asyncio.Future[object] = asyncio.Future()
+            future.set_result(result)
+            mock_apns.send_notification.side_effect = itertools.chain(
+                [exception], itertools.repeat(future)
             )
             self.send()
             mock_logging.warning.assert_called_once_with(
-                "APNs: BrokenPipeError sending for user %d to device %s: %s",
+                "APNs: ConnectionClosed sending for user %d to device %s: %s",
                 self.user_profile.id,
                 self.devices()[0].token,
-                "BrokenPipeError",
+                "ConnectionClosed",
             )
             for device in self.devices():
                 mock_logging.info.assert_any_call(
@@ -1406,19 +1430,15 @@ class TestAPNs(PushNotificationTest):
                 )
 
     def test_http_retry_eventually_fails(self) -> None:
-        import hyper
+        import aioapns
 
         self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, mock.patch(
             "zerver.lib.push_notifications.logger"
         ) as mock_logging:
-            mock_apns.get_notification_result.side_effect = itertools.chain(
-                [hyper.http20.exceptions.StreamResetError()],
-                [hyper.http20.exceptions.StreamResetError()],
-                [hyper.http20.exceptions.StreamResetError()],
-                [hyper.http20.exceptions.StreamResetError()],
-                [hyper.http20.exceptions.StreamResetError()],
-            )
+            exception: asyncio.Future[object] = asyncio.Future()
+            exception.set_exception(aioapns.exceptions.ConnectionError())
+            mock_apns.send_notification.side_effect = iter([exception] * 5)
 
             self.send(devices=self.devices()[0:1])
             self.assertEqual(mock_logging.warning.call_count, 5)

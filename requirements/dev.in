@@ -12,7 +12,7 @@ moto[s3]
 Twisted
 
 # Needed for documentation links test
-Scrapy<2.5.0  # 2.5.0 needs h2 3.0: https://github.com/Pr0Ger/PyAPNs2/issues/126
+Scrapy
 
 # Needed to compute test coverage
 coverage
