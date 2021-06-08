@@ -416,6 +416,62 @@ export const slash_commands = [
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
     },
+    {
+        text: $t({defaultMessage: "/accounting_closing_term (Summary earning and new term of tasks)"}),
+        name: "accounting_closing_term",
+    },
+    {
+        text: $t({defaultMessage: "/accounting_deposit (Deposit for increase account) [vnd_number] //Comment Momo, Vietcombank..."}),
+        name: "accounting_deposit",
+    },
+    {
+        text: $t({defaultMessage: "/accounting_miscellaneous (Record miscellaneous fee for project) [Project id] [vnd_fee] //Comment Paypal fee, Bank fee, Discount..."}),
+        name: "accounting_miscellaneous",
+    },
+    {
+        text: $t({defaultMessage: "/accounting_withdrawal (Withdrawal money from account) [vnd_money] //Comment"}),
+        name: "accounting_withdrawal",
+    },
+    {
+        text: $t({defaultMessage: "/notify_disable (Disable notification of contact) [Email] //Command"}),
+        name: "notify_disable",
+    },
+    {
+        text: $t({defaultMessage: "/project_cancel (Cancel project) [project_id] //Reason of cancellation"}),
+        name: "project_cancel",
+    },
+    {
+        text: $t({defaultMessage: "/project_set (Project set level or priority) [project id] [level/priority] [value]"}),
+        name: "project_set",
+    },
+    {
+        text: $t({defaultMessage: "/sk (Send to contact) [None(Help)/Billing] [Info to send]"}),
+        name: "sk",
+    },
+    {
+        text: $t({defaultMessage: "/sk_set (Set stream to contact list) [department: hr/support] [type: email/phone] [contact details: dan.nt@working24.net/0916666888]"}),
+        name: "sk_set",
+    },
+    {
+        text: $t({defaultMessage: "/team_accept (Team accept new member)"}),
+        name: "team_accept",
+    },
+    {
+        text: $t({defaultMessage: "/team_level (Set level for team member) [Level] //Comment"}),
+        name: "team_level",
+    },
+    {
+        text: $t({defaultMessage: "/team_exit (Team exit for member who quit or rejected from working) //Reason"}),
+        name: "team_exit",
+    },
+    {
+        text: $t({defaultMessage: "/update (Update information or notes) [help/billing]"}),
+        name: "update",
+    },
+    {
+        text: $t({defaultMessage: "/work_cancel (Cancel work of member) [Work_link] [None/Edit] //Comment for member"}),
+        name: "work_cancel",
+    },
 ];
 
 export function filter_and_sort_mentions(is_silent, query, opts) {
