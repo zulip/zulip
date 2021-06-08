@@ -488,7 +488,7 @@ test("redraw_muted_user", () => {
     };
 
     activity.redraw_user(mark.user_id);
-    assert(appended_html === undefined);
+    assert.equal(appended_html, undefined);
 });
 
 test("update_presence_info", (override) => {

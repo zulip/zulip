@@ -516,7 +516,7 @@ function make_zjquery() {
         // in turn return stubs).  The convention is that
         // they provide a to_$ attribute.
         if (arg.to_$) {
-            assert(typeof arg.to_$ === "function");
+            assert.equal(typeof arg.to_$, "function");
             return arg.to_$();
         }
 
