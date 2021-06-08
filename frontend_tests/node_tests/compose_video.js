@@ -213,7 +213,7 @@ test("videos", (override) => {
             realm_available_video_chat_providers.big_blue_button.id;
 
         channel.get = (options) => {
-            assert(options.url === "/json/calls/bigbluebutton/create");
+            assert.equal(options.url, "/json/calls/bigbluebutton/create");
             options.success({
                 url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
             });

@@ -106,7 +106,7 @@ function config_fake_channel(conf) {
             throw new Error("only use this for one call");
         }
         if (!conf.can_call_again) {
-            assert(self.success === undefined);
+            assert.equal(self.success, undefined);
         }
         assert.deepEqual(opts.data, conf.expected_opts_data);
         self.success = opts.success;
