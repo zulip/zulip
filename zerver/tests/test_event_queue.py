@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Collection, Dict, List, Optional, Tuple
+from typing import Any, Callable, Collection, Dict, List, Optional, Tuple, Union
 from unittest import mock
 
 import orjson
@@ -245,30 +245,23 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             args_list: Collection[Any],
             user_profile_id: int,
             message_id: int,
-            private_message: bool,
-            mentioned: bool,
-            wildcard_mention_notify: bool,
-            stream_push_notify: bool,
-            stream_email_notify: bool,
-            stream_name: Optional[str],
-            online_push_enabled: bool,
-            idle: bool,
-            already_notified: Dict[str, bool],
+            **kwargs: Union[bool, Dict[str, bool], Optional[str]],
         ) -> None:
+            kwargs = self.get_maybe_enqueue_notifications_parameters(**kwargs)
             self.assertEqual(
                 args_list,
                 (
                     user_profile_id,
                     message_id,
-                    private_message,
-                    mentioned,
-                    wildcard_mention_notify,
-                    stream_push_notify,
-                    stream_email_notify,
-                    stream_name,
-                    online_push_enabled,
-                    idle,
-                    already_notified,
+                    kwargs["private_message"],
+                    kwargs["mentioned"],
+                    kwargs["wildcard_mention_notify"],
+                    kwargs["stream_push_notify"],
+                    kwargs["stream_email_notify"],
+                    kwargs["stream_name"],
+                    kwargs["online_push_enabled"],
+                    kwargs["idle"],
+                    kwargs["already_notified"],
                 ),
             )
 
@@ -293,14 +286,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -319,13 +305,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
                 private_message=True,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
-                stream_name=None,
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -345,14 +324,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
                 mentioned=True,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -372,14 +345,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
                 wildcard_mention_notify=True,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -403,14 +370,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -431,14 +391,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -461,14 +414,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -495,14 +441,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
                 wildcard_mention_notify=True,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -527,14 +467,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
                 stream_push_notify=True,
                 stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -557,14 +492,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
                 stream_push_notify=False,
                 stream_email_notify=True,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -593,14 +523,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -626,14 +549,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 args_list=args_list,
                 user_profile_id=user_profile.id,
                 message_id=msg_id,
-                private_message=False,
-                mentioned=False,
-                wildcard_mention_notify=False,
-                stream_push_notify=False,
-                stream_email_notify=False,
                 stream_name="Denmark",
-                online_push_enabled=False,
-                idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
