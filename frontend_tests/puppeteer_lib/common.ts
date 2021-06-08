@@ -466,7 +466,7 @@ class CommonUtils {
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
         const url = await this.page_url_with_fragment(page);
-        assert(/^http:\/\/[^/]+\/#organization/.test(url), "Unexpected manage organization URL");
+        assert.match(url, /^http:\/\/[^/]+\/#organization/, "Unexpected manage organization URL");
 
         const organization_settings_data_section = "li[data-section='organization-settings']";
         await page.click(organization_settings_data_section);
