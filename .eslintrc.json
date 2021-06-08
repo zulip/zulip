@@ -179,7 +179,8 @@
             },
             "rules": {
                 "new-cap": "off",
-                "no-sync": "off"
+                "no-sync": "off",
+                "unicorn/prefer-prototype-methods": "off"
             }
         },
         {

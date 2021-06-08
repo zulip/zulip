@@ -107,7 +107,7 @@ function populate_messages_sent_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type, hoverinfo: "none", text};
+        const common = {x: dates, type, hoverinfo: "none", text, textposition: "none"};
         return {
             human: {
                 // 5062a0
@@ -808,7 +808,7 @@ function populate_messages_read_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type, hoverinfo: "none", text};
+        const common = {x: dates, type, hoverinfo: "none", text, textposition: "none"};
         return {
             everyone: {
                 name: $t({defaultMessage: "Everyone"}),

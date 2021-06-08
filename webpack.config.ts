@@ -218,13 +218,9 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
-                    ? "../../webpack-stats-production.json"
-                    : "../../var/webpack-stats-dev.json",
+                    ? "webpack-stats-production.json"
+                    : "var/webpack-stats-dev.json",
                 relativePath: true,
-                // Respecify many defaults until https://github.com/django-webpack/webpack-bundle-tracker/pull/55 is merged
-                path: path.resolve(__dirname, "static/webpack-bundles"),
-                integrity: false,
-                integrityHashes: [],
             }),
             ...(production
                 ? []
