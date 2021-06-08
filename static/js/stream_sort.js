@@ -24,28 +24,9 @@ function compare_function(a, b) {
     return util.strcmp(stream_name_a, stream_name_b);
 }
 
-function filter_streams_by_search(streams, search_term) {
-    if (search_term === "") {
-        return streams;
-    }
-
-    let search_terms = search_term.toLowerCase().split(",");
-    search_terms = search_terms.map((s) => s.trim());
-
-    const filtered_streams = streams.filter((stream) =>
-        search_terms.some((search_term) => {
-            const lower_stream_name = sub_store.get(stream).name.toLowerCase();
-            const cands = lower_stream_name.split(" ");
-            cands.push(lower_stream_name);
-            return cands.some((name) => name.startsWith(search_term));
-        }),
-    );
-
-    return filtered_streams;
-}
-
 export function sort_groups(streams, search_term) {
-    streams = filter_streams_by_search(streams, search_term);
+    const stream_id_to_name = (stream) => sub_store.get(stream).name;
+    streams = util.filter_by_word_prefix_match(streams, search_term, stream_id_to_name);
 
     function is_normal(sub) {
         return stream_data.is_active(sub);
