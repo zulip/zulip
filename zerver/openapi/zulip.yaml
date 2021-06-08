@@ -3271,11 +3271,6 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
                                   properties:
-                                    add_emoji_by_admins_only:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization is configured to only allow administrators
-                                        to upload new custom emoji.
                                     allow_edit_history:
                                       type: boolean
                                       description: |
