@@ -659,7 +659,7 @@ exports.fixtures = {
     update_display_settings__default_view_all_messages: {
         type: "update_display_settings",
         setting_name: "default_view",
-        setting: 1,
+        setting: "all_messages",
         user: test_user.email,
     },
 
