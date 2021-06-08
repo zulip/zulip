@@ -688,6 +688,11 @@ export function switch_to_stream_row(stream_id) {
     }, 100);
 }
 
+function show_right_section() {
+    $(".right").addClass("show");
+    $(".subscriptions-header").addClass("slide-left");
+}
+
 export function change_state(section) {
     // if in #streams/new form.
     if (section === "new") {
@@ -996,10 +1001,7 @@ export function initialize() {
         selectText(this);
     });
 
-    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", () => {
-        $(".right").addClass("show");
-        $(".subscriptions-header").addClass("slide-left");
-    });
+    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", show_right_section);
 
     $("#subscriptions_table").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
