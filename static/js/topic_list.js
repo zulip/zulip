@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_filter_topics from "../templates/filter_topics.hbs";
 import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
@@ -115,12 +116,24 @@ export function spinner_li() {
     };
 }
 
+function filter_topics_li() {
+    const eq = (other) => other.filter_topics;
+
+    return {
+        key: "filter",
+        filter_topics: true,
+        render: render_filter_topics,
+        eq,
+    };
+}
+
 export class TopicListWidget {
     prior_dom = undefined;
 
     constructor(parent_elem, my_stream_id) {
         this.parent_elem = parent_elem;
         this.my_stream_id = my_stream_id;
+        this.topic_search_text = "";
     }
 
     build_list(spinner) {
@@ -141,6 +154,10 @@ export class TopicListWidget {
             nodes.push(spinner_li());
         } else if (!is_showing_all_possible_topics) {
             nodes.push(more_li(more_topics_unreads));
+        } else if (zoomed) {
+            // In zoomed topic view, we show input
+            // for filtering through list of topics.
+            nodes.unshift(filter_topics_li());
         }
 
         const dom = vdom.ul({
@@ -159,7 +176,40 @@ export class TopicListWidget {
         return this.my_stream_id;
     }
 
+    update_topic_search_text(text) {
+        if (typeof text !== "string") {
+            return;
+        }
+        this.topic_search_text = text;
+    }
+
+    update_topic_search_input() {
+        const input = this.parent_elem.find("#filter-topic-input");
+        if (input.length) {
+            // Restore saved topic search text
+            // after the element was rerendered.
+            input.val(this.topic_search_text);
+            input.trigger("focus");
+
+            // setup event handlers.
+            const rebuild_list = () => this.build();
+            input.on("input", rebuild_list);
+        }
+    }
+
     remove() {
+        // If topic search was on, we store the
+        // input value lazily just before removing
+        // old dom.
+        const input = this.parent_elem.find("#filter-topic-input");
+        if (input.length) {
+            this.update_topic_search_text(input.val());
+        } else {
+            // This block ensures that topic search
+            // is cleared before input is shown when
+            // we go from normal to zoomed view.
+            this.update_topic_search_text();
+        }
         this.parent_elem.find(".topic-list").remove();
         this.prior_dom = undefined;
     }
@@ -170,6 +220,7 @@ export class TopicListWidget {
         const replace_content = (html) => {
             this.remove();
             this.parent_elem.append(html);
+            this.update_topic_search_input();
         };
 
         const find = () => this.parent_elem.find(".topic-list");
@@ -177,6 +228,26 @@ export class TopicListWidget {
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
+    }
+}
+
+export function clear_topic_search(e) {
+    e.stopPropagation();
+    const input = $("#filter-topic-input");
+    if (input.length) {
+        input.val("");
+        input.trigger("blur");
+
+        // As search input changes(becomes empty) after clearing
+        // we should rebuild the topic list to show all the topics
+        // again.
+        const stream_ids = Array.from(active_widgets.keys());
+
+        const stream_id = stream_ids[0];
+        const widget = active_widgets.get(stream_id);
+        const parent_widget = widget.get_parent();
+
+        rebuild(parent_widget, stream_id);
     }
 }
 
@@ -253,6 +324,14 @@ export function zoom_in() {
     active_widget.build(spinner);
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
+}
+
+export function get_topic_search_term() {
+    const filter = $("#filter-topic-input");
+    if (filter.val() === undefined) {
+        return "";
+    }
+    return filter.val().trim();
 }
 
 export function initialize() {

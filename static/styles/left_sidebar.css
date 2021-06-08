@@ -100,6 +100,15 @@ li.show-more-topics {
                 padding-right: 0;
                 padding-bottom: 2px;
                 padding-left: $topic_indent;
+
+                &.filter-topics {
+                    padding-bottom: 0;
+                }
+
+                .input-append.topic_search_section {
+                    margin-bottom: 3px;
+                    margin-left: 3px;
+                }
             }
         }
     }
@@ -513,6 +522,14 @@ li.expanded_private_message {
 
 .stream-list-filter {
     width: 236px;
+}
+
+.topic-list-filter {
+    /* Input width = 100% - 30px right-margin - 6px right-padding */
+    /* To keep the right edge of input along with its borders inline with other
+       topic items we consider to subtract the space given for right margin of
+       other items, and right padding of input element.  */
+    width: calc(100% - 36px);
 }
 
 .zero_count {
