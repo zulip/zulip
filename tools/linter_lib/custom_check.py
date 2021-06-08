@@ -134,6 +134,7 @@ js_rules = RuleList(
                 "static/js/lightbox.js",
                 "static/js/ui_report.ts",
                 "static/js/confirm_dialog.js",
+                "static/js/edit_fields_modal.js",
                 "frontend_tests/",
             },
             "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.",
