@@ -115,34 +115,44 @@ export function show_profile_incomplete(is_profile_incomplete) {
 export function initialize() {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
-        open(
-            {data_process: "insecure-desktop-app", custom_class: "red"},
-            render_insecure_desktop_app_alert_content(),
-        );
+        open({
+            data_process: "insecure-desktop-app",
+            custom_class: "red",
+            rendered_alert_content_html: render_insecure_desktop_app_alert_content(),
+        });
     } else if (page_params.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
-            open(
-                {data_process: "server-needs-upgrade", custom_class: "red"},
-                render_server_needs_upgrade_alert_content(),
-            );
+            open({
+                data_process: "server-needs-upgrade",
+                custom_class: "red",
+                rendered_alert_content_html: render_server_needs_upgrade_alert_content(),
+            });
         }
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        open(
-            {data_process: "email-server", custom_class: "red"},
-            render_configure_email_alert_content(),
-        );
+        open({
+            data_process: "email-server",
+            custom_class: "red",
+            rendered_alert_content_html: render_configure_email_alert_content(),
+        });
     } else if (should_show_notifications(ls)) {
-        open({data_process: "notifications"}, render_desktop_notifications_alert_content());
+        open({
+            data_process: "notifications",
+            rendered_alert_content_html: render_desktop_notifications_alert_content(),
+        });
     } else if (unread_ui.should_display_bankruptcy_banner()) {
         const unread_msgs_count = page_params.unread_msgs.count;
-        open(
-            {data_process: "bankruptcy", custom_class: "bankruptcy", is_bankruptcy_alert: true},
-            render_bankruptcy_alert_content({unread_msgs_count}),
-        );
+        open({
+            data_process: "bankruptcy",
+            custom_class: "bankruptcy",
+            rendered_alert_content_html: render_bankruptcy_alert_content({unread_msgs_count}),
+        });
     } else if (check_profile_incomplete()) {
-        open({data_process: "profile-incomplete"}, render_profile_incomplete_alert_content());
+        open({
+            data_process: "profile-incomplete",
+            rendered_alert_content_html: render_profile_incomplete_alert_content(),
+        });
     }
 
     // Configure click handlers.
@@ -193,11 +203,8 @@ export function initialize() {
     });
 }
 
-export function open(args, rendered_alert_content_html) {
-    const rendered_alert_wrapper_html = $(render_navbar_alert_wrapper(args));
-
-    // TODO: Use a proper CSS class to access correct outer widget.
-    rendered_alert_wrapper_html.first().prepend(rendered_alert_content_html);
+export function open(args) {
+    const rendered_alert_wrapper_html = render_navbar_alert_wrapper(args);
 
     // Note: We only support one alert being rendered at a time; as a
     // result, we just replace the alert area in the DOM with the
