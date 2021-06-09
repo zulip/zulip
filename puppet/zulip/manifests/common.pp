@@ -122,6 +122,15 @@ class zulip::common {
       },
     },
 
+    # https://github.com/fstab/grok_exporter/tags
+    'grok_exporter' => {
+      'version' => '1.0.0.RC5',
+      'sha256'  => {
+        'amd64' => 'b8771a6d7ca8447c222548d6cb8b2f8ee058b55bfd1801c2f6eb739534df5ded',
+        # No aarch64 builds
+      },
+    },
+
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
       'version' => '1.9.0',
