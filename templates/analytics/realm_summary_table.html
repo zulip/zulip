@@ -24,6 +24,7 @@
             <th>Created (green if ≤12wk)</th>
             <th>Plan type</th>
             <th>ARR</th>
+            <th>Effective rate (%)</th>
             <th></th>
             <th>DAU</th>
             <th>WAU</th>
@@ -57,6 +58,12 @@
             <td class="number">
                 {% if row.amount %}
                 {{ row.amount }}
+                {% endif %}
+            </td>
+
+            <td class="number">
+                {% if row.effective_rate != "" %}
+                {{ row.effective_rate }}
                 {% endif %}
             </td>
 

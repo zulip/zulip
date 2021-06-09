@@ -80,10 +80,12 @@ if settings.BILLING_ENABLED:
         attach_discount_to_realm,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
+        estimate_annual_recurring_revenue_by_realm,
         get_current_plan_by_realm,
         get_customer_by_realm,
         get_discount_for_realm,
         get_latest_seat_count,
+        get_realms_to_default_discount_dict,
         make_end_of_cycle_updates_if_needed,
         update_billing_method_of_current_plan,
         update_sponsorship_status,
@@ -761,12 +763,24 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     # estimate annual subscription revenue
     total_amount = 0
     if settings.BILLING_ENABLED:
-        from corporate.lib.stripe import estimate_annual_recurring_revenue_by_realm
-
         estimated_arrs = estimate_annual_recurring_revenue_by_realm()
+        realms_to_default_discount = get_realms_to_default_discount_dict()
+
         for row in rows:
-            if row["string_id"] in estimated_arrs:
-                row["amount"] = estimated_arrs[row["string_id"]]
+            string_id = row["string_id"]
+
+            if string_id in estimated_arrs:
+                row["amount"] = estimated_arrs[string_id]
+
+            if row["plan_type"] == Realm.STANDARD:
+                row["effective_rate"] = 100 - int(realms_to_default_discount.get(string_id, 0))
+            elif row["plan_type"] == Realm.STANDARD_FREE:
+                row["effective_rate"] = 0
+            elif row["plan_type"] == Realm.LIMITED and string_id in realms_to_default_discount:
+                row["effective_rate"] = 100 - int(realms_to_default_discount[string_id])
+            else:
+                row["effective_rate"] = ""
+
         total_amount += sum(estimated_arrs.values())
 
     # augment data with realm_minutes
@@ -808,6 +822,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         string_id="Total",
         plan_type_string="",
         amount=total_amount,
+        effective_rate="",
         stats_link="",
         date_created_day="",
         realm_owner_emails="",
