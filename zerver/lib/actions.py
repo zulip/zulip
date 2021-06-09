@@ -103,7 +103,9 @@ from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
     access_message,
+    aggregate_unread_data,
     get_last_message_id,
+    get_raw_unread_data,
     normalize_body,
     render_markdown,
     truncate_topic,
@@ -5674,6 +5676,12 @@ def do_update_message_flags(
         "messages": messages,
         "all": False,
     }
+
+    if flag == "read" and operation == "remove":
+        raw_unread_data = get_raw_unread_data(user_profile, messages)
+        unread_data = aggregate_unread_data(raw_unread_data)
+        event["messages_by_conversation"] = unread_data
+
     send_event(user_profile.realm, event, [user_profile.id])
 
     if flag == "read" and operation == "add":
@@ -5690,6 +5698,7 @@ def do_update_message_flags(
             event_time,
             increment=min(1, count),
         )
+
     return count
 
 

@@ -977,7 +977,7 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     )
 
 
-def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
+def get_raw_unread_data(user_profile: UserProfile, message_ids=None) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = (
@@ -986,9 +986,6 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         )
         .exclude(
             message__recipient_id__in=excluded_recipient_ids,
-        )
-        .extra(
-            where=[UserMessage.where_unread()],
         )
         .values(
             "message_id",
@@ -1001,6 +998,16 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         )
         .order_by("-message_id")
     )
+
+    if message_ids is not None:
+        # When users are marking just a few messages as unread, we just need
+        # those ids, and we know they're unread.
+        user_msgs = user_msgs.filter(message_id__in=message_ids)
+    else:
+        # At page load we need all unread messages.
+        user_msgs = user_msgs.extra(
+            where=[UserMessage.where_unread()],
+        )
 
     # Limit unread messages for performance reasons.
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
