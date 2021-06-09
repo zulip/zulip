@@ -760,7 +760,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             row["history"] = ""
 
     # estimate annual subscription revenue
-    total_amount = 0
+    total_arr = 0
     if settings.BILLING_ENABLED:
         estimated_arrs = estimate_annual_recurring_revenue_by_realm()
         realms_to_default_discount = get_realms_to_default_discount_dict()
@@ -771,7 +771,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             string_id = row["string_id"]
 
             if string_id in estimated_arrs:
-                row["amount"] = estimated_arrs[string_id]
+                row["arr"] = estimated_arrs[string_id]
 
             if row["plan_type"] == Realm.STANDARD:
                 row["effective_rate"] = 100 - int(realms_to_default_discount.get(string_id, 0))
@@ -782,7 +782,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             else:
                 row["effective_rate"] = ""
 
-        total_amount += sum(estimated_arrs.values())
+        total_arr += sum(estimated_arrs.values())
 
     # augment data with realm_minutes
     total_hours = 0.0
@@ -822,8 +822,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     total_row = dict(
         string_id="Total",
         plan_type_string="",
-        amount=total_amount,
         effective_rate="",
+        arr=total_arr,
         stats_link="",
         date_created_day="",
         realm_owner_emails="",
