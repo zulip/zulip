@@ -154,8 +154,8 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
     path_name = request.path.rstrip("/").split("/")[-1]
     description = (
         "Zulip comes with over a hundred native integrations out of the box, "
-        "and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. "
-        "Connect the apps you use everyday to Zulip."
+        "and integrates with Zapier and IFTTT to provide hundreds more. "
+        "Connect the apps you use every day to Zulip."
     )
 
     if path_name in INTEGRATIONS:

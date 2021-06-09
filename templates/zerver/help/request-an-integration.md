@@ -1,7 +1,7 @@
 # Request an integration
 
 Zulip comes with over 100 native integrations. Hundreds more are
-available through [Hubot](https://hubot.github.com/),
+available through
 [Zapier](https://zapier.com/home), [IFTTT](https://ifttt.com/), and
 the [Slack compatible webhook](/integrations/doc/slack_incoming).
 
