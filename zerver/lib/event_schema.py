@@ -1644,10 +1644,30 @@ update_message_flags_remove_event = event_dict_type(
         ("type", Equals("update_message_flags")),
         ("op", Equals("remove")),
         ("operation", Equals("remove")),
-        ("flag", str),
+        ("flag", EnumType(["read", "starred"])),
         ("messages", ListType(int)),
         ("all", bool),
-    ]
+    ],
+    optional_keys=[
+        (
+            "message_details",
+            StringDictType(
+                DictType(
+                    required_keys=[
+                        ("type", EnumType(["huddle", "private", "stream"])),
+                    ],
+                    optional_keys=[
+                        ("mentioned", bool),
+                        ("sender_id", int),
+                        ("user_ids_string", str),
+                        ("stream_id", int),
+                        ("topic", str),
+                        ("unmuted_stream_msg", bool),
+                    ],
+                )
+            ),
+        )
+    ],
 )
 check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
 
