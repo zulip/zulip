@@ -1528,7 +1528,7 @@ input[type="checkbox"] {
 }
 
 #account-settings,
-#admin-human-form {
+#user-name-form {
     .user-role button {
         cursor: default;
     }

@@ -10,8 +10,8 @@ import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {$t, $t_html} from "./i18n";
 import * as edit_fields_modal from "./edit_fields_modal";
+import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -382,44 +382,6 @@ function start_data_load() {
     populate_users();
 }
 
-function open_human_form(person) {
-    const user_id = person.user_id;
-
-    const html = render_admin_human_form({
-        user_id,
-        email: person.email,
-        full_name: person.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !page_params.is_owner,
-    });
-    const div = $(html);
-    const modal_container = $("#user-info-form-modal-container");
-    modal_container.empty().append(div);
-    overlays.open_modal("#admin-human-form");
-    $("#user-role-select").val(person.role);
-    if (!page_params.is_owner) {
-        $("#user-role-select")
-            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
-            .hide();
-    }
-
-    const element = "#admin-human-form .custom-profile-field-form";
-    $(element).html("");
-    settings_account.append_custom_profile_fields(element, user_id);
-    settings_account.initialize_custom_date_type_fields(element);
-    const pills = settings_account.initialize_custom_user_type_fields(
-        element,
-        user_id,
-        true,
-        false,
-    );
-
-    return {
-        modal: div,
-        fields_user_pills: pills,
-    };
-}
-
 function get_human_profile_data(fields_user_pills) {
     /*
         This formats custom profile field data to send to the server.
@@ -430,7 +392,7 @@ function get_human_profile_data(fields_user_pills) {
         the settings_account.js logic.
     */
     const new_profile_data = [];
-    $("#admin-human-form .custom_user_field_value").each(function () {
+    $("#user-name-form .custom_user_field_value").each(function () {
         // Remove duplicate datepicker input element generated flatpicker library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
@@ -561,16 +523,44 @@ function handle_human_form(tbody, status_field) {
             return;
         }
 
-        const ret = open_human_form(person);
-        const modal = ret.modal;
-        const fields_user_pills = ret.fields_user_pills;
+        const modal_body_html = render_admin_human_form({
+            user_id,
+            email: person.email,
+            full_name: person.full_name,
+            user_role_values: settings_config.user_role_values,
+            disable_role_dropdown: person.is_owner && !page_params.is_owner,
+        });
 
-        modal.find(".submit_human_change").on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        const modal_parent = $("#user-info-form-modal-container");
+        let fields_user_pills;
 
-            const role = Number.parseInt(modal.find("#user-role-select").val().trim(), 10);
-            const full_name = modal.find("input[name='full_name']");
+        function set_role_dropdown_and_fields_user_pills() {
+            $("#user-role-select").val(person.role);
+            if (!page_params.is_owner) {
+                $("#user-role-select")
+                    .find(
+                        `option[value="${CSS.escape(
+                            settings_config.user_role_values.owner.code,
+                        )}"]`,
+                    )
+                    .hide();
+            }
+
+            const element = "#user-name-form .custom-profile-field-form";
+            $(element).html("");
+            settings_account.append_custom_profile_fields(element, user_id);
+            settings_account.initialize_custom_date_type_fields(element);
+            fields_user_pills = settings_account.initialize_custom_user_type_fields(
+                element,
+                user_id,
+                true,
+                false,
+            );
+        }
+
+        function submit_user_details() {
+            const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+            const full_name = $("#user-name-form").find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
             const url = "/json/users/" + encodeURIComponent(user_id);
@@ -581,7 +571,15 @@ function handle_human_form(tbody, status_field) {
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#admin-human-form");
+            overlays.close_modal("#edit-fields-modal");
+        }
+
+        edit_fields_modal.launch({
+            modal_label: $t({defaultMessage: "Change user info and roles"}),
+            parent: modal_parent,
+            modal_body_html,
+            on_click: submit_user_details,
+            post_render: set_role_dropdown_and_fields_user_pills,
         });
     });
 }
