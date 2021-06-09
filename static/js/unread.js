@@ -450,7 +450,7 @@ export function process_loaded_messages(messages) {
     }
 }
 
-function process_unread_message(message) {
+export function process_unread_message(message) {
     // The `message` here just needs to require certain fields. For example,
     // the "message" may actually be constructed from a Zulip event that doesn't
     // include fields like "content".  The caller must verify that the message

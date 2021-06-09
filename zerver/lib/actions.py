@@ -106,7 +106,9 @@ from zerver.lib.message import (
     SendMessageRequest,
     access_message,
     bulk_access_messages,
+    format_unread_message_details,
     get_last_message_id,
+    get_raw_unread_data,
     normalize_body,
     render_markdown,
     truncate_topic,
@@ -6445,6 +6447,15 @@ def do_update_message_flags(
         "messages": messages,
         "all": False,
     }
+
+    if flag == "read" and operation == "remove":
+        # When removing the read flag (i.e. marking messages as
+        # unread), extend the event with an additional object with
+        # details on the messages required to update the client's
+        # `unread_msgs` data structure.
+        raw_unread_data = get_raw_unread_data(user_profile, messages)
+        event["message_details"] = format_unread_message_details(user_profile.id, raw_unread_data)
+
     send_event(user_profile.realm, event, [user_profile.id])
 
     if flag == "read" and operation == "add":
@@ -6461,6 +6472,7 @@ def do_update_message_flags(
             event_time,
             increment=min(1, count),
         )
+
     return count
 
 

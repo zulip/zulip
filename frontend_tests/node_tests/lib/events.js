@@ -69,6 +69,16 @@ exports.test_streams = {
 
 const streams = exports.test_streams;
 
+// TODO: we want to validate this better with check-schema.
+// The data should mostly be representative here, but we don't
+// really exercise it in our tests yet.
+const message_detail = {
+    type: "stream",
+    mentioned: false,
+    sender_id: test_user.id,
+    stream_id: streams.devel.test_id,
+};
+
 exports.test_realm_emojis = {
     101: {
         id: "101",
@@ -671,6 +681,16 @@ exports.fixtures = {
         operation: "add",
         flag: "read",
         messages: [999],
+        all: false,
+    },
+
+    update_message_flags__read_remove: {
+        type: "update_message_flags",
+        op: "remove",
+        operation: "remove",
+        flag: "read",
+        messages: [888],
+        message_details: {888: message_detail},
         all: false,
     },
 

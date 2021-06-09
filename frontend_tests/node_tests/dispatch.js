@@ -874,6 +874,20 @@ run_test("update_message (read)", ({override}) => {
     assert_same(args.message_ids, [999]);
 });
 
+run_test("update_message (unread)", ({override}) => {
+    const event = event_fixtures.update_message_flags__read_remove;
+
+    const stub = make_stub();
+    override(unread_ops, "process_unread_messages_event", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const {args} = stub.get_args("args");
+    assert.deepEqual(args, {
+        message_ids: event.messages,
+        message_details: event.message_details,
+    });
+});
+
 run_test("update_message (add star)", ({override, override_rewire}) => {
     override_rewire(starred_messages, "rerender_ui", noop);
 
