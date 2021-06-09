@@ -198,9 +198,9 @@ def get_deployment_lock(error_rerun_script: str) -> None:
                 WARNING
                 + "Another deployment in progress; waiting for lock... "
                 + "(If no deployment is running, rmdir {})".format(LOCK_DIR)
-                + ENDC
+                + ENDC,
+                flush=True,
             )
-            sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:

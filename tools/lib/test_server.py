@@ -78,18 +78,17 @@ def test_server_running(
 
     try:
         # Wait for the server to start up.
-        sys.stdout.write("\nWaiting for test server (may take a while)")
+        print(end="\nWaiting for test server (may take a while)")
         if not dots:
-            sys.stdout.write("\n\n")
+            print("\n", flush=True)
         t = time.time()
         while not server_is_up(server, log_file):
             if dots:
-                sys.stdout.write(".")
-                sys.stdout.flush()
+                print(end=".", flush=True)
             time.sleep(0.4)
             if time.time() - t > MAX_SERVER_WAIT:
                 raise Exception("Timeout waiting for server")
-        sys.stdout.write("\n\n--- SERVER IS UP! ---\n\n")
+        print("\n\n--- SERVER IS UP! ---\n", flush=True)
 
         # DO OUR ACTUAL TESTING HERE!!!
         yield

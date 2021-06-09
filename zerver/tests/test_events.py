@@ -5,7 +5,6 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
-import sys
 import time
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -389,10 +388,10 @@ class BaseAction(ZulipTestCase):
                     we apply events after fetching data.  If you
                     do not know how to debug it, you can ask for
                     help on chat.
-                """
+                """,
+                flush=True,
             )
 
-            sys.stdout.flush()
             raise AssertionError("Mismatching states")
 
 
