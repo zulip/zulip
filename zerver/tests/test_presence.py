@@ -45,7 +45,7 @@ class ActivityTest(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         user_profile.is_staff = True
-        user_profile.save()
+        user_profile.save(update_fields=["is_staff"])
 
         flush_per_request_caches()
         with queries_captured() as queries:
