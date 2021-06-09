@@ -50,6 +50,7 @@ export function initialize() {
     });
 
     // message reaction tooltip showing who reacted.
+    let observer;
     delegate("body", {
         target: ".message_reaction",
         placement: "bottom",
@@ -59,10 +60,37 @@ export function initialize() {
             const message_id = rows.get_message_id(instance.reference);
             const title = reactions.get_reaction_title_data(message_id, local_id);
             instance.setContent(title);
+
+            // Use MutationObserver to check for removal of nodes on which tooltips
+            // are still active.
+            // We target the message table and check for removal of it, it's children
+            // and the reactions individually down in the subtree.
+            const target_node = elem.parents(".message_table.focused_table").get(0);
+            const nodes_to_check_for_removal = [
+                elem.parents(".recipient_row").get(0),
+                elem.parents(".message_reactions").get(0),
+                elem.get(0),
+            ];
+            const config = {attributes: false, childList: true, subtree: true};
+
+            const callback = function (mutationsList) {
+                for (const mutation of mutationsList) {
+                    for (const node of nodes_to_check_for_removal) {
+                        // Hide instance if reference is in the removed node list.
+                        if (Array.prototype.includes.call(mutation.removedNodes, node)) {
+                            instance.hide();
+                        }
+                    }
+                }
+            };
+            observer = new MutationObserver(callback);
+            observer.observe(target_node, config);
         },
-        // Insert directly into the `.message_reaction` element so
-        // that when the reaction is hidden, tooltip hides as well.
-        appendTo: (reference) => reference,
+        onHidden(instance) {
+            instance.destroy();
+            observer.disconnect();
+        },
+        appendTo: () => document.body,
     });
 
     delegate("body", {
