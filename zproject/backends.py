@@ -832,6 +832,16 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # deactivated, so we shouldn't create a new user account
             raise ZulipLDAPException("Realm has been deactivated")
 
+        try:
+            validate_email(username)
+        except ValidationError:
+            error_message = f"{username} is not a valid email address."
+            # This indicates a misconfiguration of ldap settings
+            # or a malformed email value in the ldap directory,
+            # so we should log a warning about this before failing.
+            self.logger.warning(error_message)
+            raise ZulipLDAPException(error_message)
+
         # Makes sure that email domain hasn't be restricted for this
         # realm.  The main thing here is email_allowed_for_realm; but
         # we also call validate_email_not_already_in_realm just for consistency,
