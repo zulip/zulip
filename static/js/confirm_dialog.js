@@ -82,7 +82,7 @@ export function launch(conf) {
             link: conf.help_link,
         }),
     );
-    confirm_dialog.find(".confirm_dialog_body").html(conf.html_body);
+    confirm_dialog.find(".confirm_dialog_body").prepend(conf.html_body);
 
     const yes_button = confirm_dialog.find(".confirm_dialog_yes_button");
 
