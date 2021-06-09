@@ -222,7 +222,7 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ {}".format(" ".join(map(shlex.quote, args))))
+    print("+ {}".format(" ".join(map(shlex.quote, args))), flush=True)
 
     try:
         subprocess.check_call(args, **kwargs)
