@@ -32,7 +32,7 @@ import * as overlays from "./overlays";
 */
 
 export function launch(conf) {
-    const html = render_confirm_dialog();
+    const html = render_confirm_dialog({fade: conf.fade});
     const confirm_dialog = $(html);
 
     const conf_fields = [
@@ -47,7 +47,7 @@ export function launch(conf) {
     ];
 
     for (const f of conf_fields) {
-        if (!conf[f]) {
+        if (conf[f] === undefined) {
             blueslip.error("programmer omitted " + f);
         }
     }

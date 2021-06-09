@@ -872,6 +872,7 @@ export function initialize() {
                 html_body,
                 html_yes_button: $t_html({defaultMessage: "Confirm"}),
                 on_click: remove_user_from_private_stream,
+                fade: true,
             });
             return;
         }
@@ -940,6 +941,7 @@ export function initialize() {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_archive_stream,
+            fade: true,
         });
 
         $(".confirm_dialog_yes_button").attr("data-stream-id", stream_id);

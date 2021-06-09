@@ -1168,6 +1168,7 @@ export function build_page() {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_deactivate_realm,
+            fade: true,
         });
     });
 }
