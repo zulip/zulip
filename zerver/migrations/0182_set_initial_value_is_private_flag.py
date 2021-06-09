@@ -1,5 +1,3 @@
-import sys
-
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
@@ -19,8 +17,7 @@ def set_initial_value_of_is_private_flag(
     total = Message.objects.filter(recipient__type__in=[1, 3]).count()
     processed = 0
 
-    print("\nStart setting initial value for is_private flag...")
-    sys.stdout.flush()
+    print("\nStart setting initial value for is_private flag...", flush=True)
     while True:
         range_end = i + 10000
         # Can't use [Recipient.PERSONAL, Recipient.HUDDLE] in migration files
@@ -41,8 +38,7 @@ def set_initial_value_of_is_private_flag(
             percent = round((processed / total) * 100, 2)
         else:
             percent = 100.00
-        print(f"Processed {processed}/{total} {percent}%")
-        sys.stdout.flush()
+        print(f"Processed {processed}/{total} {percent}%", flush=True)
 
 
 class Migration(migrations.Migration):

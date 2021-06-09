@@ -1,5 +1,4 @@
 import os
-import sys
 import tempfile
 from argparse import ArgumentParser
 from typing import Any
@@ -207,8 +206,7 @@ class Command(ZulipBaseCommand):
             do_deactivate_realm(realm, acting_user=None)
 
         def percent_callback(bytes_transferred: Any) -> None:
-            sys.stdout.write(".")
-            sys.stdout.flush()
+            print(end=".", flush=True)
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(
