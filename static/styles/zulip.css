@@ -145,10 +145,6 @@ p.n-margin {
     border-radius: 4px;
 }
 
-.modal-backdrop {
-    z-index: 102;
-}
-
 .history-limited-box {
     color: hsl(16, 60%, 45%);
     border: 1px solid hsl(16, 60%, 45%);
@@ -2138,10 +2134,6 @@ nav {
     }
 }
 
-.modal-bg {
-    background-color: hsl(0, 0%, 98%);
-}
-
 div.floating_recipient {
     border-collapse: separate;
     width: 100%;
@@ -2308,23 +2300,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .topic_move_spinner,
 #confirm_dialog_spinner {
     margin: 0 auto;
-}
-
-.modal {
-    overflow: hidden;
-    margin-top: 0;
-    top: 5%;
-    /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
-       so avoid the outline it causes */
-    outline: 0;
-
-    form {
-        margin-bottom: 0;
-    }
-}
-
-.modal-body {
-    max-height: 60vh;
 }
 
 #invitee_emails {
