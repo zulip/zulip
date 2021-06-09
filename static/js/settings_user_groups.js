@@ -368,7 +368,6 @@ export function set_up() {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: delete_user_group,
-            fade: true,
         });
     });
 
