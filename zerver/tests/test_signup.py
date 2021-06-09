@@ -4284,6 +4284,28 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(phone_number_field_value.value, "a-new-number")
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_ldap_auto_registration_on_login_invalid_email_in_directory(self) -> None:
+        password = self.ldap_password("newuser_with_email")
+        username = "newuser_with_email"
+        subdomain = "zulip"
+
+        self.init_default_ldap_database()
+
+        self.change_ldap_user_attr("newuser_with_email", "mail", "thisisnotavalidemail")
+
+        with self.settings(
+            LDAP_EMAIL_ATTR="mail",
+        ), self.assertLogs("zulip.auth.ldap", "WARNING") as mock_log:
+            original_user_count = UserProfile.objects.count()
+            self.login_with_return(username, password, HTTP_HOST=subdomain + ".testserver")
+            # Verify that the process failed as intended - no UserProfile is created.
+            self.assertEqual(UserProfile.objects.count(), original_user_count)
+            self.assertEqual(
+                mock_log.output,
+                ["WARNING:zulip.auth.ldap:thisisnotavalidemail is not a valid email address."],
+            )
+
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_registration_multiple_realms(self) -> None:
         password = self.ldap_password("newuser")
         email = "newuser@zulip.com"
