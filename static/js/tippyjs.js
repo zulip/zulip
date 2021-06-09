@@ -52,14 +52,16 @@ export function initialize() {
     // message reaction tooltip showing who reacted.
     let observer;
     delegate("body", {
-        target: ".message_reaction",
+        target: ".message_reaction, .reaction_button",
         placement: "bottom",
         onShow(instance) {
             const elem = $(instance.reference);
-            const local_id = elem.attr("data-reaction-id");
-            const message_id = rows.get_message_id(instance.reference);
-            const title = reactions.get_reaction_title_data(message_id, local_id);
-            instance.setContent(title);
+            if (!instance.reference.classList.contains("reaction_button")) {
+                const local_id = elem.attr("data-reaction-id");
+                const message_id = rows.get_message_id(instance.reference);
+                const title = reactions.get_reaction_title_data(message_id, local_id);
+                instance.setContent(title);
+            }
 
             // Use MutationObserver to check for removal of nodes on which tooltips
             // are still active.
