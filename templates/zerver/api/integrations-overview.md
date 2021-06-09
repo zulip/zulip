@@ -2,7 +2,7 @@
 
 Integrations allow you to send data from other products into or out of
 Zulip. Zulip natively integrates with dozens of products, and with hundreds
-more through Zapier, IFTTT, and Hubot.
+more through Zapier and IFTTT.
 
 Zulip also makes it very easy to write your own integration, and (if you'd
 like) to get it merged into the main Zulip repository.
@@ -32,10 +32,6 @@ Zulip.
   [Slack's webhook API](https://api.slack.com/messaging/webhooks)
   pointed at Zulip's
   [Slack-compatible webhook API](/integrations/slack/slack_incoming).
-
-* Check if [Hubot](https://github.com/hubot-scripts) has an integration with
-  the product. If it does, follow
-  [these instructions](/integrations/doc/hubot) to set it up.
 
 * If the product can send email notifications, you can
   [send those emails to a stream](/help/message-a-stream-by-email).

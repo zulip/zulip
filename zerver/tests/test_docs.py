@@ -197,7 +197,6 @@ class DocPageTest(ZulipTestCase):
             "native integrations.",
             extra_strings=[
                 "And hundreds more through",
-                "Hubot",
                 "Zapier",
                 "IFTTT",
             ],
