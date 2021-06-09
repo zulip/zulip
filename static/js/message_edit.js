@@ -174,10 +174,9 @@ export function get_deletability(message) {
     }
 
     if (
-        page_params.realm_allow_message_deleting &&
         page_params.realm_message_content_delete_limit_seconds +
             (message.timestamp - Date.now() / 1000) >
-            0
+        0
     ) {
         return true;
     }
