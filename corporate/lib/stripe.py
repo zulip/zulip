@@ -891,6 +891,14 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
     return annual_revenue
 
 
+def get_realms_to_default_discount_dict() -> Dict[str, Decimal]:
+    realms_to_default_discount = {}
+    customers = Customer.objects.exclude(default_discount=None).exclude(default_discount=0)
+    for customer in customers:
+        realms_to_default_discount[customer.realm.string_id] = customer.default_discount
+    return realms_to_default_discount
+
+
 # During realm deactivation we instantly downgrade the plan to Limited.
 # Extra users added in the final month are not charged. Also used
 # for the cancellation of Free Trial.

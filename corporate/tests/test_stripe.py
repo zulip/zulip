@@ -32,6 +32,7 @@ from corporate.lib.stripe import (
     get_discount_for_realm,
     get_latest_seat_count,
     get_price_per_license,
+    get_realms_to_default_discount_dict,
     invoice_plan,
     invoice_plans_as_needed,
     make_end_of_cycle_updates_if_needed,
@@ -2949,6 +2950,24 @@ class BillingHelpersTest(ZulipTestCase):
             tier=CustomerPlan.STANDARD,
         )
         self.assertEqual(get_current_plan_by_realm(realm), plan)
+
+    def test_get_realms_to_default_discount_dict(self) -> None:
+        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_1")
+        lear_customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_2")
+        lear_customer.default_discount = 30
+        lear_customer.save(update_fields=["default_discount"])
+        zephyr_customer = Customer.objects.create(
+            realm=get_realm("zephyr"), stripe_customer_id="cus_3"
+        )
+        zephyr_customer.default_discount = 0
+        zephyr_customer.save(update_fields=["default_discount"])
+
+        self.assertEqual(
+            get_realms_to_default_discount_dict(),
+            {
+                "lear": Decimal("30.0000"),
+            },
+        )
 
 
 class LicenseLedgerTest(StripeTestCase):
