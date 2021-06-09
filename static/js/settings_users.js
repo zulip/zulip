@@ -11,6 +11,7 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
+import * as edit_fields_modal from "./edit_fields_modal";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -455,39 +456,6 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
-function open_bot_form(person) {
-    const html = render_admin_bot_form({
-        user_id: person.user_id,
-        email: person.email,
-        full_name: person.full_name,
-    });
-    const div = $(html);
-    const modal_container = $("#user-info-form-modal-container");
-    modal_container.empty().append(div);
-    overlays.open_modal("#admin-bot-form");
-
-    // NOTE: building `owner_dropdown` is quite expensive!
-    const owner_id = bot_data.get(person.user_id).owner_id;
-
-    const user_ids = people.get_active_human_ids();
-    const users_list = user_ids.map((user_id) => ({
-        name: people.get_full_name(user_id),
-        value: user_id.toString(),
-    }));
-    const opts = {
-        widget_name: "edit_bot_owner",
-        data: users_list,
-        default_text: $t({defaultMessage: "No owner"}),
-        value: owner_id,
-    };
-    const owner_widget = dropdown_list_widget(opts);
-
-    return {
-        modal: div,
-        owner_widget,
-    };
-}
-
 function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
     const modal_parent = $("#settings_content .organization-box");
@@ -629,26 +597,62 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const {modal, owner_widget} = open_bot_form(bot);
+        const modal_body_html = render_admin_bot_form({
+            user_id,
+            email: bot.email,
+            full_name: bot.full_name,
+        });
 
-        modal.find(".submit_bot_change").on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        const modal_parent = $("#user-info-form-modal-container");
 
-            const full_name = modal.find("input[name='full_name']");
+        let owner_widget;
+
+        function submit_bot_details() {
+            const full_name = $("#edit-fields-modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
                 full_name: full_name.val(),
             };
 
+            if (owner_widget === undefined) {
+                blueslip.error("get_bot_owner_widget not called");
+            }
             const human_user_id = owner_widget.value();
             if (human_user_id) {
                 data.bot_owner_id = human_user_id;
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#admin-bot-form");
+            overlays.close_modal("#edit-fields-modal");
+        }
+
+        function get_bot_owner_widget() {
+            const owner_id = bot_data.get(user_id).owner_id;
+
+            const user_ids = people.get_active_human_ids();
+            const users_list = user_ids.map((user_id) => ({
+                name: people.get_full_name(user_id),
+                value: user_id.toString(),
+            }));
+
+            const opts = {
+                widget_name: "edit_bot_owner",
+                data: users_list,
+                default_text: $t({defaultMessage: "No owner"}),
+                value: owner_id,
+            };
+            // Note: Rendering this is quite expensive in
+            // organizations with 10Ks of users.
+            owner_widget = dropdown_list_widget(opts);
+        }
+
+        edit_fields_modal.launch({
+            modal_label: $t({defaultMessage: "Change bot info and owner"}),
+            parent: modal_parent,
+            modal_body_html,
+            on_click: submit_bot_details,
+            post_render: get_bot_owner_widget,
         });
     });
 }
