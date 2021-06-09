@@ -2,9 +2,11 @@ import * as channel from "./channel";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
+import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as reload from "./reload";
 import * as unread from "./unread";
@@ -69,6 +71,60 @@ export function process_read_messages_event(message_ids) {
             process_newly_read_message(message, options);
         }
     }
+
+    unread_ui.update_unread_counts();
+}
+
+export function process_unread_messages_event({message_ids, message_details}) {
+    // This is the reverse of  process_unread_messages_event.
+    message_ids = unread.get_read_message_ids(message_ids);
+    if (message_ids.length === 0) {
+        return;
+    }
+
+    for (const message_id of message_ids) {
+        const message = message_store.get(message_id);
+
+        if (message) {
+            message.unread = true;
+        }
+
+        const message_info = message_details[message_id];
+
+        let user_ids_string;
+
+        if (message_info.type === "private") {
+            user_ids_string = people.pm_lookup_key_from_user_ids(message_info.user_ids);
+        }
+
+        unread.process_unread_message({
+            id: message_id,
+            mentioned: message_info.mentioned,
+            stream_id: message_info.stream_id,
+            topic: message_info.topic,
+            type: message_info.type,
+            unread: true,
+            user_ids_string,
+        });
+
+        if (message_info.type === "stream") {
+            recent_topics_ui.update_topic_unread_count({
+                stream_id: message_info.stream_id,
+                topic: message_info.topic,
+            });
+        }
+    }
+
+    /*
+        We use a big-hammer approach now to updating the message view.
+        This is relatively harmless, since the only time we are called is
+        when the user herself marks her message as unread.  But we
+        do eventually want to be more surgical here, especially once we
+        have a final scheme for how best to structure the HTML within
+        the message to indicate read-vs.-unread.  Currently we use a
+        green border, but that may change.
+    */
+    message_live_update.rerender_messages_view();
 
     unread_ui.update_unread_counts();
 }

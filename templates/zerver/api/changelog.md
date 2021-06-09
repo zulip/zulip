@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 121**
+
+* [`GET /events`](/api/get-events): Added `message_details` field
+  appearing in message flag update events when marking previously read
+  messages as unread.
+
 **Feature level 120**
 
 * [`GET /messages/{message_id}`](/api/get-message): This endpoint

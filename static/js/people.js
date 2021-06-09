@@ -403,15 +403,19 @@ export function concat_huddle(user_ids, user_id) {
     return sorted_ids.join(",");
 }
 
-export function pm_lookup_key(user_ids_string) {
+export function pm_lookup_key_from_user_ids(user_ids) {
     /*
         The server will sometimes include our own user id
         in keys for PMs, but we only want our user id if
         we sent a message to ourself.
     */
-    let user_ids = split_to_ints(user_ids_string);
     user_ids = sorted_other_user_ids(user_ids);
     return user_ids.join(",");
+}
+
+export function pm_lookup_key(user_ids_string) {
+    const user_ids = split_to_ints(user_ids_string);
+    return pm_lookup_key_from_user_ids(user_ids);
 }
 
 export function all_user_ids_in_pm(message) {

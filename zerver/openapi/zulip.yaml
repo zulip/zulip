@@ -2541,6 +2541,16 @@ paths:
                                 removed from a message.
 
                                 [message-flags]: /api/update-message-flags#available-flags
+                              required:
+                                [
+                                  "id",
+                                  "type",
+                                  "op",
+                                  "operation",
+                                  "flag",
+                                  "messages",
+                                  "all",
+                                ]
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2567,6 +2577,9 @@ paths:
                                   type: string
                                   description: |
                                     The flag to be removed.
+                                  enum:
+                                    - starred
+                                    - read
                                 messages:
                                   type: array
                                   description: |
@@ -2579,6 +2592,70 @@ paths:
                                   description: |
                                     Whether the flag was removed from all messages.
                                     If this is true then the `messages` array will be empty.
+                                message_details:
+                                  description: |
+                                    Present if `message` and `update_message_flags` are both present in
+                                    `event_types` and the `flag` is `read` and the `op` is `remove`.
+
+                                    A set of data structures describing the messages that
+                                    are being marked as unread with additional details to
+                                    allow a client to update the `unread_msgs` data
+                                    structure for these messages (which may not be
+                                    otherwise known to the client).
+
+                                    **Changes**: New in Zulip 5.0 (feature level 121). Previously,
+                                    marking already read messages as unread was not
+                                    supported by the Zulip API.
+                                  type: object
+                                  additionalProperties:
+                                    type: object
+                                    description: |
+                                      Additional properties.
+                                    additionalProperties: false
+                                    required: ["type"]
+                                    properties:
+                                      type:
+                                        type: string
+                                        description: |
+                                          The type of this message.
+                                        enum:
+                                          - private
+                                          - stream
+                                      mentioned:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether the message contains a mention
+                                          of the user.
+
+                                          Present only if the message mentions the current user.
+                                      user_ids:
+                                        type: array
+                                        items:
+                                          type: integer
+                                        description: |
+                                          Present only if `type` is `private`.
+
+                                          The user IDs of every recipient of this private message, excluding yourself.
+                                          Will be the empty list for a message you had sent to only yourself.
+                                      stream_id:
+                                        type: integer
+                                        description: |
+                                          Present only if `type` is `stream`.
+
+                                          The ID of the stream where the message was sent.
+                                      topic:
+                                        type: string
+                                        description: |
+                                          Present only if `type` is `stream`.
+
+                                          Name of the topic where the message was sent.
+                                      unmuted_stream_msg:
+                                        type: boolean
+                                        deprecated: true
+                                        description: |
+                                          **Deprecated**
+                                          Internal implementation detail. Clients should
+                                          ignore this field as it will be removed in the future.
                               example:
                                 {
                                   "type": "update_message_flags",
@@ -2586,6 +2663,15 @@ paths:
                                   "operation": "remove",
                                   "flag": "starred",
                                   "messages": [63],
+                                  "message_details":
+                                    {
+                                      63:
+                                        {
+                                          "type": "stream",
+                                          "stream_id": 22,
+                                          "topic": "lunch",
+                                        },
+                                    },
                                   "all": false,
                                   "id": 0,
                                 }
@@ -9565,8 +9651,9 @@ paths:
                                 user_ids_string:
                                   type: string
                                   description: |
-                                    A string containing the ids of all users in the huddle(group PMs)
-                                    separated by commas(,). Example: "1,2,3".
+                                    A string containing the IDs of all users in the group
+                                    private message conversation separated by commas
+                                    (,). Example: "1,2,3".
                                 message_ids:
                                   type: array
                                   description: |

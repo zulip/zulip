@@ -656,6 +656,43 @@ class NormalActionsTest(BaseAction):
                 state_change_expected=True,
             )
 
+            events = self.verify_action(
+                lambda: do_update_message_flags(user_profile, "remove", "read", [message]),
+                state_change_expected=True,
+            )
+            check_update_message_flags_remove("events[0]", events[0])
+
+            personal_message = self.send_personal_message(
+                from_user=user_profile, to_user=self.example_user("cordelia"), content=content
+            )
+            self.verify_action(
+                lambda: do_update_message_flags(user_profile, "add", "read", [personal_message]),
+                state_change_expected=True,
+            )
+
+            events = self.verify_action(
+                lambda: do_update_message_flags(user_profile, "remove", "read", [personal_message]),
+                state_change_expected=True,
+            )
+            check_update_message_flags_remove("events[0]", events[0])
+
+            huddle_message = self.send_huddle_message(
+                from_user=self.example_user("cordelia"),
+                to_users=[user_profile, self.example_user("othello")],
+                content=content,
+            )
+
+            self.verify_action(
+                lambda: do_update_message_flags(user_profile, "add", "read", [huddle_message]),
+                state_change_expected=True,
+            )
+
+            events = self.verify_action(
+                lambda: do_update_message_flags(user_profile, "remove", "read", [huddle_message]),
+                state_change_expected=True,
+            )
+            check_update_message_flags_remove("events[0]", events[0])
+
     def test_send_message_to_existing_recipient(self) -> None:
         sender = self.example_user("cordelia")
         self.send_stream_message(
