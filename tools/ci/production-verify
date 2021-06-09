@@ -21,7 +21,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 check_header() {
-    sed -i -e 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g" "$success_header_file"
+    sed -i -e 's|Length: [0-9]\+\( ([0-9.]\+K)\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g" "$success_header_file"
     if ! diff -ur /tmp/http-headers-processed "$success_header_file"; then
         set +x
         echo
@@ -73,7 +73,7 @@ grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][
 nginx_version="$(nginx -v 2>&1 | awk '{print $3, $4}' | xargs)"
 
 # Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
-sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
+sed -i 's|Length: [0-9]\+\( ([0-9.]\+K)\)\?|Length: <Length>|' /tmp/http-headers-processed
 if [ "$os_version_codename" = "buster" ] || [ "$os_version_codename" = "bullseye" ]; then
     success_header_file="/tmp/success-http-headers.template.debian.txt"
     check_header
