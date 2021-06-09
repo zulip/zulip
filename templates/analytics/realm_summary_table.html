@@ -22,9 +22,11 @@
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
+            {% if billing_enabled %}
             <th>Plan type</th>
             <th>ARR</th>
             <th>Effective rate (%)</th>
+            {% endif %}
             <th></th>
             <th>DAU</th>
             <th>WAU</th>
@@ -51,6 +53,7 @@
                 {{ row.date_created_day }}
             </td>
 
+            {% if billing_enabled %}
             <td>
                 {{ row.plan_type_string }}
             </td>
@@ -66,6 +69,7 @@
                 {{ row.effective_rate }}
                 {% endif %}
             </td>
+            {% endif %}
 
             <td>
                 {% if not loop.first %}

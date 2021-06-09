@@ -747,7 +747,6 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
-        row["plan_type_string"] = get_plan_name(row["plan_type"])
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
         row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
@@ -767,6 +766,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         realms_to_default_discount = get_realms_to_default_discount_dict()
 
         for row in rows:
+            row["plan_type_string"] = get_plan_name(row["plan_type"])
+
             string_id = row["string_id"]
 
             if string_id in estimated_arrs:
@@ -837,7 +838,12 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     content = loader.render_to_string(
         "analytics/realm_summary_table.html",
-        dict(rows=rows, num_active_sites=num_active_sites, utctime=now.strftime("%Y-%m-%d %H:%MZ")),
+        dict(
+            rows=rows,
+            num_active_sites=num_active_sites,
+            utctime=now.strftime("%Y-%m-%d %H:%MZ"),
+            billing_enabled=settings.BILLING_ENABLED,
+        ),
     )
     return content
 
