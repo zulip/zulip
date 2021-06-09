@@ -3272,10 +3272,6 @@ paths:
                                       description: |
                                         Whether this organization is configured to allow users to access
                                         [message edit history](/help/view-a-messages-edit-history).
-                                    allow_message_deleting:
-                                      type: boolean
-                                      description: |
-                                        Whether messages can be deleted in this Zulip organization.
                                     bot_creation_policy:
                                       type: integer
                                       description: |
