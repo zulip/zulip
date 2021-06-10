@@ -917,9 +917,9 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("hamlet")
         message = self.get_message(Recipient.PERSONAL, type_id=1)
-        UserMessage.objects.create(
+
+        usermessage = UserMessage.objects.create(
             user_profile=user_profile,
-            flags=UserMessage.flags.read,
             message=message,
         )
 
@@ -927,8 +927,28 @@ class HandlePushNotificationTest(PushNotificationTest):
             "message_id": message.id,
             "trigger": "private_message",
         }
-        handle_push_notification(user_profile.id, missed_message)
-        mock_push_notifications.assert_called_once()
+
+        # If the message is unread, we should send push notifications.
+        with mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple, mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android:
+            handle_push_notification(user_profile.id, missed_message)
+        mock_send_apple.assert_called_once()
+        mock_send_android.assert_called_once()
+
+        # If the message has been read, don't send push notifications.
+        usermessage.flags.read = True
+        usermessage.save()
+        with mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple, mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android:
+            handle_push_notification(user_profile.id, missed_message)
+        mock_send_apple.assert_not_called()
+        mock_send_android.assert_not_called()
 
     def test_deleted_message(self) -> None:
         """Simulates the race where message is deleted before handlingx push notifications"""
