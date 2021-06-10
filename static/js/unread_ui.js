@@ -8,6 +8,7 @@ import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as unread from "./unread";
+import * as unread_ops from "./unread_ops";
 
 let last_mention_count = 0;
 
@@ -88,6 +89,10 @@ export function should_display_bankruptcy_banner() {
 
     return false;
 }
+
+$("body").on("click", "#resume_reading", () => {
+    unread_ops.resume_reading();
+});
 
 export function initialize() {
     update_unread_counts();

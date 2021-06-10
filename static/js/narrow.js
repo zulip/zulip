@@ -191,6 +191,8 @@ export function activate(raw_operators, opts) {
         recent_topics_ui.hide();
     }
 
+    $(".hide_when_narrow_completes").hide();
+
     const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
@@ -831,6 +833,7 @@ export function deactivate(coming_from_recent_topics = false) {
       message_list_data structure caching system that happens to have
       message_lists.home in it.
      */
+    $(".hide_when_narrow_completes").hide();
     search.clear_search_form();
     // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
