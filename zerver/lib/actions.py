@@ -1974,14 +1974,16 @@ def do_send_messages(
 
         users: List[Dict[str, Union[int, List[str], bool]]] = []
         for user_id in user_list:
+            flags = user_flags.get(user_id, [])
+            wildcard_mention_notify = user_id in send_request.wildcard_mention_user_ids
             users.append(
                 dict(
                     id=user_id,
-                    flags=user_flags.get(user_id, []),
+                    flags=flags,
                     online_push_enabled=(user_id in send_request.online_push_user_ids),
                     stream_push_notify=(user_id in send_request.stream_push_user_ids),
                     stream_email_notify=(user_id in send_request.stream_email_user_ids),
-                    wildcard_mention_notify=(user_id in send_request.wildcard_mention_user_ids),
+                    wildcard_mention_notify=wildcard_mention_notify,
                     sender_is_muted=(user_id in send_request.muted_sender_user_ids),
                 )
             )
