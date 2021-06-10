@@ -1982,6 +1982,7 @@ def do_send_messages(
                 dict(
                     id=user_id,
                     flags=flags,
+                    mentioned=("mentioned" in flags),
                     online_push_enabled=(user_id in send_request.online_push_user_ids),
                     stream_push_notify=(user_id in send_request.stream_push_user_ids),
                     stream_email_notify=(user_id in send_request.stream_email_user_ids),

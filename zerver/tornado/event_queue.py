@@ -733,7 +733,6 @@ def missedmessage_hook(
     for event in client.event_queue.contents(include_internal_data=True):
         if event["type"] != "message":
             continue
-
         internal_data = event.get("internal_data", {})
 
         sender_is_muted = internal_data.get("sender_is_muted", False)
@@ -742,9 +741,7 @@ def missedmessage_hook(
 
         assert "flags" in event
 
-        flags = event["flags"]
-
-        mentioned = "mentioned" in flags
+        mentioned = internal_data.get("mentioned", False)
         private_message = event["message"]["type"] == "private"
         # stream_push_notify is set in process_message_event.
         stream_push_notify = internal_data.get("stream_push_notify", False)
@@ -949,7 +946,7 @@ def process_message_event(
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
         private_message = message_type == "private" and user_profile_id != sender_id
-        mentioned = "mentioned" in flags
+        mentioned = user_data.get("mentioned", False)
         stream_push_notify = user_data.get("stream_push_notify", False)
         stream_email_notify = user_data.get("stream_email_notify", False)
         wildcard_mention_notify = user_data.get("wildcard_mention_notify", False)
@@ -957,6 +954,7 @@ def process_message_event(
 
         extra_user_data[user_profile_id] = dict(
             internal_data=dict(
+                mentioned=mentioned,
                 stream_push_notify=stream_push_notify,
                 stream_email_notify=stream_email_notify,
                 wildcard_mention_notify=wildcard_mention_notify,
