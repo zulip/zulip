@@ -28,7 +28,7 @@ export function message(response_html, status_box, cls = "alert", remove_after =
 }
 
 export function error(response_html, xhr, status_box, remove_after) {
-    if (xhr && xhr.status.toString().charAt(0) === "4") {
+    if (xhr && xhr.status >= 400 && xhr.status < 500) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         const server_response_html = _.escape(JSON.parse(xhr.responseText).msg);
@@ -60,7 +60,7 @@ export function generic_embed_error(error_html) {
 }
 
 export function generic_row_button_error(xhr, btn) {
-    if (xhr.status.toString().charAt(0) === "4") {
+    if (xhr.status >= 400 && xhr.status < 500) {
         btn.closest("td").html(
             $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
         );
