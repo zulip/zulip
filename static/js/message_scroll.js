@@ -65,13 +65,13 @@ export function hide_indicators() {
 
 export function show_history_limit_notice() {
     $(".top_messages_logo").hide();
-    $(".history-limited-box").show();
+    $(".history_limited_box").show();
     narrow_banner.hide_empty_narrow_message();
 }
 
 export function hide_history_limit_notice() {
     $(".top_messages_logo").show();
-    $(".history-limited-box").hide();
+    $(".history_limited_box").hide();
 }
 
 export function hide_end_of_results_notice() {

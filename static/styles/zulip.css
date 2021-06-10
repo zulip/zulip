@@ -144,7 +144,7 @@ p.n-margin {
     z-index: 102;
 }
 
-.history-limited-box {
+.history_limited_box {
     color: hsl(16, 60%, 45%);
     border: 1px solid hsl(16, 60%, 45%);
     box-shadow: 0 0 2px hsl(16, 60%, 45%);
@@ -155,7 +155,7 @@ p.n-margin {
     box-shadow: 0 0 2px hsla(192, 19%, 75%, 0.2);
 }
 
-.history-limited-box,
+.history_limited_box,
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
