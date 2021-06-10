@@ -2,6 +2,7 @@ import random
 import re
 from email.headerregistry import Address
 from typing import List, Sequence
+from unittest import mock
 from unittest.mock import patch
 
 import ldap
@@ -23,6 +24,7 @@ from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     ScheduledEmail,
+    UserMessage,
     UserProfile,
     get_realm,
     get_stream,
@@ -305,6 +307,57 @@ class TestFollowupEmails(ZulipTestCase):
 
 
 class TestMissedMessages(ZulipTestCase):
+    def test_read_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.login("cordelia")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message",
+                "client": "website",
+                "to": hamlet.email,
+            },
+        )
+        self.assert_json_success(result)
+        message = self.get_last_message()
+
+        # The message is marked as read for the sender (Cordelia) by the message send codepath.
+        # We obviously should not send notifications to someone for messages they sent themselves.
+        with mock.patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
+        ) as m:
+            handle_missedmessage_emails(
+                cordelia.id, [{"message_id": message.id, "trigger": "private_message"}]
+            )
+        m.assert_not_called()
+
+        # If the notification is processed before Hamlet reads the message, he should get the email.
+        with mock.patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
+        ) as m:
+            handle_missedmessage_emails(
+                hamlet.id, [{"message_id": message.id, "trigger": "private_message"}]
+            )
+        m.assert_called_once()
+
+        # If Hamlet reads the message before receiving the email notification, we should not sent him
+        # an email.
+        usermessage = UserMessage.objects.get(
+            user_profile=hamlet,
+            message=message,
+        )
+        usermessage.flags.read = True
+        usermessage.save()
+        with mock.patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
+        ) as m:
+            handle_missedmessage_emails(
+                hamlet.id, [{"message_id": message.id, "trigger": "private_message"}]
+            )
+        m.assert_not_called()
+
     def normalize_string(self, s: str) -> str:
         s = s.strip()
         return re.sub(r"\s+", " ", s)
