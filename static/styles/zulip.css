@@ -172,12 +172,12 @@ p.n-margin {
     }
 }
 
-.bottom-messages-logo {
+.bottom_messages_logo {
     display: none;
 }
 
-.top-messages-logo,
-.bottom-messages-logo {
+.top_messages_logo,
+.bottom_messages_logo {
     width: 24px;
     height: 24px;
     margin: 0 auto 12px;

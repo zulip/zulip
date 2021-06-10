@@ -969,8 +969,8 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsl(212, 28%, 18%);
     }
 
-    .top-messages-logo,
-    .bottom-messages-logo {
+    .top_messages_logo,
+    .bottom_messages_logo {
         svg path {
             fill: hsl(214, 27%, 18%);
             stroke: hsl(214, 27%, 18%);

@@ -43,7 +43,7 @@ export function hide_loading_older() {
 
 export function show_loading_newer() {
     if (!loading_newer_messages_indicator_showing) {
-        $(".bottom-messages-logo").show();
+        $(".bottom_messages_logo").show();
         loading.make_indicator($("#loading_newer_messages_indicator"), {abs_positioned: true});
         loading_newer_messages_indicator_showing = true;
         floating_recipient_bar.hide();
@@ -52,7 +52,7 @@ export function show_loading_newer() {
 
 export function hide_loading_newer() {
     if (loading_newer_messages_indicator_showing) {
-        $(".bottom-messages-logo").hide();
+        $(".bottom_messages_logo").hide();
         loading.destroy_indicator($("#loading_newer_messages_indicator"));
         loading_newer_messages_indicator_showing = false;
     }
@@ -64,13 +64,13 @@ export function hide_indicators() {
 }
 
 export function show_history_limit_notice() {
-    $(".top-messages-logo").hide();
+    $(".top_messages_logo").hide();
     $(".history-limited-box").show();
     narrow_banner.hide_empty_narrow_message();
 }
 
 export function hide_history_limit_notice() {
-    $(".top-messages-logo").show();
+    $(".top_messages_logo").show();
     $(".history-limited-box").hide();
 }
 
