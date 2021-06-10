@@ -18,6 +18,9 @@ go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
+$selected_border_color: hsl(215, 47%, 50%);
+$unread_border_color: hsl(107, 74%, 29%);
+
 /* These need to agree with scroll_bar.js */
 $left_sidebar_width: 270px;
 $right_sidebar_width: 250px;
@@ -1213,7 +1216,7 @@ td.pointer {
     top: 0;
 }
 
-.unread_marker {
+.unread_marker:not(.selected_message) {
     display: block;
     position: absolute;
     left: 2px;
@@ -1233,7 +1236,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background-color: hsl(107, 74%, 29%);
+    background-color: $unread_border_color;
     width: 3px;
     height: 100%;
 }
@@ -1257,11 +1260,25 @@ td.pointer {
     .messagebox {
         z-index: 1;
     }
+}
 
+.selected_message {
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
-            -1px -1px 0 0 hsl(215, 47%, 50%), 1px 1px 0 0 hsl(215, 47%, 50%),
-            -1px 1px 0 0 hsl(215, 47%, 50%), 1px -1px 0 0 hsl(215, 47%, 50%);
+        box-shadow: inset 0 0 0 2px $selected_border_color,
+            -1px -1px 0 0 $selected_border_color,
+            1px 1px 0 0 $selected_border_color,
+            -1px 1px 0 0 $selected_border_color,
+            1px -1px 0 0 $selected_border_color;
+    }
+}
+
+.selected_message.unread {
+    .messagebox-content {
+        box-shadow: inset 0 0 0 2px $unread_border_color,
+            -1px -1px 0 0 $unread_border_color,
+            1px 1px 0 0 $unread_border_color,
+            -1px 1px 0 0 $unread_border_color,
+            1px -1px 0 0 $unread_border_color !important;
     }
 }
 

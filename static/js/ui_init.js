@@ -322,6 +322,7 @@ export function initialize_kitchen_sink_stuff() {
         const row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
         row.addClass("selected_message");
+        row.find(".unread_marker").addClass("selected_message");
 
         if (event.then_scroll) {
             if (row.length === 0) {
