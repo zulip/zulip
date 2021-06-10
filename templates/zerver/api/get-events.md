@@ -52,8 +52,6 @@ endpoint and a queue would be registered in the absence of a `queue_id`.
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/events:get}
 
 #### Example response

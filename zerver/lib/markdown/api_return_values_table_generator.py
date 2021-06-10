@@ -52,6 +52,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     # Another heading for the events documentation
                     text.append("\n\n## Events\n\n")
                     text += self.render_events(events)
+                if len(text) > 0:
+                    text = ["#### Return values"] + text
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
                 following = line_split[-1]

@@ -21,8 +21,6 @@
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/messages/matches_narrow:get}
 
 #### Example response

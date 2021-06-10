@@ -27,8 +27,6 @@ You may pass the `client_gravatar` or `include_custom_profile_fields` query para
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml}|/users/{email}:get}
 
 #### Example response

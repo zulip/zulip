@@ -32,8 +32,6 @@ to 25MB.
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/user_uploads:post}
 
 #### Example response

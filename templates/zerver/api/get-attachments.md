@@ -21,8 +21,6 @@
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/attachments:get}
 
 #### Example response

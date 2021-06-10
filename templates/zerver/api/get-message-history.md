@@ -21,8 +21,6 @@
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/messages/{message_id}/history:get}
 
 Please note that the original message's snapshot only contains the fields

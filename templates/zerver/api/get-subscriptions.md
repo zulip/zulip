@@ -31,8 +31,6 @@ You may pass the `include_subscribers` query parameter as follows:
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/users/me/subscriptions:get}
 
 #### Example response

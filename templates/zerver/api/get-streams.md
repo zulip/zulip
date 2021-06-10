@@ -34,8 +34,6 @@ as URL query parameters, like so:
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/streams:get}
 
 #### Example response

@@ -100,8 +100,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/messages/flags:post}
 
 #### Example response

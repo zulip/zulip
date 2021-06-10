@@ -17,8 +17,6 @@
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/dev_fetch_api_key:post}
 
 #### Example response

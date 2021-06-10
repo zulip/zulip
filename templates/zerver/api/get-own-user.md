@@ -27,8 +27,6 @@ This endpoint takes no parameters.
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/users/me:get}
 
 #### Example response

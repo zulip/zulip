@@ -32,8 +32,6 @@ administrative privileges.
 
 {generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:delete}
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/users/me/subscriptions:delete}
 
 #### Example response

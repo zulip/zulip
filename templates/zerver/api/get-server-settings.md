@@ -21,8 +21,6 @@
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/server_settings:get}
 
 [ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory

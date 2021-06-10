@@ -21,8 +21,6 @@
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/users/{user_id_or_email}/presence:get}
 
 #### Example response

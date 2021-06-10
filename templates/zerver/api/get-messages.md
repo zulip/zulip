@@ -27,8 +27,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 ## Response
 
-#### Return values
-
 When a request is successful, this endpoint returns a dictionary
 containing the following (in addition to the `msg` and `result` keys
 present in all Zulip API responses).

@@ -73,8 +73,6 @@ file.
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/messages:post}
 
 #### Example response

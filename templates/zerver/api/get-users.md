@@ -33,8 +33,6 @@ You may pass the `client_gravatar` query parameter as follows:
 
 ## Response
 
-#### Return values
-
 {generate_return_values_table|zulip.yaml|/users:get}
 
 #### Example response
