@@ -1,3 +1,4 @@
+import urllib.parse
 from typing import Optional
 
 import orjson
@@ -9,6 +10,7 @@ from django.template.response import TemplateResponse
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics
 from zerver.lib.github import InvalidPlatform, get_latest_github_release_download_link_for_platform
+from zerver.lib.subdomains import is_subdomain_root_or_alias
 from zerver.models import Realm
 
 
@@ -36,6 +38,10 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     realm_plan_type = 0
     free_trial_days = settings.FREE_TRIAL_DAYS
     sponsorship_pending = False
+    sponsorship_url = "/upgrade#sponsorship"
+    if is_subdomain_root_or_alias(request):
+        # If we're on the root domain, we make this link first ask you which organization.
+        sponsorship_url = f"/accounts/go/?next={urllib.parse.quote(sponsorship_url)}"
 
     if realm is not None:
         realm_plan_type = realm.plan_type
@@ -59,6 +65,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             "realm_plan_type": realm_plan_type,
             "free_trial_days": free_trial_days,
             "sponsorship_pending": sponsorship_pending,
+            "sponsorship_url": sponsorship_url,
         },
     )
 
