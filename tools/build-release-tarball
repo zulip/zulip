@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
+# shellcheck source=lib/git-tools.bash
+. "$(dirname "$0")"/lib/git-tools.bash
+
 usage() {
     echo "Usage: $0 <ZULIP_VERSION>" >&2
     exit 1
@@ -26,18 +29,10 @@ fi
 version="$1"
 prefix="zulip-server-$version"
 
+require_clean_work_tree 'build a release tarball'
+
 set -x
 GITID=$(git rev-parse HEAD)
-
-if ! git diff --exit-code >/dev/null; then
-    set +x
-    echo "ERROR: tarballs builds are based on a commit hash so your changes "
-    echo "will not be included; you should commit or stash them based on "
-    echo "what you want and then try again."
-    echo
-    git diff
-    exit 1
-fi
 
 umask 022
 
