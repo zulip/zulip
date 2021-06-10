@@ -3,6 +3,7 @@ import tippy, {delegate} from "tippy.js";
 
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 
+import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
@@ -142,6 +143,7 @@ export function initialize() {
         delay: 0,
         target: "#streams_inline_cog",
         onShow(instance) {
+            popovers.hide_all_except_sidebars();
             instance.setContent(
                 render_left_sidebar_stream_setting_popover({
                     can_create_streams: settings_data.user_can_create_streams(),
