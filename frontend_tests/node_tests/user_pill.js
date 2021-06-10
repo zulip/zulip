@@ -96,8 +96,8 @@ test("append", () => {
         pill_widget,
     });
 
-    assert(appended);
-    assert(cleared);
+    assert.ok(appended);
+    assert.ok(cleared);
 });
 
 test("get_items", () => {

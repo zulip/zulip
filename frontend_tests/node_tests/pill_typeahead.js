@@ -17,9 +17,9 @@ run_test("set_up", () => {
     const fake_input = $.create(".input");
     fake_input.typeahead = (config) => {
         assert.equal(config.items, 5);
-        assert(config.fixed);
-        assert(config.dropup);
-        assert(config.stopAdvance);
+        assert.ok(config.fixed);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
 
         // Working of functions that are part of config
         // is tested separately based on the widgets that
@@ -47,31 +47,31 @@ run_test("set_up", () => {
 
     // call set_up with only user type in opts.
     pill_typeahead.set_up(fake_input, pill_widget, {user: true});
-    assert(input_pill_typeahead_called);
+    assert.ok(input_pill_typeahead_called);
 
     // call set_up with only stream type in opts.
     input_pill_typeahead_called = false;
     pill_typeahead.set_up(fake_input, pill_widget, {stream: true});
-    assert(input_pill_typeahead_called);
+    assert.ok(input_pill_typeahead_called);
 
     // call set_up with only user_group type in opts.
     input_pill_typeahead_called = false;
     pill_typeahead.set_up(fake_input, pill_widget, {user_group: true});
-    assert(input_pill_typeahead_called);
+    assert.ok(input_pill_typeahead_called);
 
     // call set_up with combination two types in opts.
     input_pill_typeahead_called = false;
     pill_typeahead.set_up(fake_input, pill_widget, {user_group: true, stream: true});
-    assert(input_pill_typeahead_called);
+    assert.ok(input_pill_typeahead_called);
 
     // call set_up with all three types in opts.
     input_pill_typeahead_called = false;
     pill_typeahead.set_up(fake_input, pill_widget, {user_group: true, stream: true, user: true});
-    assert(input_pill_typeahead_called);
+    assert.ok(input_pill_typeahead_called);
 
     // call set_up without specifying type in opts.
     input_pill_typeahead_called = false;
     blueslip.expect("error", "Unspecified possible item types");
     pill_typeahead.set_up(fake_input, pill_widget, {});
-    assert(!input_pill_typeahead_called);
+    assert.ok(!input_pill_typeahead_called);
 });

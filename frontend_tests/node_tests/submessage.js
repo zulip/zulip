@@ -63,7 +63,7 @@ run_test("make_server_callback", () => {
         data: {foo: 32},
     });
 
-    assert(was_posted);
+    assert.ok(was_posted);
 });
 
 run_test("handle_event", () => {

@@ -22,7 +22,7 @@ function test_with(fixture) {
     if (fixture.unread_info.flavor === "found") {
         for (const msg of fixture.all_messages) {
             if (msg.id === fixture.unread_info.msg_id) {
-                assert(filter.predicate()(msg));
+                assert.ok(filter.predicate()(msg));
             }
         }
     }

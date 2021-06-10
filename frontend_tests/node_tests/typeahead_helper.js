@@ -612,7 +612,7 @@ test("render_person when emails hidden", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_person(b_user_1), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 });
 
 test("render_person", () => {
@@ -627,7 +627,7 @@ test("render_person", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_person(a_user), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 });
 
 test("render_person special_item_text", () => {
@@ -651,7 +651,7 @@ test("render_person special_item_text", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_person(special_person), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 });
 
 test("render_stream", () => {
@@ -671,7 +671,7 @@ test("render_stream", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_stream(stream), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 });
 
 test("render_stream w/long description", () => {
@@ -692,7 +692,7 @@ test("render_stream w/long description", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_stream(stream), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 });
 
 test("render_emoji", () => {
@@ -721,7 +721,7 @@ test("render_emoji", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_emoji(test_emoji), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 
     // Test render_emoji with normal emoji.
     rendered = false;
@@ -743,7 +743,7 @@ test("render_emoji", () => {
         return "typeahead-item-stub";
     });
     assert.equal(th.render_emoji(test_emoji), "typeahead-item-stub");
-    assert(rendered);
+    assert.ok(rendered);
 });
 
 test("sort_slash_commands", () => {

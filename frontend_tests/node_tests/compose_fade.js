@@ -87,6 +87,6 @@ run_test("set_focused_recipient", () => {
         stream_id: 999,
         topic: "lunch",
     };
-    assert(!compose_fade_helper.should_fade_message(good_msg));
-    assert(compose_fade_helper.should_fade_message(bad_msg));
+    assert.ok(!compose_fade_helper.should_fade_message(good_msg));
+    assert.ok(compose_fade_helper.should_fade_message(bad_msg));
 });

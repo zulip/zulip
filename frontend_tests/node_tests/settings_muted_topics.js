@@ -43,7 +43,7 @@ run_test("settings", (override) => {
 
     settings_muted_topics.set_up();
     assert.equal(settings_muted_topics.loaded, true);
-    assert(populate_list_called);
+    assert.ok(populate_list_called);
 
     const topic_click_handler = $("body").get_on_handler("click", ".settings-unmute-topic");
     assert.equal(typeof topic_click_handler, "function");
@@ -79,6 +79,6 @@ run_test("settings", (override) => {
         unmute_topic_called = true;
     };
     topic_click_handler.call(topic_fake_this, event);
-    assert(unmute_topic_called);
+    assert.ok(unmute_topic_called);
     assert.equal(topic_data_called, 2);
 });

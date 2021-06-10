@@ -29,10 +29,10 @@ run_test("narrowing", (override) => {
         pm_expanded = true;
     });
 
-    assert(!pm_expanded);
+    assert.ok(!pm_expanded);
     let filter = new Filter([{operator: "is", operand: "private"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(pm_expanded);
+    assert.ok(pm_expanded);
 
     const alice = {
         email: "alice@example.com",
@@ -51,51 +51,51 @@ run_test("narrowing", (override) => {
     pm_expanded = false;
     filter = new Filter([{operator: "pm-with", operand: "alice@example.com"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(pm_expanded);
+    assert.ok(pm_expanded);
 
     pm_expanded = false;
     filter = new Filter([{operator: "pm-with", operand: "bob@example.com,alice@example.com"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(pm_expanded);
+    assert.ok(pm_expanded);
 
     pm_expanded = false;
     filter = new Filter([{operator: "pm-with", operand: "not@valid.com"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(!pm_expanded);
+    assert.ok(!pm_expanded);
 
     filter = new Filter([{operator: "is", operand: "mentioned"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert($(".top_left_mentions").hasClass("active-filter"));
+    assert.ok($(".top_left_mentions").hasClass("active-filter"));
 
     filter = new Filter([{operator: "is", operand: "starred"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert($(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok($(".top_left_starred_messages").hasClass("active-filter"));
 
     filter = new Filter([{operator: "in", operand: "home"}]);
     top_left_corner.handle_narrow_activated(filter);
-    assert($(".top_left_all_messages").hasClass("active-filter"));
+    assert.ok($(".top_left_all_messages").hasClass("active-filter"));
 
     // deactivating narrow
 
     pm_closed = false;
     top_left_corner.handle_narrow_deactivated();
 
-    assert($(".top_left_all_messages").hasClass("active-filter"));
-    assert(!$(".top_left_mentions").hasClass("active-filter"));
-    assert(!$(".top_left_private_messages").hasClass("active-filter"));
-    assert(!$(".top_left_starred_messages").hasClass("active-filter"));
-    assert(!$(".top_left_recent_topics").hasClass("active-filter"));
-    assert(pm_closed);
+    assert.ok($(".top_left_all_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
+    assert.ok(!$(".top_left_private_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_recent_topics").hasClass("active-filter"));
+    assert.ok(pm_closed);
 
     set_global("setTimeout", (f) => {
         f();
     });
     top_left_corner.narrow_to_recent_topics();
-    assert(!$(".top_left_all_messages").hasClass("active-filter"));
-    assert(!$(".top_left_mentions").hasClass("active-filter"));
-    assert(!$(".top_left_private_messages").hasClass("active-filter"));
-    assert(!$(".top_left_starred_messages").hasClass("active-filter"));
-    assert($(".top_left_recent_topics").hasClass("active-filter"));
+    assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
+    assert.ok(!$(".top_left_private_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert.ok($(".top_left_recent_topics").hasClass("active-filter"));
 });
 
 run_test("update_count_in_dom", () => {
@@ -129,7 +129,7 @@ run_test("update_count_in_dom", () => {
     top_left_corner.update_dom_with_unread_counts(counts);
     top_left_corner.update_starred_count(0);
 
-    assert(!$("<mentioned-count>").visible());
+    assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");
     assert.equal($("<starred-count>").text(), "");
 });

@@ -45,7 +45,7 @@ async function open_streams_modal(page: Page): Promise<void> {
 
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
     const url = await common.page_url_with_fragment(page);
-    assert(url.includes("#streams/all"));
+    assert.ok(url.includes("#streams/all"));
 }
 
 async function test_subscription_button_verona_stream(page: Page): Promise<void> {
@@ -239,7 +239,7 @@ async function test_streams_search_feature(page: Page): Promise<void> {
         ),
         "Verona",
     );
-    assert(
+    assert.ok(
         !(await common.get_text_from_selector(page, hidden_streams_selector)).includes("Verona"),
         "#Verona is hidden",
     );
@@ -249,11 +249,11 @@ async function test_streams_search_feature(page: Page): Promise<void> {
         await common.get_text_from_selector(page, ".stream-row:not(.notdisplayed) .stream-name"),
         "Puppeteer",
     );
-    assert(
+    assert.ok(
         (await common.get_text_from_selector(page, hidden_streams_selector)).includes("Verona"),
         "#Verona is not hidden",
     );
-    assert(
+    assert.ok(
         !(await common.get_text_from_selector(page, hidden_streams_selector)).includes("Puppeteer"),
         "Puppeteer is hidden after searching.",
     );

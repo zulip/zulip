@@ -226,9 +226,9 @@ run_test("insert_local_message streams", (override) => {
     };
     echo.insert_local_message(message_request, local_id_float);
 
-    assert(apply_markdown_called);
-    assert(add_topic_links_called);
-    assert(insert_message_called);
+    assert.ok(apply_markdown_called);
+    assert.ok(add_topic_links_called);
+    assert.ok(insert_message_called);
 });
 
 run_test("insert_local_message PM", (override) => {
@@ -273,9 +273,9 @@ run_test("insert_local_message PM", (override) => {
         sender_id: 123,
     };
     echo.insert_local_message(message_request, local_id_float);
-    assert(add_topic_links_called);
-    assert(apply_markdown_called);
-    assert(insert_message_called);
+    assert.ok(add_topic_links_called);
+    assert.ok(apply_markdown_called);
+    assert.ok(insert_message_called);
 });
 
 MockDate.reset();

@@ -88,15 +88,15 @@ const message_with_emoji = {
 };
 
 run_test("notifications", () => {
-    assert(!alert_words.notifies(regular_message));
-    assert(!alert_words.notifies(own_message));
-    assert(alert_words.notifies(other_message));
-    assert(alert_words.notifies(caps_message));
-    assert(!alert_words.notifies(alertwordboundary_message));
-    assert(alert_words.notifies(multialert_message));
-    assert(alert_words.notifies(unsafe_word_message));
-    assert(alert_words.notifies(alert_domain_message));
-    assert(alert_words.notifies(message_with_emoji));
+    assert.ok(!alert_words.notifies(regular_message));
+    assert.ok(!alert_words.notifies(own_message));
+    assert.ok(alert_words.notifies(other_message));
+    assert.ok(alert_words.notifies(caps_message));
+    assert.ok(!alert_words.notifies(alertwordboundary_message));
+    assert.ok(alert_words.notifies(multialert_message));
+    assert.ok(alert_words.notifies(unsafe_word_message));
+    assert.ok(alert_words.notifies(alert_domain_message));
+    assert.ok(alert_words.notifies(message_with_emoji));
 });
 
 run_test("munging", () => {
@@ -161,10 +161,10 @@ run_test("munging", () => {
 
 run_test("basic get/set operations", () => {
     alert_words.initialize({alert_words: []});
-    assert(!alert_words.has_alert_word("breakfast"));
-    assert(!alert_words.has_alert_word("lunch"));
+    assert.ok(!alert_words.has_alert_word("breakfast"));
+    assert.ok(!alert_words.has_alert_word("lunch"));
     alert_words.set_words(["breakfast", "lunch"]);
-    assert(alert_words.has_alert_word("breakfast"));
-    assert(alert_words.has_alert_word("lunch"));
-    assert(!alert_words.has_alert_word("dinner"));
+    assert.ok(alert_words.has_alert_word("breakfast"));
+    assert.ok(alert_words.has_alert_word("lunch"));
+    assert.ok(!alert_words.has_alert_word("dinner"));
 });

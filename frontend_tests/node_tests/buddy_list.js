@@ -83,7 +83,7 @@ run_test("basics", (override) => {
     buddy_list.populate({
         keys: [alice.user_id],
     });
-    assert(appended);
+    assert.ok(appended);
 
     const alice_li = {length: 1};
 
@@ -185,7 +185,7 @@ run_test("find_li w/force_render", (override) => {
         key,
     });
     assert.equal(empty_li, stub_li);
-    assert(!shown);
+    assert.ok(!shown);
 
     const li = buddy_list.find_li({
         key,
@@ -193,7 +193,7 @@ run_test("find_li w/force_render", (override) => {
     });
 
     assert.equal(li, stub_li);
-    assert(shown);
+    assert.ok(shown);
 });
 
 run_test("find_li w/bad key", (override) => {
@@ -224,10 +224,10 @@ run_test("scrolling", (override) => {
         tried_to_fill = true;
     });
 
-    assert(!tried_to_fill);
+    assert.ok(!tried_to_fill);
 
     buddy_list.start_scroll_handler();
     $(buddy_list.scroll_container_sel).trigger("scroll");
 
-    assert(tried_to_fill);
+    assert.ok(tried_to_fill);
 });

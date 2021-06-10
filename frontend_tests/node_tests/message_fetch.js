@@ -293,9 +293,9 @@ run_test("initialize", () => {
     step2.prep();
     step1.finish();
 
-    assert(!home_loaded);
+    assert.ok(!home_loaded);
     const idle_config = step2.finish();
-    assert(home_loaded);
+    assert.ok(home_loaded);
 
     test_backfill_idle(idle_config);
 });

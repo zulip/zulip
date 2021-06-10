@@ -124,7 +124,7 @@ test_ui("create_sidebar_row", (override) => {
 
     stream_list.build_stream_list();
 
-    assert(topic_list_cleared);
+    assert.ok(topic_list_cleared);
 
     const expected_elems = [
         devel_sidebar, // pinned
@@ -154,19 +154,19 @@ test_ui("create_sidebar_row", (override) => {
     assert.equal(privacy_elem.html(), "<div>privacy-html");
 
     stream_list.set_in_home_view(stream_id, false);
-    assert(social_li.hasClass("out_of_home_view"));
+    assert.ok(social_li.hasClass("out_of_home_view"));
 
     stream_list.set_in_home_view(stream_id, true);
-    assert(!social_li.hasClass("out_of_home_view"));
+    assert.ok(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
     override(stream_data, "is_active", () => true);
     row.update_whether_active();
-    assert(!social_li.hasClass("inactive_stream"));
+    assert.ok(!social_li.hasClass("inactive_stream"));
 
     override(stream_data, "is_active", () => false);
     row.update_whether_active();
-    assert(social_li.hasClass("inactive_stream"));
+    assert.ok(social_li.hasClass("inactive_stream"));
 
     let removed;
     social_li.remove = () => {
@@ -174,7 +174,7 @@ test_ui("create_sidebar_row", (override) => {
     };
 
     row.remove();
-    assert(removed);
+    assert.ok(removed);
 });
 
 test_ui("pinned_streams_never_inactive", (override) => {
@@ -193,15 +193,15 @@ test_ui("pinned_streams_never_inactive", (override) => {
     override(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
-    assert(social_sidebar.hasClass("inactive_stream"));
+    assert.ok(social_sidebar.hasClass("inactive_stream"));
 
     override(stream_data, "is_active", () => true);
     row.update_whether_active();
-    assert(!social_sidebar.hasClass("inactive_stream"));
+    assert.ok(!social_sidebar.hasClass("inactive_stream"));
 
     override(stream_data, "is_active", () => false);
     row.update_whether_active();
-    assert(social_sidebar.hasClass("inactive_stream"));
+    assert.ok(social_sidebar.hasClass("inactive_stream"));
 
     // pinned streams can never be made inactive
     const devel_sidebar = $("<devel sidebar row>");
@@ -210,10 +210,10 @@ test_ui("pinned_streams_never_inactive", (override) => {
     override(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
-    assert(!devel_sidebar.hasClass("inactive_stream"));
+    assert.ok(!devel_sidebar.hasClass("inactive_stream"));
 
     row.update_whether_active();
-    assert(!devel_sidebar.hasClass("inactive_stream"));
+    assert.ok(!devel_sidebar.hasClass("inactive_stream"));
 });
 
 function add_row(sub) {
@@ -303,8 +303,8 @@ test_ui("zoom_in_and_zoom_out", () => {
     label1.show();
     label2.show();
 
-    assert(label1.visible());
-    assert(label2.visible());
+    assert.ok(label1.visible());
+    assert.ok(label2.visible());
 
     $.create(".stream-filters-label", {
         children: [elem(label1), elem(label2)],
@@ -313,7 +313,7 @@ test_ui("zoom_in_and_zoom_out", () => {
     const splitter = $.create("hr stub");
 
     splitter.show();
-    assert(splitter.visible());
+    assert.ok(splitter.visible());
 
     $.create(".stream-split", {
         children: [elem(splitter)],
@@ -344,12 +344,12 @@ test_ui("zoom_in_and_zoom_out", () => {
 
     stream_list.zoom_in_topics({stream_id: 42});
 
-    assert(!label1.visible());
-    assert(!label2.visible());
-    assert(!splitter.visible());
-    assert(stream_li1.visible());
-    assert(!stream_li2.visible());
-    assert($("#streams_list").hasClass("zoom-in"));
+    assert.ok(!label1.visible());
+    assert.ok(!label2.visible());
+    assert.ok(!splitter.visible());
+    assert.ok(stream_li1.visible());
+    assert.ok(!stream_li2.visible());
+    assert.ok($("#streams_list").hasClass("zoom-in"));
 
     $("#stream_filters li.narrow-filter").show = () => {
         stream_li1.show();
@@ -359,12 +359,12 @@ test_ui("zoom_in_and_zoom_out", () => {
     stream_li1.length = 1;
     stream_list.zoom_out_topics({stream_li: stream_li1});
 
-    assert(label1.visible());
-    assert(label2.visible());
-    assert(splitter.visible());
-    assert(stream_li1.visible());
-    assert(stream_li2.visible());
-    assert($("#streams_list").hasClass("zoom-out"));
+    assert.ok(label1.visible());
+    assert.ok(label2.visible());
+    assert.ok(splitter.visible());
+    assert.ok(stream_li1.visible());
+    assert.ok(stream_li2.visible());
+    assert.ok($("#streams_list").hasClass("zoom-out"));
 });
 
 test_ui("narrowing", (override) => {
@@ -376,7 +376,7 @@ test_ui("narrowing", (override) => {
     topic_list.get_stream_li = noop;
     override(scroll_util, "scroll_element_into_container", noop);
 
-    assert(!$("<devel sidebar row html>").hasClass("active-filter"));
+    assert.ok(!$("<devel sidebar row html>").hasClass("active-filter"));
 
     stream_list.set_event_handlers();
 
@@ -384,20 +384,20 @@ test_ui("narrowing", (override) => {
 
     filter = new Filter([{operator: "stream", operand: "devel"}]);
     stream_list.handle_narrow_activated(filter);
-    assert($("<devel sidebar row html>").hasClass("active-filter"));
+    assert.ok($("<devel sidebar row html>").hasClass("active-filter"));
 
     filter = new Filter([
         {operator: "stream", operand: "cars"},
         {operator: "topic", operand: "sedans"},
     ]);
     stream_list.handle_narrow_activated(filter);
-    assert(!$("ul.filters li").hasClass("active-filter"));
-    assert(!$("<cars sidebar row html>").hasClass("active-filter")); // false because of topic
+    assert.ok(!$("ul.filters li").hasClass("active-filter"));
+    assert.ok(!$("<cars sidebar row html>").hasClass("active-filter")); // false because of topic
 
     filter = new Filter([{operator: "stream", operand: "cars"}]);
     stream_list.handle_narrow_activated(filter);
-    assert(!$("ul.filters li").hasClass("active-filter"));
-    assert($("<cars sidebar row html>").hasClass("active-filter"));
+    assert.ok(!$("ul.filters li").hasClass("active-filter"));
+    assert.ok($("<cars sidebar row html>").hasClass("active-filter"));
 
     let removed_classes;
     $("ul#stream_filters li").removeClass = (classes) => {
@@ -411,7 +411,7 @@ test_ui("narrowing", (override) => {
 
     stream_list.handle_narrow_deactivated();
     assert.equal(removed_classes, "active-filter");
-    assert(topics_closed);
+    assert.ok(topics_closed);
 });
 
 test_ui("focusout_user_filter", () => {
@@ -482,9 +482,9 @@ test_ui("sort_streams", (override) => {
 
     const denmark_sub = stream_data.get_sub("Denmark");
     const stream_id = denmark_sub.stream_id;
-    assert(stream_list.stream_sidebar.has_row_for(stream_id));
+    assert.ok(stream_list.stream_sidebar.has_row_for(stream_id));
     stream_list.remove_sidebar_row(stream_id);
-    assert(!stream_list.stream_sidebar.has_row_for(stream_id));
+    assert.ok(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
 test_ui("separators_only_pinned_and_dormant", (override) => {
@@ -621,7 +621,7 @@ test_ui("rename_stream", (override) => {
     });
 
     stream_list.rename_stream(sub);
-    assert(count_updated);
+    assert.ok(count_updated);
 });
 
 test_ui("refresh_pin", (override) => {
@@ -658,7 +658,7 @@ test_ui("refresh_pin", (override) => {
     });
 
     stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);
-    assert(scrolled);
+    assert.ok(scrolled);
 });
 
 test_ui("create_initial_sidebar_rows", (override) => {

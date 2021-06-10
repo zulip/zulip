@@ -115,7 +115,7 @@ run_test("redraw_left_panel", () => {
     // on our current stream, even if it doesn't match the filter.
     const denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
     // sanity check it's not set to active
-    assert(!denmark_row.hasClass("active"));
+    assert.ok(!denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
         const stream_ids = subs.redraw_left_panel(params);
@@ -127,10 +127,10 @@ run_test("redraw_left_panel", () => {
 
     // Search with single keyword
     test_filter({input: "Po", subscribed_only: false}, [poland, pomona]);
-    assert(ui_called);
+    assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
-    assert(denmark_row.hasClass("active"));
+    assert.ok(denmark_row.hasClass("active"));
 
     // Search with multiple keywords
     test_filter({input: "Denmark, Pol", subscribed_only: false}, [denmark, poland]);
@@ -198,7 +198,7 @@ run_test("redraw_left_panel", () => {
     };
 
     test_filter({input: "d", subscribed_only: true}, [poland]);
-    assert(!$(".stream-row-denmark").hasClass("active"));
-    assert(!$(".right .settings").visible());
-    assert($(".nothing-selected").visible());
+    assert.ok(!$(".stream-row-denmark").hasClass("active"));
+    assert.ok(!$(".right .settings").visible());
+    assert.ok($(".nothing-selected").visible());
 });

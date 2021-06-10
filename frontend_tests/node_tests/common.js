@@ -24,18 +24,18 @@ const common = zrequire("common");
 run_test("basics", () => {
     common.autofocus("#home");
     $.get_initialize_function()();
-    assert($("#home").is_focused());
+    assert.ok($("#home").is_focused());
     $.clear_initialize_function();
 });
 
 run_test("phrase_match", () => {
-    assert(common.phrase_match("tes", "test"));
-    assert(common.phrase_match("Tes", "test"));
-    assert(common.phrase_match("Tes", "Test"));
-    assert(common.phrase_match("tes", "Stream Test"));
+    assert.ok(common.phrase_match("tes", "test"));
+    assert.ok(common.phrase_match("Tes", "test"));
+    assert.ok(common.phrase_match("Tes", "Test"));
+    assert.ok(common.phrase_match("tes", "Stream Test"));
 
-    assert(!common.phrase_match("tests", "test"));
-    assert(!common.phrase_match("tes", "hostess"));
+    assert.ok(!common.phrase_match("tests", "test"));
+    assert.ok(!common.phrase_match("tes", "hostess"));
 });
 
 run_test("copy_data_attribute_value", (override) => {
@@ -76,9 +76,9 @@ run_test("copy_data_attribute_value", (override) => {
         faded_in = true;
     };
     common.copy_data_attribute_value(elem, "admin-emails");
-    assert(removed);
-    assert(faded_in);
-    assert(faded_out);
+    assert.ok(removed);
+    assert.ok(faded_in);
+    assert.ok(faded_out);
 });
 
 run_test("adjust_mac_shortcuts non-mac", (override) => {
@@ -147,8 +147,8 @@ run_test("show password", () => {
 
     function check_assertion(type, present_class, absent_class) {
         assert.equal($("#id_password").attr("type"), type);
-        assert($(password_selector).hasClass(present_class));
-        assert(!$(password_selector).hasClass(absent_class));
+        assert.ok($(password_selector).hasClass(present_class));
+        assert.ok(!$(password_selector).hasClass(absent_class));
     }
 
     const ev = {

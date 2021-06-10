@@ -35,7 +35,7 @@ run_test("starred", (override) => {
 
     message_flags.toggle_starred_and_update_server(message);
 
-    assert(ui_updated);
+    assert.ok(ui_updated);
 
     assert.deepEqual(posted_data, {
         messages: "[50]",
@@ -52,7 +52,7 @@ run_test("starred", (override) => {
 
     message_flags.toggle_starred_and_update_server(message);
 
-    assert(ui_updated);
+    assert.ok(ui_updated);
 
     assert.deepEqual(posted_data, {
         messages: "[50]",
@@ -236,7 +236,7 @@ run_test("read", (override) => {
         messages: [3, 4, 5, 6, 7],
     };
     channel_post_opts.success(success_response_data);
-    assert(events.timer_set);
+    assert.ok(events.timer_set);
 
     // Mark them non local
     local_msg_1.locally_echoed = false;

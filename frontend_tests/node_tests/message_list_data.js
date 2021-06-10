@@ -46,7 +46,7 @@ run_test("basics", () => {
     });
 
     assert.equal(mld.is_search(), false);
-    assert(mld.can_mark_messages_read());
+    assert.ok(mld.can_mark_messages_read());
     mld.add_anywhere(make_msgs([35, 25, 15, 45]));
 
     assert_contents(mld, [15, 25, 35, 45]);

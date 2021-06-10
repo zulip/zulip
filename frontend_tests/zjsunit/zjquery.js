@@ -305,7 +305,7 @@ function make_new_elem(selector, opts) {
         },
         parents(parents_selector) {
             const result = parents_result.get(parents_selector);
-            assert(
+            assert.ok(
                 result,
                 "You need to call set_parents_result for " + parents_selector + " in " + selector,
             );
@@ -385,7 +385,7 @@ function make_new_elem(selector, opts) {
             return text;
         },
         toggle(show) {
-            assert([true, false].includes(show));
+            assert.ok([true, false].includes(show));
             shown = show;
             return self;
         },
@@ -549,7 +549,7 @@ function make_zjquery() {
     };
 
     zjquery.create = function (name, opts) {
-        assert(!elems.has(name), "You already created an object with this name!!");
+        assert.ok(!elems.has(name), "You already created an object with this name!!");
         const elem = new_elem(name, opts);
         elems.set(name, elem);
 

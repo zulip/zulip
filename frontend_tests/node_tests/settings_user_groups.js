@@ -41,7 +41,7 @@ function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {
         assert.equal(opts.container, pill_container_stub);
         create_item_handler = opts.create_item_from_text;
-        assert(create_item_handler);
+        assert.ok(create_item_handler);
         return pills;
     }
     input_pill.create = input_pill_stub;
@@ -55,11 +55,11 @@ function test_ui(label, f) {
 test_ui("can_edit", () => {
     page_params.is_guest = false;
     page_params.is_admin = true;
-    assert(settings_user_groups.can_edit(1));
+    assert.ok(settings_user_groups.can_edit(1));
 
     page_params.is_admin = false;
     page_params.is_guest = true;
-    assert(!settings_user_groups.can_edit(1));
+    assert.ok(!settings_user_groups.can_edit(1));
 
     page_params.is_guest = false;
     page_params.is_admin = false;
@@ -68,11 +68,11 @@ test_ui("can_edit", () => {
         assert.equal(user_id, undefined);
         return false;
     };
-    assert(!settings_user_groups.can_edit(1));
+    assert.ok(!settings_user_groups.can_edit(1));
 
     page_params.realm_user_group_edit_policy = 2;
     page_params.is_admin = true;
-    assert(settings_user_groups.can_edit(1));
+    assert.ok(settings_user_groups.can_edit(1));
 
     page_params.is_admin = false;
     user_groups.is_member_of = (group_id, user_id) => {
@@ -80,7 +80,7 @@ test_ui("can_edit", () => {
         assert.equal(user_id, undefined);
         return true;
     };
-    assert(!settings_user_groups.can_edit(1));
+    assert.ok(!settings_user_groups.can_edit(1));
 
     page_params.realm_user_group_edit_policy = 1;
     page_params.is_admin = false;
@@ -89,7 +89,7 @@ test_ui("can_edit", () => {
         assert.equal(user_id, undefined);
         return true;
     };
-    assert(settings_user_groups.can_edit(1));
+    assert.ok(settings_user_groups.can_edit(1));
 });
 
 const user_group_selector = `#user-groups #${CSS.escape(1)}`;
@@ -172,7 +172,7 @@ test_ui("populate_user_groups", (override) => {
     const pill_container_stub = $(`.pill-container[data-group-pills="${CSS.escape(1)}"]`);
     pills.appendValidatedData = (item) => {
         const id = item.user_id;
-        assert(!all_pills.has(id));
+        assert.ok(!all_pills.has(id));
         all_pills.set(id, item);
     };
     pills.items = () => Array.from(all_pills.values());
@@ -188,9 +188,9 @@ test_ui("populate_user_groups", (override) => {
     let input_typeahead_called = false;
     input_field_stub.typeahead = (config) => {
         assert.equal(config.items, 5);
-        assert(config.fixed);
-        assert(config.dropup);
-        assert(config.stopAdvance);
+        assert.ok(config.fixed);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
         assert.equal(typeof config.source, "function");
         assert.equal(typeof config.highlighter, "function");
         assert.equal(typeof config.matcher, "function");
@@ -221,20 +221,20 @@ test_ui("populate_user_groups", (override) => {
             /* Here the query doesn't begin with an '@' because typeahead is triggered
             by the '@' sign and thus removed in the query. */
             let result = config.matcher.call(fake_context, iago);
-            assert(!result);
+            assert.ok(!result);
 
             result = config.matcher.call(fake_context, alice);
-            assert(result);
+            assert.ok(result);
 
             page_params.realm_email_address_visibility =
                 settings_config.email_address_visibility_values.admins_only.code;
             page_params.is_admin = false;
             result = config.matcher.call(fake_context_for_email, bob);
-            assert(!result);
+            assert.ok(!result);
 
             page_params.is_admin = true;
             result = config.matcher.call(fake_context_for_email, bob);
-            assert(result);
+            assert.ok(result);
         })();
 
         (function test_sorter() {
@@ -243,7 +243,7 @@ test_ui("populate_user_groups", (override) => {
                 sort_recipients_typeahead_called = true;
             };
             config.sorter.call(fake_context, []);
-            assert(sort_recipients_typeahead_called);
+            assert.ok(sort_recipients_typeahead_called);
         })();
 
         (function test_updater() {
@@ -284,9 +284,9 @@ test_ui("populate_user_groups", (override) => {
             text_cleared = false;
             config.updater(alice);
             // update_cancel_button is called.
-            assert(saved_fade_out_called);
-            assert(cancel_fade_to_called);
-            assert(instructions_fade_to_called);
+            assert.ok(saved_fade_out_called);
+            assert.ok(cancel_fade_to_called);
+            assert.ok(instructions_fade_to_called);
             assert.equal(text_cleared, true);
         })();
         input_typeahead_called = true;
@@ -311,14 +311,14 @@ test_ui("populate_user_groups", (override) => {
     function test_create_item(handler) {
         (function test_rejection_path() {
             const item = handler(iago.email, pills.items());
-            assert(get_by_email_called);
+            assert.ok(get_by_email_called);
             assert.equal(item, undefined);
         })();
 
         (function test_success_path() {
             get_by_email_called = false;
             const res = handler(bob.email, pills.items());
-            assert(get_by_email_called);
+            assert.ok(get_by_email_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, bob.user_id);
             assert.equal(res.display_value, bob.full_name);
@@ -335,10 +335,10 @@ test_ui("populate_user_groups", (override) => {
 
     reset_test_setup(pill_container_stub);
     settings_user_groups.set_up();
-    assert(templates_render_called);
-    assert(user_groups_list_append_called);
-    assert(get_by_user_id_called);
-    assert(input_typeahead_called);
+    assert.ok(templates_render_called);
+    assert.ok(user_groups_list_append_called);
+    assert.ok(get_by_user_id_called);
+    assert.ok(input_typeahead_called);
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
@@ -478,7 +478,7 @@ test_ui("with_external_user", (override) => {
     assert.equal(set_parents_result_called, 1);
     assert.equal(set_attributes_called, 1);
     assert.equal(can_edit_called, 9);
-    assert(exit_button_called);
+    assert.ok(exit_button_called);
     assert.equal(user_group_find_called, 2);
     assert.equal(pill_container_find_called, 4);
     assert.equal(turned_off["keydown/.pill"], true);
@@ -493,7 +493,7 @@ test_ui("reload", (override) => {
         populate_user_groups_called = true;
     });
     settings_user_groups.reload();
-    assert(populate_user_groups_called);
+    assert.ok(populate_user_groups_called);
     assert.equal($("#user-groups").html(), "");
 });
 
@@ -542,7 +542,7 @@ test_ui("on_events", (override) => {
 
                 opts.success();
 
-                assert(!$("#admin-user-group-status").visible());
+                assert.ok(!$("#admin-user-group-status").visible());
                 assert.equal($("form.admin-user-group-form input[type='text']").val(), "");
             })();
 
@@ -561,7 +561,7 @@ test_ui("on_events", (override) => {
                 };
                 opts.error(xhr);
 
-                assert(!$("#admin-user-group-status").visible());
+                assert.ok(!$("#admin-user-group-status").visible());
             })();
         };
 
@@ -603,7 +603,7 @@ test_ui("on_events", (override) => {
             },
         };
         handler(event);
-        assert(default_action_for_enter_stopped);
+        assert.ok(default_action_for_enter_stopped);
     })();
 
     (function test_do_not_blur() {
@@ -635,7 +635,7 @@ test_ui("on_events", (override) => {
                     return [];
                 };
                 handler.call(fake_this, event);
-                assert(!api_endpoint_called);
+                assert.ok(!api_endpoint_called);
             }
 
             api_endpoint_called = false;
@@ -646,7 +646,7 @@ test_ui("on_events", (override) => {
                 return [];
             };
             handler.call(fake_this, event);
-            assert(!api_endpoint_called);
+            assert.ok(!api_endpoint_called);
 
             // Cancel button triggers blur event.
             let settings_user_groups_reload_called = false;
@@ -664,8 +664,8 @@ test_ui("on_events", (override) => {
                 return [];
             };
             handler.call(fake_this, event);
-            assert(!api_endpoint_called);
-            assert(settings_user_groups_reload_called);
+            assert.ok(!api_endpoint_called);
+            assert.ok(settings_user_groups_reload_called);
         }
     })();
 
@@ -697,23 +697,23 @@ test_ui("on_events", (override) => {
         // Cancel button removed if user group if user group has no changes.
         const fake_this = $.create("fake-#update_cancel_button");
         handler_name.call(fake_this);
-        assert(cancel_fade_out_called);
-        assert(instructions_fade_out_called);
+        assert.ok(cancel_fade_out_called);
+        assert.ok(instructions_fade_out_called);
 
         // Check if cancel button removed if user group error is showing.
         $(user_group_selector + " .user-group-status").show();
         cancel_fade_out_called = false;
         instructions_fade_out_called = false;
         handler_name.call(fake_this);
-        assert(cancel_fade_out_called);
-        assert(instructions_fade_out_called);
+        assert.ok(cancel_fade_out_called);
+        assert.ok(instructions_fade_out_called);
 
         // Check for handler_desc to achieve 100% coverage.
         cancel_fade_out_called = false;
         instructions_fade_out_called = false;
         handler_desc.call(fake_this);
-        assert(cancel_fade_out_called);
-        assert(instructions_fade_out_called);
+        assert.ok(cancel_fade_out_called);
+        assert.ok(instructions_fade_out_called);
     })();
 
     (function test_user_groups_save_group_changes_triggered() {
@@ -760,9 +760,9 @@ test_ui("on_events", (override) => {
                     func();
                 });
                 opts.success();
-                assert(cancel_fade_out_called);
-                assert(instructions_fade_out_called);
-                assert(saved_fade_to_called);
+                assert.ok(cancel_fade_out_called);
+                assert.ok(instructions_fade_out_called);
+                assert.ok(saved_fade_to_called);
             })();
             (function test_post_error() {
                 const user_group_error = $(user_group_selector + " .user-group-status");
@@ -780,7 +780,7 @@ test_ui("on_events", (override) => {
                 };
                 opts.error(xhr);
 
-                assert(user_group_error.visible());
+                assert.ok(user_group_error.visible());
             })();
         };
 
@@ -793,19 +793,19 @@ test_ui("on_events", (override) => {
 
         api_endpoint_called = false;
         handler_name.call(fake_this, event);
-        assert(api_endpoint_called);
+        assert.ok(api_endpoint_called);
 
         // Check API endpoint isn't called if name and desc haven't changed.
         group_data.name = "translated: mobile";
         group_data.description = "translated: All mobile members";
         api_endpoint_called = false;
         handler_name.call(fake_this, event);
-        assert(!api_endpoint_called);
+        assert.ok(!api_endpoint_called);
 
         // Check for handler_desc to achieve 100% coverage.
         api_endpoint_called = false;
         handler_desc.call(fake_this, event);
-        assert(!api_endpoint_called);
+        assert.ok(!api_endpoint_called);
     })();
 
     (function test_user_groups_save_member_changes_triggered() {
@@ -846,9 +846,9 @@ test_ui("on_events", (override) => {
 
             (function test_post_success() {
                 opts.success();
-                assert(cancel_fade_out_called);
-                assert(instructions_fade_out_called);
-                assert(saved_fade_to_called);
+                assert.ok(cancel_fade_out_called);
+                assert.ok(instructions_fade_out_called);
+                assert.ok(saved_fade_to_called);
             })();
         };
 
@@ -861,6 +861,6 @@ test_ui("on_events", (override) => {
 
         api_endpoint_called = false;
         handler.call(fake_this, event);
-        assert(api_endpoint_called);
+        assert.ok(api_endpoint_called);
     })();
 });

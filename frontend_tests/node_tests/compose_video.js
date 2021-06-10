@@ -102,7 +102,7 @@ test("videos", (override) => {
         $("#compose-textarea").val("");
 
         handler(ev);
-        assert(!called);
+        assert.ok(!called);
     })();
 
     (function test_jitsi_video_link_compose_clicked() {
@@ -131,14 +131,14 @@ test("videos", (override) => {
 
         page_params.jitsi_server_url = null;
         handler(ev);
-        assert(!called);
+        assert.ok(!called);
 
         page_params.jitsi_server_url = "https://meet.jit.si";
         handler(ev);
         // video link ids consist of 15 random digits
         const video_link_regex =
             /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert(called);
+        assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
@@ -168,7 +168,7 @@ test("videos", (override) => {
         page_params.has_zoom_token = false;
 
         window.open = (url) => {
-            assert(url.endsWith("/calls/zoom/register"));
+            assert.ok(url.endsWith("/calls/zoom/register"));
 
             // The event here has value=true.  We keep it in events.js to
             // allow our tooling to verify its schema.
@@ -183,7 +183,7 @@ test("videos", (override) => {
 
         handler(ev);
         const video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
-        assert(called);
+        assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
@@ -222,7 +222,7 @@ test("videos", (override) => {
         handler(ev);
         const video_link_regex =
             /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
-        assert(called);
+        assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 });

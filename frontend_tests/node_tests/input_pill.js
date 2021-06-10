@@ -93,7 +93,7 @@ run_test("basics", (override) => {
     };
 
     widget.appendValidatedData(item);
-    assert(inserted_before);
+    assert.ok(inserted_before);
 
     assert.deepEqual(widget.items(), [item]);
 });
@@ -222,7 +222,7 @@ run_test("paste to input", () => {
     });
 
     paste_handler(e);
-    assert(entered);
+    assert.ok(entered);
 });
 
 run_test("arrows on pills", () => {
@@ -267,10 +267,10 @@ run_test("arrows on pills", () => {
     // actually cause any real state changes here.  We stub out
     // the only interaction, which is to move the focus.
     test_key("ArrowLeft");
-    assert(prev_focused);
+    assert.ok(prev_focused);
 
     test_key("ArrowRight");
-    assert(next_focused);
+    assert.ok(next_focused);
 });
 
 run_test("left arrow on input", () => {
@@ -299,7 +299,7 @@ run_test("left arrow on input", () => {
         key: "ArrowLeft",
     });
 
-    assert(last_pill_focused);
+    assert.ok(last_pill_focused);
 });
 
 run_test("comma", () => {
@@ -389,8 +389,8 @@ run_test("insert_remove", (override) => {
 
     widget.appendValue("blue,chartreuse,red,yellow,mauve");
 
-    assert(created);
-    assert(!removed);
+    assert.ok(created);
+    assert.ok(!removed);
 
     assert.deepEqual(inserted_html, [
         pill_html("BLUE", "some_id1", example_img_link),
@@ -429,7 +429,7 @@ run_test("insert_remove", (override) => {
         preventDefault: noop,
     });
 
-    assert(removed);
+    assert.ok(removed);
     assert.equal(color_removed, "YELLOW");
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
@@ -461,7 +461,7 @@ run_test("insert_remove", (override) => {
     });
 
     assert.equal(color_removed, "BLUE");
-    assert(next_pill_focused);
+    assert.ok(next_pill_focused);
 });
 
 run_test("exit button on pill", (override) => {
@@ -515,7 +515,7 @@ run_test("exit button on pill", (override) => {
 
     exit_click_handler.call(exit_button_stub, e);
 
-    assert(next_pill_focused);
+    assert.ok(next_pill_focused);
 
     assert.deepEqual(widget.items(), [items.red]);
 });
@@ -544,7 +544,7 @@ run_test("misc things", () => {
     };
 
     animation_end_handler.call(input_stub);
-    assert(shake_class_removed);
+    assert.ok(shake_class_removed);
 
     // bad data
     blueslip.expect("error", "no display_value returned");

@@ -115,16 +115,16 @@ function assert_same(actual, expected) {
 
 run_test("alert_words", (override) => {
     alert_words.initialize({alert_words: []});
-    assert(!alert_words.has_alert_word("fire"));
-    assert(!alert_words.has_alert_word("lunch"));
+    assert.ok(!alert_words.has_alert_word("fire"));
+    assert.ok(!alert_words.has_alert_word("lunch"));
 
     override(alert_words_ui, "render_alert_words_ui", noop);
     const event = event_fixtures.alert_words;
     dispatch(event);
 
     assert.deepEqual(alert_words.get_word_list(), ["fire", "lunch"]);
-    assert(alert_words.has_alert_word("fire"));
-    assert(alert_words.has_alert_word("lunch"));
+    assert.ok(alert_words.has_alert_word("fire"));
+    assert.ok(alert_words.has_alert_word("lunch"));
 });
 
 run_test("attachments", (override) => {
@@ -305,7 +305,7 @@ run_test("realm settings", (override) => {
             called = true;
         });
 
-        assert(called);
+        assert.ok(called);
     }
 
     // realm
@@ -567,7 +567,7 @@ run_test("realm_user", (override) => {
     // manipulation
     assert.deepEqual(added_person, event.person);
 
-    assert(people.is_active_user_for_popover(event.person.user_id));
+    assert.ok(people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__remove;
     override(stream_events, "remove_deactivated_user_from_all_streams", noop);
@@ -576,7 +576,7 @@ run_test("realm_user", (override) => {
     // We don't actually remove the person, we just deactivate them.
     const removed_person = people.get_by_user_id(event.person.user_id);
     assert.equal(removed_person.full_name, "Test User");
-    assert(!people.is_active_user_for_popover(event.person.user_id));
+    assert.ok(!people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();

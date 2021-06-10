@@ -82,7 +82,7 @@ run_test("message_event", (override) => {
     });
 
     server_events._get_events_success([event]);
-    assert(inserted);
+    assert.ok(inserted);
 });
 
 // Start blueslip tests here

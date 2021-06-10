@@ -50,46 +50,46 @@ function test(label, f) {
 
 test("edge_cases", () => {
     // private messages
-    assert(!muting.is_topic_muted(undefined, undefined));
+    assert.ok(!muting.is_topic_muted(undefined, undefined));
 
     // invalid user
-    assert(!muting.is_user_muted(undefined));
+    assert.ok(!muting.is_user_muted(undefined));
 });
 
 test("add_and_remove_mutes", () => {
-    assert(!muting.is_topic_muted(devel.stream_id, "java"));
+    assert.ok(!muting.is_topic_muted(devel.stream_id, "java"));
     muting.add_muted_topic(devel.stream_id, "java");
-    assert(muting.is_topic_muted(devel.stream_id, "java"));
+    assert.ok(muting.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotentcy
     muting.add_muted_topic(devel.stream_id, "java");
-    assert(muting.is_topic_muted(devel.stream_id, "java"));
+    assert.ok(muting.is_topic_muted(devel.stream_id, "java"));
 
     muting.remove_muted_topic(devel.stream_id, "java");
-    assert(!muting.is_topic_muted(devel.stream_id, "java"));
+    assert.ok(!muting.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotentcy
     muting.remove_muted_topic(devel.stream_id, "java");
-    assert(!muting.is_topic_muted(devel.stream_id, "java"));
+    assert.ok(!muting.is_topic_muted(devel.stream_id, "java"));
 
     // test unknown stream is harmless too
     muting.remove_muted_topic(unknown.stream_id, "java");
-    assert(!muting.is_topic_muted(unknown.stream_id, "java"));
+    assert.ok(!muting.is_topic_muted(unknown.stream_id, "java"));
 
-    assert(!muting.is_user_muted(1));
+    assert.ok(!muting.is_user_muted(1));
     muting.add_muted_user(1);
-    assert(muting.is_user_muted(1));
+    assert.ok(muting.is_user_muted(1));
 
     // test idempotentcy
     muting.add_muted_user(1);
-    assert(muting.is_user_muted(1));
+    assert.ok(muting.is_user_muted(1));
 
     muting.remove_muted_user(1);
-    assert(!muting.is_user_muted(1));
+    assert.ok(!muting.is_user_muted(1));
 
     // test idempotentcy
     muting.remove_muted_user(1);
-    assert(!muting.is_user_muted(1));
+    assert.ok(!muting.is_user_muted(1));
 });
 
 test("get_unmuted_users", () => {
@@ -204,8 +204,8 @@ test("unknown streams", () => {
 
 test("case_insensitivity", () => {
     muting.set_muted_topics([]);
-    assert(!muting.is_topic_muted(social.stream_id, "breakfast"));
+    assert.ok(!muting.is_topic_muted(social.stream_id, "breakfast"));
     muting.set_muted_topics([["SOCial", "breakfast"]]);
-    assert(muting.is_topic_muted(social.stream_id, "breakfast"));
-    assert(muting.is_topic_muted(social.stream_id, "breakFAST"));
+    assert.ok(muting.is_topic_muted(social.stream_id, "breakfast"));
+    assert.ok(muting.is_topic_muted(social.stream_id, "breakFAST"));
 });

@@ -79,7 +79,7 @@ run_test("t_tag", () => {
     };
 
     const html = require("../../static/templates/actions_popover_content.hbs")(args);
-    assert(html.indexOf("Citer et répondre ou transférer") > 0);
+    assert.ok(html.indexOf("Citer et répondre ou transférer") > 0);
 });
 
 run_test("tr_tag", () => {
@@ -103,5 +103,5 @@ run_test("tr_tag", () => {
     };
 
     const html = require("../../static/templates/settings_tab.hbs")(args);
-    assert(html.indexOf("Déclencheurs de notification") > 0);
+    assert.ok(html.indexOf("Déclencheurs de notification") > 0);
 });

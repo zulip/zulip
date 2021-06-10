@@ -233,14 +233,14 @@ run_test("activate another person poll", () => {
 
     poll_widget.activate(opts);
 
-    assert(poll_option_container.visible());
-    assert(poll_question_header.visible());
+    assert.ok(poll_option_container.visible());
+    assert.ok(poll_question_header.visible());
 
-    assert(!poll_question_container.visible());
-    assert(!poll_question_submit.visible());
-    assert(!poll_edit_question.visible());
-    assert(!poll_please_wait.visible());
-    assert(!poll_author_help.visible());
+    assert.ok(!poll_question_container.visible());
+    assert.ok(!poll_question_submit.visible());
+    assert.ok(!poll_edit_question.visible());
+    assert.ok(!poll_please_wait.visible());
+    assert.ok(!poll_author_help.visible());
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
@@ -352,18 +352,18 @@ run_test("activate own poll", () => {
     set_widget_find_result("button.poll-question-remove");
 
     function assert_visibility() {
-        assert(poll_option_container.visible());
-        assert(poll_question_header.visible());
-        assert(!poll_question_container.visible());
-        assert(poll_edit_question.visible());
-        assert(!poll_please_wait.visible());
-        assert(!poll_author_help.visible());
+        assert.ok(poll_option_container.visible());
+        assert.ok(poll_question_header.visible());
+        assert.ok(!poll_question_container.visible());
+        assert.ok(poll_edit_question.visible());
+        assert.ok(!poll_please_wait.visible());
+        assert.ok(!poll_author_help.visible());
     }
 
     poll_widget.activate(opts);
 
     assert_visibility();
-    assert(!poll_question_submit.visible());
+    assert.ok(!poll_question_submit.visible());
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
@@ -377,7 +377,7 @@ run_test("activate own poll", () => {
         assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
 
         assert_visibility();
-        assert(poll_question_submit.visible());
+        assert.ok(poll_question_submit.visible());
 
         poll_option_input.val("");
         out_data = undefined;

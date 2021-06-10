@@ -233,7 +233,7 @@ function process(s) {
 
 function assert_mapping(c, module, func_name, shiftKey) {
     stubbing(module, func_name, (stub) => {
-        assert(process(c, shiftKey));
+        assert.ok(process(c, shiftKey));
         assert.equal(stub.num_calls, 1);
     });
 }
@@ -432,7 +432,7 @@ run_test("motion_keys", () => {
 
     function assert_mapping(key_name, module, func_name) {
         stubbing(module, func_name, (stub) => {
-            assert(process(key_name));
+            assert.ok(process(key_name));
             assert.equal(stub.num_calls, 1);
         });
     }

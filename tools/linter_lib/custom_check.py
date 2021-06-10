@@ -212,6 +212,12 @@ js_rules = RuleList(
             "good_lines": ["#my-style {color: blue;}"],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
         },
+        {
+            "pattern": r"assert\(",
+            "description": "Use 'assert.ok' instead of 'assert'. We avoid the use of 'assert' as it can easily be confused with 'assert.equal'.",
+            "good_lines": ["assert.ok(...)"],
+            "bad_lines": ["assert(...)"],
+        },
         *whitespace_rules,
     ],
 )
