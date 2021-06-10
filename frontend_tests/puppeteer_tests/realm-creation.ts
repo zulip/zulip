@@ -21,7 +21,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
     ]);
 
     // Make sure onfirmation email is sent.
-    assert(page.url().includes("/accounts/new/send_confirm/" + email));
+    assert.ok(page.url().includes("/accounts/new/send_confirm/" + email));
 
     // Special endpoint enabled only during tests for extracting confirmation key
     await page.goto("http://" + host + "/confirmation_key/");

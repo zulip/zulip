@@ -320,7 +320,7 @@ test("server_history_end_to_end", () => {
 
     get_success_callback({topics});
 
-    assert(on_success_called);
+    assert.ok(on_success_called);
 
     const history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic3", "topic2", "topic1"]);
@@ -335,7 +335,7 @@ test("server_history_end_to_end", () => {
     stream_topic_history_util.get_server_history(stream_id, () => {
         on_success_called = true;
     });
-    assert(on_success_called);
+    assert.ok(on_success_called);
 });
 
 test("all_topics_in_cache", (override) => {

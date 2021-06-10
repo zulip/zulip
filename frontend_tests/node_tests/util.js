@@ -41,9 +41,9 @@ run_test("extract_pm_recipients", () => {
 
 run_test("is_pm_recipient", () => {
     const message = {to_user_ids: "31,32,33"};
-    assert(util.is_pm_recipient(31, message));
-    assert(util.is_pm_recipient(32, message));
-    assert(!util.is_pm_recipient(34, message));
+    assert.ok(util.is_pm_recipient(31, message));
+    assert.ok(util.is_pm_recipient(32, message));
+    assert.ok(!util.is_pm_recipient(34, message));
 });
 
 run_test("lower_bound", () => {
@@ -67,43 +67,45 @@ run_test("lower_bound", () => {
 });
 
 run_test("same_recipient", () => {
-    assert(
+    assert.ok(
         util.same_recipient(
             {type: "stream", stream_id: 101, topic: "Bar"},
             {type: "stream", stream_id: 101, topic: "bar"},
         ),
     );
 
-    assert(
+    assert.ok(
         !util.same_recipient(
             {type: "stream", stream_id: 101, topic: "Bar"},
             {type: "stream", stream_id: 102, topic: "whatever"},
         ),
     );
 
-    assert(
+    assert.ok(
         util.same_recipient(
             {type: "private", to_user_ids: "101,102"},
             {type: "private", to_user_ids: "101,102"},
         ),
     );
 
-    assert(
+    assert.ok(
         !util.same_recipient(
             {type: "private", to_user_ids: "101,102"},
             {type: "private", to_user_ids: "103"},
         ),
     );
 
-    assert(!util.same_recipient({type: "stream", stream_id: 101, topic: "Bar"}, {type: "private"}));
+    assert.ok(
+        !util.same_recipient({type: "stream", stream_id: 101, topic: "Bar"}, {type: "private"}),
+    );
 
-    assert(!util.same_recipient({type: "private", to_user_ids: undefined}, {type: "private"}));
+    assert.ok(!util.same_recipient({type: "private", to_user_ids: undefined}, {type: "private"}));
 
-    assert(!util.same_recipient({type: "unknown type"}, {type: "unknown type"}));
+    assert.ok(!util.same_recipient({type: "unknown type"}, {type: "unknown type"}));
 
-    assert(!util.same_recipient(undefined, {type: "private"}));
+    assert.ok(!util.same_recipient(undefined, {type: "private"}));
 
-    assert(!util.same_recipient(undefined, undefined));
+    assert.ok(!util.same_recipient(undefined, undefined));
 });
 
 run_test("robust_uri_decode", () => {
@@ -148,18 +150,18 @@ run_test("get_edit_event_prev_topic", () => {
 
 run_test("is_mobile", () => {
     window.navigator = {userAgent: "Android"};
-    assert(util.is_mobile());
+    assert.ok(util.is_mobile());
 
     window.navigator = {userAgent: "Not mobile"};
-    assert(!util.is_mobile());
+    assert.ok(!util.is_mobile());
 });
 
 run_test("array_compare", () => {
-    assert(util.array_compare([], []));
-    assert(util.array_compare([1, 2, 3], [1, 2, 3]));
-    assert(!util.array_compare([1, 2], [1, 2, 3]));
-    assert(!util.array_compare([1, 2, 3], [1, 2]));
-    assert(!util.array_compare([1, 2, 3, 4], [1, 2, 3, 5]));
+    assert.ok(util.array_compare([], []));
+    assert.ok(util.array_compare([1, 2, 3], [1, 2, 3]));
+    assert.ok(!util.array_compare([1, 2], [1, 2, 3]));
+    assert.ok(!util.array_compare([1, 2, 3], [1, 2]));
+    assert.ok(!util.array_compare([1, 2, 3, 4], [1, 2, 3, 5]));
 });
 
 run_test("normalize_recipients", () => {
@@ -175,8 +177,8 @@ run_test("random_int", () => {
 
     _.times(500, () => {
         const val = util.random_int(min, max);
-        assert(min <= val);
-        assert(val <= max);
+        assert.ok(min <= val);
+        assert.ok(val <= max);
         assert.equal(val, Math.floor(val));
     });
 });
@@ -232,27 +234,27 @@ run_test("all_and_everyone_mentions_regexp", () => {
 
     let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
-        assert(util.find_wildcard_mentions(messages_with_all_mentions[i]));
+        assert.ok(util.find_wildcard_mentions(messages_with_all_mentions[i]));
     }
 
     for (i = 0; i < messages_with_everyone_mentions.length; i += 1) {
-        assert(util.find_wildcard_mentions(messages_with_everyone_mentions[i]));
+        assert.ok(util.find_wildcard_mentions(messages_with_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_with_stream_mentions.length; i += 1) {
-        assert(util.find_wildcard_mentions(messages_with_stream_mentions[i]));
+        assert.ok(util.find_wildcard_mentions(messages_with_stream_mentions[i]));
     }
 
     for (i = 0; i < messages_without_all_mentions.length; i += 1) {
-        assert(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
+        assert.ok(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_without_everyone_mentions.length; i += 1) {
-        assert(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
+        assert.ok(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
     }
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
-        assert(!util.find_wildcard_mentions(messages_without_stream_mentions[i]));
+        assert.ok(!util.find_wildcard_mentions(messages_without_stream_mentions[i]));
     }
 });
 

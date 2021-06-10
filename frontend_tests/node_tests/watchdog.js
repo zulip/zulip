@@ -62,10 +62,10 @@ run_test("basics", () => {
 
 run_test("suspect_offline", () => {
     watchdog.set_suspect_offline(true);
-    assert(watchdog.suspects_user_is_offline());
+    assert.ok(watchdog.suspects_user_is_offline());
 
     watchdog.set_suspect_offline(false);
-    assert(!watchdog.suspects_user_is_offline());
+    assert.ok(!watchdog.suspects_user_is_offline());
 });
 
 MockDate.reset();

@@ -87,11 +87,11 @@ test("clear_search", (override) => {
     override(resize, "resize_sidebars", () => {});
 
     $(".user-list-filter").val("somevalue");
-    assert(!$("#user_search_section").hasClass("notdisplayed"));
+    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
     $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
-    assert($("#user_search_section").hasClass("notdisplayed"));
+    assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
 test("escape_search", (override) => {
@@ -104,7 +104,7 @@ test("escape_search", (override) => {
     activity.escape_search();
     assert.equal($(".user-list-filter").val(), "");
     activity.escape_search();
-    assert($("#user_search_section").hasClass("notdisplayed"));
+    assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
 test("blur search right", (override) => {
@@ -205,12 +205,12 @@ test("click on user header to toggle display", (override) => {
 
     page_params.realm_presence_disabled = true;
 
-    assert(!$("#user_search_section").hasClass("notdisplayed"));
+    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
     user_filter.val("bla");
 
     $("#userlist-header").trigger("click");
-    assert($("#user_search_section").hasClass("notdisplayed"));
+    assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal(user_filter.val(), "");
 
     $(".user-list-filter").closest = (selector) => {

@@ -401,7 +401,7 @@ test("content_typeahead_selected", (override) => {
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
-    assert(warned_for_mention);
+    assert.ok(warned_for_mention);
 
     fake_this.query = "Hello @oth";
     fake_this.token = "oth";
@@ -565,11 +565,11 @@ test("content_typeahead_selected", (override) => {
     expected_value = fake_this.query;
     assert.equal(actual_value, expected_value);
 
-    assert(caret_called1);
-    assert(caret_called2);
-    assert(autosize_called);
-    assert(set_timeout_called);
-    assert(warned_for_stream_link);
+    assert.ok(caret_called1);
+    assert.ok(caret_called2);
+    assert.ok(autosize_called);
+    assert.ok(set_timeout_called);
+    assert.ok(warned_for_stream_link);
 });
 
 function sorted_names_from(subs) {
@@ -831,14 +831,14 @@ test("initialize", (override) => {
         options.query = "hamletchar";
         options.updater(hamletcharacters, event);
         assert.deepEqual(appended_names, ["King Lear"]);
-        assert(cleared);
+        assert.ok(cleared);
 
         inserted_users = [lear.user_id];
         appended_names = [];
         cleared = false;
         options.updater(hamletcharacters, event);
         assert.deepEqual(appended_names, []);
-        assert(cleared);
+        assert.ok(cleared);
 
         pm_recipient_typeahead_called = true;
     };
@@ -862,7 +862,7 @@ test("initialize", (override) => {
         fake_this.options = options;
         let actual_value = options.source.call(fake_this, "test #s");
         assert.deepEqual(sorted_names_from(actual_value), ["Denmark", "Sweden", "The Netherlands"]);
-        assert(caret_called);
+        assert.ok(caret_called);
 
         // options.highlighter()
         //
@@ -1048,7 +1048,7 @@ test("initialize", (override) => {
     });
 
     $("form#send_message_form").trigger(event);
-    assert(compose_finish_called);
+    assert.ok(compose_finish_called);
     event.metaKey = false;
     event.ctrlKey = true;
     $("form#send_message_form").trigger(event);
@@ -1122,11 +1122,11 @@ test("initialize", (override) => {
 
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
-    assert(stream_typeahead_called);
-    assert(subject_typeahead_called);
-    assert(pm_recipient_typeahead_called);
-    assert(channel_post_called);
-    assert(compose_textarea_typeahead_called);
+    assert.ok(stream_typeahead_called);
+    assert.ok(subject_typeahead_called);
+    assert.ok(pm_recipient_typeahead_called);
+    assert.ok(channel_post_called);
+    assert.ok(compose_textarea_typeahead_called);
 });
 
 test("begins_typeahead", (override) => {
@@ -1419,15 +1419,15 @@ test("content_highlighter", (override) => {
     ct.content_highlighter.call(fake_this, "py");
 
     fake_this = {completing: "something-else"};
-    assert(!ct.content_highlighter.call(fake_this));
+    assert.ok(!ct.content_highlighter.call(fake_this));
 
     // Verify that all stub functions have been called.
-    assert(th_render_typeahead_item_called);
-    assert(th_render_person_called);
-    assert(th_render_user_group_called);
-    assert(th_render_stream_called);
-    assert(th_render_typeahead_item_called);
-    assert(th_render_slash_command_called);
+    assert.ok(th_render_typeahead_item_called);
+    assert.ok(th_render_person_called);
+    assert.ok(th_render_user_group_called);
+    assert.ok(th_render_stream_called);
+    assert.ok(th_render_typeahead_item_called);
+    assert.ok(th_render_slash_command_called);
 });
 
 test("filter_and_sort_mentions (normal)", () => {

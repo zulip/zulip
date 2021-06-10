@@ -134,8 +134,8 @@ test("open_reactions_popover (sent by me)", () => {
         assert.equal(target, "action-stub");
     };
 
-    assert(reactions.open_reactions_popover());
-    assert(called);
+    assert.ok(reactions.open_reactions_popover());
+    assert.ok(called);
 });
 
 test("open_reactions_popover (not sent by me)", () => {
@@ -149,16 +149,16 @@ test("open_reactions_popover (not sent by me)", () => {
         assert.equal(target, "reaction-stub");
     };
 
-    assert(reactions.open_reactions_popover());
-    assert(called);
+    assert.ok(reactions.open_reactions_popover());
+    assert.ok(called);
 });
 
 test("basics", () => {
     const message = {...sample_message};
 
     const result = reactions.get_message_reactions(message);
-    assert(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
-    assert(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
+    assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
+    assert.ok(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
 
     result.sort((a, b) => a.count - b.count);
 
@@ -616,8 +616,8 @@ test("view.insert_new_reaction (me w/unicode emoji)", (override) => {
     };
 
     reactions.view.insert_new_reaction(opts);
-    assert(template_called);
-    assert(insert_called);
+    assert.ok(template_called);
+    assert.ok(insert_called);
 });
 
 test("view.insert_new_reaction (them w/zulip emoji)", (override) => {
@@ -669,8 +669,8 @@ test("view.insert_new_reaction (them w/zulip emoji)", (override) => {
     };
 
     reactions.view.insert_new_reaction(opts);
-    assert(template_called);
-    assert(insert_called);
+    assert.ok(template_called);
+    assert.ok(insert_called);
 });
 
 test("view.update_existing_reaction (me)", (override) => {
@@ -698,7 +698,7 @@ test("view.update_existing_reaction (me)", (override) => {
 
     reactions.view.update_existing_reaction(opts);
 
-    assert(our_reaction.hasClass("reacted"));
+    assert.ok(our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
@@ -730,7 +730,7 @@ test("view.update_existing_reaction (them)", (override) => {
 
     reactions.view.update_existing_reaction(opts);
 
-    assert(!our_reaction.hasClass("reacted"));
+    assert.ok(!our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: You (click to remove), Bob van Roberts, Cali and Alexus reacted with :8ball:",
@@ -763,7 +763,7 @@ test("view.remove_reaction (me)", (override) => {
 
     reactions.view.remove_reaction(opts);
 
-    assert(!our_reaction.hasClass("reacted"));
+    assert.ok(!our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: Bob van Roberts and Cali reacted with :8ball:",
@@ -797,7 +797,7 @@ test("view.remove_reaction (them)", (override) => {
     our_reaction.addClass("reacted");
     reactions.view.remove_reaction(opts);
 
-    assert(our_reaction.hasClass("reacted"));
+    assert.ok(our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: You (click to remove) reacted with :8ball:",
@@ -827,7 +827,7 @@ test("view.remove_reaction (last person)", (override) => {
         removed = true;
     };
     reactions.view.remove_reaction(opts);
-    assert(removed);
+    assert.ok(removed);
 });
 
 test("error_handling", (override) => {

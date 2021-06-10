@@ -155,9 +155,9 @@ test_ui("subscriber_pills", (override) => {
 
     input_field_stub.typeahead = (config) => {
         assert.equal(config.items, 5);
-        assert(config.fixed);
-        assert(config.dropup);
-        assert(config.stopAdvance);
+        assert.ok(config.fixed);
+        assert.ok(config.dropup);
+        assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
         assert.equal(typeof config.highlighter, "function");
@@ -191,19 +191,19 @@ test_ui("subscriber_pills", (override) => {
 
         (function test_matcher() {
             let result = config.matcher.call(fake_stream_this, denmark);
-            assert(result);
+            assert.ok(result);
             result = config.matcher.call(fake_stream_this, sweden);
-            assert(!result);
+            assert.ok(!result);
 
             result = config.matcher.call(fake_group_this, testers);
-            assert(result);
+            assert.ok(result);
             result = config.matcher.call(fake_group_this, admins);
-            assert(!result);
+            assert.ok(!result);
 
             result = config.matcher.call(fake_person_this, me);
-            assert(result);
+            assert.ok(result);
             result = config.matcher.call(fake_person_this, jill);
-            assert(!result);
+            assert.ok(!result);
         })();
 
         (function test_sorter() {
@@ -212,18 +212,18 @@ test_ui("subscriber_pills", (override) => {
                 sort_streams_called = true;
             };
             config.sorter.call(fake_stream_this);
-            assert(sort_streams_called);
+            assert.ok(sort_streams_called);
 
             let sort_recipients_called = false;
             typeahead_helper.sort_recipients = function () {
                 sort_recipients_called = true;
             };
             config.sorter.call(fake_group_this, [testers]);
-            assert(sort_recipients_called);
+            assert.ok(sort_recipients_called);
 
             sort_recipients_called = false;
             config.sorter.call(fake_person_this, [me]);
-            assert(sort_recipients_called);
+            assert.ok(sort_recipients_called);
         })();
 
         (function test_updater() {
@@ -270,8 +270,8 @@ test_ui("subscriber_pills", (override) => {
     let fake_this = $subscription_settings;
     let event = {target: fake_this};
     stream_row_handler.call(fake_this, event);
-    assert(template_rendered);
-    assert(input_typeahead_called);
+    assert.ok(template_rendered);
+    assert.ok(input_typeahead_called);
 
     let add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "submit",
@@ -314,13 +314,13 @@ test_ui("subscriber_pills", (override) => {
     stream_pill.get_user_ids = () => [];
     add_subscribers_request = false;
     add_subscribers_handler(event);
-    assert(!add_subscribers_request);
+    assert.ok(!add_subscribers_request);
 
     // No request is sent if we try to subscribe ourselves
     // only and are already subscribed to the stream.
     override(user_pill, "get_user_ids", () => [me.user_id]);
     add_subscribers_handler(event);
-    assert(!add_subscribers_request);
+    assert.ok(!add_subscribers_request);
 
     // Denmark stream pill and fred and mark user pills are created.
     // But only one request for mark is sent even though a mark user

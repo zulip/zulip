@@ -93,7 +93,7 @@ run_test("autosize_textarea", (override) => {
     const container = "container-stub";
     compose_ui.autosize_textarea(container);
     assert.equal(textarea_autosized.textarea, container);
-    assert(textarea_autosized.autosized);
+    assert.ok(textarea_autosized.autosized);
 });
 
 run_test("insert_syntax_and_focus", () => {
@@ -108,7 +108,7 @@ run_test("insert_syntax_and_focus", () => {
     compose_ui.insert_syntax_and_focus(":octopus:");
     assert.equal($("#compose-textarea").caret(), 4);
     assert.equal($("#compose-textarea").val(), "xyz :octopus: ");
-    assert($("#compose-textarea").is_focused());
+    assert.ok($("#compose-textarea").is_focused());
 });
 
 run_test("smart_insert", () => {
@@ -119,27 +119,27 @@ run_test("smart_insert", () => {
     assert.equal(textbox.insert_pos, 4);
     assert.equal(textbox.insert_text, " :smile: ");
     assert.equal(textbox.val(), "abc :smile: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":airplane:");
     assert.equal(textbox.insert_text, ":airplane: ");
     assert.equal(textbox.val(), "abc :smile: :airplane: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox.caret(0);
     textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":octopus:");
     assert.equal(textbox.insert_text, ":octopus: ");
     assert.equal(textbox.val(), ":octopus: abc :smile: :airplane: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox.caret(textbox.val().length);
     textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":heart:");
     assert.equal(textbox.insert_text, ":heart: ");
     assert.equal(textbox.val(), ":octopus: abc :smile: :airplane: :heart: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     // Test handling of spaces for ```quote
     textbox = make_textbox("");
@@ -148,7 +148,7 @@ run_test("smart_insert", () => {
     compose_ui.smart_insert(textbox, "```quote\nquoted message\n```\n");
     assert.equal(textbox.insert_text, "```quote\nquoted message\n```\n");
     assert.equal(textbox.val(), "```quote\nquoted message\n```\n");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox = make_textbox("");
     textbox.caret(0);
@@ -156,7 +156,7 @@ run_test("smart_insert", () => {
     compose_ui.smart_insert(textbox, "[Quoting…]\n");
     assert.equal(textbox.insert_text, "[Quoting…]\n");
     assert.equal(textbox.val(), "[Quoting…]\n");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox = make_textbox("abc");
     textbox.caret(3);
@@ -164,7 +164,7 @@ run_test("smart_insert", () => {
     compose_ui.smart_insert(textbox, " test with space");
     assert.equal(textbox.insert_text, " test with space ");
     assert.equal(textbox.val(), "abc test with space ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things

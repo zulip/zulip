@@ -279,19 +279,19 @@ test_people("basics", () => {
     const full_name = "Isaac Newton";
     const email = "isaac@example.com";
 
-    assert(!people.is_known_user_id(32));
-    assert(!people.is_known_user(isaac));
-    assert(!people.is_known_user(undefined));
-    assert(!people.is_valid_full_name_and_user_id(full_name, 32));
+    assert.ok(!people.is_known_user_id(32));
+    assert.ok(!people.is_known_user(isaac));
+    assert.ok(!people.is_known_user(undefined));
+    assert.ok(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
     people.add_active_user(isaac);
 
     assert.equal(people.get_actual_name_from_user_id(32), full_name);
 
-    assert(people.is_valid_full_name_and_user_id(full_name, 32));
-    assert(people.is_known_user_id(32));
-    assert(people.is_known_user(isaac));
+    assert.ok(people.is_valid_full_name_and_user_id(full_name, 32));
+    assert.ok(people.is_known_user_id(32));
+    assert.ok(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
@@ -305,7 +305,7 @@ test_people("basics", () => {
     const active_user_ids = people.get_active_user_ids().sort();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
-    assert(people.is_valid_email_for_compose(isaac.email));
+    assert.ok(people.is_valid_email_for_compose(isaac.email));
 
     // Now deactivate isaac
     people.deactivate(isaac);
@@ -606,40 +606,40 @@ test_people("filtered_users", () => {
     const users = people.get_people_for_stream_create();
     let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
     assert.equal(filtered_people.size, 2);
-    assert(filtered_people.has(ashton.user_id));
-    assert(filtered_people.has(maria.user_id));
-    assert(!filtered_people.has(charles.user_id));
+    assert.ok(filtered_people.has(ashton.user_id));
+    assert.ok(filtered_people.has(maria.user_id));
+    assert.ok(!filtered_people.has(charles.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, []);
     assert.equal(filtered_people.size, 0);
 
     filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
     assert.equal(filtered_people.size, 1);
-    assert(filtered_people.has(linus.user_id));
+    assert.ok(filtered_people.has(linus.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, ["ch di", "maria"]);
     assert.equal(filtered_people.size, 2);
-    assert(filtered_people.has(charles.user_id));
-    assert(filtered_people.has(maria.user_id));
+    assert.ok(filtered_people.has(charles.user_id));
+    assert.ok(filtered_people.has(maria.user_id));
 
     // Test filtering of names with diacritics
     // This should match Nöôáàh by ignoring diacritics, and also match Nooaah
     filtered_people = people.filter_people_by_search_terms(users, ["noOa"]);
     assert.equal(filtered_people.size, 2);
-    assert(filtered_people.has(noah.user_id));
-    assert(filtered_people.has(plain_noah.user_id));
+    assert.ok(filtered_people.has(noah.user_id));
+    assert.ok(filtered_people.has(plain_noah.user_id));
 
     // This should match ëmerson, but not emerson
     filtered_people = people.filter_people_by_search_terms(users, ["ëm"]);
     assert.equal(filtered_people.size, 1);
-    assert(filtered_people.has(noah.user_id));
+    assert.ok(filtered_people.has(noah.user_id));
 
     // Test filtering with undefined user
     users.push(unknown_user);
 
     filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
     assert.equal(filtered_people.size, 1);
-    assert(filtered_people.has(linus.user_id));
+    assert.ok(filtered_people.has(linus.user_id));
 });
 
 people.init();
@@ -821,7 +821,7 @@ test_people("extract_people_from_message", (override) => {
         sender_id: maria.user_id,
         sender_email: maria.email,
     };
-    assert(!people.is_known_user_id(maria.user_id));
+    assert.ok(!people.is_known_user_id(maria.user_id));
 
     let reported;
     override(people, "report_late_add", (user_id, email) => {
@@ -831,8 +831,8 @@ test_people("extract_people_from_message", (override) => {
     });
 
     people.extract_people_from_message(message);
-    assert(people.is_known_user_id(maria.user_id));
-    assert(reported);
+    assert.ok(people.is_known_user_id(maria.user_id));
+    assert.ok(reported);
 
     // Get line coverage
     people.__Rewire__("report_late_add", () => {
@@ -947,7 +947,7 @@ test_people("updates", () => {
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
-    assert(!people.is_cross_realm_email(old_email));
+    assert.ok(!people.is_cross_realm_email(old_email));
 
     assert.equal(people.get_by_email(new_email), undefined);
 
@@ -956,7 +956,7 @@ test_people("updates", () => {
 
     // Now look up using the new email.
     assert.equal(people.get_by_email(new_email).user_id, user_id);
-    assert(!people.is_cross_realm_email(new_email));
+    assert.ok(!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
     assert.equal(all_people.length, 2);
@@ -993,7 +993,7 @@ test_people("track_duplicate_full_names", () => {
     people.add_active_user(maria);
     people.add_active_user(stephen1);
 
-    assert(!people.is_duplicate_full_name("Stephen King"));
+    assert.ok(!people.is_duplicate_full_name("Stephen King"));
     assert.equal(people.get_user_id_from_name("Stephen King"), stephen1.user_id);
 
     // Now duplicate the Stephen King name.
@@ -1004,16 +1004,16 @@ test_people("track_duplicate_full_names", () => {
     // other codepaths for disambiguation.
     assert.equal(people.get_user_id_from_name("Stephen King"), undefined);
 
-    assert(people.is_duplicate_full_name("Stephen King"));
-    assert(!people.is_duplicate_full_name("Maria Athens"));
-    assert(!people.is_duplicate_full_name("Some Random Name"));
+    assert.ok(people.is_duplicate_full_name("Stephen King"));
+    assert.ok(!people.is_duplicate_full_name("Maria Athens"));
+    assert.ok(!people.is_duplicate_full_name("Some Random Name"));
 
     // It is somewhat janky that we have to clone
     // stephen2 here.  It would be nice if people.set_full_name
     // just took a user_id as the first parameter.
     people.set_full_name({...stephen2}, "Stephen King JP");
-    assert(!people.is_duplicate_full_name("Stephen King"));
-    assert(!people.is_duplicate_full_name("Stephen King JP"));
+    assert.ok(!people.is_duplicate_full_name("Stephen King"));
+    assert.ok(!people.is_duplicate_full_name("Stephen King JP"));
 });
 
 test_people("get_mention_syntax", () => {
@@ -1021,7 +1021,7 @@ test_people("get_mention_syntax", () => {
     people.add_active_user(stephen2);
     people.add_active_user(maria);
 
-    assert(people.is_duplicate_full_name("Stephen King"));
+    assert.ok(people.is_duplicate_full_name("Stephen King"));
 
     blueslip.expect("warn", "get_mention_syntax called without user_id.");
     assert.equal(people.get_mention_syntax("Stephen King"), "@**Stephen King**");
@@ -1074,14 +1074,14 @@ test_people("initialize", () => {
     people.initialize(my_user_id, params);
 
     assert.equal(people.is_active_user_for_popover(17), true);
-    assert(people.is_cross_realm_email("bot@example.com"));
-    assert(people.is_valid_email_for_compose("bot@example.com"));
-    assert(people.is_valid_email_for_compose("alice@example.com"));
-    assert(!people.is_valid_email_for_compose("retiree@example.com"));
-    assert(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
-    assert(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
-    assert(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
-    assert(people.is_my_user_id(42));
+    assert.ok(people.is_cross_realm_email("bot@example.com"));
+    assert.ok(people.is_valid_email_for_compose("bot@example.com"));
+    assert.ok(people.is_valid_email_for_compose("alice@example.com"));
+    assert.ok(!people.is_valid_email_for_compose("retiree@example.com"));
+    assert.ok(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
+    assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
+    assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
+    assert.ok(people.is_my_user_id(42));
 
     const fetched_retiree = people.get_by_user_id(15);
     assert.equal(fetched_retiree.full_name, "Retiree");
@@ -1149,9 +1149,9 @@ test_people("matches_user_settings_search", () => {
 });
 
 test_people("is_valid_full_name_and_user_id", () => {
-    assert(!people.is_valid_full_name_and_user_id("bogus", 99));
-    assert(!people.is_valid_full_name_and_user_id(me.full_name, 99));
-    assert(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
+    assert.ok(!people.is_valid_full_name_and_user_id("bogus", 99));
+    assert.ok(!people.is_valid_full_name_and_user_id(me.full_name, 99));
+    assert.ok(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
 });
 
 test_people("emails_strings_to_user_ids_array", () => {

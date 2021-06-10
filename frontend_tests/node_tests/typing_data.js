@@ -39,21 +39,21 @@ test("basics", () => {
     assert.deepEqual(typing_data.get_all_typists(), [7, 10, 15]);
 
     // test basic removal
-    assert(typing_data.remove_typist([15, 7], "7"));
+    assert.ok(typing_data.remove_typist([15, 7], "7"));
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
 
     // test removing an id that is not there
-    assert(!typing_data.remove_typist([15, 7], 7));
+    assert.ok(!typing_data.remove_typist([15, 7], 7));
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
     assert.deepEqual(typing_data.get_all_typists(), [10, 15]);
 
     // remove user from one group, but "15" will still be among
     // "all typists"
-    assert(typing_data.remove_typist(["15", 7], "15"));
+    assert.ok(typing_data.remove_typist(["15", 7], "15"));
     assert.deepEqual(typing_data.get_all_typists(), [10, 15]);
 
     // now remove from the other group
-    assert(typing_data.remove_typist([5, 15, 10], 15));
+    assert.ok(typing_data.remove_typist([5, 15, 10], 15));
     assert.deepEqual(typing_data.get_all_typists(), [10]);
 
     // test duplicate ids in a groups

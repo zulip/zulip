@@ -136,7 +136,7 @@ run_test("create_ajax_request", (override) => {
         assert.equal(data.schedule, "monthly");
         assert.equal(data.licenses, "");
 
-        assert(!("license_management" in data));
+        assert.ok(!("license_management" in data));
 
         history.pushState = (state_object, title, path) => {
             state.pushState += 1;

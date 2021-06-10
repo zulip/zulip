@@ -227,15 +227,15 @@ run_test("autopay_form_fields", () => {
     assert.equal(schedule_options[0].value, "monthly");
     assert.equal(schedule_options[1].value, "annual");
 
-    assert(document.querySelector("#autopay-error"));
-    assert(document.querySelector("#autopay-loading"));
-    assert(document.querySelector("#autopay"));
-    assert(document.querySelector("#autopay-success"));
-    assert(document.querySelector("#autopay_loading_indicator"));
+    assert.ok(document.querySelector("#autopay-error"));
+    assert.ok(document.querySelector("#autopay-loading"));
+    assert.ok(document.querySelector("#autopay"));
+    assert.ok(document.querySelector("#autopay-success"));
+    assert.ok(document.querySelector("#autopay_loading_indicator"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
-    assert(document.querySelector("#free-trial-alert-message"));
+    assert.ok(document.querySelector("#free-trial-alert-message"));
 });
 
 run_test("invoice_form_fields", () => {
@@ -259,13 +259,13 @@ run_test("invoice_form_fields", () => {
     assert.equal(schedule_options.length, 1);
     assert.equal(schedule_options[0].value, "annual");
 
-    assert(document.querySelector("#invoice-error"));
-    assert(document.querySelector("#invoice-loading"));
-    assert(document.querySelector("#invoice"));
-    assert(document.querySelector("#invoice-success"));
-    assert(document.querySelector("#invoice_loading_indicator"));
+    assert.ok(document.querySelector("#invoice-error"));
+    assert.ok(document.querySelector("#invoice-loading"));
+    assert.ok(document.querySelector("#invoice"));
+    assert.ok(document.querySelector("#invoice-success"));
+    assert.ok(document.querySelector("#invoice_loading_indicator"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
-    assert(document.querySelector("#free-trial-alert-message"));
+    assert.ok(document.querySelector("#free-trial-alert-message"));
 });

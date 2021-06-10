@@ -38,7 +38,7 @@ run_test("scrub_realm", () => {
 
     window.prompt = () => "zulip";
     click_handler.call(fake_this, event);
-    assert(submit_form_called);
+    assert.ok(submit_form_called);
 
     submit_form_called = false;
     window.prompt = () => "invalid-string-id";
@@ -47,8 +47,8 @@ run_test("scrub_realm", () => {
         alert_called = true;
     };
     click_handler.call(fake_this, event);
-    assert(!submit_form_called);
-    assert(alert_called);
+    assert.ok(!submit_form_called);
+    assert.ok(alert_called);
 
     assert.equal(typeof click_handler, "function");
 

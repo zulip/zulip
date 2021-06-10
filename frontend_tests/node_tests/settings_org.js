@@ -23,7 +23,7 @@ const realm_icon = mock_esm("../../static/js/realm_icon");
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
-        assert(data.realm_domain.domain);
+        assert.ok(data.realm_domain.domain);
         return "stub-domains-list";
     }
     throw new Error(`Unknown template ${name}`);
@@ -95,7 +95,7 @@ function simulate_realm_domains_table() {
     };
 
     return function verify() {
-        assert(appended);
+        assert.ok(appended);
     };
 }
 
@@ -124,7 +124,7 @@ function test_realms_domain_modal(override, add_realm_domain) {
 
     add_realm_domain();
 
-    assert(posted);
+    assert.ok(posted);
 
     success_callback();
     assert.equal(info.val(), "translated HTML: Added successfully!");
@@ -250,7 +250,7 @@ function test_submit_settings_form(override, submit_form) {
 
     patched = false;
     submit_form(ev);
-    assert(patched);
+    assert.ok(patched);
 
     let expected_value = {
         bot_creation_policy: 1,
@@ -284,7 +284,7 @@ function test_submit_settings_form(override, submit_form) {
     ]);
 
     submit_form(ev);
-    assert(patched);
+    assert.ok(patched);
 
     expected_value = {
         default_language: "en",
@@ -361,7 +361,7 @@ function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
     });
 
     upload_realm_logo_or_icon(file_input, null, true);
-    assert(posted);
+    assert.ok(posted);
 }
 
 function test_change_allow_subdomains(change_allow_subdomains) {
@@ -842,64 +842,64 @@ test("misc", (override) => {
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
-    assert(!$("#full_name").prop("disabled"));
+    assert.ok(!$("#full_name").prop("disabled"));
     assert.equal($(".change_name_tooltip").is(":visible"), false);
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
-    assert($("#full_name").prop("disabled"));
-    assert($(".change_name_tooltip").is(":visible"));
+    assert.ok($("#full_name").prop("disabled"));
+    assert.ok($(".change_name_tooltip").is(":visible"));
 
     page_params.realm_name_changes_disabled = true;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
-    assert($("#full_name").prop("disabled"));
-    assert($(".change_name_tooltip").is(":visible"));
+    assert.ok($("#full_name").prop("disabled"));
+    assert.ok($(".change_name_tooltip").is(":visible"));
 
     page_params.realm_name_changes_disabled = false;
     page_params.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
-    assert($("#full_name").prop("disabled"));
-    assert($(".change_name_tooltip").is(":visible"));
+    assert.ok($("#full_name").prop("disabled"));
+    assert.ok($(".change_name_tooltip").is(":visible"));
 
     page_params.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
-    assert(!$("#change_email .button").prop("disabled"));
+    assert.ok(!$("#change_email .button").prop("disabled"));
 
     page_params.realm_email_changes_disabled = true;
     settings_account.update_email_change_display();
-    assert($("#change_email .button").prop("disabled"));
+    assert.ok($("#change_email .button").prop("disabled"));
 
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert(!$("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert(!$("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;
     settings_account.update_name_change_display();
-    assert(!$("#full_name").prop("disabled"));
+    assert.ok(!$("#full_name").prop("disabled"));
     assert.equal($(".change_name_tooltip").is(":visible"), false);
 
     settings_account.update_email_change_display();
-    assert(!$("#change_email .button").prop("disabled"));
+    assert.ok(!$("#change_email .button").prop("disabled"));
 
     override(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
@@ -939,11 +939,11 @@ test("misc", (override) => {
     });
     settings_org.notifications_stream_widget.render(42);
     assert.equal(elem.text(), "#some_stream");
-    assert(!elem.hasClass("text-warning"));
+    assert.ok(!elem.hasClass("text-warning"));
 
     settings_org.notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), "translated: Disabled");
-    assert(elem.hasClass("text-warning"));
+    assert.ok(elem.hasClass("text-warning"));
 
     setting_name = "realm_signup_notifications_stream_id";
     elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
@@ -954,9 +954,9 @@ test("misc", (override) => {
     });
     settings_org.signup_notifications_stream_widget.render(75);
     assert.equal(elem.text(), "#some_stream");
-    assert(!elem.hasClass("text-warning"));
+    assert.ok(!elem.hasClass("text-warning"));
 
     settings_org.signup_notifications_stream_widget.render(undefined);
     assert.equal(elem.text(), "translated: Disabled");
-    assert(elem.hasClass("text-warning"));
+    assert.ok(elem.hasClass("text-warning"));
 });

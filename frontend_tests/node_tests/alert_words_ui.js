@@ -36,12 +36,12 @@ run_test("render_alert_words_ui", () => {
     });
 
     const new_alert_word = $("#create_alert_word_name");
-    assert(!new_alert_word.is_focused());
+    assert.ok(!new_alert_word.is_focused());
 
     alert_words_ui.render_alert_words_ui();
 
     assert.deepEqual(appended, ["stub-bar", "stub-foo"]);
-    assert(new_alert_word.is_focused());
+    assert.ok(new_alert_word.is_focused());
 });
 
 run_test("add_alert_word", (override) => {
@@ -60,17 +60,17 @@ run_test("add_alert_word", (override) => {
     // add '' as alert word
     add_func();
     assert.equal(new_alert_word.val(), "");
-    assert(alert_word_status.hasClass("alert-danger"));
+    assert.ok(alert_word_status.hasClass("alert-danger"));
     assert.equal(alert_word_status_text.text(), "translated: Alert word can't be empty!");
-    assert(alert_word_status.visible());
+    assert.ok(alert_word_status.visible());
 
     // add 'foo' as alert word (existing word)
     new_alert_word.val("foo");
 
     add_func();
-    assert(alert_word_status.hasClass("alert-danger"));
+    assert.ok(alert_word_status.hasClass("alert-danger"));
     assert.equal(alert_word_status_text.text(), "translated: Alert word already exists!");
-    assert(alert_word_status.visible());
+    assert.ok(alert_word_status.visible());
 
     // add 'zot' as alert word (new word)
     new_alert_word.val("zot");
@@ -88,15 +88,15 @@ run_test("add_alert_word", (override) => {
 
     // test failure
     fail_func();
-    assert(alert_word_status.hasClass("alert-danger"));
+    assert.ok(alert_word_status.hasClass("alert-danger"));
     assert.equal(alert_word_status_text.text(), "translated: Error adding alert word!");
-    assert(alert_word_status.visible());
+    assert.ok(alert_word_status.visible());
 
     // test success
     success_func();
-    assert(alert_word_status.hasClass("alert-success"));
+    assert.ok(alert_word_status.hasClass("alert-success"));
     assert.equal(alert_word_status_text.text(), 'translated: Alert word "zot" added successfully!');
-    assert(alert_word_status.visible());
+    assert.ok(alert_word_status.visible());
 });
 
 run_test("add_alert_word_keypress", (override) => {
@@ -122,7 +122,7 @@ run_test("add_alert_word_keypress", (override) => {
     };
 
     keypress_func(event);
-    assert(called);
+    assert.ok(called);
 });
 
 run_test("remove_alert_word", (override) => {
@@ -161,15 +161,15 @@ run_test("remove_alert_word", (override) => {
 
     // test failure
     fail_func();
-    assert(alert_word_status.hasClass("alert-danger"));
+    assert.ok(alert_word_status.hasClass("alert-danger"));
     assert.equal(alert_word_status_text.text(), "translated: Error removing alert word!");
-    assert(alert_word_status.visible());
+    assert.ok(alert_word_status.visible());
 
     // test success
     success_func();
-    assert(alert_word_status.hasClass("alert-success"));
+    assert.ok(alert_word_status.hasClass("alert-success"));
     assert.equal(alert_word_status_text.text(), "translated: Alert word removed successfully!");
-    assert(alert_word_status.visible());
+    assert.ok(alert_word_status.visible());
 });
 
 run_test("close_status_message", (override) => {
@@ -190,7 +190,7 @@ run_test("close_status_message", (override) => {
         currentTarget: ".close-alert-word-status",
     };
 
-    assert(alert.visible());
+    assert.ok(alert.visible());
     close(event);
-    assert(!alert.visible());
+    assert.ok(!alert.visible());
 });

@@ -112,30 +112,30 @@ run_test("multiple item list", (override) => {
 
     cursor.go_to(2);
     assert.equal(cursor.get_key(), 2);
-    assert(!list_items[1].hasClass("highlight"));
-    assert(list_items[2].hasClass("highlight"));
-    assert(!list_items[3].hasClass("highlight"));
+    assert.ok(!list_items[1].hasClass("highlight"));
+    assert.ok(list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
 
     cursor.next();
     cursor.next();
     cursor.next();
 
     assert.equal(cursor.get_key(), 3);
-    assert(!list_items[1].hasClass("highlight"));
-    assert(!list_items[2].hasClass("highlight"));
-    assert(list_items[3].hasClass("highlight"));
+    assert.ok(!list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[2].hasClass("highlight"));
+    assert.ok(list_items[3].hasClass("highlight"));
 
     cursor.prev();
     cursor.prev();
     cursor.prev();
 
     assert.equal(cursor.get_key(), 1);
-    assert(list_items[1].hasClass("highlight"));
-    assert(!list_items[2].hasClass("highlight"));
-    assert(!list_items[3].hasClass("highlight"));
+    assert.ok(list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
 
     cursor.clear();
     assert.equal(cursor.get_key(), undefined);
     cursor.redraw();
-    assert(!list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[1].hasClass("highlight"));
 });

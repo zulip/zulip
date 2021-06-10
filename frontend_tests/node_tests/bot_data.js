@@ -116,7 +116,7 @@ test("test_basics", () => {
 
         bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);
-        assert(bot.is_active);
+        assert.ok(bot.is_active);
         bot_data.deactivate(43);
         bot = bot_data.get(43);
         assert.equal(bot.is_active, false);
@@ -135,7 +135,7 @@ test("test_basics", () => {
 
         bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);
-        assert(bot.is_active);
+        assert.ok(bot.is_active);
         bot_data.del(43);
         bot = bot_data.get(43);
         assert.equal(bot, undefined);

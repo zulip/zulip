@@ -261,7 +261,7 @@ class CommonUtils {
         // Wait for a email input in login page so we know login
         // page is loaded. Then check that we are at the login url.
         await page.waitForSelector('input[name="username"]');
-        assert(page.url().includes("/login/"));
+        assert.ok(page.url().includes("/login/"));
     }
 
     async ensure_enter_does_not_send(page: Page): Promise<void> {

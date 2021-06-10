@@ -27,5 +27,5 @@ run_test("build_emoji_upload_widget", () => {
         build_widget_stub = true;
     };
     settings_emoji.build_emoji_upload_widget();
-    assert(build_widget_stub);
+    assert.ok(build_widget_stub);
 });

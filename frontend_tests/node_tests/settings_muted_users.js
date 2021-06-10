@@ -34,7 +34,7 @@ run_test("settings", (override) => {
 
     settings_muted_users.set_up();
     assert.equal(settings_muted_users.loaded, true);
-    assert(populate_list_called);
+    assert.ok(populate_list_called);
 
     const unmute_click_handler = $("body").get_on_handler("click", ".settings-unmute-user");
     assert.equal(typeof unmute_click_handler, "function");
@@ -66,6 +66,6 @@ run_test("settings", (override) => {
     };
 
     unmute_click_handler.call(unmute_button, event);
-    assert(unmute_user_called);
-    assert(row_attribute_fetched);
+    assert.ok(unmute_user_called);
+    assert.ok(row_attribute_fetched);
 });

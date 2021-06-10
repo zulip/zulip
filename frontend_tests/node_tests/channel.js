@@ -42,7 +42,7 @@ function test_with_mock_ajax(test_params) {
     };
 
     run_code();
-    assert(ajax_called);
+    assert.ok(ajax_called);
     check_ajax_options(ajax_options);
 }
 
@@ -176,10 +176,10 @@ test("normal_post", () => {
             assert.equal(options.url, "/json/endpoint");
 
             options.simulate_success("response data", "success");
-            assert(orig_success_called);
+            assert.ok(orig_success_called);
 
             options.simulate_error();
-            assert(orig_error_called);
+            assert.ok(orig_error_called);
         },
     });
 });
@@ -201,7 +201,7 @@ test("patch_with_form_data", () => {
                 data,
                 processData: false,
             });
-            assert(appended);
+            assert.ok(appended);
         },
 
         check_ajax_options(options) {
@@ -233,7 +233,7 @@ test("reload_on_403_error", () => {
             });
 
             options.simulate_error();
-            assert(handler_called);
+            assert.ok(handler_called);
         },
     });
 });
@@ -339,11 +339,11 @@ test("while_reloading", () => {
         check_ajax_options(options) {
             blueslip.expect("log", "Ignoring DELETE /json/endpoint response while reloading");
             options.simulate_success();
-            assert(!orig_success_called);
+            assert.ok(!orig_success_called);
 
             blueslip.expect("log", "Ignoring DELETE /json/endpoint error response while reloading");
             options.simulate_error();
-            assert(!orig_error_called);
+            assert.ok(!orig_error_called);
         },
     });
 });

@@ -171,7 +171,7 @@ test("initialize", (override) => {
             called = true;
         });
         f();
-        assert(called);
+        assert.ok(called);
     };
 
     drafts.initialize();

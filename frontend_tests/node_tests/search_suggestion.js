@@ -558,7 +558,7 @@ test("sent_by_me_suggestions", (override) => {
 
     let query = "";
     let suggestions = get_suggestions("", query);
-    assert(suggestions.strings.includes("sender:myself@zulip.com"));
+    assert.ok(suggestions.strings.includes("sender:myself@zulip.com"));
     assert.equal(suggestions.lookup_table.get("sender:myself@zulip.com").description, "Sent by me");
 
     query = "sender";

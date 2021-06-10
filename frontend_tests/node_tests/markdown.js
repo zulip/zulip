@@ -272,18 +272,18 @@ test("marked_shared", () => {
 test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
     markdown.apply_markdown(message);
-    assert(!message.mentioned);
-    assert(!message.mentioned_me_directly);
+    assert.ok(!message.mentioned);
+    assert.ok(!message.mentioned_me_directly);
 
     message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
-    assert(message.mentioned);
-    assert(message.mentioned_me_directly);
+    assert.ok(message.mentioned);
+    assert.ok(message.mentioned_me_directly);
 
     message = {raw_content: "@**all**"};
     markdown.apply_markdown(message);
-    assert(message.mentioned);
-    assert(!message.mentioned_me_directly);
+    assert.ok(message.mentioned);
+    assert.ok(!message.mentioned_me_directly);
 });
 
 test("marked", () => {
@@ -671,7 +671,7 @@ test("message_flags", () => {
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, true);
-    assert(!message.unread);
+    assert.ok(!message.unread);
 
     input = "/me is testing\nthis";
     message = {topic: "No links here", raw_content: input};

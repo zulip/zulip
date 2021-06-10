@@ -340,7 +340,7 @@ test("handlers", (override) => {
         narrowed = false;
         activity.user_cursor.go_to(alice.user_id);
         filter_key_handlers.Enter();
-        assert(narrowed);
+        assert.ok(narrowed);
 
         // get line coverage for cleared case
         activity.user_cursor.clear();
@@ -353,7 +353,7 @@ test("handlers", (override) => {
         // so this just tests the called function.
         narrowed = false;
         activity.narrow_for_user({li: alice_li});
-        assert(narrowed);
+        assert.ok(narrowed);
     })();
 
     (function test_blur_filter() {
@@ -393,8 +393,8 @@ test("insert_one_user_into_empty_list", (override) => {
     });
 
     activity.redraw_user(alice.user_id);
-    assert(appended_html.indexOf('data-user-id="1"') > 0);
-    assert(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
 
 test("insert_alice_then_fred", (override) => {
@@ -405,12 +405,12 @@ test("insert_alice_then_fred", (override) => {
     override(padded_widget, "update_padding", () => {});
 
     activity.redraw_user(alice.user_id);
-    assert(appended_html.indexOf('data-user-id="1"') > 0);
-    assert(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
     activity.redraw_user(fred.user_id);
-    assert(appended_html.indexOf('data-user-id="2"') > 0);
-    assert(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
 
 test("insert_fred_then_alice_then_rename", (override) => {
@@ -421,8 +421,8 @@ test("insert_fred_then_alice_then_rename", (override) => {
     override(padded_widget, "update_padding", () => {});
 
     activity.redraw_user(fred.user_id);
-    assert(appended_html.indexOf('data-user-id="2"') > 0);
-    assert(appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
     const fred_stub = $.create("fred-first");
     buddy_list_add(fred.user_id, fred_stub);
@@ -438,8 +438,8 @@ test("insert_fred_then_alice_then_rename", (override) => {
     };
 
     activity.redraw_user(alice.user_id);
-    assert(inserted_html.indexOf('data-user-id="1"') > 0);
-    assert(inserted_html.indexOf("user_circle_green") > 0);
+    assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(inserted_html.indexOf("user_circle_green") > 0);
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -457,8 +457,8 @@ test("insert_fred_then_alice_then_rename", (override) => {
     };
 
     activity.redraw_user(fred_with_new_name.user_id);
-    assert(fred_removed);
-    assert(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(fred_removed);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data
     people.add_active_user(fred);
@@ -516,12 +516,12 @@ test("update_presence_info", (override) => {
 
     presence.presence_info.delete(me.user_id);
     activity.update_presence_info(me.user_id, info, server_time);
-    assert(inserted);
+    assert.ok(inserted);
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
     presence.presence_info.delete(alice.user_id);
     activity.update_presence_info(alice.user_id, info, server_time);
-    assert(inserted);
+    assert.ok(inserted);
 
     const expected = {status: "active", last_active: 500};
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
@@ -563,9 +563,9 @@ test("initialize", (override) => {
     $(window).trigger("focus");
     clear();
 
-    assert(scroll_handler_started);
-    assert(!activity.new_user_input);
-    assert(!$("#zephyr-mirror-error").hasClass("show"));
+    assert.ok(scroll_handler_started);
+    assert.ok(!activity.new_user_input);
+    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
     assert.equal(activity.compute_active_status(), "active");
 
     $(window).idle = (params) => {
@@ -581,8 +581,8 @@ test("initialize", (override) => {
         presences: {},
     });
 
-    assert($("#zephyr-mirror-error").hasClass("show"));
-    assert(!activity.new_user_input);
+    assert.ok($("#zephyr-mirror-error").hasClass("show"));
+    assert.ok(!activity.new_user_input);
     assert.equal(activity.compute_active_status(), "idle");
 
     // Exercise the mousemove handler, which just
@@ -596,11 +596,11 @@ test("away_status", (override) => {
     override(pm_list, "update_private_messages", () => {});
     override(buddy_list, "insert_or_move", () => {});
 
-    assert(!user_status.is_away(alice.user_id));
+    assert.ok(!user_status.is_away(alice.user_id));
     activity.on_set_away(alice.user_id);
-    assert(user_status.is_away(alice.user_id));
+    assert.ok(user_status.is_away(alice.user_id));
     activity.on_revoke_away(alice.user_id);
-    assert(!user_status.is_away(alice.user_id));
+    assert.ok(!user_status.is_away(alice.user_id));
 });
 
 test("electron_bridge", (override) => {

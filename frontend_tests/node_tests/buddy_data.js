@@ -394,12 +394,12 @@ test("muted users excluded from search", () => {
     assert.equal(user_ids.includes(selma.user_id), false);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
     assert.deepEqual(user_ids, []);
-    assert(!buddy_data.matches_filter("sel", selma.user_id));
+    assert.ok(!buddy_data.matches_filter("sel", selma.user_id));
 
     muting.remove_muted_user(selma.user_id);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
     assert.deepEqual(user_ids, [selma.user_id]);
-    assert(buddy_data.matches_filter("sel", selma.user_id));
+    assert.ok(buddy_data.matches_filter("sel", selma.user_id));
 });
 
 test("bulk_data_hacks", () => {

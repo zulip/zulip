@@ -67,7 +67,7 @@ test("close", () => {
         collapsed = true;
     };
     pm_list.close();
-    assert(collapsed);
+    assert.ok(collapsed);
 });
 
 test("build_private_messages_list", (override) => {
@@ -167,7 +167,7 @@ test("update_dom_with_unread_counts", (override) => {
 
     pm_list.update_dom_with_unread_counts(counts);
     assert.equal(total_count.text(), "10");
-    assert(total_count.visible());
+    assert.ok(total_count.visible());
 
     counts = {
         private_message_count: 0,
@@ -175,7 +175,7 @@ test("update_dom_with_unread_counts", (override) => {
 
     pm_list.update_dom_with_unread_counts(counts);
     assert.equal(total_count.text(), "");
-    assert(!total_count.visible());
+    assert.ok(!total_count.visible());
 });
 
 test("get_active_user_ids_string", (override) => {
@@ -230,11 +230,11 @@ test("expand", (override) => {
         html_updated = true;
     });
 
-    assert(!$(".top_left_private_messages").hasClass("active-filter"));
+    assert.ok(!$(".top_left_private_messages").hasClass("active-filter"));
 
     pm_list.expand();
-    assert(html_updated);
-    assert($(".top_left_private_messages").hasClass("active-filter"));
+    assert.ok(html_updated);
+    assert.ok($(".top_left_private_messages").hasClass("active-filter"));
 });
 
 test("update_private_messages", (override) => {
@@ -260,8 +260,8 @@ test("update_private_messages", (override) => {
 
     pm_list.expand();
     pm_list.update_private_messages();
-    assert(html_updated);
-    assert(container_found);
+    assert.ok(html_updated);
+    assert.ok(container_found);
 });
 
 test("ensure coverage", (override) => {

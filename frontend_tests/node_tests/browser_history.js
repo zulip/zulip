@@ -32,7 +32,7 @@ test("basics", () => {
     assert.equal(browser_history.old_hash(), hash1);
 
     const was_internal_change = browser_history.save_old_hash();
-    assert(was_internal_change);
+    assert.ok(was_internal_change);
     assert.equal(browser_history.old_hash(), hash2);
 });
 

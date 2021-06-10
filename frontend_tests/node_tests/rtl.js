@@ -130,19 +130,19 @@ run_test("get_direction", () => {
 
 run_test("set_rtl_class_for_textarea rtl", () => {
     const textarea = $.create("some-textarea");
-    assert(!textarea.hasClass("rtl"));
+    assert.ok(!textarea.hasClass("rtl"));
     const text = "```quote\nمرحبا";
     textarea.val(text);
     rtl.set_rtl_class_for_textarea(textarea);
-    assert(textarea.hasClass("rtl"));
+    assert.ok(textarea.hasClass("rtl"));
 });
 
 run_test("set_rtl_class_for_textarea ltr", () => {
     const textarea = $.create("some-textarea");
     textarea.addClass("rtl");
-    assert(textarea.hasClass("rtl"));
+    assert.ok(textarea.hasClass("rtl"));
     const text = "```quote\nEnglish text";
     textarea.val(text);
     rtl.set_rtl_class_for_textarea(textarea);
-    assert(!textarea.hasClass("rtl"));
+    assert.ok(!textarea.hasClass("rtl"));
 });

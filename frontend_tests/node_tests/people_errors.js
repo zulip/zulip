@@ -102,7 +102,7 @@ run_test("blueslip", (override) => {
     };
     blueslip.expect("error", "Unknown user id in message: 42");
     const reply_to = people.pm_reply_to(message);
-    assert(reply_to.includes("?"));
+    assert.ok(reply_to.includes("?"));
 
     override(people, "pm_with_user_ids", () => [42]);
     override(people, "get_by_user_id", () => {});

@@ -210,7 +210,7 @@ test("set_presence_info", () => {
     assert.equal(presence.get_status(zoe.user_id), "offline");
     assert.equal(presence.last_active_date(zoe.user_id), undefined);
 
-    assert(!presence.presence_info.has(bot.user_id));
+    assert.ok(!presence.presence_info.has(bot.user_id));
     assert.equal(presence.get_status(bot.user_id), "offline");
 
     assert.deepEqual(presence.presence_info.get(john.user_id), {
@@ -279,8 +279,8 @@ test("big realms", () => {
     const get_active_human_count = people.get_active_human_count;
     people.get_active_human_count = () => 1000;
     presence.set_info(presences, now);
-    assert(presence.presence_info.has(sally.user_id));
-    assert(!presence.presence_info.has(zoe.user_id));
+    assert.ok(presence.presence_info.has(sally.user_id));
+    assert.ok(!presence.presence_info.has(zoe.user_id));
     people.get_active_human_count = get_active_human_count;
 });
 

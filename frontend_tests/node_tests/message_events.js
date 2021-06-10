@@ -79,7 +79,7 @@ run_test("update_messages", () => {
     assert.deepEqual(stream_topic_history.get_recent_topic_names(denmark.stream_id), ["lunch"]);
 
     unread.update_message_for_mention(original_message);
-    assert(unread.unread_mentions_counter.has(original_message.id));
+    assert.ok(unread.unread_mentions_counter.has(original_message.id));
 
     const events = [
         {
@@ -121,7 +121,7 @@ run_test("update_messages", () => {
     // TEST THIS:
     message_events.update_messages(events);
 
-    assert(!unread.unread_mentions_counter.has(original_message.id));
+    assert.ok(!unread.unread_mentions_counter.has(original_message.id));
 
     helper.verify();
 

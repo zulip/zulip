@@ -50,7 +50,7 @@ run_test("basics w/progress bar", () => {
 
     password = "z!X4@S_&";
     accepted = password_quality(password, bar, password_field(10, 80000));
-    assert(!accepted);
+    assert.ok(!accepted);
     assert.equal(bar.w, "39.7%");
     assert.equal(bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(10));
@@ -58,7 +58,7 @@ run_test("basics w/progress bar", () => {
 
     password = "foo";
     accepted = password_quality(password, bar, password_field(2, 200));
-    assert(accepted);
+    assert.ok(accepted);
     assert.equal(bar.w, "10.390277164940581%");
     assert.equal(bar.added_class, "bar-success");
     warning = password_warning(password, password_field(2));
@@ -66,7 +66,7 @@ run_test("basics w/progress bar", () => {
 
     password = "aaaaaaaa";
     accepted = password_quality(password, bar, password_field(6, 1e100));
-    assert(!accepted);
+    assert.ok(!accepted);
     assert.equal(bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(6));
     assert.equal(warning, 'Repeats like "aaa" are easy to guess');

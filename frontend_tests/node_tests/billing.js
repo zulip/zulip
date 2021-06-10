@@ -76,16 +76,16 @@ run_test("initialize", (override) => {
 
     $.get_initialize_function()();
 
-    assert(set_tab_called);
-    assert(stripe_checkout_configure_called);
+    assert.ok(set_tab_called);
+    assert.ok(stripe_checkout_configure_called);
     const e = {
         preventDefault: () => {},
     };
     const update_card_click_handler = $("#update-card-button").get_on_handler("click");
     with_field(helpers, "create_ajax_request", card_change_ajax, () => {
         update_card_click_handler(e);
-        assert(create_ajax_request_called);
-        assert(open_func_called);
+        assert.ok(create_ajax_request_called);
+        assert.ok(open_func_called);
     });
 
     create_ajax_request_called = false;
@@ -103,7 +103,7 @@ run_test("initialize", (override) => {
 
     with_field(helpers, "create_ajax_request", plan_change_ajax, () => {
         change_plan_status_click_handler(e);
-        assert(create_ajax_request_called);
+        assert.ok(create_ajax_request_called);
     });
 
     create_ajax_request_called = false;
@@ -125,7 +125,7 @@ run_test("initialize", (override) => {
     }
     with_field(helpers, "create_ajax_request", license_change_ajax, () => {
         billing.create_update_license_request();
-        assert(create_ajax_request_called);
+        assert.ok(create_ajax_request_called);
     });
 
     let create_update_license_request_called = false;
@@ -137,7 +137,7 @@ run_test("initialize", (override) => {
         "click",
     );
     confirm_license_update_click_handler(e);
-    assert(create_update_license_request_called);
+    assert.ok(create_update_license_request_called);
 
     let confirm_license_modal_shown = false;
     override(helpers, "is_valid_input", () => true);
@@ -154,14 +154,14 @@ run_test("initialize", (override) => {
     const update_licenses_button_click_handler =
         $("#update-licenses-button").get_on_handler("click");
     update_licenses_button_click_handler(e);
-    assert(create_update_license_request_called);
-    assert(!confirm_license_modal_shown);
+    assert.ok(create_update_license_request_called);
+    assert.ok(!confirm_license_modal_shown);
 
     $("#new_licenses_input").val = () => 25;
     create_update_license_request_called = false;
     update_licenses_button_click_handler(e);
-    assert(!create_update_license_request_called);
-    assert(confirm_license_modal_shown);
+    assert.ok(!create_update_license_request_called);
+    assert.ok(confirm_license_modal_shown);
 
     override(helpers, "is_valid_input", () => false);
     let prevent_default_called = false;
@@ -171,7 +171,7 @@ run_test("initialize", (override) => {
         },
     };
     update_licenses_button_click_handler(event);
-    assert(!prevent_default_called);
+    assert.ok(!prevent_default_called);
 
     const update_next_renewal_licenses_button_click_handler = $(
         "#update-licenses-at-next-renewal-button",
@@ -195,26 +195,26 @@ run_test("initialize", (override) => {
     }
     with_field(helpers, "create_ajax_request", licenses_at_next_renewal_change_ajax, () => {
         update_next_renewal_licenses_button_click_handler(e);
-        assert(create_ajax_request_called);
+        assert.ok(create_ajax_request_called);
     });
 });
 
 run_test("billing_template", () => {
     // Elements necessary for create_ajax_request
-    assert(document.querySelector("#cardchange-error"));
-    assert(document.querySelector("#cardchange-loading"));
-    assert(document.querySelector("#cardchange_loading_indicator"));
-    assert(document.querySelector("#cardchange-success"));
+    assert.ok(document.querySelector("#cardchange-error"));
+    assert.ok(document.querySelector("#cardchange-loading"));
+    assert.ok(document.querySelector("#cardchange_loading_indicator"));
+    assert.ok(document.querySelector("#cardchange-success"));
 
-    assert(document.querySelector("#licensechange-error"));
-    assert(document.querySelector("#licensechange-loading"));
-    assert(document.querySelector("#licensechange_loading_indicator"));
-    assert(document.querySelector("#licensechange-success"));
+    assert.ok(document.querySelector("#licensechange-error"));
+    assert.ok(document.querySelector("#licensechange-loading"));
+    assert.ok(document.querySelector("#licensechange_loading_indicator"));
+    assert.ok(document.querySelector("#licensechange-success"));
 
-    assert(document.querySelector("#planchange-error"));
-    assert(document.querySelector("#planchange-loading"));
-    assert(document.querySelector("#planchange_loading_indicator"));
-    assert(document.querySelector("#planchange-success"));
+    assert.ok(document.querySelector("#planchange-error"));
+    assert.ok(document.querySelector("#planchange-loading"));
+    assert.ok(document.querySelector("#planchange_loading_indicator"));
+    assert.ok(document.querySelector("#planchange-success"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 });

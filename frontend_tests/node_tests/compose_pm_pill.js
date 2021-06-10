@@ -49,7 +49,7 @@ run_test("pills", (override) => {
 
     pills.appendValidatedData = (item) => {
         const id = item.user_id;
-        assert(!all_pills.has(id));
+        assert.ok(!all_pills.has(id));
         all_pills.set(id, item);
     };
     pills.items = () => Array.from(all_pills.values());
@@ -102,14 +102,14 @@ run_test("pills", (override) => {
     function test_create_item(handler) {
         (function test_rejection_path() {
             const item = handler(othello.email, pills.items());
-            assert(get_by_email_called);
+            assert.ok(get_by_email_called);
             assert.equal(item, undefined);
         })();
 
         (function test_success_path() {
             get_by_email_called = false;
             const res = handler(iago.email, pills.items());
-            assert(get_by_email_called);
+            assert.ok(get_by_email_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
@@ -119,7 +119,7 @@ run_test("pills", (override) => {
     function input_pill_stub(opts) {
         assert.equal(opts.container, pill_container_stub);
         create_item_handler = opts.create_item_from_text;
-        assert(create_item_handler);
+        assert.ok(create_item_handler);
         return pills;
     }
 
@@ -137,7 +137,7 @@ run_test("pills", (override) => {
     };
 
     compose_pm_pill.initialize();
-    assert(compose_pm_pill.widget);
+    assert.ok(compose_pm_pill.widget);
 
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
@@ -158,12 +158,12 @@ run_test("pills", (override) => {
     test_create_item(create_item_handler);
 
     compose_pm_pill.set_from_emails("othello@example.com");
-    assert(compose_pm_pill.widget);
+    assert.ok(compose_pm_pill.widget);
 
-    assert(get_by_user_id_called);
-    assert(pills_cleared);
-    assert(appendValue_called);
-    assert(text_cleared);
+    assert.ok(get_by_user_id_called);
+    assert.ok(pills_cleared);
+    assert.ok(appendValue_called);
+    assert.ok(text_cleared);
 });
 
 run_test("has_unconverted_data", () => {

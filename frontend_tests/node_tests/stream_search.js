@@ -74,24 +74,24 @@ run_test("basics", (override) => {
     cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
-        assert(!section.hasClass("notdisplayed"));
+        assert.ok(!section.hasClass("notdisplayed"));
         simulate_search_expanded();
     }
 
     function verify_focused() {
-        assert(stream_list.searching());
-        assert(input.is_focused());
+        assert.ok(stream_list.searching());
+        assert.ok(input.is_focused());
     }
 
     function verify_blurred() {
-        assert(stream_list.searching());
-        assert(input.is_focused());
+        assert.ok(stream_list.searching());
+        assert.ok(input.is_focused());
     }
 
     function verify_collapsed() {
-        assert(section.hasClass("notdisplayed"));
-        assert(!input.is_focused());
-        assert(!stream_list.searching());
+        assert.ok(section.hasClass("notdisplayed"));
+        assert.ok(!input.is_focused());
+        assert.ok(!stream_list.searching());
         simulate_search_collapsed();
     }
 
@@ -102,7 +102,7 @@ run_test("basics", (override) => {
         });
 
         f();
-        assert(updated);
+        assert.ok(updated);
     }
 
     // Initiate search (so expand widget).
