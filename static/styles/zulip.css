@@ -401,7 +401,7 @@ p.n-margin {
 }
 
 .column-middle,
-.compose-content {
+#compose-content {
     margin-right: $right_sidebar_width;
     margin-left: $left_sidebar_width;
     position: relative;

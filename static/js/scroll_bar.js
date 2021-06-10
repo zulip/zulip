@@ -59,13 +59,13 @@ export function initialize() {
         });
 
         $("#compose").css("left", "-" + sbWidth + "px");
-        $(".compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
+        $("#compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
         $("#keyboard-icon").css({"margin-right": sbWidth + "px"});
 
         $("head").append(
             "<style> @media (min-width: " +
                 media_breakpoints.xl_min +
-                ") { .compose-content, .header-main .column-middle { margin-right: " +
+                ") { #compose-content, .header-main .column-middle { margin-right: " +
                 (right_sidebar_width + sbWidth) +
                 "px !important; } } " +
                 "@media (min-width: " +

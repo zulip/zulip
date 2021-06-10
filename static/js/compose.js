@@ -1091,10 +1091,9 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 }
 
 export function render_compose_box() {
-    const $compose = $("#compose");
-    $compose.append(
+    $("#compose-container").append(
         render_compose({
-            embedded: $compose.attr("data-embedded") === "",
+            embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
         }),
