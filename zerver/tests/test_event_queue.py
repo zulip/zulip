@@ -351,30 +351,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
-        # Test the hook with a wildcard mention sent by the user
-        # themself using a human client; should not notify.
-        client_descriptor = allocate_event_queue()
-        self.assertTrue(client_descriptor.event_queue.empty())
-        msg_id = self.send_stream_message(
-            self.example_user("hamlet"),
-            "Denmark",
-            content="@**all** what's up?",
-            sending_client_name="website",
-        )
-        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
-            missedmessage_hook(user_profile.id, client_descriptor, True)
-            mock_enqueue.assert_called_once()
-            args_list = mock_enqueue.call_args_list[0][0]
-
-            assert_maybe_enqueue_notifications_call_args(
-                args_list=args_list,
-                user_profile_id=user_profile.id,
-                message_id=msg_id,
-                stream_name="Denmark",
-                already_notified={"email_notified": False, "push_notified": False},
-            )
-        destroy_event_queue(client_descriptor.event_queue.id)
-
         # Wildcard mentions in muted streams don't notify.
         change_subscription_properties(user_profile, stream, sub, {"is_muted": True})
         client_descriptor = allocate_event_queue()
