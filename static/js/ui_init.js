@@ -47,7 +47,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as presence from "./presence";
 import * as realm_playground from "./realm_playground";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -146,7 +146,7 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_active() && !recent_topics.is_visible()) {
+        if (!overlays.is_active() && !recent_topics_util.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }

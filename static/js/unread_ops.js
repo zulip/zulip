@@ -5,7 +5,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as reload from "./reload";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -36,7 +36,7 @@ function process_newly_read_message(message, options) {
         message_list.narrowed.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
-    recent_topics.update_topic_unread_count(message);
+    recent_topics_ui.update_topic_unread_count(message);
 }
 
 export function process_read_messages_event(message_ids) {

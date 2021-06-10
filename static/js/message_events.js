@@ -20,7 +20,7 @@ import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as resize from "./resize";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
@@ -132,7 +132,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_topics.process_messages(messages);
+    recent_topics_ui.process_messages(messages);
 }
 
 export function update_messages(events) {
@@ -399,7 +399,7 @@ export function update_messages(events) {
                 new_stream_id: post_edit_stream_id,
                 new_topic: post_edit_topic,
             });
-            recent_topics.process_topic_edit(...args);
+            recent_topics_ui.process_topic_edit(...args);
         }
 
         // Rerender "Message edit history" if it was open to the edited message.
@@ -456,5 +456,5 @@ export function remove_messages(message_ids) {
         list.remove_and_rerender(message_ids);
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
-    recent_topics.update_topics_of_deleted_message_ids(message_ids);
+    recent_topics_ui.update_topics_of_deleted_message_ids(message_ids);
 }

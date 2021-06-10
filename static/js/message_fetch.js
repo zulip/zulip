@@ -14,7 +14,7 @@ import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
@@ -76,7 +76,7 @@ function process_result(data, opts) {
     huddle_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_topics.process_messages(messages);
+    recent_topics_ui.process_messages(messages);
 
     stream_list.maybe_scroll_narrow_into_view();
 

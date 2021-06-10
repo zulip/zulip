@@ -30,9 +30,8 @@ mock_esm("../../static/js/notifications", {
 mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_util", {
     is_visible: noop,
-    set_compose_defaults: noop,
 });
 mock_esm("../../static/js/drafts", {
     update_draft: noop,

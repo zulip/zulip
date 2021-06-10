@@ -32,7 +32,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -407,7 +407,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, false);
     });
 
@@ -416,18 +416,18 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, true);
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element($(e.target), "click");
+        recent_topics_ui.change_focused_element($(e.target), "click");
     });
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.read);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -437,20 +437,20 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element($(e.target), "click");
-        recent_topics.set_filter(e.currentTarget.dataset.filter);
-        recent_topics.update_filters_view();
+        recent_topics_ui.change_focused_element($(e.target), "click");
+        recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
+        recent_topics_ui.update_filters_view();
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.stream);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.topic);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -459,7 +459,7 @@ export function initialize() {
         "keyup",
         "#recent_topics_search",
         _.debounce(() => {
-            recent_topics.update_filters_view();
+            recent_topics_ui.update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
     );
@@ -467,7 +467,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_search_clear", (e) => {
         e.stopPropagation();
         $("#recent_topics_search").val("");
-        recent_topics.update_filters_view();
+        recent_topics_ui.update_filters_view();
     });
 
     // RECIPIENT BARS
