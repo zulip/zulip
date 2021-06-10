@@ -75,6 +75,7 @@ export function changehash(newhash) {
     if (browser_history.state.changing_hash) {
         return;
     }
+    $(".hide_when_narrow_completes").hide();
     maybe_hide_recent_topics();
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
@@ -136,6 +137,7 @@ function do_hashchange_normal(from_reload) {
 
     switch (hash[0]) {
         case "#narrow": {
+            $(".hide_when_narrow_completes").hide();
             maybe_hide_recent_topics();
             ui_util.change_tab_to("#message_feed_container");
             let operators;
@@ -177,9 +179,11 @@ function do_hashchange_normal(from_reload) {
         }
         case "":
         case "#":
+            $(".hide_when_narrow_completes").hide();
             show_default_view();
             break;
         case "#recent_topics":
+            $(".hide_when_narrow_completes").hide();
             recent_topics_ui.show();
             break;
         case "#all_messages":

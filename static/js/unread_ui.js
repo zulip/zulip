@@ -12,6 +12,7 @@ import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import {notify_server_messages_read} from "./unread_ops";
+import * as unread_ops from "./unread_ops";
 
 let last_mention_count = 0;
 
@@ -96,6 +97,10 @@ export function should_display_bankruptcy_banner() {
 export function notify_messages_remain_unread() {
     $("#mark_as_read_turned_off_banner").show();
 }
+
+$("body").on("click", "#resume_reading", () => {
+    unread_ops.resume_reading();
+});
 
 export function initialize() {
     update_unread_counts();

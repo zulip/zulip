@@ -733,3 +733,9 @@ a.compose_control_button.hide {
         flex: 1;
     }
 }
+
+#resume_reading {
+    display: none;
+    text-align: right;
+    padding-top: 10px;
+}
