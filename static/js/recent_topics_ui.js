@@ -5,7 +5,6 @@ import render_recent_topics_filters from "../templates/recent_topics_filters.hbs
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
 import * as compose_closed_ui from "./compose_closed_ui";
-import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -18,10 +17,10 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
-import * as overlays from "./overlays";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
+import {get, process_message, topics} from "./recent_topics_data";
+import {get_topic_key, is_in_focus, is_visible} from "./recent_topics_util";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
@@ -29,7 +28,6 @@ import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as unread from "./unread";
 
-const topics = new Map(); // Key is stream-id:topic.
 let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
@@ -47,7 +45,8 @@ const MAX_EXTRA_SENDERS = 10;
 // So, we use table as a grid system and
 // track the coordinates of the focus element via
 // `row_focus` and `col_focus`.
-let current_focus_elem = "table";
+export let current_focus_elem = "table";
+
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -71,18 +70,6 @@ const ls = localstorage();
 
 let filters = new Set();
 
-export function is_in_focus() {
-    // Check if user is focused on
-    // recent topics.
-    return (
-        is_visible() &&
-        !compose_state.composing() &&
-        !popovers.any_active() &&
-        !overlays.is_active() &&
-        !$(".home-page-input").is(":focus")
-    );
-}
-
 export function clear_for_tests() {
     filters.clear();
     topics.clear();
@@ -95,10 +82,6 @@ export function save_filters() {
 
 export function load_filters() {
     filters = new Set(ls.get(ls_key));
-}
-
-function is_table_focused() {
-    return current_focus_elem === "table";
 }
 
 export function set_default_focus() {
@@ -115,6 +98,10 @@ function get_min_load_count(already_rendered_count, load_count) {
         return row_focus + extra_rows_for_viewing_pleasure - already_rendered_count;
     }
     return load_count;
+}
+
+function is_table_focused() {
+    return current_focus_elem === "table";
 }
 
 function set_table_focus(row, col) {
@@ -208,10 +195,6 @@ function revive_current_focus() {
     return true;
 }
 
-function get_topic_key(stream_id, topic) {
-    return stream_id + ":" + topic.toLowerCase();
-}
-
 export function process_messages(messages) {
     // While this is inexpensive and handles all the cases itself,
     // the UX can be bad if user wants to scroll down the list as
@@ -230,65 +213,6 @@ export function process_messages(messages) {
     if (topic_data_changed) {
         complete_rerender();
     }
-}
-
-export function process_message(msg) {
-    // This function returns if topic_data
-    // has changed or not.
-    if (msg.type !== "stream") {
-        // We don't process private messages yet.
-        return false;
-    }
-    // Initialize topic data
-    const key = get_topic_key(msg.stream_id, msg.topic);
-    if (!topics.has(key)) {
-        topics.set(key, {
-            last_msg_id: -1,
-            participated: false,
-        });
-    }
-    // Update topic data
-    const is_ours = people.is_my_user_id(msg.sender_id);
-    const topic_data = topics.get(key);
-    if (topic_data.last_msg_id < msg.id) {
-        // NOTE: This also stores locally echoed msg_id which
-        // has not been successfully received from the server.
-        // We store it now and reify it when response is available
-        // from server.
-        topic_data.last_msg_id = msg.id;
-    }
-    // TODO: Add backend support for participated topics.
-    // Currently participated === recently participated
-    // i.e. Only those topics are participated for which we have the user's
-    // message fetched in the topic. Ideally we would want this to be attached
-    // to topic info fetched from backend, which is currently not a thing.
-    topic_data.participated = is_ours || topic_data.participated;
-    return true;
-}
-
-export function reify_message_id_if_available(opts) {
-    // We don't need to reify the message_id of the topic
-    // if a new message arrives in the topic from another user,
-    // since it replaces the last_msg_id of the topic which
-    // we were trying to reify.
-    for (const [, value] of topics.entries()) {
-        if (value.last_msg_id === opts.old_id) {
-            value.last_msg_id = opts.new_id;
-            return true;
-        }
-    }
-    return false;
-}
-
-function get_sorted_topics() {
-    // Sort all recent topics by last message time.
-    return new Map(
-        Array.from(topics.entries()).sort((a, b) => b[1].last_msg_id - a[1].last_msg_id),
-    );
-}
-
-export function get() {
-    return get_sorted_topics();
 }
 
 function format_topic(topic_data) {
@@ -648,10 +572,6 @@ export function complete_rerender() {
         post_scroll__pre_render_callback: set_focus_to_element_in_center,
         get_min_load_count,
     });
-}
-
-export function is_visible() {
-    return $("#recent_topics_view").is(":visible");
 }
 
 export function show() {

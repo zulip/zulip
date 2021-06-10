@@ -7,6 +7,10 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+mock_esm("../../static/js/recent_topics_util", {
+    is_visible: () => false,
+});
+
 // Mocking and stubbing things
 mock_cjs("jquery", $);
 set_global("document", "document-stub");

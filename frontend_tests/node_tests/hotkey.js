@@ -81,7 +81,7 @@ mock_esm("../../static/js/hotspots", {
     is_open: () => false,
 });
 
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_util", {
     is_visible: () => false,
     is_in_focus: () => false,
 });

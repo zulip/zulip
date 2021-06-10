@@ -21,7 +21,7 @@ mock_esm("../../static/js/message_list_view", {
     MessageListView,
 });
 
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_ui", {
     process_messages: noop,
 });
 mock_esm("../../static/js/ui_report", {

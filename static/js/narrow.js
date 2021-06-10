@@ -23,7 +23,8 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as resize from "./resize";
 import * as search from "./search";
 import * as search_pill from "./search_pill";
@@ -187,8 +188,8 @@ export function activate(raw_operators, opts) {
          or rerendering due to server-side changes.
     */
 
-    if (recent_topics.is_visible()) {
-        recent_topics.hide();
+    if (recent_topics_util.is_visible()) {
+        recent_topics_ui.hide();
     }
 
     const start_time = new Date();

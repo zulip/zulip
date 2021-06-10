@@ -15,7 +15,7 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_muted_topics from "./settings_muted_topics";
 import * as settings_muted_users from "./settings_muted_users";
 import * as stream_data from "./stream_data";
@@ -40,7 +40,7 @@ export function rerender_for_muted_topic(old_muted_topics) {
     const maybe_affected_topics = _.unionWith(old_muted_topics, current_muted_topics, _.isEqual);
 
     for (const topic_data of maybe_affected_topics) {
-        recent_topics.update_topic_is_muted(topic_data.stream_id, topic_data.topic);
+        recent_topics_ui.update_topic_is_muted(topic_data.stream_id, topic_data.topic);
     }
 }
 
@@ -172,7 +172,7 @@ export function rerender_for_muted_user() {
 
     // If a user is (un)muted, we want to update their avatars on the recent topics
     // participants column.
-    recent_topics.complete_rerender();
+    recent_topics_ui.complete_rerender();
 }
 
 export function handle_user_updates(muted_user_ids) {

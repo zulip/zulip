@@ -30,7 +30,8 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as stream_list from "./stream_list";
@@ -222,10 +223,10 @@ export function in_content_editable_widget(e) {
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
     if (
-        recent_topics.is_in_focus() &&
+        recent_topics_util.is_in_focus() &&
         // This will return false if `e.target` is not
         // any of the recent topics elements by design.
-        recent_topics.change_focused_element($(e.target), "escape")
+        recent_topics_ui.change_focused_element($(e.target), "escape")
     ) {
         // Recent topics uses escape to switch focus from RT search / filters to topics table.
         // If focus is already on the table it returns false.
@@ -549,8 +550,8 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (recent_topics.is_in_focus()) {
-                return recent_topics.change_focused_element($(e.target), event_name);
+            if (recent_topics_util.is_in_focus()) {
+                return recent_topics_ui.change_focused_element($(e.target), event_name);
             }
     }
 
@@ -816,7 +817,7 @@ export function process_hotkey(e, hotkey) {
 
     // We don't want hotkeys below this to work when recent topics is
     // open. These involve hotkeys that can only be performed on a message.
-    if (recent_topics.is_visible()) {
+    if (recent_topics_util.is_visible()) {
         return false;
     }
 

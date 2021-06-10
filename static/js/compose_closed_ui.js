@@ -7,7 +7,7 @@ import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as popovers from "./popovers";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_util from "./recent_topics_util";
 
 function update_stream_button(btn_text, title) {
     $("#left_bar_compose_stream_button_big").text(btn_text);
@@ -101,7 +101,7 @@ export function update_reply_recipient_label(message) {
 export function initialize() {
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
-        if (recent_topics.is_visible()) {
+        if (recent_topics_util.is_visible()) {
             // message_selected events can occur with recent topics
             // open due to "All messages" loading in the background,
             // so we return without calling changing button state.

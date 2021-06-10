@@ -15,7 +15,8 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -58,8 +59,8 @@ function set_hash(hash) {
 }
 
 function maybe_hide_recent_topics() {
-    if (recent_topics.is_visible()) {
-        recent_topics.hide();
+    if (recent_topics_util.is_visible()) {
+        recent_topics_ui.hide();
         return true;
     }
     return false;
@@ -105,7 +106,7 @@ function show_default_view() {
     // We only allow all_messages and recent_topics
     // to be rendered without a hash.
     if (page_params.default_view === "recent_topics") {
-        recent_topics.show();
+        recent_topics_ui.show();
     } else if (page_params.default_view === "all_messages") {
         show_all_message_view();
     } else {
@@ -162,7 +163,7 @@ function do_hashchange_normal(from_reload) {
             show_default_view();
             break;
         case "#recent_topics":
-            recent_topics.show();
+            recent_topics_ui.show();
             break;
         case "#all_messages":
             show_all_message_view();

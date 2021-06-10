@@ -30,7 +30,7 @@ mock_esm("../../static/js/all_messages_data", {
 const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
 });
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_ui", {
     complete_rerender: () => {},
 });
 mock_esm("../../static/js/settings_notifications", {

@@ -38,8 +38,7 @@ const top_left_corner = mock_esm("../../static/js/top_left_corner");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui_util = mock_esm("../../static/js/ui_util");
 const unread_ops = mock_esm("../../static/js/unread_ops");
-mock_esm("../../static/js/recent_topics", {
-    hide: () => {},
+mock_esm("../../static/js/recent_topics_util", {
     is_visible: () => {},
 });
 
