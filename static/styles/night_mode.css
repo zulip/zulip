@@ -983,7 +983,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .history_limited_box,
-    .all-messages-search-caution {
+    .all_messages_search_caution {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 

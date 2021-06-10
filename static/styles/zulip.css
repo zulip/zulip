@@ -150,13 +150,13 @@ p.n-margin {
     box-shadow: 0 0 2px hsl(16, 60%, 45%);
 }
 
-.all-messages-search-caution {
+.all_messages_search_caution {
     border: 1px solid hsla(192, 19%, 75%, 0.2);
     box-shadow: 0 0 2px hsla(192, 19%, 75%, 0.2);
 }
 
 .history_limited_box,
-.all-messages-search-caution {
+.all_messages_search_caution {
     border-radius: 4px;
     display: none;
     height: 28px;

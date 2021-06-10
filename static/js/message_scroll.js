@@ -75,17 +75,17 @@ export function hide_history_limit_notice() {
 }
 
 export function hide_end_of_results_notice() {
-    $(".all-messages-search-caution").hide();
+    $(".all_messages_search_caution").hide();
 }
 
 export function show_end_of_results_notice() {
-    $(".all-messages-search-caution").show();
+    $(".all_messages_search_caution").show();
     // Set the link to point to this search with streams:public added.
     // It's a bit hacky to use the href, but
     // !filter.includes_full_stream_history() implies streams:public
     // wasn't already present.
     const update_hash = hash_util.search_public_streams_notice_url();
-    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
+    $(".all_messages_search_caution a.search-shared-history").attr("href", update_hash);
 }
 
 export function update_top_of_narrow_notices(msg_list) {
