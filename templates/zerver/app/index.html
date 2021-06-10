@@ -177,7 +177,10 @@
         </div>
     </div>
     {% include "zerver/app/invite_user.html" %}
-    {% include "zerver/app/logout.html" %}
+    <div class="hidden">
+        <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+        </form>
+    </div>
     {% include "zerver/app/deprecation_notice.html" %}
     {% include "zerver/app/about-zulip.html" %}
     <div id="user-profile-modal-holder"></div>
