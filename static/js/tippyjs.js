@@ -157,5 +157,6 @@ export function initialize() {
         interactive: true,
         hideOnClick: true,
         theme: "light-border",
+        placement: "bottom",
     });
 }
