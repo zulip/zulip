@@ -11,7 +11,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 // that here for the tests.
 page_params.request_language = "en";
 page_params.translation_data = {
-    "Quote and reply or forward": "Citer et répondre ou transférer",
+    Quote: "Citer",
     "Notification triggers": "Déclencheurs de notification",
     "You subscribed to stream {stream}": "Vous n'êtes pas abonnés au canal {stream}",
     "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>":
@@ -29,10 +29,7 @@ zrequire("templates");
 run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
     // this test file is not processed by Babel.
-    assert.equal(
-        $t({id: "Quote and reply or forward", defaultMessage: "Quote and reply or forward"}),
-        "Citer et répondre ou transférer",
-    );
+    assert.equal($t({id: "Quote", defaultMessage: "Quote"}), "Citer");
     assert.equal(
         $t(
             {
@@ -79,7 +76,7 @@ run_test("t_tag", () => {
     };
 
     const html = require("../../static/templates/actions_popover_content.hbs")(args);
-    assert(html.indexOf("Citer et répondre ou transférer") > 0);
+    assert(html.indexOf("Citer") > 0);
 });
 
 run_test("tr_tag", () => {
