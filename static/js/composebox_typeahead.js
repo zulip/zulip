@@ -385,6 +385,13 @@ export const slash_commands = [
         name: "day",
     },
     {
+        text: $t({
+            defaultMessage:
+                "/digress #stream name>topic name (Shift conversation to another topic)",
+        }),
+        name: "digress",
+    },
+    {
         text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
         name: "fixed-width",
     },
