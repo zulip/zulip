@@ -305,7 +305,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark mode */
-    .compose-content,
+    #compose-content,
     .message_list .recipient_row,
     .message_row,
     .draft-row .draft-info-box,

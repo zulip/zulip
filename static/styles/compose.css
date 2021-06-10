@@ -59,7 +59,7 @@
 }
 
 /* Main geometry for this element is in zulip.css */
-.compose-content {
+#compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px 4px;
@@ -518,13 +518,13 @@ a.undo_markdown_preview {
 
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
-    .compose-content {
+    #compose-content {
         margin-right: 7px;
     }
 }
 
 @media (width < $md_min) {
-    .compose-content {
+    #compose-content {
         margin-right: 7px;
         margin-left: 7px;
     }
@@ -536,7 +536,7 @@ a.undo_markdown_preview {
         min-width: 95px;
     }
 
-    .compose-content {
+    #compose-content {
         margin-right: 5px;
         margin-left: 5px;
     }

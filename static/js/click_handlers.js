@@ -686,8 +686,7 @@ export function initialize() {
         popovers.hide_all();
     }
 
-    $("body").on("click", "#compose_buttons", handle_compose_click);
-    $("body").on("click", ".compose-content", handle_compose_click);
+    $("body").on("click", "#compose-content", handle_compose_click);
 
     $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
