@@ -38,7 +38,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         "--hot",
     ]
     if minify:
-        webpack_args.append("--optimize-minimize")
+        webpack_args.append("--env=minimize")
     if disable_host_check:
         webpack_args.append("--disable-host-check")
 
