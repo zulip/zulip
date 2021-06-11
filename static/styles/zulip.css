@@ -1400,10 +1400,9 @@ a.dark_background:hover,
     }
 }
 
-.info {
+.settings-forgot-password {
     display: inline-block;
     position: relative;
-    font-size: 14px;
     color: hsl(0, 0%, 73%);
 }
 
