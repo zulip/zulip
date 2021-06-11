@@ -1611,17 +1611,25 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 .dropdown-list-widget {
     button {
         margin: 0 5px;
-
-        &.dropdown_list_reset_button {
-            /* Prevent night mode from overriding background. */
-            background: unset !important;
-            border: none;
-
-            &:disabled {
-                display: none;
-            }
+        &.dropdown-toggle {
+            /* Matches bootstrap hardcoded 30px height for select elements,
+               which we want to match the size of. */
+            height: 30px;
+            padding: 0;
         }
+
         &:disabled i {
+            display: none;
+        }
+    }
+
+    a.dropdown_list_reset_button {
+        /* Prevent night mode from overriding background. */
+        background: unset !important;
+        border: none;
+        margin-left: 10px;
+
+        &:disabled {
             display: none;
         }
     }
