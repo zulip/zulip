@@ -952,6 +952,16 @@ def process_message_event(
         wildcard_mention_notify = user_data.get("wildcard_mention_notify", False)
         sender_is_muted = user_data.get("sender_is_muted", False)
 
+        # TODO/compatibility: Translation code for the rename of
+        # `always_push_notify` to `online_push_enabled`.  Remove this
+        # when one can no longer directly upgrade from 4.x to master.
+        if "online_push_enabled" in user_data:
+            online_push_enabled = user_data["online_push_enabled"]
+        elif "always_push_notify" in user_data:
+            online_push_enabled = user_data["always_push_notify"]
+        else:
+            online_push_enabled = False
+
         extra_user_data[user_profile_id] = dict(
             internal_data=dict(
                 mentioned=mentioned,
@@ -978,16 +988,6 @@ def process_message_event(
             idle = receiver_is_off_zulip(user_profile_id) or (
                 user_profile_id in presence_idle_user_ids
             )
-
-            # TODO/compatibility: Translation code for the rename of
-            # `always_push_notify` to `online_push_enabled`.  Remove this
-            # when one can no longer directly upgrade from 4.x to master.
-            if "online_push_enabled" in user_data:
-                online_push_enabled = user_data["online_push_enabled"]
-            elif "always_push_notify" in user_data:
-                online_push_enabled = user_data["always_push_notify"]
-            else:
-                online_push_enabled = False
 
             stream_name = event_template.get("stream_name")
 
