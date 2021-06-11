@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 
 from zerver.lib.actions import (
+    RESOLVED_TOPIC_PREFIX,
     do_change_stream_post_policy,
     do_change_user_role,
     do_delete_messages,
@@ -1924,6 +1925,67 @@ class EditMessageTest(EditMessageTestCase):
             return user_profile.can_move_messages_between_streams()
 
         self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
+
+    def test_mark_topic_as_resolved(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        original_topic = "topic 1"
+        id1 = self.send_stream_message(
+            self.example_user("hamlet"), "new", topic_name=original_topic
+        )
+        id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        unresolved_topic = original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": unresolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                unresolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, unresolved_topic)
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[3].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
+        )
 
 
 class DeleteMessageTest(ZulipTestCase):

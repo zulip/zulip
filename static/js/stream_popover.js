@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/delete_topic_modal.hbs";
@@ -32,6 +33,7 @@ import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
+const RESOLVED_PREFIX = "✔️ ";
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;
@@ -254,6 +256,7 @@ function build_topic_popover(opts) {
         topic_muted,
         can_move_topic,
         is_realm_admin: page_params.is_admin,
+        topic_is_resolved: topic_name.startsWith(RESOLVED_PREFIX),
         color: sub.color,
         has_starred_messages,
     });
@@ -654,6 +657,51 @@ export function register_topic_handlers() {
         });
 
         e.stopPropagation();
+    });
+
+    function mark_topic_as_resolved(stream_id, topic_name) {
+        const request = {
+            propagate_mode: "change_all",
+            topic: RESOLVED_PREFIX + topic_name,
+            send_notification_to_old_thread: false,
+            send_notification_to_new_thread: true,
+        };
+        with_first_message_id(stream_id, topic_name, (message_id) => {
+            channel.patch({
+                url: "/json/messages/" + message_id,
+                data: request,
+            });
+        });
+    }
+
+    function mark_topic_as_unresolved(stream_id, topic_name) {
+        const request = {
+            propagate_mode: "change_all",
+            topic: _.trimStart(topic_name, RESOLVED_PREFIX),
+            send_notification_to_old_thread: false,
+            send_notification_to_new_thread: true,
+        };
+        with_first_message_id(stream_id, topic_name, (message_id) => {
+            channel.patch({
+                url: "/json/messages/" + message_id,
+                data: request,
+            });
+        });
+    }
+
+    $("body").on("click", ".sidebar-popover-toggle-resolved", (e) => {
+        const topic_row = $(e.currentTarget);
+        const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
+        const topic_name = topic_row.attr("data-topic-name");
+        if (topic_name.startsWith(RESOLVED_PREFIX)) {
+            mark_topic_as_unresolved(stream_id, topic_name);
+        } else {
+            mark_topic_as_resolved(stream_id, topic_name);
+        }
+
+        hide_topic_popover();
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".sidebar-popover-move-topic-messages", (e) => {
