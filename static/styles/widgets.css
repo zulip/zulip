@@ -37,11 +37,6 @@
 }
 
 .poll-widget {
-    .poll-names .todo-widget {
-        font-size: 14px;
-        color: hsl(120, 100%, 25%);
-    }
-
     .poll-option {
         font-weight: 600;
     }
