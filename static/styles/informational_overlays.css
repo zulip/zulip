@@ -111,10 +111,6 @@
         text-align: left;
         white-space: normal;
         font-weight: bold;
-
-        :not(kbd) {
-            font-size: 14px;
-        }
     }
 }
 

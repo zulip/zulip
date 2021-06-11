@@ -546,8 +546,8 @@ strong {
 }
 
 .sidebar-title {
-    font-size: 14px;
     color: hsl(0, 0%, 43%);
+    font-size: inherit;
     font-weight: normal;
     display: inline;
 }
@@ -803,8 +803,7 @@ td.pointer {
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
-    line-height: 18px;
-    font-size: 14px;
+
     position: relative;
     max-width: calc(100% - 50px);
 
@@ -844,7 +843,6 @@ td.pointer {
 .alert-msg {
     position: absolute;
     right: -110px;
-    font-size: 14px;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
@@ -943,8 +941,6 @@ td.pointer {
 }
 
 .star {
-    font-size: 14px;
-
     &:hover {
         cursor: pointer;
         color: hsl(153, 80%, 25%);
@@ -1190,7 +1186,6 @@ td.pointer {
         display: inline-block;
         padding: 3px 6px 2px 6px;
         font-weight: normal;
-        font-size: 14px;
         height: 17px;
         line-height: 17px;
         border-left-color: hsl(0, 0%, 27%);
@@ -1300,7 +1295,6 @@ td.pointer {
     font-weight: 700;
     vertical-align: top;
     line-height: 12px;
-    font-size: 14px;
     margin-left: -3px;
 }
 
@@ -1435,7 +1429,6 @@ div.focused_table {
 .message_content {
     line-height: 1.214;
     min-height: 17px;
-    font-size: 14px;
     margin-left: 46px;
     display: block;
     position: relative;
@@ -1499,7 +1492,6 @@ div.focused_table {
         margin: 0;
         padding: 0 10px;
         line-height: 17px;
-        font-size: 14px;
     }
 }
 
@@ -1511,10 +1503,7 @@ div.focused_table {
         display: inline-block;
         padding: 0 3px;
         vertical-align: baseline;
-
         line-height: 0px;
-        font-size: 14px;
-
         box-shadow: none;
     }
 }

@@ -45,7 +45,6 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #stream_filters,
 #global_filters {
-    font-size: 14px;
     margin-right: 12px;
 }
 
