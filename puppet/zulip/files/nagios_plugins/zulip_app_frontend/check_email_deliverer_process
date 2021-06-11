@@ -5,7 +5,7 @@
 #"CRITICAL": 2
 #"UNKNOWN": 3
 
-SUPERVISOR_STATUS=$(supervisorctl status zulip-workers:zulip_deliver_scheduled_emails 2>&1)
+SUPERVISOR_STATUS=$(supervisorctl status zulip_deliver_scheduled_emails 2>&1)
 STATUS=$(echo "$SUPERVISOR_STATUS" | awk '{ print $2 }')
 
 case "$STATUS" in

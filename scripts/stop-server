@@ -40,6 +40,13 @@ if has_application_server():
     services.append("zulip-django")
     services.extend(["zulip-tornado", "zulip-tornado:*"])
     services.append("zulip-workers:*")
+    if has_application_server(once=True):
+        services.extend(
+            [
+                "zulip_deliver_scheduled_emails",
+                "zulip_deliver_scheduled_messages",
+            ]
+        )
 
 subprocess.check_call(["supervisorctl", "stop", *services])
 
