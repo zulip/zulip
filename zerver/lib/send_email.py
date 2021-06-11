@@ -482,7 +482,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     with open(plain_text_template_path, "w") as f:
         f.write(parsed_email_template.get_payload())
 
-    from zerver.templatetags.app_filters import render_markdown_path
+    from zerver.lib.templates import render_markdown_path
 
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 

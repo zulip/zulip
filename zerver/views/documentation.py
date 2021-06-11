@@ -14,9 +14,9 @@ from zerver.decorator import add_google_analytics_context
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, WebhookIntegration
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.templates import render_markdown_path
 from zerver.models import Realm
 from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_summary
-from zerver.templatetags.app_filters import render_markdown_path
 
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:

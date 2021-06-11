@@ -98,7 +98,7 @@ not_yet_fully_covered = [
     "zerver/lib/unminify.py",
     "zerver/lib/utils.py",
     "zerver/lib/zephyr.py",
-    "zerver/templatetags/app_filters.py",
+    "zerver/lib/templates.py",
     "zerver/templatetags/minified_js.py",
     # Low priority for coverage
     "zerver/lib/ccache.py",
