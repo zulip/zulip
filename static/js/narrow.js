@@ -310,6 +310,8 @@ export function activate(raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
+    $("#resume_reading_banner").hide();
+
     ui_util.change_tab_to("#message_feed_container");
     message_list.set_narrowed(msg_list);
     message_lists.set_current(message_list.narrowed);
@@ -861,6 +863,8 @@ export function deactivate(coming_from_recent_topics = false) {
     $("#zhome").addClass("focused_table");
     message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
+
+    $("#resume_reading_banner").hide();
 
     message_scroll.hide_indicators();
     hashchange.save_narrow();

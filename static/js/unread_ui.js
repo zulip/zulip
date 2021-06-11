@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as activity from "./activity";
+import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
@@ -8,6 +9,7 @@ import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as unread from "./unread";
+import {notify_server_messages_read} from "./unread_ops";
 
 let last_mention_count = 0;
 
@@ -91,4 +93,18 @@ export function should_display_bankruptcy_banner() {
 
 export function initialize() {
     update_unread_counts();
+
+    $("#yes_resume_reading").on("click", () => {
+        const message_list = message_lists.current;
+
+        // Mark all messages from first unread in the view to the selected message.
+        const messages_to_mark_as_read = message_list.message_range(
+            message_list.first_unread_message_id(),
+            message_list.data.selected_id(),
+        );
+        notify_server_messages_read(messages_to_mark_as_read);
+
+        message_list.enable_mark_messages_read();
+        $("#resume_reading_banner").hide();
+    });
 }

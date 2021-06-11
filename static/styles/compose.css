@@ -244,6 +244,7 @@
 .compose_private_stream_alert,
 .compose-all-everyone,
 .compose-announce,
+.compose_resume_reading,
 .compose_not_subscribed {
     padding: 4px 0 4px 0;
     display: flex;
@@ -267,12 +268,14 @@
 .compose-all-everyone-controls,
 .compose-announce-controls,
 .compose_invite_user_controls,
+.resume_reading_controls,
 .compose_private_stream_alert_controls {
     float: right;
     position: relative;
 }
 
 .compose_invite_user p,
+.compose_resume_reading p,
 .compose_not_subscribed p {
     margin: 0;
     display: inline-block;

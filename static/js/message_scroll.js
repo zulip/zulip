@@ -10,6 +10,7 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as recent_topics_util from "./recent_topics_util";
+import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 
 let actively_scrolling = false;
@@ -199,6 +200,13 @@ export function initialize() {
             }
             if (event.msg_list.mark_messages_read_enabled()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
+            } else if (
+                unread.get_unread_messages(messages).length !== 0 &&
+                narrow_state.filter() !== undefined
+            ) {
+                // Ask user if they want to enable mark-as-read mode when
+                // their interactions would've marked messages as read.
+                $("#resume_reading_banner").show();
             }
         }
     });

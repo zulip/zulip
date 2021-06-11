@@ -591,6 +591,8 @@ export function show() {
     $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
+    $("#resume_reading_banner").hide();
+
     // We want to show `new stream message` instead of
     // `new topic`, which we are already doing in this
     // function. So, we reuse it here.
