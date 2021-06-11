@@ -10,7 +10,7 @@ import {$t} from "./i18n";
    cls- class that we want to add/remove to/from the status_box
 */
 
-export function message(response_html, status_box, cls = "alert", remove_after = false) {
+export function message(response_html, status_box, cls = "alert", remove_after) {
     // Note we use html() below, since we can rely on our callers escaping HTML
     // via $t_html when interpolating data.
     status_box
@@ -19,7 +19,7 @@ export function message(response_html, status_box, cls = "alert", remove_after =
         .html(response_html)
         .stop(true)
         .fadeTo(0, 1);
-    if (remove_after) {
+    if (remove_after !== undefined) {
         setTimeout(() => {
             status_box.fadeOut(400);
         }, remove_after);
