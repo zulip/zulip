@@ -429,7 +429,7 @@ export class Filter {
         return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
     }
 
-    calc_can_mark_messages_read() {
+    calc_mark_messages_read_default() {
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["stream", "topic"])) {
@@ -469,11 +469,11 @@ export class Filter {
         return false;
     }
 
-    can_mark_messages_read() {
-        if (this._can_mark_messages_read === undefined) {
-            this._can_mark_messages_read = this.calc_can_mark_messages_read();
+    mark_messages_read_default() {
+        if (this._mark_messages_read_default === undefined) {
+            this._mark_messages_read_default = this.calc_mark_messages_read_default();
         }
-        return this._can_mark_messages_read;
+        return this._mark_messages_read_default;
     }
 
     // This is used to control the behaviour for "exiting search",
@@ -484,19 +484,19 @@ export class Filter {
     // close search bar UI and show the narrow description UI.
     //
     // TODO: We likely will want to rewrite this to not piggy-back on
-    // can_mark_messages_read, since that might gain some more complex behavior
+    // mark_messages_read_default, since that might gain some more complex behavior
     // with near: narrows.
     is_common_narrow() {
-        // can_mark_messages_read tests the following filters:
+        // mark_messages_read_default tests the following filters:
         // stream, stream + topic,
         // is: private, pm-with:,
         // is: resolved
-        if (this.can_mark_messages_read()) {
+        if (this.mark_messages_read_default()) {
             return true;
         }
         // that leaves us with checking:
         // is: starred
-        // (which can_mark_messages_read_does not check as starred messages are always read)
+        // (which mark_messages_read_default does not check as starred messages are always read)
         // is: mentioned
         // We don't mark messages as read when in mentioned narrow.
         const term_types = this.sorted_term_types();
@@ -664,7 +664,7 @@ export class Filter {
     }
 
     allow_use_first_unread_when_narrowing() {
-        return this.can_mark_messages_read() || this.has_operator("is");
+        return this.mark_messages_read_default() || this.has_operator("is");
     }
 
     contains_only_private_messages() {

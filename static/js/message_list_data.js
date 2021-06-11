@@ -145,7 +145,7 @@ export class MessageListData {
         return this.filter.is_search();
     }
     can_mark_messages_read() {
-        return this.filter.can_mark_messages_read();
+        return this.filter.mark_messages_read_default();
     }
     _get_predicate() {
         // We cache this.

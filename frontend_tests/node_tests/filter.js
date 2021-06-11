@@ -86,7 +86,7 @@ test("basics", () => {
     assert.ok(!filter.has_operand("stream", "nada"));
 
     assert.ok(!filter.is_search());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(filter.includes_full_stream_history());
@@ -101,7 +101,7 @@ test("basics", () => {
     filter = new Filter(operators);
 
     assert.ok(filter.is_search());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(!filter.can_apply_locally());
@@ -116,7 +116,7 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("stream"));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.is_personal_filter());
 
     // Negated searches are just like positive searches for our purposes, since
@@ -127,7 +127,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(filter.has_operator("search"));
     assert.ok(!filter.can_apply_locally());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.is_personal_filter());
 
     // Similar logic applies to negated "has" searches.
@@ -137,14 +137,14 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.can_apply_locally(true));
     assert.ok(!filter.includes_full_stream_history());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.is_personal_filter());
 
     operators = [{operator: "streams", operand: "public", negated: true}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("streams"));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(filter.has_negated_operand("streams", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
@@ -153,7 +153,7 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(filter.has_operator("streams"));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.has_negated_operand("streams", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
@@ -162,7 +162,7 @@ test("basics", () => {
     operators = [{operator: "is", operand: "private"}];
     filter = new Filter(operators);
     assert.ok(filter.contains_only_private_messages());
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
@@ -170,7 +170,7 @@ test("basics", () => {
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
@@ -178,7 +178,7 @@ test("basics", () => {
     operators = [{operator: "is", operand: "starred"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
@@ -206,7 +206,7 @@ test("basics", () => {
     operators = [{operator: "is", operand: "resolved"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
@@ -216,108 +216,108 @@ function assert_not_mark_read_with_has_operands(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let has_operator = [{operator: "has", operand: "link"}];
     let filter = new Filter(additional_operators_to_test.concat(has_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     has_operator = [{operator: "has", operand: "link", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     has_operator = [{operator: "has", operand: "image"}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     has_operator = [{operator: "has", operand: "image", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     has_operator = [{operator: "has", operand: "attachment", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     has_operator = [{operator: "has", operand: "attachment"}];
     filter = new Filter(additional_operators_to_test.concat(has_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 }
 function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let is_operator = [{operator: "is", operand: "starred"}];
     let filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "starred", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "mentioned", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "alerted"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "alerted", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "unread"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "unread", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     is_operator = [{operator: "is", operand: "resolved"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
     if (additional_operators_to_test.length === 0) {
-        assert.ok(filter.can_mark_messages_read());
+        assert.ok(filter.mark_messages_read_default());
     } else {
-        assert.ok(!filter.can_mark_messages_read());
+        assert.ok(!filter.mark_messages_read_default());
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 }
 
 function assert_not_mark_read_when_searching(additional_operators_to_test) {
     additional_operators_to_test = additional_operators_to_test || [];
     let search_op = [{operator: "search", operand: "keyword"}];
     let filter = new Filter(additional_operators_to_test.concat(search_op));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     search_op = [{operator: "search", operand: "keyword", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(search_op));
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 }
 
-test("can_mark_messages_read", () => {
+test("mark_messages_read_default", () => {
     assert_not_mark_read_with_has_operands();
     assert_not_mark_read_with_is_operands();
     assert_not_mark_read_when_searching();
 
     const stream_operator = [{operator: "stream", operand: "foo"}];
     let filter = new Filter(stream_operator);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert_not_mark_read_with_has_operands(stream_operator);
     assert_not_mark_read_with_is_operands(stream_operator);
     assert_not_mark_read_when_searching(stream_operator);
 
     const stream_negated_operator = [{operator: "stream", operand: "foo", negated: true}];
     filter = new Filter(stream_negated_operator);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     const stream_topic_operators = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(stream_topic_operators);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert_not_mark_read_with_has_operands(stream_topic_operators);
     assert_not_mark_read_with_is_operands(stream_topic_operators);
     assert_not_mark_read_when_searching(stream_topic_operators);
@@ -327,7 +327,7 @@ test("can_mark_messages_read", () => {
         {operator: "topic", operand: "bar", negated: true},
     ];
     filter = new Filter(stream_negated_topic_operators);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     const pm_with = [{operator: "pm-with", operand: "joe@example.com,"}];
 
@@ -335,11 +335,11 @@ test("can_mark_messages_read", () => {
 
     const group_pm = [{operator: "pm-with", operand: "joe@example.com,STEVE@foo.com"}];
     filter = new Filter(pm_with);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     filter = new Filter(pm_with_negated);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     filter = new Filter(group_pm);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert_not_mark_read_with_is_operands(group_pm);
     assert_not_mark_read_with_is_operands(pm_with);
     assert_not_mark_read_with_has_operands(group_pm);
@@ -349,14 +349,14 @@ test("can_mark_messages_read", () => {
 
     const is_private = [{operator: "is", operand: "private"}];
     filter = new Filter(is_private);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert_not_mark_read_with_is_operands(is_private);
     assert_not_mark_read_with_has_operands(is_private);
     assert_not_mark_read_when_searching(is_private);
 
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert_not_mark_read_with_is_operands(in_all);
     assert_not_mark_read_with_has_operands(in_all);
     assert_not_mark_read_when_searching(in_all);
@@ -364,39 +364,39 @@ test("can_mark_messages_read", () => {
     const in_home = [{operator: "in", operand: "home"}];
     const in_home_negated = [{operator: "in", operand: "home", negated: true}];
     filter = new Filter(in_home);
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert_not_mark_read_with_is_operands(in_home);
     assert_not_mark_read_with_has_operands(in_home);
     assert_not_mark_read_when_searching(in_home);
     filter = new Filter(in_home_negated);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     // Do not mark messages as read when in an unsupported 'in:*' filter.
     const in_random = [{operator: "in", operand: "xxxxxxxxx"}];
     const in_random_negated = [{operator: "in", operand: "xxxxxxxxx", negated: true}];
     filter = new Filter(in_random);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     filter = new Filter(in_random_negated);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
 
     // test caching of term types
     // init and stub
     filter = new Filter(pm_with);
-    filter.stub = filter.calc_can_mark_messages_read;
-    filter.calc_can_mark_messages_read = function () {
-        this.calc_can_mark_messages_read_called = true;
+    filter.stub = filter.calc_mark_messages_read_default;
+    filter.calc_mark_messages_read_default = function () {
+        this.calc_mark_messages_read_default_called = true;
         return this.stub();
     };
 
     // uncached trial
-    filter.calc_can_mark_messages_read_called = false;
-    assert.ok(filter.can_mark_messages_read());
-    assert.ok(filter.calc_can_mark_messages_read_called);
+    filter.calc_mark_messages_read_default_called = false;
+    assert.ok(filter.mark_messages_read_default());
+    assert.ok(filter.calc_mark_messages_read_default_called);
 
     // cached trial
-    filter.calc_can_mark_messages_read_called = false;
-    assert.ok(filter.can_mark_messages_read());
-    assert.ok(!filter.calc_can_mark_messages_read_called);
+    filter.calc_mark_messages_read_default_called = false;
+    assert.ok(filter.mark_messages_read_default());
+    assert.ok(!filter.calc_mark_messages_read_default_called);
 });
 
 test("show_first_unread", () => {
@@ -409,13 +409,13 @@ test("show_first_unread", () => {
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
 
     filter = new Filter();
-    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.mark_messages_read_default());
     assert.ok(filter.allow_use_first_unread_when_narrowing());
 
     // Side case
     operators = [{operator: "is", operand: "any"}];
     filter = new Filter(operators);
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.mark_messages_read_default());
     assert.ok(filter.allow_use_first_unread_when_narrowing());
 });
 
