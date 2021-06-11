@@ -42,7 +42,7 @@ class zulip::profile::smokescreen {
     notify  => Service[supervisor],
   }
 
-  file { '/etc/supervisor/conf.d/zulip/smokescreen.conf':
+  file { "${zulip::common::supervisor_conf_dir}/smokescreen.conf":
     ensure  => file,
     require => [
       Package[supervisor],
