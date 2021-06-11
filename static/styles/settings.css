@@ -1141,12 +1141,11 @@ input[type="checkbox"] {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
-        font-size: 14px;
         padding: 3px 14px 4px 11px;
         text-decoration: none;
         color: hsl(0, 0%, 47%);
         min-width: 80px;
-        line-height: 16px;
+        line-height: 1.2;
 
         &:hover,
         &:focus {
@@ -1182,9 +1181,8 @@ input[type="checkbox"] {
         }
 
         .save-discard-widget-button-icon {
-            vertical-align: bottom;
+            vertical-align: middle;
             margin-right: 3px;
-            margin-bottom: 1px;
             font-size: 15px;
             font-weight: 500;
         }
