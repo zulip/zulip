@@ -733,6 +733,9 @@ def missedmessage_hook(
     for event in client.event_queue.contents(include_internal_data=True):
         if event["type"] != "message":
             continue
+
+        internal_data = event.get("internal_data", {})
+
         assert "flags" in event
 
         flags = event["flags"]
@@ -740,10 +743,10 @@ def missedmessage_hook(
         mentioned = "mentioned" in flags and "read" not in flags
         private_message = event["message"]["type"] == "private"
         # stream_push_notify is set in process_message_event.
-        stream_push_notify = event.get("internal_data", {}).get("stream_push_notify", False)
-        stream_email_notify = event.get("internal_data", {}).get("stream_email_notify", False)
+        stream_push_notify = internal_data.get("stream_push_notify", False)
+        stream_email_notify = internal_data.get("stream_email_notify", False)
         wildcard_mention_notify = (
-            event.get("internal_data", {}).get("wildcard_mention_notify", False)
+            internal_data.get("wildcard_mention_notify", False)
             and "read" not in flags
             and "wildcard_mentioned" in flags
         )
@@ -760,8 +763,8 @@ def missedmessage_hook(
         message_id = event["message"]["id"]
         # Pass on the information on whether a push or email notification was already sent.
         already_notified = dict(
-            push_notified=event.get("internal_data", {}).get("push_notified", False),
-            email_notified=event.get("internal_data", {}).get("email_notified", False),
+            push_notified=internal_data.get("push_notified", False),
+            email_notified=internal_data.get("email_notified", False),
         )
         maybe_enqueue_notifications(
             user_profile_id,
