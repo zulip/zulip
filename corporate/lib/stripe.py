@@ -12,6 +12,7 @@ import stripe
 from django.conf import settings
 from django.core.signing import Signer
 from django.db import transaction
+from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -26,6 +27,7 @@ from corporate.models import (
     get_customer_by_realm,
 )
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_realm_owners
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
 from zproject.config import get_secret
@@ -986,6 +988,46 @@ def void_all_open_invoices(realm: Realm) -> int:
             stripe.Invoice.void_invoice(invoice.id)
             voided_invoices_count += 1
     return voided_invoices_count
+
+
+def downgrade_small_realms_behind_on_payments_as_needed() -> None:
+    customers = Customer.objects.all()
+    for customer in customers:
+        realm = customer.realm
+
+        # For larger realms, we generally want to talk to the customer
+        # before downgrading; so this logic only applies with 5.
+        if get_latest_seat_count(realm) >= 5:
+            continue
+
+        if get_current_plan_by_customer(customer) is None:
+            continue
+
+        due_invoice_count = 0
+        for invoice in stripe.Invoice.list(customer=customer.stripe_customer_id, limit=2):
+            if invoice.status == "open":
+                due_invoice_count += 1
+
+        # Customers with only 1 overdue invoice are ignored.
+        if due_invoice_count < 2:
+            continue
+
+        # We've now decided to downgrade this customer and void all invoices, and the below will execute this.
+
+        downgrade_now_without_creating_additional_invoices(realm)
+        void_all_open_invoices(realm)
+        context: Dict[str, str] = {
+            "upgrade_url": f"{realm.uri}{reverse('initial_upgrade')}",
+            "realm": realm,
+        }
+        send_email_to_billing_admins_and_realm_owners(
+            "zerver/emails/realm_auto_downgraded",
+            realm,
+            from_name=FromAddress.security_email_from_name(language=realm.default_language),
+            from_address=FromAddress.tokenized_no_reply_address(),
+            language=realm.default_language,
+            context=context,
+        )
 
 
 def update_billing_method_of_current_plan(

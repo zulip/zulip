@@ -380,6 +380,24 @@ def send_email_to_admins(
     )
 
 
+def send_email_to_billing_admins_and_realm_owners(
+    template_prefix: str,
+    realm: Realm,
+    from_name: Optional[str] = None,
+    from_address: Optional[str] = None,
+    language: Optional[str] = None,
+    context: Dict[str, Any] = {},
+) -> None:
+    send_email(
+        template_prefix,
+        to_user_ids=[user.id for user in realm.get_human_billing_admin_and_realm_owner_users()],
+        from_name=from_name,
+        from_address=from_address,
+        language=language,
+        context=context,
+    )
+
+
 def clear_scheduled_invitation_emails(email: str) -> None:
     """Unlike most scheduled emails, invitation emails don't have an
     existing user object to key off of, so we filter by address here."""

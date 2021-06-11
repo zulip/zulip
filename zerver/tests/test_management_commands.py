@@ -483,6 +483,19 @@ class TestInvoicePlans(ZulipTestCase):
         m.assert_called_once()
 
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+class TestDowngradeSmallRealmsBehindOnPayments(ZulipTestCase):
+    COMMAND_NAME = "downgrade_small_realms_behind_on_payments"
+
+    def test_if_command_calls_downgrade_small_realms_behind_on_payments_as_needed(self) -> None:
+        with patch(
+            "zilencer.management.commands.downgrade_small_realms_behind_on_payments.downgrade_small_realms_behind_on_payments_as_needed"
+        ) as m:
+            call_command(self.COMMAND_NAME)
+
+        m.assert_called_once()
+
+
 class TestExport(ZulipTestCase):
     COMMAND_NAME = "export"
 

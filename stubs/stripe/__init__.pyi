@@ -81,7 +81,7 @@ class Invoice:
         ...
 
     @staticmethod
-    def pay(invoice: Invoice) -> Invoice:
+    def pay(invoice: Invoice, paid_out_of_band: bool=False) -> Invoice:
         ...
 
     @staticmethod
@@ -89,6 +89,10 @@ class Invoice:
         ...
 
     def get(self, key: str) -> Any:
+        ...
+
+    @staticmethod
+    def refresh(invoice: Invoice) -> Invoice:
         ...
 
 class Subscription:

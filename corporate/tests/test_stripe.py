@@ -1,12 +1,13 @@
 import json
 import operator
 import os
+import random
 import re
 import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, TypeVar, cast
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
 from unittest.mock import Mock, patch
 
 import orjson
@@ -19,6 +20,7 @@ from django.urls.resolvers import get_resolver
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import (
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     BillingError,
@@ -31,6 +33,7 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     customer_has_credit_card_as_default_source,
     do_create_stripe_customer,
+    downgrade_small_realms_behind_on_payments_as_needed,
     get_discount_for_realm,
     get_latest_seat_count,
     get_price_per_license,
@@ -273,6 +276,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
         "Invoice.finalize_invoice",
         "Invoice.list",
         "Invoice.pay",
+        "Invoice.refresh",
         "Invoice.upcoming",
         "Invoice.void_invoice",
         "InvoiceItem.create",
@@ -2695,6 +2699,135 @@ class StripeTest(StripeTestCase):
         self.assert_length(invoices, 1)
         for invoice in invoices:
             self.assertEqual(invoice.status, "void")
+
+    @mock_stripe()
+    def test_downgrade_small_realms_behind_on_payments_as_needed(self, *mock: Mock) -> None:
+        def create_realm(
+            users_to_create: int,
+            create_stripe_customer: bool,
+            create_plan: bool,
+        ) -> Tuple[Realm, Optional[Customer], Optional[CustomerPlan]]:
+            realm_string_id = "realm_" + str(random.randrange(1, 1000000))
+            realm = Realm.objects.create(string_id=realm_string_id)
+            users = []
+            for i in range(users_to_create):
+                user = UserProfile.objects.create(
+                    delivery_email=f"user-{i}-{realm_string_id}@zulip.com",
+                    email=f"user-{i}-{realm_string_id}@zulip.com",
+                    realm=realm,
+                )
+                users.append(user)
+
+            customer = None
+            if create_stripe_customer:
+                customer = do_create_stripe_customer(users[0])
+            plan = None
+            if create_plan:
+                plan, _ = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
+                    realm, users_to_create, users_to_create
+                )
+            return realm, customer, plan
+
+        def create_invoices(customer: Customer, num_invoices: int) -> List[stripe.Invoice]:
+            invoices = []
+            assert customer.stripe_customer_id is not None
+            for _ in range(num_invoices):
+                stripe.InvoiceItem.create(
+                    amount=10000,
+                    currency="usd",
+                    customer=customer.stripe_customer_id,
+                    description="Zulip standard",
+                    discountable=False,
+                )
+                invoice = stripe.Invoice.create(
+                    auto_advance=True,
+                    billing="send_invoice",
+                    customer=customer.stripe_customer_id,
+                    days_until_due=DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+                    statement_descriptor="Zulip Standard",
+                )
+                stripe.Invoice.finalize_invoice(invoice)
+                invoices.append(invoice)
+            return invoices
+
+        realm_1, _, _ = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=False
+        )
+
+        realm_2, _, plan_2 = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=True
+        )
+        assert plan_2
+
+        realm_3, customer_3, plan_3 = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=True
+        )
+        assert customer_3 and plan_3
+        create_invoices(customer_3, num_invoices=1)
+
+        realm_4, customer_4, plan_4 = create_realm(
+            users_to_create=3, create_stripe_customer=True, create_plan=True
+        )
+        assert customer_4 and plan_4
+        create_invoices(customer_4, num_invoices=2)
+
+        realm_5, customer_5, plan_5 = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=True
+        )
+        assert customer_5 and plan_5
+        realm_5_invoices = create_invoices(customer_5, num_invoices=2)
+        for invoice in realm_5_invoices:
+            stripe.Invoice.pay(invoice, paid_out_of_band=True)
+
+        realm_6, customer_6, plan_6 = create_realm(
+            users_to_create=20, create_stripe_customer=True, create_plan=True
+        )
+        assert customer_6 and plan_6
+        create_invoices(customer_6, num_invoices=2)
+
+        with patch("corporate.lib.stripe.void_all_open_invoices") as void_all_open_invoices_mock:
+            downgrade_small_realms_behind_on_payments_as_needed()
+
+        realm_1.refresh_from_db()
+        self.assertEqual(realm_1.plan_type, Realm.SELF_HOSTED)
+
+        realm_2.refresh_from_db()
+        self.assertEqual(realm_2.plan_type, Realm.STANDARD)
+        plan_2.refresh_from_db()
+        self.assertEqual(plan_2.status, CustomerPlan.ACTIVE)
+
+        realm_3.refresh_from_db()
+        self.assertEqual(realm_3.plan_type, Realm.STANDARD)
+        plan_3.refresh_from_db()
+        self.assertEqual(plan_3.status, CustomerPlan.ACTIVE)
+
+        realm_4.refresh_from_db()
+        self.assertEqual(realm_4.plan_type, Realm.LIMITED)
+        plan_4.refresh_from_db()
+        self.assertEqual(plan_4.status, CustomerPlan.ENDED)
+        void_all_open_invoices_mock.assert_called_once_with(realm_4)
+
+        realm_5.refresh_from_db()
+        self.assertEqual(realm_5.plan_type, Realm.STANDARD)
+        plan_5.refresh_from_db()
+        self.assertEqual(plan_5.status, CustomerPlan.ACTIVE)
+
+        realm_6.refresh_from_db()
+        self.assertEqual(realm_6.plan_type, Realm.STANDARD)
+        plan_6.refresh_from_db()
+        self.assertEqual(plan_6.status, CustomerPlan.ACTIVE)
+
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+        self.assertIn(
+            f"Your organization, http://{realm_4.string_id}.testserver, has been downgraded",
+            outbox[0].body,
+        )
+        self.assert_length(outbox[0].to, 1)
+        recipient = UserProfile.objects.get(email=outbox[0].to[0])
+        self.assertEqual(recipient.realm, realm_4)
+        self.assertTrue(recipient.is_billing_admin)
 
     def test_update_billing_method_of_current_plan(self) -> None:
         realm = get_realm("zulip")
