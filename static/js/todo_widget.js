@@ -7,6 +7,10 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import * as util from "./util";
 
+// Any single user should send add a finite number of tasks
+// to a todo list. We arbitrarily pick this value.
+const MAX_IDX = 1000;
+
 export class TaskData {
     task_map = new Map();
     my_idx = 1;
@@ -67,9 +71,25 @@ export class TaskData {
                 // for legacy reasons, the inbound idx is
                 // called key in the event
                 const idx = data.key;
-                const key = idx + "," + sender_id;
                 const task = data.task;
                 const desc = data.desc;
+
+                if (!Number.isInteger(idx) || idx < 0 || idx > MAX_IDX) {
+                    blueslip.warn("todo widget: bad type for inbound task idx");
+                    return;
+                }
+
+                if (typeof task !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task title");
+                    return;
+                }
+
+                if (typeof desc !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task desc");
+                    return;
+                }
+
+                const key = idx + "," + sender_id;
                 const completed = data.completed;
 
                 const task_data = {
@@ -104,6 +124,11 @@ export class TaskData {
             inbound: (sender_id, data) => {
                 // All message readers may strike/unstrike todo tasks.
                 const key = data.key;
+                if (typeof key !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound strike key");
+                    return;
+                }
+
                 const item = this.task_map.get(key);
 
                 if (item === undefined) {
@@ -118,8 +143,10 @@ export class TaskData {
 
     handle_event(sender_id, data) {
         const type = data.type;
-        if (this.handle[type]) {
+        if (this.handle[type] && this.handle[type].inbound) {
             this.handle[type].inbound(sender_id, data);
+        } else {
+            blueslip.warn(`todo widget: unknown inbound type: ${type}`);
         }
     }
 }
