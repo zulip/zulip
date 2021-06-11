@@ -2121,6 +2121,30 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
         execute_values(cursor.cursor, query, vals)
 
 
+def verify_submessage_sender(
+    *,
+    message_id: int,
+    message_sender_id: int,
+    submessage_sender_id: int,
+) -> None:
+    """Even though our submessage architecture is geared toward
+    collaboration among all message readers, we still enforce
+    the the first person to attach a submessage to the message
+    must be the original sender of the message.
+    """
+
+    if message_sender_id == submessage_sender_id:
+        return
+
+    if SubMessage.objects.filter(
+        message_id=message_id,
+        sender_id=message_sender_id,
+    ).exists():
+        return
+
+    raise JsonableError(_("You cannot attach a submessage to this message."))
+
+
 def do_add_submessage(
     realm: Realm,
     sender_id: int,
