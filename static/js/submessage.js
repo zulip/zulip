@@ -128,7 +128,7 @@ export function handle_event(submsg) {
     try {
         data = JSON.parse(submsg.content);
     } catch {
-        blueslip.error("server sent us invalid json in handle_event: " + submsg.content);
+        blueslip.warn("server sent us invalid json in handle_event: " + submsg.content);
         return;
     }
 
