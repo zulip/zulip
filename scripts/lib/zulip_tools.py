@@ -621,7 +621,9 @@ def is_vagrant_env_host(path: str) -> bool:
     return ".vagrant" in os.listdir(path)
 
 
-def has_application_server() -> bool:
+def has_application_server(once: bool = False) -> bool:
+    if once:
+        return os.path.exists("/etc/supervisor/conf.d/zulip/zulip-once.conf")
     return (
         # Current path
         os.path.exists("/etc/supervisor/conf.d/zulip/zulip.conf")

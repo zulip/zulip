@@ -91,6 +91,14 @@ if has_application_server():
             worker_status.check_returncode()
         workers.extend(status_line.split()[0] for status_line in worker_status.stdout.splitlines())
 
+    if has_application_server(once=True):
+        workers.extend(
+            [
+                "zulip_deliver_scheduled_emails",
+                "zulip_deliver_scheduled_messages",
+            ]
+        )
+
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 
