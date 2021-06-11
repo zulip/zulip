@@ -5,7 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Callable, Dict, Optional, Tuple, TypeVar, cast
+from typing import Callable, Dict, Generator, Optional, Tuple, TypeVar, cast
 
 import orjson
 import stripe
@@ -961,13 +961,25 @@ def downgrade_at_the_end_of_billing_cycle(realm: Realm) -> None:
     do_change_plan_status(plan, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
 
 
+def get_all_invoices_for_customer(customer: Customer) -> Generator[stripe.Invoice, None, None]:
+    if customer.stripe_customer_id is None:
+        return
+
+    invoices = stripe.Invoice.list(customer=customer.stripe_customer_id, limit=100)
+    while len(invoices):
+        for invoice in invoices:
+            yield invoice
+            last_invoice = invoice
+        invoices = stripe.Invoice.list(
+            customer=customer.stripe_customer_id, starting_after=last_invoice, limit=100
+        )
+
+
 def void_all_open_invoices(realm: Realm) -> int:
     customer = get_customer_by_realm(realm)
     if customer is None:
         return 0
-    if customer.stripe_customer_id is None:
-        return 0
-    invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
+    invoices = get_all_invoices_for_customer(customer)
     voided_invoices_count = 0
     for invoice in invoices:
         if invoice.status == "open":

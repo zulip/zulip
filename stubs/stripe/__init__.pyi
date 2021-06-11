@@ -65,8 +65,10 @@ class Invoice:
         ...
 
     @staticmethod
-    def list(billing: str=..., customer: str=..., limit: Optional[int]=...,
-             status: str=...) -> List[Invoice]:
+    def list(billing: str=..., customer: str=...,
+             status: str=..., limit: Optional[int]=...,
+             starting_after: Optional[Invoice]=...,
+             ) -> List[Invoice]:
         ...
 
     @staticmethod
