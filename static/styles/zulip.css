@@ -878,6 +878,9 @@ td.pointer {
         transition: all 0.2s ease;
         width: 16px;
         text-align: center;
+        display: inline-block;
+        position: relative;
+        color: hsl(0, 0%, 73%);
 
         > i {
             vertical-align: middle;
@@ -891,10 +894,16 @@ td.pointer {
     }
 
     > .reaction_button {
-        display: inline-block;
-        position: relative;
-        color: hsl(0, 0%, 73%);
         &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    .edit_content {
+        width: 12px;
+
+        &:hover {
+            cursor: pointer;
             color: hsl(200, 100%, 40%);
         }
     }
@@ -923,8 +932,6 @@ td.pointer {
     }
 
     .star_container {
-        display: inline-block;
-
         &:not(.empty-star) {
             color: hsl(106, 77%, 29%);
 
@@ -953,13 +960,8 @@ td.pointer {
 
     &:hover .message_controls,
     &:focus-within .message_controls {
-        .empty-star {
-            opacity: 0.4;
-        }
-
         .empty-star:hover {
             cursor: pointer;
-            opacity: 1;
         }
 
         > div {
@@ -1354,18 +1356,6 @@ td.pointer {
     &:hover {
         cursor: pointer;
         opacity: 1;
-    }
-}
-
-.edit_content {
-    width: 12px;
-    display: inline-block;
-    position: relative;
-    color: hsl(0, 0%, 73%);
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(200, 100%, 40%);
     }
 }
 
