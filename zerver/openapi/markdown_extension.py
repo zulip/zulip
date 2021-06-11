@@ -19,6 +19,7 @@ from markdown.preprocessors import Preprocessor
 
 import zerver.openapi.python_examples
 from zerver.openapi.openapi import (
+    check_requires_administrator,
     generate_openapi_fixture,
     get_openapi_description,
     get_openapi_summary,
@@ -76,6 +77,7 @@ DEFAULT_EXAMPLE = {
     "string": "demo",
     "boolean": False,
 }
+ADMIN_CONFIG_LANGUAGES = ["python", "javascript"]
 
 
 def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str, Any]]:
@@ -426,7 +428,10 @@ class APICodeExamplesPreprocessor(Preprocessor):
                         if argument:
                             text = self.render_fixture(function, name=argument)
                     elif key == "example":
-                        if argument == "admin_config=True":
+                        path, method = function.rsplit(":", 1)
+                        if language in ADMIN_CONFIG_LANGUAGES and check_requires_administrator(
+                            path, method
+                        ):
                             text = SUPPORTED_LANGUAGES[language]["render"](
                                 function, admin_config=True
                             )
@@ -525,6 +530,8 @@ class APITitlePreprocessor(Preprocessor):
         raw_title = get_openapi_summary(path, method)
         title.extend(raw_title.splitlines())
         title = ["# " + line for line in title]
+        if check_requires_administrator(path, method):
+            title.append("{!api-admin-only.md!}")
         return title
 
 

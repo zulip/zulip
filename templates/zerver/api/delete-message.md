@@ -9,7 +9,7 @@
 {start_tabs}
 {tab|python}
 
-{generate_code_example(python)|/messages/{message_id}:delete|example(admin_config=True)}
+{generate_code_example(python)|/messages/{message_id}:delete|example}
 
 {generate_code_example(javascript)|/messages/{message_id}:delete|example}
 

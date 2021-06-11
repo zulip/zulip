@@ -7,7 +7,7 @@
 {start_tabs}
 {tab|python}
 
-{generate_code_example(python)|/realm/profile_fields:post|example(admin_config=True)}
+{generate_code_example(python)|/realm/profile_fields:post|example}
 
 {generate_code_example(javascript)|/realm/profile_fields:post|example}
 
