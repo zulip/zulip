@@ -2,8 +2,6 @@
 
 {generate_api_description(/messages/{message_id}:delete)}
 
-[delete-completely]: /help/edit-or-delete-a-message#delete-a-message-completely
-
 ## Usage examples
 
 {start_tabs}
