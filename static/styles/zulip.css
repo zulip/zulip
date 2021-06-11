@@ -595,8 +595,7 @@ strong {
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
-    font-size: 13px;
-    margin-top: 3px;
+    margin-top: 2px;
     margin-left: 6px;
     opacity: 0.5;
     cursor: pointer;
