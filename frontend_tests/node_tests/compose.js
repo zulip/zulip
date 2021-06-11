@@ -5,9 +5,8 @@ const {strict: assert} = require("assert");
 const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
-const {stub_templates} = require("../zjsunit/handlebars");
 const {$t, $t_html} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -47,6 +46,10 @@ const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
 const subs = mock_esm("../../static/js/subs");
 const transmit = mock_esm("../../static/js/transmit");
+
+const render_compose = mock_template("compose.hbs");
+const render_compose_invite_users = mock_template("compose_invite_users.hbs");
+const render_compose_private_stream_alert = mock_template("compose_private_stream_alert.hbs");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
@@ -635,7 +638,7 @@ test_ui("finish", (override) => {
     })();
 });
 
-test_ui("warn_if_private_stream_is_linked", () => {
+test_ui("warn_if_private_stream_is_linked", (override) => {
     const test_sub = {
         name: compose_state.stream_name(),
         stream_id: 99,
@@ -670,9 +673,8 @@ test_ui("warn_if_private_stream_is_linked", () => {
     const checks = [
         (function () {
             let called;
-            stub_templates((template_name, context) => {
+            override(render_compose_private_stream_alert, "f", (context) => {
                 called = true;
-                assert.equal(template_name, "compose_private_stream_alert");
                 assert.equal(context.stream_name, "Denmark");
                 return "fake-compose_private_stream_alert-template";
             });
@@ -753,8 +755,7 @@ test_ui("initialize", (override) => {
         };
     });
 
-    stub_templates((template_name, context) => {
-        assert.equal(template_name, "compose");
+    override(render_compose, "f", (context) => {
         assert.equal(context.embedded, false);
         assert.equal(context.file_upload_enabled, true);
         assert.equal(context.giphy_enabled, true);
@@ -953,9 +954,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
 
         (function () {
             let called;
-            stub_templates((template_name, context) => {
+            override(render_compose_invite_users, "f", (context) => {
                 called = true;
-                assert.equal(template_name, "compose_invite_users");
                 assert.equal(context.user_id, 34);
                 assert.equal(context.stream_id, 111);
                 assert.equal(context.name, "Foo Barson");
@@ -1014,7 +1014,6 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
 
     // Now try to mention the same person again. The template should
     // not render.
-    stub_templates(noop);
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert.ok(looked_for_existing);
