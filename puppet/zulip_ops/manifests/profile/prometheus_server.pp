@@ -31,7 +31,7 @@ class zulip_ops::profile::prometheus_server {
     group   => 'prometheus',
     require => [ User[prometheus], Group[prometheus] ],
   }
-  file { '/etc/supervisor/conf.d/prometheus.conf':
+  file { "${zulip::common::supervisor_conf_dir}/prometheus.conf":
     ensure  => file,
     require => [
       Package[supervisor],

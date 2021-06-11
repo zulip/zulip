@@ -32,7 +32,21 @@ class zulip::supervisor {
     "${zulip::common::supervisor_system_conf_dir}/thumbor.conf",
     "${zulip::common::supervisor_system_conf_dir}/zulip.conf",
     "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
-  ]:
+    ]:
+    ensure => absent,
+  }
+
+  # These were similarly moved, but were only referenced in zulip_ops,
+  # and thus can be removed as soon as all relevant hosts have been
+  # updated:
+  file { [
+    "${zulip::common::supervisor_system_conf_dir}/grafana.conf",
+    "${zulip::common::supervisor_system_conf_dir}/munin_tunnels.conf",
+    "${zulip::common::supervisor_system_conf_dir}/prometheus.conf",
+    "${zulip::common::supervisor_system_conf_dir}/prometheus_node_exporter.conf",
+    "${zulip::common::supervisor_system_conf_dir}/redis_tunnel.conf",
+    "${zulip::common::supervisor_system_conf_dir}/zmirror.conf",
+    ]:
     ensure => absent,
   }
 

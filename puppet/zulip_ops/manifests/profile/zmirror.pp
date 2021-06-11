@@ -23,7 +23,7 @@ class zulip_ops::profile::zmirror {
     require => Exec['setup_apt_repo_debathena'],
   }
 
-  file { '/etc/supervisor/conf.d/zmirror.conf':
+  file { "${zulip::common::supervisor_conf_dir}/zmirror.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
