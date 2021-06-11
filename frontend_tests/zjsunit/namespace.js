@@ -67,9 +67,9 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-exports.mock_cjs = (request, obj) => {
+function resolve_filename(fn) {
     const filename = Module._resolveFilename(
-        request,
+        fn,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -82,7 +82,28 @@ exports.mock_cjs = (request, obj) => {
         throw new Error(`It is too late to mock ${filename}; call this earlier.`);
     }
 
+    return filename;
+}
+
+exports.mock_cjs = (fn, obj) => {
+    const filename = resolve_filename(fn);
     module_mocks.set(filename, obj);
+    return obj;
+};
+
+exports.mock_template = (fn) => {
+    const filename = resolve_filename("../../static/templates/" + fn);
+
+    const obj = {
+        f: () => {
+            throw new Error(`
+                You did render_foo = mock_template("${fn}")
+                but you also need to do override(render_foo, "f", () => {...}
+            `);
+        },
+    };
+
+    module_mocks.set(filename, (...args) => obj.f(...args));
     return obj;
 };
 

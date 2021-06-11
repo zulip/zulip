@@ -9,6 +9,8 @@ const {SourceMapConsumer, SourceNode} = require("source-map");
 const templates_path = path.resolve(__dirname, "../../static/templates");
 
 exports.stub_templates = (stub) => {
+    // THIS FUNCTION IS HIGHLY DEPRECATED!!!
+    // DEPRECATION NOTICE: use mock_template instead
     window.template_stub = stub;
 };
 
