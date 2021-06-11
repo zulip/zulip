@@ -42,7 +42,7 @@ mock_esm("../../static/js/unread_ops", {
 });
 mock_esm("../../static/js/message_lists", {
     current: {
-        can_mark_messages_read: () => true,
+        mark_messages_read_enabled: () => true,
     },
 });
 mock_esm("../../static/js/resize", {

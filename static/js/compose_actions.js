@@ -360,7 +360,7 @@ export function respond_to_message(opts) {
             return;
         }
 
-        if (message_lists.current.can_mark_messages_read()) {
+        if (message_lists.current.mark_messages_read_enabled()) {
             unread_ops.notify_server_message_read(message);
         }
     }

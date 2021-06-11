@@ -105,7 +105,7 @@ export function process_visible() {
     if (
         message_viewport.is_visible_and_focused() &&
         message_viewport.bottom_message_visible() &&
-        message_lists.current.can_mark_messages_read()
+        message_lists.current.mark_messages_read_enabled()
     ) {
         mark_current_list_as_read();
     }

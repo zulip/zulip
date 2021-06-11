@@ -37,6 +37,7 @@ export class MessageList {
         this.table_name = table_name;
         this.narrowed = this.table_name === "zfilt";
         this.num_appends = 0;
+        this._mark_messages_read_enabled = this.data.mark_messages_read_default();
 
         return this;
     }
@@ -123,8 +124,12 @@ export class MessageList {
         return this.data.is_search();
     }
 
-    can_mark_messages_read() {
-        return this.data.mark_messages_read_default();
+    mark_messages_read_enabled() {
+        return this._mark_messages_read_enabled;
+    }
+
+    enable_mark_messages_read() {
+        this._mark_messages_read_enabled = true;
     }
 
     clear({clear_selected_id = true} = {}) {

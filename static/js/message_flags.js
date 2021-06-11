@@ -101,7 +101,7 @@ export function toggle_starred_and_update_server(message) {
     message.starred = !message.starred;
 
     // Unlike most calls to mark messages as read, we don't check
-    // msg_list.can_mark_messages_read, because starring a message is an
+    // msg_list.mark_messages_read_enabled, because starring a message is an
     // explicit interaction and we'd like to preserve the user
     // expectation invariant that all starred messages are read.
     unread_ops.notify_server_message_read(message);

@@ -197,7 +197,7 @@ export function initialize() {
             } else {
                 messages = event.msg_list.message_range(event.previously_selected_id, event.id);
             }
-            if (event.msg_list.can_mark_messages_read()) {
+            if (event.msg_list.mark_messages_read_enabled()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
             }
         }

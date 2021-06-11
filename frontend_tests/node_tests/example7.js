@@ -121,21 +121,21 @@ run_test("unread_ops", ({override}) => {
         channel_post_opts = opts;
     });
 
-    let can_mark_messages_read;
+    let mark_messages_read_enabled;
 
     // Set up an override to point to the above var, so we can
     // toggle it easily from within the test (and avoid complicated
     // data setup).
-    override(message_lists.current, "can_mark_messages_read", () => can_mark_messages_read);
+    override(message_lists.current, "mark_messages_read_enabled", () => mark_messages_read_enabled);
 
     // First, test for a message list that cannot read messages.
-    can_mark_messages_read = false;
+    mark_messages_read_enabled = false;
     unread_ops.process_visible();
 
     assert.deepEqual(channel_post_opts, undefined);
 
     // Now flip the boolean, and get to the main thing we are testing.
-    can_mark_messages_read = true;
+    mark_messages_read_enabled = true;
     unread_ops.process_visible();
 
     // The most important side effect of the above call is that

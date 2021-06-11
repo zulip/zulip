@@ -718,7 +718,7 @@ export function by_topic(target_id, opts) {
         return;
     }
 
-    // We don't check msg_list.can_mark_messages_read here only because
+    // We don't check msg_list.mark_messages_read_enabled here only because
     // the target msg_list isn't initialized yet; in any case, the
     // message is about to be marked read in the new view.
     unread_ops.notify_server_message_read(original);
@@ -737,7 +737,7 @@ export function by_recipient(target_id, opts) {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
 
-    // We don't check msg_list.can_mark_messages_read here only because
+    // We don't check msg_list.mark_messages_read_enabled here only because
     // the target msg_list isn't initialized yet; in any case, the
     // message is about to be marked read in the new view.
     unread_ops.notify_server_message_read(message);
