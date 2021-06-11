@@ -113,9 +113,9 @@ ul {
     &.streams_popover i,
     &.topics_popover i {
         display: inline-block;
-        width: 14px;
+        width: 1em;
         text-align: center;
-        margin-right: 3px;
+        margin-right: calc(3em / 14);
     }
 
     &.topics_popover {

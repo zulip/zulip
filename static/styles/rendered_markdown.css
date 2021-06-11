@@ -2,35 +2,35 @@
     /* The default top/bottom margins for paragraphs are small, to make sure
        they look nice next to blockquotes, lists, etc. */
     p {
-        margin: 3px 0 3px 0;
+        margin: calc(3em / 14) 0;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
        arrange things so that this spacing matches the spacing between
        paragraphs in two consecutive 1-line messages. */
     p + p {
-        margin-top: 10px;
+        margin-top: calc(10em / 14);
     }
 
     /* Ensure bulleted lists are nicely centered in 1-line messages */
     ul {
-        margin: 2px 0 5px 20px;
+        margin: calc(2em / 14) 0 calc(5em / 14) calc(20em / 14);
     }
 
     /* Swap the left and right margins of bullets for Right-To-Left languages */
     &.rtl ul {
-        margin-right: 20px;
+        margin-right: calc(20em / 14);
         margin-left: 0;
     }
 
     /* Ensure ordered lists are nicely centered in 1-line messages */
     ol {
-        margin: 2px 0 5px 20px;
+        margin: calc(2em / 14) 0 calc(5em / 14) calc(20em / 14);
     }
 
     /* Swap the left and right margins of ordered list for Right-To-Left languages */
     &.rtl ol {
-        margin-right: 8px;
+        margin-right: calc(8em / 14);
         margin-left: 0;
     }
 
@@ -47,20 +47,20 @@
     h4,
     h5,
     h6 {
-        font-size: 14px;
+        font-size: inherit;
         font-weight: 600;
-        line-height: 1.4;
+        line-height: inherit;
         margin-top: 0;
-        margin-bottom: 5px;
+        margin-bottom: calc(5em / 14);
         text-decoration: underline;
     }
 
     /* Formatting for blockquotes */
     blockquote {
-        padding-left: 5px;
-        margin-left: 10px;
-        margin-top: 5px;
-        margin-bottom: 6px;
+        padding-left: calc(5em / 14);
+        margin-left: calc(10em / 14);
+        margin-top: calc(5em / 14);
+        margin-bottom: calc(6em / 14);
         border-left-color: hsl(0, 0%, 87%);
 
         p {
@@ -71,17 +71,17 @@
 
     &.rtl blockquote {
         padding-left: unset;
-        padding-right: 5px;
+        padding-right: calc(5em / 14);
         margin-left: unset;
-        margin-right: 10px;
+        margin-right: calc(10em / 14);
         border-left: unset;
-        border-right: 5px solid hsl(0, 0%, 87%);
+        border-right: calc(5em / 14) solid hsl(0, 0%, 87%);
     }
 
     /* Formatting for Markdown tables */
     table {
-        padding-right: 10px;
-        margin: 5px 5px 5px 5px;
+        padding-right: calc(10em / 14);
+        margin: calc(5em / 14);
         width: 99%;
         display: block;
         max-width: fit-content;
@@ -100,19 +100,19 @@
 
     tr th {
         border: 1px solid hsl(0, 0%, 80%);
-        padding: 4px;
+        padding: calc(4em / 14);
         text-align: left;
     }
 
     tr td {
         border: 1px solid hsl(0, 0%, 80%);
-        padding: 4px;
+        padding: calc(4em / 14);
     }
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: 20px;
-        width: 20px;
+        height: calc(20em / 14);
+        width: calc(20em / 14);
     }
 
     /* Mentions and alert words */
@@ -122,11 +122,11 @@
 
     .user-group-mention,
     .user-mention {
-        border-radius: 3px;
+        border-radius: calc(3em / 14);
         padding: 0 0.2em;
         box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
-        margin-right: 2px;
-        margin-left: 2px;
+        margin-right: calc(2em / 14);
+        margin-left: calc(2em / 14);
         white-space: nowrap;
         background: linear-gradient(
             to bottom,
@@ -159,8 +159,8 @@
         /* KaTeX sometimes overdraws its bounding box by a little, so we
            enlarge its scrolling area by stealing 3px from the margin
            of the enclosing <p>. */
-        margin: -3px 0;
-        padding: 3px 0;
+        margin: calc(-3em / 14) 0;
+        padding: calc(3em / 14) 0;
         overflow: auto hidden;
     }
 
@@ -528,13 +528,13 @@ pre {
     overflow-x: auto;
     word-wrap: normal;
     /* Bootstrap's default here is top: 0px, bottom: 10px */
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: calc(5em / 14);
+    margin-bottom: calc(5em / 14);
     /* Bootstrap's default here is 9.5 on all sides */
-    padding-top: 5px;
-    padding-bottom: 3px;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding-top: calc(5em / 14);
+    padding-bottom: calc(3em / 14);
+    padding-left: calc(7em / 14);
+    padding-right: calc(7em / 14);
 }
 
 .rendered_markdown pre code {

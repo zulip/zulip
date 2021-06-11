@@ -710,18 +710,18 @@ li.actual-dropdown-menu > a:focus {
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
-    width: 14px;
+    width: 1em;
     text-align: center;
-    margin-right: 3px;
+    margin-right: calc(3em / 14);
 }
 
 #gear_menu_about_zulip {
     .white_zulip_icon_without_text {
         position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
+        top: calc(3em / 14);
+        width: 1em;
+        height: 1em;
+        margin-right: calc(3em / 14);
         filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
             brightness(20%) contrast(95%);
     }
@@ -738,7 +738,7 @@ li.actual-dropdown-menu i {
 }
 
 .settings-dropdown-cog {
-    padding: 6px 12px;
+    padding: 6px;
 }
 
 .message_area_padder {
@@ -769,7 +769,7 @@ td.pointer {
     .message_edit_notice {
         display: inline-block;
         vertical-align: top;
-        line-height: 14px;
+        line-height: 1;
         margin-left: 0;
         position: static;
         padding: 0;
@@ -777,33 +777,33 @@ td.pointer {
     }
 
     .message_time {
-        top: -4px;
+        top: calc(-4em / 14);
     }
 
     .alert-msg {
-        top: -3px;
+        top: calc(-3em / 14);
     }
 
     .message_controls {
-        top: -5px;
+        top: calc(-5em / 14);
     }
 
     .message_top_line {
-        margin-top: 6px;
+        margin-top: calc(6em / 14);
     }
 
     .message_content:not(:empty) {
-        margin-top: -18px;
+        margin-top: calc(-18em / 14);
     }
 
     .message_edit {
-        margin-top: -14px;
+        margin-top: calc(-14em / 14);
     }
 }
 
 .sender-status {
     display: inline-block;
-    margin: 8px 0 8px -3px;
+    margin: calc(8em / 14) 0 calc(8em / 14) calc(-3em / 14);
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
@@ -817,26 +817,26 @@ td.pointer {
 }
 
 .message_edit_notice {
-    font-size: 10px;
+    font-size: calc(10em / 14);
     opacity: 0.5;
-    line-height: 0px;
+    line-height: 0;
     text-align: right;
-    width: 45px;
+    width: 4.5em;
     position: absolute;
     left: 0;
-    top: 16px;
+    top: 1.6em;
     user-select: none;
 }
 
 .message_time {
     display: block;
-    font-size: 12px;
+    font-size: calc(12em / 14);
     opacity: 0.4;
-    padding: 1px;
+    padding: calc(1em / 12);
     font-weight: 400;
     position: absolute;
-    right: -105px;
-    line-height: 20px;
+    right: calc(-105em / 12);
+    line-height: calc(20 / 12);
     text-align: right;
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
@@ -863,10 +863,10 @@ td.pointer {
 .message_controls {
     display: inline-block;
     position: absolute;
-    top: -1px;
-    right: -56px;
-    width: 54px;
-    height: 22px;
+    top: calc(-1em / 14);
+    right: calc(-56em / 14);
+    width: calc(54em / 14);
+    height: calc(22em / 14);
     z-index: 1;
 
     /* This is a bit tricky; we need to reserve space for the message
@@ -878,7 +878,7 @@ td.pointer {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
-        width: 16px;
+        width: calc(16em / 14);
         text-align: center;
         display: inline-block;
         position: relative;
@@ -902,7 +902,7 @@ td.pointer {
     }
 
     .edit_content {
-        width: 12px;
+        width: calc(12em / 14);
 
         &:hover {
             cursor: pointer;
@@ -911,7 +911,7 @@ td.pointer {
     }
 
     &.sender-status-controls {
-        top: 10px;
+        top: calc(10em / 14);
     }
 
     .message_failed {
@@ -919,7 +919,7 @@ td.pointer {
         display: inline-flex;
         justify-content: space-between;
         /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
-        width: 30px;
+        width: calc(30em / 14);
         cursor: pointer;
         font-weight: bold;
         color: hsl(0, 100%, 50%);
@@ -983,7 +983,7 @@ td.pointer {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    line-height: 14px;
+    line-height: 1;
     position: relative;
     z-index: 0;
 }
@@ -991,7 +991,7 @@ td.pointer {
 .message_list {
     .recipient_row {
         border-bottom: 1px solid hsl(0, 0%, 88%);
-        margin-bottom: 10px;
+        margin-bottom: calc(10em / 14);
     }
 }
 
@@ -1020,10 +1020,10 @@ td.pointer {
 
 .stream_label {
     display: inline-block;
-    padding: 4px 6px 3px 6px;
+    padding: calc(4em / 14) calc(6em / 14) calc(3em / 14) calc(6em / 14);
     font-weight: normal;
-    height: 17px;
-    line-height: 17px;
+    height: calc(17em / 14);
+    line-height: calc(17 / 14);
     border-top-color: hsla(0, 0%, 0%, 0);
     border-right-color: hsla(0, 0%, 0%, 0);
     border-bottom-color: hsla(0, 0%, 0%, 0);
@@ -1034,8 +1034,8 @@ td.pointer {
     text-decoration: none;
 
     .invite-stream-icon {
-        font-size: 12px;
-        line-height: 17px;
+        font-size: calc(12em / 14);
+        line-height: calc(17 / 12);
     }
 
     &:hover {
@@ -1050,9 +1050,9 @@ td.pointer {
         width: 0;
         position: absolute;
         pointer-events: none;
-        margin-top: -11px;
+        margin-top: calc(-11em / 14);
         border-style: solid;
-        border-width: 11px 0 11px 5px;
+        border-width: calc(11em / 14) 0 calc(11em / 14) calc(5em / 14);
         border-color: inherit;
         z-index: 2;
         transform: scale(0.9999);
@@ -1061,9 +1061,9 @@ td.pointer {
 
 .stream_topic {
     display: inline-block;
-    padding: 3px 3px 2px 9px;
-    height: 17px;
-    line-height: 17px;
+    padding: calc(3em / 14) calc(3em / 14) calc(2em / 14) calc(9em / 14);
+    height: calc(17em / 14);
+    line-height: calc(17 / 14);
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1074,11 +1074,11 @@ td.pointer {
 
 .recipient_row_date {
     color: hsl(0, 0%, 53%);
-    font-size: 12px;
+    font-size: calc(12em / 14);
     font-weight: 600;
     padding: 3px 11px 2px 10px;
-    height: 17px;
-    line-height: 17px;
+    height: calc(17em / 12);
+    line-height: calc(17 / 12);
 
     &.hide-date {
         display: none;
@@ -1171,10 +1171,10 @@ td.pointer {
     .message_label_clickable {
         background-color: hsl(0, 0%, 27%);
         display: inline-block;
-        padding: 3px 6px 2px 6px;
+        padding: calc(3em / 14) calc(6em / 14) calc(2em / 14) calc(6em / 14);
         font-weight: normal;
-        height: 17px;
-        line-height: 17px;
+        height: calc(17em / 14);
+        line-height: calc(16 / 14);
         border-left-color: hsl(0, 0%, 27%);
     }
 
@@ -1273,7 +1273,7 @@ td.pointer {
     position: relative;
 
     i.zulip-icon.zulip-icon-bot {
-        font-size: 12px;
+        font-size: calc(12em / 14);
     }
 }
 
@@ -1281,7 +1281,7 @@ td.pointer {
     display: inline-block;
     font-weight: 700;
     vertical-align: top;
-    line-height: 12px;
+    line-height: calc(12em / 14);
 }
 
 .sender_name-in-status {
@@ -1413,9 +1413,9 @@ div.focused_table {
 }
 
 .message_content {
-    line-height: 1.214;
-    min-height: 17px;
-    margin-left: 46px;
+    line-height: calc(17 / 14);
+    min-height: calc(17em / 14);
+    margin-left: calc(46em / 14);
     display: block;
     position: relative;
     overflow: hidden;
@@ -1442,7 +1442,8 @@ div.focused_table {
 }
 
 .message_edit_content {
-    line-height: 18px;
+    line-height: calc(18 / 14);
+
     resize: vertical !important;
     max-height: 24em;
 }
@@ -1472,24 +1473,24 @@ div.focused_table {
 
 .topic_edit {
     display: none;
-    line-height: 22px;
+    line-height: calc(22 / 14);
     .alert {
         display: inline-block;
         margin: 0;
-        padding: 0 10px;
-        line-height: 17px;
+        padding: 0 calc(10em / 14);
+        line-height: calc(17 / 14);
     }
 }
 
 #inline_topic_edit {
-    margin-bottom: 5px;
+    margin-bottom: calc(5em / 14);
 
     &.header-v {
-        height: 18px;
+        height: calc(18em / 14);
         display: inline-block;
-        padding: 0 3px;
+        padding: 0 calc(3em / 14);
         vertical-align: baseline;
-        line-height: 0px;
+        line-height: 0;
         box-shadow: none;
     }
 }
@@ -1568,7 +1569,7 @@ div.focused_table {
 }
 
 .messagebox-content {
-    padding: 4px 115px 1px 10px;
+    padding: calc(4em / 14) calc(115em / 14) calc(1em / 14) calc(10em / 14);
 }
 
 .bookend {
@@ -1583,15 +1584,20 @@ div.focused_table {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 35px;
-    height: 35px;
-    margin-right: 11px;
+    width: calc(35em / 14);
+    height: calc(35em / 14);
+    margin-right: calc(11em / 14);
     vertical-align: top;
-    border-radius: 4px;
+    border-radius: calc(4em / 14);
     overflow: hidden;
+    line-height: 0;
 
     &.guest-avatar::after {
-        outline: 2px solid hsl(0, 0%, 100%);
+        outline: calc(2em / 14) solid hsl(0, 0%, 100%);
+    }
+
+    img {
+        width: 100%;
     }
 }
 
@@ -2058,6 +2064,7 @@ div.focused_table {
 .nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;
+    line-height: inherit;
 }
 
 .typeahead.dropdown-menu {
@@ -2251,11 +2258,11 @@ div.floating_recipient {
 .small_square_button {
     padding: 0;
     border: none;
-    font-size: 12px;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    margin-bottom: 3px;
+    font-size: calc(12em / 14);
+    width: calc(18em / 14);
+    height: calc(18em / 14);
+    border-radius: calc(4em / 14);
+    margin-bottom: calc(3em / 14);
 
     &:focus {
         outline: none;
