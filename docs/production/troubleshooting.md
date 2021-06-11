@@ -44,20 +44,27 @@ supervisorctl status
 When everything is running as expected, you will see something like this:
 
 ```
-process-fts-updates                                             RUNNING   pid 2194, uptime 1:13:11
-zulip-django                                                    RUNNING   pid 2192, uptime 1:13:11
-zulip-tornado                                                   RUNNING   pid 2193, uptime 1:13:11
-zulip-workers:zulip-events-confirmation-emails                  RUNNING   pid 2199, uptime 1:13:11
-zulip-workers:zulip-events-digest_emails                        RUNNING   pid 2205, uptime 1:13:11
-zulip-workers:zulip-events-email_mirror                         RUNNING   pid 2203, uptime 1:13:11
-zulip-workers:zulip-events-error_reports                        RUNNING   pid 2200, uptime 1:13:11
-zulip-workers:zulip-events-missedmessage_mobile_notifications   RUNNING   pid 2204, uptime 1:13:11
-zulip-workers:zulip-events-missedmessage_reminders              RUNNING   pid 2206, uptime 1:13:11
-zulip-workers:zulip-events-signups                              RUNNING   pid 2198, uptime 1:13:11
-zulip-workers:zulip-events-slowqueries                          RUNNING   pid 2202, uptime 1:13:11
-zulip-workers:zulip-events-user-activity                        RUNNING   pid 2197, uptime 1:13:11
-zulip-workers:zulip-events-user-activity-interval               RUNNING   pid 2196, uptime 1:13:11
-zulip-workers:zulip-events-user-presence                        RUNNING   pid 2195, uptime 1:13:11
+process-fts-updates                                             RUNNING   pid 11392, uptime 19:40:06
+smokescreen                                                     RUNNING   pid 3113, uptime 29 days, 21:58:32
+teleport_node                                                   RUNNING   pid 15683, uptime 3 days, 13:01:58
+zulip-django                                                    RUNNING   pid 11441, uptime 19:39:57
+zulip-tornado                                                   RUNNING   pid 11397, uptime 19:40:03
+zulip_deliver_scheduled_emails                                  RUNNING   pid 10289, uptime 19:41:04
+zulip_deliver_scheduled_messages                                RUNNING   pid 10294, uptime 19:41:02
+zulip-workers:zulip_events_deferred_work                        RUNNING   pid 10314, uptime 19:41:00
+zulip-workers:zulip_events_digest_emails                        RUNNING   pid 10339, uptime 19:40:57
+zulip-workers:zulip_events_email_mirror                         RUNNING   pid 10751, uptime 19:40:52
+zulip-workers:zulip_events_email_senders                        RUNNING   pid 10769, uptime 19:40:49
+zulip-workers:zulip_events_embed_links                          RUNNING   pid 11035, uptime 19:40:46
+zulip-workers:zulip_events_embedded_bots                        RUNNING   pid 11139, uptime 19:40:43
+zulip-workers:zulip_events_error_reports                        RUNNING   pid 11154, uptime 19:40:40
+zulip-workers:zulip_events_invites                              RUNNING   pid 11261, uptime 19:40:36
+zulip-workers:zulip_events_missedmessage_emails                 RUNNING   pid 11346, uptime 19:40:21
+zulip-workers:zulip_events_missedmessage_mobile_notifications   RUNNING   pid 11351, uptime 19:40:19
+zulip-workers:zulip_events_outgoing_webhooks                    RUNNING   pid 11358, uptime 19:40:17
+zulip-workers:zulip_events_user_activity                        RUNNING   pid 11365, uptime 19:40:14
+zulip-workers:zulip_events_user_activity_interval               RUNNING   pid 11376, uptime 19:40:11
+zulip-workers:zulip_events_user_presence                        RUNNING   pid 11384, uptime 19:40:08
 ```
 
 If you see any services showing a status other than `RUNNING`, or you
