@@ -110,6 +110,7 @@ from zerver.lib.message import (
     update_first_visible_message_id,
     wildcard_mention_allowed,
 )
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.realm_icon import realm_icon_url
@@ -1979,15 +1980,17 @@ def do_send_messages(
                 user_id in send_request.wildcard_mention_user_ids and "wildcard_mentioned" in flags
             )
             users.append(
-                dict(
-                    id=user_id,
-                    flags=flags,
-                    mentioned=("mentioned" in flags),
-                    online_push_enabled=(user_id in send_request.online_push_user_ids),
-                    stream_push_notify=(user_id in send_request.stream_push_user_ids),
-                    stream_email_notify=(user_id in send_request.stream_email_user_ids),
-                    wildcard_mention_notify=wildcard_mention_notify,
-                    sender_is_muted=(user_id in send_request.muted_sender_user_ids),
+                asdict(
+                    UserMessageNotificationsData(
+                        id=user_id,
+                        flags=flags,
+                        mentioned=("mentioned" in flags),
+                        online_push_enabled=(user_id in send_request.online_push_user_ids),
+                        stream_push_notify=(user_id in send_request.stream_push_user_ids),
+                        stream_email_notify=(user_id in send_request.stream_email_user_ids),
+                        wildcard_mention_notify=wildcard_mention_notify,
+                        sender_is_muted=(user_id in send_request.muted_sender_user_ids),
+                    )
                 )
             )
 
