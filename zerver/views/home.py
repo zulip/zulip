@@ -205,11 +205,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "user_profile": user_profile,
             "page_params": page_params,
             "csp_nonce": csp_nonce,
-            "is_owner": user_permission_info.is_realm_owner,
-            "is_admin": user_permission_info.is_realm_admin,
-            "is_guest": user_permission_info.is_guest,
             "color_scheme": user_permission_info.color_scheme,
-            "max_file_upload_size_mib": settings.MAX_FILE_UPLOAD_SIZE,
         },
     )
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

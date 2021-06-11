@@ -3,6 +3,7 @@ import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 
 import timezones from "../generated/timezones.json";
+import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
@@ -168,4 +169,16 @@ export function set_settings_header(key) {
                 " sidebar list. Please add it.",
         );
     }
+}
+
+export function initialize() {
+    const rendered_settings_overlay = render_settings_overlay({
+        is_owner: page_params.is_owner,
+        is_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
+        show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
+        show_emoji_settings_lock:
+            !page_params.is_admin && page_params.realm_add_emoji_by_admins_only,
+    });
+    $("#settings_overlay_container").append(rendered_settings_overlay);
 }
