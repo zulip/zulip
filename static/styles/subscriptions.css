@@ -97,7 +97,10 @@
 .stream-email {
     font-family: "Source Code Pro", monospace;
     padding: 5px;
-    font-size: 0.9em;
+    /* We need a smaller font because this is fixed-width and we really
+       want it to fit without line-wrapping. 82.5% copies our code block
+       font size. */
+    font-size: 82.5%;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
@@ -832,7 +835,6 @@
     }
 
     .stream-header {
-        margin-bottom: 20px;
         white-space: nowrap;
 
         .stream-name {
@@ -841,12 +843,10 @@
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
-            padding-bottom: 5px;
             white-space: nowrap;
             max-width: 260px;
 
             .stream-name-editable {
-                line-height: 1em;
                 display: block;
                 max-width: 20ch;
                 overflow: hidden;
@@ -893,7 +893,6 @@
     }
 
     .stream-description {
-        font-size: 0.9em;
         margin-bottom: 5px;
     }
 
@@ -912,7 +911,6 @@
 
         &[contenteditable="true"] {
             display: inline-block;
-            vertical-align: top;
             color: hsl(170, 48%, 54%);
 
             &:focus {
@@ -941,7 +939,7 @@
 
         &:not(:empty) {
             position: relative;
-            top: 2px;
+            top: 3px;
         }
 
         &:hover {
@@ -952,7 +950,6 @@
     .checkmark {
         display: none;
         margin-left: 5px;
-        font-size: 0.9rem;
         color: hsl(0, 0%, 67%);
 
         cursor: pointer;
@@ -964,7 +961,6 @@
 
     .subscription-type {
         margin-bottom: 10px;
-        font-size: 0.9em;
         opacity: 0.5;
 
         .subscription-type-text {
