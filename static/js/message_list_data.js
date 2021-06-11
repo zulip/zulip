@@ -144,7 +144,7 @@ export class MessageListData {
     is_search() {
         return this.filter.is_search();
     }
-    can_mark_messages_read() {
+    mark_messages_read_default() {
         return this.filter.mark_messages_read_default();
     }
     _get_predicate() {

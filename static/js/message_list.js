@@ -124,7 +124,7 @@ export class MessageList {
     }
 
     can_mark_messages_read() {
-        return this.data.can_mark_messages_read();
+        return this.data.mark_messages_read_default();
     }
 
     clear({clear_selected_id = true} = {}) {
