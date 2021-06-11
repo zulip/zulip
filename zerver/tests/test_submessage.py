@@ -100,6 +100,42 @@ class TestBasics(ZulipTestCase):
         result = self.client_post("/json/submessage", payload)
         self.assert_json_error(result, "Invalid message(s)")
 
+    def test_original_sender_enforced(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream_name = "Verona"
+
+        message_id = self.send_stream_message(
+            sender=cordelia,
+            stream_name=stream_name,
+        )
+        self.login_user(hamlet)
+
+        payload = dict(
+            message_id=message_id,
+            msg_type="whatever",
+            content="{}",
+        )
+
+        # Hamlet can't just go attaching submessages to Cordelia's
+        # message, even though he does have read access here to the
+        # message itself.
+        result = self.client_post("/json/submessage", payload)
+        self.assert_json_error(result, "You cannot attach a submessage to this message.")
+
+        # Since Hamlet is actually subcribed to the stream, he is welcome
+        # to send submessages to Cordelia once she initiates the "subconversation".
+        do_add_submessage(
+            realm=cordelia.realm,
+            sender_id=cordelia.id,
+            message_id=message_id,
+            msg_type="whatever",
+            content="whatever",
+        )
+
+        result = self.client_post("/json/submessage", payload)
+        self.assert_json_success(result)
+
     def test_endpoint_success(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")

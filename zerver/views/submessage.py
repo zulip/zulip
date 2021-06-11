@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
-from zerver.lib.actions import do_add_submessage
+from zerver.lib.actions import do_add_submessage, verify_submessage_sender
 from zerver.lib.message import access_message
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int
@@ -22,6 +22,12 @@ def process_submessage(
     content: str = REQ(),
 ) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id, lock_message=True)
+
+    verify_submessage_sender(
+        message_id=message.id,
+        message_sender_id=message.sender_id,
+        submessage_sender_id=user_profile.id,
+    )
 
     try:
         orjson.loads(content)
