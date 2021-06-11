@@ -1,3 +1,7 @@
+// Any single user should send add a finite number of options
+// to a poll. We arbitrarily pick this value.
+const MAX_IDX = 1000;
+
 export class PollData {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
@@ -98,8 +102,19 @@ export class PollData {
             inbound: (sender_id, data) => {
                 // All message readers may add a new option to the poll.
                 const idx = data.idx;
-                const key = sender_id + "," + idx;
                 const option = data.option;
+
+                if (!Number.isInteger(idx) || idx < 0 || idx > MAX_IDX) {
+                    this.report_error_function("poll widget: bad type for inbound option idx");
+                    return;
+                }
+
+                if (typeof option !== "string") {
+                    this.report_error_function("poll widget: bad type for inbound option");
+                    return;
+                }
+
+                const key = sender_id + "," + idx;
                 const votes = new Map();
 
                 this.key_to_option.set(key, {
@@ -136,6 +151,11 @@ export class PollData {
                     return;
                 }
 
+                if (typeof data.question !== "string") {
+                    this.report_error_function("poll widget: bad type for inbound question");
+                    return;
+                }
+
                 this.set_question(data.question);
             },
         },
@@ -162,6 +182,17 @@ export class PollData {
                 // All message readers may vote on poll options.
                 const key = data.key;
                 const vote = data.vote;
+
+                if (typeof key !== "string") {
+                    this.report_error_function("poll widget: bad type for inbound vote key");
+                    return;
+                }
+
+                if (!Number.isInteger(vote) || !(vote === 1 || vote === -1)) {
+                    this.report_error_function("poll widget: bad value for inbound vote count");
+                    return;
+                }
+
                 const option = this.key_to_option.get(key);
 
                 if (option === undefined) {
@@ -182,8 +213,10 @@ export class PollData {
 
     handle_event(sender_id, data) {
         const type = data.type;
-        if (this.handle[type]) {
+        if (this.handle[type] && this.handle[type].inbound) {
             this.handle[type].inbound(sender_id, data);
+        } else {
+            this.report_error_function(`poll widget: unknown inbound type: ${type}`);
         }
     }
 
