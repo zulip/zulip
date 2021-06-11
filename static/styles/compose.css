@@ -458,21 +458,17 @@ a.compose_control_button.hide {
     /* minus 5px padding. */
     width: calc(100% - 12px);
     padding: 5px;
+    margin-top: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
-    min-height: 36px;
+    min-height: 42px;
     overflow: auto;
 
     border: 1px solid hsl(0, 0%, 67%);
     border-radius: 4px;
     background-color: hsla(0, 0%, 0%, 0.02);
     cursor: not-allowed;
-}
-
-#preview_message_area {
-    margin-top: 5px;
-    min-height: 42px;
 }
 
 .markdown_preview_spinner {
