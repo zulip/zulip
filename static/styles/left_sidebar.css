@@ -172,7 +172,7 @@ li.show-more-topics {
 }
 
 #private-container {
-    max-height: 200px;
+    max-height: 210px;
 
     /* Match the opacity for global-filters icons. */
     span.fa-group {
@@ -430,11 +430,12 @@ ul.topic-list {
 
 ul.expanded_private_messages {
     list-style-type: none;
-    font-size: 13px;
+    span.fa-group {
+        font-size: 90%;
+    }
     font-weight: 400;
     margin-left: 0;
     padding-bottom: 2px;
-    margin-top: 3px;
 }
 
 li.topic-list-item {
