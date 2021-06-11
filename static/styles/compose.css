@@ -475,12 +475,6 @@ a.compose_control_button.hide {
     min-height: 42px;
 }
 
-a.undo_markdown_preview {
-    text-decoration: none;
-    position: relative;
-    font-size: 15px;
-}
-
 .markdown_preview_spinner {
     margin: auto;
 }
