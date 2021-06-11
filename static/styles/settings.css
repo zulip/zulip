@@ -531,7 +531,6 @@ input[type="checkbox"] {
     margin-left: 10px;
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
-    font-size: 15px;
 
     &:not(:empty) {
         border: 1px solid hsl(156, 30%, 50%);
@@ -605,7 +604,6 @@ input[type="checkbox"] {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
-        font-size: 14px;
         padding-left: 0;
         margin-left: 5px;
         border: none;
