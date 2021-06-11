@@ -28,9 +28,10 @@ class zulip::supervisor {
   file { [
     "${zulip::common::supervisor_system_conf_dir}/cron.conf",
     "${zulip::common::supervisor_system_conf_dir}/nginx.conf",
+    "${zulip::common::supervisor_system_conf_dir}/smokescreen.conf",
     "${zulip::common::supervisor_system_conf_dir}/thumbor.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
     "${zulip::common::supervisor_system_conf_dir}/zulip.conf",
+    "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
   ]:
     ensure => absent,
   }

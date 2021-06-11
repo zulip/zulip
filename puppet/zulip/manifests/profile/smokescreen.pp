@@ -54,9 +54,4 @@ class zulip::profile::smokescreen {
     content => template('zulip/supervisor/smokescreen.conf.erb'),
     notify  => Service[supervisor],
   }
-  # Removed 2021-03 in version 4.0; these lines can be removed in
-  # Zulip version 5.0 and later.
-  file { '/etc/supervisor/conf.d/smokescreen.conf':
-    ensure  => absent,
-  }
 }
