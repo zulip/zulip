@@ -1975,7 +1975,9 @@ def do_send_messages(
         users: List[Dict[str, Union[int, List[str], bool]]] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
-            wildcard_mention_notify = user_id in send_request.wildcard_mention_user_ids
+            wildcard_mention_notify = (
+                user_id in send_request.wildcard_mention_user_ids and "wildcard_mentioned" in flags
+            )
             users.append(
                 dict(
                     id=user_id,

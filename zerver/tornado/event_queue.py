@@ -749,9 +749,7 @@ def missedmessage_hook(
         # stream_push_notify is set in process_message_event.
         stream_push_notify = internal_data.get("stream_push_notify", False)
         stream_email_notify = internal_data.get("stream_email_notify", False)
-        wildcard_mention_notify = (
-            internal_data.get("wildcard_mention_notify", False) and "wildcard_mentioned" in flags
-        )
+        wildcard_mention_notify = internal_data.get("wildcard_mention_notify", False)
 
         stream_name = None
         if not private_message:
@@ -954,9 +952,7 @@ def process_message_event(
         mentioned = "mentioned" in flags
         stream_push_notify = user_data.get("stream_push_notify", False)
         stream_email_notify = user_data.get("stream_email_notify", False)
-        wildcard_mention_notify = (
-            user_data.get("wildcard_mention_notify", False) and "wildcard_mentioned" in flags
-        )
+        wildcard_mention_notify = user_data.get("wildcard_mention_notify", False)
         sender_is_muted = user_data.get("sender_is_muted", False)
 
         extra_user_data[user_profile_id] = dict(
