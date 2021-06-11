@@ -7,9 +7,9 @@
 {start_tabs}
 {tab|python}
 
-{generate_code_example(python)|/users:post|example(admin_config=True)}
+{generate_code_example(python)|/users:post|example}
 
-{generate_code_example(javascript)|/users:post|example(admin_config=True)}
+{generate_code_example(javascript)|/users:post|example}
 
 {tab|curl}
 

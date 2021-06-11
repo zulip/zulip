@@ -214,6 +214,13 @@ def get_openapi_fixture_description(endpoint: str, method: str, status_code: str
     return get_schema(endpoint, method, status_code)["description"]
 
 
+def check_requires_administrator(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint requires admin config."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-requires-administrator", False
+    )
+
+
 def generate_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> List[str]:
     """Generate fixture to be rendered"""
     fixture = []

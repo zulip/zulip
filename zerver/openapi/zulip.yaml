@@ -5007,6 +5007,7 @@ paths:
         This API corresponds to the
         [delete a message completely][delete-completely] feature documented in
         the Zulip Help Center.
+      x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/MessageId"
       responses:
@@ -5264,6 +5265,7 @@ paths:
         Create a new user account via the API.
 
         `POST {{ api_url }}/v1/users`
+      x-requires-administrator: true
       parameters:
         - name: email
           in: query
@@ -5329,9 +5331,8 @@ paths:
       operationId: reactivate_user
       summary: Reactivate a user
       tags: ["users"]
+      x-requires-administrator: true
       description: |
-        {!api-admin-only.md!}
-
         [Reactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
@@ -6531,8 +6532,6 @@ paths:
       summary: Reorder custom profile fields
       tags: ["server_and_organizations"]
       description: |
-        {!api-admin-only.md!}
-
         Reorder the custom profile fields in the user's organization.
 
         `PATCH {{ api_url }}/v1/realm/profile_fields`
@@ -6542,6 +6541,7 @@ paths:
 
         This endpoint is used to implement the dragging feature described in the
         [custom profile fields documentation](/help/add-custom-profile-fields).
+      x-requires-administrator: true
       parameters:
         - name: order
           in: query
@@ -6570,11 +6570,10 @@ paths:
       summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
-        {!api-admin-only.md!}
-
         [Create a custom profile field](/help/add-custom-profile-fields) in the user's organization.
 
         `POST {{ api_url }}/v1/realm/profile_fields`
+      x-requires-administrator: true
       parameters:
         - name: name
           in: query
@@ -6960,9 +6959,8 @@ paths:
       operationId: update_user
       summary: Update a user
       tags: ["users"]
+      x-requires-administrator: true
       description: |
-        {!api-admin-only.md!}
-
         Administrative endpoint to update the details of another user in the organization.
 
         `PATCH {{ api_url }}/v1/users/{user_id}`
@@ -7042,9 +7040,8 @@ paths:
       operationId: deactivate_user
       summary: Deactivate a user
       tags: ["users"]
+      x-requires-administrator: true
       description: |
-        {!api-admin-only.md!}
-
         [Deactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
