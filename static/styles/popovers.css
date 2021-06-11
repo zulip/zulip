@@ -305,7 +305,6 @@ ul {
         }
     }
     #default-section {
-        font-size: 15px;
         display: inline-block;
         vertical-align: top;
 
@@ -332,10 +331,6 @@ ul {
             .name {
                 color: hsl(0, 0%, 20%);
                 font-weight: 600;
-            }
-
-            .value {
-                font-size: 15px;
             }
 
             &[data-type="2"] .value {
