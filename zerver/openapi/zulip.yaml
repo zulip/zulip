@@ -1693,12 +1693,6 @@ paths:
                                   enum:
                                     - private
                                     - stream
-                                recipient_id:
-                                  type: integer
-                                  description: |
-                                    Only present for private messages.
-
-                                    The ID of the user (or group of users) who received the private message.
                                 sender_id:
                                   type: integer
                                   description: |
@@ -1720,7 +1714,6 @@ paths:
                               example:
                                 {
                                   "type": "delete_message",
-                                  "recipient_id": 10,
                                   "sender_id": 8,
                                   "message_type": "private",
                                   "message_id": 37,

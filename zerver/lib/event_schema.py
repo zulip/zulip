@@ -230,7 +230,6 @@ delete_message_event = event_dict_type(
         ("message_ids", ListType(int)),
         ("stream_id", int),
         ("topic", str),
-        ("recipient_id", int),
         ("sender_id", int),
     ],
 )
@@ -253,7 +252,7 @@ def check_delete_message(
     if message_type == "stream":
         keys |= {"stream_id", "topic"}
     elif message_type == "private":
-        keys |= {"recipient_id", "sender_id"}
+        keys |= {"sender_id"}
     else:
         raise AssertionError("unexpected message_type")
 

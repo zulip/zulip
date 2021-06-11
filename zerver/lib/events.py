@@ -987,23 +987,6 @@ def apply_event(
         if "raw_recent_private_conversations" not in state or event["message_type"] != "private":
             return
 
-        recipient_id = get_recent_conversations_recipient_id(
-            user_profile, event["recipient_id"], event["sender_id"]
-        )
-
-        # Ideally, we'd have test coverage for these two blocks.  To
-        # do that, we'll need a test where we delete not-the-latest
-        # messages or delete a private message not in
-        # recent_private_conversations.
-        if recipient_id not in state["raw_recent_private_conversations"]:  # nocoverage
-            return
-
-        old_max_message_id = state["raw_recent_private_conversations"][recipient_id][
-            "max_message_id"
-        ]
-        if old_max_message_id not in message_ids:  # nocoverage
-            return
-
         # OK, we just deleted what had been the max_message_id for
         # this recent conversation; we need to recompute that value
         # from scratch.  Definitely don't need to re-query everything,
