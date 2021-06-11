@@ -2,8 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_template, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -11,6 +10,9 @@ const $ = require("../zjsunit/zjquery");
 const {PollData} = zrequire("../../static/shared/js/poll_data");
 
 mock_cjs("jquery", $);
+
+const render_poll_widget = mock_template("widgets/poll_widget.hbs");
+const render_poll_widget_results = mock_template("widgets/poll_widget_results.hbs");
 
 const poll_widget = zrequire("poll_widget");
 
@@ -179,16 +181,9 @@ run_test("PollData my question", () => {
     });
 });
 
-run_test("activate another person poll", () => {
-    stub_templates((template_name) => {
-        if (template_name === "widgets/poll_widget") {
-            return "widgets/poll_widget";
-        }
-        if (template_name === "widgets/poll_widget_results") {
-            return "widgets/poll_widget_results";
-        }
-        throw new Error(`Unknown template ${template_name}`);
-    });
+run_test("activate another person poll", (override) => {
+    override(render_poll_widget, "f", () => "widgets/poll_widget");
+    override(render_poll_widget_results, "f", () => "widgets/poll_widget_results");
 
     const widget_elem = $("<div>").addClass("widget-content");
 
@@ -301,16 +296,9 @@ run_test("activate another person poll", () => {
     widget_elem.handle_events(add_question_event);
 });
 
-run_test("activate own poll", () => {
-    stub_templates((template_name) => {
-        if (template_name === "widgets/poll_widget") {
-            return "widgets/poll_widget";
-        }
-        if (template_name === "widgets/poll_widget_results") {
-            return "widgets/poll_widget_results";
-        }
-        throw new Error(`Unknown template ${template_name}`);
-    });
+run_test("activate own poll", (override) => {
+    override(render_poll_widget, "f", () => "widgets/poll_widget");
+    override(render_poll_widget_results, "f", () => "widgets/poll_widget_results");
 
     const widget_elem = $("<div>").addClass("widget-content");
     let out_data;
