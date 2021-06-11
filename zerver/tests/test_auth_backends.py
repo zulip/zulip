@@ -4047,6 +4047,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_APPEND_DOMAIN="zulip.com",
         AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "org_membership": "department"},
     )
     def test_ldap_auth_email_auth_organization_restriction(self) -> None:
@@ -4056,26 +4057,27 @@ class FetchAPIKeyTest(ZulipTestCase):
         # The second user has one set, but to a different value
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
         self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
         self.change_ldap_user_attr("hamlet", "department", "zulip")
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_success(result)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_APPEND_DOMAIN="zulip.com",
         AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "org_membership": "department"},
         AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={
             "zulip": [{"test1": "test", "test2": "testing"}, {"test1": "test2"}],
@@ -4088,7 +4090,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         # The first user has no attribute set
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
@@ -4096,7 +4098,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         # Check with only one set
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
@@ -4105,7 +4107,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.change_ldap_user_attr("hamlet", "department", "wrongDepartment")
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_success(result)
         self.remove_ldap_user_attr("hamlet", "test2")
@@ -4115,7 +4117,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.change_ldap_user_attr("hamlet", "test1", "test2")
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_success(result)
 
@@ -4123,7 +4125,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         with override_settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
             result = self.client_post(
                 "/api/v1/fetch_api_key",
-                dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
             self.assert_json_success(result)
 
@@ -4131,7 +4133,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.change_ldap_user_attr("hamlet", "test1", "invalid")
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
@@ -4139,7 +4141,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.change_ldap_user_attr("hamlet", "department", "zulip")
         result = self.client_post(
             "/api/v1/fetch_api_key",
-            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
         self.assert_json_success(result)
         self.remove_ldap_user_attr("hamlet", "department")
@@ -4150,7 +4152,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         ):
             result = self.client_post(
                 "/api/v1/fetch_api_key",
-                dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+                dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
             self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
