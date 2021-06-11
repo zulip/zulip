@@ -44,7 +44,7 @@ class zulip_ops::profile::grafana {
 
   zulip_ops::teleport::application { 'monitoring': port => '3000' }
   zulip_ops::firewall_allow { 'grafana': port => '3000' }
-  file { '/etc/supervisor/conf.d/grafana.conf':
+  file { "${zulip::common::supervisor_conf_dir}/grafana.conf":
     ensure  => file,
     require => [
       Package[supervisor],
