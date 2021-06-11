@@ -192,12 +192,14 @@
 }
 
 #compose_invite_users,
+#compose_mention_one_on_one_alerts,
 #compose_private_stream_alert {
     /* Don't overlap into the compose_close × */
     margin-right: 10px;
 }
 
 .compose_invite_user,
+.compose_mention_one_on_one_alert,
 .compose_private_stream_alert,
 .compose-all-everyone,
 .compose-announce,
@@ -214,6 +216,7 @@
 }
 
 .compose_invite_close,
+.compose_mention_one_on_one_alert_close,
 .compose_private_stream_alert_close {
     display: inline-block;
     margin-top: 4px;
@@ -224,6 +227,7 @@
 .compose-all-everyone-controls,
 .compose-announce-controls,
 .compose_invite_user_controls,
+.compose_mention_one_on_one_alert_controls,
 .compose_private_stream_alert_controls {
     float: right;
     position: relative;

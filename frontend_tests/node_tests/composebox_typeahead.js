@@ -383,6 +383,8 @@ test("content_typeahead_selected", (override) => {
     fake_this.completing = "mention";
 
     override(compose, "warn_if_mentioning_unsubscribed_user", () => {});
+    override(compose, "warn_if_mention_one_on_one", () => {});
+    override(compose, "warn_if_private_stream_is_linked", () => {});
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
@@ -390,10 +392,15 @@ test("content_typeahead_selected", (override) => {
     expected_value = "@**Mark Twin|105** ";
     assert.equal(actual_value, expected_value);
 
-    let warned_for_mention = false;
+    let warned_for_unsubscribed_mention = false;
     override(compose, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
         assert.equal(mentioned, othello);
-        warned_for_mention = true;
+        warned_for_unsubscribed_mention = true;
+    });
+    let warned_for_one_on_one_mention = false;
+    override(compose, "warn_if_mention_one_on_one", (mentioned) => {
+        assert.equal(mentioned, othello);
+        warned_for_one_on_one_mention = true;
     });
 
     fake_this.query = "@oth";
@@ -401,7 +408,8 @@ test("content_typeahead_selected", (override) => {
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
-    assert.ok(warned_for_mention);
+    assert.ok(warned_for_unsubscribed_mention);
+    assert.ok(warned_for_one_on_one_mention);
 
     fake_this.query = "Hello @oth";
     fake_this.token = "oth";
@@ -424,7 +432,9 @@ test("content_typeahead_selected", (override) => {
     fake_this.query = "@back";
     fake_this.token = "back";
     with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
-        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+        with_field(compose, "warn_if_mention_one_on_one", unexpected_warn, () => {
+            actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+        });
     });
     expected_value = "@*Backend* ";
     assert.equal(actual_value, expected_value);
@@ -438,13 +448,15 @@ test("content_typeahead_selected", (override) => {
     // silent mention
     fake_this.completing = "silent_mention";
     function unexpected_warn() {
-        throw new Error("unexpected warning about unsubscribed user");
+        throw new Error("unexpected warning about unsubscribed or 1:1 PM user");
     }
 
     fake_this.query = "@_kin";
     fake_this.token = "kin";
     with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
-        actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+        with_field(compose, "warn_if_mention_one_on_one", unexpected_warn, () => {
+            actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+        });
     });
 
     expected_value = "@_**King Hamlet** ";
@@ -470,8 +482,11 @@ test("content_typeahead_selected", (override) => {
 
     fake_this.query = "@_back";
     fake_this.token = "back";
+    
     with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
-        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+        with_field(compose, "warn_if_mention_one_on_one", unexpected_warn, () => {
+            actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+        });
     });
     expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);

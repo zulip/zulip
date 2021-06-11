@@ -6,6 +6,7 @@ import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
+import render_compose_mention_one_on_one_alert from "../templates/compose_mention_one_on_one_alert.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
 import * as blueslip from "./blueslip";
@@ -44,6 +45,7 @@ import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
+import { get_user_ids } from "./user_pill";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
@@ -149,6 +151,11 @@ export function clear_announce_warnings() {
 export function clear_invites() {
     $("#compose_invite_users").hide();
     $("#compose_invite_users").empty();
+}
+
+export function clear_mention_one_on_one_alert() {
+    $("#compose_mention_one_on_one_alerts").hide();
+    $("#compose_mention_one_on_one_alerts").empty();
 }
 
 export function clear_private_stream_alert() {
@@ -377,6 +384,7 @@ export function enter_with_preview_open() {
 export function finish() {
     clear_preview_area();
     clear_invites();
+    clear_mention_one_on_one_alert();
     clear_private_stream_alert();
     notifications.clear_compose_notifications();
 
@@ -988,6 +996,43 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
     }
 }
 
+export function warn_if_mention_one_on_one(mentioned) {
+    if (compose_state.get_message_type() !== "private") {
+        return;
+    }
+
+    const pm_users = compose_pm_pill.get_user_ids();
+
+    if (pm_users.length !== 1) {
+        return;
+    }
+
+    const user_id = mentioned.user_id;
+
+    if (!pm_users.includes(user_id)) {
+        return;
+    }
+
+    const warning_area = $("#compose_mention_one_on_one_alerts");
+    const existing_mentions_area = $("#compose_mention_one_on_one_alerts .compose_mention_one_on_one_alert");
+
+    const existing_mentions = Array.from($(existing_mentions_area), (user_row) =>
+        Number.parseInt($(user_row).data("user-id"), 10),
+    );
+
+    if (!existing_mentions.includes(user_id)) {
+        const context = {
+            user_id,
+            name: mentioned.full_name,
+        };
+        const new_row = render_compose_mention_one_on_one_alert(context);
+    
+        warning_area.append(new_row);
+    }
+    
+    warning_area.show();
+}
+
 export function warn_if_private_stream_is_linked(linked_stream) {
     // For PMs, we currently don't warn about links to private
     // streams, since you are specifically sharing the existence of
@@ -1205,6 +1250,21 @@ export function initialize() {
             all_invites.hide();
         }
     });
+
+    $("#compose_mention_one_on_one_alerts").on(
+        "click",
+        ".compose_mention_one_on_one_alert_close",
+        (event) => {
+            const stream_alert_row = $(event.target).parents(".compose_mention_one_on_one_alert");
+            const stream_alert = $("#compose_mention_one_on_one_alerts");
+
+            stream_alert_row.remove();
+
+            if (stream_alert.children().length === 0) {
+                stream_alert.hide();
+            }
+        },
+    );
 
     $("#compose_private_stream_alert").on(
         "click",
