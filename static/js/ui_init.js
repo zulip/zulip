@@ -65,6 +65,7 @@ import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import * as settings from "./settings";
 import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -503,6 +504,7 @@ export function initialize_everything() {
     // modules were migrated from Django templates to handlebars).
     initialize_left_sidebar();
     initialize_right_sidebar();
+    settings.initialize();
     compose.initialize();
     initialize_navbar();
     realm_logo.rerender();
