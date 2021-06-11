@@ -12,6 +12,7 @@ sys.path.append(ZULIP_PATH)
 from pygments import __version__ as pygments_version
 from pytz import VERSION as timezones_version
 
+from scripts.lib import clean_unused_caches
 from scripts.lib.zulip_tools import (
     ENDC,
     OKBLUE,
@@ -202,21 +203,6 @@ def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
         return True
 
 
-def clean_unused_caches() -> None:
-    args = argparse.Namespace(
-        threshold_days=6,
-        # The defaults here should match parse_cache_script_args in zulip_tools.py
-        dry_run=False,
-        verbose=False,
-        no_headings=True,
-    )
-    from scripts.lib import clean_emoji_cache, clean_node_cache, clean_venv_cache
-
-    clean_venv_cache.main(args)
-    clean_node_cache.main(args)
-    clean_emoji_cache.main(args)
-
-
 def main(options: argparse.Namespace) -> int:
     setup_bash_profile()
     setup_shell_profile("~/.zprofile")
@@ -333,7 +319,15 @@ def main(options: argparse.Namespace) -> int:
         if destroyed:
             print(f"Dropped {destroyed} stale test databases!")
 
-    clean_unused_caches()
+    clean_unused_caches.main(
+        argparse.Namespace(
+            threshold_days=6,
+            # The defaults here should match parse_cache_script_args in zulip_tools.py
+            dry_run=False,
+            verbose=False,
+            no_headings=True,
+        )
+    )
 
     # Keeping this cache file around can cause eslint to throw
     # random TypeErrors when new/updated dependencies are added
