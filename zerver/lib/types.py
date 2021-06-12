@@ -68,3 +68,9 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     extra_attrs: List[str]
     x509cert: str
     x509cert_path: str
+
+
+class FullNameInfo(TypedDict):
+    id: int
+    email: str
+    full_name: str

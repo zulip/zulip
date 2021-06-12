@@ -20,7 +20,7 @@ from zerver.lib.actions import (
     do_update_message,
 )
 from zerver.lib.avatar import avatar_url
-from zerver.lib.markdown import MentionData
+from zerver.lib.mention import MentionData
 from zerver.lib.message import (
     MessageDict,
     get_first_visible_message_id,

@@ -96,8 +96,9 @@ from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
-from zerver.lib.markdown import MentionData, topic_links
+from zerver.lib.markdown import topic_links
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.mention import MentionData
 from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,

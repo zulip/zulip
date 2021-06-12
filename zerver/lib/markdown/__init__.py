@@ -1,14 +1,13 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import datetime
-import functools
 import html
 import logging
 import re
 import time
 import urllib
 import urllib.parse
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -39,7 +38,6 @@ import markdown.treeprocessors
 import markdown.util
 import requests
 from django.conf import settings
-from django.db.models import Q
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
@@ -52,7 +50,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import possible_mentions, possible_user_group_mentions
+from zerver.lib.mention import MentionData, get_stream_name_info
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
@@ -61,15 +59,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import (
-    Message,
-    Realm,
-    UserGroup,
-    UserGroupMembership,
-    UserProfile,
-    get_active_streams,
-    linkifiers_for_realm,
-)
+from zerver.models import Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
 
@@ -90,12 +80,6 @@ def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
         return val
 
     return cache_wrapper
-
-
-class FullNameInfo(TypedDict):
-    id: int
-    email: str
-    full_name: str
 
 
 class LinkInfo(TypedDict):
@@ -2391,132 +2375,6 @@ _privacy_re = re.compile("\\w", flags=re.UNICODE)
 
 def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub("x", content))
-
-
-def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
-    if not mention_texts:
-        return []
-
-    q_list = set()
-
-    name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
-    for mention_text in mention_texts:
-        name_syntax_match = re.match(name_re, mention_text)
-        if name_syntax_match:
-            full_name = name_syntax_match.group("full_name")
-            mention_id = name_syntax_match.group("mention_id")
-            if full_name:
-                # For **name|id** mentions as mention_id
-                # cannot be null inside this block.
-                q_list.add(Q(full_name__iexact=full_name, id=mention_id))
-            else:
-                # For **|id** syntax.
-                q_list.add(Q(id=mention_id))
-        else:
-            # For **name** syntax.
-            q_list.add(Q(full_name__iexact=mention_text))
-
-    rows = (
-        UserProfile.objects.filter(
-            realm_id=realm_id,
-            is_active=True,
-        )
-        .filter(
-            functools.reduce(lambda a, b: a | b, q_list),
-        )
-        .values(
-            "id",
-            "full_name",
-            "email",
-        )
-    )
-    return list(rows)
-
-
-class MentionData:
-    def __init__(self, realm_id: int, content: str) -> None:
-        mention_texts, has_wildcards = possible_mentions(content)
-        possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
-        self.full_name_info = {row["full_name"].lower(): row for row in possible_mentions_info}
-        self.user_id_info = {row["id"]: row for row in possible_mentions_info}
-        self.init_user_group_data(realm_id=realm_id, content=content)
-        self.has_wildcards = has_wildcards
-
-    def message_has_wildcards(self) -> bool:
-        return self.has_wildcards
-
-    def init_user_group_data(self, realm_id: int, content: str) -> None:
-        user_group_names = possible_user_group_mentions(content)
-        self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
-        self.user_group_members: Dict[int, List[int]] = defaultdict(list)
-        group_ids = [group.id for group in self.user_group_name_info.values()]
-
-        if not group_ids:
-            # Early-return to avoid the cost of hitting the ORM,
-            # which shows up in profiles.
-            return
-
-        membership = UserGroupMembership.objects.filter(user_group_id__in=group_ids)
-        for info in membership.values("user_group_id", "user_profile_id"):
-            group_id = info["user_group_id"]
-            user_profile_id = info["user_profile_id"]
-            self.user_group_members[group_id].append(user_profile_id)
-
-    def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
-        # warning: get_user_by_name is not dependable if two
-        # users of the same full name are mentioned. Use
-        # get_user_by_id where possible.
-        return self.full_name_info.get(name.lower(), None)
-
-    def get_user_by_id(self, id: int) -> Optional[FullNameInfo]:
-        return self.user_id_info.get(id, None)
-
-    def get_user_ids(self) -> Set[int]:
-        """
-        Returns the user IDs that might have been mentioned by this
-        content.  Note that because this data structure has not parsed
-        the message and does not know about escaping/code blocks, this
-        will overestimate the list of user ids.
-        """
-        return set(self.user_id_info.keys())
-
-    def get_user_group(self, name: str) -> Optional[UserGroup]:
-        return self.user_group_name_info.get(name.lower(), None)
-
-    def get_group_members(self, user_group_id: int) -> List[int]:
-        return self.user_group_members.get(user_group_id, [])
-
-
-def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
-    if not user_group_names:
-        return {}
-
-    rows = UserGroup.objects.filter(realm_id=realm_id, name__in=user_group_names)
-    dct = {row.name.lower(): row for row in rows}
-    return dct
-
-
-def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, FullNameInfo]:
-    if not stream_names:
-        return {}
-
-    q_list = {Q(name=name) for name in stream_names}
-
-    rows = (
-        get_active_streams(
-            realm=realm,
-        )
-        .filter(
-            functools.reduce(lambda a, b: a | b, q_list),
-        )
-        .values(
-            "id",
-            "name",
-        )
-    )
-
-    dct = {row["name"]: row for row in rows}
-    return dct
 
 
 def do_convert(

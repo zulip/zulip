@@ -27,8 +27,9 @@ from zerver.lib.display_recipient import (
     UserDisplayRecipient,
     bulk_fetch_display_recipients,
 )
-from zerver.lib.markdown import MentionData, markdown_convert, topic_links
+from zerver.lib.markdown import markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.mention import MentionData
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,

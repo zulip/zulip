@@ -25,11 +25,9 @@ from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import (
     MarkdownListPreprocessor,
-    MentionData,
     clear_state_for_testing,
     content_has_emoji_syntax,
     fetch_tweet_data,
-    get_possible_mentions_info,
     get_tweet_id,
     image_preview_enabled,
     markdown_convert,
@@ -41,7 +39,12 @@ from zerver.lib.markdown import (
 )
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
 from zerver.lib.mdiff import diff_strings
-from zerver.lib.mention import possible_mentions, possible_user_group_mentions
+from zerver.lib.mention import (
+    MentionData,
+    get_possible_mentions_info,
+    possible_mentions,
+    possible_user_group_mentions,
+)
 from zerver.lib.message import render_markdown
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase

@@ -167,7 +167,7 @@ from zerver.lib.events import (
     fetch_initial_state_data,
     post_process_state,
 )
-from zerver.lib.markdown import MentionData
+from zerver.lib.mention import MentionData
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
