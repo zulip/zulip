@@ -310,6 +310,10 @@ textarea.new_message_textarea {
     resize: vertical !important;
     margin-top: 5px;
     line-height: calc(18 / 14);
+
+    body.less_dense_mode & {
+        line-height: calc(20 / 14);
+    }
 }
 
 textarea.new_message_textarea,

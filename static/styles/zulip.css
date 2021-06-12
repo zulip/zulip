@@ -40,6 +40,10 @@ body {
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
+
+    &.less_dense_mode {
+        font-size: 15px;
+    }
 }
 
 /* Common background color */
@@ -1435,6 +1439,11 @@ div.focused_table {
         min-height: 0;
         overflow: hidden;
     }
+
+    .less_dense_mode & {
+        line-height: calc(20 / 14);
+        min-height: calc(20em / 14);
+    }
 }
 
 .rtl {
@@ -1446,6 +1455,10 @@ div.focused_table {
 
     resize: vertical !important;
     max-height: 24em;
+
+    .less_dense_mode & {
+        line-height: calc(20 / 14);
+    }
 }
 
 .message_edit_countdown_timer {
