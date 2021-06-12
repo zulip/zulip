@@ -1660,6 +1660,10 @@ paths:
                               description: |
                                 Event sent when a message has been deleted.
                                 Sent to all users who received the message.
+
+                                **Changes**: Before Zulip 5.0 (feature level 77), events
+                                for private messages contained additional `sender_id` and
+                                `recipient_id` fields.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1693,12 +1697,6 @@ paths:
                                   enum:
                                     - private
                                     - stream
-                                sender_id:
-                                  type: integer
-                                  description: |
-                                    Only present for private messages.
-
-                                    The ID of the user who sent the private message.
                                 stream_id:
                                   type: integer
                                   description: |
@@ -1714,7 +1712,6 @@ paths:
                               example:
                                 {
                                   "type": "delete_message",
-                                  "sender_id": 8,
                                   "message_type": "private",
                                   "message_id": 37,
                                   "id": 0,

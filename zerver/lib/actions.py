@@ -5896,7 +5896,6 @@ class DeleteMessagesEvent(TypedDict, total=False):
     type: str
     message_ids: List[int]
     message_type: str
-    sender_id: int
     topic: str
     stream_id: int
 
@@ -6323,8 +6322,6 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         message_type = "private"
         ums = UserMessage.objects.filter(message_id__in=message_ids)
         users_to_notify = [um.user_profile_id for um in ums]
-        # TODO: We should plan to remove `sender_id` here.
-        event["sender_id"] = sample_message.sender_id
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
 
     if message_type == "stream":

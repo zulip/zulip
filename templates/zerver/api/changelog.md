@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 77**
+
+* [`GET /events`](/api/get-events): Removed `recipient_id` and
+  `sender_id` field in responses of `delete_message` event when
+  `message_type` is `private`.
+
 **Feature level 76**
 
 * [`POST /fetch_api_key`](/api/fetch_api_key), [`POST
