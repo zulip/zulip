@@ -22,5 +22,15 @@
         See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/{{ pagename }}.html">documentation for the latest stable release</a>.</p>
     </div>
     {% endif %}
+
+    <script type="text/javascript">
+      // <!-- Adds target=_blank to external links -->
+      $(document).ready(function () {
+        $('a[href^="http://"], a[href^="https://"]')
+        .not('a[class*=internal]')
+        .attr({ 'target': '_blank', 'rel': "noopener noreferrer" });
+      });
+    </script>
+
     {{ super() }}
 {% endblock %}
