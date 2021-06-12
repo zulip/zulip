@@ -16,6 +16,7 @@ import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
+import * as util from "./util";
 
 function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);
@@ -148,11 +149,7 @@ function generate_multiuse_invite() {
 
 export function get_invite_streams() {
     const streams = stream_data.get_invite_stream_data();
-
-    function compare_streams(a, b) {
-        return a.name.localeCompare(b.name);
-    }
-    streams.sort(compare_streams);
+    streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
 }
 
