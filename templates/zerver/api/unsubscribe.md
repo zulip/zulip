@@ -13,11 +13,11 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=["subscriptions"])|/users/me/subscriptions:delete|example}
+{generate_code_example(curl)|/users/me/subscriptions:delete|example}
 
 You may specify the `principals` parameter like so:
 
-{generate_code_example(curl)|/users/me/subscriptions:delete|example}
+{generate_code_example(curl, include=["principals"])|/users/me/subscriptions:delete|example}
 
 **Note**: Unsubscribing another user from a stream requires
 administrative privileges.

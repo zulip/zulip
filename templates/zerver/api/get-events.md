@@ -32,7 +32,7 @@ a queue for you.
 
 {tab|curl}
 
-{generate_code_example(curl, include=["queue_id", "last_event_id"])|/events:get|example}
+{generate_code_example(curl)|/events:get|example}
 
 {end_tabs}
 

@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, exclude=["client_gravatar", "apply_markdown", "use_first_unread_anchor"])|/messages:get|example}
+{generate_code_example(curl)|/messages:get|example}
 
 {end_tabs}
 

@@ -13,12 +13,12 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=["subscriptions"])|/users/me/subscriptions:post|example}
+{generate_code_example(curl)|/users/me/subscriptions:post|example}
 
 To subscribe another user to a stream, you may pass in
 the `principals` parameter, like so:
 
-{generate_code_example(curl, include=["subscriptions", "principals"])|/users/me/subscriptions:post|example}
+{generate_code_example(curl, include=["principals"])|/users/me/subscriptions:post|example}
 
 {end_tabs}
 

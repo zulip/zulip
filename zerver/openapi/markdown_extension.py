@@ -76,6 +76,28 @@ DEFAULT_EXAMPLE = {
     "string": "demo",
     "boolean": False,
 }
+CURL_EXCLUDE_DICTIONARY: Dict[str, List[str]] = {
+    "/messages/{message_id}/reactions:post": ["emoji_code", "reaction_type"],
+    "/messages:get": ["client_gravatar", "apply_markdown", "use_first_unread_anchor"],
+    "/users/me/subscriptions/muted_topics:patch": ["stream_id"],
+    "/messages/{message_id}/reactions:delete": ["emoji_code", "reaction_type"],
+    "/typing:post": ["topic"],
+    "/messages/{message_id}:patch": ["stream_id"],
+    "/user_groups/{user_group_id}/members:post": ["delete"],
+}
+CURL_INCLUDE_DICTIONARY: Dict[str, List[str]] = {
+    "/users/me/subscriptions:post": ["subscriptions"],
+    "/streams:get": [""],
+    "/events:get": ["queue_id", "last_event_id"],
+    "/streams/{stream_id}:patch": ["new_name", "description", "is_private"],
+    "/settings/display:patch": ["left_side_userlist", "emojiset"],
+    "/settings/notifications:patch": [
+        "enable_offline_push_notifications",
+        "enable_online_push_notifications",
+    ],
+    "/users/me/subscriptions:delete": ["subscriptions"],
+    "/register:post": ["event_types"],
+}
 
 
 def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str, Any]]:
@@ -253,10 +275,10 @@ def generate_curl_example(
     api_url: str,
     auth_email: str = DEFAULT_AUTH_EMAIL,
     auth_api_key: str = DEFAULT_AUTH_API_KEY,
-    exclude: Optional[List[str]] = None,
-    include: Optional[List[str]] = None,
+    exclude: List[str] = list(),
+    include: List[str] = list(),
 ) -> List[str]:
-    if exclude is not None and include is not None:
+    if len(exclude) != 0 and len(include) != 0:
         raise AssertionError("exclude and include cannot be set at the same time.")
 
     lines = ["```curl"]
@@ -316,10 +338,10 @@ def generate_curl_example(
             continue
         param_name = param["name"]
 
-        if include is not None and param_name not in include:
+        if len(include) != 0 and param_name not in include:
             continue
 
-        if exclude is not None and param_name in exclude:
+        if param_name in exclude:
             continue
 
         example_value = get_openapi_param_example_value_as_string(
@@ -345,14 +367,16 @@ def generate_curl_example(
 def render_curl_example(
     function: str,
     api_url: str,
-    exclude: Optional[List[str]] = None,
-    include: Optional[List[str]] = None,
+    exclude: List[str] = list(),
+    include: List[str] = list(),
 ) -> List[str]:
     """A simple wrapper around generate_curl_example."""
     parts = function.split(":")
     endpoint = parts[0]
     method = parts[1]
     kwargs: Dict[str, Any] = {}
+    include = include + CURL_INCLUDE_DICTIONARY.get(function, [])
+    exclude = exclude + CURL_EXCLUDE_DICTIONARY.get(function, [])
     if len(parts) > 2:
         kwargs["auth_email"] = parts[2]
     if len(parts) > 3:
