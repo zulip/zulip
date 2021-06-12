@@ -309,6 +309,7 @@ textarea.new_message_textarea {
     margin-bottom: 0;
     resize: vertical !important;
     margin-top: 5px;
+    line-height: calc(18 / 14);
 }
 
 textarea.new_message_textarea,
