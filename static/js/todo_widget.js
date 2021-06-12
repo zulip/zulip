@@ -5,6 +5,7 @@ import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_t
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import * as util from "./util";
 
 export class TaskData {
     task_map = new Map();
@@ -21,7 +22,7 @@ export class TaskData {
 
     get_widget_data() {
         const all_tasks = Array.from(this.task_map.values());
-        all_tasks.sort((a, b) => a.task.localeCompare(b.task));
+        all_tasks.sort((a, b) => util.strcmp(a.task, b.task));
 
         const pending_tasks = [];
         const completed_tasks = [];
