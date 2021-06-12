@@ -307,29 +307,38 @@ export const absolute_time = (function () {
 })();
 
 export function get_full_datetime(time) {
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    const tz_offset = -time.getTimezoneOffset() / 60;
+    const date_string_options = {weekday: "long", month: "long", day: "numeric"};
+    const time_string_options = {timeStyle: "full"};
+
+    if (page_params.twenty_four_hour_time) {
+        time_string_options.hourCycle = "h24";
+    }
+
+    const current_date = new Date();
+    if (time.getFullYear() !== current_date.getFullYear()) {
+        // Show year only if not current year.
+        date_string_options.year = "numeric";
+    }
+
     return {
-        date: time.toLocaleDateString(),
-        time: time.toLocaleTimeString() + " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
+        date: time.toLocaleDateString(page_params.request_language, date_string_options),
+        time: time.toLocaleTimeString(page_params.request_language, time_string_options),
     };
+}
+
+function render_tippy_tooltip(message, time_elem) {
+    time_elem.attr("data-tippy-content", message.full_date_str + "<br/>" + message.full_time_str);
 }
 
 // Date.toLocaleDateString and Date.toLocaleTimeString are
 // expensive, so we delay running the following code until we need
 // the full date and time strings.
 export const set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
-    if (message.full_date_str !== undefined) {
-        return;
-    }
-
     const time = new Date(message.timestamp * 1000);
     const full_datetime = get_full_datetime(time);
 
     message.full_date_str = full_datetime.date;
     message.full_time_str = full_datetime.time;
 
-    time_elem.attr("title", message.full_date_str + " " + message.full_time_str);
+    render_tippy_tooltip(message, time_elem);
 };

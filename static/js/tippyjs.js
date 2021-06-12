@@ -145,4 +145,14 @@ export function initialize() {
             return true;
         },
     });
+
+    delegate("body", {
+        target: ".message_time",
+        allowHTML: true,
+        placement: "top",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

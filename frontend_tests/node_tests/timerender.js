@@ -219,24 +219,59 @@ run_test("absolute_time_24_hour", () => {
     assert.equal(actual, expected);
 });
 
-run_test("set_full_datetime", () => {
-    const message = {
-        timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
-    };
+function test_set_full_datetime(message, expected_tooltip_content) {
     const time_element = $("<span/>");
     const attrs = {};
 
-    time_element.attr = (name, val) => {
+    time_element.attr = (name, val = null) => {
+        if (val === null) {
+            return attrs[name];
+        }
         attrs[name] = val;
-        return time_element;
+        return val;
+    };
+
+    timerender.set_full_datetime(message, time_element);
+    assert.equal(attrs["data-tippy-content"], expected_tooltip_content);
+
+    // Removing `data-tippy-content` and re-running should
+    // set `data-tippy-content` value again.
+    delete attrs["data-tippy-content"];
+    timerender.set_full_datetime(message, time_element);
+    assert.equal(attrs["data-tippy-content"], expected_tooltip_content);
+}
+
+run_test("set_full_datetime", () => {
+    let message = {
+        timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
     };
 
     // The formatting of the string time.toLocale(Date|Time)String() on Node
     // might differ from the browser.
-    const time = new Date(message.timestamp * 1000);
-    const expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
-    timerender.set_full_datetime(message, time_element);
-    assert.equal(attrs.title, expected);
+    let time = new Date(message.timestamp * 1000);
+    let expected = `${time.toLocaleDateString("en", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    })}<br/>7:12:53 AM Coordinated Universal Time`;
+    test_set_full_datetime(message, expected);
+
+    // Check year is hidden if current year.
+    time = new Date();
+    message = {
+        timestamp: Math.floor(time.getTime() / 1000),
+    };
+    // Also check 24hour time format is shown.
+    page_params.twenty_four_hour_time = true;
+    const date_string = time.toLocaleDateString("en", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+    });
+    const time_string = time.toLocaleString("en", {timeStyle: "full", hourCycle: "h24"});
+    expected = `${date_string}<br/>${time_string}`;
+    test_set_full_datetime(message, expected);
 });
 
 run_test("last_seen_status_from_date", () => {
