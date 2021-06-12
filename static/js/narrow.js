@@ -151,6 +151,10 @@ function update_narrow_title(filter) {
     }
 }
 
+export function handle_middle_pane_transition() {
+    $("#resume_reading_banner").hide();
+}
+
 export function activate(raw_operators, opts) {
     /* Main entrypoint for switching to a new view / message list.
        Note that for historical reasons related to the current
@@ -310,7 +314,7 @@ export function activate(raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    $("#resume_reading_banner").hide();
+    handle_middle_pane_transition();
 
     ui_util.change_tab_to("#message_feed_container");
     message_list.set_narrowed(msg_list);
@@ -864,7 +868,7 @@ export function deactivate(coming_from_recent_topics = false) {
     message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
 
-    $("#resume_reading_banner").hide();
+    handle_middle_pane_transition();
 
     message_scroll.hide_indicators();
     hashchange.save_narrow();
