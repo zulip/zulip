@@ -1055,23 +1055,6 @@ td.pointer {
         z-index: 2;
         transform: scale(0.9999);
     }
-
-    &::before {
-        left: 100%;
-        top: 50%;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-        margin-top: -14px;
-        border-style: solid;
-        border-width: 14px 0 14px 6px;
-        border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
-            transparent;
-        z-index: 1;
-        transform: scale(0.9999);
-    }
 }
 
 .stream_topic {
