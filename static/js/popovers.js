@@ -378,7 +378,7 @@ export function hide_user_profile() {
 }
 
 function compare_by_name(a, b) {
-    return a.name.localeCompare(b.name);
+    return util.strcmp(a.name, b.name);
 }
 
 function format_user_stream_list_item(stream) {
@@ -560,7 +560,7 @@ function fetch_group_members(member_ids) {
 }
 
 function sort_group_members(members) {
-    return members.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    return members.sort((a, b) => util.strcmp(a.full_name, b.fullname));
 }
 
 // exporting these functions for testing purposes
