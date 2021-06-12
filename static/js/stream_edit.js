@@ -46,13 +46,13 @@ function setup_subscriptions_stream_hash(sub) {
 
 function compare_by_email(a, b) {
     if (a.delivery_email && b.delivery_email) {
-        return a.delivery_email.localeCompare(b.delivery_email);
+        return util.strcmp(a.delivery_email, b.delivery_email);
     }
-    return a.email.localeCompare(b.email);
+    return util.strcmp(a.email, b.email);
 }
 
 function compare_by_name(a, b) {
-    return a.full_name.localeCompare(b.full_name);
+    return util.strcmp(a.full_name, b.full_name);
 }
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
