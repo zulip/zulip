@@ -24,18 +24,31 @@ def generate_topics(num_topics: int) -> List[str]:
     # it is important we test on it.
     num_single_word_topics = num_topics // 3
     for _ in itertools.repeat(None, num_single_word_topics):
-        topics.append(random.choice(config["nouns"]))
+        url = ""
+        # Add urls to 5 percent of the single word topics.
+        if random.random() <= 0.05:
+            url = " [ {} ]".format(random.choice(config["embedded_links"]))
+        topics.append(random.choice(config["nouns"]) + url)
+
+    # 2 Percent chance that a topic name will be a url.
+    num_url_topics = num_topics // 60
+    for _ in itertools.repeat(None, num_url_topics):
+        topics.append(random.choice(config["embedded_links"]))
 
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:
         # Add an empty string so that we can generate variable length topics.
         config[pos].append("")
 
-    for _ in itertools.repeat(None, num_topics - num_single_word_topics):
+    for _ in itertools.repeat(None, num_topics - num_single_word_topics - num_url_topics):
         generated_topic = [random.choice(config[pos]) for pos in sentence]
         topic = " ".join(filter(None, generated_topic))
-        topics.append(topic)
-
+        url = ""
+        # Calculating length of topic name so that the final length
+        # doesn't exceed 60 when a url is added.
+        if random.random() <= 0.10 and len(topic) <= 35:
+            url = " [ {} ]".format(random.choice(config["embedded_links"]))
+        topics.append(topic + url)
     return topics
 
 
