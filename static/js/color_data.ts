@@ -1,6 +1,7 @@
 import _ from "lodash";
 
-export let unused_colors;
+export let unused_colors: string[];
+
 // These colors are used now for streams.
 const stream_colors = [
     "#76ce90",
@@ -33,13 +34,13 @@ const stream_colors = [
 // bias toward "early" colors.
 export const colors = _.shuffle(stream_colors);
 
-export function reset() {
+export function reset(): void {
     unused_colors = colors.slice();
 }
 
 reset();
 
-export function claim_color(color) {
+export function claim_color(color: string): void {
     const i = unused_colors.indexOf(color);
 
     if (i < 0) {
@@ -53,14 +54,14 @@ export function claim_color(color) {
     }
 }
 
-export function claim_colors(subs) {
+export function claim_colors(subs: {color: string}[]): void {
     const colors = new Set(subs.map((sub) => sub.color));
     for (const color of colors) {
         claim_color(color);
     }
 }
 
-export function pick_color() {
+export function pick_color(): string {
     const color = unused_colors[0];
 
     claim_color(color);
