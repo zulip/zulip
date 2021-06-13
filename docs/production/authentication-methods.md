@@ -400,6 +400,8 @@ it as follows:
         user ID) and name for the user.
      5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
+     6. The `auto_signup` field determines how Zulip should handle
+        login attempts by users who don't have an account yet.
 
 1. Install the certificate(s) required for SAML authentication.  You
     will definitely need the public certificate of your IdP.  Some IdP

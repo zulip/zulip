@@ -1560,7 +1560,7 @@ def social_auth_finish(
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
     if user_profile is None or user_profile.is_mirror_dummy:
-        is_signup = strategy.session_get("is_signup") == "1"
+        is_signup = strategy.session_get("is_signup") == "1" or backend.should_auto_signup()
     else:
         is_signup = False
 
@@ -1674,6 +1674,9 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
             # interesting enough that we should log a warning.
             self.logger.warning(str(e))
             return None
+
+    def should_auto_signup(self) -> bool:
+        return False
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
@@ -2271,6 +2274,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 if param in self.standard_relay_params:
                     self.strategy.session_set(param, value)
 
+            # We want the IdP name to be accessible from the social pipeline.
+            self.strategy.session_set("saml_idp_name", idp_name)
+
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
@@ -2338,6 +2344,15 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             result.append(saml_dict)
 
         return result
+
+    def should_auto_signup(self) -> bool:
+        """
+        This function is meant to be called in the social pipeline or later,
+        as it requires (validated) information about the IdP name to have
+        already been store in the session.
+        """
+        idp_name = self.strategy.session_get("saml_idp_name")
+        return settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
 
 
 @external_auth_method

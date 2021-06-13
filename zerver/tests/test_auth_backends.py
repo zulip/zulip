@@ -1945,6 +1945,39 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result,
             )
 
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_registration_auto_signup(self) -> None:
+        """
+        Verify that with SAML auto signup enabled, a user coming from the /login page
+        (so without the is_signup param) will be taken straight to registration, without
+        having to go through the step of having to confirm that they do want to sign up.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict["test_idp"]["auto_signup"] = True
+
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=False,
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                name,
+                self.BACKEND_CLASS.full_name_validated,
+                expect_confirm_registration_page=False,
+            )
+
     def test_social_auth_complete(self) -> None:
         with mock.patch.object(OneLogin_Saml2_Response, "is_valid", return_value=True):
             with mock.patch.object(
