@@ -9,16 +9,7 @@ import * as util from "./util";
 
 export class TaskData {
     task_map = new Map();
-
-    get_new_index() {
-        let idx = 0;
-
-        for (const item of this.task_map.values()) {
-            idx = Math.max(idx, item.idx);
-        }
-
-        return idx + 1;
-    }
+    my_idx = 1;
 
     get_widget_data() {
         const all_tasks = Array.from(this.task_map.values());
@@ -56,9 +47,10 @@ export class TaskData {
     handle = {
         new_task: {
             outbound: (task, desc) => {
+                this.my_idx += 1;
                 const event = {
                     type: "new_task",
-                    key: this.get_new_index(),
+                    key: this.my_idx,
                     task,
                     desc,
                     completed: false,
@@ -90,6 +82,11 @@ export class TaskData {
 
                 if (!this.name_in_use(task)) {
                     this.task_map.set(key, task_data);
+                }
+
+                // I may have added a task from another device.
+                if (sender_id === this.me && this.my_idx <= idx) {
+                    this.my_idx = idx + 1;
                 }
             },
         },
