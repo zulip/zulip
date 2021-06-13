@@ -438,6 +438,11 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         ## You can also limit subdomains by setting "attr_org_membership"
         ## to be a SAML attribute containing the allowed subdomains for a user.
         # "attr_org_membership": "member",
+        ##
+        ## Enable this setting to automatically create the account and sign in the user
+        ## (if your organization settings permit it) on their first login without taking them
+        ## through the extra step of having to confirm they intend to register.
+        # "auto_signup": True,
     },
 }
 
