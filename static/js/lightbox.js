@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
+
 import * as blueslip from "./blueslip";
 import {LightboxCanvas} from "./lightbox_canvas";
 import * as message_store from "./message_store";
@@ -280,6 +282,9 @@ export function next() {
 
 // this is a block of events that are required for the lightbox to work.
 export function initialize() {
+    const rendered_lightbox_overlay = render_lightbox_overlay();
+    $("body").append(rendered_lightbox_overlay);
+
     $("#main_div, #compose .preview_content").on("click", ".message_inline_image a", function (e) {
         // prevent the link from opening in a new page.
         e.preventDefault();
