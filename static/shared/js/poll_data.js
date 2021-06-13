@@ -96,6 +96,7 @@ export class PollData {
             },
 
             inbound: (sender_id, data) => {
+                // All message readers may add a new option to the poll.
                 const idx = data.idx;
                 const key = sender_id + "," + idx;
                 const option = data.option;
@@ -157,6 +158,7 @@ export class PollData {
             },
 
             inbound: (sender_id, data) => {
+                // All message readers may vote on poll options.
                 const key = data.key;
                 const vote = data.vote;
                 const option = this.key_to_option.get(key);
