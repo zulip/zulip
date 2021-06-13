@@ -397,6 +397,12 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         ## You can also limit subdomains by setting "attr_org_membership"
         ## to be a SAML attribute containing the allowed subdomains for a user.
         # "attr_org_membership": "member",
+        ##
+        ## Determines whether "Log in with SAML" will automatically
+        ## register a new account if one does not already exist. By
+        ## default, Zulip asks the user whether they want to create an
+        ## account or try to log in again using another method.
+        # "auto_signup": False,
     },
 }
 
