@@ -612,16 +612,19 @@ export function hide_search_section() {
     resize.resize_stream_filters_container();
 }
 
+export function is_left_column_popover_hidden() {
+    // returns true if left column is a popover and is hidden.
+    return (
+        $("#streamlist-toggle").is(":visible") && !$(".app-main .column-left").hasClass("expanded")
+    );
+}
+
 export function initiate_search() {
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
 
-    if (
-        // Check if left column is a popover and is not visible.
-        $("#streamlist-toggle").is(":visible") &&
-        !$(".app-main .column-left").hasClass("expanded")
-    ) {
+    if (is_left_column_popover_hidden()) {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
     }
