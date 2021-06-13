@@ -108,7 +108,8 @@ export class PollData {
                     votes,
                 });
 
-                if (this.my_idx <= idx) {
+                // I may have added a poll option from another device.
+                if (sender_id === this.me && this.my_idx <= idx) {
                     this.my_idx = idx + 1;
                 }
             },
