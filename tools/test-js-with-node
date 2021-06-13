@@ -53,7 +53,7 @@ EXEMPT_FILES = {
     "static/js/condense.js",
     "static/js/confirm_dialog.js",
     "static/js/copy_and_paste.js",
-    "static/js/csrf.js",
+    "static/js/csrf.ts",
     "static/js/css_variables.js",
     "static/js/debug.js",
     "static/js/deprecated_feature_notice.js",
