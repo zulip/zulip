@@ -53,7 +53,7 @@ export function initialize() {
     // message reaction tooltip showing who reacted.
     let observer;
     delegate("body", {
-        target: ".message_reaction, .reaction_button",
+        target: ".message_reaction, .message_reactions .reaction_button",
         placement: "bottom",
         onShow(instance) {
             const elem = $(instance.reference);
