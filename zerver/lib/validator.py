@@ -455,6 +455,49 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
     raise ValidationError("unknown widget type: " + widget_type)
 
 
+def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
+    check_dict([("type", check_string)])("poll data", poll_data)
+
+    assert isinstance(poll_data, dict)
+
+    if poll_data["type"] == "vote":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+                ("vote", check_int_in([1, -1])),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    if poll_data["type"] == "question":
+        if not is_widget_author:
+            raise ValidationError("You can't edit a question unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("question", check_string),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    if poll_data["type"] == "new_option":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("option", check_string),
+                ("idx", check_int),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
+
+
 # Converter functions for use with has_request_variables
 def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
     x = int(s)

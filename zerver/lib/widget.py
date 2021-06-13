@@ -79,6 +79,30 @@ def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
         send_request.submessages = SubMessage.get_raw_db_rows([message_id])
 
 
+def get_widget_type(*, message_id: int) -> Optional[str]:
+    submessage = (
+        SubMessage.objects.filter(
+            message_id=message_id,
+            msg_type="widget",
+        )
+        .only("content")
+        .first()
+    )
+
+    if submessage is None:
+        return None
+
+    try:
+        data = json.loads(submessage.content)
+    except Exception:
+        return None
+
+    try:
+        return data["widget_type"]
+    except Exception:
+        return None
+
+
 def is_widget_message(message: Message) -> bool:
     # Right now all messages that are widgetized use submessage, and vice versa.
     return message.submessage_set.exists()
