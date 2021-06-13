@@ -2191,10 +2191,10 @@ class Markdown(markdown.Markdown):
         # Custom strikethrough syntax: ~~foo~~
         DEL_RE = r"(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)"
         # Custom bold syntax: **foo** but not __foo__
-        # str inside ** must start and end with a word character
-        # it need for things like "const char *x = (char *)y"
+        # String inside ** must start and end with a word
+        # character; this makes us CommonMark compliant.
         EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+?)(?<!\s)\2"
-        STRONG_RE = r"(\*\*)([^\n]+?)\2"
+        STRONG_RE = r"(\*{2})(?!\s+)(([^\*^\n]+?)\*?([^\*^\n]+?))(?<!\s)\2"
         STRONG_EM_RE = r"(\*{3})(?!\s+)([^\*^\n]+?)(?<!\s)\2"
         TEX_RE = r"\B(?<!\$)(\${2})(?P<body>[^\n_$](\\\$|[^$\n])*)\2(?!\$)\B"
         TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"

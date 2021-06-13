@@ -331,6 +331,23 @@
       "expected_output": "<p>const char *x = (char *)y</p>"
     },
     {
+      "name": "strong_code",
+      "input": "const char **x = (char **)y",
+      "expected_output": "<p>const char **x = (char **)y</p>",
+      "marked_expected_output": "<p>const char <strong>x = (char </strong>)y</p>"
+    },
+    {
+      "name": "strong_emphasis_code",
+      "input": "const char ***x = (char ***)y",
+      "expected_output": "<p>const char ***x = (char ***)y</p>",
+      "marked_expected_output": "<p>const char <strong>*x = (char *</strong>)y</p>"
+    },
+    {
+      "name": "strong_with_one_asterisk",
+      "input": "foo **bar*baz bar** foo",
+      "expected_output": "<p>foo <strong>bar*baz bar</strong> foo</p>"
+    },
+    {
       "name": "emphasis_with_space",
       "input": "A *foo bar* is a *baz quux*",
       "expected_output": "<p>A <em>foo bar</em> is a <em>baz quux</em></p>",
