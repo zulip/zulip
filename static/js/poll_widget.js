@@ -15,6 +15,7 @@ export function activate({
 }) {
     const is_my_poll = people.is_my_user_id(message.sender_id);
     const poll_data = new PollData({
+        message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_poll,
         question,

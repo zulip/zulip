@@ -8,6 +8,7 @@ export class PollData {
     my_idx = 1;
 
     constructor({
+        message_sender_id,
         current_user_id,
         is_my_poll,
         question,
@@ -15,6 +16,7 @@ export class PollData {
         comma_separated_names,
         report_error_function,
     }) {
+        this.message_sender_id = message_sender_id;
         this.me = current_user_id;
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
@@ -124,6 +126,14 @@ export class PollData {
             },
 
             inbound: (sender_id, data) => {
+                // Only the message author can edit questions.
+                if (sender_id !== this.message_sender_id) {
+                    this.report_error_function(
+                        `user ${sender_id} is not allowed to edit the question`,
+                    );
+                    return;
+                }
+
                 this.set_question(data.question);
             },
         },

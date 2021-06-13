@@ -38,6 +38,7 @@ run_test("PollData my question", () => {
 
     const data_holder = new PollData({
         current_user_id: me.user_id,
+        message_sender_id: me.user_id,
         is_my_poll,
         question,
         options: [],
@@ -178,6 +179,35 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+    });
+});
+
+run_test("wrong person editing question", () => {
+    const is_my_poll = true;
+    const question = "Favorite color?";
+
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: me.user_id,
+        is_my_poll,
+        question,
+        options: [],
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
+    });
+
+    const question_event = {
+        type: "question",
+        question: "best plan?",
+    };
+
+    blueslip.expect("warn", "user 100 is not allowed to edit the question");
+
+    data_holder.handle_event(alice.user_id, question_event);
+
+    assert.deepEqual(data_holder.get_widget_data(), {
+        options: [],
+        question: "Favorite color?",
     });
 });
 
