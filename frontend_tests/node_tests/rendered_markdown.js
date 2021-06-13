@@ -255,12 +255,26 @@ run_test("timestamp without time", () => {
 run_test("timestamp", () => {
     // Setup
     const $content = get_content_element();
+    const locale_properties = new Intl.DateTimeFormat().resolvedOptions();
     const $timestamp = $.create("timestamp(valid)");
     $timestamp.attr("datetime", "1970-01-01T00:00:01Z");
     const $timestamp_invalid = $.create("timestamp(invalid)");
     $timestamp_invalid.attr("datetime", "invalid");
     $content.set_find_results("time", $array([$timestamp, $timestamp_invalid]));
     blueslip.expect("error", "Could not parse datetime supplied by backend: invalid");
+
+    // Mocks the browser's timezone.
+    const mock_browser_timezone = function (timezone) {
+        Intl.DateTimeFormat.prototype.resolvedOptions = function () {
+            return {...locale_properties, timeZone: timezone};
+        };
+    };
+
+    const reset_browser_locale_properties = function () {
+        Intl.DateTimeFormat.prototype.resolvedOptions = function () {
+            return locale_properties;
+        };
+    };
 
     // Initial asserts
     assert.equal($timestamp.text(), "never-been-set");
@@ -269,12 +283,34 @@ run_test("timestamp", () => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM\n');
     assert.equal(
-        $timestamp.attr("title"),
-        "This time is in your timezone. Original text was 'never-been-set'.",
+        $timestamp.html(),
+        '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM UTC\n',
     );
+
+    $content.set_find_results("time", $array([$timestamp]));
+
+    mock_browser_timezone("Europe/Paris");
+    rm.update_elements($content);
+
+    assert.equal(
+        $timestamp.html(),
+        '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM CEST\n',
+    );
+
+    mock_browser_timezone("Asia/Kolkata");
+    rm.update_elements($content);
+
+    assert.equal(
+        $timestamp.html(),
+        '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM IST\n',
+    );
+
+    assert.equal($timestamp.attr("data-title"), "over 51 years ago");
     assert.equal($timestamp_invalid.text(), "never-been-set");
+
+    // Defaulting back to local_properties including timezone
+    reset_browser_locale_properties();
 });
 
 run_test("timestamp-twenty-four-hour-time", () => {
@@ -286,14 +322,17 @@ run_test("timestamp-twenty-four-hour-time", () => {
     // We will temporarily change the 24h setting for this test.
     with_field(page_params, "twenty_four_hour_time", true, () => {
         rm.update_elements($content);
-        assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40\n');
+        assert.equal(
+            $timestamp.html(),
+            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40 UTC\n',
+        );
     });
 
     with_field(page_params, "twenty_four_hour_time", false, () => {
         rm.update_elements($content);
         assert.equal(
             $timestamp.html(),
-            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM\n',
+            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM UTC\n',
         );
     });
 });

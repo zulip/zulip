@@ -1,3 +1,4 @@
+import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
@@ -7,6 +8,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import * as timerender from "./timerender";
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -157,5 +159,27 @@ export function initialize() {
         interactive: true,
         hideOnClick: true,
         theme: "light-border",
+    });
+
+    // Timezone tooltip to show user how far or back the mentioned time is.
+    delegate("body", {
+        target: "time",
+        onShow(instance) {
+            const elem = $(instance.reference);
+            const time_str = elem.attr("datetime");
+            if (time_str === undefined) {
+                instance.hide();
+            }
+            const timestamp = parseISO(time_str);
+            if (isValid(timestamp)) {
+                const text = elem.attr("data-title");
+                const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
+                instance.setContent(rendered_time.title);
+            }
+        },
+        placement: "top",
+        // Append to message_table so that tooltip has enough area to show
+        // itself and doesn't persist when the message_table is hidden.
+        appendTo: () => document.querySelector(".message_table.focused_table"),
     });
 }

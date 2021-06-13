@@ -95,7 +95,7 @@ export function build_page() {
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
-        timezones: timezones.timezones,
+        timezones: Object.keys(timezones.timezones),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
