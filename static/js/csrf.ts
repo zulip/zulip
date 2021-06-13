@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-export let csrf_token;
+export let csrf_token: string | undefined;
 
 $(() => {
     // This requires that we used Jinja2's {% csrf_input %} somewhere on the page.
@@ -11,7 +11,11 @@ $(() => {
     }
 
     $.ajaxSetup({
-        beforeSend(xhr, settings) {
+        beforeSend(xhr: JQuery.jqXHR, settings: JQuery.AjaxSettings) {
+            if (settings.url === undefined || csrf_token === undefined) {
+                throw new Error("settings.url and/or csrf_token are missing.");
+            }
+
             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
                 // Only send the token to relative URLs i.e. locally.
                 xhr.setRequestHeader("X-CSRFToken", csrf_token);
