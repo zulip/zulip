@@ -71,6 +71,7 @@ export class TaskData {
             },
 
             inbound: (sender_id, data) => {
+                // All messages readers may add tasks.
                 // for legacy reasons, the inbound idx is
                 // called key in the event
                 const idx = data.key;
@@ -104,6 +105,7 @@ export class TaskData {
             },
 
             inbound: (sender_id, data) => {
+                // All message readers may strike/unstrike todo tasks.
                 const key = data.key;
                 const item = this.task_map.get(key);
 
