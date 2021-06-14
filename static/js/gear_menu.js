@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_gear_menu from "../templates/gear_menu.hbs";
+
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
@@ -96,6 +98,8 @@ export function update_org_settings_menu_item() {
 }
 
 export function initialize() {
+    const rendered_gear_menu = render_gear_menu({page_params});
+    $("#navbar-buttons").html(rendered_gear_menu);
     update_org_settings_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
