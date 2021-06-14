@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_set_status_overlay from "../templates/set_status_overlay.hbs";
+
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as user_status from "./user_status";
@@ -84,6 +86,17 @@ export function clear_message() {
 }
 
 export function initialize() {
+    const rendered_set_status_overlay = render_set_status_overlay();
+    $(".app").append(rendered_set_status_overlay);
+
+    $("body").on("click", ".user-status-value", (event) => {
+        event.stopPropagation();
+        const user_status_value = $(event.currentTarget).text();
+        $("input.user_status").val(user_status_value);
+        toggle_clear_message_button();
+        update_button();
+    });
+
     $("body").on("click", ".user_status_overlay .set_user_status", () => {
         submit_new_status();
     });
@@ -101,7 +114,7 @@ export function initialize() {
         toggle_clear_message_button();
     });
 
-    $("#clear_status_message_button").on("click", () => {
+    $("body").on("click", "#clear_status_message_button", () => {
         clear_message();
         update_button();
     });

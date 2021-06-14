@@ -43,7 +43,6 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
-import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
 
 export function initialize() {
@@ -266,16 +265,6 @@ export function initialize() {
             return;
         }
         window.location.href = $(this).attr("href");
-    });
-
-    // USER STATUS MODAL
-
-    $(".user-status-value").on("click", (e) => {
-        e.stopPropagation();
-        const user_status_value = $(e.currentTarget).text();
-        $("input.user_status").val(user_status_value);
-        user_status_ui.toggle_clear_message_button();
-        user_status_ui.update_button();
     });
 
     // MESSAGE EDITING
