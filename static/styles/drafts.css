@@ -39,9 +39,10 @@
 
             .exit-sign {
                 position: relative;
-                top: 3px;
+                top: 1px;
                 margin-left: 3px;
                 font-size: 1.5rem;
+                line-height: 1;
                 font-weight: 600;
                 cursor: pointer;
             }
