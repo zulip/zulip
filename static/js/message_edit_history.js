@@ -2,6 +2,7 @@ import {format, isSameDay} from "date-fns";
 import $ from "jquery";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
+import render_message_history from "../templates/message_history.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
@@ -77,4 +78,11 @@ export function show_history(message) {
     $("#message-history").html("");
     overlays.open_modal("#message-edit-history");
     fetch_and_render_message_history(message);
+}
+
+export function initialize() {
+    // TODO: Migrate this modal to be rendered when
+    // opened rather than once at startup.
+    const rendered_message_history = render_message_history();
+    $("#message_feed_container").append(rendered_message_history);
 }
