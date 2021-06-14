@@ -90,11 +90,12 @@ function report_error(
     }
 
     const key = ":" + msg + stack;
+    const last_report_time = last_report_attempt.get(key);
     if (
         reported_errors.has(key) ||
-        (last_report_attempt.has(key) &&
+        (last_report_time !== undefined &&
             // Only try to report a given error once every 5 minutes
-            Date.now() - last_report_attempt.get(key) <= 60 * 5 * 1000)
+            Date.now() - last_report_time <= 60 * 5 * 1000)
     ) {
         return;
     }
