@@ -955,6 +955,14 @@ def process_message_event(
         )
         sender_is_muted = user_data.get("sender_is_muted", False)
 
+        extra_user_data[user_profile_id] = dict(
+            internal_data=dict(
+                stream_push_notify=stream_push_notify,
+                stream_email_notify=stream_email_notify,
+                wildcard_mention_notify=wildcard_mention_notify,
+            ),
+        )
+
         if sender_is_muted:
             # If the sender is muted, never enqueue notifications.
             continue
@@ -984,24 +992,21 @@ def process_message_event(
 
             stream_name = event_template.get("stream_name")
 
-            result: Dict[str, Any] = {}
-            result["internal_data"] = maybe_enqueue_notifications(
-                user_profile_id,
-                message_id,
-                private_message,
-                mentioned,
-                wildcard_mention_notify,
-                stream_push_notify,
-                stream_email_notify,
-                stream_name,
-                online_push_enabled,
-                idle,
-                {},
+            extra_user_data[user_profile_id]["internal_data"].update(
+                maybe_enqueue_notifications(
+                    user_profile_id,
+                    message_id,
+                    private_message,
+                    mentioned,
+                    wildcard_mention_notify,
+                    stream_push_notify,
+                    stream_email_notify,
+                    stream_name,
+                    online_push_enabled,
+                    idle,
+                    {},
+                )
             )
-            result["internal_data"]["stream_push_notify"] = stream_push_notify
-            result["internal_data"]["stream_email_notify"] = stream_email_notify
-            result["internal_data"]["wildcard_mention_notify"] = wildcard_mention_notify
-            extra_user_data[user_profile_id] = result
 
     for client_data in send_to_clients.values():
         client = client_data["client"]
