@@ -2,8 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -26,6 +25,8 @@ set_global("document", {
     location: {},
     to_$: () => $("document-stub"),
 });
+
+const render_compose = mock_template("compose.hbs");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");
@@ -75,10 +76,7 @@ test("videos", (override) => {
 
     stub_out_video_calls();
 
-    stub_templates((template_name) => {
-        assert.equal(template_name, "compose");
-        return "fake-compose-template";
-    });
+    override(render_compose, "f", () => "fake-compose-template");
     compose.initialize();
 
     (function test_no_provider_video_link_compose_clicked() {
@@ -230,6 +228,7 @@ test("videos", (override) => {
 test("test_video_chat_button_toggle disabled", (override) => {
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
+    override(render_compose, "f", () => "fake-compose-template");
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
     compose.initialize();
@@ -239,6 +238,7 @@ test("test_video_chat_button_toggle disabled", (override) => {
 test("test_video_chat_button_toggle no url", (override) => {
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
+    override(render_compose, "f", () => "fake-compose-template");
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = null;
@@ -249,6 +249,7 @@ test("test_video_chat_button_toggle no url", (override) => {
 test("test_video_chat_button_toggle enabled", (override) => {
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
+    override(render_compose, "f", () => "fake-compose-template");
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = "https://meet.jit.si";
