@@ -2,9 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
 const {$t_html} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -18,6 +17,10 @@ const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_state = zrequire("compose_state");
 const reminder = mock_esm("../../static/js/reminder");
 const ui_util = mock_esm("../../static/js/ui_util");
+
+const render_compose_not_subscribed = mock_template("compose_not_subscribed.hbs");
+const render_compose_all_everyone = mock_template("compose_all_everyone.hbs");
+const render_input_pill = mock_template("input_pill.hbs");
 
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -58,7 +61,7 @@ function test_ui(label, f) {
     });
 }
 
-test_ui("validate_stream_message_address_info", () => {
+test_ui("validate_stream_message_address_info", (override) => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -69,10 +72,7 @@ test_ui("validate_stream_message_address_info", () => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    stub_templates((template_name) => {
-        assert.equal(template_name, "compose_not_subscribed");
-        return "compose_not_subscribed_stub";
-    });
+    override(render_compose_not_subscribed, "f", () => "compose_not_subscribed_stub");
     assert.ok(!compose.validate_stream_message_address_info("social"));
     assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
 
@@ -139,10 +139,7 @@ test_ui("validate", (override) => {
 
         $("#zephyr-mirror-error").is = () => {};
 
-        stub_templates((fn) => {
-            assert.equal(fn, "input_pill");
-            return "<div>pill-html</div>";
-        });
+        override(render_input_pill, "f", () => "<div>pill-html</div>");
     }
 
     function add_content_to_compose_box() {
@@ -284,8 +281,7 @@ test_ui("validate_stream_message", (override) => {
         assert.equal(stream_id, 101);
         return 16;
     };
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "compose_all_everyone");
+    override(render_compose_all_everyone, "f", (data) => {
         assert.equal(data.count, 16);
         return "compose_all_everyone_stub";
     });
