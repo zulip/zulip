@@ -2,7 +2,7 @@ from typing import Any
 
 import orjson
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template.defaultfilters import pluralize, slugify
+from django.template.defaultfilters import date, pluralize, slugify
 from django.urls import reverse
 from django.utils import translation
 from django.utils.timesince import timesince
@@ -37,6 +37,7 @@ def environment(**options: Any) -> Environment:
     env.filters["display_list"] = display_list
     env.filters["device_action"] = device_action
     env.filters["timesince"] = timesince
+    env.filters["date"] = date
 
     env.policies["json.dumps_function"] = json_dumps
     env.policies["json.dumps_kwargs"] = {}

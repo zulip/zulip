@@ -639,7 +639,7 @@ class StripeTest(StripeTestCase):
             f"{self.seat_count} of {self.seat_count} licenses",
             "Licenses are automatically managed by Zulip; when you add",
             "Your plan will renew on",
-            "January 2, 2013",
+            "Jan. 2, 2013",
             f"${80 * self.seat_count}.00",
             f"Billing email: <strong>{user.email}</strong>",
             "Visa ending in 4242",
@@ -778,7 +778,7 @@ class StripeTest(StripeTestCase):
             f"{self.seat_count} of {123} licenses",
             "Licenses are manually managed. You will not be able to add ",
             "Your plan will renew on",
-            "January 2, 2013",
+            "Jan. 2, 2013",
             "$9,840.00",  # 9840 = 80 * 123
             f"Billing email: <strong>{user.email}</strong>",
             "Billed by invoice",
@@ -1830,8 +1830,8 @@ class StripeTest(StripeTestCase):
                 self.assert_in_success_response(
                     [
                         "Your plan will be downgraded to <strong>Zulip Limited</strong> on "
-                        "<strong>January 2, 2013</strong>",
-                        "You plan is scheduled for downgrade on <strong>January 2, 2013</strong>",
+                        "<strong>Jan. 2, 2013</strong>",
+                        "You plan is scheduled for downgrade on <strong>Jan. 2, 2013</strong>",
                         "Cancel downgrade",
                     ],
                     response,
@@ -1929,7 +1929,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.views.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
-            ["be switched from monthly to annual billing on <strong>February 2, 2012"], response
+            ["be switched from monthly to annual billing on <strong>Feb. 2, 2012"], response
         )
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=20):
@@ -2116,7 +2116,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.views.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
-            ["be switched from monthly to annual billing on <strong>February 2, 2012"], response
+            ["be switched from monthly to annual billing on <strong>Feb. 2, 2012"], response
         )
 
         invoice_plans_as_needed(self.next_month)
