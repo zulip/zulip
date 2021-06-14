@@ -2,9 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_cjs,
+    mock_esm,
+    set_global,
+    with_field,
+    zrequire,
+    mock_template,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -37,6 +43,11 @@ mock_esm("../../static/js/stream_popover", {
     hide_starred_messages_popover: noop,
     hide_streamlist_sidebar: noop,
 });
+
+const render_actions_popover_content = mock_template("actions_popover_content.hbs");
+const render_user_info_popover_content = mock_template("user_info_popover_content.hbs");
+const render_user_info_popover_title = mock_template("user_info_popover_title.hbs");
+const render_no_arrow_popover = mock_template("no_arrow_popover.hbs");
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");
@@ -143,53 +154,49 @@ test_ui("sender_hover", (override) => {
         return {};
     };
 
-    stub_templates((fn, opts) => {
-        switch (fn) {
-            case "no_arrow_popover":
-                assert.deepEqual(opts, {
-                    class: "message-info-popover",
-                });
-                return "popover-html";
+    override(render_no_arrow_popover, "f", (opts) => {
+        assert.deepEqual(opts, {
+            class: "message-info-popover",
+        });
+        return "popover-html";
+    });
 
-            case "user_info_popover_title":
-                assert.deepEqual(opts, {
-                    user_avatar: "avatar/alice@example.com",
-                    user_is_guest: false,
-                });
-                return "title-html";
+    override(render_user_info_popover_title, "f", (opts) => {
+        assert.deepEqual(opts, {
+            user_avatar: "avatar/alice@example.com",
+            user_is_guest: false,
+        });
+        return "title-html";
+    });
 
-            case "user_info_popover_content":
-                assert.deepEqual(opts, {
-                    can_set_away: false,
-                    can_revoke_away: false,
-                    can_mute: true,
-                    can_unmute: false,
-                    user_full_name: "Alice Smith",
-                    user_email: "alice@example.com",
-                    user_id: 42,
-                    user_time: undefined,
-                    user_type: $t({defaultMessage: "Member"}),
-                    user_circle_class: "user_circle_empty",
-                    user_last_seen_time_status:
-                        "translated: Last active: translated: More than 2 weeks ago",
-                    pm_with_uri: "#narrow/pm-with/42-alice",
-                    sent_by_uri: "#narrow/sender/42-alice",
-                    private_message_class: "respond_personal_button",
-                    show_email: false,
-                    show_user_profile: false,
-                    is_me: false,
-                    is_active: true,
-                    is_bot: undefined,
-                    is_sender_popover: true,
-                    has_message_context: true,
-                    status_text: "on the beach",
-                    user_mention_syntax: "@**Alice Smith**",
-                });
-                return "content-html";
-
-            default:
-                throw new Error("unrecognized template: " + fn);
-        }
+    override(render_user_info_popover_content, "f", (opts) => {
+        assert.deepEqual(opts, {
+            can_set_away: false,
+            can_revoke_away: false,
+            can_mute: true,
+            can_unmute: false,
+            user_full_name: "Alice Smith",
+            user_email: "alice@example.com",
+            user_id: 42,
+            user_time: undefined,
+            user_type: $t({defaultMessage: "Member"}),
+            user_circle_class: "user_circle_empty",
+            user_last_seen_time_status:
+                "translated: Last active: translated: More than 2 weeks ago",
+            pm_with_uri: "#narrow/pm-with/42-alice",
+            sent_by_uri: "#narrow/sender/42-alice",
+            private_message_class: "respond_personal_button",
+            show_email: false,
+            show_user_profile: false,
+            is_me: false,
+            is_active: true,
+            is_bot: undefined,
+            is_sender_popover: true,
+            has_message_context: true,
+            status_text: "on the beach",
+            user_mention_syntax: "@**Alice Smith**",
+        });
+        return "content-html";
     });
 
     $.create(".user_popover_email", {children: []});
@@ -253,18 +260,13 @@ test_ui("actions_popover", (override) => {
         };
     };
 
-    stub_templates((fn, opts) => {
+    override(render_actions_popover_content, "f", (opts) => {
         // TODO: Test all the properties of the popover
-        switch (fn) {
-            case "actions_popover_content":
-                assert.equal(
-                    opts.conversation_time_uri,
-                    "http://chat.zulip.org/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
-                );
-                return "actions-content";
-            default:
-                throw new Error("unrecognized template: " + fn);
-        }
+        assert.equal(
+            opts.conversation_time_uri,
+            "http://chat.zulip.org/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
+        );
+        return "actions-content";
     });
 
     handler.call(target, e);
