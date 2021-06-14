@@ -241,7 +241,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     );
 }
 
-async function test_delete_draft_on_sending(page: Page): Promise<void> {
+async function test_not_delete_draft_on_sending(page: Page): Promise<void> {
     await page.click("#drafts_table .message_row.private-message .restore-draft");
     await wait_for_drafts_to_dissapear(page);
     await page.waitForSelector("#private-message", {visible: true});
@@ -253,8 +253,7 @@ async function test_delete_draft_on_sending(page: Page): Promise<void> {
     await page.click(drafts_button_in_compose);
     await wait_for_drafts_to_appear(page);
     const drafts_count = await get_drafts_count(page);
-    assert.strictEqual(drafts_count, 1, "Draft wasn't cleared on sending.");
-    await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
+    assert.strictEqual(drafts_count, 2, "Draft got cleared on sending.");
 }
 
 async function drafts_test(page: Page): Promise<void> {
@@ -276,7 +275,7 @@ async function drafts_test(page: Page): Promise<void> {
     await test_restore_private_message_draft(page);
     await test_delete_draft(page);
     await test_save_draft_by_reloading(page);
-    await test_delete_draft_on_sending(page);
+    await test_not_delete_draft_on_sending(page);
 }
 
 common.run_test(drafts_test);

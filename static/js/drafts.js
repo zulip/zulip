@@ -160,7 +160,7 @@ export function update_draft() {
         // the existing draft yet--the user may have mistakenly
         // hit delete after select-all or something.
         // Just do nothing.
-        return;
+        return undefined;
     }
 
     const draft_id = $("#compose-textarea").data("draft-id");
@@ -170,7 +170,7 @@ export function update_draft() {
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);
         draft_notify();
-        return;
+        return draft_id;
     }
 
     // We have never saved a draft for this message, so add
@@ -178,14 +178,8 @@ export function update_draft() {
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
     draft_notify();
-}
 
-export function delete_active_draft() {
-    const draft_id = $("#compose-textarea").data("draft-id");
-    if (draft_id) {
-        draft_model.deleteDraft(draft_id);
-    }
-    $("#compose-textarea").removeData("draft-id");
+    return new_draft_id;
 }
 
 export function restore_draft(draft_id) {

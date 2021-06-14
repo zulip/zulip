@@ -11,6 +11,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const markdown = mock_esm("../../static/js/markdown");
 const message_lists = mock_esm("../../static/js/message_lists");
+const notifications = mock_esm("../../static/js/notifications");
 
 let disparities = [];
 
@@ -24,7 +25,7 @@ mock_esm("../../static/js/sent_messages", {
     },
 });
 
-mock_esm("../../static/js/message_store", {
+const message_store = mock_esm("../../static/js/message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans: () => {},
@@ -34,6 +35,7 @@ mock_esm("../../static/js/message_list");
 message_lists.current = "";
 message_lists.home = {view: {}};
 
+const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
 
@@ -194,7 +196,7 @@ run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
     MockDate.set(new Date(fake_now * 1000));
 
-    const local_id_float = 101;
+    const local_id_float = 101.01;
 
     let apply_markdown_called = false;
     let add_topic_links_called = false;
@@ -232,7 +234,7 @@ run_test("insert_local_message streams", ({override}) => {
 });
 
 run_test("insert_local_message PM", ({override}) => {
-    const local_id_float = 102;
+    const local_id_float = 102.01;
 
     page_params.user_id = 123;
 
@@ -276,6 +278,48 @@ run_test("insert_local_message PM", ({override}) => {
     assert.ok(add_topic_links_called);
     assert.ok(apply_markdown_called);
     assert.ok(insert_message_called);
+});
+
+run_test("test reify_message_id", ({override}) => {
+    const local_id_float = 103.01;
+
+    override(markdown, "apply_markdown", () => {});
+    override(markdown, "add_topic_links", () => {});
+    override(echo, "insert_message", () => {});
+
+    const message_request = {
+        type: "stream",
+        stream: "general",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+        draft_id: 100,
+    };
+    echo.insert_local_message(message_request, local_id_float);
+
+    let message_store_reify_called = false;
+    let notifications_reify_called = false;
+    let draft_deleted = false;
+
+    override(message_store, "reify_message_id", () => {
+        message_store_reify_called = true;
+    });
+
+    override(notifications, "reify_message_id", () => {
+        notifications_reify_called = true;
+    });
+
+    const draft_model = drafts.draft_model;
+    override(draft_model, "deleteDraft", (draft_id) => {
+        assert.ok(draft_id, 100);
+        draft_deleted = true;
+    });
+
+    echo.reify_message_id(local_id_float.toString(), 110);
+
+    assert.ok(message_store_reify_called);
+    assert.ok(notifications_reify_called);
+    assert.ok(draft_deleted);
 });
 
 MockDate.reset();
