@@ -171,7 +171,7 @@ export function get_deletability(message) {
         return false;
     }
 
-    if (page_params.realm_message_content_delete_limit_seconds === 0) {
+    if (page_params.realm_message_content_delete_limit_seconds === null) {
         // This means no time limit for message deletion.
         return true;
     }

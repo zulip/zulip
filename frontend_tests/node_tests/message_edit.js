@@ -125,7 +125,7 @@ run_test("get_editability", ({override}) => {
 run_test("get_deletability", () => {
     page_params.is_admin = true;
     page_params.realm_allow_message_deleting = false;
-    page_params.realm_message_content_delete_limit_seconds = 0;
+    page_params.realm_message_content_delete_limit_seconds = null;
     const message = {
         sent_by_me: false,
         locally_echoed: true,

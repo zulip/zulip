@@ -162,6 +162,9 @@ function get_property_value(property_name) {
         if (!page_params.realm_allow_message_deleting) {
             return "never";
         }
+        if (page_params.realm_message_content_delete_limit_seconds === null) {
+            return "any_time";
+        }
         for (const [value, elem] of settings_config.msg_delete_limit_dropdown_values) {
             if (elem.seconds === page_params.realm_message_content_delete_limit_seconds) {
                 return value;
@@ -776,14 +779,17 @@ export function build_page() {
 
                         break;
                     }
+                    case "any_time": {
+                        data.allow_message_deleting = true;
+                        data.message_content_delete_limit_seconds = JSON.stringify("unlimited");
+
+                        break;
+                    }
                     case "custom_limit": {
                         data.message_content_delete_limit_seconds = parse_time_limit(
                             $("#id_realm_message_content_delete_limit_minutes"),
                         );
-                        // Disable deleting if the parsed time limit is 0 seconds
-                        data.allow_message_deleting = Boolean(
-                            data.message_content_delete_limit_seconds,
-                        );
+                        data.allow_message_deleting = true;
 
                         break;
                     }

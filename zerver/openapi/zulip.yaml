@@ -3556,10 +3556,17 @@ paths:
                                         in this organization. Null if no default has been set.
                                     message_content_delete_limit_seconds:
                                       type: integer
+                                      nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be deleted
                                         with this organization's
                                         [message deletion policy](/help/configure-message-editing-and-deletion).
+
+                                        A 'null' value means no limit: messages can be deleted
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: No limit was represented using the
+                                        special value `0` before Zulip 5.0 (feature level 100).
                                     authentication_methods:
                                       type: object
                                       additionalProperties:
@@ -10599,12 +10606,19 @@ paths:
                           in this organization. Null if no default has been set.
                       realm_message_content_delete_limit_seconds:
                         type: integer
+                        nullable: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be deleted
                           with this organization's
                           [message deletion policy](/help/configure-message-editing-and-deletion).
+
+                          A 'null' value means no limit: messages can be deleted
+                          regardless of how long ago they were sent.
+
+                          **Changes**: No limit was represented using the
+                          special value `0` before Zulip 5.0 (feature level 100).
                       realm_authentication_methods:
                         type: object
                         additionalProperties:

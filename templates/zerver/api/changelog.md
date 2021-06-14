@@ -11,6 +11,15 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 100**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): `message_content_delete_limit_seconds`
+  now represents no limit using `null`, instead of the integer 0.
+* `PATCH /realm`: One now sets `message_content_delete_limit_seconds`
+  to no limit by passing the string `unlimited`, rather than the
+  integer 0.
+
 **Feature level 99**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

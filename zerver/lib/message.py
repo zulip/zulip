@@ -2,7 +2,7 @@ import copy
 import datetime
 import zlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import ahocorasick
 import orjson
@@ -28,6 +28,7 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
+from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
     get_subscribed_stream_recipient_ids_for_user,
@@ -1470,3 +1471,15 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
+
+
+def parse_message_content_delete_limit(
+    value: Union[int, str],
+    special_values_map: Mapping[str, Optional[int]],
+) -> Optional[int]:
+    if isinstance(value, str) and value in special_values_map.keys():
+        return special_values_map[value]
+    if isinstance(value, str) or value <= 0:
+        raise RequestVariableConversionError("message_content_delete_limit_seconds", value)
+    assert isinstance(value, int)
+    return value

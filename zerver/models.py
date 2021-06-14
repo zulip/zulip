@@ -371,8 +371,11 @@ class Realm(models.Model):
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    message_content_delete_limit_seconds: int = models.IntegerField(
-        default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS,
+    MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
+        "unlimited": None,
+    }
+    message_content_delete_limit_seconds: int = models.PositiveIntegerField(
+        default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS, null=True
     )
 
     allow_message_editing: bool = models.BooleanField(default=True)
@@ -629,7 +632,7 @@ class Realm(models.Model):
         private_message_policy=int,
         user_group_edit_policy=int,
         default_code_block_language=(str, type(None)),
-        message_content_delete_limit_seconds=int,
+        message_content_delete_limit_seconds=(int, type(None)),
         wildcard_mention_policy=int,
     )
 

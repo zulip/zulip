@@ -137,9 +137,9 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
         # User can not delete message, if message deleting is not allowed in realm.
         raise JsonableError(_("You don't have permission to delete this message"))
 
-    deadline_seconds = user_profile.realm.message_content_delete_limit_seconds
-    if deadline_seconds == 0:
-        # 0 for no time limit to delete message
+    deadline_seconds: Optional[int] = user_profile.realm.message_content_delete_limit_seconds
+    if deadline_seconds is None:
+        # None means no time limit to delete message
         return
     if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
         # User can not delete message after deadline time of realm

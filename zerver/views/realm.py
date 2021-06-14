@@ -21,6 +21,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
+from zerver.lib.message import parse_message_content_delete_limit
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -67,8 +68,8 @@ def update_realm(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     allow_message_deleting: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_content_delete_limit_seconds: Optional[int] = REQ(
-        converter=to_non_negative_int, default=None
+    message_content_delete_limit_seconds_raw: Optional[Union[int, str]] = REQ(
+        "message_content_delete_limit_seconds", json_validator=check_string_or_int, default=None
     ),
     allow_message_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
     edit_topic_policy: Optional[int] = REQ(
@@ -157,6 +158,22 @@ def update_realm(
     if invite_to_realm_policy is not None and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
 
+    data: Dict[str, Any] = {}
+
+    message_content_delete_limit_seconds: Optional[int] = None
+    if message_content_delete_limit_seconds_raw is not None:
+        message_content_delete_limit_seconds = parse_message_content_delete_limit(
+            message_content_delete_limit_seconds_raw,
+            Realm.MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP,
+        )
+        do_set_realm_property(
+            realm,
+            "message_content_delete_limit_seconds",
+            message_content_delete_limit_seconds,
+            acting_user=user_profile,
+        )
+        data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #
@@ -164,7 +181,6 @@ def update_realm(
     # further by some more advanced usage of the
     # `REQ/has_request_variables` extraction.
     req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
-    data: Dict[str, Any] = {}
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:

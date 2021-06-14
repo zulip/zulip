@@ -1005,17 +1005,33 @@ class RealmAPITest(ZulipTestCase):
     def test_update_realm_allow_message_deleting(self) -> None:
         """Tests updating the realm property 'allow_message_deleting'."""
         self.set_up_db("allow_message_deleting", True)
-        self.set_up_db("message_content_delete_limit_seconds", 0)
         realm = self.update_with_api("allow_message_deleting", False)
         self.assertEqual(realm.allow_message_deleting, False)
-        self.assertEqual(realm.message_content_delete_limit_seconds, 0)
+        self.assertEqual(realm.message_content_delete_limit_seconds, 600)
         realm = self.update_with_api("allow_message_deleting", True)
         realm = self.update_with_api("message_content_delete_limit_seconds", 100)
         self.assertEqual(realm.allow_message_deleting, True)
         self.assertEqual(realm.message_content_delete_limit_seconds, 100)
+        realm = self.update_with_api(
+            "message_content_delete_limit_seconds", orjson.dumps("unlimited").decode()
+        )
+        self.assertEqual(realm.allow_message_deleting, True)
+        self.assertEqual(realm.message_content_delete_limit_seconds, None)
         realm = self.update_with_api("message_content_delete_limit_seconds", 600)
         self.assertEqual(realm.allow_message_deleting, True)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
+
+        # Test that 0 is invalid value.
+        req = dict(message_content_delete_limit_seconds=orjson.dumps(0).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Bad value for 'message_content_delete_limit_seconds': 0")
+
+        # Test that only "unlimited" string is valid and others are invalid.
+        req = dict(message_content_delete_limit_seconds=orjson.dumps("invalid").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(
+            result, "Bad value for 'message_content_delete_limit_seconds': invalid"
+        )
 
     def test_change_invite_to_realm_policy_by_owners_only(self) -> None:
         self.login("iago")
