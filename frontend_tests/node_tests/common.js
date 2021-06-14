@@ -9,9 +9,9 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 
 mock_esm("tippy.js", {
-    default: (selector) => {
-        $(selector)[0]._tippy = noop;
-        $(selector)[0]._tippy.setContent = noop;
+    default: (arg) => {
+        arg._tippy = {setContent: noop};
+        return arg._tippy;
     },
 });
 

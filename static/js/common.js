@@ -71,8 +71,9 @@ export function adjust_mac_shortcuts(key_elem_class, require_cmd_style) {
         }
 
         for (const key of keys) {
-            if (keys_map.get(key)) {
-                key_text = key_text.replace(key, keys_map.get(key));
+            const replace_key = keys_map.get(key);
+            if (replace_key !== undefined) {
+                key_text = key_text.replace(key, replace_key);
             }
         }
 
@@ -85,10 +86,9 @@ export function adjust_mac_shortcuts(key_elem_class, require_cmd_style) {
 function set_password_toggle_label(password_selector, label, tippy_tooltips) {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        if (!$(password_selector)[0]._tippy) {
-            tippy(password_selector);
-        }
-        $(password_selector)[0]._tippy.setContent(label);
+        const element = $(password_selector)[0];
+        const tippy_instance = element._tippy ?? tippy(element);
+        tippy_instance.setContent(label);
     } else {
         $(password_selector).attr("title", label);
     }
