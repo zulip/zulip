@@ -5,6 +5,7 @@ import $ from "jquery";
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_subscription from "../templates/invite_subscription.hbs";
+import render_invite_user from "../templates/invite_user.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as browser_history from "./browser_history";
@@ -13,6 +14,7 @@ import * as common from "./common";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -190,6 +192,15 @@ export function launch() {
 }
 
 export function initialize() {
+    const rendered = render_invite_user({
+        is_admin: page_params.is_admin,
+        is_owner: page_params.is_owner,
+        development_environment: page_params.development_environment,
+        invite_as_options: settings_config.user_role_values,
+    });
+
+    $(".app").append(rendered);
+
     $(document).on("click", "#invite_check_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", true);
     });

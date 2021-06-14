@@ -242,7 +242,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "navbar_logo_url": navbar_logo_url,
             "show_webathena": user_permission_info.show_webathena,
             "embedded": narrow_stream is not None,
-            "invite_as": PreregistrationUser.INVITE_AS,
             "max_file_upload_size_mib": settings.MAX_FILE_UPLOAD_SIZE,
         },
     )
