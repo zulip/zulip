@@ -148,7 +148,6 @@ exports.zrequire = function (short_fn) {
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
-const templatesPath = staticPath + "templates" + path.sep;
 
 exports.complain_about_unused_mocks = function () {
     for (const filename of module_mocks.keys()) {
@@ -177,7 +176,7 @@ exports.finish = function () {
     used_module_mocks.clear();
 
     for (const path of Object.keys(require.cache)) {
-        if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
+        if (path.startsWith(staticPath)) {
             delete require.cache[path];
         }
     }
