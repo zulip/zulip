@@ -2,8 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -22,6 +21,9 @@ mock_esm("../../static/js/keydown_util", {
     handle: noop,
 });
 mock_esm("../../static/js/ui", {get_scroll_element: (element) => element});
+
+const render_stream_privacy = mock_template("stream_privacy.hbs");
+const render_stream_sidebar_row = mock_template("stream_sidebar_row.hbs");
 
 const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");
@@ -48,7 +50,7 @@ const social = {
 // We use this with override.
 let num_unread_for_stream;
 
-function create_devel_sidebar_row() {
+function create_devel_sidebar_row(override) {
     const devel_count = $.create("devel-count");
     const subscription_block = $.create("devel-block");
 
@@ -57,8 +59,7 @@ function create_devel_sidebar_row() {
     sidebar_row.set_find_results(".subscription_block", subscription_block);
     subscription_block.set_find_results(".unread_count", devel_count);
 
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "stream_sidebar_row");
+    override(render_stream_sidebar_row, "f", (data) => {
         assert.equal(data.uri, "#narrow/stream/100-devel");
         return "<devel sidebar row>";
     });
@@ -68,7 +69,7 @@ function create_devel_sidebar_row() {
     assert.equal(devel_count.text(), "42");
 }
 
-function create_social_sidebar_row() {
+function create_social_sidebar_row(override) {
     const social_count = $.create("social-count");
     const subscription_block = $.create("social-block");
 
@@ -77,8 +78,7 @@ function create_social_sidebar_row() {
     sidebar_row.set_find_results(".subscription_block", subscription_block);
     subscription_block.set_find_results(".unread_count", social_count);
 
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "stream_sidebar_row");
+    override(render_stream_sidebar_row, "f", (data) => {
         assert.equal(data.uri, "#narrow/stream/200-social");
         return "<social sidebar row>";
     });
@@ -105,8 +105,8 @@ test_ui("create_sidebar_row", (override) => {
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
-    create_devel_sidebar_row();
-    create_social_sidebar_row();
+    create_devel_sidebar_row(override);
+    create_social_sidebar_row(override);
 
     const split = '<hr class="stream-split">';
     const devel_sidebar = $("<devel sidebar row>");
@@ -144,8 +144,8 @@ test_ui("create_sidebar_row", (override) => {
 
     social.invite_only = true;
     social.color = "#222222";
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "stream_privacy");
+
+    override(render_stream_privacy, "f", (data) => {
         assert.equal(data.invite_only, true);
         assert.equal(data.dark_background, "dark_background");
         return "<div>privacy-html";
@@ -183,8 +183,8 @@ test_ui("pinned_streams_never_inactive", (override) => {
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
-    create_devel_sidebar_row();
-    create_social_sidebar_row();
+    create_devel_sidebar_row(override);
+    create_social_sidebar_row(override);
 
     // non-pinned streams can be made inactive
     const social_sidebar = $("<social sidebar row>");
@@ -598,8 +598,7 @@ test_ui("rename_stream", (override) => {
     const li_stub = $.create("li stub");
     li_stub.length = 0;
 
-    stub_templates((name, payload) => {
-        assert.equal(name, "stream_sidebar_row");
+    override(render_stream_sidebar_row, "f", (payload) => {
         assert.deepEqual(payload, {
             name: "Development",
             id: 1000,
@@ -646,7 +645,7 @@ test_ui("refresh_pin", (override) => {
     const li_stub = $.create("li stub");
     li_stub.length = 0;
 
-    stub_templates(() => ({to_$: () => li_stub}));
+    override(render_stream_sidebar_row, "f", () => ({to_$: () => li_stub}));
 
     override(stream_list, "update_count_in_dom", noop);
     $("#stream_filters").append = noop;
@@ -673,10 +672,7 @@ test_ui("create_initial_sidebar_rows", (override) => {
 
     override(stream_list, "update_count_in_dom", noop);
 
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "stream_sidebar_row");
-        return "<div>stub-html-" + data.name;
-    });
+    override(render_stream_sidebar_row, "f", (data) => "<div>stub-html-" + data.name);
 
     // Test this code with stubs above...
     stream_list.create_initial_sidebar_rows();
