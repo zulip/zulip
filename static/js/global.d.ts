@@ -7,4 +7,5 @@ declare let zulip_test: any;
 
 interface JQuery {
     expectOne(): JQuery;
+    tab(action?: string): this; // From static/third/bootstrap
 }

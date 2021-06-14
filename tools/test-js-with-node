@@ -166,7 +166,7 @@ EXEMPT_FILES = {
     "static/js/ui_init.js",
     "static/js/ui.js",
     "static/js/ui_report.ts",
-    "static/js/ui_util.js",
+    "static/js/ui_util.ts",
     "static/js/unread_ops.js",
     "static/js/unread_ui.js",
     "static/js/upload_widget.js",
