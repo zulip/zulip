@@ -28,12 +28,9 @@ function compile_hbs(module, filename) {
     const node = new SourceNode();
     node.add([
         'const Handlebars = require("handlebars/runtime");\n',
-        "const template = Handlebars.template(",
+        "module.exports = Handlebars.template(",
         SourceNode.fromStringWithSourceMap(pc.code, new SourceMapConsumer(pc.map)),
         ");\n",
-        "module.exports = (...args) => {\n",
-        "    return template(...args);\n",
-        "};\n",
     ]);
     const out = node.toStringWithSourceMap();
     module._compile(
