@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-function collapse_spoiler(spoiler) {
+function collapse_spoiler(spoiler: JQuery): void {
     const spoiler_height = spoiler.height();
 
     // Set height to rendered height on next frame, then to zero on following
@@ -15,7 +15,7 @@ function collapse_spoiler(spoiler) {
     });
 }
 
-function expand_spoiler(spoiler) {
+function expand_spoiler(spoiler: JQuery): void {
     // Normally, the height of the spoiler block is not defined absolutely on
     // the `spoiler-content-open` class, but just set to `auto` (i.e. the height
     // of the content). CSS animations do not work with properties set to
@@ -35,8 +35,8 @@ function expand_spoiler(spoiler) {
     });
 }
 
-export const hide_spoilers_in_notification = (content) => {
-    content.find(".spoiler-block").each((i, elem) => {
+export const hide_spoilers_in_notification = (content: JQuery): JQuery => {
+    content.find(".spoiler-block").each((_i, elem) => {
         $(elem).find(".spoiler-content").remove();
         let text = $(elem).find(".spoiler-header").text().trim();
         if (text.length > 0) {
@@ -48,7 +48,7 @@ export const hide_spoilers_in_notification = (content) => {
     return content;
 };
 
-export function initialize() {
+export function initialize(): void {
     $("body").on("click", ".spoiler-header", function (e) {
         const button = $(this).children(".spoiler-button");
         const arrow = button.children(".spoiler-arrow");
@@ -63,7 +63,8 @@ export function initialize() {
         }
 
         // Allow selecting text inside a spoiler header.
-        if (document.getSelection().type === "Range") {
+        const selection = document.getSelection();
+        if (selection && selection.type === "Range") {
             return;
         }
 

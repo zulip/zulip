@@ -141,7 +141,7 @@ EXEMPT_FILES = {
     "static/js/settings_ui.js",
     "static/js/settings_users.js",
     "static/js/setup.js",
-    "static/js/spoilers.js",
+    "static/js/spoilers.ts",
     "static/js/starred_messages_ui.js",
     "static/js/stream_bar.js",
     "static/js/stream_color.js",
