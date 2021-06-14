@@ -1,6 +1,11 @@
 import $ from "jquery";
 
-export function update_padding(opts) {
+export function update_padding(opts: {
+    content_sel: string;
+    padding_sel: string;
+    total_rows: number;
+    shown_rows: number;
+}): void {
     const content = $(opts.content_sel);
     const padding = $(opts.padding_sel);
     const total_rows = opts.total_rows;
@@ -15,6 +20,10 @@ export function update_padding(opts) {
     const ratio = hidden_rows / shown_rows;
 
     const content_height = content.height();
+    if (content_height === undefined) {
+        return;
+    }
+
     const new_padding_height = ratio * content_height;
 
     padding.height(new_padding_height);
