@@ -316,6 +316,13 @@ comes from the [pygments][] package.  `tools/setup/build_pygments_data` is
 responsible for generating `static/generated/pygments_data.json` so that
 our JavaScript Markdown processor has access to the supported list.
 
+### Kroki data
+
+The list of diagram types supported by our Markdown syntax highlighting
+comes from [Kroki][]. `tools/setup/build_kroki_data` is responsible for
+generating `static/generated/kroki_data.json` so that our JavaScript
+Markdown processor has access to the supported list.
+
 ## Modifying provisioning
 
 When making changes to Zulip's provisioning process or dependencies,
@@ -338,3 +345,4 @@ usually one needs to think about making changes in 3 places:
 [npm]: https://npmjs.com/
 [iamcal]: https://github.com/iamcal/emoji-data
 [pygments]: https://pygments.org/
+[Kroki]: https://kroki.io/#support

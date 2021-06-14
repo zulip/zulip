@@ -164,6 +164,7 @@
         overflow: auto hidden;
     }
 
+    .kroki-error,
     .tex-error {
         color: hsl(0, 0%, 50%);
     }
@@ -454,6 +455,12 @@
         &:hover {
             color: hsl(200, 100%, 40%);
         }
+    }
+
+    .kroki-block {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }
 

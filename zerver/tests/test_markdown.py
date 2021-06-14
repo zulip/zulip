@@ -1,11 +1,14 @@
 import copy
 import os
 import re
+from functools import partial
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple
 from unittest import mock
 
 import orjson
+import requests
+import responses
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
@@ -1154,6 +1157,57 @@ class MarkdownTest(ZulipTestCase):
     def test_fetch_tweet_data_settings_validation(self) -> None:
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
             self.assertIs(None, fetch_tweet_data("287977969287315459"))
+
+    @responses.activate
+    def test_kroki_diagrams(self) -> None:
+        def request_callback(
+            request: requests.models.PreparedRequest, html: str
+        ) -> Tuple[int, Dict[str, str], str]:
+            payload = {}
+            if request.body is not None:
+                payload = orjson.loads(request.body)
+
+            if not all(payload.values()):
+                return (400, {}, "")
+
+            return (200, {}, html)
+
+        def assert_kroki_output(
+            msg: str, expected: str, html: str = "", call_count: int = 1
+        ) -> None:
+            responses.add_callback(
+                responses.POST,
+                settings.KROKI_SERVER_URL,
+                callback=partial(request_callback, html=html),
+            )
+            self.assertEqual(markdown_convert_wrapper(msg), expected)
+            self.assertTrue(responses.assert_call_count(settings.KROKI_SERVER_URL, call_count))
+            responses.reset()
+
+        with open(os.path.join(os.path.dirname(__file__), "fixtures/kroki.json"), "r") as f:
+            data = orjson.loads(f.read())
+            for test in data:
+                # If the message input is split into paragraphs then kroki will not be able
+                # to generate correct html string. We need to make sure we are not splitting
+                # text into multiple paragraphs.
+                # For multiple paragraphs the mock will be called more than once.
+                expected = f"""<div class="kroki-block">{test["html_output"]}</div>"""
+                assert_kroki_output(test["input"], expected, test["html_output"])
+
+        # Kroki cannot guess the diagram type; we need to provide it explicitly.
+        msg = """\n```kroki\ndigraph G {\nHello->World\n}"""
+        expected = """<p><span class="kroki-error">digraph G {\nHello-&gt;World\n}\n\n</span></p>"""
+        assert_kroki_output(msg, expected)
+
+        with self.settings(KROKI_SERVER_URL=None):
+            assert_kroki_output(msg, expected, call_count=0)
+
+        # This exception occurs in cases like request times out, too many redirects, etc.
+        responses.add(
+            responses.POST, settings.KROKI_SERVER_URL, body=requests.exceptions.RequestException()
+        )
+        self.assertEqual(markdown_convert_wrapper(msg), expected)
+        self.assertTrue(responses.assert_call_count(settings.KROKI_SERVER_URL, 1))
 
     def test_content_has_emoji(self) -> None:
         self.assertFalse(content_has_emoji_syntax("boring"))

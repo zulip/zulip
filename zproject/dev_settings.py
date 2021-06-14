@@ -179,3 +179,7 @@ USE_X_FORWARDED_PORT = True
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 
 MEMCACHED_USERNAME = None
+
+## We use this API provided by Kroki to render
+## diagrams from textual descriptions.
+KROKI_SERVER_URL = "https://kroki.io/"

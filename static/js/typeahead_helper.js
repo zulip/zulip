@@ -1,6 +1,7 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
+import kroki_data from "../generated/kroki_data.json";
 import pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
@@ -13,6 +14,8 @@ import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
+
+const syntax_highlighting_data = _.merge(pygments_data, kroki_data);
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
@@ -244,7 +247,9 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
 }
 
 export function compare_by_popularity(lang_a, lang_b) {
-    const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
+    const diff =
+        syntax_highlighting_data.langs[lang_b].priority -
+        syntax_highlighting_data.langs[lang_a].priority;
     if (diff !== 0) {
         return diff;
     }

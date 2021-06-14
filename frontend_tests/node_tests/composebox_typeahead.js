@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const _ = require("lodash");
+
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -48,6 +50,7 @@ const user_pill = zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
+const kroki_data = zrequire("../generated/kroki_data.json");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
 // To be eliminated in next commit:
@@ -1174,7 +1177,7 @@ test("begins_typeahead", (override) => {
 
     const people_only = {is_silent: true};
     const all_mentions = {is_silent: false};
-    const lang_list = Object.keys(pygments_data.langs);
+    const lang_list = _.merge(Object.keys(pygments_data.langs), Object.keys(kroki_data.langs));
 
     assert_typeahead_equals("test", false);
     assert_typeahead_equals("test one two", false);
@@ -1339,6 +1342,15 @@ test("begins_typeahead", (override) => {
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
     }
+
+    // Kroki diagram types suggestions
+    assert_typeahead_equals("```krok", lang_list);
+    assert_typeahead_equals("```kroki ", lang_list);
+    assert_typeahead_equals("~~~ kroki b", lang_list);
+    assert_typeahead_equals("```graphviz", lang_list);
+    assert_typeahead_equals("```kroki vega", lang_list);
+    assert_typeahead_equals("~~~ diag", lang_list);
+    assert_typeahead_equals("```kroki seqdiag", lang_list);
 });
 
 test("tokenizing", () => {

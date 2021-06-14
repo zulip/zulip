@@ -3,6 +3,7 @@ import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import _ from "lodash";
 
+import kroki_data from "../generated/kroki_data.json";
 import pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
@@ -41,6 +42,11 @@ import * as user_pill from "./user_pill";
 // This is what we use for PM/compose typeaheads.
 // We export it to allow tests to mock it.
 export const max_num_items = 8;
+
+const syntax_highlighting_langs = _.merge(
+    Object.keys(pygments_data.langs),
+    Object.keys(kroki_data.langs),
+);
 
 export let emoji_collection = [];
 
@@ -615,7 +621,7 @@ export function get_candidates(query) {
         }
         this.completing = "syntax";
         this.token = current_token;
-        return Object.keys(pygments_data.langs);
+        return syntax_highlighting_langs;
     }
 
     // Only start the emoji autocompleter if : is directly after one

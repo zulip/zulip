@@ -127,13 +127,14 @@ be happy to help you out.
 
 ## Related articles
 
-[Math blocks][math-block], [spoiler blocks][spoiler-block], and [quote
-blocks][quote-block] use similar fenced block syntax.
+[Math blocks][math-block], [spoiler blocks][spoiler-block], [quote blocks][quote-block],
+and [Kroki diagram blocks][kroki-diagram-block] use similar fenced block syntax.
 
 [pygments-lexers]: https://pygments.org/docs/lexers/
 [get_lexer_by_name]: https://pygments-doc.readthedocs.io/en/latest/lexers/lexers.html#pygments.lexers.get_lexer_by_name
 
 [markdown]: /help/format-your-message-using-markdown
 [math-block]: /help/format-your-message-using-markdown#latex
+[kroki-diagram-block]: /help/format-your-message-using-markdown#kroki-diagrams
 [quote-block]: /help/format-your-message-using-markdown#quotes
 [spoiler-block]: /help/format-your-message-using-markdown#spoilers
