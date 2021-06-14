@@ -99,7 +99,7 @@ EXEMPT_FILES = {
     "static/js/night_mode.ts",
     "static/js/notifications.js",
     "static/js/overlays.js",
-    "static/js/padded_widget.js",
+    "static/js/padded_widget.ts",
     "static/js/page_params.ts",
     "static/js/navbar_alerts.js",
     "static/js/pm_list_dom.js",
