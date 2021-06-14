@@ -2193,10 +2193,10 @@ class Markdown(markdown.Markdown):
         # Custom bold syntax: **foo** but not __foo__
         # str inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
-        EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*"
+        EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+?)(?<!\s)\2"
         STRONG_RE = r"(\*\*)([^\n]+?)\2"
-        STRONG_EM_RE = r"(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*"
-        TEX_RE = r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"
+        STRONG_EM_RE = r"(\*{3})(?!\s+)([^\*^\n]+?)(?<!\s)\2"
+        TEX_RE = r"\B(?<!\$)(\${2})(?P<body>[^\n_$](\\\$|[^$\n])*)\2(?!\$)\B"
         TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"
 
         # Add inline patterns.  We use a custom numbering of the
