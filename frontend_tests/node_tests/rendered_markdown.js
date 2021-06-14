@@ -2,8 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, mock_template, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -18,6 +17,9 @@ class Clipboard {
 
 mock_cjs("clipboard", Clipboard);
 mock_cjs("jquery", $);
+
+const render_copy_code_button = mock_template("copy_code_button.hbs");
+const render_view_code_in_playground = mock_template("view_code_in_playground.hbs");
 
 const realm_playground = mock_esm("../../static/js/realm_playground");
 page_params.emojiset = "apple";
@@ -378,7 +380,7 @@ function assert_clipboard_setup() {
     assert.equal(text, "text");
 }
 
-function test_code_playground() {
+function test_code_playground(override, viewing_code) {
     const $content = get_content_element();
     const $hilite = $.create("div.codehilite");
     const $pre = $.create("hilite-pre");
@@ -402,18 +404,17 @@ function test_code_playground() {
         prepends.push(arg);
     };
 
-    stub_templates((template_name, data) => {
-        switch (template_name) {
-            case "copy_code_button":
-                assert.equal(data, undefined);
-                return {to_$: () => $copy_code_button};
-            case "view_code_in_playground":
-                assert.equal(data, undefined);
-                return {to_$: () => $view_code_in_playground};
-            default:
-                throw new Error(`unexpected template_name ${template_name}`);
-        }
+    override(render_copy_code_button, "f", (data) => {
+        assert.equal(data, undefined);
+        return {to_$: () => $copy_code_button};
     });
+
+    if (viewing_code) {
+        override(render_view_code_in_playground, "f", (data) => {
+            assert.equal(data, undefined);
+            return {to_$: () => $view_code_in_playground};
+        });
+    }
 
     rm.update_elements($content);
 
@@ -430,7 +431,7 @@ run_test("code playground none", (override) => {
         return undefined;
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground();
+    const {prepends, copy_code, view_code} = test_code_playground(override, false);
     assert.deepEqual(prepends, [copy_code]);
     assert_clipboard_setup();
 
@@ -444,7 +445,7 @@ run_test("code playground single", (override) => {
         return [{name: "Some Javascript Playground"}];
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground();
+    const {prepends, copy_code, view_code} = test_code_playground(override, true);
     assert.deepEqual(prepends, [view_code, copy_code]);
     assert_clipboard_setup();
 
@@ -462,7 +463,7 @@ run_test("code playground multiple", (override) => {
         return ["whatever", "whatever"];
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground();
+    const {prepends, copy_code, view_code} = test_code_playground(override, true);
     assert.deepEqual(prepends, [view_code, copy_code]);
     assert_clipboard_setup();
 
