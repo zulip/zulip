@@ -2187,15 +2187,17 @@ class Markdown(markdown.Markdown):
         # emphasis2 -       we disable _ for bold and emphasis
 
         # Declare regexes for clean single line calls to .register().
-        NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
+        #
         # Custom strikethrough syntax: ~~foo~~
         DEL_RE = r"(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)"
         # Custom bold syntax: **foo** but not __foo__
         # str inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
         EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*"
-        ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
+        STRONG_RE = r"(\*\*)([^\n]+?)\2"
         STRONG_EM_RE = r"(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*"
+        TEX_RE = r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"
+        TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"
 
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
@@ -2206,12 +2208,10 @@ class Markdown(markdown.Markdown):
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
         reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
-        reg.register(
-            Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B", self), "tex", 90
-        )
+        reg.register(Tex(TEX_RE, self), "tex", 90)
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
-        reg.register(Timestamp(r"<time:(?P<time>[^>]*?)>"), "timestamp", 75)
+        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
         reg.register(
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
@@ -2219,14 +2219,20 @@ class Markdown(markdown.Markdown):
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
-        reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), "entity", 40)
         reg.register(
-            markdown.inlinepatterns.SimpleTagPattern(r"(\*\*)([^\n]+?)\2", "strong"), "strong", 35
+            markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
+            "entity",
+            40,
         )
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, "strong"), "strong", 35)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, "em"), "emphasis", 30)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, "del"), "del", 25)
         reg.register(
-            markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), "not_strong", 20
+            markdown.inlinepatterns.SimpleTextInlineProcessor(
+                markdown.inlinepatterns.NOT_STRONG_RE
+            ),
+            "not_strong",
+            20,
         )
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
         reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
