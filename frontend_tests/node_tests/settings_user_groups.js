@@ -4,9 +4,8 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {stub_templates} = require("../zjsunit/handlebars");
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -21,6 +20,7 @@ const pills = {
 let create_item_handler;
 
 mock_cjs("jquery", $);
+const render_admin_user_group_list = mock_template("/settings/admin_user_group_list.hbs");
 const channel = mock_esm("../../static/js/channel");
 const confirm_dialog = mock_esm("../../static/js/confirm_dialog");
 const input_pill = mock_esm("../../static/js/input_pill");
@@ -130,8 +130,7 @@ test_ui("populate_user_groups", (override) => {
 
     let templates_render_called = false;
     const fake_rendered_temp = $.create("fake_admin_user_group_list_template_rendered");
-    stub_templates((template, args) => {
-        assert.equal(template, "settings/admin_user_group_list");
+    override(render_admin_user_group_list, "f", (args) => {
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, "Mobile");
         assert.equal(args.user_group.description, "All mobile people");
@@ -365,7 +364,7 @@ test_ui("with_external_user", (override) => {
     // We return noop because these are already tested, so we skip them
     people.get_realm_users = () => noop;
 
-    stub_templates(() => noop);
+    override(render_admin_user_group_list, "f", () => "settings/admin_user_group_list.hbs");
 
     people.get_by_user_id = () => noop;
 
