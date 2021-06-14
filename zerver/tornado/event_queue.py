@@ -736,6 +736,10 @@ def missedmessage_hook(
 
         internal_data = event.get("internal_data", {})
 
+        sender_is_muted = internal_data.get("sender_is_muted", False)
+        if sender_is_muted:
+            continue
+
         assert "flags" in event
 
         flags = event["flags"]
@@ -960,6 +964,7 @@ def process_message_event(
                 stream_push_notify=stream_push_notify,
                 stream_email_notify=stream_email_notify,
                 wildcard_mention_notify=wildcard_mention_notify,
+                sender_is_muted=sender_is_muted,
             ),
         )
 

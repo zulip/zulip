@@ -523,6 +523,20 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             user_profile, stream, sub, {"push_notifications": True, "is_muted": False}
         )
 
+        # Test the hook when the sender has been muted
+        result = self.api_post(user_profile, f"/api/v1/users/me/muted_users/{iago.id}")
+        self.assert_json_success(result)
+        client_descriptor = allocate_event_queue()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_personal_message(iago, user_profile)
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            # If the sender is muted, we don't call `maybe_enqueue_notifications` at all.
+            mock_enqueue.assert_not_called()
+        destroy_event_queue(client_descriptor.event_queue.id)
+        result = self.api_delete(user_profile, f"/api/v1/users/me/muted_users/{iago.id}")
+        self.assert_json_success(result)
+
 
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:
