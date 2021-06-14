@@ -32,6 +32,7 @@ import * as linkifiers from "./linkifiers";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
@@ -531,6 +532,7 @@ export function initialize_everything() {
     starred_messages.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
+    message_edit_history.initialize();
 }
 
 $(() => {
