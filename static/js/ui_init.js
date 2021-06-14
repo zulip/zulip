@@ -7,6 +7,7 @@ import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
+import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -518,6 +519,9 @@ export function initialize_everything() {
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
+    about_zulip.initialize();
+
+    // All overlays must be initialized before hashchange.js
     hashchange.initialize();
     unread_ui.initialize();
     activity.initialize();

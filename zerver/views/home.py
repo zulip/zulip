@@ -8,7 +8,6 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
-from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
@@ -237,8 +236,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "is_admin": user_permission_info.is_realm_admin,
             "is_guest": user_permission_info.is_guest,
             "color_scheme": user_permission_info.color_scheme,
-            "zulip_version": ZULIP_VERSION,
-            "zulip_merge_base": ZULIP_MERGE_BASE,
             "navbar_logo_url": navbar_logo_url,
             "show_webathena": user_permission_info.show_webathena,
             "embedded": narrow_stream is not None,

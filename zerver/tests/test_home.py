@@ -236,6 +236,7 @@ class HomeTest(ZulipTestCase):
         "webpack_public_path",
         "wildcard_mentions_notify",
         "zulip_feature_level",
+        "zulip_merge_base",
         "zulip_plan_is_not_limited",
         "zulip_version",
     ]

@@ -8,6 +8,7 @@ from django.http import HttpRequest
 from django.utils import translation
 from two_factor.utils import default_device
 
+from version import ZULIP_MERGE_BASE
 from zerver.lib.events import do_events_register
 from zerver.lib.i18n import (
     get_and_set_request_language,
@@ -207,6 +208,8 @@ def build_page_params_for_home_page_load(
         # There is no event queue for web_public_visitors since
         # events support for web_public_visitors is not implemented yet.
         no_event_queue=user_profile is None,
+        # Required for about_zulip.hbs
+        zulip_merge_base=ZULIP_MERGE_BASE,
     )
 
     for field_name in register_ret.keys():
