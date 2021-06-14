@@ -27,7 +27,7 @@ db_service:
   databases:
     - name: "<%= @hostname %>"
       protocol: "postgres"
-      uri: "localhost:5432"
+      uri: "<%= @fqdn %>:5432"
       ca_cert_file: /etc/ssl/certs/teleport-ca.crt
       static_labels:
         hostname: "<%= @hostname %>"
