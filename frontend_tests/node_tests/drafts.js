@@ -2,8 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {
+    mock_cjs,
+    mock_esm,
+    set_global,
+    zrequire,
+    with_overrides,
+    mock_template,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -36,6 +42,8 @@ mock_esm("../../static/js/stream_data", {
     },
 });
 page_params.twenty_four_hour_time = false;
+
+const render_draft_table_body = mock_template("draft_table_body.hbs");
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
@@ -304,8 +312,7 @@ test("format_drafts", (override) => {
     const stub_render_now = timerender.render_now;
     override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "draft_table_body");
+    override(render_draft_table_body, "f", (data) => {
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
         return "<draft table stub>";
