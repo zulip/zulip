@@ -2,9 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -18,16 +17,12 @@ const _FormData = function () {
     return form_data;
 };
 
+const render_settings_admin_realm_domains_list = mock_template(
+    "settings/admin_realm_domains_list.hbs",
+);
+
 mock_cjs("jquery", $);
 const realm_icon = mock_esm("../../static/js/realm_icon");
-
-stub_templates((name, data) => {
-    if (name === "settings/admin_realm_domains_list") {
-        assert.ok(data.realm_domain.domain);
-        return "stub-domains-list";
-    }
-    throw new Error(`Unknown template ${name}`);
-});
 
 const channel = mock_esm("../../static/js/channel");
 const overlays = mock_esm("../../static/js/overlays");
@@ -649,6 +644,7 @@ function test_discard_changes_button(discard_changes) {
 }
 
 test("set_up", (override) => {
+    override(render_settings_admin_realm_domains_list, "f", () => "stub-domains-list");
     const verify_realm_domains = simulate_realm_domains_table();
     page_params.realm_available_video_chat_providers = {
         jitsi_meet: {
