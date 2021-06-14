@@ -2,14 +2,14 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
-stub_templates(() => "<stub>");
+
+const render_subscription_settings = mock_template("subscription_settings.hbs");
 
 mock_cjs("jquery", $);
 const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
@@ -113,6 +113,7 @@ function test_ui(label, f) {
 
 test_ui("subscriber_pills", (override) => {
     override(stream_edit, "sort_but_pin_current_user_on_top", noop);
+    override(render_subscription_settings, "f", () => "subscription_settings");
 
     const subscriptions_table_selector = "#subscriptions_table";
     const input_field_stub = $.create(".input");
