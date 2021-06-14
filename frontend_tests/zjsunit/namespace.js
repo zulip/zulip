@@ -94,6 +94,7 @@ exports.mock_template = (fn) => {
                 but you also need to do override(render_foo, "f", () => {...}
             `);
         },
+        __template_fn: fn,
     };
 
     exports.mock_cjs("../../static/templates/" + fn, (...args) => obj.f(...args));
@@ -286,9 +287,13 @@ exports.with_overrides = function (test_function) {
         }
     }
 
-    for (const module_unused_funcs of unused_funcs.values()) {
+    for (const [obj, module_unused_funcs] of unused_funcs.entries()) {
         for (const unused_name of module_unused_funcs.keys()) {
-            throw new Error(unused_name + " never got invoked!");
+            if (obj.__template_fn) {
+                throw new Error(`The ${obj.__template_fn} template was never rendered.`);
+            } else {
+                throw new Error(unused_name + " never got invoked!");
+            }
         }
     }
 };
