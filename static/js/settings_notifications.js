@@ -68,7 +68,7 @@ export function set_enable_digest_emails_visibility() {
 }
 
 export function set_enable_marketing_emails_visibility() {
-    if (page_params.enable_marketing_emails_enabled) {
+    if (page_params.corporate_enabled) {
         $("#enable_marketing_emails_label").parent().show();
     } else {
         $("#enable_marketing_emails_label").parent().hide();
