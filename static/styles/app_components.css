@@ -551,3 +551,15 @@ div.overlay {
     background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
     background-size: cover;
 }
+
+.spectator-view {
+    /* Add this class to elements which a
+     * spectator cannot use. */
+    .hidden-for-spectators {
+        display: none !important;
+    }
+
+    .only-visible-for-spectators {
+        display: unset;
+    }
+}

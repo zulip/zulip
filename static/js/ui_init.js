@@ -189,6 +189,10 @@ export function initialize_kitchen_sink_stuff() {
     // box, but, close enough for now.
     resize.handler();
 
+    if (page_params.is_spectator) {
+        $("body").addClass("spectator-view");
+    }
+
     if (!page_params.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
     }
