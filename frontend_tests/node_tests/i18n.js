@@ -24,7 +24,6 @@ page_params.translation_data = {
 // `templates.js`.
 unmock_module("../../static/js/i18n");
 const {$t, $t_html} = zrequire("i18n");
-zrequire("templates");
 
 run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
