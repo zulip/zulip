@@ -774,22 +774,30 @@ export function build_page() {
                         ).seconds;
                 }
                 const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
-                if (delete_limit_setting_value === "never") {
-                    data.allow_message_deleting = false;
-                } else if (delete_limit_setting_value === "custom_limit") {
-                    data.message_content_delete_limit_seconds = parse_time_limit(
-                        $("#id_realm_message_content_delete_limit_minutes"),
-                    );
-                    // Disable deleting if the parsed time limit is 0 seconds
-                    data.allow_message_deleting = Boolean(
-                        data.message_content_delete_limit_seconds,
-                    );
-                } else {
-                    data.allow_message_deleting = true;
-                    data.message_content_delete_limit_seconds =
-                        settings_config.msg_delete_limit_dropdown_values.get(
-                            delete_limit_setting_value,
-                        ).seconds;
+                switch (delete_limit_setting_value) {
+                    case "never": {
+                        data.allow_message_deleting = false;
+
+                        break;
+                    }
+                    case "custom_limit": {
+                        data.message_content_delete_limit_seconds = parse_time_limit(
+                            $("#id_realm_message_content_delete_limit_minutes"),
+                        );
+                        // Disable deleting if the parsed time limit is 0 seconds
+                        data.allow_message_deleting = Boolean(
+                            data.message_content_delete_limit_seconds,
+                        );
+
+                        break;
+                    }
+                    default: {
+                        data.allow_message_deleting = true;
+                        data.message_content_delete_limit_seconds =
+                            settings_config.msg_delete_limit_dropdown_values.get(
+                                delete_limit_setting_value,
+                            ).seconds;
+                    }
                 }
                 break;
             }
