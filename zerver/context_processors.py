@@ -72,6 +72,12 @@ def get_valid_realm_from_request(request: HttpRequest) -> Realm:
     return realm
 
 
+def get_apps_page_url() -> str:
+    if settings.ZILENCER_ENABLED:
+        return "/apps/"
+    return "https://zulip.com/apps/"  # nocoverage
+
+
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
     passed in.  Designed to provide the long list of variables at the
@@ -105,10 +111,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         login_link_disabled = True
         find_team_link_disabled = False
         allow_search_engine_indexing = True
-
-    apps_page_url = "https://zulip.com/apps/"
-    if settings.ZILENCER_ENABLED:
-        apps_page_url = "/apps/"
 
     apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
 
@@ -150,7 +152,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "realm_name": realm_name,
         "realm_icon": realm_icon,
         "root_domain_uri": settings.ROOT_DOMAIN_URI,
-        "apps_page_url": apps_page_url,
+        "apps_page_url": get_apps_page_url(),
         "apps_page_web": apps_page_web,
         "open_realm_creation": settings.OPEN_REALM_CREATION,
         "development_environment": settings.DEVELOPMENT,
