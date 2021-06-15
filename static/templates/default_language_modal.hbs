@@ -21,23 +21,23 @@
         </p>
         <div>
             <table>
-                {{#each page_params.language_list_dbl_col}}
+                {{#each language_list}}
                 <tr>
                     <td>
                         <a class="language" data-code="{{this.first.code}}" data-name="{{this.first.name}}">
                             {{#if this.first.selected}}
-                            <b>{{this.first.percent}}</b>
+                            <b>{{this.first.name_with_percent}}</b>
                             {{else}}
-                            {{this.first.percent}}
+                            {{this.first.name_with_percent}}
                             {{/if}}
                         </a>
                     </td>
                     <td>
                         <a class="language" data-code="{{this.second.code}}" data-name="{{this.second.name}}">
                             {{#if this.second.selected}}
-                            <b>{{this.second.percent}}</b>
+                            <b>{{this.second.name_with_percent}}</b>
                             {{else}}
-                            {{this.second.percent}}
+                            {{this.second.name_with_percent}}
                             {{/if}}
                         </a>
                     </td>

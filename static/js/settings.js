@@ -7,7 +7,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as common from "./common";
-import {$t, $t_html} from "./i18n";
+import {$t, $t_html, get_language_list_columns} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -113,6 +113,7 @@ export function build_page() {
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.default_language_name,
+        language_list_dbl_col: get_language_list_columns(page_params.default_language),
     });
 
     $(".settings-box").html(rendered_settings_tab);

@@ -14,7 +14,6 @@ from zerver.lib.events import do_events_register
 from zerver.lib.i18n import (
     get_and_set_request_language,
     get_language_list,
-    get_language_list_for_templates,
     get_language_translation_data,
 )
 from zerver.lib.users import compute_show_invites_and_add_streams
@@ -196,7 +195,6 @@ def build_page_params_for_home_page_load(
         # Only show marketing email settings if on Zulip Cloud
         corporate_enabled=settings.CORPORATE_ENABLED,
         ## Misc. extra data.
-        language_list_dbl_col=get_language_list_for_templates(register_ret["default_language"]),
         language_list=get_language_list(),
         needs_tutorial=needs_tutorial,
         first_in_realm=first_in_realm,

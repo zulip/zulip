@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const _ = require("lodash");
+
 const {unmock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -23,7 +25,7 @@ page_params.translation_data = {
 // `i18n.js` initializes FormatJS and is imported by
 // `templates.js`.
 unmock_module("../../static/js/i18n");
-const {$t, $t_html} = zrequire("i18n");
+const {$t, $t_html, get_language_list_columns} = zrequire("i18n");
 
 run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
@@ -103,4 +105,79 @@ run_test("tr_tag", () => {
 
     const html = require("../../static/templates/settings_tab.hbs")(args);
     assert.ok(html.indexOf("Déclencheurs de notification") > 0);
+});
+
+run_test("language_list", () => {
+    page_params.language_list = [
+        {
+            code: "en",
+            locale: "en",
+            name: "English",
+        },
+        {
+            code: "en-gb",
+            locale: "en_GB",
+            name: "British English",
+            percent_translated: 99,
+        },
+        {
+            code: "id",
+            locale: "id",
+            name: "Bahasa Indonesia",
+            percent_translated: 32,
+        },
+    ];
+
+    const successful_formatted_list = [
+        {
+            first: {
+                name: "English",
+                code: "en",
+                name_with_percent: "English",
+                selected: true,
+            },
+            second: {
+                name: "Bahasa Indonesia",
+                code: "id",
+                name_with_percent: "Bahasa Indonesia (32%)",
+                selected: false,
+            },
+        },
+        {
+            first: {
+                name: "British English",
+                code: "en-gb",
+                name_with_percent: "British English (99%)",
+                selected: false,
+            },
+        },
+    ];
+
+    const formatted_list = get_language_list_columns("en");
+
+    function check_value_match(element, position) {
+        assert.equal(
+            formatted_list[element][position].name,
+            successful_formatted_list[element][position].name,
+        );
+        assert.equal(
+            formatted_list[element][position].code,
+            successful_formatted_list[element][position].code,
+        );
+        assert.equal(
+            formatted_list[element][position].name_with_percent,
+            successful_formatted_list[element][position].name_with_percent,
+        );
+        assert.equal(
+            formatted_list[element][position].selected,
+            successful_formatted_list[element][position].selected,
+        );
+    }
+
+    for (const element of _.range(0, formatted_list.length)) {
+        check_value_match(element, "first");
+        if (formatted_list[element].second) {
+            check_value_match(element, "second");
+        }
+    }
 });

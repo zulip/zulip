@@ -106,7 +106,6 @@ class HomeTest(ZulipTestCase):
         "is_spectator",
         "jitsi_server_url",
         "language_list",
-        "language_list_dbl_col",
         "last_event_id",
         "left_side_userlist",
         "login_page",
