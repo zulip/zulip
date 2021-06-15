@@ -14,6 +14,7 @@ import * as people from "./people";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
@@ -111,6 +112,7 @@ export function build_page() {
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
+        default_language_name: settings_display.default_language_name,
     });
 
     $(".settings-box").html(rendered_settings_tab);

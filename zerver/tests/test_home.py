@@ -65,7 +65,6 @@ class HomeTest(ZulipTestCase):
         "custom_profile_field_types",
         "custom_profile_fields",
         "default_language",
-        "default_language_name",
         "default_view",
         "delivery_email",
         "demote_inactive_streams",

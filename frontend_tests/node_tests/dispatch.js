@@ -646,6 +646,7 @@ run_test("typing", ({override}) => {
 });
 
 run_test("update_display_settings", ({override}) => {
+    settings_display.set_default_language_name = () => {};
     let event = event_fixtures.update_display_settings__default_language;
     page_params.default_language = "en";
     override(settings_display, "update_page", noop);

@@ -58,6 +58,7 @@ import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
@@ -520,6 +521,7 @@ export function initialize_everything() {
     gear_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
+    settings_display.initialize();
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();

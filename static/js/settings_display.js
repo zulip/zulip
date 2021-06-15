@@ -14,6 +14,22 @@ const meta = {
     loaded: false,
 };
 
+function get_default_language_name(language_code) {
+    const language_list_map = {};
+
+    // One-to-one mapping from code to name for all languages
+    for (const language of page_params.language_list) {
+        language_list_map[language.code] = language.name;
+    }
+    return language_list_map[language_code];
+}
+
+export let default_language_name;
+
+export function set_default_language_name(name) {
+    default_language_name = name;
+}
+
 function change_display_setting(data, status_element, success_msg_html, sticky) {
     const $status_el = $(status_element);
     const status_is_sticky = $status_el.data("is_sticky");
@@ -196,7 +212,7 @@ export async function report_emojiset_change() {
 
 export function update_page() {
     $("#left_side_userlist").prop("checked", page_params.left_side_userlist);
-    $("#default_language_name").text(page_params.default_language_name);
+    $("#default_language_name").text(default_language_name);
     $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
     $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
@@ -204,4 +220,9 @@ export function update_page() {
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
+}
+
+export function initialize() {
+    const language_name = get_default_language_name(page_params.default_language);
+    set_default_language_name(language_name);
 }

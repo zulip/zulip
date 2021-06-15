@@ -564,7 +564,7 @@ export function dispatch_normal_event(event) {
                 // a reload is fundamentally required because we
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
-                page_params.default_language_name = event.language_name;
+                settings_display.set_default_language_name(event.language_name);
             }
             if (event.setting_name === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
