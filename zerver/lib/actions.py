@@ -1932,23 +1932,6 @@ def do_send_messages(
         wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
 
         user_flags = user_message_flags.get(send_request.message.id, {})
-        sender = send_request.message.sender
-        message_type = wide_message_dict["type"]
-
-        presence_idle_user_ids = get_active_presence_idle_user_ids(
-            realm=sender.realm,
-            sender_id=sender.id,
-            message_type=message_type,
-            active_user_ids=send_request.active_user_ids,
-            user_flags=user_flags,
-        )
-
-        event = dict(
-            type="message",
-            message=send_request.message.id,
-            message_dict=wide_message_dict,
-            presence_idle_user_ids=presence_idle_user_ids,
-        )
 
         """
         TODO:  We may want to limit user_ids to only those users who have
@@ -1993,6 +1976,24 @@ def do_send_messages(
             )
 
         users = [asdict(user_data_object) for user_data_object in user_data_objects]
+
+        sender = send_request.message.sender
+        message_type = wide_message_dict["type"]
+
+        presence_idle_user_ids = get_active_presence_idle_user_ids(
+            realm=sender.realm,
+            sender_id=sender.id,
+            message_type=message_type,
+            active_user_ids=send_request.active_user_ids,
+            user_flags=user_flags,
+        )
+
+        event = dict(
+            type="message",
+            message=send_request.message.id,
+            message_dict=wide_message_dict,
+            presence_idle_user_ids=presence_idle_user_ids,
+        )
 
         if send_request.message.is_stream_message():
             # Note: This is where authorization for single-stream
