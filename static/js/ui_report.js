@@ -61,9 +61,8 @@ export function generic_embed_error(error_html) {
 
 export function generic_row_button_error(xhr, btn) {
     if (xhr.status >= 400 && xhr.status < 500) {
-        btn.closest("td").html(
-            $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
-        );
+        const $error = $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg);
+        btn.closest("td").empty().append($error);
     } else {
         btn.text($t({defaultMessage: "Failed!"}));
     }
