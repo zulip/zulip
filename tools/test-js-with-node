@@ -56,6 +56,7 @@ EXEMPT_FILES = {
     "static/js/csrf.js",
     "static/js/css_variables.js",
     "static/js/debug.js",
+    "static/js/deprecated_feature_notice.js",
     "static/js/desktop_integration.js",
     "static/js/drafts.js",
     "static/js/echo.js",

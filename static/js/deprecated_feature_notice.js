@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_deprecated_feature_notice from "../templates/deprecated_feature_notice.hbs";
+
 import * as blueslip from "./blueslip";
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -42,6 +44,11 @@ export function maybe_show_deprecation_notice(key) {
     }
 
     if (!shown_deprecation_notices.includes(key)) {
+        const rendered_deprecated_feature_notice = render_deprecated_feature_notice({message});
+        const deprecated_feature_notice = $(rendered_deprecated_feature_notice);
+
+        $(".app").append(deprecated_feature_notice);
+
         overlays.open_modal("#deprecation-notice-modal");
         $("#deprecation-notice-message").text(message);
         $("#close-deprecation-notice").trigger("focus");
@@ -52,5 +59,9 @@ export function maybe_show_deprecation_notice(key) {
                 JSON.stringify(shown_deprecation_notices),
             );
         }
+
+        deprecated_feature_notice.on("hidden.bs.modal", () => {
+            deprecated_feature_notice.remove();
+        });
     }
 }
