@@ -834,6 +834,8 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
+    /* Disable blue link styling for the message timestamp link. */
+    color: hsl(0, 0%, 20%);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 

@@ -647,6 +647,8 @@ export class MessageListView {
                 message.starred_status = $t({defaultMessage: "Star"});
             }
 
+            message.url = hash_util.by_conversation_and_time_uri(message);
+
             return {msg: message};
         });
 

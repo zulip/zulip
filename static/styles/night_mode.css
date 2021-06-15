@@ -285,6 +285,11 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    /* Disable blue link styling for the message timestamp link. */
+    .message_time {
+        color: hsl(236, 33%, 90%);
+    }
+
     .emoji-popover .reaction:focus {
         box-shadow: 0 0 1px hsl(0, 0%, 98%);
     }
