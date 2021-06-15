@@ -2329,7 +2329,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
         pattern = prepare_linkifier_pattern(raw_pattern)
         for m in re.finditer(pattern, topic_name):
             match_details = m.groupdict()
-            match_text = match_details["linkifier_actual_match"]
+            match_text = match_details[OUTER_CAPTURE_GROUP]
             # We format the linkifier's url string using the matched text.
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
