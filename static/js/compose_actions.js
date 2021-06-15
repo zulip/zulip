@@ -11,6 +11,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as copy_and_paste from "./copy_and_paste";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -437,8 +438,13 @@ export function on_topic_narrow() {
 
 export function quote_and_reply(opts) {
     const textarea = $("#compose-textarea");
-    const message_id = message_lists.current.selected_id();
-    const message = message_lists.current.selected_message();
+    let message_id = message_lists.current.selected_id();
+    let message = message_lists.current.selected_message();
+
+    if (opts.start_message_id) {
+        message_id = opts.start_message_id;
+        message = message_lists.current.get(message_id);
+    }
 
     if (compose_state.has_message_content()) {
         // The user already started typing a message,
@@ -484,7 +490,17 @@ export function quote_and_reply(opts) {
         compose_ui.autosize_textarea($("#compose-textarea"));
     }
 
-    if (message && message.raw_content) {
+    if (message && opts.selected_text !== undefined) {
+        // The copied text is plain text, therefore, the quoted text
+        // is not stylized as well.
+        message.raw_content = opts.selected_text;
+        replace_content(message);
+
+        // Resets the raw_content, otherwise this can cause the
+        // selected text to get quoted next time the hotkey is used.
+        message.raw_content = undefined;
+        return;
+    } else if (message && message.raw_content) {
         replace_content(message);
         return;
     }
@@ -497,6 +513,23 @@ export function quote_and_reply(opts) {
             replace_content(message);
         },
     });
+}
+
+export function quote_selected_text_and_reply(opts) {
+    const selected_text = window.getSelection().toString();
+
+    if (selected_text !== "") {
+        const analysis = copy_and_paste.analyze_selection(window.getSelection());
+
+        if (!analysis.skip_same_td_check && analysis.start_id === analysis.end_id) {
+            // Quote the selected text iff a single message's text is selected.
+            // Otherwise, just quote the selected message.
+            opts.selected_text = selected_text.trim();
+            opts.start_message_id = analysis.start_id;
+        }
+    }
+
+    quote_and_reply(opts);
 }
 
 export function on_narrow(opts) {
