@@ -19,8 +19,30 @@ function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
-        return module_mocks.get(filename);
+        const obj = module_mocks.get(filename);
+
+        // Normal mocks are just objects.
+        if (!obj.__template_fn) {
+            return obj;
+        }
+
+        // For template mocks, we have an underlying object that
+        // we wrap with a render function.
+        const render = (data) => {
+            if (obj.f.__default) {
+                throw new Error(`
+                    You did render_foo = mock_template("${obj.__template_fn}")
+                    but you also need to do override(render_foo, "f", () => {...}
+                `);
+            }
+
+            // User will override "f" for now, which is a bit hacky.
+            return obj.f(data);
+        };
+
+        return render;
     }
+
     if (filename === jquery_path && parent.filename !== real_jquery_path) {
         // jQuery exposes an incompatible API to Node vs. browser, so
         // this wouldn't work.
@@ -67,9 +89,9 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-exports.mock_cjs = (request, obj) => {
+function get_validated_filename(fn) {
     const filename = Module._resolveFilename(
-        request,
+        fn,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -82,22 +104,31 @@ exports.mock_cjs = (request, obj) => {
         throw new Error(`It is too late to mock ${filename}; call this earlier.`);
     }
 
+    return filename;
+}
+
+exports.mock_cjs = (fn, obj) => {
+    const filename = get_validated_filename(fn);
     module_mocks.set(filename, obj);
+
     return obj;
 };
 
 exports.mock_template = (fn) => {
+    // We create an object with an f() function that the test author
+    // can override.
     const obj = {
-        f: () => {
-            throw new Error(`
-                You did render_foo = mock_template("${fn}")
-                but you also need to do override(render_foo, "f", () => {...}
-            `);
-        },
+        f: () => {},
         __template_fn: fn,
     };
+    obj.f.__default = true;
 
-    exports.mock_cjs("../../static/templates/" + fn, (...args) => obj.f(...args));
+    const filename = get_validated_filename("../../static/templates/" + fn);
+
+    // We update module_mocks with our object, but load() will return
+    // its own function that calls our obj.f.
+    module_mocks.set(filename, obj);
+
     return obj;
 };
 
