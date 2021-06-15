@@ -399,7 +399,7 @@ class PlansPageTest(ZulipTestCase):
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/login/?next=plans")
+        self.assertEqual(result["Location"], "/accounts/login/?next=/plans")
 
         guest_user = "polonius"
         self.login(guest_user)
