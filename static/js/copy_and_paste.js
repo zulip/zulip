@@ -306,6 +306,19 @@ export function paste_handler_converter(paste_html) {
     return markdown_text;
 }
 
+// https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+function isValidHttpUrl(string) {
+    let url;
+
+    try {
+        url = new URL(string);
+    } catch {
+        return false;
+    }
+
+    return url.protocol === "http:" || url.protocol === "https:";
+}
+
 export function paste_handler(event) {
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -318,6 +331,20 @@ export function paste_handler(event) {
     }
 
     if (clipboardData.getData) {
+        const paste_text = clipboardData.getData("text");
+        if (paste_text && isValidHttpUrl(paste_text) && document.getSelection().type === "Range") {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const textarea = $(this);
+            const prefix = "[";
+            const suffix = "](" + paste_text + ")";
+            compose_ui.wrap_text_with_markdown(textarea, prefix, suffix);
+            compose_ui.autosize_textarea(textarea);
+
+            return;
+        }
+
         const paste_html = clipboardData.getData("text/html");
         if (paste_html && page_params.development_environment) {
             const text = paste_handler_converter(paste_html);
