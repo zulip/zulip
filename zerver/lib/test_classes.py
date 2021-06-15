@@ -507,22 +507,22 @@ Output:
 
     def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
-        and not for a logged-out web-public visitor."""
+        and not for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_visitor` to verify
+        # It is important to check `is_spectator` to verify
         # that we treated this request as a normal logged-in session,
-        # not as a web-public visitor.
-        self.assertEqual(page_params["is_web_public_visitor"], False)
+        # not as a spectator.
+        self.assertEqual(page_params["is_spectator"], False)
 
-    def check_rendered_web_public_visitor(self, result: HttpResponse) -> None:
+    def check_rendered_spectator(self, result: HttpResponse) -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
-        for a logged-out web-public visitor."""
+        for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_visitor` to verify
-        # that we treated this request to render for a `web_public_visitor`
-        self.assertEqual(page_params["is_web_public_visitor"], True)
+        # It is important to check `is_spectator` to verify
+        # that we treated this request to render for a `spectator`
+        self.assertEqual(page_params["is_spectator"], True)
 
     def login_with_return(
         self, email: str, password: Optional[str] = None, **kwargs: Any

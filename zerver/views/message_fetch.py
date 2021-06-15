@@ -1095,7 +1095,7 @@ def get_messages_backend(
     message_ids: List[int] = []
     user_message_flags: Dict[int, List[str]] = {}
     if is_web_public_query:
-        # For web-public users, we treat all historical messages as read.
+        # For spectators, we treat all historical messages as read.
         for row in rows:
             message_id = row[0]
             message_ids.append(message_id)

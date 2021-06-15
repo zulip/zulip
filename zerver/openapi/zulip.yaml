@@ -1121,7 +1121,7 @@ paths:
                                   description: |
                                     Note: Only present if the changed property was `invite_only`.
 
-                                    Whether the stream's history is now readable by web-public visitors.
+                                    Whether the stream's history is now readable by web-public spectators.
 
                                     **Changes**: New in Zulip 5.0 (feature level 71).
                               additionalProperties: false

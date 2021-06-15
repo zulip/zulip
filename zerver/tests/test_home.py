@@ -104,7 +104,7 @@ class HomeTest(ZulipTestCase):
         "is_guest",
         "is_moderator",
         "is_owner",
-        "is_web_public_visitor",
+        "is_spectator",
         "jitsi_server_url",
         "language_list",
         "language_list_dbl_col",

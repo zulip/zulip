@@ -183,7 +183,7 @@ export function send_presence_to_server(want_redraw) {
     // which will clear suspect_offline and potentially trigger a
     // reload if the device was offline for more than
     // DEFAULT_EVENT_QUEUE_TIMEOUT_SECS).
-    if (page_params.is_web_public_visitor) {
+    if (page_params.is_spectator) {
         return;
     }
 

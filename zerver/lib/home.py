@@ -152,9 +152,9 @@ def build_page_params_for_home_page_load(
             include_streams=False,
         )
     else:
-        # Since events for web_public_visitor is not implemented, we only fetch the data
+        # Since events for spectator is not implemented, we only fetch the data
         # at the time of request and don't register for any events.
-        # TODO: Implement events for web_public_visitor.
+        # TODO: Implement events for spectator.
         from zerver.lib.events import fetch_initial_state_data, post_process_state
 
         register_ret = fetch_initial_state_data(
@@ -215,9 +215,9 @@ def build_page_params_for_home_page_load(
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
-        is_web_public_visitor=user_profile is None,
-        # There is no event queue for web_public_visitors since
-        # events support for web_public_visitors is not implemented yet.
+        is_spectator=user_profile is None,
+        # There is no event queue for spectators since
+        # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
         # Required for about_zulip.hbs
         zulip_merge_base=ZULIP_MERGE_BASE,

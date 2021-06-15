@@ -641,7 +641,7 @@ test("electron_bridge", (override) => {
     });
 });
 
-test("test_send_or_receive_no_presence_for_web_public_visitor", () => {
-    page_params.is_web_public_visitor = true;
+test("test_send_or_receive_no_presence_for_spectator", () => {
+    page_params.is_spectator = true;
     activity.send_presence_to_server();
 });
