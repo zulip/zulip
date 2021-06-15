@@ -11,11 +11,10 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 
-const {DOMParser, document} = window;
+const {document} = window;
 const $ = jquery(window);
 
 const compose_ui = mock_esm("../../static/js/compose_ui");
-set_global("DOMParser", DOMParser);
 set_global("document", document);
 
 const copy_and_paste = zrequire("copy_and_paste");

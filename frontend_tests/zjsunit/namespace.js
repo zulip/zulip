@@ -15,6 +15,8 @@ const used_module_mocks = new Set();
 const jquery_path = require.resolve("jquery");
 const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
 
+let in_mid_render = false;
+
 function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
@@ -26,9 +28,15 @@ function load(request, parent, isMain) {
             return obj;
         }
 
+        const actual_render = actual_load(request, parent, isMain);
+
         // For template mocks, we have an underlying object that
         // we wrap with a render function.
-        const render = (data) => {
+        const render = (...args) => {
+            if (in_mid_render) {
+                return actual_render(...args);
+            }
+
             if (obj.f.__default) {
                 throw new Error(`
                     You did render_foo = mock_template("${obj.__template_fn}")
@@ -36,7 +44,17 @@ function load(request, parent, isMain) {
                 `);
             }
 
-            // User will override "f" for now, which is a bit hacky.
+            const data = args[0];
+
+            if (obj.exercise_template) {
+                in_mid_render = true;
+                const html = actual_render(...args);
+                in_mid_render = false;
+
+                // User will override "f" for now, which is a bit hacky.
+                return obj.f(data, html);
+            }
+
             return obj.f(data);
         };
 
@@ -114,13 +132,15 @@ exports.mock_cjs = (fn, obj) => {
     return obj;
 };
 
-exports.mock_template = (fn) => {
+exports.mock_template = (fn, exercise_template) => {
     // We create an object with an f() function that the test author
     // can override.
     const obj = {
         f: () => {},
         __template_fn: fn,
+        exercise_template: Boolean(exercise_template),
     };
+
     obj.f.__default = true;
 
     const filename = get_validated_filename("../../static/templates/" + fn);
@@ -132,11 +152,11 @@ exports.mock_template = (fn) => {
     return obj;
 };
 
-exports.mock_esm = (request, obj = {}) => {
+exports.mock_esm = (fn, obj = {}) => {
     if (typeof obj !== "object") {
         throw new TypeError("An ES module must be mocked with an object");
     }
-    return exports.mock_cjs(request, {...obj, __esModule: true});
+    return exports.mock_cjs(fn, {...obj, __esModule: true});
 };
 
 exports.unmock_module = (request) => {
@@ -176,6 +196,15 @@ exports.set_global = function (name, val) {
 };
 
 exports.zrequire = function (short_fn) {
+    if (short_fn === "templates") {
+        throw new Error(`
+            There is no need to zrequire templates.js.
+
+            The test runner automatically registers the
+            Handlebar extensions.
+        `);
+    }
+
     return require(`../../static/js/${short_fn}`);
 };
 

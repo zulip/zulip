@@ -21,7 +21,6 @@ set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
 
-zrequire("templates");
 const input_pill = zrequire("input_pill");
 
 function pill_html(value, data_id, img_src) {

@@ -38,7 +38,6 @@ set_global("document", "document-stub");
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
-zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
 const muting = zrequire("muting");
 const people = zrequire("people");

@@ -152,7 +152,7 @@ mock_esm("../../static/js/unread", {
 
 const render_recent_topics_table = mock_template("recent_topics_table.hbs");
 const render_recent_topics_filters = mock_template("recent_topics_filters.hbs");
-const render_recent_topic_row = mock_template("recent_topic_row.hbs");
+const render_recent_topic_row = mock_template("recent_topic_row.hbs", true);
 
 const ls_container = new Map();
 set_global("localStorage", {
@@ -654,7 +654,9 @@ test("basic assertions", (override) => {
     rt.clear_for_tests();
 
     override(render_recent_topics_table, "f", () => {});
-    override(render_recent_topic_row, "f", () => {});
+    override(render_recent_topic_row, "f", (data, html) => {
+        assert.ok(html.startsWith('<tr id="recent_topic'));
+    });
 
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);

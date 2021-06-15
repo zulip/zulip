@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {$t, $t_html} = require("../zjsunit/i18n");
@@ -15,8 +14,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 mock_cjs("jquery", $);
 
 const noop = () => {};
-
-set_global("DOMParser", new JSDOM().window.DOMParser);
 
 set_global("document", {});
 set_global("navigator", {});
