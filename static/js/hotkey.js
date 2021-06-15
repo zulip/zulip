@@ -10,6 +10,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
+import * as deprecated_feature_notice from "./deprecated_feature_notice";
 import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
@@ -808,10 +809,10 @@ export function process_hotkey(e, hotkey) {
             browser_history.go_to_location("drafts");
             return true;
         case "C_deprecated":
-            ui.maybe_show_deprecation_notice("C");
+            deprecated_feature_notice.maybe_show_deprecation_notice("C");
             return true;
         case "star_deprecated":
-            ui.maybe_show_deprecation_notice("*");
+            deprecated_feature_notice.maybe_show_deprecation_notice("*");
             return true;
     }
 

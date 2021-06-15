@@ -1,13 +1,9 @@
 import $ from "jquery";
 import SimpleBar from "simplebar";
 
-import * as blueslip from "./blueslip";
-import * as common from "./common";
 import {$t} from "./i18n";
-import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
-import * as overlays from "./overlays";
 
 // What, if anything, obscures the home tab?
 
@@ -107,55 +103,6 @@ export function show_failed_message_success(message_id) {
     update_message_in_all_views(message_id, (row) => {
         row.find(".message_failed").toggleClass("notvisible", true);
     });
-}
-
-export function get_hotkey_deprecation_notice(originalHotkey, replacementHotkey) {
-    return $t(
-        {
-            defaultMessage:
-                'We\'ve replaced the "{originalHotkey}" hotkey with "{replacementHotkey}" to make this common shortcut easier to trigger.',
-        },
-        {originalHotkey, replacementHotkey},
-    );
-}
-
-let shown_deprecation_notices = [];
-
-export function maybe_show_deprecation_notice(key) {
-    let message;
-    const isCmdOrCtrl = common.has_mac_keyboard() ? "Cmd" : "Ctrl";
-    if (key === "C") {
-        message = get_hotkey_deprecation_notice("C", "x");
-    } else if (key === "*") {
-        message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
-    } else {
-        blueslip.error("Unexpected deprecation notice for hotkey:", key);
-        return;
-    }
-
-    // Here we handle the tracking for showing deprecation notices,
-    // whether or not local storage is available.
-    if (localstorage.supported()) {
-        const notices_from_storage = JSON.parse(localStorage.getItem("shown_deprecation_notices"));
-        if (notices_from_storage !== null) {
-            shown_deprecation_notices = notices_from_storage;
-        } else {
-            shown_deprecation_notices = [];
-        }
-    }
-
-    if (!shown_deprecation_notices.includes(key)) {
-        overlays.open_modal("#deprecation-notice-modal");
-        $("#deprecation-notice-message").text(message);
-        $("#close-deprecation-notice").trigger("focus");
-        shown_deprecation_notices.push(key);
-        if (localstorage.supported()) {
-            localStorage.setItem(
-                "shown_deprecation_notices",
-                JSON.stringify(shown_deprecation_notices),
-            );
-        }
-    }
 }
 
 // Save the compose content cursor position and restore when we
