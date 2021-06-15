@@ -72,7 +72,7 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     return realm.plan_type in [Realm.STANDARD_FREE, Realm.SELF_HOSTED]
 
 
-def get_billing_info(user_profile: UserProfile) -> BillingInfo:
+def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
     show_billing = False
     show_plans = False
     if settings.CORPORATE_ENABLED and user_profile is not None:
