@@ -5,8 +5,6 @@ import $ from "jquery";
 import {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
-import render_mobile_message_buttons_popover from "../templates/mobile_message_buttons_popover.hbs";
-import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
 import render_remind_me_popover_content from "../templates/remind_me_popover_content.hbs";
@@ -60,7 +58,6 @@ import * as util from "./util";
 let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
-let current_mobile_message_buttons_popover_elem;
 let current_user_info_popover_elem;
 let current_playground_links_popover_elem;
 let userlist_placement = "right";
@@ -71,7 +68,6 @@ export function clear_for_testing() {
     current_actions_popover_elem = undefined;
     current_flatpickr_instance = undefined;
     current_message_info_popover_elem = undefined;
-    current_mobile_message_buttons_popover_elem = undefined;
     current_user_info_popover_elem = undefined;
     current_playground_links_popover_elem = undefined;
     list_of_popovers.length = 0;
@@ -341,37 +337,6 @@ function show_user_info_popover_for_message(element, user, message) {
         );
 
         current_message_info_popover_elem = elt;
-    }
-}
-
-function show_mobile_message_buttons_popover(element) {
-    const last_popover_elem = current_mobile_message_buttons_popover_elem;
-    hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
-    }
-
-    const $element = $(element);
-    $element.popover({
-        placement: "left",
-        template: render_mobile_message_buttons_popover(),
-        content: render_mobile_message_buttons_popover_content({
-            is_in_private_narrow: narrow_state.narrowed_to_pms(),
-        }),
-        html: true,
-        trigger: "manual",
-    });
-    $element.popover("show");
-
-    current_mobile_message_buttons_popover_elem = $element;
-}
-
-export function hide_mobile_message_buttons_popover() {
-    if (current_mobile_message_buttons_popover_elem) {
-        current_mobile_message_buttons_popover_elem.popover("destroy");
-        current_mobile_message_buttons_popover_elem = undefined;
     }
 }
 
@@ -1145,12 +1110,6 @@ export function register_click_handlers() {
         hide_user_profile();
     });
 
-    $("body").on("click", ".compose_mobile_button", function (e) {
-        show_mobile_message_buttons_popover(this);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", ".set_away_status", (e) => {
         hide_all();
         user_status.server_set_away();
@@ -1469,6 +1428,7 @@ export function any_active() {
     // Expanded sidebars on mobile view count as popovers as well.
     return (
         tippyjs.is_left_sidebar_stream_setting_popover_displayed() ||
+        tippyjs.is_compose_mobile_button_popover_displayed() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
@@ -1499,7 +1459,6 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
     hide_user_sidebar_popover();
-    hide_mobile_message_buttons_popover();
     hide_user_info_popover();
     hide_playground_links_popover();
 

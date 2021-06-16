@@ -6,7 +6,6 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
 
 function update_stream_button(btn_text, title) {
@@ -113,22 +112,10 @@ export function initialize() {
 
     // Click handlers for buttons in the compose compose box.
     $("body").on("click", ".compose_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
 
     $("body").on("click", ".compose_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("private");
-    });
-
-    $("body").on("click", ".compose_mobile_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("stream", {trigger: "new topic button"});
-    });
-
-    $("body").on("click", ".compose_mobile_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
 
