@@ -99,6 +99,20 @@ export function clear_private_stream_alert() {
     $("#compose_private_stream_alert").empty();
 }
 
+export function show_preview_area() {
+    const content = $("#compose-textarea").val();
+    $("#compose-textarea").hide();
+    $("#compose .markdown_preview").hide();
+    $("#compose .undo_markdown_preview").show();
+    $("#compose .preview_message_area").show();
+
+    render_and_show_preview(
+        $("#compose .markdown_preview_spinner"),
+        $("#compose .preview_content"),
+        content,
+    );
+}
+
 export function clear_preview_area() {
     $("#compose-textarea").show();
     $("#compose .undo_markdown_preview").hide();
@@ -820,17 +834,7 @@ export function initialize() {
 
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
-        const content = $("#compose-textarea").val();
-        $("#compose-textarea").hide();
-        $("#compose .markdown_preview").hide();
-        $("#compose .undo_markdown_preview").show();
-        $("#compose .preview_message_area").show();
-
-        render_and_show_preview(
-            $("#compose .markdown_preview_spinner"),
-            $("#compose .preview_content"),
-            content,
-        );
+        show_preview_area();
     });
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
