@@ -758,6 +758,10 @@ urls += [
         "help/configure-missed-message-emails",
         RedirectView.as_view(url="/help/configure-message-notification-emails", permanent=True),
     ),
+    path(
+        "help/community-topic-edits",
+        RedirectView.as_view(url="/help/configure-who-can-edit-topics", permanent=True),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
