@@ -3312,15 +3312,6 @@ paths:
 
                                         **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
                                         Zulip 4.0 (feature level 62).
-                                    default_language:
-                                      type: string
-                                      description: |
-                                        The default UI language for new users joining this organization.
-                                    default_twenty_four_hour_time:
-                                      type: boolean
-                                      description: |
-                                        Whether new members of this organization will see times displayed in
-                                        24-hour time (true) or 12-hour time (false).
                                     description:
                                       type: string
                                       description: |
