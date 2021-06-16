@@ -128,6 +128,7 @@ EXEMPT_FILES = make_set(
         "static/js/poll_widget.js",
         "static/js/popover_menus.js",
         "static/js/popovers.js",
+        "static/js/read_receipts.js",
         "static/js/ready.ts",
         "static/js/realm_icon.js",
         "static/js/realm_logo.js",

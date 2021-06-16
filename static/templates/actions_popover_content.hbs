@@ -79,6 +79,14 @@
     </li>
     {{/if}}
 
+    {{#if should_display_read_receipts_option}}
+    <li>
+        <a class="view_read_receipts" data-message-id="{{message_id}}" tabindex="0">
+            <i class="zulip-icon zulip-icon-readreceipts" aria-label="{{#tr}}View read receipts{{/tr}}"></i> {{t "View read receipts" }}
+        </a>
+    </li>
+    {{/if}}
+
     <li>
         <a class="copy_link" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_uri }}" tabindex="0">
             <i class="fa fa-link" aria-hidden="true"></i> {{t "Copy link to message" }}

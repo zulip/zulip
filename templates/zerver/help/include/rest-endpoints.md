@@ -14,6 +14,7 @@
 * [Get a message's edit history](/api/get-message-history)
 * [Update personal message flags](/api/update-message-flags)
 * [Mark messages as read in bulk](/api/mark-all-as-read)
+* [Get a message's read receipts](/api/get-read-receipts)
 
 #### Drafts
 

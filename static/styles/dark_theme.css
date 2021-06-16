@@ -1205,6 +1205,17 @@ body.dark-theme {
             color: hsl(0, 0%, 100%);
         }
     }
+
+    #read_receipts_modal #read_receipts_list li {
+        &:hover {
+            background-color: hsla(0, 0%, 100%, 0.05);
+        }
+
+        &:active,
+        &:focus {
+            background-color: hsla(0, 0%, 100%, 0.1);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {

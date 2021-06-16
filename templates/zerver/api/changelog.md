@@ -22,6 +22,8 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 137**
 
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Added new endpoint to fetch read receipts for a message.
 * [`POST /register`](/api/register-queue), [`GET
   /events`](/api/get-events), `PATCH /realm`: Added new
   `enable_read_receipts` realm setting.

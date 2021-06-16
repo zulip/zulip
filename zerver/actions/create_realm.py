@@ -142,6 +142,7 @@ def do_create_realm(
     org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: bool = False,
+    enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
@@ -177,6 +178,19 @@ def do_create_realm(
         # suites that want to backdate the date of a realm's creation.
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
+
+    # Generally, closed organizations like companies want read
+    # receipts, whereas it's unclear what an open organization's
+    # preferences will be. We enable the setting by default only for
+    # closed organizations.
+    if enable_read_receipts is not None:
+        kwargs["enable_read_receipts"] = enable_read_receipts
+    else:
+        # Hacky: The default of invited_required is True, so we need
+        # to check for None too.
+        kwargs["enable_read_receipts"] = (
+            invite_required is None or invite_required is True or emails_restricted_to_domains
+        )
 
     with transaction.atomic():
         realm = Realm(string_id=string_id, name=name, **kwargs)

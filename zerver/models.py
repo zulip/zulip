@@ -3247,6 +3247,10 @@ class AbstractUserMessage(models.Model):
         return AbstractUserMessage.where_flag_is_absent(getattr(AbstractUserMessage.flags, "read"))
 
     @staticmethod
+    def where_read() -> str:
+        return AbstractUserMessage.where_flag_is_present(getattr(AbstractUserMessage.flags, "read"))
+
+    @staticmethod
     def where_starred() -> str:
         return AbstractUserMessage.where_flag_is_present(
             getattr(AbstractUserMessage.flags, "starred")

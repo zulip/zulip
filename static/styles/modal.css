@@ -120,6 +120,7 @@
     color: hsl(0, 0%, 100%) !important;
 }
 
+#read_receipts_error,
 #dialog_error {
     margin-bottom: 10px;
 }
