@@ -20,17 +20,6 @@
 
 ## Parameters
 
-As described above, the file to upload must be provided in the
-request's body.
-
-## Maximum file size
-
-The maximum file size for uploads can be configured by the
-administrator of the Zulip server by setting `MAX_FILE_UPLOAD_SIZE`
-in the [server's settings][1]. `MAX_FILE_UPLOAD_SIZE` defaults
-to 25MB.
-
-[1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
 {generate_parameter_description(/user_uploads:post)}
 
 ## Response
