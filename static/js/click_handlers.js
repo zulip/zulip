@@ -920,7 +920,13 @@ export function initialize() {
                 '.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded',
             ).has(e.target).length === 0
         ) {
-            popovers.hide_all();
+            // Since tippy instance can handle outside clicks on their own,
+            // we don't need to trigger them from here.
+            // This fixes the bug of `hideAll` being called
+            // after a tippy popover has been triggered which hides
+            // the popover without being displayed.
+            const not_hide_tippy_instances = true;
+            popovers.hide_all(not_hide_tippy_instances);
         }
 
         if (compose_state.composing()) {

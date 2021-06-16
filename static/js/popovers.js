@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
+import {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_mobile_message_buttons_popover from "../templates/mobile_message_buttons_popover.hbs";
@@ -50,6 +51,7 @@ import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
+import * as tippyjs from "./tippyjs";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -1466,6 +1468,7 @@ export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
     return (
+        tippyjs.is_left_sidebar_stream_setting_popover_displayed() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
@@ -1480,8 +1483,13 @@ export function any_active() {
 // This function will hide all true popovers (the streamlist and
 // userlist sidebars use the popover infrastructure, but doesn't work
 // like a popover structurally).
-export function hide_all_except_sidebars() {
+export function hide_all_except_sidebars(opts) {
     $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
+    if (!opts || !opts.not_hide_tippy_instances) {
+        hideAll();
+    } else if (opts.exclude_tippy_instance) {
+        hideAll({exclude: opts.exclude_tippy_instance});
+    }
     hide_actions_popover();
     hide_message_info_popover();
     emoji_picker.hide_emoji_popover();
@@ -1506,10 +1514,13 @@ export function hide_all_except_sidebars() {
 
 // This function will hide all the popovers, including the mobile web
 // or narrow window sidebars.
-export function hide_all() {
+export function hide_all(not_hide_tippy_instances) {
     hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
-    hide_all_except_sidebars();
+    hide_all_except_sidebars({
+        exclude_tippy_instance: undefined,
+        not_hide_tippy_instances,
+    });
 }
 
 export function set_userlist_placement(placement) {

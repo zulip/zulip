@@ -39,6 +39,12 @@ tippy.setDefaultProps({
     // in the tag or a parameter.
 });
 
+let left_sidebar_stream_setting_popover_displayed = false;
+
+export function is_left_sidebar_stream_setting_popover_displayed() {
+    return left_sidebar_stream_setting_popover_displayed;
+}
+
 export function initialize() {
     delegate("body", {
         // Add elements here which are not displayed on
@@ -143,12 +149,13 @@ export function initialize() {
         delay: 0,
         target: "#streams_inline_cog",
         onShow(instance) {
-            popovers.hide_all_except_sidebars();
+            popovers.hide_all_except_sidebars(instance);
             instance.setContent(
                 render_left_sidebar_stream_setting_popover({
                     can_create_streams: settings_data.user_can_create_streams(),
                 }),
             );
+            left_sidebar_stream_setting_popover_displayed = true;
             $(instance.popper).one("click", instance.hide);
         },
         appendTo: () => document.body,
@@ -158,5 +165,8 @@ export function initialize() {
         hideOnClick: true,
         theme: "light-border",
         touch: true,
+        onHidden() {
+            left_sidebar_stream_setting_popover_displayed = false;
+        },
     });
 }
