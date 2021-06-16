@@ -383,14 +383,13 @@ def notify_new_user(user_profile: UserProfile) -> None:
     try:
         # Check whether the stream exists
         signups_stream = get_signups_stream(admin_realm)
-        with override_language(admin_realm.default_language):
-            # We intentionally use the same strings as above to avoid translation burden.
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-                user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
-            )
-            internal_send_stream_message(
-                sender, signups_stream, user_profile.realm.display_subdomain, message
-            )
+        # We intentionally use the same strings as above to avoid translation burden.
+        message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+            user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
+        )
+        internal_send_stream_message(
+            sender, signups_stream, user_profile.realm.display_subdomain, message
+        )
 
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
@@ -4890,8 +4889,7 @@ def do_create_realm(
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     admin_realm = sender.realm
     # Send a notification to the admin realm
-    with override_language(admin_realm.default_language):
-        signup_message = _("Signups enabled")
+    signup_message = _("Signups enabled")
 
     try:
         signups_stream = get_signups_stream(admin_realm)
