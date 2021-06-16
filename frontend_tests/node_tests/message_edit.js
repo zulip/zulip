@@ -16,7 +16,7 @@ const editability_types = message_edit.editability_types;
 
 const settings_data = mock_esm("../../static/js/settings_data");
 
-run_test("get_editability", (override) => {
+run_test("get_editability", ({override}) => {
     override(settings_data, "user_can_edit_topic_of_any_message", () => true);
     // You can't edit a null message
     assert.equal(get_editability(null), editability_types.NO);
