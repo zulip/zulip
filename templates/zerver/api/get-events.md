@@ -50,12 +50,4 @@ a queue for you.
 
 {generate_code_example|/events:get|fixture(200)}
 
-#### BAD_EVENT_QUEUE_ID errors
-
 {generate_code_example|/events:get|fixture(400)}
-
-A compliant client will handle this error by re-initializing itself
-(e.g. a Zulip web app browser window will reload in this case).
-
-See [the /register endpoint docs](/api/register-queue) for details on how to
-handle these correctly.
