@@ -81,6 +81,16 @@ function is_default_emoji(emoji_name) {
     return emoji_codes.names.includes(emoji_name);
 }
 
+function is_custom_emoji(emoji_name) {
+    const emoji_data = emoji.get_server_realm_emoji_data();
+    for (const emoji of Object.values(emoji_data)) {
+        if (emoji.name === emoji_name && !emoji.deactivated) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export function populate_emoji() {
     if (!meta.loaded) {
         return;
@@ -234,6 +244,16 @@ export function set_up() {
             if (emoji.name.trim() === "") {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Failed: Emoji name is required."}),
+                    emoji_status,
+                );
+                return;
+            }
+
+            if (is_custom_emoji(emoji.name)) {
+                ui_report.client_error(
+                    $t_html({
+                        defaultMessage: "Failed: A custom emoji with this name already exists.",
+                    }),
                     emoji_status,
                 );
                 return;
