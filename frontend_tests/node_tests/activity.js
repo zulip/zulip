@@ -145,6 +145,12 @@ test("get_status", () => {
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
 
+    page_params.presence_enabled = false;
+    assert.equal(presence.get_status(page_params.user_id), "offline");
+    page_params.presence_enabled = true;
+    assert.equal(presence.get_status(page_params.user_id), "active");
+    delete page_params.presence_enabled;
+
     presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");
 

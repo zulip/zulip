@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import render_compose_notification from "../templates/compose_notification.hbs";
 
+import {redraw_user} from "./activity";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -687,6 +688,9 @@ export function handle_global_notification_updates(notification_name, setting) {
     // particular stream should receive notifications.
     if (settings_config.all_notification_settings.includes(notification_name)) {
         page_params[notification_name] = setting;
+        if (notification_name === "presence_enabled") {
+            redraw_user(page_params.user_id);
+        }
     }
 
     if (settings_config.stream_notification_settings.includes(notification_name)) {

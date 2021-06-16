@@ -1,4 +1,5 @@
 import * as blueslip from "./blueslip";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reload_state from "./reload_state";
 import * as watchdog from "./watchdog";
@@ -40,7 +41,10 @@ export function is_active(user_id) {
 
 export function get_status(user_id) {
     if (people.is_my_user_id(user_id)) {
-        return "active";
+        if (!("presence_enabled" in page_params) || page_params.presence_enabled === true) {
+            return "active";
+        }
+        return "offline";
     }
     if (presence_info.has(user_id)) {
         return presence_info.get(user_id).status;
