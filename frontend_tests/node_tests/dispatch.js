@@ -817,6 +817,7 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__presence_enabled;
     user_settings.presence_enabled = true;
+    override(activity, "redraw_user", noop);
     dispatch(event);
     assert_same(user_settings.presence_enabled, false);
 
