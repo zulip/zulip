@@ -5811,6 +5811,70 @@ paths:
                       }
                     description: |
                       An example JSON error response for when the emoji code is invalid:
+
+  /messages/{message_id}/read_receipts:
+    get:
+      operationId: get-read-receipts
+      summary: Get the list of IDs of users who have read a message.
+      tags: ["messages"]
+      description: |
+        Returns a list containing the IDs for all users who have
+        marked the message as read (and whose privacy settings allow
+        sharing that information).
+
+        The list of users IDs will include any bots who have marked
+        the message as read via the API (providing a way for bots to
+        indicate whether they have processed a message successfully in
+        a way that can be easily inspected in a Zulip client). Bots
+        for which this behavior is not desired may disable the
+        `send_read_receipts` setting via the API.
+
+        It will never contain the message's sender.
+
+        **Changes**: New in Zulip 6.0 (feature level 137).
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      user_ids:
+                        type: array
+                        description: |
+                          An array of IDs of users who have marked the target message as
+                          read and whose read status is available to the current user.
+
+                          The IDs of users who have disabled sending read receipts
+                          (`send_read_receipts=false`) will never appear in the response,
+                          nor will the message's sender. The current user's ID will, if
+                          they have marked the read target message as read.
+                        items:
+                          type: integer
+                    example:
+                      {"msg": "", "result": "success", "user_ids": [3, 7, 9]}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example: {"msg": "Invalid message(s)", "result": "error"}
+                    description: |
+                      A typical JSON response when attempting to
+                      access read receipts for a message ID that
+                      either does not exist or is not accessible to
+                      the current user.
+
   /messages/matches_narrow:
     get:
       operationId: check-messages-match-narrow

@@ -38,6 +38,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
+import * as read_receipts from "./read_receipts";
 import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
@@ -509,6 +510,9 @@ export function toggle_actions_popover(element, id) {
 
         const should_display_delete_option =
             message_edit.get_deletability(message) && not_spectator;
+        const should_display_read_receipts_option =
+            page_params.realm_enable_read_receipts && not_spectator;
+
         const args = {
             message_id: message.id,
             historical: message.historical,
@@ -523,6 +527,7 @@ export function toggle_actions_popover(element, id) {
             conversation_time_uri,
             narrowed: narrow_state.active(),
             should_display_delete_option,
+            should_display_read_receipts_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
             should_display_edit_and_view_source,
             should_display_quote_and_reply,
@@ -1231,6 +1236,14 @@ export function register_click_handlers() {
         hide_actions_popover();
         message_edit_history.show_history(message);
         $("#message-history-cancel").trigger("focus");
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".view_read_receipts", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        hide_actions_popover();
+        read_receipts.show_user_list(message_id);
         e.stopPropagation();
         e.preventDefault();
     });

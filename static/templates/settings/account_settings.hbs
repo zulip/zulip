@@ -64,6 +64,7 @@
                   is_checked=settings_object.send_stream_typing_notifications
                   label=settings_label.send_stream_typing_notifications
                   }}
+                {{/if}}
                 {{> settings_checkbox
                   setting_name="send_read_receipts"
                   is_checked=settings_object.send_read_receipts
@@ -71,7 +72,6 @@
                   tooltip_text=send_read_receipts_tooltip
                   hide_tooltip=page_params.realm_enable_read_receipts
                   }}
-                {{/if}}
             </div>
         </div>
 

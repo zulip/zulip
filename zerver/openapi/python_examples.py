@@ -1015,6 +1015,15 @@ def remove_reaction(client: Client, message_id: int) -> None:
     validate_against_openapi_schema(result, "/messages/{message_id}/reactions", "delete", "200")
 
 
+@openapi_test_function("/messages/{message_id}/read_receipts:get")
+def get_read_receipts(client: Client, message_id: int) -> None:
+    # {code_example|start}
+    # Get read receipts for a message
+    result = client.call_endpoint(f"/messages/{message_id}/read_receipts", method="GET")
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/messages/{message_id}/read_receipts", "get", "200")
+
+
 def test_nonexistent_stream_error(client: Client) -> None:
     request = {
         "type": "stream",
@@ -1498,6 +1507,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     get_messages(client)
     check_messages_match_narrow(client)
     get_message_history(client, message_id)
+    get_read_receipts(client, message_id)
     delete_message(client, message_id)
     mark_all_as_read(client)
     mark_stream_as_read(client)

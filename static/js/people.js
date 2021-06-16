@@ -1362,7 +1362,7 @@ export function is_my_user_id(user_id) {
     return user_id === my_user_id;
 }
 
-function compare_by_name(a, b) {
+export function compare_by_name(a, b) {
     return util.strcmp(a.full_name, b.full_name);
 }
 
