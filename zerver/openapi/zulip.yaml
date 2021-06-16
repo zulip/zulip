@@ -5018,6 +5018,11 @@ paths:
 
         `{msg_id}` in the above URL should be replaced with the ID of the
         message you wish you update.
+
+        **Note**: See [configuring message editing][config-message-editing] for detailed documentation on under what
+        circumstances users are allowed to edit topics.
+
+        [config-message-editing]: /help/configure-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
