@@ -9507,6 +9507,16 @@ paths:
       operationId: get_server_settings
       summary: Get server settings
       tags: ["server_and_organizations"]
+      x-response-description: |
+        Please note that not all of these attributes are guaranteed to appear in a
+        response, for two reasons:
+
+        * This endpoint has evolved over time, so responses from older Zulip servers
+          might be missing some keys (in which case a client should assume the
+          appropriate default).
+        * If a `/server_settings` request is made to the root domain of a
+          multi-subdomain server, like the root domain of zulip.com, the settings
+          that are realm-specific are not known and thus not provided.
       description: |
         Fetch global settings for a Zulip server.
 
@@ -9675,6 +9685,8 @@ paths:
                           This value will be false if the server has [LDAP
                           authentication][ldap-auth] enabled with a username and
                           password combination.
+
+                          [ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
                       realm_uri:
                         type: string
                         description: |
