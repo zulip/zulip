@@ -11,6 +11,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
+from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
@@ -506,6 +507,15 @@ class PlansPageTest(ZulipTestCase):
 
 
 class AppsPageTest(ZulipTestCase):
+    def test_get_apps_page_url(self) -> None:
+        with self.settings(ZILENCER_ENABLED=False):
+            apps_page_url = get_apps_page_url()
+        self.assertEqual(apps_page_url, "https://zulip.com/apps/")
+
+        with self.settings(ZILENCER_ENABLED=True):
+            apps_page_url = get_apps_page_url()
+        self.assertEqual(apps_page_url, "/apps/")
+
     def test_apps_view(self) -> None:
         result = self.client_get("/apps")
         self.assertEqual(result.status_code, 301)
