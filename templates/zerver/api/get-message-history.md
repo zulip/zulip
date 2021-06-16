@@ -27,16 +27,6 @@
 
 {generate_return_values_table|zulip.yaml|/messages/{message_id}/history:get}
 
-Please note that the original message's snapshot only contains the fields
-`topic`, `content`, `rendered_content`, `timestamp` and `user_id`. This
-snapshot will be the only one present if the message has never been edited.
-
-Also note that if a message's content was edited (but not the topic)
-or the topic was edited (but not the content), the snapshot object
-will only contain data for the modified fields (e.g. if only the topic
-was edited, `prev_content`, `prev_rendered_content`, and
-`content_html_diff` will not appear).
-
 {generate_response_description(/messages/{message_id}/history:get)}
 
 #### Example response
