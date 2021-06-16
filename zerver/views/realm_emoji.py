@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_member_or_admin
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
-from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name
+from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import RealmEmoji, UserProfile
@@ -23,6 +23,7 @@ def upload_emoji(
     request: HttpRequest, user_profile: UserProfile, emoji_name: str = REQ(path_only=True)
 ) -> HttpResponse:
     emoji_name = emoji_name.strip().replace(" ", "_")
+    valid_built_in_emoji = name_to_codepoint.keys()
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)
     if RealmEmoji.objects.filter(
@@ -31,6 +32,9 @@ def upload_emoji(
         raise JsonableError(_("A custom emoji with this name already exists."))
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one file."))
+    if emoji_name in valid_built_in_emoji:
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Only administrators can override built-in emoji."))
     emoji_file = list(request.FILES.values())[0]
     if (settings.MAX_EMOJI_FILE_SIZE_MIB * 1024 * 1024) < emoji_file.size:
         raise JsonableError(

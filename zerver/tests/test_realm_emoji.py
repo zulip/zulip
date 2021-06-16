@@ -79,6 +79,28 @@ class RealmEmojiTest(ZulipTestCase):
         author = UserProfile.objects.get(id=test_emoji["author_id"])
         self.assertEqual(author.email, email)
 
+    def test_override_built_in_emoji_by_admin(self) -> None:
+        # Test that only administrators can override built-in emoji.
+        self.login("othello")
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/laughing", info=emoji_data)
+        self.assert_json_error(
+            result,
+            "Only administrators can override built-in emoji.",
+        )
+
+        user = self.example_user("iago")
+        email = user.email
+        self.login_user(user)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/smile", info=emoji_data)
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+        realm_emoji = RealmEmoji.objects.get(name="smile")
+        self.assertEqual(realm_emoji.author.email, email)
+
     def test_realm_emoji_repr(self) -> None:
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
         file_name = str(realm_emoji.id) + ".png"
