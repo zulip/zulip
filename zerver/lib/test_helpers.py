@@ -444,6 +444,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
             "help/configure-missed-message-emails",
+            "help/community-topic-edits",
             "help/delete-a-stream",
             "api/delete-stream",
             "casper/(?P<path>.+)",
