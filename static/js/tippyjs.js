@@ -149,7 +149,7 @@ export function initialize() {
                     can_create_streams: settings_data.user_can_create_streams(),
                 }),
             );
-            $(instance.popper).on("click", instance.hide);
+            $(instance.popper).one("click", instance.hide);
         },
         appendTo: () => document.body,
         trigger: "click",
