@@ -33,9 +33,9 @@ const search_pill = zrequire("search_pill");
 const {Filter} = zrequire("../js/filter");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.search_pills_enabled = true;
-        f(override);
+        f({override});
     });
 }
 

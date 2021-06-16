@@ -55,13 +55,13 @@ people.add_active_user(bob);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         $("#compose-textarea").val("some message");
-        f(override);
+        f({override});
     });
 }
 
-test_ui("validate_stream_message_address_info", (override) => {
+test_ui("validate_stream_message_address_info", ({override}) => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -116,7 +116,7 @@ test_ui("validate_stream_message_address_info", (override) => {
     );
 });
 
-test_ui("validate", (override) => {
+test_ui("validate", ({override}) => {
     override(compose_actions, "update_placeholder_text", () => {});
     override(reminder, "is_deferred_delivery", () => false);
 
@@ -237,7 +237,7 @@ test_ui("validate", (override) => {
     );
 });
 
-test_ui("get_invalid_recipient_emails", (override) => {
+test_ui("get_invalid_recipient_emails", ({override}) => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
@@ -257,7 +257,7 @@ test_ui("get_invalid_recipient_emails", (override) => {
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
-test_ui("validate_stream_message", (override) => {
+test_ui("validate_stream_message", ({override}) => {
     override(reminder, "is_deferred_delivery", () => false);
 
     // This test is in kind of continuation to test_validate but since it is
@@ -308,7 +308,7 @@ test_ui("validate_stream_message", (override) => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", (override) => {
+test_ui("test_validate_stream_message_post_policy_admin_only", ({override}) => {
     override(reminder, "is_deferred_delivery", () => false);
 
     // This test is in continuation with test_validate but it has been separated out
@@ -347,7 +347,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", (override) => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", (override) => {
+test_ui("test_validate_stream_message_post_policy_moderators_only", ({override}) => {
     override(reminder, "is_deferred_delivery", () => false);
 
     page_params.is_admin = false;
@@ -386,7 +386,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", (override) =
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_full_members_only", (override) => {
+test_ui("test_validate_stream_message_post_policy_full_members_only", ({override}) => {
     override(reminder, "is_deferred_delivery", () => false);
 
     page_params.is_admin = false;

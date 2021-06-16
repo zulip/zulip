@@ -49,7 +49,7 @@ function contains_sub(subs, sub) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         peer_data.clear_for_testing();
         stream_data.clear_subscriptions();
 
@@ -57,7 +57,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
 
-        f(override);
+        f({override});
     });
 }
 

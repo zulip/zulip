@@ -26,7 +26,7 @@ set_global("page_params", {});
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
 
-run_test("redraw_left_panel", (override) => {
+run_test("redraw_left_panel", ({override}) => {
     // set-up sub rows stubs
     const denmark = {
         elem: "denmark",

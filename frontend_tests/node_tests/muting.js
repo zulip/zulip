@@ -41,10 +41,10 @@ stream_data.add_sub(office);
 stream_data.add_sub(social);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         muting.set_muted_topics([]);
         muting.set_muted_users([]);
-        f(override);
+        f({override});
     });
 }
 

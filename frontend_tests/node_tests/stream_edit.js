@@ -104,14 +104,14 @@ for (const sub of subs) {
 }
 
 function test_ui(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.user_id = me.user_id;
         stream_edit.initialize();
-        f(override);
+        f({override});
     });
 }
 
-test_ui("subscriber_pills", (override) => {
+test_ui("subscriber_pills", ({override}) => {
     override(stream_edit, "sort_but_pin_current_user_on_top", noop);
     override(render_subscription_settings, "f", () => "subscription_settings");
 

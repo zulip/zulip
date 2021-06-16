@@ -47,9 +47,9 @@ function test_with_mock_ajax(test_params) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         reload_state.clear_for_testing();
-        f(override);
+        f({override});
     });
 }
 

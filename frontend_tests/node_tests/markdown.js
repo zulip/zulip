@@ -191,10 +191,10 @@ markdown.initialize(markdown_config.get_helpers());
 linkifiers.initialize(example_realm_linkifiers);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.realm_users = [];
         linkifiers.update_linkifier_rules(example_realm_linkifiers);
-        f(override);
+        f({override});
     });
 }
 
@@ -816,7 +816,7 @@ test("translate_emoticons_to_names", () => {
     }
 });
 
-test("missing unicode emojis", (override) => {
+test("missing unicode emojis", ({override}) => {
     const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);

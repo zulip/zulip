@@ -20,7 +20,7 @@ function returns_time(secs) {
     };
 }
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     typing_status.initialize_state();
 
     // invalid conversation basically does nothing

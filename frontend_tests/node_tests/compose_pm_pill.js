@@ -17,7 +17,7 @@ let pills = {
     pill: {},
 };
 
-run_test("pills", (override) => {
+run_test("pills", ({override}) => {
     override(compose_actions, "update_placeholder_text", () => {});
 
     const othello = {

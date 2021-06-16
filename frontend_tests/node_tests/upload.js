@@ -39,13 +39,13 @@ const compose_actions = zrequire("compose_actions");
 const upload = zrequire("upload");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.max_file_upload_size_mib = 25;
-        f(override);
+        f({override});
     });
 }
 
-test("feature_check", (override) => {
+test("feature_check", ({override}) => {
     const upload_button = $.create("upload-button-stub");
     upload_button.addClass("notdisplayed");
     upload.feature_check(upload_button);
@@ -206,7 +206,7 @@ test("show_error_message", () => {
     assert.equal($("#compose-error-msg").text(), "translated: An unknown error occurred.");
 });
 
-test("upload_files", (override) => {
+test("upload_files", ({override}) => {
     let uppy_cancel_all_called = false;
     let files = [
         {
@@ -385,7 +385,7 @@ test("uppy_config", () => {
     assert.equal(uppy_used_progressbar, true);
 });
 
-test("file_input", (override) => {
+test("file_input", ({override}) => {
     upload.setup_upload({mode: "compose"});
 
     const change_handler = $("body").get_on_handler("change", "#compose .file_input");
@@ -406,7 +406,7 @@ test("file_input", (override) => {
     assert.ok(upload_files_called);
 });
 
-test("file_drop", (override) => {
+test("file_drop", ({override}) => {
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -444,7 +444,7 @@ test("file_drop", (override) => {
     assert.equal(upload_files_called, true);
 });
 
-test("copy_paste", (override) => {
+test("copy_paste", ({override}) => {
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -483,7 +483,7 @@ test("copy_paste", (override) => {
     assert.equal(upload_files_called, false);
 });
 
-test("uppy_events", (override) => {
+test("uppy_events", ({override}) => {
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};

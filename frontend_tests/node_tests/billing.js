@@ -24,7 +24,7 @@ const helpers = mock_esm("../../static/js/billing/helpers", {
 
 const billing = zrequire("billing/billing");
 
-run_test("initialize", (override) => {
+run_test("initialize", ({override}) => {
     let token_func;
 
     let set_tab_called = false;

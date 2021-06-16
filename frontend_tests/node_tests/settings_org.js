@@ -56,7 +56,7 @@ const sub_store = zrequire("sub_store");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = () => {};
         page_params.is_admin = false;
         page_params.realm_domains = [
@@ -65,7 +65,7 @@ function test(label, f) {
         ];
         page_params.realm_authentication_methods = {};
         settings_org.reset();
-        f(override);
+        f({override});
     });
 }
 
@@ -643,7 +643,7 @@ function test_discard_changes_button(discard_changes) {
     settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
 
-test("set_up", (override) => {
+test("set_up", ({override}) => {
     override(render_settings_admin_realm_domains_list, "f", () => "stub-domains-list");
     const verify_realm_domains = simulate_realm_domains_table();
     page_params.realm_available_video_chat_providers = {
@@ -826,7 +826,7 @@ test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-test("misc", (override) => {
+test("misc", ({override}) => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create("<stub notification_disable parent");

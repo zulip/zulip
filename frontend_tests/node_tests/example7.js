@@ -72,7 +72,7 @@ const denmark_stream = {
     subscribed: false,
 };
 
-run_test("unread_ops", (override) => {
+run_test("unread_ops", ({override}) => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
     message_store.clear_for_testing();

@@ -70,7 +70,7 @@ run_test("get_items", () => {
     );
 });
 
-run_test("create_pills", (override) => {
+run_test("create_pills", ({override}) => {
     let input_pill_create_called = false;
 
     override(input_pill, "create", () => {

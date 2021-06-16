@@ -49,7 +49,7 @@ run_test("process_from_server for un-echoed messages", () => {
     assert.deepEqual(non_echo_messages, server_messages);
 });
 
-run_test("process_from_server for differently rendered messages", (override) => {
+run_test("process_from_server for differently rendered messages", ({override}) => {
     let messages_to_rerender = [];
 
     override(message_lists.home.view, "rerender_messages", (msgs) => {
@@ -190,7 +190,7 @@ run_test("update_message_lists", () => {
     assert.equal(view_args.new, 402);
 });
 
-run_test("insert_local_message streams", (override) => {
+run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
     MockDate.set(new Date(fake_now * 1000));
 
@@ -231,7 +231,7 @@ run_test("insert_local_message streams", (override) => {
     assert.ok(insert_message_called);
 });
 
-run_test("insert_local_message PM", (override) => {
+run_test("insert_local_message PM", ({override}) => {
     const local_id_float = 102;
 
     page_params.user_id = 123;

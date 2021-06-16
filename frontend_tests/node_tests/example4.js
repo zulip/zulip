@@ -106,7 +106,7 @@ run_test("add users with event", () => {
 
 */
 
-run_test("update user with event", (override) => {
+run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
 

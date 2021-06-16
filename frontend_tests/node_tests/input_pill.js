@@ -39,7 +39,7 @@ function pill_html(value, data_id, img_src) {
     return require("../../static/templates/input_pill.hbs")(opts);
 }
 
-function override_random_id(override) {
+function override_random_id({override}) {
     let id_seq = 0;
     override(input_pill, "random_id", () => {
         id_seq += 1;
@@ -52,8 +52,8 @@ run_test("random_id", () => {
     input_pill.random_id();
 });
 
-run_test("basics", (override) => {
-    override_random_id(override);
+run_test("basics", ({override}) => {
+    override_random_id({override});
     const config = {};
 
     blueslip.expect("error", "Pill needs container.");
@@ -143,8 +143,8 @@ function set_up() {
     };
 }
 
-run_test("copy from pill", (override) => {
-    override_random_id(override);
+run_test("copy from pill", ({override}) => {
+    override_random_id({override});
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -359,8 +359,8 @@ run_test("Enter key with text", () => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("insert_remove", (override) => {
-    override_random_id(override);
+run_test("insert_remove", ({override}) => {
+    override_random_id({override});
     const info = set_up();
 
     const config = info.config;
@@ -463,8 +463,8 @@ run_test("insert_remove", (override) => {
     assert.ok(next_pill_focused);
 });
 
-run_test("exit button on pill", (override) => {
-    override_random_id(override);
+run_test("exit button on pill", ({override}) => {
+    override_random_id({override});
     const info = set_up();
 
     const config = info.config;

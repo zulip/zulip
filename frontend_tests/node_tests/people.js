@@ -62,9 +62,9 @@ function initialize() {
 }
 
 function test_people(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         initialize();
-        f(override);
+        f({override});
     });
 }
 
@@ -814,7 +814,7 @@ test_people("message_methods", () => {
     assert.equal(people.sender_is_guest(message), false);
 });
 
-test_people("extract_people_from_message", (override) => {
+test_people("extract_people_from_message", ({override}) => {
     let message = {
         type: "stream",
         sender_full_name: maria.full_name,
@@ -905,7 +905,7 @@ test_people("slugs", () => {
     assert.equal(people.emails_to_slug("does@not.exist"), undefined);
 });
 
-test_people("get_people_for_search_bar", (override) => {
+test_people("get_people_for_search_bar", ({override}) => {
     let user_ids;
 
     override(message_user_ids, "user_ids", () => user_ids);

@@ -30,7 +30,7 @@ const location = set_global("location", {
 
 const helpers = zrequire("billing/helpers");
 
-run_test("create_ajax_request", (override) => {
+run_test("create_ajax_request", ({override}) => {
     const form_loading_indicator = "#autopay_loading_indicator";
     const form_input_section = "#autopay-input-section";
     const form_success = "#autopay-success";

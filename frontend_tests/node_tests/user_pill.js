@@ -38,12 +38,12 @@ const isaac_item = {
 let pill_widget = {};
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         people.init();
         people.add_active_user(alice);
         people.add_active_user(isaac);
         pill_widget = {};
-        f(override);
+        f({override});
     });
 }
 

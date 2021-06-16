@@ -38,13 +38,13 @@ function get_list_info(zoomed) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_topic_history.reset();
-        f(override);
+        f({override});
     });
 }
 
-test("get_list_info w/real stream_topic_history", (override) => {
+test("get_list_info w/real stream_topic_history", ({override}) => {
     let list_info;
     const empty_list_info = get_list_info();
 
@@ -101,7 +101,7 @@ test("get_list_info w/real stream_topic_history", (override) => {
     assert.equal(list_info.num_possible_topics, 2);
 });
 
-test("get_list_info unreads", (override) => {
+test("get_list_info unreads", ({override}) => {
     let list_info;
 
     override(stream_topic_history, "get_recent_topic_names", () =>

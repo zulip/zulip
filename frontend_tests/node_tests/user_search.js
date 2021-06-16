@@ -65,7 +65,7 @@ const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         people.init();
         people.add_active_user(alice);
         people.add_active_user(fred);
@@ -74,11 +74,11 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         muting.set_muted_users([]);
         activity.set_cursor_and_filter();
-        f(override);
+        f({override});
     });
 }
 
-test("clear_search", (override) => {
+test("clear_search", ({override}) => {
     override(fake_buddy_list, "populate", (user_ids) => {
         assert.deepEqual(user_ids, {keys: ordered_user_ids});
     });
@@ -94,7 +94,7 @@ test("clear_search", (override) => {
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test("escape_search", (override) => {
+test("escape_search", ({override}) => {
     page_params.realm_presence_disabled = true;
 
     override(resize, "resize_sidebars", () => {});
@@ -107,7 +107,7 @@ test("escape_search", (override) => {
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test("blur search right", (override) => {
+test("blur search right", ({override}) => {
     override(popovers, "show_userlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
@@ -124,7 +124,7 @@ test("blur search right", (override) => {
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
-test("blur search left", (override) => {
+test("blur search left", ({override}) => {
     override(stream_popover, "show_streamlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
@@ -141,7 +141,7 @@ test("blur search left", (override) => {
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
-test("filter_user_ids", (override) => {
+test("filter_user_ids", ({override}) => {
     const user_presence = {};
     user_presence[alice.user_id] = "active";
     user_presence[fred.user_id] = "active";
@@ -195,7 +195,7 @@ test("filter_user_ids", (override) => {
     test_filter("fr,al", [alice, fred]);
 });
 
-test("click on user header to toggle display", (override) => {
+test("click on user header to toggle display", ({override}) => {
     const user_filter = $(".user-list-filter");
 
     override(popovers, "hide_all", () => {});

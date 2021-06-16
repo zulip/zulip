@@ -33,7 +33,7 @@ const settings_bots = zrequire("settings_bots");
 bot_data.initialize(bot_data_params);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.realm_uri = "https://chat.example.com";
         page_params.realm_embedded_bots = [
             {name: "converter", config: {}},
@@ -41,7 +41,7 @@ function test(label, f) {
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
         ];
 
-        f(override);
+        f({override});
     });
 }
 
@@ -120,7 +120,7 @@ function test_create_bot_type_input_box_toggle(f) {
     assert.ok(!config_inputbox.visible());
 }
 
-test("test tab clicks", (override) => {
+test("test tab clicks", ({override}) => {
     override($.validator, "addMethod", () => {});
 
     $("#create_bot_form").validate = () => {};

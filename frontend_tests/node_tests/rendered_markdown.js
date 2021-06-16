@@ -425,7 +425,7 @@ function test_code_playground(override, viewing_code) {
     };
 }
 
-run_test("code playground none", (override) => {
+run_test("code playground none", ({override}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return undefined;
@@ -439,7 +439,7 @@ run_test("code playground none", (override) => {
     assert.equal(view_code.attr("aria-label"), undefined);
 });
 
-run_test("code playground single", (override) => {
+run_test("code playground single", ({override}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return [{name: "Some Javascript Playground"}];
@@ -457,7 +457,7 @@ run_test("code playground single", (override) => {
     assert.equal(view_code.attr("aria-haspopup"), undefined);
 });
 
-run_test("code playground multiple", (override) => {
+run_test("code playground multiple", ({override}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return ["whatever", "whatever"];

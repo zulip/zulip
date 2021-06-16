@@ -19,10 +19,10 @@ function set_filter(operators) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         narrow_state.reset_current_filter();
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 

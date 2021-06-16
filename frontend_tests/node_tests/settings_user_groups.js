@@ -99,7 +99,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", (override) => {
+test_ui("populate_user_groups", ({override}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -351,7 +351,7 @@ test_ui("populate_user_groups", (override) => {
         "function",
     );
 });
-test_ui("with_external_user", (override) => {
+test_ui("with_external_user", ({override}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -485,7 +485,7 @@ test_ui("with_external_user", (override) => {
     assert.equal(turned_off["click/whole"], true);
 });
 
-test_ui("reload", (override) => {
+test_ui("reload", ({override}) => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
     override(settings_user_groups, "populate_user_groups", () => {
@@ -502,7 +502,7 @@ test_ui("reset", () => {
     assert.equal(result, undefined);
 });
 
-test_ui("on_events", (override) => {
+test_ui("on_events", ({override}) => {
     override(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {

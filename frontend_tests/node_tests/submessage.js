@@ -67,7 +67,7 @@ run_test("make_server_callback", () => {
     assert.ok(was_posted);
 });
 
-run_test("check sender", (override) => {
+run_test("check sender", ({override}) => {
     const message_id = 101;
 
     const message = {

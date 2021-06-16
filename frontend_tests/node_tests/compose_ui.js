@@ -81,7 +81,7 @@ function make_textbox(s) {
     return widget;
 }
 
-run_test("autosize_textarea", (override) => {
+run_test("autosize_textarea", ({override}) => {
     const textarea_autosized = {};
 
     override(autosize, "update", (textarea) => {

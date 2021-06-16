@@ -167,7 +167,7 @@ function test_helper({override, change_tab}) {
     };
 }
 
-run_test("hash_interactions", (override) => {
+run_test("hash_interactions", ({override}) => {
     window_stub = $.create("window-stub");
     page_params.default_view = "recent_topics";
 
@@ -285,7 +285,7 @@ run_test("hash_interactions", (override) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", (override) => {
+run_test("save_narrow", ({override}) => {
     override(recent_topics_util, "is_visible", () => false);
 
     const helper = test_helper({override});

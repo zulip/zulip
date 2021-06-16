@@ -9,7 +9,7 @@ const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
 
-run_test("private_message_recipient", (override) => {
+run_test("private_message_recipient", ({override}) => {
     let emails;
     override(compose_pm_pill, "set_from_emails", (value) => {
         emails = value;

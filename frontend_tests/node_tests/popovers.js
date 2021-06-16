@@ -109,18 +109,18 @@ function make_image_stubber() {
 }
 
 function test_ui(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
         override(popovers, "clipboard_enable", noop);
         popovers.clear_for_testing();
         popovers.register_click_handlers();
-        f(override);
+        f({override});
     });
 }
 
-test_ui("sender_hover", (override) => {
+test_ui("sender_hover", ({override}) => {
     override($.fn, "popover", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
@@ -214,7 +214,7 @@ test_ui("sender_hover", (override) => {
     // todo: load image
 });
 
-test_ui("actions_popover", (override) => {
+test_ui("actions_popover", ({override}) => {
     override($.fn, "popover", noop);
 
     const target = $.create("click target");

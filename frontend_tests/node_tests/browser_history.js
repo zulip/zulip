@@ -14,10 +14,10 @@ const location = set_global("location", {
 });
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         location.hash = "bogus";
         browser_history.clear_for_testing();
-        f(override);
+        f({override});
     });
 }
 
@@ -51,7 +51,7 @@ test("error for bad hashes", () => {
     browser_history.update(hash);
 });
 
-test("update internal hash if required", (override) => {
+test("update internal hash if required", ({override}) => {
     const hash = "#test/hash";
     const stub = make_stub();
     override(browser_history, "update", stub.f);

@@ -59,7 +59,7 @@ people.add_active_user(isaac);
 
 */
 
-function test_helper(override) {
+function test_helper({override}) {
     const events = [];
 
     return {
@@ -72,12 +72,12 @@ function test_helper(override) {
     };
 }
 
-run_test("insert_message", (override) => {
+run_test("insert_message", ({override}) => {
     message_store.clear_for_testing();
 
     override(pm_list, "update_private_messages", () => {});
 
-    const helper = test_helper(override);
+    const helper = test_helper({override});
 
     const new_message = {
         sender_id: isaac.user_id,

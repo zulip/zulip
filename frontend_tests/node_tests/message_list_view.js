@@ -52,9 +52,9 @@ const muting = zrequire("muting");
 let next_timestamp = 1500000000;
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         muting.set_muted_users([]);
-        f(override);
+        f({override});
     });
 }
 

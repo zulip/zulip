@@ -65,17 +65,17 @@ set_global("document", "document-stub");
 const widgetize = zrequire("widgetize");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         events = [...sample_events];
         widget_elem = undefined;
         is_event_handled = false;
         is_widget_activated = false;
         widgetize.clear_for_testing();
-        f(override);
+        f({override});
     });
 }
 
-test("activate", (override) => {
+test("activate", ({override}) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const row = $.create("<stub message row>");
