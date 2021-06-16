@@ -159,6 +159,12 @@ paths:
               enum:
                 - queue_id
                 - last_event_id
+      x-parameter-description: |
+        **Note**: The parameters documented above are optional in the sense that
+        even if you haven't registered a queue by explicitly requesting the
+        `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
+        [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
+        endpoint and a queue would be registered in the absence of a `queue_id`.
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id

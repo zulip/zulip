@@ -40,13 +40,6 @@ a queue for you.
 
 {generate_api_arguments_table|zulip.yaml|/events:get}
 
-**Note**: The parameters documented above are optional in the sense that
-even if you haven't registered a queue by explicitly requesting the
-`{{ api_url}}/v1/register` endpoint, you could pass the parameters for
-[the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
-endpoint and a queue would be registered in the absence of a `queue_id`.
-{generate_parameter_description(/events:get)}
-
 ## Response
 
 {generate_return_values_table|zulip.yaml|/events:get}
