@@ -75,7 +75,7 @@ def get_valid_realm_from_request(request: HttpRequest) -> Realm:
 def get_apps_page_url() -> str:
     if settings.ZILENCER_ENABLED:
         return "/apps/"
-    return "https://zulip.com/apps/"  # nocoverage
+    return "https://zulip.com/apps/"
 
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
