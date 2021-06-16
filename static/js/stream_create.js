@@ -172,15 +172,23 @@ function create_stream() {
     let history_public_to_subscribers;
     const privacy_setting = $("#stream_creation_form input[name=privacy]:checked").val();
 
-    if (privacy_setting === "invite-only") {
-        invite_only = true;
-        history_public_to_subscribers = false;
-    } else if (privacy_setting === "invite-only-public-history") {
-        invite_only = true;
-        history_public_to_subscribers = true;
-    } else {
-        invite_only = false;
-        history_public_to_subscribers = true;
+    switch (privacy_setting) {
+        case "invite-only": {
+            invite_only = true;
+            history_public_to_subscribers = false;
+
+            break;
+        }
+        case "invite-only-public-history": {
+            invite_only = true;
+            history_public_to_subscribers = true;
+
+            break;
+        }
+        default: {
+            invite_only = false;
+            history_public_to_subscribers = true;
+        }
     }
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
