@@ -1332,11 +1332,10 @@ export function register_click_handlers() {
         const message_id = $(e.currentTarget).data("message-id");
         const row = message_lists.current.get_row(message_id);
         const message = message_lists.current.get(rows.id(row));
-        const message_history_cancel_btn = $("#message-history-cancel");
 
         hide_actions_popover();
         message_edit_history.show_history(message);
-        message_history_cancel_btn.trigger("focus");
+        $("#message-history-cancel").trigger("focus");
         e.stopPropagation();
         e.preventDefault();
     });

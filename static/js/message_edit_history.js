@@ -2,7 +2,7 @@ import {format, isSameDay} from "date-fns";
 import $ from "jquery";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
-import render_message_history from "../templates/message_history.hbs";
+import render_message_history_modal from "../templates/message_history_modal.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
@@ -79,9 +79,11 @@ export function fetch_and_render_message_history(message) {
 }
 
 export function show_history(message) {
-    $("#message-history").html("");
-    overlays.open_modal("#message-edit-history");
+    const rendered_message_history = render_message_history_modal();
+    $("#message_feed_container").append(rendered_message_history);
+
     fetch_and_render_message_history(message);
+    overlays.open_modal("#message-edit-history", true);
 }
 
 export function initialize() {
@@ -102,18 +104,12 @@ export function initialize() {
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         const row = message_lists.current.get_row(message_id);
         const message = message_lists.current.get(rows.id(row));
-        const message_history_cancel_btn = $("#message-history-cancel");
 
         if (page_params.realm_allow_edit_history) {
             show_history(message);
-            message_history_cancel_btn.trigger("focus");
+            $("#message-history-cancel").trigger("focus");
         }
         e.stopPropagation();
         e.preventDefault();
     });
-
-    // TODO: Migrate this modal to be rendered when
-    // opened rather than once at startup.
-    const rendered_message_history = render_message_history();
-    $("#message_feed_container").append(rendered_message_history);
 }
