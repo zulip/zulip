@@ -49,7 +49,7 @@ export function maybe_show_deprecation_notice(key) {
 
         $(".app").append(deprecated_feature_notice);
 
-        overlays.open_modal("#deprecation-notice-modal");
+        overlays.open_modal("#deprecation-notice-modal", true);
         $("#deprecation-notice-message").text(message);
         $("#close-deprecation-notice").trigger("focus");
         shown_deprecation_notices.push(key);
@@ -59,9 +59,5 @@ export function maybe_show_deprecation_notice(key) {
                 JSON.stringify(shown_deprecation_notices),
             );
         }
-
-        deprecated_feature_notice.on("hidden.bs.modal", () => {
-            deprecated_feature_notice.remove();
-        });
     }
 }
