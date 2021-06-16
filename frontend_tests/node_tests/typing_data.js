@@ -9,10 +9,10 @@ const muting = zrequire("muting");
 const typing_data = zrequire("typing_data");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         typing_data.clear_for_testing();
         muting.set_muted_users([]);
-        f(override);
+        f({override});
     });
 }
 

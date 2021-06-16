@@ -15,10 +15,10 @@ const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         unread.declare_bankruptcy();
         stream_topic_history.reset();
-        f(override);
+        f({override});
     });
 }
 
@@ -338,7 +338,7 @@ test("server_history_end_to_end", () => {
     assert.ok(on_success_called);
 });
 
-test("all_topics_in_cache", (override) => {
+test("all_topics_in_cache", ({override}) => {
     // Add a new stream with first_message_id set.
     const general = {
         name: "general",

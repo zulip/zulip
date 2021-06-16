@@ -40,9 +40,9 @@ const notifications = zrequire("notifications");
 const util = zrequire("util");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         localStorage.clear();
-        f(override);
+        f({override});
     });
 }
 
@@ -95,7 +95,7 @@ test("profile_incomplete_alert", () => {
     assert.equal(navbar_alerts.check_profile_incomplete(), false);
 });
 
-test("server_upgrade_alert hide_duration_expired", (override) => {
+test("server_upgrade_alert hide_duration_expired", ({override}) => {
     const ls = localstorage();
     const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 

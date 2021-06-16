@@ -20,12 +20,12 @@ const params = {
 };
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         pmc.clear_for_testing();
         muting.set_muted_topics([]);
         muting.set_muted_users([]);
         people.initialize_current_user(15);
-        f(override);
+        f({override});
     });
 }
 

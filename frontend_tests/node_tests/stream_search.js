@@ -63,7 +63,7 @@ function clear_search_input() {
     stream_list.clear_search({stopPropagation: noop});
 }
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     let cursor_helper;
     const input = $(".stream-list-filter");
     const section = $(".stream_search_section");

@@ -66,7 +66,7 @@ const server_events = zrequire("server_events");
 
 server_events.home_view_loaded();
 
-run_test("message_event", (override) => {
+run_test("message_event", ({override}) => {
     const event = {
         type: "message",
         message: {

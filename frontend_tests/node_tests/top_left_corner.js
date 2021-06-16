@@ -16,7 +16,7 @@ const people = zrequire("people");
 const pm_list = zrequire("pm_list");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("narrowing", (override) => {
+run_test("narrowing", ({override}) => {
     // activating narrow
 
     let pm_expanded;

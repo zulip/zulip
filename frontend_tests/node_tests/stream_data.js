@@ -29,7 +29,7 @@ function contains_sub(subs, sub) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         page_params.is_guest = false;
@@ -37,7 +37,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
@@ -641,7 +641,7 @@ test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-test("create_sub", (override) => {
+test("create_sub", ({override}) => {
     const india = {
         stream_id: 102,
         name: "India",

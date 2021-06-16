@@ -61,9 +61,9 @@ function make_sub(name, stream_id) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
@@ -1263,7 +1263,7 @@ test("term_type", () => {
     assert.ok(!filter._build_sorted_term_types_called);
 });
 
-test("first_valid_id_from", (override) => {
+test("first_valid_id_from", ({override}) => {
     const terms = [{operator: "is", operand: "alerted"}];
 
     const filter = new Filter(terms);
@@ -1564,7 +1564,7 @@ test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), default_redirect.redirect_url);
 });
 
-test("error_cases", (override) => {
+test("error_cases", ({override}) => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
     override(people, "pm_with_user_ids", () => {});

@@ -76,9 +76,9 @@ people.add_active_user(jane);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         presence.clear_internal_data();
-        f(override);
+        f({override});
     });
 }
 
@@ -86,7 +86,7 @@ test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
 });
 
-test("unknown user", (override) => {
+test("unknown user", ({override}) => {
     const unknown_user_id = 999;
     const now = 888888;
     const presences = {};

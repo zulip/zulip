@@ -99,7 +99,7 @@ stream_data.create_streams([
 ]);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
@@ -109,11 +109,11 @@ function test(label, f) {
         page_params.realm_email_address_visibility =
             settings_config.email_address_visibility_values.admins_only.code;
 
-        f(override);
+        f({override});
     });
 }
 
-test("sort_streams", (override) => {
+test("sort_streams", ({override}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -602,7 +602,7 @@ test("highlight_with_escaping", () => {
     assert.equal(result, expected);
 });
 
-test("render_person when emails hidden", (override) => {
+test("render_person when emails hidden", ({override}) => {
     // Test render_person with regular person, under hidden email visibility case
     let rendered = false;
     override(render_typeahead_list_item, "f", (args) => {
@@ -615,7 +615,7 @@ test("render_person when emails hidden", (override) => {
     assert.ok(rendered);
 });
 
-test("render_person", (override) => {
+test("render_person", ({override}) => {
     // Test render_person with regular person
     page_params.is_admin = true;
     let rendered = false;
@@ -629,7 +629,7 @@ test("render_person", (override) => {
     assert.ok(rendered);
 });
 
-test("render_person special_item_text", (override) => {
+test("render_person special_item_text", ({override}) => {
     let rendered = false;
 
     // Test render_person with special_item_text person
@@ -652,7 +652,7 @@ test("render_person special_item_text", (override) => {
     assert.ok(rendered);
 });
 
-test("render_stream", (override) => {
+test("render_stream", ({override}) => {
     // Test render_stream with short description
     let rendered = false;
     const stream = {
@@ -671,7 +671,7 @@ test("render_stream", (override) => {
     assert.ok(rendered);
 });
 
-test("render_stream w/long description", (override) => {
+test("render_stream w/long description", ({override}) => {
     // Test render_stream with long description
     let rendered = false;
     const stream = {
@@ -691,7 +691,7 @@ test("render_stream w/long description", (override) => {
     assert.ok(rendered);
 });
 
-test("render_emoji", (override) => {
+test("render_emoji", ({override}) => {
     // Test render_emoji with normal emoji.
     let expected_template_data = {
         primary: "thumbs up",

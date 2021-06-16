@@ -191,7 +191,7 @@ run_test("get_unread_ids", () => {
     });
 });
 
-run_test("defensive code", (override) => {
+run_test("defensive code", ({override}) => {
     // Test defensive code.  We actually avoid calling
     // _possible_unread_message_ids for any case where we
     // couldn't compute the unread message ids, but that

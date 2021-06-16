@@ -284,7 +284,7 @@ const make_emoji = (emoji_dict) => ({
 });
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         people.init();
         user_groups.init();
 
@@ -308,11 +308,11 @@ function test(label, f) {
 
         muting.set_muted_users([]);
 
-        f(override);
+        f({override});
     });
 }
 
-test("topics_seen_for", (override) => {
+test("topics_seen_for", ({override}) => {
     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
@@ -332,7 +332,7 @@ test("topics_seen_for", (override) => {
     assert.deepEqual(ct.topics_seen_for("non-existing-stream"), []);
 });
 
-test("content_typeahead_selected", (override) => {
+test("content_typeahead_selected", ({override}) => {
     const fake_this = {
         query: "",
         $element: {},
@@ -575,7 +575,7 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-test("initialize", (override) => {
+test("initialize", ({override}) => {
     let expected_value;
 
     override(stream_topic_history_util, "get_server_history", () => {});
@@ -1128,7 +1128,7 @@ test("initialize", (override) => {
     assert.ok(compose_textarea_typeahead_called);
 });
 
-test("begins_typeahead", (override) => {
+test("begins_typeahead", ({override}) => {
     override(stream_topic_history_util, "get_server_history", () => {});
 
     const begin_typehead_this = {
@@ -1362,7 +1362,7 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
-test("content_highlighter", (override) => {
+test("content_highlighter", ({override}) => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
@@ -1521,7 +1521,7 @@ test("typeahead_results", () => {
     assert_stream_matches("city", [netherland_stream]);
 });
 
-test("message people", (override) => {
+test("message people", ({override}) => {
     let results;
 
     /*

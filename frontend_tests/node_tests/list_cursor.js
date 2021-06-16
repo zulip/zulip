@@ -31,7 +31,7 @@ function basic_conf({first_key, prev_key, next_key}) {
     return conf;
 }
 
-run_test("misc errors", (override) => {
+run_test("misc errors", ({override}) => {
     const conf = basic_conf({
         first_key: () => undefined,
         prev_key: () => undefined,
@@ -60,7 +60,7 @@ run_test("misc errors", (override) => {
     cursor.next();
 });
 
-run_test("single item list", (override) => {
+run_test("single item list", ({override}) => {
     const valid_key = "42";
 
     const conf = basic_conf({
@@ -89,7 +89,7 @@ run_test("single item list", (override) => {
     cursor.go_to(valid_key);
 });
 
-run_test("multiple item list", (override) => {
+run_test("multiple item list", ({override}) => {
     const conf = basic_conf({
         first_key: () => 1,
         next_key: (key) => (key < 3 ? key + 1 : undefined),

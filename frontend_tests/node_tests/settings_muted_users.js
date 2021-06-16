@@ -14,7 +14,7 @@ const muting = zrequire("muting");
 
 const noop = () => {};
 
-run_test("settings", (override) => {
+run_test("settings", ({override}) => {
     muting.add_muted_user(5, 1577836800);
     let populate_list_called = false;
     override(settings_muted_users, "populate_list", () => {

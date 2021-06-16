@@ -39,7 +39,7 @@ run_test("streams", () => {
     assert_prev_stream("announce", "test here");
 });
 
-run_test("topics", (override) => {
+run_test("topics", ({override}) => {
     const streams = [1, 2, 3, 4];
     const topics = new Map([
         [1, ["read", "read", "1a", "1b", "read", "1c"]],
@@ -119,7 +119,7 @@ run_test("topics", (override) => {
     });
 });
 
-run_test("get_next_unread_pm_string", (override) => {
+run_test("get_next_unread_pm_string", ({override}) => {
     pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
 
     override(unread, "num_unread_for_person", (user_ids_string) => {

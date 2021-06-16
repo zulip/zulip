@@ -30,7 +30,7 @@ const stream_data = mock_esm("../../static/js/stream_data");
 const {MessageList} = zrequire("message_list");
 const {Filter} = zrequire("filter");
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     const filter = new Filter();
 
     const list = new MessageList({
@@ -300,7 +300,7 @@ run_test("local_echo", () => {
     assert.equal(list.closest_id(50.01), 50.01);
 });
 
-run_test("bookend", (override) => {
+run_test("bookend", ({override}) => {
     const list = new MessageList({});
 
     let expected = "translated: You subscribed to stream IceCream";

@@ -8,9 +8,9 @@ const {run_test} = require("../zjsunit/test");
 const reload_state = zrequire("reload_state");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         reload_state.clear_for_testing();
-        f(override);
+        f({override});
     });
 }
 

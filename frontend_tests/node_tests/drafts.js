@@ -83,10 +83,10 @@ const short_msg = {
 };
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         $("#draft_overlay").css = () => {};
         localStorage.clear();
-        f(override);
+        f({override});
     });
 }
 
@@ -94,7 +94,7 @@ test("legacy", () => {
     assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
-test("draft_model add", (override) => {
+test("draft_model add", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -129,7 +129,7 @@ test("draft_model edit", () => {
     });
 });
 
-test("draft_model delete", (override) => {
+test("draft_model delete", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -144,7 +144,7 @@ test("draft_model delete", (override) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", (override) => {
+test("snapshot_message", ({override}) => {
     let curr_draft;
 
     function map(field, f) {
@@ -171,7 +171,7 @@ test("snapshot_message", (override) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-test("initialize", (override) => {
+test("initialize", ({override}) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
@@ -210,7 +210,7 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-test("format_drafts", (override) => {
+test("format_drafts", ({override}) => {
     override(drafts, "remove_old_drafts", noop);
 
     function feb12() {

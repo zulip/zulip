@@ -55,10 +55,10 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         unread.declare_bankruptcy();
         muting.set_muted_topics([]);
-        f(override);
+        f({override});
     });
 }
 
@@ -242,7 +242,7 @@ test("muting", () => {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 });
 
-test("num_unread_for_topic", (override) => {
+test("num_unread_for_topic", ({override}) => {
     // Test the num_unread_for_topic() function using many
     // messages.
     const stream_id = 301;
@@ -315,7 +315,7 @@ test("num_unread_for_topic", (override) => {
     assert.deepEqual(msg_ids, []);
 });
 
-test("home_messages", (override) => {
+test("home_messages", ({override}) => {
     override(stream_data, "is_subscribed", () => true);
     override(stream_data, "is_muted", () => false);
 

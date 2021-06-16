@@ -69,7 +69,7 @@ function test_populate(opts, template_data) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", (override) => {
+run_test("populate_profile_fields", ({override}) => {
     page_params.custom_profile_fields = {};
     page_params.realm_default_external_accounts = JSON.stringify({});
 

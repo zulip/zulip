@@ -44,13 +44,13 @@ people.initialize_current_user(me.user_id);
 const dispatch = server_events_dispatch.dispatch_normal_event;
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
-test("add", (override) => {
+test("add", ({override}) => {
     const event = event_fixtures.subscription__add;
 
     const sub = event.subscriptions[0];
@@ -70,7 +70,7 @@ test("add", (override) => {
     assert.deepEqual(args.subscribers, event.subscriptions[0].subscribers);
 });
 
-test("peer add/remove", (override) => {
+test("peer add/remove", ({override}) => {
     let event = event_fixtures.subscription__peer_add;
 
     stream_data.add_sub({
@@ -98,7 +98,7 @@ test("peer add/remove", (override) => {
     assert.ok(!peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
 });
 
-test("remove", (override) => {
+test("remove", ({override}) => {
     const event = event_fixtures.subscription__remove;
     const event_sub = event.subscriptions[0];
     const stream_id = event_sub.stream_id;
@@ -118,7 +118,7 @@ test("remove", (override) => {
     assert.deepEqual(args.sub, sub);
 });
 
-test("update", (override) => {
+test("update", ({override}) => {
     const event = event_fixtures.subscription__update;
 
     const stub = make_stub();
@@ -140,7 +140,7 @@ test("add error handling", () => {
     blueslip.reset();
 });
 
-test("peer event error handling (bad stream_ids/user_ids)", (override) => {
+test("peer event error handling (bad stream_ids/user_ids)", ({override}) => {
     override(compose_fade, "update_faded_users", () => {});
 
     const add_event = {
@@ -167,7 +167,7 @@ test("peer event error handling (bad stream_ids/user_ids)", (override) => {
     dispatch(remove_event);
 });
 
-test("stream update", (override) => {
+test("stream update", ({override}) => {
     const event = event_fixtures.stream__update;
 
     const stub = make_stub();
@@ -181,7 +181,7 @@ test("stream update", (override) => {
     assert.equal(args.value, event.value);
 });
 
-test("stream create", (override) => {
+test("stream create", ({override}) => {
     const event = event_fixtures.stream__create;
 
     const stub = make_stub();
@@ -197,7 +197,7 @@ test("stream create", (override) => {
     );
 });
 
-test("stream delete (normal)", (override) => {
+test("stream delete (normal)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {
@@ -238,7 +238,7 @@ test("stream delete (normal)", (override) => {
     assert.equal(removed_sidebar_rows, 1);
 });
 
-test("stream delete (special streams)", (override) => {
+test("stream delete (special streams)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {

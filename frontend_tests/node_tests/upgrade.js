@@ -24,7 +24,7 @@ mock_cjs("jquery", $);
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
-run_test("initialize", (override) => {
+run_test("initialize", ({override}) => {
     page_params.annual_price = 8000;
     page_params.monthly_price = 800;
     page_params.seat_count = 8;

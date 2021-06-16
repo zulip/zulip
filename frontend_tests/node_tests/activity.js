@@ -98,7 +98,7 @@ function clear_buddy_list() {
 let presence_info;
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
         // list in one pass.  We will do more refined
@@ -126,7 +126,7 @@ function test(label, f) {
         activity.clear_for_testing();
         activity.set_cursor_and_filter();
 
-        f(override);
+        f({override});
     });
 }
 
@@ -205,7 +205,7 @@ test("huddle_data.process_loaded_messages", () => {
     assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
-test("presence_list_full_update", (override) => {
+test("presence_list_full_update", ({override}) => {
     override(padded_widget, "update_padding", () => {});
 
     $(".user-list-filter").trigger("focus");
@@ -262,7 +262,7 @@ test("PM_update_dom_counts", () => {
     assert.equal(count.text(), "");
 });
 
-test("handlers", (override) => {
+test("handlers", ({override}) => {
     let filter_key_handlers;
 
     override(keydown_util, "handle", (opts) => {
@@ -364,7 +364,7 @@ test("handlers", (override) => {
     })();
 });
 
-test("first/prev/next", (override) => {
+test("first/prev/next", ({override}) => {
     override(padded_widget, "update_padding", () => {});
 
     assert.equal(buddy_list.first_key(), undefined);
@@ -384,7 +384,7 @@ test("first/prev/next", (override) => {
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
 });
 
-test("insert_one_user_into_empty_list", (override) => {
+test("insert_one_user_into_empty_list", ({override}) => {
     override(padded_widget, "update_padding", () => {});
 
     let appended_html;
@@ -397,7 +397,7 @@ test("insert_one_user_into_empty_list", (override) => {
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
 
-test("insert_alice_then_fred", (override) => {
+test("insert_alice_then_fred", ({override}) => {
     let appended_html;
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
@@ -413,7 +413,7 @@ test("insert_alice_then_fred", (override) => {
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
 
-test("insert_fred_then_alice_then_rename", (override) => {
+test("insert_fred_then_alice_then_rename", ({override}) => {
     let appended_html;
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
@@ -491,7 +491,7 @@ test("redraw_muted_user", () => {
     assert.equal(appended_html, undefined);
 });
 
-test("update_presence_info", (override) => {
+test("update_presence_info", ({override}) => {
     override(pm_list, "update_private_messages", () => {});
 
     page_params.realm_presence_disabled = false;
@@ -527,7 +527,7 @@ test("update_presence_info", (override) => {
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });
 
-test("initialize", (override) => {
+test("initialize", ({override}) => {
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
@@ -592,7 +592,7 @@ test("initialize", (override) => {
     clear();
 });
 
-test("away_status", (override) => {
+test("away_status", ({override}) => {
     override(pm_list, "update_private_messages", () => {});
     override(buddy_list, "insert_or_move", () => {});
 
@@ -603,7 +603,7 @@ test("away_status", (override) => {
     assert.ok(!user_status.is_away(alice.user_id));
 });
 
-test("electron_bridge", (override) => {
+test("electron_bridge", ({override}) => {
     override(activity, "send_presence_to_server", () => {});
 
     function with_bridge_idle(bridge_idle, f) {

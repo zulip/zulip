@@ -29,7 +29,9 @@ exports.run_test = (label, f, opts) => {
     zpage_params.reset();
 
     try {
-        namespace.with_overrides(f);
+        namespace.with_overrides((override) => {
+            f({override});
+        });
     } catch (error) {
         console.info("-".repeat(50));
         console.info(`test failed: ${current_file_name} > ${label}`);

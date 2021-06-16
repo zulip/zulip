@@ -85,13 +85,13 @@ function narrow_to_frontend() {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
-test("update_property", (override) => {
+test("update_property", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
 
@@ -262,7 +262,7 @@ test("marked_subscribed (error)", () => {
     blueslip.reset();
 });
 
-test("marked_subscribed (normal)", (override) => {
+test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_data, "subscribe_myself", noop);
@@ -299,7 +299,7 @@ test("marked_subscribed (normal)", (override) => {
     narrow_state.reset_current_filter();
 });
 
-test("marked_subscribed (color)", (override) => {
+test("marked_subscribed (color)", ({override}) => {
     override(stream_data, "subscribe_myself", noop);
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
@@ -328,7 +328,7 @@ test("marked_subscribed (color)", (override) => {
     }
 });
 
-test("marked_subscribed (emails)", (override) => {
+test("marked_subscribed (emails)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color, "update_stream_color", noop);
@@ -352,7 +352,7 @@ test("marked_subscribed (emails)", (override) => {
     assert.deepEqual(sub, args.sub);
 });
 
-test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {
+test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     // Test unsubscribe
     const sub = {...dev_help};
     assert.ok(sub.subscribed);
@@ -368,7 +368,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {
     assert.deepEqual(args.sub, sub);
 });
 
-test("mark_unsubscribed (render_title_area)", (override) => {
+test("mark_unsubscribed (render_title_area)", ({override}) => {
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub(sub);
 

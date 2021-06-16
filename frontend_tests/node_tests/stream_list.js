@@ -50,7 +50,7 @@ const social = {
 // We use this with override.
 let num_unread_for_stream;
 
-function create_devel_sidebar_row(override) {
+function create_devel_sidebar_row({override}) {
     const devel_count = $.create("devel-count");
     const subscription_block = $.create("devel-block");
 
@@ -69,7 +69,7 @@ function create_devel_sidebar_row(override) {
     assert.equal(devel_count.text(), "42");
 }
 
-function create_social_sidebar_row(override) {
+function create_social_sidebar_row({override}) {
     const social_count = $.create("social-count");
     const subscription_block = $.create("social-block");
 
@@ -89,14 +89,14 @@ function create_social_sidebar_row(override) {
 }
 
 function test_ui(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
-        f(override);
+        f({override});
     });
 }
 
-test_ui("create_sidebar_row", (override) => {
+test_ui("create_sidebar_row", ({override}) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
     page_params.demote_inactive_streams = 1;
@@ -105,8 +105,8 @@ test_ui("create_sidebar_row", (override) => {
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
-    create_devel_sidebar_row(override);
-    create_social_sidebar_row(override);
+    create_devel_sidebar_row({override});
+    create_social_sidebar_row({override});
 
     const split = '<hr class="stream-split">';
     const devel_sidebar = $("<devel sidebar row>");
@@ -177,14 +177,14 @@ test_ui("create_sidebar_row", (override) => {
     assert.ok(removed);
 });
 
-test_ui("pinned_streams_never_inactive", (override) => {
+test_ui("pinned_streams_never_inactive", ({override}) => {
     override(unread, "num_unread_for_stream", () => num_unread_for_stream);
 
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
 
-    create_devel_sidebar_row(override);
-    create_social_sidebar_row(override);
+    create_devel_sidebar_row({override});
+    create_social_sidebar_row({override});
 
     // non-pinned streams can be made inactive
     const social_sidebar = $("<social sidebar row>");
@@ -367,7 +367,7 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert.ok($("#streams_list").hasClass("zoom-out"));
 });
 
-test_ui("narrowing", (override) => {
+test_ui("narrowing", ({override}) => {
     initialize_stream_data();
 
     topic_list.close = noop;
@@ -421,7 +421,7 @@ test_ui("focusout_user_filter", () => {
     click_handler(e);
 });
 
-test_ui("focus_user_filter", (override) => {
+test_ui("focus_user_filter", ({override}) => {
     override(scroll_util, "scroll_element_into_container", noop);
     stream_list.set_event_handlers();
 
@@ -435,7 +435,7 @@ test_ui("focus_user_filter", (override) => {
     click_handler(e);
 });
 
-test_ui("sort_streams", (override) => {
+test_ui("sort_streams", ({override}) => {
     override(scroll_util, "scroll_element_into_container", noop);
 
     // Get coverage on early-exit.
@@ -487,7 +487,7 @@ test_ui("sort_streams", (override) => {
     assert.ok(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
-test_ui("separators_only_pinned_and_dormant", (override) => {
+test_ui("separators_only_pinned_and_dormant", ({override}) => {
     // Test only pinned and dormant streams
 
     // Get coverage on early-exit.
@@ -587,7 +587,7 @@ test_ui("separators_only_pinned", () => {
 
 narrow_state.active = () => false;
 
-test_ui("rename_stream", (override) => {
+test_ui("rename_stream", ({override}) => {
     initialize_stream_data();
 
     const sub = stream_data.get_sub_by_name("devel");
@@ -623,7 +623,7 @@ test_ui("rename_stream", (override) => {
     assert.ok(count_updated);
 });
 
-test_ui("refresh_pin", (override) => {
+test_ui("refresh_pin", ({override}) => {
     initialize_stream_data();
 
     override(scroll_util, "scroll_element_into_container", noop);
@@ -660,7 +660,7 @@ test_ui("refresh_pin", (override) => {
     assert.ok(scrolled);
 });
 
-test_ui("create_initial_sidebar_rows", (override) => {
+test_ui("create_initial_sidebar_rows", ({override}) => {
     initialize_stream_data();
 
     const html_dict = new Map();

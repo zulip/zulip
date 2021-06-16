@@ -38,7 +38,7 @@ run_test("phrase_match", () => {
     assert.ok(!common.phrase_match("tes", "hostess"));
 });
 
-run_test("copy_data_attribute_value", (override) => {
+run_test("copy_data_attribute_value", ({override}) => {
     const admin_emails_val = "iago@zulip.com";
 
     const input = $.create("input");
@@ -81,7 +81,7 @@ run_test("copy_data_attribute_value", (override) => {
     assert.ok(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", (override) => {
+run_test("adjust_mac_shortcuts non-mac", ({override}) => {
     override(common, "has_mac_keyboard", () => false);
 
     // The adjust_mac_shortcuts has a really simple guard
@@ -90,7 +90,7 @@ run_test("adjust_mac_shortcuts non-mac", (override) => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-run_test("adjust_mac_shortcuts mac", (override) => {
+run_test("adjust_mac_shortcuts mac", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],

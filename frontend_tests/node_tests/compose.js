@@ -109,7 +109,7 @@ function test_ui(label, f) {
     run_test(label, f);
 }
 
-function initialize_handlers(override) {
+function initialize_handlers({override}) {
     override(compose, "compute_show_video_chat_button", () => false);
     override(compose, "render_compose_box", () => {});
     override(upload, "setup_upload", () => undefined);
@@ -189,7 +189,7 @@ test_ui("right-to-left", () => {
     assert.equal(textarea.hasClass("rtl"), false);
 });
 
-test_ui("markdown_shortcuts", (override) => {
+test_ui("markdown_shortcuts", ({override}) => {
     let queryCommandEnabled = true;
     const event = {
         key: "b",
@@ -351,7 +351,7 @@ test_ui("markdown_shortcuts", (override) => {
     navigator.userAgent = "";
 });
 
-test_ui("send_message_success", (override) => {
+test_ui("send_message_success", ({override}) => {
     override(drafts, "delete_active_draft", () => {});
 
     $("#compose-textarea").val("foobarfoobar");
@@ -378,7 +378,7 @@ test_ui("send_message_success", (override) => {
     assert.ok(reify_message_id_checked);
 });
 
-test_ui("send_message", (override) => {
+test_ui("send_message", ({override}) => {
     MockDate.set(new Date(fake_now * 1000));
 
     override(drafts, "delete_active_draft", () => {});
@@ -536,7 +536,7 @@ test_ui("send_message", (override) => {
     })();
 });
 
-test_ui("enter_with_preview_open", (override) => {
+test_ui("enter_with_preview_open", ({override}) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -584,7 +584,7 @@ test_ui("enter_with_preview_open", (override) => {
     );
 });
 
-test_ui("finish", (override) => {
+test_ui("finish", ({override}) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -635,7 +635,7 @@ test_ui("finish", (override) => {
     })();
 });
 
-test_ui("warn_if_private_stream_is_linked", (override) => {
+test_ui("warn_if_private_stream_is_linked", ({override}) => {
     const test_sub = {
         name: compose_state.stream_name(),
         stream_id: 99,
@@ -707,7 +707,7 @@ test_ui("warn_if_private_stream_is_linked", (override) => {
     }
 });
 
-test_ui("initialize", (override) => {
+test_ui("initialize", ({override}) => {
     override(giphy, "is_giphy_enabled", () => true);
 
     let compose_actions_expected_opts;
@@ -806,8 +806,8 @@ test_ui("initialize", (override) => {
     })();
 });
 
-test_ui("update_fade", (override) => {
-    initialize_handlers(override);
+test_ui("update_fade", ({override}) => {
+    initialize_handlers({override});
 
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
@@ -836,8 +836,8 @@ test_ui("update_fade", (override) => {
     assert.ok(update_all_called);
 });
 
-test_ui("trigger_submit_compose_form", (override) => {
-    initialize_handlers(override);
+test_ui("trigger_submit_compose_form", ({override}) => {
+    initialize_handlers({override});
 
     let prevent_default_checked = false;
     let compose_finish_checked = false;
@@ -892,7 +892,7 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
+test_ui("warn_if_mentioning_unsubscribed_user", ({override}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned = {
@@ -1016,8 +1016,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
     assert.ok(looked_for_existing);
 });
 
-test_ui("on_events", (override) => {
-    initialize_handlers(override);
+test_ui("on_events", ({override}) => {
+    initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
 
@@ -1370,7 +1370,7 @@ test_ui("on_events", (override) => {
     })();
 });
 
-test_ui("create_message_object", (override) => {
+test_ui("create_message_object", ({override}) => {
     $("#stream_message_recipient_stream").val("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");

@@ -359,7 +359,7 @@ run_test("narrow_to_compose_target errors", () => {
     test();
 });
 
-run_test("narrow_to_compose_target streams", (override) => {
+run_test("narrow_to_compose_target streams", ({override}) => {
     const args = {called: false};
     override(narrow, "activate", (operators, opts) => {
         args.operators = operators;
@@ -405,7 +405,7 @@ run_test("narrow_to_compose_target streams", (override) => {
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 });
 
-run_test("narrow_to_compose_target PMs", (override) => {
+run_test("narrow_to_compose_target PMs", ({override}) => {
     const args = {called: false};
     override(narrow, "activate", (operators, opts) => {
         args.operators = operators;

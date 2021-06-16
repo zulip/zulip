@@ -211,7 +211,7 @@ run_test("wrong person editing question", () => {
     });
 });
 
-run_test("activate another person poll", (override) => {
+run_test("activate another person poll", ({override}) => {
     override(render_poll_widget, "f", () => "widgets/poll_widget");
     override(render_poll_widget_results, "f", () => "widgets/poll_widget_results");
 
@@ -326,7 +326,7 @@ run_test("activate another person poll", (override) => {
     widget_elem.handle_events(add_question_event);
 });
 
-run_test("activate own poll", (override) => {
+run_test("activate own poll", ({override}) => {
     override(render_poll_widget, "f", () => "widgets/poll_widget");
     override(render_poll_widget_results, "f", () => "widgets/poll_widget_results");
 
