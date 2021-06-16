@@ -2,12 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 const condense = mock_esm("../../static/js/condense");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_list = mock_esm("../../static/js/message_list");

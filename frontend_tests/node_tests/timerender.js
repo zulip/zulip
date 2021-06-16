@@ -6,14 +6,12 @@ const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.twenty_four_hour_time = true;
-
-mock_cjs("jquery", $);
 
 const timerender = zrequire("timerender");
 

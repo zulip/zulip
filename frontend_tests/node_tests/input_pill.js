@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -12,7 +12,6 @@ set_global("document", {});
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-mock_cjs("jquery", $);
 mock_esm("../../static/js/ui_util", {
     place_caret_at_end: noop,
 });

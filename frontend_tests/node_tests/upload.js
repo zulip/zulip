@@ -19,8 +19,6 @@ set_global("navigator", {
 document.location.protocol = "https:";
 document.location.host = "foo.com";
 
-mock_cjs("jquery", $);
-
 let uppy_stub;
 function Uppy(options) {
     return uppy_stub.call(this, options);

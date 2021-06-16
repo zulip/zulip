@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -34,8 +34,6 @@ const topic7 = "topic-7"; // muted topic
 const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";
-
-mock_cjs("jquery", $);
 
 let expected_data_to_replace_in_list_widget;
 

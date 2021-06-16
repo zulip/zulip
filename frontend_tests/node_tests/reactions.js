@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -37,8 +37,6 @@ const sample_message = {
         },
     ],
 };
-
-mock_cjs("jquery", $);
 
 const render_message_reaction = mock_template("message_reaction.hbs");
 

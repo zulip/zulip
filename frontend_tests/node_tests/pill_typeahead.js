@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire, mock_esm, mock_cjs} = require("../zjsunit/namespace");
+const {zrequire, mock_esm} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -11,7 +11,6 @@ const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
 const noop = function () {};
 
-mock_cjs("jquery", $);
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");

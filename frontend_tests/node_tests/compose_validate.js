@@ -3,12 +3,10 @@
 const {strict: assert} = require("assert");
 
 const {$t_html} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
-
-mock_cjs("jquery", $);
 
 set_global("document", {location: {}});
 

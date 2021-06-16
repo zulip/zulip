@@ -2,12 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 const render_admin_profile_field_list = mock_template("settings/admin_profile_field_list.hbs");
 const loading = mock_esm("../../static/js/loading");
 

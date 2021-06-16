@@ -3,7 +3,7 @@
 // Setup
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -12,7 +12,6 @@ mock_esm("../../static/js/recent_topics_util", {
 });
 
 // Mocking and stubbing things
-mock_cjs("jquery", $);
 set_global("document", "document-stub");
 const message_lists = mock_esm("../../static/js/message_lists");
 

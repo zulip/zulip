@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -20,7 +20,6 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-mock_cjs("jquery", $);
 const activity = mock_esm("../../static/js/activity");
 const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
 const attachments_ui = mock_esm("../../static/js/attachments_ui");

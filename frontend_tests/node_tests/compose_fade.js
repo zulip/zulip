@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {mock_jquery, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_cjs("jquery", (selector) => {
+mock_jquery((selector) => {
     switch (selector) {
         case "#stream_message_recipient_stream":
             return {

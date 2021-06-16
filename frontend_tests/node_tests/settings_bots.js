@@ -19,7 +19,6 @@ const bot_data_params = {
     ],
 };
 
-mock_cjs("jquery", $);
 const avatar = mock_esm("../../static/js/avatar");
 
 function ClipboardJS(sel) {

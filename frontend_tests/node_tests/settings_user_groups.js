@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -19,7 +19,6 @@ const pills = {
 
 let create_item_handler;
 
-mock_cjs("jquery", $);
 const render_admin_user_group_list = mock_template("/settings/admin_user_group_list.hbs");
 const channel = mock_esm("../../static/js/channel");
 const confirm_dialog = mock_esm("../../static/js/confirm_dialog");
