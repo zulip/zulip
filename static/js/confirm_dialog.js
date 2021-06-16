@@ -30,9 +30,10 @@ import * as overlays from "./overlays";
            only ever have one confirm dialog active at any
            time.
 
-        6) If a modal wants a loading spinner, it should pass loading_spinner: true
-           and manage the spinner via calling the functions hide_confirm_dialog_spinner
-           and show_confirm_dialog_spinner via its callback hooks.
+        6) If a modal wants a loading spinner, it should pass loading_spinner: true.
+           This will show a loading spinner when the yes button is clicked.
+           The caller is responsible for calling hide_confirm_dialog_spinner()
+           to hide the spinner in both success and error handlers.
 */
 
 export function hide_confirm_dialog_spinner() {
