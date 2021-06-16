@@ -3,7 +3,6 @@
 const {strict: assert} = require("assert");
 
 const {
-    mock_cjs,
     mock_esm,
     set_global,
     zrequire,
@@ -31,7 +30,6 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-mock_cjs("jquery", $);
 const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,

@@ -2,14 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_template, zrequire} = require("../zjsunit/namespace");
+const {mock_template, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const {PollData} = zrequire("../../static/shared/js/poll_data");
-
-mock_cjs("jquery", $);
 
 const render_poll_widget = mock_template("widgets/poll_widget.hbs");
 const render_poll_widget_results = mock_template("widgets/poll_widget_results.hbs");

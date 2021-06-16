@@ -4,12 +4,9 @@ const {strict: assert} = require("assert");
 
 const {addDays} = require("date-fns");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
-
-mock_cjs("jquery", $);
 
 const ls_container = new Map();
 

@@ -3,21 +3,13 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {
-    mock_cjs,
-    mock_esm,
-    set_global,
-    with_field,
-    zrequire,
-    mock_template,
-} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
 
-mock_cjs("jquery", $);
 const rows = mock_esm("../../static/js/rows");
 const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {

@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -18,8 +18,6 @@ const document = dom.window.document;
 const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
-
-mock_cjs("jquery", $);
 
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");

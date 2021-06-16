@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -14,7 +14,6 @@ page_params.realm_users = [];
 
 const noop = () => {};
 
-mock_cjs("jquery", $);
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const topic_list = mock_esm("../../static/js/topic_list");
 mock_esm("../../static/js/keydown_util", {

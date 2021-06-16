@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -10,7 +10,6 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-mock_cjs("jquery", $);
 const color_data = mock_esm("../../static/js/color_data");
 const message_util = mock_esm("../../static/js/message_util");
 const stream_color = mock_esm("../../static/js/stream_color");

@@ -16,7 +16,6 @@ class Clipboard {
 }
 
 mock_cjs("clipboard", Clipboard);
-mock_cjs("jquery", $);
 
 const render_copy_code_button = mock_template("copy_code_button.hbs");
 const render_view_code_in_playground = mock_template("view_code_in_playground.hbs");

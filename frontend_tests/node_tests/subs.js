@@ -2,13 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const denmark_stream_id = 101;
 
-mock_cjs("jquery", $);
 const ui = mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,

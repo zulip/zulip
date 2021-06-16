@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_jquery, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -17,7 +17,7 @@ set_global("Element", () => {});
 
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
-mock_cjs("jquery", (arg) => {
+mock_jquery((arg) => {
     if (arg.to_jquery) {
         return arg.to_jquery();
     }

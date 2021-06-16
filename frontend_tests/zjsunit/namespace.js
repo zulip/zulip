@@ -5,6 +5,8 @@ const path = require("path");
 
 const callsites = require("callsites");
 
+const $ = require("../zjsunit/zjquery");
+
 const new_globals = new Set();
 let old_globals = {};
 
@@ -16,6 +18,7 @@ const jquery_path = require.resolve("jquery");
 const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
 
 let in_mid_render = false;
+let jquery_function;
 
 function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
@@ -62,9 +65,7 @@ function load(request, parent, isMain) {
     }
 
     if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        // jQuery exposes an incompatible API to Node vs. browser, so
-        // this wouldn't work.
-        throw new Error("This test will need jquery mocked using zjquery or real_jquery");
+        return jquery_function || $;
     }
 
     return actual_load(request, parent, isMain);
@@ -126,10 +127,20 @@ function get_validated_filename(fn) {
 }
 
 exports.mock_cjs = (fn, obj) => {
+    if (fn === "jquery") {
+        throw new Error(
+            "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
+        );
+    }
     const filename = get_validated_filename(fn);
     module_mocks.set(filename, obj);
 
     return obj;
+};
+
+exports.mock_jquery = ($) => {
+    jquery_function = $;
+    return $;
 };
 
 exports.mock_template = (fn, exercise_template) => {
@@ -227,6 +238,8 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
+    jquery_function = undefined;
+
     if (actual_load === undefined) {
         throw new Error("namespace.finish was called without namespace.start.");
     }

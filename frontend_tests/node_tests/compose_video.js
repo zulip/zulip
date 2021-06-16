@@ -2,14 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const events = require("./lib/events");
 
-mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
 const upload = mock_esm("../../static/js/upload");
 mock_esm("../../static/js/giphy", {

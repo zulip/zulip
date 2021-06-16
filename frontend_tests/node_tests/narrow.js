@@ -2,12 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 
 const hash_util = zrequire("hash_util");
