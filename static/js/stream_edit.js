@@ -655,7 +655,6 @@ export function change_stream_name(e) {
     }
 
     channel.patch({
-        // Stream names might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
         data: {new_name},
         success() {
@@ -707,7 +706,6 @@ export function change_stream_description(e) {
     }
 
     channel.patch({
-        // Description might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
         data: {
             description,
