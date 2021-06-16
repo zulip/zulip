@@ -247,7 +247,7 @@ export function set_up() {
 
                 confirm_dialog.launch({
                     parent: modal_parent,
-                    html_heading: $t_html({defaultMessage: "Override unicode emoji?"}),
+                    html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
                     html_body,
                     html_yes_button: $t_html({defaultMessage: "Yes"}),
                     on_click: submit_custom_emoji_request,
