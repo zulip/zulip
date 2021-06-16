@@ -21,7 +21,6 @@ import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -29,7 +28,6 @@ import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -214,33 +212,6 @@ export function initialize() {
         const message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
         $(".tooltip").remove();
-    });
-
-    $("body").on("mouseenter", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
-        }
-    });
-
-    $("body").on("mouseleave", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
-        }
-    });
-
-    $("body").on("click", ".message_edit_notice", (e) => {
-        popovers.hide_all();
-        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        const row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id(row));
-        const message_history_cancel_btn = $("#message-history-cancel");
-
-        if (page_params.realm_allow_edit_history) {
-            message_edit_history.show_history(message);
-            message_history_cancel_btn.trigger("focus");
-        }
-        e.stopPropagation();
-        e.preventDefault();
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {

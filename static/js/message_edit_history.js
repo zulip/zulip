@@ -6,8 +6,12 @@ import render_message_history from "../templates/message_history.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
+import * as rows from "./rows";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
@@ -81,6 +85,33 @@ export function show_history(message) {
 }
 
 export function initialize() {
+    $("body").on("mouseenter", ".message_edit_notice", (e) => {
+        if (page_params.realm_allow_edit_history) {
+            $(e.currentTarget).addClass("message_edit_notice_hover");
+        }
+    });
+
+    $("body").on("mouseleave", ".message_edit_notice", (e) => {
+        if (page_params.realm_allow_edit_history) {
+            $(e.currentTarget).removeClass("message_edit_notice_hover");
+        }
+    });
+
+    $("body").on("click", ".message_edit_notice", (e) => {
+        popovers.hide_all();
+        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
+        const message_history_cancel_btn = $("#message-history-cancel");
+
+        if (page_params.realm_allow_edit_history) {
+            show_history(message);
+            message_history_cancel_btn.trigger("focus");
+        }
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     // TODO: Migrate this modal to be rendered when
     // opened rather than once at startup.
     const rendered_message_history = render_message_history();
