@@ -7229,6 +7229,8 @@ paths:
         `PATCH {{ api_url }}/v1/realm/filters/{filter_id}`
 
         **Changes**: New in Zulip 4.0 (feature level 57).
+
+        **Changes**: New in Zulip 5.0 (feature level 76).
       parameters:
         - name: filter_id
           in: path
@@ -7240,6 +7242,7 @@ paths:
           required: true
         - $ref: "#/components/parameters/LinkifierPattern"
         - $ref: "#/components/parameters/LinkifierURLFormatString"
+        - $ref: "#/components/parameters/LinkiferRenderFormatString"
       responses:
         "200":
           description: Success.

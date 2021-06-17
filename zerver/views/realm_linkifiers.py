@@ -55,6 +55,7 @@ def update_linkifier(
     filter_id: int,
     pattern: str = REQ(),
     url_format_string: str = REQ(),
+    render_format_string: str = REQ(default=""),
 ) -> HttpResponse:
     try:
         do_update_linkifier(
@@ -62,6 +63,7 @@ def update_linkifier(
             id=filter_id,
             pattern=pattern,
             url_format_string=url_format_string,
+            render_format_string=render_format_string,
         )
         return json_success()
     except RealmFilter.DoesNotExist:

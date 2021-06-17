@@ -242,3 +242,11 @@ class RealmFilterTest(ZulipTestCase):
         data["url_format_string"] = "https://realm.com/my_realm_filter/%(id)s"
         result = self.client_patch(f"/json/realm/filters/{linkifier_id + 1}", info=data)
         self.assert_json_error(result, "Linkifier not found.")
+
+        data["render_format_string"] = "ticket-%(id)s"
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+
+        data["render_format_string"] = "$foobar"
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_error(result, "Invalid render format string.")
