@@ -1,7 +1,7 @@
 from django.conf.urls import include
 from django.urls import path
 
-from analytics.views import (
+from analytics.views.legacy import (
     get_activity,
     get_chart_data,
     get_chart_data_for_installation,
