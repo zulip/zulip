@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from html import escape
 from typing import Any, Dict, List, Optional, Sequence
@@ -5,6 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence
 import pytz
 from django.conf import settings
 from django.db import connection
+from django.db.models.query import QuerySet
 from django.template import loader
 from django.urls import reverse
 from jinja2 import Markup as mark_safe
@@ -59,7 +61,7 @@ def user_activity_link(email: str) -> mark_safe:
 
 
 def realm_activity_link(realm_str: str) -> mark_safe:
-    from analytics.views.legacy import get_realm_activity
+    from analytics.views.realm_activity import get_realm_activity
 
     url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
     realm_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
@@ -80,3 +82,57 @@ def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
     stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(hostname)}</a>'
     return mark_safe(stats_link)
+
+
+def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
+    #: `Any` used above should be `Union(int, datetime)`.
+    #: However current version of `Union` does not work inside other function.
+    #: We could use something like:
+    # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
+    #: but that would require this long `Union` to carry on throughout inner functions.
+    summary: Dict[str, Dict[str, Any]] = {}
+
+    def update(action: str, record: QuerySet) -> None:
+        if action not in summary:
+            summary[action] = dict(
+                count=record.count,
+                last_visit=record.last_visit,
+            )
+        else:
+            summary[action]["count"] += record.count
+            summary[action]["last_visit"] = max(
+                summary[action]["last_visit"],
+                record.last_visit,
+            )
+
+    if records:
+        summary["name"] = records[0].user_profile.full_name
+
+    for record in records:
+        client = record.client.name
+        query = record.query
+
+        update("use", record)
+
+        if client == "API":
+            m = re.match("/api/.*/external/(.*)", query)
+            if m:
+                client = m.group(1)
+                update(client, record)
+
+        if client.startswith("desktop"):
+            update("desktop", record)
+        if client == "website":
+            update("website", record)
+        if ("send_message" in query) or re.search("/api/.*/external/.*", query):
+            update("send", record)
+        if query in [
+            "/json/update_pointer",
+            "/json/users/me/pointer",
+            "/api/v1/update_pointer",
+            "update_pointer_backend",
+        ]:
+            update("pointer", record)
+        update(client, record)
+
+    return summary
