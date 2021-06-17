@@ -973,7 +973,7 @@ class RealmFilter(models.Model):
         # this regex will incorrectly reject patterns that attempt to
         # escape % using %%.
         found_group_set: Set[str] = set()
-        group_match_regex = r"%\((?P<group_name>[^()]+)\)s"
+        group_match_regex = r"(?<!%)%\((?P<group_name>[^()]+)\)s"
         for m in re.finditer(group_match_regex, self.url_format_string):
             group_name = m.group("group_name")
             found_group_set.add(group_name)
