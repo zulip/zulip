@@ -53,7 +53,7 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
 
 
 def user_activity_link(email: str) -> mark_safe:
-    from analytics.views.legacy import get_user_activity
+    from analytics.views.user_activity import get_user_activity
 
     url = reverse(get_user_activity, kwargs=dict(email=email))
     email_link = f'<a href="{escape(url)}">{escape(email)}</a>'
