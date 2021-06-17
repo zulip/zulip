@@ -250,7 +250,7 @@ class TestSupportEndpoint(ZulipTestCase):
         check_lear_realm_query_result(result)
 
         with mock.patch(
-            "analytics.views.legacy.timezone_now",
+            "analytics.views.support.timezone_now",
             return_value=timezone_now() - timedelta(minutes=50),
         ):
             self.client_post("/accounts/home/", {"email": self.nonreg_email("test")})
@@ -289,7 +289,7 @@ class TestSupportEndpoint(ZulipTestCase):
             check_realm_reactivation_link_query_result(result)
             check_zulip_realm_query_result(result)
 
-    @mock.patch("analytics.views.legacy.update_billing_method_of_current_plan")
+    @mock.patch("analytics.views.support.update_billing_method_of_current_plan")
     def test_change_billing_method(self, m: mock.Mock) -> None:
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
@@ -335,7 +335,7 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch("analytics.views.legacy.do_change_plan_type") as m:
+        with mock.patch("analytics.views.support.do_change_plan_type") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "2"}
             )
@@ -358,7 +358,7 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login("iago")
 
-        with mock.patch("analytics.views.legacy.attach_discount_to_realm") as m:
+        with mock.patch("analytics.views.support.attach_discount_to_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "discount": "25"}
             )
@@ -446,14 +446,14 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        with mock.patch("analytics.views.legacy.do_deactivate_realm") as m:
+        with mock.patch("analytics.views.support.do_deactivate_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"}
             )
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["lear deactivated"], result)
 
-        with mock.patch("analytics.views.legacy.do_send_realm_reactivation_email") as m:
+        with mock.patch("analytics.views.support.do_send_realm_reactivation_email") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "active"}
             )
@@ -518,7 +518,7 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch("analytics.views.legacy.downgrade_at_the_end_of_billing_cycle") as m:
+        with mock.patch("analytics.views.support.downgrade_at_the_end_of_billing_cycle") as m:
             result = self.client_post(
                 "/activity/support",
                 {
@@ -532,7 +532,7 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
         with mock.patch(
-            "analytics.views.legacy.downgrade_now_without_creating_additional_invoices"
+            "analytics.views.support.downgrade_now_without_creating_additional_invoices"
         ) as m:
             result = self.client_post(
                 "/activity/support",
@@ -547,9 +547,9 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
         with mock.patch(
-            "analytics.views.legacy.downgrade_now_without_creating_additional_invoices"
+            "analytics.views.support.downgrade_now_without_creating_additional_invoices"
         ) as m1:
-            with mock.patch("analytics.views.legacy.void_all_open_invoices", return_value=1) as m2:
+            with mock.patch("analytics.views.support.void_all_open_invoices", return_value=1) as m2:
                 result = self.client_post(
                     "/activity/support",
                     {
@@ -576,14 +576,14 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        with mock.patch("analytics.views.legacy.do_scrub_realm") as m:
+        with mock.patch("analytics.views.support.do_scrub_realm") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "scrub_realm"}
             )
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["lear scrubbed"], result)
 
-        with mock.patch("analytics.views.legacy.do_scrub_realm") as m:
+        with mock.patch("analytics.views.support.do_scrub_realm") as m:
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             self.assert_json_error(result, "Invalid parameters")
             m.assert_not_called()
