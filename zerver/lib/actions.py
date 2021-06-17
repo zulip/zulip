@@ -96,7 +96,7 @@ from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
-from zerver.lib.markdown import topic_links
+from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
 from zerver.lib.message import (
@@ -1413,10 +1413,10 @@ def render_incoming_message(
     realm: Realm,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
-) -> str:
+) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
-        rendered_content = render_markdown(
+        rendering_result = render_markdown(
             message=message,
             content=content,
             realm=realm,
@@ -1426,7 +1426,7 @@ def render_incoming_message(
         )
     except MarkdownRenderingException:
         raise JsonableError(_("Unable to render message"))
-    return rendered_content
+    return rendering_result
 
 
 class RecipientInfoResult(TypedDict):
@@ -1780,7 +1780,7 @@ def build_message_send_dict(
     # Render our message_dicts.
     assert message.rendered_content is None
 
-    rendered_content = render_incoming_message(
+    rendering_result = render_incoming_message(
         message,
         message.content,
         info["active_user_ids"],
@@ -1788,20 +1788,20 @@ def build_message_send_dict(
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
-    message.rendered_content = rendered_content
+    message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
-    links_for_embed = message.links_for_preview
+    links_for_embed = rendering_result.links_for_preview
 
     # Add members of the mentioned user groups into `mentions_user_ids`.
-    for group_id in message.mentions_user_group_ids:
+    for group_id in rendering_result.mentions_user_group_ids:
         members = mention_data.get_group_members(group_id)
-        message.mentions_user_ids.update(members)
+        rendering_result.mentions_user_ids.update(members)
 
     # Only send data to Tornado about wildcard mentions if message
     # rendering determined the message had an actual wildcard
     # mention in it (and not e.g. wildcard mention syntax inside a
     # code block).
-    if message.mentions_wildcard:
+    if rendering_result.mentions_wildcard:
         wildcard_mention_user_ids = info["wildcard_mention_user_ids"]
     else:
         wildcard_mention_user_ids = set()
@@ -1812,7 +1812,7 @@ def build_message_send_dict(
     who were directly mentioned in this message as eligible to
     get UserMessage rows.
     """
-    mentioned_user_ids = message.mentions_user_ids
+    mentioned_user_ids = rendering_result.mentions_user_ids
     default_bot_user_ids = info["default_bot_user_ids"]
     mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
     info["um_eligible_user_ids"] |= mentioned_bot_user_ids
@@ -1824,6 +1824,7 @@ def build_message_send_dict(
         realm=realm,
         mention_data=mention_data,
         message=message,
+        rendering_result=rendering_result,
         active_user_ids=info["active_user_ids"],
         online_push_user_ids=info["online_push_user_ids"],
         stream_push_user_ids=info["stream_push_user_ids"],
@@ -1866,7 +1867,7 @@ def do_send_messages(
         # Claim attachments in message
         for send_request in send_message_requests:
             if do_claim_attachments(
-                send_request.message, send_request.message.potential_attachment_path_ids
+                send_request.message, send_request.rendering_result.potential_attachment_path_ids
             ):
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
@@ -1875,7 +1876,7 @@ def do_send_messages(
         for send_request in send_message_requests:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
-            mentioned_user_ids = send_request.message.mentions_user_ids
+            mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
             # Extend the set with users who have muted the sender.
             mark_as_read_for_users = send_request.muted_sender_user_ids
@@ -1883,6 +1884,7 @@ def do_send_messages(
 
             user_messages = create_user_messages(
                 message=send_request.message,
+                rendering_result=send_request.rendering_result,
                 um_eligible_user_ids=send_request.um_eligible_user_ids,
                 long_term_idle_user_ids=send_request.long_term_idle_user_ids,
                 stream_push_user_ids=send_request.stream_push_user_ids,
@@ -2068,6 +2070,7 @@ class UserMessageLite:
 
 def create_user_messages(
     message: Message,
+    rendering_result: MessageRenderingResult,
     um_eligible_user_ids: AbstractSet[int],
     long_term_idle_user_ids: AbstractSet[int],
     stream_push_user_ids: AbstractSet[int],
@@ -2077,12 +2080,12 @@ def create_user_messages(
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
-    ids_with_alert_words = message.user_ids_with_alert_words
+    ids_with_alert_words = rendering_result.user_ids_with_alert_words
     sender_id = message.sender.id
     is_stream_message = message.is_stream_message()
 
     base_flags = 0
-    if message.mentions_wildcard:
+    if rendering_result.mentions_wildcard:
         base_flags |= UserMessage.flags.wildcard_mentioned
     if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
         base_flags |= UserMessage.flags.is_private
@@ -2891,7 +2894,7 @@ def check_update_message(
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed"))
 
-    rendered_content = None
+    rendering_result = None
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
@@ -2911,14 +2914,14 @@ def check_update_message(
         # the cross-realm bots never edit messages, this should be
         # always correct.
         # Note: If rendering fails, the called code will raise a JsonableError.
-        rendered_content = render_incoming_message(
+        rendering_result = render_incoming_message(
             message,
             content,
             user_info["message_user_ids"],
             user_profile.realm,
             mention_data=mention_data,
         )
-        links_for_embed |= message.links_for_preview
+        links_for_embed |= rendering_result.links_for_preview
 
     new_stream = None
     number_changed = 0
@@ -2948,7 +2951,7 @@ def check_update_message(
         send_notification_to_old_thread,
         send_notification_to_new_thread,
         content,
-        rendered_content,
+        rendering_result,
         prior_mention_user_ids,
         mention_data,
     )
@@ -3254,7 +3257,7 @@ def check_message(
         email_gateway=email_gateway,
     )
 
-    if stream is not None and message_send_dict.message.mentions_wildcard:
+    if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
         if not wildcard_mention_allowed(sender, stream):
             raise JsonableError(
                 _("You do not have permission to use wildcard mentions in this stream.")
@@ -5758,10 +5761,12 @@ def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoR
     )
 
 
-def update_user_message_flags(message: Message, ums: Iterable[UserMessage]) -> None:
-    wildcard = message.mentions_wildcard
-    mentioned_ids = message.mentions_user_ids
-    ids_with_alert_words = message.user_ids_with_alert_words
+def update_user_message_flags(
+    rendering_result: MessageRenderingResult, ums: Iterable[UserMessage]
+) -> None:
+    wildcard = rendering_result.mentions_wildcard
+    mentioned_ids = rendering_result.mentions_user_ids
+    ids_with_alert_words = rendering_result.user_ids_with_alert_words
     changed_ums: Set[UserMessage] = set()
 
     def update_flag(um: UserMessage, should_set: bool, flag: int) -> None:
@@ -5810,16 +5815,17 @@ def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
     content: Optional[str],
-    rendered_content: Optional[str],
+    rendering_result: MessageRenderingResult,
 ) -> None:
     event: Dict[str, Any] = {"type": "update_message", "message_id": message.id}
     changed_messages = [message]
+    rendered_content: Optional[str] = None
 
     ums = UserMessage.objects.filter(message=message.id)
 
     if content is not None:
-        update_user_message_flags(message, ums)
-        message.content = content
+        update_user_message_flags(rendering_result, ums)
+        rendered_content = rendering_result.rendered_content
         message.rendered_content = rendered_content
         message.rendered_content_version = markdown_version
         event["content"] = content
@@ -5859,7 +5865,7 @@ def do_update_message(
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
     content: Optional[str],
-    rendered_content: Optional[str],
+    rendering_result: Optional[MessageRenderingResult],
     prior_mention_user_ids: Set[int],
     mention_data: Optional[MentionData] = None,
 ) -> int:
@@ -5902,17 +5908,17 @@ def do_update_message(
     ums = UserMessage.objects.filter(message=target_message.id)
 
     if content is not None:
-        assert rendered_content is not None
+        assert rendering_result is not None
 
         # mention_data is required if there's a content edit.
         assert mention_data is not None
 
         # add data from group mentions to mentions_user_ids.
-        for group_id in target_message.mentions_user_group_ids:
+        for group_id in rendering_result.mentions_user_group_ids:
             members = mention_data.get_group_members(group_id)
-            target_message.mentions_user_ids.update(members)
+            rendering_result.mentions_user_ids.update(members)
 
-        update_user_message_flags(target_message, ums)
+        update_user_message_flags(rendering_result, ums)
 
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
@@ -5930,16 +5936,20 @@ def do_update_message(
             "prev_rendered_content_version"
         ] = target_message.rendered_content_version
         target_message.content = content
-        target_message.rendered_content = rendered_content
+        target_message.rendered_content = rendering_result.rendered_content
         target_message.rendered_content_version = markdown_version
         event["content"] = content
-        event["rendered_content"] = rendered_content
+        event["rendered_content"] = rendering_result.rendered_content
         event["prev_rendered_content_version"] = target_message.rendered_content_version
-        event["is_me_message"] = Message.is_status_message(content, rendered_content)
+        event["is_me_message"] = Message.is_status_message(
+            content, rendering_result.rendered_content
+        )
 
         # target_message.has_image and target_message.has_link will have been
         # already updated by Markdown rendering in the caller.
-        target_message.has_attachment = check_attachment_reference_change(target_message)
+        target_message.has_attachment = check_attachment_reference_change(
+            target_message, rendering_result
+        )
 
         if target_message.is_stream_message():
             if topic_name is not None:
@@ -5968,7 +5978,7 @@ def do_update_message(
         event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
-        if target_message.mentions_wildcard:
+        if rendering_result.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
         else:
             event["wildcard_mention_user_ids"] = []
@@ -5976,7 +5986,7 @@ def do_update_message(
         do_update_mobile_push_notification(
             target_message,
             prior_mention_user_ids,
-            target_message.mentions_user_ids,
+            rendering_result.mentions_user_ids,
             info["stream_push_user_ids"],
         )
 
@@ -7360,12 +7370,14 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         attachment.delete()
 
 
-def check_attachment_reference_change(message: Message) -> bool:
+def check_attachment_reference_change(
+    message: Message, rendering_result: MessageRenderingResult
+) -> bool:
     # For a unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to
     # the new content.
     prev_attachments = {a.path_id for a in message.attachment_set.all()}
-    new_attachments = set(message.potential_attachment_path_ids)
+    new_attachments = set(rendering_result.potential_attachment_path_ids)
 
     if new_attachments == prev_attachments:
         return bool(prev_attachments)

@@ -89,6 +89,18 @@ class LinkInfo(TypedDict):
     remove: Optional[Element]
 
 
+@dataclass
+class MessageRenderingResult:
+    rendered_content: str
+    mentions_wildcard: bool
+    mentions_user_ids: Set[int]
+    mentions_user_group_ids: Set[int]
+    alert_words: Set[str]
+    links_for_preview: Set[str]
+    user_ids_with_alert_words: Set[int]
+    potential_attachment_path_ids: List[str]
+
+
 DbData = Dict[str, Any]
 
 # Format version of the Markdown rendering; stored along with rendered
@@ -1220,7 +1232,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if self.md.zulip_message:
             self.md.zulip_message.has_link = len(found_urls) > 0
             self.md.zulip_message.has_image = False  # This is updated in self.add_a
-            self.md.zulip_message.potential_attachment_path_ids = []
 
             for url in unique_urls:
                 # Due to rewrite_local_links_to_relative, we need to
@@ -1238,7 +1249,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     continue
 
                 path_id = parsed_url.path[len("/user_uploads/") :]
-                self.md.zulip_message.potential_attachment_path_ids.append(path_id)
+                self.md.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
         if len(found_urls) == 0:
             return
@@ -1321,7 +1332,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
             except NotFoundInCache:
-                self.md.zulip_message.links_for_preview.add(url)
+                self.md.zulip_rendering_result.links_for_preview.add(url)
                 continue
 
             if extracted_data:
@@ -1828,11 +1839,11 @@ class UserMentionPattern(CompiledInlineProcessor):
 
             if wildcard:
                 if not silent:
-                    self.md.zulip_message.mentions_wildcard = True
+                    self.md.zulip_rendering_result.mentions_wildcard = True
                 user_id = "*"
             elif user:
                 if not silent:
-                    self.md.zulip_message.mentions_user_ids.add(user["id"])
+                    self.md.zulip_rendering_result.mentions_user_ids.add(user["id"])
                 name = user["full_name"]
                 user_id = str(user["id"])
             else:
@@ -1864,7 +1875,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
                 if not silent:
-                    self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
+                    self.md.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1994,7 +2005,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             #
             # Our caller passes in the list of possible_words.  We
             # don't do any special rendering; we just append the alert words
-            # we find to the set self.md.zulip_message.alert_words.
+            # we find to the set self.md.zulip_rendering_result.user_ids_with_alert_words.
 
             realm_alert_words_automaton = db_data["realm_alert_words_automaton"]
 
@@ -2006,7 +2017,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
                     if self.check_valid_start_position(
                         content, end_index - len(original_value)
                     ) and self.check_valid_end_position(content, end_index + 1):
-                        self.md.zulip_message.user_ids_with_alert_words.update(user_ids)
+                        self.md.zulip_rendering_result.user_ids_with_alert_words.update(user_ids)
         return lines
 
 
@@ -2070,6 +2081,7 @@ class Markdown(markdown.Markdown):
     zulip_message: Optional[Message]
     zulip_realm: Optional[Realm]
     zulip_db_data: Optional[DbData]
+    zulip_rendering_result: Optional[MessageRenderingResult]
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
 
@@ -2387,7 +2399,7 @@ def do_convert(
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
-) -> str:
+) -> MessageRenderingResult:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -2420,7 +2432,19 @@ def do_convert(
     _md_engine.reset()
 
     # Filters such as UserMentionPattern need a message.
+    rendering_result: MessageRenderingResult = MessageRenderingResult(
+        rendered_content="",
+        mentions_wildcard=False,
+        mentions_user_ids=set(),
+        mentions_user_group_ids=set(),
+        alert_words=set(),
+        links_for_preview=set(),
+        user_ids_with_alert_words=set(),
+        potential_attachment_path_ids=[],
+    )
+
     _md_engine.zulip_message = message
+    _md_engine.zulip_rendering_result = rendering_result
     _md_engine.zulip_realm = message_realm
     _md_engine.zulip_db_data = None  # for now
     _md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
@@ -2464,17 +2488,17 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendered_content = timeout(5, lambda: _md_engine.convert(content))
+        rendering_result.rendered_content = timeout(5, lambda: _md_engine.convert(content))
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
         MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
-        if len(rendered_content) > MAX_MESSAGE_LENGTH * 100:
+        if len(rendering_result.rendered_content) > MAX_MESSAGE_LENGTH * 100:
             raise MarkdownRenderingException(
                 f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
             )
-        return rendered_content
+        return rendering_result
     except Exception:
         cleaned = privacy_clean_markdown(content)
         # NOTE: Don't change this message without also changing the
@@ -2532,7 +2556,7 @@ def markdown_convert(
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
-) -> str:
+) -> MessageRenderingResult:
     markdown_stats_start()
     ret = do_convert(
         content,

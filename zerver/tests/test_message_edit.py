@@ -951,7 +951,7 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_old_thread=False,
                 send_notification_to_new_thread=False,
                 content=None,
-                rendered_content=None,
+                rendering_result=None,
                 prior_mention_user_ids=set(),
                 mention_data=None,
             )
