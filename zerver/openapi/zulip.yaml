@@ -7098,6 +7098,8 @@ paths:
         **Changes**: New in Zulip 4.0 (feature level 54). On older versions,
         a similar `GET /realm/filters` endpoint was available with each entry in
         a `[pattern, url_format, id]` tuple format.
+
+        **Changes**: New in Zulip 5.0 (feature level 76).
       responses:
         "200":
           description: Success.
@@ -7128,6 +7130,11 @@ paths:
                               type: string
                               description: |
                                 The URL format string to be used for linkifying matches.
+                            render_format:
+                              type: string
+                              description: |
+                                The Render format string is an optional parameter used to set
+                                the rendered text of the linkifier pattern.
                             id:
                               type: integer
                               description: |
@@ -7140,6 +7147,7 @@ paths:
                             {
                               "pattern": "#(?P<id>[0-9]+)",
                               "url_format": "https://github.com/zulip/zulip/issues/%(id)s",
+                              "render_format": "ticket-%(id)s",
                               "id": 1,
                             },
                           ],
