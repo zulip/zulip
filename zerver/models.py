@@ -981,7 +981,7 @@ class RealmFilter(models.Model):
         # Report patterns missing in linkifier pattern.
         missing_in_pattern_set = found_group_set - group_set
         if len(missing_in_pattern_set) > 0:
-            name = list(missing_in_pattern_set)[0]
+            name = list(sorted(missing_in_pattern_set))[0]
             raise ValidationError(
                 _("Group %(name)r in URL format string is not present in linkifier pattern."),
                 params={"name": name},
@@ -993,7 +993,7 @@ class RealmFilter(models.Model):
             # We just report the first missing pattern here. Users can
             # incrementally resolve errors if there are multiple
             # missing patterns.
-            name = list(missing_in_url_set)[0]
+            name = list(sorted(missing_in_url_set))[0]
             raise ValidationError(
                 _("Group %(name)r in linkifier pattern is not present in URL format string."),
                 params={"name": name},
