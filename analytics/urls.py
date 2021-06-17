@@ -1,21 +1,18 @@
 from django.conf.urls import include
 from django.urls import path
 
-from analytics.views.legacy import (
-    get_activity,
+from analytics.views.legacy import get_activity, get_realm_activity, get_user_activity, support
+from analytics.views.stats import (
     get_chart_data,
     get_chart_data_for_installation,
     get_chart_data_for_realm,
     get_chart_data_for_remote_installation,
     get_chart_data_for_remote_realm,
-    get_realm_activity,
-    get_user_activity,
     stats,
     stats_for_installation,
     stats_for_realm,
     stats_for_remote_installation,
     stats_for_remote_realm,
-    support,
 )
 from zerver.lib.rest import rest_path
 

@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import FillState, RealmCount, UserCount
-from analytics.views.legacy import rewrite_client_arrays, sort_by_totals, sort_client_labels
+from analytics.views.stats import rewrite_client_arrays, sort_by_totals, sort_client_labels
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
 from zerver.models import Client, get_realm
