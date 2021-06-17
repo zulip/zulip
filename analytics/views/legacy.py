@@ -1,14 +1,13 @@
 import itertools
-import re
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from django.conf import settings
 from django.db import connection
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
@@ -19,11 +18,11 @@ from analytics.lib.counts import COUNT_STATS
 from analytics.views.activity_common import (
     dictfetchall,
     format_date_for_activity_reports,
+    get_user_activity_summary,
     make_table,
     realm_activity_link,
     realm_stats_link,
     remote_installation_stats_link,
-    user_activity_link,
 )
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
@@ -356,76 +355,6 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
     return content, realm_minutes
 
 
-def sent_messages_report(realm: str) -> str:
-    title = "Recently sent messages for " + realm
-
-    cols = [
-        "Date",
-        "Humans",
-        "Bots",
-    ]
-
-    query = SQL(
-        """
-        select
-            series.day::date,
-            humans.cnt,
-            bots.cnt
-        from (
-            select generate_series(
-                (now()::date - interval '2 week'),
-                now()::date,
-                interval '1 day'
-            ) as day
-        ) as series
-        left join (
-            select
-                date_sent::date date_sent,
-                count(*) cnt
-            from zerver_message m
-            join zerver_userprofile up on up.id = m.sender_id
-            join zerver_realm r on r.id = up.realm_id
-            where
-                r.string_id = %s
-            and
-                (not up.is_bot)
-            and
-                date_sent > now() - interval '2 week'
-            group by
-                date_sent::date
-            order by
-                date_sent::date
-        ) humans on
-            series.day = humans.date_sent
-        left join (
-            select
-                date_sent::date date_sent,
-                count(*) cnt
-            from zerver_message m
-            join zerver_userprofile up on up.id = m.sender_id
-            join zerver_realm r on r.id = up.realm_id
-            where
-                r.string_id = %s
-            and
-                up.is_bot
-            and
-                date_sent > now() - interval '2 week'
-            group by
-                date_sent::date
-            order by
-                date_sent::date
-        ) bots on
-            series.day = bots.date_sent
-    """
-    )
-    cursor = connection.cursor()
-    cursor.execute(query, [realm, realm])
-    rows = cursor.fetchall()
-    cursor.close()
-
-    return make_table(title, cols, rows)
-
-
 def ad_hoc_queries() -> List[Dict[str, str]]:
     def get_page(
         query: Composable, cols: Sequence[str], title: str, totals_columns: Sequence[int] = []
@@ -687,26 +616,6 @@ def get_activity(request: HttpRequest) -> HttpResponse:
     )
 
 
-def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
-    fields = [
-        "user_profile__full_name",
-        "user_profile__delivery_email",
-        "query",
-        "client__name",
-        "count",
-        "last_visit",
-    ]
-
-    records = UserActivity.objects.filter(
-        user_profile__realm__string_id=realm,
-        user_profile__is_active=True,
-        user_profile__is_bot=is_bot,
-    )
-    records = records.order_by("user_profile__delivery_email", "-last_visit")
-    records = records.select_related("user_profile", "client").only(*fields)
-    return records
-
-
 def get_user_activity_records_for_email(email: str) -> List[QuerySet]:
     fields = [
         "user_profile__full_name",
@@ -745,105 +654,6 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
     return make_table(title, cols, rows)
 
 
-def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
-    #: `Any` used above should be `Union(int, datetime)`.
-    #: However current version of `Union` does not work inside other function.
-    #: We could use something like:
-    # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
-    #: but that would require this long `Union` to carry on throughout inner functions.
-    summary: Dict[str, Dict[str, Any]] = {}
-
-    def update(action: str, record: QuerySet) -> None:
-        if action not in summary:
-            summary[action] = dict(
-                count=record.count,
-                last_visit=record.last_visit,
-            )
-        else:
-            summary[action]["count"] += record.count
-            summary[action]["last_visit"] = max(
-                summary[action]["last_visit"],
-                record.last_visit,
-            )
-
-    if records:
-        summary["name"] = records[0].user_profile.full_name
-
-    for record in records:
-        client = record.client.name
-        query = record.query
-
-        update("use", record)
-
-        if client == "API":
-            m = re.match("/api/.*/external/(.*)", query)
-            if m:
-                client = m.group(1)
-                update(client, record)
-
-        if client.startswith("desktop"):
-            update("desktop", record)
-        if client == "website":
-            update("website", record)
-        if ("send_message" in query) or re.search("/api/.*/external/.*", query):
-            update("send", record)
-        if query in [
-            "/json/update_pointer",
-            "/json/users/me/pointer",
-            "/api/v1/update_pointer",
-            "update_pointer_backend",
-        ]:
-            update("pointer", record)
-        update(client, record)
-
-    return summary
-
-
-def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
-    exclude_keys = [
-        "internal",
-        "name",
-        "use",
-        "send",
-        "pointer",
-        "website",
-        "desktop",
-    ]
-
-    rows = []
-    for email, user_summary in user_summaries.items():
-        email_link = user_activity_link(email)
-        name = user_summary["name"]
-        for k, v in user_summary.items():
-            if k in exclude_keys:
-                continue
-            client = k
-            count = v["count"]
-            last_visit = v["last_visit"]
-            row = [
-                format_date_for_activity_reports(last_visit),
-                client,
-                name,
-                email_link,
-                count,
-            ]
-            rows.append(row)
-
-    rows = sorted(rows, key=lambda r: r[0], reverse=True)
-
-    cols = [
-        "Last visit",
-        "Client",
-        "Name",
-        "Email",
-        "Count",
-    ]
-
-    title = "Clients"
-
-    return make_table(title, cols, rows)
-
-
 def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
     rows = []
     for k, v in user_summary.items():
@@ -869,110 +679,6 @@ def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
 
     title = "User activity"
     return make_table(title, cols, rows)
-
-
-def realm_user_summary_table(
-    all_records: List[QuerySet], admin_emails: Set[str]
-) -> Tuple[Dict[str, Dict[str, Any]], str]:
-    user_records = {}
-
-    def by_email(record: QuerySet) -> str:
-        return record.user_profile.delivery_email
-
-    for email, records in itertools.groupby(all_records, by_email):
-        user_records[email] = get_user_activity_summary(list(records))
-
-    def get_last_visit(user_summary: Dict[str, Dict[str, datetime]], k: str) -> Optional[datetime]:
-        if k in user_summary:
-            return user_summary[k]["last_visit"]
-        else:
-            return None
-
-    def get_count(user_summary: Dict[str, Dict[str, str]], k: str) -> str:
-        if k in user_summary:
-            return user_summary[k]["count"]
-        else:
-            return ""
-
-    def is_recent(val: Optional[datetime]) -> bool:
-        age = timezone_now() - val
-        return age.total_seconds() < 5 * 60
-
-    rows = []
-    for email, user_summary in user_records.items():
-        email_link = user_activity_link(email)
-        sent_count = get_count(user_summary, "send")
-        cells = [user_summary["name"], email_link, sent_count]
-        row_class = ""
-        for field in ["use", "send", "pointer", "desktop", "ZulipiOS", "Android"]:
-            visit = get_last_visit(user_summary, field)
-            if field == "use":
-                if visit and is_recent(visit):
-                    row_class += " recently_active"
-                if email in admin_emails:
-                    row_class += " admin"
-            val = format_date_for_activity_reports(visit)
-            cells.append(val)
-        row = dict(cells=cells, row_class=row_class)
-        rows.append(row)
-
-    def by_used_time(row: Dict[str, Any]) -> str:
-        return row["cells"][3]
-
-    rows = sorted(rows, key=by_used_time, reverse=True)
-
-    cols = [
-        "Name",
-        "Email",
-        "Total sent",
-        "Heard from",
-        "Message sent",
-        "Pointer motion",
-        "Desktop",
-        "ZulipiOS",
-        "Android",
-    ]
-
-    title = "Summary"
-
-    content = make_table(title, cols, rows, has_row_class=True)
-    return user_records, content
-
-
-@require_server_admin
-def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
-    data: List[Tuple[str, str]] = []
-    all_user_records: Dict[str, Any] = {}
-
-    try:
-        admins = Realm.objects.get(string_id=realm_str).get_human_admin_users()
-    except Realm.DoesNotExist:
-        return HttpResponseNotFound()
-
-    admin_emails = {admin.delivery_email for admin in admins}
-
-    for is_bot, page_title in [(False, "Humans"), (True, "Bots")]:
-        all_records = list(get_user_activity_records_for_realm(realm_str, is_bot))
-
-        user_records, content = realm_user_summary_table(all_records, admin_emails)
-        all_user_records.update(user_records)
-
-        data += [(page_title, content)]
-
-    page_title = "Clients"
-    content = realm_client_table(all_user_records)
-    data += [(page_title, content)]
-
-    page_title = "History"
-    content = sent_messages_report(realm_str)
-    data += [(page_title, content)]
-
-    title = realm_str
-    return render(
-        request,
-        "analytics/activity.html",
-        context=dict(data=data, realm_link=None, title=title),
-    )
 
 
 @require_server_admin
