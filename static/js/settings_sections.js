@@ -38,6 +38,10 @@ export function get_group(section) {
         case "deactivated-users-admin":
             return "org_users";
 
+        case "profile":
+        case "account-and-privacy":
+            return "your-account";
+
         default:
             return section;
     }

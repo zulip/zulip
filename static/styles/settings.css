@@ -62,7 +62,8 @@ h3 .fa-question-circle-o {
             text-align: left;
         }
     }
-    #account-settings {
+    #account-settings,
+    #profile-field-settings {
         .grid {
             label {
                 min-width: 120px;
@@ -108,8 +109,7 @@ h3 .fa-question-circle-o {
 }
 
 #change_password_modal,
-#change_email_modal,
-#change_full_name_modal {
+#change_email_modal {
     max-width: 480px;
 }
 
@@ -587,12 +587,14 @@ input[type="checkbox"] {
     }
 }
 
-#account-settings {
-    .custom-profile-fields-form .custom_user_field label {
+#profile-settings {
+    .custom-profile-fields-form .custom_user_field label,
+    .full-name-change-form label {
         min-width: fit-content;
     }
 
-    .alert-notification.custom-field-status {
+    .alert-notification.custom-field-status,
+    .alert-notification.full-name-status {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
@@ -1511,7 +1513,6 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_full_name_modal .change_full_name_info,
     #change_email_modal .change_email_info,
     #change_password_modal .change_password_info,
     #api_key_modal #api_key_status {
@@ -1519,7 +1520,7 @@ input[type="checkbox"] {
     }
 }
 
-#account-settings,
+#profile-settings,
 #edit-user-form {
     .user-role button {
         cursor: default;

@@ -27,7 +27,7 @@ async function open_settings(page: Page): Promise<void> {
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
-    await page.waitForSelector("#settings_content .account-settings-form", {visible: true});
+    await page.waitForSelector("#settings_content .profile-settings-form", {visible: true});
     const page_url = await common.page_url_with_fragment(page);
     assert.ok(
         page_url.includes("/#settings/"),
@@ -36,23 +36,18 @@ async function open_settings(page: Page): Promise<void> {
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
-    await page.click("#change_full_name");
-
-    const change_full_name_button_selector = "#change_full_name_button";
-    await page.waitForSelector(change_full_name_button_selector, {visible: true});
+    await page.click("#full_name");
 
     const full_name_input_selector = 'input[name="full_name"]';
-    await page.$eval(full_name_input_selector, (el) => {
-        (el as HTMLInputElement).value = "";
-    });
-    await page.waitForFunction(() => $(":focus").attr("id") === "change_full_name_modal");
-    await page.type(full_name_input_selector, "New name");
-    await page.click(change_full_name_button_selector);
-    await page.waitForFunction(() => $("#change_full_name").text().trim() === "New name");
-    await common.wait_for_modal_to_close(page);
+    await common.clear_and_type(page, full_name_input_selector, "New name");
+
+    await page.click("#settings_content .profile-settings-form");
+    await page.waitForSelector(".full-name-change-form .alert-success", {visible: true});
+    await page.waitForFunction(() => $("#full_name").val() === "New name");
 }
 
 async function test_change_password(page: Page): Promise<void> {
+    await page.click('[data-section="account-and-privacy"]');
     await page.click("#change_password");
 
     const change_password_button_selector = "#change_password_button";

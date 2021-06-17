@@ -12,7 +12,7 @@ export function get_hash_category(hash) {
 }
 
 export function get_hash_section(hash) {
-    // given "#settings/your-account", returns "your-account"
+    // given "#settings/profile", returns "profile"
     // given '#streams/5/social", returns "5"
     if (!hash) {
         return "";

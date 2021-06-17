@@ -36,15 +36,10 @@ export function update_email(new_email) {
 }
 
 export function update_full_name(new_full_name) {
-    const full_name_field = $("#full_name_value");
-    if (full_name_field) {
-        full_name_field.text(new_full_name);
-    }
-
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
-    const full_name_input = $(".full_name_change_container input[name='full_name']");
+    const full_name_input = $(".full-name-change-form input[name='full_name']");
     if (full_name_input) {
         full_name_input.val(new_full_name);
     }
@@ -279,13 +274,8 @@ export function add_custom_profile_fields_to_settings() {
         return;
     }
 
-    const element_id = "#account-settings .custom-profile-fields-form";
+    const element_id = "#profile-settings .custom-profile-fields-form";
     $(element_id).html("");
-    if (page_params.custom_profile_fields.length > 0) {
-        $("#account-settings #custom-field-header").show();
-    } else {
-        $("#account-settings #custom-field-header").hide();
-    }
 
     append_custom_profile_fields(element_id, people.my_current_user_id());
     initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
@@ -403,15 +393,6 @@ export function set_up() {
 
     clear_password_change();
 
-    $("#change_full_name").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (settings_data.user_can_change_name()) {
-            $("#change_full_name_modal").find("input[name='full_name']").val(page_params.full_name);
-            overlays.open_modal("#change_full_name_modal");
-        }
-    });
-
     $("#change_password").on("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -487,28 +468,18 @@ export function set_up() {
         password_quality?.(field.val(), $("#pw_strength .bar"), field);
     });
 
-    $("#change_full_name_button").on("click", (e) => {
+    $("#full_name").on("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_full_name_error = $("#change_full_name_modal")
-            .find(".change_full_name_info")
-            .expectOne();
         const data = {};
 
-        data.full_name = $(".full_name_change_container").find("input[name='full_name']").val();
+        data.full_name = $("#full_name").val();
 
-        const opts = {
-            success_continuation() {
-                overlays.close_modal("#change_full_name_modal");
-            },
-            error_msg_element: change_full_name_error,
-        };
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",
             data,
-            $("#account-settings-status").expectOne(),
-            opts,
+            $(".full-name-status").expectOne(),
         );
     });
 
@@ -556,7 +527,7 @@ export function set_up() {
         }
     });
 
-    $("#account-settings").on("click", ".custom_user_field .remove_date", (e) => {
+    $("#profile-settings").on("click", ".custom_user_field .remove_date", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const field = $(e.target).closest(".custom_user_field").expectOne();
@@ -564,7 +535,7 @@ export function set_up() {
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
-    $("#account-settings").on("change", ".custom_user_field_value", function (e) {
+    $("#profile-settings").on("change", ".custom_user_field_value", function (e) {
         const fields = [];
         const value = $(this).val();
         const field_id = Number.parseInt(

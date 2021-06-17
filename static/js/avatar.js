@@ -95,7 +95,7 @@ export function build_user_avatar_widget(upload_function) {
                 },
             });
         }
-        const modal_parent = $("#account-settings");
+        const modal_parent = $("#profile-settings");
 
         const html_body = render_confirm_delete_user_avatar();
 
