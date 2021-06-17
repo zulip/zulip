@@ -261,7 +261,9 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
+    assert_same({hours: -12}, $t({defaultMessage: "12 hours ago"}));
+
+    assert_same({hours: -20}, $t({defaultMessage: "Yesterday"}));
 
     assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 

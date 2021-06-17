@@ -81,7 +81,7 @@ export function last_seen_status_from_date(last_active_date, current_date = new 
     const days_old = differenceInCalendarDays(current_date, last_active_date);
     const hours = Math.floor(minutes / 60);
 
-    if (hours < 24) {
+    if (hours <= 12) {
         if (hours === 1) {
             return $t({defaultMessage: "An hour ago"});
         }
