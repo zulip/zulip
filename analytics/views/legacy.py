@@ -3,23 +3,28 @@ import re
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
-from html import escape
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
 
-import pytz
 from django.conf import settings
 from django.db import connection
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.template import loader
-from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from jinja2 import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS
-from analytics.views.stats import stats_for_realm, stats_for_remote_installation
+from analytics.views.activity_common import (
+    dictfetchall,
+    format_date_for_activity_reports,
+    make_table,
+    realm_activity_link,
+    realm_stats_link,
+    remote_installation_stats_link,
+    user_activity_link,
+)
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
@@ -31,36 +36,6 @@ if settings.BILLING_ENABLED:
         estimate_annual_recurring_revenue_by_realm,
         get_realms_to_default_discount_dict,
     )
-
-
-eastern_tz = pytz.timezone("US/Eastern")
-
-
-def make_table(
-    title: str, cols: Sequence[str], rows: Sequence[Any], has_row_class: bool = False
-) -> str:
-
-    if not has_row_class:
-
-        def fix_row(row: Any) -> Dict[str, Any]:
-            return dict(cells=row, row_class=None)
-
-        rows = list(map(fix_row, rows))
-
-    data = dict(title=title, cols=cols, rows=rows)
-
-    content = loader.render_to_string(
-        "analytics/ad_hoc_query.html",
-        dict(data=data),
-    )
-
-    return content
-
-
-def dictfetchall(cursor: connection.cursor) -> List[Dict[str, Any]]:
-    "Returns all rows from a cursor as a dict"
-    desc = cursor.description
-    return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
 
 
 def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
@@ -822,37 +797,6 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
         update(client, record)
 
     return summary
-
-
-def format_date_for_activity_reports(date: Optional[datetime]) -> str:
-    if date:
-        return date.astimezone(eastern_tz).strftime("%Y-%m-%d %H:%M")
-    else:
-        return ""
-
-
-def user_activity_link(email: str) -> mark_safe:
-    url = reverse(get_user_activity, kwargs=dict(email=email))
-    email_link = f'<a href="{escape(url)}">{escape(email)}</a>'
-    return mark_safe(email_link)
-
-
-def realm_activity_link(realm_str: str) -> mark_safe:
-    url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
-    realm_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
-    return mark_safe(realm_link)
-
-
-def realm_stats_link(realm_str: str) -> mark_safe:
-    url = reverse(stats_for_realm, kwargs=dict(realm_str=realm_str))
-    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(realm_str)}</a>'
-    return mark_safe(stats_link)
-
-
-def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
-    url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
-    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(hostname)}</a>'
-    return mark_safe(stats_link)
 
 
 def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
