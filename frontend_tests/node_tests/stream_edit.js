@@ -172,7 +172,7 @@ test_ui("subscriber_pills", ({override}) => {
             query: "me",
         };
         const fake_group_this = {
-            query: "test",
+            query: "@test",
         };
 
         (function test_highlighter() {

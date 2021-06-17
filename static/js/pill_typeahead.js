@@ -27,7 +27,7 @@ export function set_up(input, pills, opts) {
         return;
     }
     const include_streams = (query) => opts.stream && query.trim().startsWith("#");
-    const include_user_groups = opts.user_group;
+    const include_user_groups = (query) => opts.user_group && query.trim().startsWith("@");
     const include_users = opts.user;
 
     input.typeahead({
@@ -43,8 +43,8 @@ export function set_up(input, pills, opts) {
                 return stream_pill.typeahead_source(pills);
             }
 
-            if (include_user_groups) {
-                source = source.concat(user_group_pill.typeahead_source(pills));
+            if (include_user_groups(this.query)) {
+                return user_group_pill.typeahead_source(pills);
             }
 
             if (include_users) {
@@ -64,7 +64,7 @@ export function set_up(input, pills, opts) {
                 return typeahead_helper.render_stream(item);
             }
 
-            if (include_user_groups && user_groups.is_user_group(item)) {
+            if (include_user_groups(this.query) && user_groups.is_user_group(item)) {
                 return typeahead_helper.render_user_group(item);
             }
 
@@ -84,8 +84,9 @@ export function set_up(input, pills, opts) {
             }
 
             let matches = false;
-            if (include_user_groups) {
-                matches = matches || group_matcher(query, item);
+            if (include_user_groups(this.query)) {
+                query = query.trim().slice(1);
+                return group_matcher(query, item);
             }
 
             if (include_users) {
@@ -104,8 +105,8 @@ export function set_up(input, pills, opts) {
                 users = matches.filter((ele) => people.is_known_user(ele));
             }
 
-            let groups;
-            if (include_user_groups) {
+            let groups = [];
+            if (include_user_groups(query)) {
                 groups = matches.filter((ele) => user_groups.is_user_group(ele));
             }
             return typeahead_helper.sort_recipients({
@@ -120,7 +121,7 @@ export function set_up(input, pills, opts) {
         updater(item) {
             if (include_streams(this.query)) {
                 stream_pill.append_stream(item, pills);
-            } else if (include_user_groups && user_groups.is_user_group(item)) {
+            } else if (include_user_groups(this.query) && user_groups.is_user_group(item)) {
                 user_group_pill.append_user_group(item, pills);
             } else if (include_users && people.is_known_user(item)) {
                 user_pill.append_user(item, pills);
