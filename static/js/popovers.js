@@ -433,7 +433,7 @@ export function show_user_profile(user) {
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.name !== undefined);
-    const user_streams = stream_data.subscribed_subs();
+    const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         full_name: user.full_name,

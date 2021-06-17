@@ -11,6 +11,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
@@ -21,6 +22,12 @@ const me = {
     email: "me@zulip.com",
     full_name: "Current User",
     user_id: 100,
+};
+
+const test_user = {
+    email: "test@zulip.com",
+    full_name: "Test User",
+    user_id: 101,
 };
 
 // set up user data
@@ -126,6 +133,54 @@ test("basics", () => {
 
     assert.equal(stream_data.slug_to_name("99-whatever"), "99-whatever");
     assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
+});
+
+test("get_subscribed_streams_for_user", () => {
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+        is_muted: true,
+        invite_only: true,
+        history_public_to_subscribers: true,
+    };
+    const social = {
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    const test = {
+        color: "yellow",
+        name: "test",
+        stream_id: 3,
+        is_muted: true,
+        invite_only: true,
+    };
+    const subs = [denmark, social, test];
+    for (const sub of subs) {
+        stream_data.add_sub(sub);
+    }
+
+    peer_data.set_subscribers(denmark.stream_id, [me.user_id, test_user.user_id]);
+    peer_data.set_subscribers(social.stream_id, [test_user.user_id]);
+    peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
+
+    // test_user is subscribed to all three streams, but current user (me)
+    // gets only two because of subscriber visibility policy of stream:
+    // #denmark: current user is subscribed to it so he can see its subscribers.
+    // #social: current user is can get this as neither this is invite onyl nor current
+    //          user is a guest.
+    // #test: current user is no longer subscribed to a private stream, so
+    //        he can not see whether test_user is subscribed to it.
+    assert.deepEqual(stream_data.get_subscribed_streams_for_user(test_user.user_id), [
+        denmark,
+        social,
+    ]);
 });
 
 test("renames", () => {
