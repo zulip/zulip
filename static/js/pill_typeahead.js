@@ -52,9 +52,9 @@ export function set_up(input, pills, opts) {
                     // If user_source is specified in opts, it
                     // is given priority. Otherwise we use
                     // default user_pill.typeahead_source.
-                    source = source.concat(opts.user_source());
+                    source = opts.user_source();
                 } else {
-                    source = source.concat(user_pill.typeahead_source(pills));
+                    source = user_pill.typeahead_source(pills);
                 }
             }
             return source;
@@ -83,16 +83,12 @@ export function set_up(input, pills, opts) {
                 return item.name.toLowerCase().includes(query);
             }
 
-            let matches = false;
             if (include_user_groups(this.query)) {
                 query = query.trim().slice(1);
                 return group_matcher(query, item);
             }
 
-            if (include_users) {
-                matches = matches || person_matcher(query, item);
-            }
-            return matches;
+            return person_matcher(query, item);
         },
         sorter(matches) {
             const query = this.query;
