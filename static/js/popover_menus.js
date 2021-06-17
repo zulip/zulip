@@ -12,6 +12,17 @@ import * as settings_data from "./settings_data";
 let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
 
+const default_popover_props = {
+    delay: 0,
+    appendTo: () => document.body,
+    trigger: "click",
+    allowHTML: true,
+    interactive: true,
+    hideOnClick: true,
+    theme: "light-border",
+    touch: true,
+};
+
 export function is_left_sidebar_stream_setting_popover_displayed() {
     return left_sidebar_stream_setting_popover_displayed;
 }
@@ -22,7 +33,7 @@ export function is_compose_mobile_button_popover_displayed() {
 
 export function initialize() {
     delegate("body", {
-        delay: 0,
+        ...default_popover_props,
         target: "#streams_inline_cog",
         onShow(instance) {
             popovers.hide_all_except_sidebars(instance);
@@ -34,13 +45,6 @@ export function initialize() {
             left_sidebar_stream_setting_popover_displayed = true;
             $(instance.popper).one("click", instance.hide);
         },
-        appendTo: () => document.body,
-        trigger: "click",
-        allowHTML: true,
-        interactive: true,
-        hideOnClick: true,
-        theme: "light-border",
-        touch: true,
         onHidden() {
             left_sidebar_stream_setting_popover_displayed = false;
         },
@@ -48,6 +52,7 @@ export function initialize() {
 
     // compose box buttons popover shown on mobile widths.
     delegate("body", {
+        ...default_popover_props,
         target: ".compose_mobile_button",
         placement: "top",
         onShow(instance) {
@@ -68,13 +73,6 @@ export function initialize() {
                 compose_actions.start("private");
             });
         },
-        appendTo: () => document.body,
-        trigger: "click",
-        allowHTML: true,
-        interactive: true,
-        hideOnClick: true,
-        theme: "light-border",
-        touch: true,
         onHidden(instance) {
             // Destroy instance so that event handlers
             // are destroyed too.
