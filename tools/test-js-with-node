@@ -78,7 +78,7 @@ EXEMPT_FILES = {
     "static/js/lightbox_canvas.js",
     "static/js/lightbox.js",
     "static/js/list_util.ts",
-    "static/js/loading.js",
+    "static/js/loading.ts",
     "static/js/local_message.js",
     "static/js/localstorage.js",
     "static/js/message_edit.js",
