@@ -771,7 +771,8 @@ export function initialize() {
             disable_message_retention_setting:
                 !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
             stream_message_retention_days: stream.message_retention_days,
-            realm_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
+            org_level_message_retention_setting:
+                get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
             is_stream_edit: true,

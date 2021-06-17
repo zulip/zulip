@@ -613,8 +613,8 @@ export function setup_page(callback) {
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_post_policy_values: stream_data.stream_post_policy_values,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-            realm_message_retention_setting:
-                stream_edit.get_display_text_for_realm_message_retention_setting,
+            org_level_message_retention_setting:
+                stream_edit.get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
             disable_message_retention_setting:
