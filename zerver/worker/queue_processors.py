@@ -757,10 +757,10 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             realm = Realm.objects.get(id=event["message_realm_id"])
 
             # If rendering fails, the called code will raise a JsonableError.
-            rendered_content = render_incoming_message(
+            rendering_result = render_incoming_message(
                 message, message.content, message_user_ids, realm
             )
-            do_update_embedded_data(message.sender, message, message.content, rendered_content)
+            do_update_embedded_data(message.sender, message, message.content, rendering_result)
 
 
 @assign_queue("outgoing_webhooks")

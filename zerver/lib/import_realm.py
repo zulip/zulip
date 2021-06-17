@@ -347,7 +347,7 @@ def fix_message_rendered_content(
                 message_realm=realm,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
-            )
+            ).rendered_content
 
             message["rendered_content"] = rendered_content
             message["rendered_content_version"] = markdown_version

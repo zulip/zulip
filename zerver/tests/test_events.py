@@ -451,7 +451,7 @@ class NormalActionsTest(BaseAction):
         topic = "new_topic"
         propagate_mode = "change_all"
         content = "new content"
-        rendered_content = render_markdown(message, content)
+        rendering_result = render_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
         mention_data = MentionData(
             realm_id=self.user_profile.realm_id,
@@ -468,7 +468,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 False,
                 content,
-                rendered_content,
+                rendering_result,
                 prior_mention_user_ids,
                 mention_data,
             ),
@@ -482,10 +482,10 @@ class NormalActionsTest(BaseAction):
             has_new_stream_id=False,
         )
 
+        content = "embed_content"
+        rendering_result = render_markdown(message, content)
         events = self.verify_action(
-            lambda: do_update_embedded_data(
-                self.user_profile, message, "embed_content", "<p>embed_content</p>"
-            ),
+            lambda: do_update_embedded_data(self.user_profile, message, content, rendering_result),
             state_change_expected=False,
         )
         check_update_message_embedded("events[0]", events[0])

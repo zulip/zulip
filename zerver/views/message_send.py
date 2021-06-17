@@ -325,5 +325,5 @@ def render_message_backend(
     message.content = content
     message.sending_client = request.client
 
-    rendered_content = render_markdown(message, content, realm=user_profile.realm)
-    return json_success({"rendered": rendered_content})
+    rendering_result = render_markdown(message, content, realm=user_profile.realm)
+    return json_success({"rendered": rendering_result.rendered_content})

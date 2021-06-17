@@ -617,7 +617,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         expected_rendered_value: Dict[Union[int, float, str, None], Union[str, None]] = {}
         for f in data:
             if f["field"].is_renderable():
-                expected_rendered_value[f["id"]] = markdown_convert(f["value"])
+                expected_rendered_value[f["id"]] = markdown_convert(f["value"]).rendered_content
             else:
                 expected_rendered_value[f["id"]] = None
 

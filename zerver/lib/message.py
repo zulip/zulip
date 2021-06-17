@@ -27,7 +27,7 @@ from zerver.lib.display_recipient import (
     UserDisplayRecipient,
     bulk_fetch_display_recipients,
 )
-from zerver.lib.markdown import markdown_convert, topic_links
+from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
 from zerver.lib.request import JsonableError
@@ -90,6 +90,7 @@ class UnreadMessagesResult(TypedDict):
 @dataclass
 class SendMessageRequest:
     message: Message
+    rendering_result: MessageRenderingResult
     stream: Optional[Stream]
     local_id: Optional[str]
     sender_queue_id: Optional[str]
@@ -227,7 +228,10 @@ def message_to_dict_json(message: Message, realm_id: Optional[int] = None) -> by
 
 
 def save_message_rendered_content(message: Message, content: str) -> str:
-    rendered_content = render_markdown(message, content, realm=message.get_realm())
+    rendering_result = render_markdown(message, content, realm=message.get_realm())
+    rendered_content = None
+    if rendering_result is not None:
+        rendered_content = rendering_result.rendered_content
     message.rendered_content = rendered_content
     message.rendered_content_version = markdown_version
     message.save_rendered_content()
@@ -810,7 +814,7 @@ def render_markdown(
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
-) -> str:
+) -> MessageRenderingResult:
     """
     This is basically just a wrapper for do_render_markdown.
     """
@@ -822,7 +826,7 @@ def render_markdown(
     sent_by_bot = sender.is_bot
     translate_emoticons = sender.translate_emoticons
 
-    rendered_content = do_render_markdown(
+    result = do_render_markdown(
         message=message,
         content=content,
         realm=realm,
@@ -833,7 +837,7 @@ def render_markdown(
         email_gateway=email_gateway,
     )
 
-    return rendered_content
+    return result
 
 
 def do_render_markdown(
@@ -845,22 +849,9 @@ def do_render_markdown(
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
-) -> str:
-    """Return HTML for given Markdown. Markdown may add properties to the
-    message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
-    `mentions_wildcard`.  These are only on this Django object and are not
-    saved in the database.
-    """
-
-    message.mentions_wildcard = False
-    message.mentions_user_ids = set()
-    message.mentions_user_group_ids = set()
-    message.alert_words = set()
-    message.links_for_preview = set()
-    message.user_ids_with_alert_words = set()
-
+) -> MessageRenderingResult:
     # DO MAIN WORK HERE -- call markdown_convert to convert
-    rendered_content = markdown_convert(
+    rendering_result = markdown_convert(
         content,
         realm_alert_words_automaton=realm_alert_words_automaton,
         message=message,
@@ -870,7 +861,7 @@ def do_render_markdown(
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
-    return rendered_content
+    return rendering_result
 
 
 def huddle_users(recipient_id: int) -> str:
