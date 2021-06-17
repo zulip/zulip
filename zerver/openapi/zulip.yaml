@@ -1971,6 +1971,8 @@ paths:
                                     was called `subject_links`; clients are recommended to
                                     rename `subject_links` to `topic_links` if present for
                                     compatibility with older Zulip servers.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 76).
                                 orig_content:
                                   type: string
                                   description: |
@@ -2600,7 +2602,11 @@ paths:
                                         type: string
                                         description: |
                                           The URL format string to be used for linkifying matches.
-
+                                      render_format:
+                                        type: string
+                                        description: |
+                                          The Render format string is an optional parameter used to set
+                                          the rendered text of the linkifier pattern.
                                       id:
                                         type: integer
                                         description: |
@@ -2613,6 +2619,7 @@ paths:
                                       {
                                         "pattern": "#(?P<id>[123])",
                                         "url_format": "https://realm.com/my_realm_filter/%(id)s",
+                                        "render_format": "ticket-%(id)s",
                                         "id": 1,
                                       },
                                     ],
@@ -7690,6 +7697,8 @@ paths:
                           **Changes**: New in Zulip 4.0 (feature level 54). Clients can
                           access these data on older server versions via the previous
                           `realm_filters` key.
+
+                          **Changes**: New in Zulip 5.0 (feature level 76).
                         items:
                           type: object
                           additionalProperties: false
@@ -7703,6 +7712,11 @@ paths:
                               type: string
                               description: |
                                 The URL with which the pattern matching string should be linkified.
+                            render_format:
+                              type: string
+                              description: |
+                                The Render format string is an optional parameter used to set
+                                the rendered text of the linkifier pattern.
                             id:
                               type: integer
                               description: |

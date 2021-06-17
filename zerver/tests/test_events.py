@@ -1471,6 +1471,32 @@ class NormalActionsTest(BaseAction):
         check_realm_linkifiers("events[0]", events[0])
         check_realm_filters("events[1]", events[1])
 
+        # Test with render format string.
+        render_format = "ticket-%(id)s"
+        events = self.verify_action(
+            lambda: do_add_linkifier(self.user_profile.realm, regex, url, render_format),
+            num_events=2,
+        )
+        check_realm_linkifiers("events[0]", events[0])
+        check_realm_filters("events[1]", events[1])
+
+        render_format = "TICKET-%(id)s"
+        linkifier_id = events[0]["realm_linkifiers"][0]["id"]
+        events = self.verify_action(
+            lambda: do_update_linkifier(
+                self.user_profile.realm, linkifier_id, regex, url, render_format
+            ),
+            num_events=2,
+        )
+        check_realm_linkifiers("events[0]", events[0])
+        check_realm_filters("events[1]", events[1])
+
+        events = self.verify_action(
+            lambda: do_remove_linkifier(self.user_profile.realm, regex), num_events=2
+        )
+        check_realm_linkifiers("events[0]", events[0])
+        check_realm_filters("events[1]", events[1])
+
     def test_realm_domain_events(self) -> None:
         events = self.verify_action(
             lambda: do_add_realm_domain(self.user_profile.realm, "zulip.org", False)

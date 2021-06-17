@@ -17,6 +17,10 @@ below features are supported.
   (/api/add-linkifier) and [`PATCH /realm/filters/{filter_id}`]
   (/api/update-linkifier): Added `render_format_string` field to linkifier
   objects sent in `realm_linkifiers` events.
+* [`GET /events`](/api/get-events): Added `render_format_string` field to
+  linkifier objects sent in `realm_linkifiers` events.
+* [`POST /register`](/api/register-queue): Added `render_format_string` field
+  to linkifier objects sent in `realm_linkifiers` events.
 
 **Feature level 75**
 

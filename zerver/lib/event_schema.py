@@ -786,7 +786,10 @@ realm_linkifier_type = DictType(
         ("pattern", str),
         ("url_format", str),
         ("id", int),
-    ]
+    ],
+    optional_keys=[
+        ("render_format", str),
+    ],
 )
 
 realm_linkifiers_event = event_dict_type(
