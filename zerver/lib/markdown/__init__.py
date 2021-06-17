@@ -1783,18 +1783,24 @@ class LinkifierPattern(markdown.inlinepatterns.Pattern):
         self,
         source_pattern: str,
         format_string: str,
+        render_string: str = "",
         md: Optional[markdown.Markdown] = None,
     ) -> None:
         self.pattern = prepare_linkifier_pattern(source_pattern)
         self.format_string = format_string
+        self.render_string = render_string
         super().__init__(self.pattern, md)
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
         db_data = self.md.zulip_db_data
+        if self.render_string:
+            text = self.render_string % m.groupdict()
+        else:
+            text = m.group(OUTER_CAPTURE_GROUP)
         return url_to_a(
             db_data,
             self.format_string % m.groupdict(),
-            markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)),
+            markdown.util.AtomicString(text),
         )
 
 
@@ -2226,7 +2232,9 @@ class Markdown(markdown.Markdown):
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
             inlinePatterns.register(
-                LinkifierPattern(pattern, linkifier["url_format"], self),
+                LinkifierPattern(
+                    pattern, linkifier["url_format"], linkifier["render_format"], self
+                ),
                 f"linkifiers/{pattern}",
                 45,
             )
@@ -2308,6 +2316,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     for linkifier in linkifiers:
         raw_pattern = linkifier["pattern"]
         url_format_string = linkifier["url_format"]
+        render_format_string = linkifier["render_format"]
         pattern = prepare_linkifier_pattern(raw_pattern)
         for m in re.finditer(pattern, topic_name):
             match_details = m.groupdict()
@@ -2315,10 +2324,14 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # We format the linkifier's url string using the matched text.
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
+            if render_format_string:
+                text = render_format_string % match_details
+            else:
+                text = match_text
             matches += [
                 dict(
                     url=url_format_string % match_details,
-                    text=match_text,
+                    text=text,
                     index=topic_name.find(match_text),
                 )
             ]

@@ -1398,6 +1398,79 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+    def test_realm_linkifers_with_render_string(self) -> None:
+        realm = get_realm("zulip")
+        pattern = r"#(?P<id>[0-9]{2,8})"
+        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        render_format_string = r"ticket-%(id)s"
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=pattern,
+            url_format_string=url_format_string,
+            render_format_string=render_format_string,
+        )
+        linkifier.save()
+        self.assertEqual(
+            linkifier.__str__(),
+            f"<RealmFilter(zulip): {pattern} {url_format_string} {render_format_string}>",
+        )
+
+        hamlet = self.example_user("hamlet")
+        msg = Message(sender=hamlet)
+        msg.set_topic_name("#444")
+
+        flush_per_request_caches()
+
+        content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.example.com/ticket/16) today."
+        converted = markdown_convert(content, message_realm=realm, message=msg)
+        converted_topic = topic_links(realm.id, msg.topic_name())
+
+        self.assertEqual(
+            converted,
+            '<p>We should fix <a href="https://trac.example.com/ticket/224">ticket-224</a> and <a href="https://trac.example.com/ticket/115">ticket-115</a>, but not issue#124 or #1124z or <a href="https://trac.example.com/ticket/16">trac #15</a> today.</p>',
+        )
+        self.assertEqual(
+            converted_topic, [{"url": "https://trac.example.com/ticket/444", "text": "ticket-444"}]
+        )
+
+        # Test nested realm patterns.
+        # This should avoid double processing or going into an infinite loop.
+
+        pattern = r"ticket-(?P<id>[0-9]+)"
+        url_format_string = r"https://trac.example.com/new_ticket/%(id)s"
+        render_format_string = r"#%(id)s"
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=pattern,
+            url_format_string=url_format_string,
+            render_format_string=render_format_string,
+        )
+        linkifier.save()
+        self.assertEqual(
+            linkifier.__str__(),
+            f"<RealmFilter(zulip): {pattern} {url_format_string} {render_format_string}>",
+        )
+
+        msg = Message(sender=hamlet)
+        msg.set_topic_name("#4321 ticket-4321 https://google.com")
+
+        content = "We have two tickets: 1) ticket-1234 2) #1234 both of them must be linked to different urls and texts."
+        converted = markdown_convert(content, message_realm=realm, message=msg)
+        converted_topic = topic_links(realm.id, msg.topic_name())
+
+        self.assertEqual(
+            converted,
+            '<p>We have two tickets: 1) <a href="https://trac.example.com/new_ticket/1234">#1234</a> 2) <a href="https://trac.example.com/ticket/1234">ticket-1234</a> both of them must be linked to different urls and texts.</p>',
+        )
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://trac.example.com/ticket/4321", "text": "ticket-4321"},
+                {"url": "https://trac.example.com/new_ticket/4321", "text": "#4321"},
+                {"url": "https://google.com", "text": "https://google.com"},
+            ],
+        )
+
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
