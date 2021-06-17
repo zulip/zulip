@@ -14,12 +14,24 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
 
+        data = {
+            "pattern": "ticket-(?P<id>[0-9]+)",
+            "url_format_string": "https://realm.com/ticket/%(id)s",
+            "render_format_string": "Ticket-%(id)s",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+
         result = self.client_get("/json/realm/linkifiers")
         self.assert_json_success(result)
         linkifiers = result.json()["linkifiers"]
-        self.assert_length(linkifiers, 1)
+        self.assert_length(linkifiers, 2)
         self.assertEqual(linkifiers[0]["pattern"], "#(?P<id>[123])")
         self.assertEqual(linkifiers[0]["url_format"], "https://realm.com/my_realm_filter/%(id)s")
+
+        self.assertEqual(linkifiers[1]["pattern"], "ticket-(?P<id>[0-9]+)")
+        self.assertEqual(linkifiers[1]["url_format"], "https://realm.com/ticket/%(id)s")
+        self.assertEqual(linkifiers[1]["render_format"], "Ticket-%(id)s")
 
     def test_create(self) -> None:
         self.login("iago")
@@ -134,6 +146,30 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data["pattern"], "zulip/zulip#123"))
+
+        # Test with Render format string.
+        data["pattern"] = r"#(?P<id>[0-9]{2,8})"
+        data["url_format_string"] = r"https://trac.example.com/ticket/%(id)s"
+        data["render_format_string"] = r"ticket-%(id)s"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "#1234"))
+
+        data["render_format_string"] = "$foobar"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid render format string.")
+
+        data["render_format_string"] = r"ticket-%(num)s"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "Group 'num' in Render format string is not present in linkifier pattern."
+        )
+
+        # Render format string does not need to contain every parameter of the linkifier pattern.
+        data["pattern"] = r"ZUL-#(?P<id>[0-9]+)"
+        data["render_format_string"] = "ticket"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
 
     def test_not_realm_admin(self) -> None:
         self.login("hamlet")

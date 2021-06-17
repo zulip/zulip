@@ -13,7 +13,8 @@ below features are supported.
 
 **Feature level 76**
 
-* [`GET /realm/linkifiers`](/api/get-linkifiers): Added `render_format_string` field
+* [`GET /realm/linkifiers`](/api/get-linkifiers) and [`POST /realm/filters`]
+  (/api/add-linkifier): Added `render_format_string` field
   to linkifier objects sent in `realm_linkifiers` events.
 
 **Feature level 75**

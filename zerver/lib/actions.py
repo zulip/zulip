@@ -7076,10 +7076,21 @@ def notify_linkifiers(realm: Realm) -> None:
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
-def do_add_linkifier(realm: Realm, pattern: str, url_format_string: str) -> int:
+def do_add_linkifier(
+    realm: Realm, pattern: str, url_format_string: str, render_format_string: str = ""
+) -> int:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
-    linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
+
+    if render_format_string:
+        render_format_string.strip()
+
+    linkifier = RealmFilter(
+        realm=realm,
+        pattern=pattern,
+        url_format_string=url_format_string,
+        render_format_string=render_format_string,
+    )
     linkifier.full_clean()
     linkifier.save()
     notify_linkifiers(realm)

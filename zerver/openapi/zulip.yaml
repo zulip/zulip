@@ -7164,9 +7164,12 @@ paths:
         appear in messages and topics.
 
         `POST {{ api_url }}/v1/realm/filters`
+
+        **Changes**: New in Zulip 5.0 (feature level 76).
       parameters:
         - $ref: "#/components/parameters/LinkifierPattern"
         - $ref: "#/components/parameters/LinkifierURLFormatString"
+        - $ref: "#/components/parameters/LinkiferRenderFormatString"
       responses:
         "200":
           description: Success.
@@ -12788,3 +12791,14 @@ components:
         type: string
       example: https://github.com/zulip/zulip/issues/%(id)s
       required: true
+    LinkiferRenderFormatString:
+      name: render_format_string
+      in: query
+      description: |
+        This optional parameter can be use to set the rendered text of the matched
+        pattern. You can insert the content of named groups of the `pattern` with
+        `%(name_of_the_capturing_group)s`.
+      schema:
+        type: string
+      example: https://github.com/zulip/zulip/issues/%(id)s
+      required: false
