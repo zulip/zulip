@@ -2,6 +2,7 @@ import {
     differenceInCalendarDays,
     differenceInMinutes,
     format,
+    formatDistanceToNow,
     formatISO,
     isEqual,
     isValid,
@@ -11,6 +12,9 @@ import {
 import $ from "jquery";
 import _ from "lodash";
 
+import timezones from "../generated/timezones.json";
+
+import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
@@ -178,13 +182,27 @@ export function render_date(time, time_above, today) {
     return node;
 }
 
+// Returns the abbreviated timezone
+function get_abbreviated_timezone() {
+    const tz_values = timezones.timezones;
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    if (!Object.keys(timezones.timezones).includes(timezone)) {
+        blueslip.warn("Invalid browser timezone detected.");
+        return "";
+    }
+    return tz_values[timezone].abbreviation;
+}
+
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function render_markdown_timestamp(time, text) {
+export function render_markdown_timestamp(time) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
+    const timezone = get_abbreviated_timezone();
+    const relativeTime = formatDistanceToNow(time, {addSuffix: true});
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
-    const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
+    const titlestring = relativeTime;
     return {
-        text: timestring,
+        text: timestring + " " + timezone,
         title: titlestring,
     };
 }
