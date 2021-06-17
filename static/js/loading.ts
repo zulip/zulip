@@ -2,7 +2,10 @@ import $ from "jquery";
 
 import render_loader from "../templates/loader.hbs";
 
-export function make_indicator(outer_container, {abs_positioned = false, text} = {}) {
+export function make_indicator(
+    outer_container: JQuery,
+    {abs_positioned = false, text}: {abs_positioned?: boolean; text?: string} = {},
+): void {
     let container = outer_container;
 
     // TODO: We set white-space to 'nowrap' because under some
@@ -37,7 +40,7 @@ export function make_indicator(outer_container, {abs_positioned = false, text} =
         container.append(text_elem);
         // See note, below
         if (!abs_positioned) {
-            text_width = 20 + text_elem.width();
+            text_width = 20 + (text_elem.width() ?? 0);
         }
     }
 
@@ -48,7 +51,7 @@ export function make_indicator(outer_container, {abs_positioned = false, text} =
     outer_container.data("destroying", false);
 }
 
-export function destroy_indicator(container) {
+export function destroy_indicator(container: JQuery): void {
     if (container.data("destroying")) {
         return;
     }
