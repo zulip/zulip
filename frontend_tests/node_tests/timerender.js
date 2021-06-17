@@ -257,13 +257,15 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({minutes: -30}, $t({defaultMessage: "30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -20}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
 
-    assert_same({days: -1}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
+
+    assert_same({hours: -48}, $t({defaultMessage: "2 days ago"}));
 
     assert_same({days: -2}, $t({defaultMessage: "2 days ago"}));
 
