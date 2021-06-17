@@ -31,13 +31,14 @@ def remove_unused_versions_dir(args: argparse.Namespace) -> None:
     except FileNotFoundError:
         return
 
+    no_headings = getattr(args, "no_headings", False)
     may_be_perform_purging(
         dirs_to_purge,
         {current_version_dir},
         "yarn cache",
         args.dry_run,
         args.verbose,
-        args.no_headings,
+        no_headings,
     )
 
 
