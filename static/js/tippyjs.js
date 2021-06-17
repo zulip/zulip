@@ -1,15 +1,8 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
-import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
-import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
-
-import * as compose_actions from "./compose_actions";
-import * as narrow_state from "./narrow_state";
-import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
-import * as settings_data from "./settings_data";
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -41,17 +34,6 @@ tippy.setDefaultProps({
     // enable it by passing data-tippy-allowHtml="true"
     // in the tag or a parameter.
 });
-
-let left_sidebar_stream_setting_popover_displayed = false;
-let compose_mobile_button_popover_displayed = false;
-
-export function is_left_sidebar_stream_setting_popover_displayed() {
-    return left_sidebar_stream_setting_popover_displayed;
-}
-
-export function is_compose_mobile_button_popover_displayed() {
-    return compose_mobile_button_popover_displayed;
-}
 
 export function initialize() {
     delegate("body", {
@@ -150,70 +132,6 @@ export function initialize() {
             }
             instance.setContent(content);
             return true;
-        },
-    });
-
-    // ------------------ Popovers ----------------------------------------------
-
-    delegate("body", {
-        delay: 0,
-        target: "#streams_inline_cog",
-        onShow(instance) {
-            popovers.hide_all_except_sidebars(instance);
-            instance.setContent(
-                render_left_sidebar_stream_setting_popover({
-                    can_create_streams: settings_data.user_can_create_streams(),
-                }),
-            );
-            left_sidebar_stream_setting_popover_displayed = true;
-            $(instance.popper).one("click", instance.hide);
-        },
-        appendTo: () => document.body,
-        trigger: "click",
-        allowHTML: true,
-        interactive: true,
-        hideOnClick: true,
-        theme: "light-border",
-        touch: true,
-        onHidden() {
-            left_sidebar_stream_setting_popover_displayed = false;
-        },
-    });
-
-    // compose box buttons popover shown on mobile widths.
-    delegate("body", {
-        target: ".compose_mobile_button",
-        placement: "top",
-        onShow(instance) {
-            popovers.hide_all_except_sidebars(instance);
-            instance.setContent(
-                render_mobile_message_buttons_popover_content({
-                    is_in_private_narrow: narrow_state.narrowed_to_pms(),
-                }),
-            );
-            compose_mobile_button_popover_displayed = true;
-
-            const $popper = $(instance.popper);
-            $popper.one("click", instance.hide);
-            $popper.one("click", ".compose_mobile_stream_button", () => {
-                compose_actions.start("stream", {trigger: "new topic button"});
-            });
-            $popper.one("click", ".compose_mobile_private_button", () => {
-                compose_actions.start("private");
-            });
-        },
-        appendTo: () => document.body,
-        trigger: "click",
-        allowHTML: true,
-        interactive: true,
-        hideOnClick: true,
-        theme: "light-border",
-        touch: true,
-        onHidden(instance) {
-            // Destroy instance so that event handlers
-            // are destroyed too.
-            instance.destroy();
-            compose_mobile_button_popover_displayed = false;
         },
     });
 }

@@ -48,6 +48,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
 import * as realm_playground from "./realm_playground";
 import * as recent_topics_util from "./recent_topics_util";
@@ -470,6 +471,7 @@ export function initialize_everything() {
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
+    popover_menus.initialize();
     // We need to initialize compose early, because other modules'
     // initialization expects `#compose` to be already present in the
     // DOM, dating from when the compose area was part of the backend

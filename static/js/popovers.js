@@ -40,6 +40,7 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
@@ -49,7 +50,6 @@ import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
-import * as tippyjs from "./tippyjs";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -1427,8 +1427,8 @@ export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
     return (
-        tippyjs.is_left_sidebar_stream_setting_popover_displayed() ||
-        tippyjs.is_compose_mobile_button_popover_displayed() ||
+        popover_menus.is_left_sidebar_stream_setting_popover_displayed() ||
+        popover_menus.is_compose_mobile_button_popover_displayed() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
