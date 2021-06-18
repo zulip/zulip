@@ -53,6 +53,7 @@ def get_filtered_commands() -> Dict[str, str]:
     ]
     documented_command_subsets = {
         "django.core": {
+            "changepassword",
             "dbshell",
             "makemigrations",
             "migrate",
