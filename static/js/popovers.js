@@ -1136,9 +1136,9 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-   $("body") .on("click", "#edit_user_group", () =>{
-       hide_user_profile();
-   })
+    $("body").on("click", "#edit_user_group", () => {
+        hide_user_profile();
+    });
 
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
         hide_user_profile();
