@@ -199,8 +199,9 @@ export function update_stream_description(sub, description, rendered_description
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
 
-export function update_stream_privacy(sub, values) {
-    stream_data.update_stream_privacy(sub, values);
+export function update_stream_privacy(slim_sub, values) {
+    stream_data.update_stream_privacy(slim_sub, values);
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
     // Update UI elements
     update_left_panel_row(sub);
@@ -317,7 +318,8 @@ export function show_active_stream_in_left_panel() {
     }
 }
 
-export function update_settings_for_unsubscribed(sub) {
+export function update_settings_for_unsubscribed(slim_sub) {
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
     stream_ui_updates.update_subscribers_list(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
