@@ -319,6 +319,7 @@ def do_replace_payment_source(
 ) -> stripe.Customer:
     customer = get_customer_by_realm(user.realm)
     assert customer is not None  # for mypy
+    assert customer.stripe_customer_id is not None  # for mypy
 
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     stripe_customer.source = stripe_token
@@ -533,6 +534,8 @@ def process_initial_upgrade(
 ) -> None:
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
+    assert customer.stripe_customer_id is not None  # for mypy
+
     charge_automatically = stripe_token is not None
     free_trial = is_free_trial_offer_enabled()
 
@@ -710,6 +713,11 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
+    if not plan.customer.stripe_customer_id:
+        raise BillingError(
+            f"Realm {plan.customer.realm.string_id} has a paid plan without a Stripe customer."
+        )
+
     make_end_of_cycle_updates_if_needed(plan, event_time)
 
     if plan.invoicing_status == CustomerPlan.INITIAL_INVOICE_TO_BE_SENT:
@@ -956,6 +964,8 @@ def downgrade_at_the_end_of_billing_cycle(realm: Realm) -> None:
 def void_all_open_invoices(realm: Realm) -> int:
     customer = get_customer_by_realm(realm)
     if customer is None:
+        return 0
+    if customer.stripe_customer_id is None:
         return 0
     invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
     voided_invoices_count = 0

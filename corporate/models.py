@@ -16,7 +16,7 @@ class Customer(models.Model):
     """
 
     realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
-    stripe_customer_id: str = models.CharField(max_length=255, null=True, unique=True)
+    stripe_customer_id: Optional[str] = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending: bool = models.BooleanField(default=False)
     # A percentage, like 85.
     default_discount: Optional[Decimal] = models.DecimalField(

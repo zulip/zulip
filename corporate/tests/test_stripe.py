@@ -1990,6 +1990,7 @@ class StripeTest(StripeTestCase):
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.next_invoice_date, None)
 
+        assert customer.stripe_customer_id
         [invoice0, invoice1, invoice2] = stripe.Invoice.list(customer=customer.stripe_customer_id)
 
         [invoice_item0, invoice_item1] = invoice0.get("lines")
@@ -2154,6 +2155,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 12))
         self.assertEqual(annual_plan.invoicing_status, CustomerPlan.DONE)
 
+        assert customer.stripe_customer_id
         [invoice0, invoice1] = stripe.Invoice.list(customer=customer.stripe_customer_id)
 
         [invoice_item] = invoice0.get("lines")
@@ -2632,12 +2634,17 @@ class StripeTest(StripeTestCase):
     @mock_stripe()
     def test_void_all_open_invoices(self, *mock: Mock) -> None:
         iago = self.example_user("iago")
-        self.assertEqual(void_all_open_invoices(iago.realm), 0)
-        customer = update_or_create_stripe_customer(iago)
+        king = self.lear_user("king")
 
+        self.assertEqual(void_all_open_invoices(iago.realm), 0)
+
+        zulip_customer = update_or_create_stripe_customer(iago)
+        lear_customer = update_or_create_stripe_customer(king)
+
+        assert zulip_customer.stripe_customer_id
         stripe.InvoiceItem.create(
             currency="usd",
-            customer=customer.stripe_customer_id,
+            customer=zulip_customer.stripe_customer_id,
             description="Zulip standard upgrade",
             discountable=False,
             unit_amount=800,
@@ -2646,14 +2653,45 @@ class StripeTest(StripeTestCase):
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
             billing="send_invoice",
-            customer=customer.stripe_customer_id,
+            customer=zulip_customer.stripe_customer_id,
+            days_until_due=30,
+            statement_descriptor="Zulip Standard",
+        )
+        stripe.Invoice.finalize_invoice(stripe_invoice)
+
+        assert lear_customer.stripe_customer_id
+        stripe.InvoiceItem.create(
+            currency="usd",
+            customer=lear_customer.stripe_customer_id,
+            description="Zulip standard upgrade",
+            discountable=False,
+            unit_amount=800,
+            quantity=8,
+        )
+        stripe_invoice = stripe.Invoice.create(
+            auto_advance=True,
+            billing="send_invoice",
+            customer=lear_customer.stripe_customer_id,
             days_until_due=30,
             statement_descriptor="Zulip Standard",
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
         self.assertEqual(void_all_open_invoices(iago.realm), 1)
-        invoices = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        invoices = stripe.Invoice.list(customer=zulip_customer.stripe_customer_id)
+        self.assert_length(invoices, 1)
+        for invoice in invoices:
+            self.assertEqual(invoice.status, "void")
+
+        lear_stripe_customer_id = lear_customer.stripe_customer_id
+        lear_customer.stripe_customer_id = None
+        lear_customer.save(update_fields=["stripe_customer_id"])
+        self.assertEqual(void_all_open_invoices(king.realm), 0)
+
+        lear_customer.stripe_customer_id = lear_stripe_customer_id
+        lear_customer.save(update_fields=["stripe_customer_id"])
+        self.assertEqual(void_all_open_invoices(king.realm), 1)
+        invoices = stripe.Invoice.list(customer=lear_customer.stripe_customer_id)
         self.assert_length(invoices, 1)
         for invoice in invoices:
             self.assertEqual(invoice.status, "void")
@@ -3206,6 +3244,17 @@ class InvoiceTest(StripeTestCase):
         plan.save(update_fields=["invoicing_status"])
         with self.assertRaises(NotImplementedError):
             invoice_plan(CustomerPlan.objects.first(), self.now)
+
+    def test_invoice_plan_without_stripe_customer(self) -> None:
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL)
+        plan = get_current_plan_by_realm(get_realm("zulip"))
+        assert plan and plan.customer
+        plan.customer.stripe_customer_id = None
+        plan.customer.save(update_fields=["stripe_customer_id"])
+        with self.assertRaisesRegex(
+            BillingError, "Realm zulip has a paid plan without a Stripe customer"
+        ):
+            invoice_plan(plan, timezone_now())
 
     @mock_stripe()
     def test_invoice_plan(self, *mocks: Mock) -> None:

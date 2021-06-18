@@ -317,6 +317,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             )
             renewal_cents = renewal_amount(plan, now)
             charge_automatically = plan.charge_automatically
+            assert customer.stripe_customer_id is not None  # for mypy
             stripe_customer = stripe_get_customer(customer.stripe_customer_id)
             if charge_automatically:
                 payment_method = payment_method_string(stripe_customer)
