@@ -338,7 +338,7 @@ function filter_user_ids(user_filter_text, user_ids) {
         return user_ids;
     }
 
-    // If a query is present in "Filter users", we return matches.
+    // If a query is present in "Search people", we return matches.
     user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
 
     let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
