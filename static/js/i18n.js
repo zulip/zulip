@@ -44,7 +44,7 @@ export function $t_html(descriptor, values) {
     });
 }
 
-let language_list;
+export let language_list;
 
 export function get_language_name(language_code) {
     const language_list_map = {};

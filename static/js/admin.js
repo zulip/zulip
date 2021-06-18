@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
-import {$t} from "./i18n";
+import {$t, language_list} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings from "./settings";
@@ -87,7 +87,7 @@ export function build_page() {
         ),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
-        language_list: page_params.language_list,
+        language_list,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
