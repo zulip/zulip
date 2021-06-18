@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import * as emojisets from "./emojisets";
-import {$t_html} from "./i18n";
+import {$t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -13,16 +13,6 @@ import * as ui_report from "./ui_report";
 const meta = {
     loaded: false,
 };
-
-function get_default_language_name(language_code) {
-    const language_list_map = {};
-
-    // One-to-one mapping from code to name for all languages
-    for (const language of page_params.language_list) {
-        language_list_map[language.code] = language.name;
-    }
-    return language_list_map[language_code];
-}
 
 export let default_language_name;
 
@@ -223,6 +213,6 @@ export function update_page() {
 }
 
 export function initialize() {
-    const language_name = get_default_language_name(page_params.default_language);
+    const language_name = get_language_name(page_params.default_language);
     set_default_language_name(language_name);
 }

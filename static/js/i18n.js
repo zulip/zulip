@@ -44,13 +44,24 @@ export function $t_html(descriptor, values) {
     });
 }
 
-// This formats language data for the language selection modal in a
-// 2-column format.
-export function get_language_list_columns(default_language) {
-    const language_list = [];
+let language_list;
 
-    // Only render languages with percentage translation >= 5%
-    for (const language of page_params.language_list) {
+export function get_language_name(language_code) {
+    const language_list_map = {};
+
+    // One-to-one mapping from code to name for all languages
+    for (const language of language_list) {
+        language_list_map[language.code] = language.name;
+    }
+    return language_list_map[language_code];
+}
+
+export function initialize(language_params) {
+    const language_list_raw = language_params.language_list;
+
+    // Limit offered languages to options with percentage translation >= 5%
+    language_list = [];
+    for (const language of language_list_raw) {
         if (language.percent_translated === undefined || language.percent_translated >= 5) {
             language_list.push({
                 code: language.code,
@@ -60,13 +71,16 @@ export function get_language_list_columns(default_language) {
             });
         }
     }
+}
 
+// This formats language data for the language selection modal in a
+// 2-column format.
+export function get_language_list_columns(default_language) {
     const formatted_list = [];
     const language_len = language_list.length;
     const firsts_end = Math.floor(language_len / 2) + (language_len % 2);
     const firsts = _.range(0, firsts_end);
     const seconds = _.range(firsts_end, language_len);
-
     const longest_zip = [];
 
     // Create a zip (itertool.zip_longest in python)

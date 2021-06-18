@@ -25,7 +25,7 @@ page_params.translation_data = {
 // `i18n.js` initializes FormatJS and is imported by
 // `templates.js`.
 unmock_module("../../static/js/i18n");
-const {$t, $t_html, get_language_list_columns} = zrequire("i18n");
+const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
 
 run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
@@ -108,7 +108,7 @@ run_test("tr_tag", () => {
 });
 
 run_test("language_list", () => {
-    page_params.language_list = [
+    const language_list = [
         {
             code: "en",
             locale: "en",
@@ -127,6 +127,8 @@ run_test("language_list", () => {
             percent_translated: 32,
         },
     ];
+    initialize({language_list});
+    assert.equal(get_language_name("en"), "English");
 
     const successful_formatted_list = [
         {

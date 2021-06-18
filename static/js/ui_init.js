@@ -27,6 +27,7 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
+import * as i18n from "./i18n";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
@@ -465,7 +466,9 @@ export function initialize_everything() {
     const user_groups_params = pop_fields("realm_user_groups");
 
     const user_status_params = pop_fields("user_status");
+    const i18n_params = pop_fields("language_list");
 
+    i18n.initialize(i18n_params);
     tippyjs.initialize();
     // We need to initialize compose early, because other modules'
     // initialization expects `#compose` to be already present in the
