@@ -431,22 +431,26 @@ export function show_user_profile(user) {
         callback(name, key) {
             function hide_profile_tab() {
                 $("#profile-tab").hide();
-                $(".subscription-group-list").show();
             }
             switch (name) {
                 case "User groups":
                     hide_profile_tab();
                     $("#streams-tab").hide();
+                    $(".subscription-group-tab").show();
+                    $(".subscription-stream-tab").hide();
                     render_user_group_list(groups_of_user, user);
                     break;
                 case "Streams":
                     hide_profile_tab();
                     $("#groups-tab").hide();
+                    $(".subscription-group-tab").hide();
+                    $(".subscription-stream-tab").show();
                     render_user_stream_list(user_streams, user);
                     break;
                 default:
                     // default is profile section
-                    $(".subscription-group-list").hide();
+                    $(".subscription-group-tab").hide();
+                    $(".subscription-stream-tab").hide();
                     break;
             }
             $("#" + key).show();
@@ -1099,9 +1103,16 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
+<<<<<<< HEAD
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
+=======
+   $("body") .on("click", "#edit_user_group", () =>{
+       hide_user_profile();
+   })
+
+>>>>>>> added link to open user_group_settings in profile popover groups tab.
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
         hide_user_profile();
     });

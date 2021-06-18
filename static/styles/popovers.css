@@ -362,6 +362,7 @@ ul {
         margin-bottom: 20px;
     }
 
+    .subscription-stream-list,
     .subscription-group-list {
         position: relative;
         border: 1px solid hsl(0, 0%, 83%);

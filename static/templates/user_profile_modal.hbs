@@ -64,13 +64,20 @@
                 </div>
             </div>
 
-            <div class="subscription-group-list">
-                <div class="tabcontent" id="groups-tab">
-                    <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
+            <div class="subscription-stream-tab">
+                <div class="subscription-stream-list">
+                    <div class="tabcontent" id="streams-tab">
+                        <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}"></table>
+                    </div>
                 </div>
+            </div>
 
-                <div class="tabcontent" id="streams-tab">
-                    <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}"></table>
+            <div class="subscription-group-tab">
+                <p>&nbsp;&nbsp;&nbsp;View and edit user groups <a id="edit_user_group" href="#organization/user-groups-admin">here</a></p>
+                <div class="subscription-group-list">
+                    <div class="tabcontent" id="groups-tab">
+                        <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
+                    </div>
                 </div>
             </div>
 
