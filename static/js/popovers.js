@@ -2,9 +2,10 @@ import ClipboardJS from "clipboard";
 import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
-import {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_mobile_message_buttons_popover from "../templates/mobile_message_buttons_popover.hbs";
+import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
 import render_remind_me_popover_content from "../templates/remind_me_popover_content.hbs";
@@ -40,7 +41,6 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
@@ -58,6 +58,7 @@ import * as util from "./util";
 let current_actions_popover_elem;
 let current_flatpickr_instance;
 let current_message_info_popover_elem;
+let current_mobile_message_buttons_popover_elem;
 let current_user_info_popover_elem;
 let current_playground_links_popover_elem;
 let userlist_placement = "right";
@@ -68,6 +69,7 @@ export function clear_for_testing() {
     current_actions_popover_elem = undefined;
     current_flatpickr_instance = undefined;
     current_message_info_popover_elem = undefined;
+    current_mobile_message_buttons_popover_elem = undefined;
     current_user_info_popover_elem = undefined;
     current_playground_links_popover_elem = undefined;
     list_of_popovers.length = 0;
@@ -340,6 +342,37 @@ function show_user_info_popover_for_message(element, user, message) {
     }
 }
 
+function show_mobile_message_buttons_popover(element) {
+    const last_popover_elem = current_mobile_message_buttons_popover_elem;
+    hide_all();
+    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    const $element = $(element);
+    $element.popover({
+        placement: "left",
+        template: render_mobile_message_buttons_popover(),
+        content: render_mobile_message_buttons_popover_content({
+            is_in_private_narrow: narrow_state.narrowed_to_pms(),
+        }),
+        html: true,
+        trigger: "manual",
+    });
+    $element.popover("show");
+
+    current_mobile_message_buttons_popover_elem = $element;
+}
+
+export function hide_mobile_message_buttons_popover() {
+    if (current_mobile_message_buttons_popover_elem) {
+        current_mobile_message_buttons_popover_elem.popover("destroy");
+        current_mobile_message_buttons_popover_elem = undefined;
+    }
+}
+
 export function hide_user_profile() {
     overlays.close_modal("#user-profile-modal");
 }
@@ -400,7 +433,7 @@ export function show_user_profile(user) {
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.name !== undefined);
-    const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
+    const user_streams = stream_data.subscribed_subs();
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         full_name: user.full_name,
@@ -1103,22 +1136,25 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-<<<<<<< HEAD
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-=======
+
    $("body") .on("click", "#edit_user_group", () =>{
        hide_user_profile();
    })
+    $("body").on("click", "#edit_user_group", () => {
+        hide_user_profile();
+    });
 
->>>>>>> added link to open user_group_settings in profile popover groups tab.
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
         hide_user_profile();
     });
 
-    $("body").on("click", "#user-profile-modal .stream_list_item", () => {
-        hide_user_profile();
+    $("body").on("click", ".compose_mobile_button", function (e) {
+        show_mobile_message_buttons_popover(this);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".set_away_status", (e) => {
@@ -1343,10 +1379,11 @@ export function register_click_handlers() {
         const message_id = $(e.currentTarget).data("message-id");
         const row = message_lists.current.get_row(message_id);
         const message = message_lists.current.get(rows.id(row));
+        const message_history_cancel_btn = $("#message-history-cancel");
 
         hide_actions_popover();
         message_edit_history.show_history(message);
-        $("#message-history-cancel").trigger("focus");
+        message_history_cancel_btn.trigger("focus");
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1437,8 +1474,6 @@ export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
     return (
-        popover_menus.is_left_sidebar_stream_setting_popover_displayed() ||
-        popover_menus.is_compose_mobile_button_popover_displayed() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
@@ -1453,13 +1488,8 @@ export function any_active() {
 // This function will hide all true popovers (the streamlist and
 // userlist sidebars use the popover infrastructure, but doesn't work
 // like a popover structurally).
-export function hide_all_except_sidebars(opts) {
+export function hide_all_except_sidebars() {
     $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
-    if (!opts || !opts.not_hide_tippy_instances) {
-        hideAll();
-    } else if (opts.exclude_tippy_instance) {
-        hideAll({exclude: opts.exclude_tippy_instance});
-    }
     hide_actions_popover();
     hide_message_info_popover();
     emoji_picker.hide_emoji_popover();
@@ -1469,6 +1499,7 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
     hide_user_sidebar_popover();
+    hide_mobile_message_buttons_popover();
     hide_user_info_popover();
     hide_playground_links_popover();
 
@@ -1483,13 +1514,10 @@ export function hide_all_except_sidebars(opts) {
 
 // This function will hide all the popovers, including the mobile web
 // or narrow window sidebars.
-export function hide_all(not_hide_tippy_instances) {
+export function hide_all() {
     hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
-    hide_all_except_sidebars({
-        exclude_tippy_instance: undefined,
-        not_hide_tippy_instances,
-    });
+    hide_all_except_sidebars();
 }
 
 export function set_userlist_placement(placement) {
