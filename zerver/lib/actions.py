@@ -110,7 +110,6 @@ from zerver.lib.message import (
     update_first_visible_message_id,
     wildcard_mention_allowed,
 )
-from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.realm_icon import realm_icon_url
@@ -1956,26 +1955,10 @@ def do_send_messages(
         else:
             user_list = list(user_ids)
 
-        user_data_objects: List[UserMessageNotificationsData] = []
+        users: List[Dict[str, Union[int, List[str]]]] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
-            wildcard_mention_notify = (
-                user_id in send_request.wildcard_mention_user_ids and "wildcard_mentioned" in flags
-            )
-            user_data_objects.append(
-                UserMessageNotificationsData(
-                    id=user_id,
-                    flags=flags,
-                    mentioned=("mentioned" in flags),
-                    online_push_enabled=(user_id in send_request.online_push_user_ids),
-                    stream_push_notify=(user_id in send_request.stream_push_user_ids),
-                    stream_email_notify=(user_id in send_request.stream_email_user_ids),
-                    wildcard_mention_notify=wildcard_mention_notify,
-                    sender_is_muted=(user_id in send_request.muted_sender_user_ids),
-                )
-            )
-
-        users = [asdict(user_data_object) for user_data_object in user_data_objects]
+            users.append(dict(id=user_id, flags=flags))
 
         sender = send_request.message.sender
         message_type = wide_message_dict["type"]
@@ -1993,6 +1976,11 @@ def do_send_messages(
             message=send_request.message.id,
             message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
+            online_push_user_ids=list(send_request.online_push_user_ids),
+            stream_push_user_ids=list(send_request.stream_push_user_ids),
+            stream_email_user_ids=list(send_request.stream_email_user_ids),
+            wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
+            muted_sender_user_ids=list(send_request.muted_sender_user_ids),
         )
 
         if send_request.message.is_stream_message():
