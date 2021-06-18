@@ -22,6 +22,9 @@ class Customer(models.Model):
     default_discount: Optional[Decimal] = models.DecimalField(
         decimal_places=4, max_digits=7, null=True
     )
+    # Some non-profit organizations on manual license management pay only for their paid employees.
+    # We don't prevent these organizations from adding more users than the number of licenses they purchased.
+    exempt_from_from_license_number_check: bool = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"<Customer {self.realm} {self.stripe_customer_id}>"
@@ -44,10 +47,6 @@ class CustomerPlan(models.Model):
 
     automanage_licenses: bool = models.BooleanField(default=False)
     charge_automatically: bool = models.BooleanField(default=False)
-
-    # Some non-profit organizations on manual license management pay only for their paid employees.
-    # We don't prevent these organizations from adding more users than the number of licenses they purchased.
-    exempt_from_from_license_number_check: bool = models.BooleanField(default=False)
 
     # Both of these are in cents. Exactly one of price_per_license or
     # fixed_price should be set. fixed_price is only for manual deals, and
