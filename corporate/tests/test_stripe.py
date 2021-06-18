@@ -217,6 +217,7 @@ def normalize_fixture_data(
             # Don't use (..) notation, since the matched strings may be small integers that will also match
             # elsewhere in the file
             '"realm_id": "[0-9]+"': '"realm_id": "%d"',
+            r'"account_name": "[\w\s]+"': '"account_name": "NORMALIZED-%d"',
         }
     )
     # Normalizing across all timestamps still causes a lot of variance run to run, which is
