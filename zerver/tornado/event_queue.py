@@ -24,6 +24,7 @@ from typing import (
     Optional,
     Sequence,
     Set,
+    Tuple,
     Union,
     cast,
 )
@@ -912,6 +913,12 @@ def process_message_event(
     send_to_clients = get_client_info_for_message_event(event_template, users)
 
     presence_idle_user_ids = set(event_template.get("presence_idle_user_ids", []))
+    online_push_user_ids = set(event_template.get("online_push_user_ids", []))
+    stream_push_user_ids = set(event_template.get("stream_push_user_ids", []))
+    stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
+    wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+    muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
+
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
     # Temporary transitional code: Zulip servers that have message
@@ -946,21 +953,14 @@ def process_message_event(
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
         private_message = message_type == "private" and user_profile_id != sender_id
-        mentioned = user_data.get("mentioned", False)
-        stream_push_notify = user_data.get("stream_push_notify", False)
-        stream_email_notify = user_data.get("stream_email_notify", False)
-        wildcard_mention_notify = user_data.get("wildcard_mention_notify", False)
-        sender_is_muted = user_data.get("sender_is_muted", False)
-
-        # TODO/compatibility: Translation code for the rename of
-        # `always_push_notify` to `online_push_enabled`.  Remove this
-        # when one can no longer directly upgrade from 4.x to master.
-        if "online_push_enabled" in user_data:
-            online_push_enabled = user_data["online_push_enabled"]
-        elif "always_push_notify" in user_data:
-            online_push_enabled = user_data["always_push_notify"]
-        else:
-            online_push_enabled = False
+        mentioned = "mentioned" in flags
+        stream_push_notify = user_profile_id in stream_push_user_ids
+        stream_email_notify = user_profile_id in stream_email_user_ids
+        wildcard_mention_notify = (
+            user_profile_id in wildcard_mention_user_ids and "wildcard_mentioned" in flags
+        )
+        sender_is_muted = user_profile_id in muted_sender_user_ids
+        online_push_enabled = user_profile_id in online_push_user_ids
 
         extra_user_data[user_profile_id] = dict(
             internal_data=dict(
@@ -1230,13 +1230,63 @@ def maybe_enqueue_notifications_for_message_update(
     )
 
 
+def reformat_legacy_send_message_event(
+    event: Mapping[str, Any], users: Union[List[int], List[Mapping[str, Any]]]
+) -> Tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
+    # do_send_messages used to send events with users in dict format, with the
+    # dict containing the user_id and other data. We later trimmed down the user
+    # data to only contain the user_id and the usermessage flags, and put everything
+    # else in the event dict as lists.
+    # This block handles any old-format events still in the queue during upgrade.
+
+    modern_event = cast(MutableMapping[str, Any], event)
+    user_dicts = cast(List[MutableMapping[str, Any]], users)
+
+    # Back-calculate the older all-booleans format data in the `users` dicts into the newer
+    # all-lists format, and attach the lists to the `event` object.
+    modern_event["online_push_user_ids"] = []
+    modern_event["stream_push_user_ids"] = []
+    modern_event["stream_email_user_ids"] = []
+    modern_event["wildcard_mention_user_ids"] = []
+    modern_event["muted_sender_user_ids"] = []
+
+    for user in user_dicts:
+        user_id = user["id"]
+
+        if user.pop("stream_push_notify", False):
+            modern_event["stream_push_user_ids"].append(user_id)
+        if user.pop("stream_email_notify", False):
+            modern_event["stream_email_user_ids"].append(user_id)
+        if user.pop("wildcard_mention_notify", False):
+            modern_event["wildcard_mention_user_ids"].append(user_id)
+        if user.pop("sender_is_muted", False):
+            modern_event["muted_sender_user_ids"].append(user_id)
+
+        # TODO/compatibility: Another translation code block for the rename of
+        # `always_push_notify` to `online_push_enabled`.  Remove this
+        # when one can no longer directly upgrade from 4.x to 5.0-dev.
+        if user.pop("online_push_enabled", False) or user.pop("always_push_notify", False):
+            modern_event["online_push_user_ids"].append(user_id)
+
+        # We can calculate `mentioned` from the usermessage flags, so just remove it
+        user.pop("mentioned", False)
+
+    return (modern_event, user_dicts)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: Union[List[int], List[Mapping[str, Any]]] = notice["users"]
     start_time = time.time()
 
     if event["type"] == "message":
-        process_message_event(event, cast(List[Mapping[str, Any]], users))
+        if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
+            # TODO/compatibility: Remove this whole block once one can no
+            # longer directly upgrade directly from 4.x to 5.0-dev.
+            modern_event, user_dicts = reformat_legacy_send_message_event(event, users)
+            process_message_event(modern_event, user_dicts)
+        else:
+            process_message_event(event, cast(List[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(List[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
