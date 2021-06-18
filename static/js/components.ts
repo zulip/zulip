@@ -1,6 +1,8 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as keydown_util from "./keydown_util";
+
 /* USAGE:
     Toggle x = components.toggle({
         selected: Integer selected_index,
@@ -13,7 +15,23 @@ import * as keydown_util from "./keydown_util";
     }).get();
 */
 
-export function toggle(opts) {
+export type Toggle = {
+    maybe_go_left(): boolean;
+    maybe_go_right(): boolean;
+    disable_tab(name: string): void;
+    enable_tab(name: string): void;
+    value(): string | undefined;
+    get(): JQuery;
+    goto(name: string): void;
+};
+
+export function toggle(opts: {
+    html_class?: string;
+    values: {label: string; label_html?: string; key: string}[];
+    callback?: (label: string, value: string) => void;
+    child_wants_focus?: boolean;
+    selected?: number;
+}): Toggle {
     const component = $("<div class='tab-switcher'></div>");
     if (opts.html_class) {
         // add a check inside passed arguments in case some extra
@@ -56,7 +74,7 @@ export function toggle(opts) {
     };
 
     // Returns false if the requested tab is disabled.
-    function select_tab(idx) {
+    function select_tab(idx: number): boolean {
         const elem = meta.$ind_tab.eq(idx);
         if (elem.hasClass("disabled")) {
             return false;
@@ -76,7 +94,7 @@ export function toggle(opts) {
         return true;
     }
 
-    function maybe_go_left() {
+    function maybe_go_left(): boolean {
         // Select the first non-disabled tab to the left, if any.
         let i = 1;
         while (meta.idx - i >= 0) {
@@ -88,7 +106,7 @@ export function toggle(opts) {
         return false;
     }
 
-    function maybe_go_right() {
+    function maybe_go_right(): boolean {
         // Select the first non-disabled tab to the right, if any.
         let i = 1;
         while (meta.idx + i <= opts.values.length - 1) {
@@ -123,15 +141,23 @@ export function toggle(opts) {
         maybe_go_left,
         maybe_go_right,
 
-        disable_tab(name) {
+        disable_tab(name: string) {
             const value = opts.values.find((o) => o.key === name);
+            if (!value) {
+                blueslip.warn("Incorrect tab name given.");
+                return;
+            }
 
             const idx = opts.values.indexOf(value);
             meta.$ind_tab.eq(idx).addClass("disabled");
         },
 
-        enable_tab(name) {
+        enable_tab(name: string) {
             const value = opts.values.find((o) => o.key === name);
+            if (!value) {
+                blueslip.warn("Incorrect tab name given.");
+                return;
+            }
 
             const idx = opts.values.indexOf(value);
             meta.$ind_tab.eq(idx).removeClass("disabled");
@@ -150,8 +176,12 @@ export function toggle(opts) {
         },
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.
-        goto(name) {
+        goto(name: string) {
             const value = opts.values.find((o) => o.label === name || o.key === name);
+            if (!value) {
+                blueslip.warn("Incorrect tab name given.");
+                return;
+            }
 
             const idx = opts.values.indexOf(value);
 
