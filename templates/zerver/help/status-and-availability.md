@@ -90,4 +90,11 @@ minutes after disabling updates to your availability.
 
 ## Typing notifications
 
-Zulip displays typing notifications in private messages.
+Zulip displays typing notifications when viewing a private message or
+group private message conversation to which one of the other
+participants is currently composing a message.
+
+Typing notifications are only sent while one is actively editing text
+in the compose box, and they disappear if typing is paused for about
+15 seconds.  Just having the compose box open will not send a typing
+notification.
