@@ -22,8 +22,8 @@
 
 # To rebuild from this file for a given release, say bionic:
 #   0. $ tools/ci/generate-dockerfiles
-#   1. $ sudo docker build tools/ci/images/$RELEASE/ --tag zulip/ci:$RELEASE
-#   2. $ sudo docker push zulip/ci:$RELEASE
+#   1. $ docker build tools/ci/images/$RELEASE/ --tag zulip/ci:$RELEASE
+#   2. $ docker push zulip/ci:$RELEASE
 
 FROM {base_image}
 
