@@ -110,6 +110,7 @@ from zerver.lib.message import (
     update_first_visible_message_id,
     wildcard_mention_allowed,
 )
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.realm_icon import realm_icon_url
@@ -1962,13 +1963,24 @@ def do_send_messages(
 
         sender = send_request.message.sender
         message_type = wide_message_dict["type"]
+        active_users_data = [
+            UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=user_flags.get(user_id, []),
+                online_push_user_ids=send_request.online_push_user_ids,
+                stream_push_user_ids=send_request.stream_push_user_ids,
+                stream_email_user_ids=send_request.stream_email_user_ids,
+                wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
+                muted_sender_user_ids=send_request.muted_sender_user_ids,
+            )
+            for user_id in send_request.active_user_ids
+        ]
 
         presence_idle_user_ids = get_active_presence_idle_user_ids(
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
-            active_user_ids=send_request.active_user_ids,
-            user_flags=user_flags,
+            active_users_data=active_users_data,
         )
 
         event = dict(
@@ -6557,15 +6569,13 @@ def get_active_presence_idle_user_ids(
     realm: Realm,
     sender_id: int,
     message_type: str,
-    active_user_ids: Set[int],
-    user_flags: Dict[int, List[str]],
+    active_users_data: List[UserMessageNotificationsData],
 ) -> List[int]:
     """
     Given a list of active_user_ids, we build up a subset
     of those users who fit these criteria:
 
-        * They are likely to need notifications (either due
-          to mentions, alert words, or being PM'ed).
+        * They are likely to need notifications.
         * They are no longer "present" according to the
           UserPresence table.
     """
@@ -6573,16 +6583,17 @@ def get_active_presence_idle_user_ids(
     if realm.presence_disabled:
         return []
 
-    is_pm = message_type == "private"
+    is_private_message = message_type == "private"
 
     user_ids = set()
-    for user_id in active_user_ids:
-        flags = user_flags.get(user_id, [])
-        mentioned = "mentioned" in flags or "wildcard_mentioned" in flags
-        private_message = is_pm and user_id != sender_id
-        alerted = "has_alert_word" in flags
-        if mentioned or private_message or alerted:
-            user_ids.add(user_id)
+    for user_data in active_users_data:
+        alerted = "has_alert_word" in user_data.flags
+
+        # We only need to know the presence idle state for a user if this message would be notifiable
+        # for them if they were indeed idle. Only including those users in the calculation below is a
+        # very important optimization for open communities with many inactive users.
+        if user_data.is_notifiable(is_private_message, sender_id, idle=True) or alerted:
+            user_ids.add(user_data.id)
 
     return filter_presence_idle_user_ids(user_ids)
 

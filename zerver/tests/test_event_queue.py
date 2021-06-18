@@ -439,7 +439,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_push_notify=True,
                 stream_email_notify=False,
                 stream_name="Denmark",
-                already_notified={"email_notified": False, "push_notified": False},
+                already_notified={"email_notified": False, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -462,7 +462,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_push_notify=False,
                 stream_email_notify=True,
                 stream_name="Denmark",
-                already_notified={"email_notified": False, "push_notified": False},
+                already_notified={"email_notified": True, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
