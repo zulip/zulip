@@ -33,7 +33,7 @@ import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
-const RESOLVED_PREFIX = "✔ ";
+const RESOLVED_TOPIC_PREFIX = "✔ ";
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;
@@ -256,7 +256,7 @@ function build_topic_popover(opts) {
         topic_muted,
         can_move_topic,
         is_realm_admin: page_params.is_admin,
-        topic_is_resolved: topic_name.startsWith(RESOLVED_PREFIX),
+        topic_is_resolved: topic_name.startsWith(RESOLVED_TOPIC_PREFIX),
         color: sub.color,
         has_starred_messages,
     });
@@ -662,7 +662,7 @@ export function register_topic_handlers() {
     function mark_topic_as_resolved(stream_id, topic_name) {
         const request = {
             propagate_mode: "change_all",
-            topic: RESOLVED_PREFIX + topic_name,
+            topic: RESOLVED_TOPIC_PREFIX + topic_name,
             send_notification_to_old_thread: false,
             send_notification_to_new_thread: true,
         };
@@ -677,7 +677,7 @@ export function register_topic_handlers() {
     function mark_topic_as_unresolved(stream_id, topic_name) {
         const request = {
             propagate_mode: "change_all",
-            topic: _.trimStart(topic_name, RESOLVED_PREFIX),
+            topic: _.trimStart(topic_name, RESOLVED_TOPIC_PREFIX),
             send_notification_to_old_thread: false,
             send_notification_to_new_thread: true,
         };
@@ -693,7 +693,7 @@ export function register_topic_handlers() {
         const topic_row = $(e.currentTarget);
         const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
         const topic_name = topic_row.attr("data-topic-name");
-        if (topic_name.startsWith(RESOLVED_PREFIX)) {
+        if (topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
             mark_topic_as_unresolved(stream_id, topic_name);
         } else {
             mark_topic_as_resolved(stream_id, topic_name);
