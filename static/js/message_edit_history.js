@@ -83,7 +83,7 @@ export function show_history(message) {
     $("#message_feed_container").append(rendered_message_history);
 
     fetch_and_render_message_history(message);
-    overlays.open_modal("#message-edit-history", true);
+    overlays.open_modal("#message-edit-history", {autoremove: true});
 }
 
 export function initialize() {
