@@ -231,6 +231,10 @@ export function initialize() {
     $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
         let $target = $(e.target);
 
+        if (document.getSelection().type === "Range") {
+            return;
+        }
+
         // if the target is not the div.overlay element, search up the node tree
         // until it is found.
         if ($target.is(".exit, .exit-sign, .overlay-content, .exit span")) {
