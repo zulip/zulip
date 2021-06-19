@@ -1136,10 +1136,6 @@ export function register_click_handlers() {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-   $("body") .on("click", "#edit_user_group", () =>{
-       hide_user_profile();
-   })
-
     $("body").on("click", "#edit_user_group", () => {
         hide_user_profile();
     });
