@@ -373,3 +373,48 @@ class TestQueryCounts(ZulipTestCase):
 
         # The assert_length helper is another useful extra from ZulipTestCase.
         self.assert_length(queries, 16)
+
+
+class TestDevelopmentEmailsLog(ZulipTestCase):
+    # We have development specific utilities that automate common tasks
+    # to improve developer productivity.
+    #
+    # Ones such is /emails/generate/ endpoint that can be used to generate
+    # all sorts of emails zulip sends. Those can be accessed at /emails/
+    # in development server. Let's test that here.
+    def test_generate_emails(self) -> None:
+        # It is a common case where some functions that we test rely
+        # on a certain setting's value. You can test those under the
+        # context of a desired setting value as done below.
+        # The endpoint we're testing here rely on these settings:
+        #   * EMAIL_BACKEND: The backend class used to send emails.
+        #   * DEVELOPMENT_LOG_EMAILS: Whether to log emails sent.
+        # so, we set those to required values.
+        #
+        # If the code you're testing creates logs, it is best to capture them
+        # and verify the log messages. That can be achieved with assertLogs()
+        # as you'll see below. Read more about assertLogs() at:
+        # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLogs
+        with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), self.settings(
+            DEVELOPMENT_LOG_EMAILS=True
+        ), self.assertLogs(level="INFO") as logger:
+
+            result = self.client_get(
+                "/emails/generate/"
+            )  # Generates emails and redirects to /emails/
+            self.assertEqual("/emails/", result["Location"])  # Make sure redirect URL is correct.
+
+            # The above call to /emails/generate/ creates 15 emails and
+            # logs the below line for every email.
+            output_log = (
+                "INFO:root:Emails sent in development are available at http://testserver/emails"
+            )
+            # logger.output is a list of all the log messages captured. Verify it is as expected.
+            self.assertEqual(logger.output, [output_log] * 15)
+
+            # Now, lets actually go the URL the above call redirects to, i.e., /emails/
+            result = self.client_get(result["Location"])
+
+            # assert_in_success_response() is another helper that is commonly used to ensure
+            # we are on the right page by verifying a string exists in the page's content.
+            self.assert_in_success_response(["All the emails sent in the Zulip"], result)
