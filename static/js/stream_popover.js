@@ -33,7 +33,7 @@ import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
-const RESOLVED_PREFIX = "✔️ ";
+const RESOLVED_PREFIX = "✔ ";
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;

@@ -5632,7 +5632,7 @@ class MessageUpdateUserInfoResult(TypedDict):
     mention_user_ids: Set[int]
 
 
-RESOLVED_TOPIC_PREFIX = "✔️ "
+RESOLVED_TOPIC_PREFIX = "✔ "
 
 
 def maybe_send_resolve_topic_notifications(
