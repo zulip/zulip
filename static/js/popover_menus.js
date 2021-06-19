@@ -1,3 +1,7 @@
+/* Module for popovers that have been ported to the modern
+   TippyJS/Popper popover library from the legacy Bootstrap
+   popovers system in popovers.js. */
+
 import $ from "jquery";
 import {delegate} from "tippy.js";
 
@@ -19,6 +23,9 @@ const default_popover_props = {
     allowHTML: true,
     interactive: true,
     hideOnClick: true,
+    /* The light-border TippyJS theme is a bit of a misnomer; it
+       is a popover styling similar to Bootstrap.  We've also customized
+       its CSS to support Zulip's night theme. */
     theme: "light-border",
     touch: true,
 };
