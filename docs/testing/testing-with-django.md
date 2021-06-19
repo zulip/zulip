@@ -62,8 +62,12 @@ always use `test-backend --include-webhooks` and run all of the tests.
 ## Writing tests
 
 Before you write your first tests of Zulip, it is worthwhile to read
-the rest of this document, and you can also read some of the existing tests
-in `zerver/tests` to get a feel for the patterns we use.
+the rest of this document.
+
+To get a hang of commonly used testing techniques, read
+[zerver/tests/test_example.py](https://github.com/zulip/zulip/blob/master/zerver/tests/test_example.py).
+You can also read some of the existing tests in `zerver/tests`
+to get a feel for other patterns we use.
 
 A good practice is to get a "failing test" before you start to implement
 your feature.  First, it is a useful exercise to understand what needs to happen
