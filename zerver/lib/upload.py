@@ -386,6 +386,8 @@ class S3UploadBackend(ZulipUploadBackend):
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
+        self._boto_client = None
+
     def get_public_upload_url(
         self,
         key: str,
@@ -399,13 +401,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # different URL format. Configuring no signature and providing
         # no access key makes `generate_presigned_url` just return the
         # normal public URL for a key.
-        config = Config(signature_version=botocore.UNSIGNED)
-        return self.session.client(
-            "s3",
-            region_name=settings.S3_REGION,
-            endpoint_url=settings.S3_ENDPOINT_URL,
-            config=config,
-        ).generate_presigned_url(
+        return self.get_boto_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
@@ -413,6 +409,20 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
+
+    def get_boto_client(self) -> botocore.client.BaseClient:
+        """
+        Creating the client takes a long time so we need to cache it.
+        """
+        if self._boto_client is None:
+            config = Config(signature_version=botocore.UNSIGNED)
+            self._boto_client = self.session.client(
+                "s3",
+                region_name=settings.S3_REGION,
+                endpoint_url=settings.S3_ENDPOINT_URL,
+                config=config,
+            )
+        return self._boto_client
 
     def delete_file_from_s3(self, path_id: str, bucket: ServiceResource) -> bool:
         key = bucket.Object(path_id)
