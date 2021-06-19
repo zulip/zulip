@@ -111,9 +111,9 @@ export function open_overlay(opts) {
     };
 }
 
-// If autoremove is true, the modal element will be removed from the DOM
+// If conf.autoremove is true, the modal element will be removed from the DOM
 // once the modal is hidden.
-export function open_modal(selector, autoremove = false) {
+export function open_modal(selector, conf) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into open_modal");
         return;
@@ -139,7 +139,7 @@ export function open_modal(selector, autoremove = false) {
     elem.find(".alert").hide();
     elem.find(".alert-notification").html("");
 
-    if (autoremove) {
+    if (conf && conf.autoremove) {
         elem.on("hidden.bs.modal", () => {
             elem.remove();
         });
