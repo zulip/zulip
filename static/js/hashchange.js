@@ -179,6 +179,8 @@ function do_hashchange_normal(from_reload) {
         case "#about-zulip":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
+        default:
+            show_default_view();
     }
     return false;
 }

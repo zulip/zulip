@@ -170,14 +170,29 @@ run_test("hash_interactions", ({override}) => {
     window_stub = $.create("window-stub");
     page_params.default_view = "recent_topics";
 
-    override(recent_topics_ui, "show", () => {});
     override(recent_topics_util, "is_visible", () => false);
     const helper = test_helper({override, change_tab: true});
 
-    window.location.hash = "#all_messages";
+    let recent_topics_ui_shown = false;
+    override(recent_topics_ui, "show", () => {
+        recent_topics_ui_shown = true;
+    });
+    window.location.hash = "#unknown_hash";
 
     browser_history.clear_for_testing();
     hashchange.initialize();
+    // If it's an unknown hash it should show the default view.
+    assert.equal(recent_topics_ui_shown, true);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+    ]);
+
+    override(recent_topics_ui, "show", () => {});
+    window.location.hash = "#all_messages";
+
+    helper.clear_events();
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
