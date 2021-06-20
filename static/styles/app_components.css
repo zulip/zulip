@@ -552,6 +552,10 @@ div.overlay {
     background-size: cover;
 }
 
+.only-visible-for-spectators {
+    display: none;
+}
+
 .spectator-view {
     /* Add this class to elements which a
      * spectator cannot use. */
