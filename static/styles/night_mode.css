@@ -73,6 +73,18 @@ body.night-mode {
         }
     }
 
+    .compose_formatting_button {
+        background-color: hsl(0, 0%, 0%);
+
+        &:hover {
+            background-color: hsl(212, 11%, 18%);
+        }
+
+        .zulip-icon {
+            filter: invert(1);
+        }
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,

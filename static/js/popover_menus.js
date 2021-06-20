@@ -2,13 +2,16 @@
    TippyJS/Popper popover library from the legacy Bootstrap
    popovers system in popovers.js. */
 
+import {position} from "caret-pos";
 import $ from "jquery";
-import {delegate} from "tippy.js";
+import tippy, {delegate, hideAll} from "tippy.js";
 
+import render_formatting_buttons_popover from "../templates/formatting_buttons_popover.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 
 import * as compose_actions from "./compose_actions";
+import * as compose_ui from "./compose_ui";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as settings_data from "./settings_data";
@@ -88,5 +91,52 @@ export function initialize() {
             instance.destroy();
             compose_mobile_button_popover_displayed = false;
         },
+    });
+
+    // compose formatting buttons popover
+    $("body").on("select", ".new_message_textarea, .message_edit_content", (e) => {
+        hideAll();
+        const textarea = $(e.currentTarget);
+        const caret_offset = position(e.currentTarget);
+        const range = textarea.range();
+        if (!range || !range.length) {
+            // check if user selected a range of text.
+            return;
+        }
+        tippy(e.target, {
+            ...default_popover_props,
+            content: render_formatting_buttons_popover(),
+            placement: "top-start",
+            trigger: "manual",
+            // Shifting 3px to left places `B` above selection.
+            // Extra 5px from top to get popover closer to text.
+            offset: [caret_offset.left - 3, -1 * caret_offset.top + 5],
+            arrow: false,
+            showOnCreate: true,
+            onHidden(instance) {
+                textarea.off("keyup.tooltip_check_selection_range");
+                instance.destroy();
+            },
+            onShow(instance) {
+                const $popper = $(instance.popper);
+                // Remove extra padding around the buttons so that
+                // user doesn't click on it by mistake.
+                $popper.find(".tippy-content").css("padding", 0);
+                $popper.on("click", ".compose_formatting_button", (e) => {
+                    const format_type = $(e.currentTarget)
+                        .find("[data-format-type]")
+                        .data("format-type");
+                    compose_ui.format_text(textarea, format_type);
+                    textarea.trigger("focus");
+                });
+                textarea.on("keyup.tooltip_check_selection_range", () => {
+                    // Hide if there is no longer any text selected.
+                    const range = textarea.range();
+                    if (!range || !range.length) {
+                        instance.hide();
+                    }
+                });
+            },
+        });
     });
 }
