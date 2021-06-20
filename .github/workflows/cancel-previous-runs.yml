@@ -22,6 +22,7 @@ jobs:
       # so this is required.
       - name: Get workflow IDs.
         id: workflow_ids
+        continue-on-error: true # Don't fail this job on failure
         env:
           # This is in <owner>/<repo> format e.g. zulip/zulip
           REPOSITORY: ${{ github.repository }}
@@ -36,6 +37,7 @@ jobs:
           echo "::set-output name=ids::$ids"
 
       - uses: styfle/cancel-workflow-action@0.4.1
+        continue-on-error: true # Don't fail this job on failure
         with:
           workflow_id: ${{ steps.workflow_ids.outputs.ids }}
           access_token: ${{ github.token }}
