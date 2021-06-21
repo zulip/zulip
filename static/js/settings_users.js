@@ -490,7 +490,7 @@ function open_bot_form(person) {
 
 function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
-    const modal_parent = $("#admin-user-list");
+    const modal_parent = $("#settings_content .organization-box");
     const opts = {
         username: user.full_name,
         email: user.email,
