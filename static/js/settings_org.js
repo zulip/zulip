@@ -1,9 +1,9 @@
 import $ from "jquery";
 
 import pygments_data from "../generated/pygments_data.json";
+import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.hbs";
-import render_settings_deactivate_realm_modal from "../templates/settings/deactivate_realm_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
