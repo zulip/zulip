@@ -920,7 +920,7 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 
 def filter_pattern_validator(value: str) -> Pattern[str]:
-    regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
+    regex = re.compile(r"^(?:(?:[\w\-#= /:%.@~]*|[+]|[!])(\(\?P<\w+>.+\))(?:[\w\-%#?&./=]*))+$")
     error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
         "[ a-zA-Z_#=/:+!-]",
     )
