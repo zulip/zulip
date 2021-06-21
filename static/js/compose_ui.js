@@ -122,3 +122,11 @@ export function compute_placeholder_text(opts) {
     }
     return $t({defaultMessage: "Compose your message here"});
 }
+
+export function wrap_text_with_markdown(textarea, prefix, suffix) {
+    const range = textarea.range();
+
+    if (!document.execCommand("insertText", false, prefix + range.text + suffix)) {
+        textarea.range(range.start, range.end).range(prefix + range.text + suffix);
+    }
+}
