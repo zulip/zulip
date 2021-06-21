@@ -2243,6 +2243,63 @@ class DeleteMessageTest(ZulipTestCase):
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
 
+    def test_delete_message_according_to_delete_own_message_policy(self) -> None:
+        def check_delete_message_by_sender(
+            sender_name: str, error_msg: Optional[str] = None
+        ) -> None:
+            sender = self.example_user(sender_name)
+            msg_id = self.send_stream_message(sender, "Verona")
+            self.login_user(sender)
+            result = self.client_delete(f"/json/messages/{msg_id}")
+            if error_msg is None:
+                self.assert_json_success(result)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = get_realm("zulip")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+        check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
+        check_delete_message_by_sender("iago")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_sender("shiva")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        check_delete_message_by_sender(
+            "polonius", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_sender("cordelia")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        cordelia = self.example_user("cordelia")
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.save()
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message"
+        )
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.save()
+        check_delete_message_by_sender("cordelia")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_EVERYONE, acting_user=None
+        )
+        check_delete_message_by_sender("cordelia")
+        check_delete_message_by_sender("polonius")
+
     def test_delete_event_sent_after_transaction_commits(self) -> None:
         """
         Tests that `send_event` is hooked to `transaction.on_commit`. This is important, because

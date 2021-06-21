@@ -68,7 +68,7 @@ def update_realm(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     delete_own_message_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.DELETE_OWN_MESSAGE_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_MESSAGE_POLICY_TYPES), default=None
     ),
     message_content_delete_limit_seconds_raw: Optional[Union[int, str]] = REQ(
         "message_content_delete_limit_seconds", json_validator=check_string_or_int, default=None

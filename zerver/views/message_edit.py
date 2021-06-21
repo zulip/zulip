@@ -18,7 +18,7 @@ from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
-from zerver.models import Message, Realm, UserProfile
+from zerver.models import Message, UserProfile
 
 
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
@@ -133,8 +133,8 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     if message.sender != user_profile:
         # Users can only delete messages sent by them.
         raise JsonableError(_("You don't have permission to delete this message"))
-    if user_profile.realm.delete_own_message_policy == Realm.POLICY_ADMINS_ONLY:
-        # User can not delete message, if message deleting is not allowed in realm.
+    if not user_profile.can_delete_own_message():
+        # Only user with roles as allowed by delete_own_message_policy can delete message.
         raise JsonableError(_("You don't have permission to delete this message"))
 
     deadline_seconds: Optional[int] = user_profile.realm.message_content_delete_limit_seconds

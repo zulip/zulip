@@ -10344,7 +10344,10 @@ paths:
                           The policy defining which users can delete
                           messages that they had sent.
 
+                          - 1 = members only
                           - 2 = admins only
+                          - 3 = full members only
+                          - 4 = admins and moderators only
                           - 5 = everyone
 
                           **Changes**: New in Zulip 5.0 (feature level 101), replacing the

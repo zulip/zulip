@@ -294,6 +294,9 @@ class Realm(models.Model):
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
+    # Who in the organization is allowed to delete messages they themselves sent.
+    delete_own_message_policy: bool = models.PositiveSmallIntegerField(default=POLICY_ADMINS_ONLY)
+
     # Who in the organization is allowed to edit topics of any message.
     edit_topic_policy: int = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
 
@@ -366,13 +369,6 @@ class Realm(models.Model):
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold: int = models.PositiveIntegerField(default=0)
-
-    DELETE_OWN_MESSAGE_POLICY_TYPES = [
-        POLICY_EVERYONE,
-        POLICY_ADMINS_ONLY,
-    ]
-
-    delete_own_message_policy: bool = models.PositiveSmallIntegerField(default=POLICY_ADMINS_ONLY)
 
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
@@ -1839,6 +1835,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         if policy_name not in [
             "add_custom_emoji_policy",
             "create_stream_policy",
+            "delete_own_message_policy",
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
@@ -1850,6 +1847,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_NOBODY:
             return False
+
+        if policy_value == Realm.POLICY_EVERYONE:
+            return True
 
         if self.is_realm_admin:
             return True
@@ -1894,6 +1894,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("add_custom_emoji_policy")
+
+    def can_delete_own_message(self) -> bool:
+        return self.has_permission("delete_own_message_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)

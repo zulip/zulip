@@ -839,7 +839,7 @@ class RealmAPITest(ZulipTestCase):
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
-            delete_own_message_policy=Realm.DELETE_OWN_MESSAGE_POLICY_TYPES,
+            delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -1021,6 +1021,12 @@ class RealmAPITest(ZulipTestCase):
         realm = self.update_with_api("message_content_delete_limit_seconds", 600)
         self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_EVERYONE)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
+        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_MODERATORS_ONLY)
+        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
+        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_FULL_MEMBERS_ONLY)
+        realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_MEMBERS_ONLY)
+        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_MEMBERS_ONLY)
 
         # Test that 0 is invalid value.
         req = dict(message_content_delete_limit_seconds=orjson.dumps(0).decode())

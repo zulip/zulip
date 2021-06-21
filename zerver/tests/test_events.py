@@ -2145,7 +2145,7 @@ class RealmPropertyActionTest(BaseAction):
             invite_to_realm_policy=[6, 4, 3, 2, 1],
             move_messages_between_streams_policy=[4, 3, 2, 1],
             add_custom_emoji_policy=[4, 3, 2, 1],
-            delete_own_message_policy=[5, 2],
+            delete_own_message_policy=[5, 4, 3, 2, 1],
         )
 
         vals = test_values.get(name)
