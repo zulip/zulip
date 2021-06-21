@@ -1,11 +1,11 @@
 import $ from "jquery";
 
+import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_settings_deactivation_stream_modal from "../templates/settings/deactivation_stream_modal.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
 import render_stream_subscription_info from "../templates/stream_subscription_info.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
-import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
