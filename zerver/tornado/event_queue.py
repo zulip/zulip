@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 from collections import deque
+from dataclasses import asdict
 from typing import (
     AbstractSet,
     Any,
@@ -39,6 +40,7 @@ from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.decorator import cachify
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
 from zerver.lib.utils import statsd
@@ -952,60 +954,49 @@ def process_message_event(
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
-        private_message = message_type == "private" and user_profile_id != sender_id
-        mentioned = "mentioned" in flags
-        stream_push_notify = user_profile_id in stream_push_user_ids
-        stream_email_notify = user_profile_id in stream_email_user_ids
-        wildcard_mention_notify = (
-            user_profile_id in wildcard_mention_user_ids and "wildcard_mentioned" in flags
-        )
-        sender_is_muted = user_profile_id in muted_sender_user_ids
-        online_push_enabled = user_profile_id in online_push_user_ids
-
-        extra_user_data[user_profile_id] = dict(
-            internal_data=dict(
-                mentioned=mentioned,
-                stream_push_notify=stream_push_notify,
-                stream_email_notify=stream_email_notify,
-                wildcard_mention_notify=wildcard_mention_notify,
-                sender_is_muted=sender_is_muted,
-            ),
+        private_message = message_type == "private"
+        user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
+            user_id=user_profile_id,
+            flags=flags,
+            online_push_user_ids=online_push_user_ids,
+            stream_push_user_ids=stream_push_user_ids,
+            stream_email_user_ids=stream_email_user_ids,
+            wildcard_mention_user_ids=wildcard_mention_user_ids,
+            muted_sender_user_ids=muted_sender_user_ids,
         )
 
-        if sender_is_muted:
-            # If the sender is muted, never enqueue notifications.
+        # Remove fields sent through other pipes to save some space.
+        internal_data = asdict(user_notifications_data)
+        internal_data.pop("flags")
+        internal_data.pop("id")
+        extra_user_data[user_profile_id] = dict(internal_data=internal_data)
+
+        # If the message isn't notifiable had the user been idle, then the user
+        # shouldn't receive notifications even if they were online. In that case we can
+        # avoid the more expensive `receiver_is_off_zulip` call, and move on to process
+        # the next user.
+        if not user_notifications_data.is_notifiable(private_message, sender_id, idle=True):
             continue
 
-        # We first check if a message is potentially mentionable,
-        # since receiver_is_off_zulip is somewhat expensive.
-        if (
-            private_message
-            or mentioned
-            or wildcard_mention_notify
-            or stream_push_notify
-            or stream_email_notify
-        ):
-            idle = receiver_is_off_zulip(user_profile_id) or (
-                user_profile_id in presence_idle_user_ids
-            )
+        idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
 
-            stream_name = event_template.get("stream_name")
+        stream_name = event_template.get("stream_name")
 
-            extra_user_data[user_profile_id]["internal_data"].update(
-                maybe_enqueue_notifications(
-                    user_profile_id,
-                    message_id,
-                    private_message,
-                    mentioned,
-                    wildcard_mention_notify,
-                    stream_push_notify,
-                    stream_email_notify,
-                    stream_name,
-                    online_push_enabled,
-                    idle,
-                    {},
-                )
+        extra_user_data[user_profile_id]["internal_data"].update(
+            maybe_enqueue_notifications(
+                user_profile_id,
+                message_id,
+                private_message,
+                user_notifications_data.mentioned,
+                user_notifications_data.wildcard_mention_notify,
+                user_notifications_data.stream_push_notify,
+                user_notifications_data.stream_email_notify,
+                stream_name,
+                user_notifications_data.online_push_enabled,
+                idle,
+                {},
             )
+        )
 
     for client_data in send_to_clients.values():
         client = client_data["client"]
