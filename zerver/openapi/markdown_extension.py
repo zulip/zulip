@@ -259,8 +259,6 @@ def generate_curl_example(
     exclude: Optional[List[str]] = None,
     include: Optional[List[str]] = None,
 ) -> List[str]:
-    if exclude is not None and include is not None:
-        raise AssertionError("exclude and include cannot be set at the same time.")
 
     lines = ["```curl"]
     operation = endpoint + ":" + method.lower()
