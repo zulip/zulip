@@ -19,8 +19,6 @@
 
 ## Parameters
 
-**Note**: The following parameters are all URL query parameters.
-
 {generate_api_arguments_table|zulip.yaml|/streams:get}
 
 {generate_parameter_description(/streams:get)}

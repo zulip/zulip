@@ -19,8 +19,6 @@
 
 ## Parameters
 
-**Note**: The following parameters are all URL query parameters.
-
 {generate_api_arguments_table|zulip.yaml|/users/{user_id}:get}
 
 {generate_parameter_description(/users/{user_id}:get)}
