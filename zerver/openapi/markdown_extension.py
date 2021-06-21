@@ -24,6 +24,7 @@ from zerver.openapi.openapi import (
     get_curl_include_exclude,
     get_openapi_description,
     get_openapi_summary,
+    get_parameters_description,
     get_responses_description,
     openapi_spec,
 )
@@ -36,6 +37,7 @@ JS_EXAMPLE_REGEX = re.compile(r"\/\/ \{code_example\|\s*(.+?)\s*\}")
 MACRO_REGEXP_DESC = re.compile(r"\{generate_api_description(\(\s*(.+?)\s*\))}")
 MACRO_REGEXP_TITLE = re.compile(r"\{generate_api_title(\(\s*(.+?)\s*\))}")
 MACRO_REGEXP_RESPONSE_DESC = re.compile(r"\{generate_response_description(\(\s*(.+?)\s*\))}")
+MACRO_REGEXP_PARAMETER_DESC = re.compile(r"\{generate_parameter_description(\(\s*(.+?)\s*\))}")
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -414,6 +416,11 @@ class APIMarkdownExtension(Extension):
             "generate_response_description",
             531,
         )
+        md.preprocessors.register(
+            ParameterDescriptionPreprocessor(md, self.getConfigs()),
+            "generate_parameter_description",
+            535,
+        )
 
 
 class APICodeExamplesPreprocessor(Preprocessor):
@@ -581,6 +588,43 @@ class ResponseDescriptionPreprocessor(Preprocessor):
         description: List[str] = []
         path, method = function.rsplit(":", 1)
         raw_description = get_responses_description(path, method)
+        description.extend(raw_description.splitlines())
+        return description
+
+
+class ParameterDescriptionPreprocessor(Preprocessor):
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
+        super().__init__(md)
+        self.api_url = config["api_url"]
+
+    def run(self, lines: List[str]) -> List[str]:
+        done = False
+        while not done:
+            for line in lines:
+                loc = lines.index(line)
+                match = MACRO_REGEXP_PARAMETER_DESC.search(line)
+
+                if match:
+                    function = match.group(2)
+                    text = self.render_parameters_description(function)
+                    # The line that contains the directive to include the macro
+                    # may be preceded or followed by text or tags, in that case
+                    # we need to make sure that any preceding or following text
+                    # stays the same.
+                    line_split = MACRO_REGEXP_PARAMETER_DESC.split(line, maxsplit=0)
+                    preceding = line_split[0]
+                    following = line_split[-1]
+                    text = [preceding, *text, following]
+                    lines = lines[:loc] + text + lines[loc + 1 :]
+                    break
+            else:
+                done = True
+        return lines
+
+    def render_parameters_description(self, function: str) -> List[str]:
+        description: List[str] = []
+        path, method = function.rsplit(":", 1)
+        raw_description = get_parameters_description(path, method)
         description.extend(raw_description.splitlines())
         return description
 
