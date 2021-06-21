@@ -16,7 +16,7 @@
     height: 48px;
     margin: 0 auto 24px;
 }
-#app-loading {
+#app-loading, #app-loading-reload  {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -27,6 +27,10 @@
 }
 #app-loading h3 {
     text-align: center;
+}
+#app-loading-reload {
+    top: unset;
+    bottom: 0;
 }
 </style>
 {% endblock %}
@@ -43,6 +47,9 @@
         </svg>
     </div>
     <h3>{{ _('Loading...') }}</h3>
+</div>
+
+<div id="app-loading-reload">
     <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
     <script nonce="{{ csp_nonce }}">
         document.addEventListener('DOMContentLoaded', function () {
