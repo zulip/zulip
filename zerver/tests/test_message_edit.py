@@ -2005,6 +2005,32 @@ class EditMessageTest(EditMessageTestCase):
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
 
+        # Now move to a weird state and confirm no new messages
+        weird_topic = "✔ ✔✔" + original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": weird_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                weird_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, weird_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
         unresolved_topic = original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),

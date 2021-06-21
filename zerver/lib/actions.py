@@ -5643,13 +5643,37 @@ def maybe_send_resolve_topic_notifications(
     old_topic: str,
     new_topic: str,
 ) -> None:
+    # Note that topics will have already been stripped in check_update_message.
+    #
+    # This logic is designed to treat removing a weird "✔ ✔✔ "
+    # prefix as unresolving the topic.
     if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
         return
 
-    if new_topic.startswith(RESOLVED_TOPIC_PREFIX):
+    if new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
+        RESOLVED_TOPIC_PREFIX
+    ):
         notification_string = _("{user} has marked this topic as resolved.")
-    else:
+    elif old_topic.startswith(RESOLVED_TOPIC_PREFIX) and not new_topic.startswith(
+        RESOLVED_TOPIC_PREFIX
+    ):
         notification_string = _("{user} has marked this topic as unresolved.")
+    else:
+        # If there's some other weird topic that does not toggle the
+        # state of "topic starts with RESOLVED_TOPIC_PREFIX", we do
+        # nothing. Any other logic could result in cases where we send
+        # these notifications in a non-alternating fashion.
+        #
+        # Note that it is still possible for an individual topic to
+        # have multiple "This topic was marked as resolved"
+        # notifications in a row: one can send new messages to the
+        # pre-resolve topic and then resolve the topic created that
+        # way to get multiple in the resolved topic. And then an
+        # administrator can the messages in between. We consider this
+        # to be a fundamental risk of irresponsible message deletion,
+        # not a bug with the "resolve topics" feature.
+        return
+
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     with override_language(stream.realm.default_language):
