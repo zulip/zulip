@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/{user_id}/reactivate:post}
 
+{generate_parameter_description(/users/{user_id}/reactivate:post)}
+
 ## Response
 
 #### Example response

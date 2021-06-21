@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/playgrounds/{playground_id}:delete}
 
+{generate_parameter_description(/realm/playgrounds/{playground_id}:delete)}
+
 ## Response
 
 #### Example response

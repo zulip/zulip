@@ -15,6 +15,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/fetch_api_key:post}
 
+{generate_parameter_description(/fetch_api_key:post)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/fetch_api_key:post}

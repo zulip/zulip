@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/filters/{filter_id}:patch}
 
+{generate_parameter_description(/realm/filters/{filter_id}:patch)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/realm/filters/{filter_id}:patch}

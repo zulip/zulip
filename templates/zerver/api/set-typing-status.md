@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/typing:post}
 
+{generate_parameter_description(/typing:post)}
+
 ## Response
 
 #### Example response

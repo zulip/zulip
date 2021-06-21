@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/profile_fields:post}
 
+{generate_parameter_description(/realm/profile_fields:post)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/realm/profile_fields:post}

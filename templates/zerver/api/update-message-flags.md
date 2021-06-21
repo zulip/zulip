@@ -93,6 +93,7 @@
         </tbody>
     </table>
 </div>
+{generate_parameter_description(/messages/flags:post)}
 
 ## Response
 

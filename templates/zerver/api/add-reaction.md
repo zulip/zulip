@@ -22,6 +22,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}/reactions:post}
 
+{generate_parameter_description(/messages/{message_id}/reactions:post)}
+
 ## Response
 
 #### Example response

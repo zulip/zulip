@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/settings/notifications:patch}
 
+{generate_parameter_description(/settings/notifications:patch)}
+
 ## Response
 
 #### Return values

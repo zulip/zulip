@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/me:delete}
 
+{generate_parameter_description(/users/me:delete)}
+
 ## Response
 
 #### Example response
