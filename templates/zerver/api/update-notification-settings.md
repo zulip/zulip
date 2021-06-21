@@ -32,6 +32,8 @@ with their new value. Please note that this doesn't necessarily mean that it
 will return all the settings passed as parameters in the request, but only
 those ones that were different than the already existing setting.
 
+{generate_response_description(/settings/notifications:patch)}
+
 #### Example response
 
 {generate_code_example|/settings/notifications:patch|fixture(200)}

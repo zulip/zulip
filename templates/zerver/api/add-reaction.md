@@ -26,6 +26,8 @@
 
 ## Response
 
+{generate_response_description(/messages/{message_id}/reactions:post)}
+
 #### Example response
 
 {generate_code_example|/messages/{message_id}/reactions:post|fixture(200)}

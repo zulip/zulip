@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/realm/playgrounds/{playground_id}:delete)}
+
 #### Example response
 
 {generate_code_example|/realm/playgrounds/{playground_id}:delete|fixture(200)}

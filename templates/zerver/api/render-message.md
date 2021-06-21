@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/messages/render:post}
 
+{generate_response_description(/messages/render:post)}
+
 #### Example response
 
 {generate_code_example|/messages/render:post|fixture(200)}

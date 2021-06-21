@@ -27,6 +27,8 @@
 
 ## Response
 
+{generate_response_description(/messages/{message_id}:delete)}
+
 #### Example response
 
 {generate_code_example|/messages/{message_id}:delete|fixture(200)}

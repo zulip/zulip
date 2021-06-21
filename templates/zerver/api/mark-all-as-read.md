@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/mark_all_as_read:post)}
+
 #### Example response
 
 {generate_code_example|/mark_all_as_read:post|fixture(200)}
@@ -59,6 +61,8 @@
 {generate_parameter_description(/mark_all_as_read:post)}
 
 ## Response
+
+{generate_response_description(/mark_all_as_read:post)}
 
 #### Example response
 
@@ -95,6 +99,8 @@
 {generate_parameter_description(/mark_all_as_read:post)}
 
 ## Response
+
+{generate_response_description(/mark_all_as_read:post)}
 
 #### Example response
 

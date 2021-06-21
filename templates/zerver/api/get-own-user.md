@@ -27,6 +27,8 @@ This endpoint takes no parameters.
 
 {generate_return_values_table|zulip.yaml|/users/me:get}
 
+{generate_response_description(/users/me:get)}
+
 #### Example response
 
 {generate_code_example|/users/me:get|fixture(200)}

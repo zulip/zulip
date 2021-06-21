@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/streams/{stream_id}:patch)}
+
 #### Example response
 
 {generate_code_example|/streams/{stream_id}:patch|fixture(200)}

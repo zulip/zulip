@@ -28,6 +28,8 @@
 {generate_return_values_table|zulip.yaml|/realm/profile_fields:get}
 
 
+{generate_response_description(/realm/profile_fields:get)}
+
 #### Example response
 
 {generate_code_example|/realm/profile_fields:get|fixture(200)}

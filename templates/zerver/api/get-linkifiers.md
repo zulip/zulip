@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/realm/linkifiers:get}
 
+{generate_response_description(/realm/linkifiers:get)}
+
 #### Example response
 
 {generate_code_example|/realm/linkifiers:get|fixture(200)}

@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/users/{user_id}:patch)}
+
 #### Example response
 
 {generate_code_example|/users/{user_id}:patch|fixture(200)}

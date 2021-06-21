@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/users/me:delete)}
+
 #### Example response
 
 {generate_code_example|/users/me:delete|fixture(200)}

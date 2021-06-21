@@ -21,6 +21,8 @@
 
 {generate_return_values_table|zulip.yaml|/dev_fetch_api_key:post}
 
+{generate_response_description(/dev_fetch_api_key:post)}
+
 #### Example response
 
 {generate_code_example|/dev_fetch_api_key:post|fixture(200)}

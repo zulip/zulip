@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/realm/profile_fields:post}
 
+{generate_response_description(/realm/profile_fields:post)}
+
 #### Example response
 
 {generate_code_example|/realm/profile_fields:post|fixture(200)}

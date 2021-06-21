@@ -39,6 +39,8 @@ response, for two reasons:
   multi-subdomain server, like the root domain of zulip.com, the settings
   that are realm-specific are not known and thus not provided.
 
+{generate_response_description(/server_settings:get)}
+
 #### Example response
 
 {generate_code_example|/server_settings:get|fixture(200)}

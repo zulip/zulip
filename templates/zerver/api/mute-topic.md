@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/users/me/subscriptions/muted_topics:patch)}
+
 #### Example response
 
 {generate_code_example|/users/me/subscriptions/muted_topics:patch|fixture(200)}

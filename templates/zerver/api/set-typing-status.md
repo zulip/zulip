@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/typing:post)}
+
 #### Example response
 
 {generate_code_example|/typing:post|fixture(200)}

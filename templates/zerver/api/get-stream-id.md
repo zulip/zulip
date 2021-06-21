@@ -29,6 +29,8 @@
 
 {generate_return_values_table|zulip.yaml|/get_stream_id:get}
 
+{generate_response_description(/get_stream_id:get)}
+
 #### Example response
 
 {generate_code_example|/get_stream_id:get|fixture(200)}

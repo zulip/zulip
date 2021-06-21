@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/events:delete)}
+
 #### Example response
 
 {generate_code_example|/events:delete|fixture(200)}

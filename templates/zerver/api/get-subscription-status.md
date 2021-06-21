@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/users/{user_id}/subscriptions/{stream_id}:get)}
+
 #### Example response
 
 {generate_code_example|/users/{user_id}/subscriptions/{stream_id}:get|fixture(200)}

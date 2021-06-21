@@ -34,6 +34,8 @@ You only have permission to edit a message if:
 
 ## Response
 
+{generate_response_description(/messages/{message_id}:patch)}
+
 #### Example response
 
 {generate_code_example|/messages/{message_id}:patch|fixture(200)}

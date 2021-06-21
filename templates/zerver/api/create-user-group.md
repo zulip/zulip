@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/user_groups/create:post)}
+
 #### Example response
 
 {generate_code_example|/user_groups/create:post|fixture(200)}
