@@ -1968,6 +1968,18 @@ class EditMessageTest(EditMessageTestCase):
         )
         id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
 
+        # Check that we don't incorrectly send "unresolve topic"
+        # notifications when asking the preserve the current topic.
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": original_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "Nothing to change")
+
         resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),
