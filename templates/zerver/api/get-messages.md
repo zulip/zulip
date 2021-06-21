@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages:get}
 
+{generate_parameter_description(/messages:get)}
+
 ## Response
 
 When a request is successful, this endpoint returns a dictionary

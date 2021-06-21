@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/attachments:get}
 
+{generate_parameter_description(/attachments:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/attachments:get}

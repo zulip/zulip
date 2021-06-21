@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}:get}
 
+{generate_parameter_description(/messages/{message_id}:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/messages/{message_id}:get}

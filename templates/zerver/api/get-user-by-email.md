@@ -23,6 +23,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/{email}:get}
 
+{generate_parameter_description(/users/{email}:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml}|/users/{email}:get}

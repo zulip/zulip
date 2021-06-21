@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/server_settings:get}
 
+{generate_parameter_description(/server_settings:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/server_settings:get}

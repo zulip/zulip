@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/user_groups/{user_group_id}:delete}
 
+{generate_parameter_description(/user_groups/{user_group_id}:delete)}
+
 ## Response
 
 #### Example response

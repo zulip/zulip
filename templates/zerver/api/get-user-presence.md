@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/{user_id_or_email}/presence:get}
 
+{generate_parameter_description(/users/{user_id_or_email}/presence:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/users/{user_id_or_email}/presence:get}

@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/me/subscriptions/muted_topics:patch}
 
+{generate_parameter_description(/users/me/subscriptions/muted_topics:patch)}
+
 ## Response
 
 #### Example response

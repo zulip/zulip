@@ -21,6 +21,8 @@
 
 This endpoint takes no parameters.
 
+{generate_parameter_description(/users/me:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/users/me:get}

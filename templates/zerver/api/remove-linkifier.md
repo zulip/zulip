@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/filters/{filter_id}:delete}
 
+{generate_parameter_description(/realm/filters/{filter_id}:delete)}
+
 ## Response
 
 #### Example response

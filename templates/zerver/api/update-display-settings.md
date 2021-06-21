@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/settings/display:patch}
 
+{generate_parameter_description(/settings/display:patch)}
+
 ## Response
 
 #### Return values

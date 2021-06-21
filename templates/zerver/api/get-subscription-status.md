@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/{user_id}/subscriptions/{stream_id}:get}
 
+{generate_parameter_description(/users/{user_id}/subscriptions/{stream_id}:get)}
+
 ## Response
 
 #### Example response
