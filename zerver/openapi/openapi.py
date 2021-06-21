@@ -214,6 +214,18 @@ def get_openapi_fixture_description(endpoint: str, method: str, status_code: str
     return get_schema(endpoint, method, status_code)["description"]
 
 
+def get_curl_include_exclude(endpoint: str, method: str) -> List[Dict[str, Any]]:
+    """Fetch all the kinds of parameters required for curl examples."""
+    if (
+        "x-curl-examples-parameters"
+        not in openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    ):
+        return [{"type": "exclude", "parameters": {"enum": [""]}}]
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()]["x-curl-examples-parameters"][
+        "oneOf"
+    ]
+
+
 def check_requires_administrator(endpoint: str, method: str) -> bool:
     """Fetch if the endpoint requires admin config."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
