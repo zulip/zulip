@@ -115,6 +115,9 @@ below, and add more to your repertoire as needed.
 * **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
   the unsent message as a draft.
 
+* **Toggle Preview**: `Ctrl + Shift + P` — Show preview of the message when
+  composebox is open.
+
 ## Message actions
 
 * **Edit last message**: `←` — Open the last editable message in the current
