@@ -1,7 +1,7 @@
 import $ from "jquery";
 
+import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_settings_deactivation_stream_modal from "../templates/settings/deactivation_stream_modal.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
 import render_stream_subscription_info from "../templates/stream_subscription_info.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
