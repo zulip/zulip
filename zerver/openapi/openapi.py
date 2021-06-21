@@ -240,6 +240,13 @@ def get_responses_description(endpoint: str, method: str) -> str:
     )
 
 
+def get_parameters_description(endpoint: str, method: str) -> str:
+    """Fetch parameters description of an endpoint."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-parameter-description", ""
+    )
+
+
 def generate_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> List[str]:
     """Generate fixture to be rendered"""
     fixture = []
