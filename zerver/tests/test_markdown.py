@@ -1471,6 +1471,80 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+        # We now test linkifiers as Link-Shorteners.
+        pattern = r"https://github.com/(?P<org>[\w\-]+)/(?P<repo>[\w\-]+)/issues/(?P<id>[0-9]+)"
+        url_format_string = r"https://github.com/%(org)s/%(repo)s/issues/%(id)s"
+        render_format_string = r"%(org)s/%(repo)s#%(id)s"
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=pattern,
+            url_format_string=url_format_string,
+            render_format_string=render_format_string,
+        )
+        linkifier.save()
+        self.assertEqual(
+            linkifier.__str__(),
+            f"<RealmFilter(zulip): {pattern} {url_format_string} {render_format_string}>",
+        )
+
+        github_issue_url = "https://github.com/zulip/zulip-mobile/issues/17971"
+
+        msg = Message(sender=hamlet)
+        msg.set_topic_name(github_issue_url)
+
+        converted = markdown_convert(content=github_issue_url, message_realm=realm, message=msg)
+        converted_topic = topic_links(realm.id, msg.topic_name())
+
+        self.assertEqual(
+            converted,
+            f'<p><a href="{github_issue_url}">zulip/zulip-mobile#17971</a></p>',
+        )
+        self.assertEqual(
+            converted_topic,
+            [
+                {"text": "zulip/zulip-mobile#17971", "url": github_issue_url},
+                {"text": github_issue_url, "url": github_issue_url},
+            ],
+        )
+
+        pattern = r"https://github.com/(?P<org>[\w\-]+)/(?P<repo>[\w\-]+)/commit/(?P<commit_id>[0-9a-f]{7})(?P<id>[0-9a-f]{33})"
+        url_format_string = r"https://github.com/%(org)s/%(repo)s/commit/%(commit_id)s%(id)s"
+        render_format_string = r"%(org)s/%(repo)s@%(commit_id)s"
+
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=pattern,
+            url_format_string=url_format_string,
+            render_format_string=render_format_string,
+        )
+        linkifier.save()
+        self.assertEqual(
+            linkifier.__str__(),
+            f"<RealmFilter(zulip): {pattern} {url_format_string} {render_format_string}>",
+        )
+
+        github_commit_url = (
+            "https://github.com/zulip/zulip-mobile/commit/8ee652e560dcc6967b1af3d0b1ce3084a447bb17"
+        )
+
+        msg = Message(sender=hamlet)
+        msg.set_topic_name(github_commit_url)
+
+        converted = markdown_convert(content=github_commit_url, message_realm=realm, message=msg)
+        converted_topic = topic_links(realm.id, msg.topic_name())
+
+        self.assertEqual(
+            converted,
+            f'<p><a href="{github_commit_url}">zulip/zulip-mobile@8ee652e</a></p>',
+        )
+        self.assertEqual(
+            converted_topic,
+            [
+                {"text": "zulip/zulip-mobile@8ee652e", "url": github_commit_url},
+                {"text": github_commit_url, "url": github_commit_url},
+            ],
+        )
+
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"

@@ -2210,9 +2210,9 @@ class Markdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
-        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
-        # Reserve priority 45-54 for linkifiers
+        # Reserve priority 50-59 for linkifiers.
         reg = self.register_linkifiers(reg)
+        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 45)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), "entity", 40)
         reg.register(
             markdown.inlinepatterns.SimpleTagPattern(r"(\*\*)([^\n]+?)\2", "strong"), "strong", 35
@@ -2236,7 +2236,7 @@ class Markdown(markdown.Markdown):
                     pattern, linkifier["url_format"], linkifier["render_format"], self
                 ),
                 f"linkifiers/{pattern}",
-                45,
+                50,
             )
         return inlinePatterns
 
