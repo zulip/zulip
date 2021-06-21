@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Collection
 
 
 @dataclass
 class UserMessageNotificationsData:
     id: int
-    flags: List[str]
+    flags: Collection[str]
     mentioned: bool
     online_push_enabled: bool
     stream_push_notify: bool
