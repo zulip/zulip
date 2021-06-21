@@ -705,7 +705,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/upgrade.html",
             # Miscellaneous violations to be cleaned up
             "static/templates/user_info_popover_title.hbs",
-            "static/templates/subscription_invites_warning_modal.hbs",
+            "static/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
             "templates/zerver/config_error.html",
             "templates/zerver/dev_env_email_access_details.html",
