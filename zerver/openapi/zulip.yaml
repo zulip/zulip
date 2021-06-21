@@ -6565,14 +6565,31 @@ paths:
         [organization's configuration](https://zulip.com/help/only-allow-admins-to-add-emoji).
 
         `POST {{ api_url }}/v1/realm/emoji/{emoji_name}`
+      x-parameter-description: |
+        As described above, the image file to upload must be provided in the
+        request's body.
+
+        ## Maximum file size
+
+        The maximum file size for uploads can be configured by the
+        administrator of the Zulip server by setting `MAX_EMOJI_FILE_SIZE_MIB`
+        in the [server's settings][1]. `MAX_EMOJI_FILE_SIZE_MIB` defaults
+        to 5MB.
+
+        [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
       parameters:
         - name: emoji_name
           required: true
           in: path
           description: |
             The name that should be associated with the uploaded emoji image/gif.
+            The emoji name can only contain letters, numbers, dashes, and spaces.
+            Upper and lower case letters are treated the same, and underscores (_)
+            are treated the same as spaces (consistent with how the Zulip UI
+            handles emoji).
           schema:
             type: string
+          example: smile
       requestBody:
         content:
           multipart/form-data:

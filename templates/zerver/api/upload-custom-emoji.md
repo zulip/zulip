@@ -21,29 +21,14 @@
 
 ## Parameters
 
-As described above, the image file to upload must be provided in the
-request's body.
+{generate_api_arguments_table|zulip.yaml|/realm/emoji/{emoji_name}:post}
 
-## Emoji name
-
-The emoji name can only contain letters, numbers, dashes, and spaces.
-Upper and lower case letters are treated the same, and underscores (_)
-are treated the same as spaces (consistent with how the Zulip UI
-handles emoji).
-
-## Maximum file size
-
-The maximum file size for uploads can be configured by the
-administrator of the Zulip server by setting `MAX_EMOJI_FILE_SIZE_MIB`
-in the [server's settings][1]. `MAX_EMOJI_FILE_SIZE_MIB` defaults
-to 5MB.
-
-[1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
 {generate_parameter_description(/realm/emoji/{emoji_name}:post)}
 
+## Response
 
 {generate_response_description(/realm/emoji/{emoji_name}:post)}
-## Response
+
 #### Example response
 
 {generate_code_example|/realm/emoji/{emoji_name}:post|fixture(200)}
