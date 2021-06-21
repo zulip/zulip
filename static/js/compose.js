@@ -344,30 +344,32 @@ export function handle_keydown(event, textarea) {
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         const range = textarea.range();
-        function wrap_text_with_markdown(prefix, suffix) {
-            if (!document.execCommand("insertText", false, prefix + range.text + suffix)) {
-                textarea.range(range.start, range.end).range(prefix + range.text + suffix);
-            }
-            event.preventDefault();
-        }
 
         if (isBold) {
             // Ctrl + B: Convert selected text to bold text
-            wrap_text_with_markdown("**", "**");
+            compose_ui.wrap_text_with_markdown(textarea, "**", "**");
+            event.preventDefault();
+
             if (!range.length) {
                 textarea.caret(textarea.caret() - 2);
             }
         }
+
         if (isItalic) {
             // Ctrl + I: Convert selected text to italic text
-            wrap_text_with_markdown("*", "*");
+            compose_ui.wrap_text_with_markdown(textarea, "*", "*");
+            event.preventDefault();
+
             if (!range.length) {
                 textarea.caret(textarea.caret() - 1);
             }
         }
+
         if (isLink) {
             // Ctrl + L: Insert a link to selected text
-            wrap_text_with_markdown("[", "](url)");
+            compose_ui.wrap_text_with_markdown(textarea, "[", "](url)");
+            event.preventDefault();
+
             const position = textarea.caret();
             const txt = textarea[0];
 
