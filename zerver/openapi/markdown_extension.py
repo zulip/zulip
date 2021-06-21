@@ -21,6 +21,7 @@ import zerver.openapi.python_examples
 from zerver.openapi.openapi import (
     check_requires_administrator,
     generate_openapi_fixture,
+    get_curl_include_exclude,
     get_openapi_description,
     get_openapi_summary,
     openapi_spec,
@@ -347,8 +348,6 @@ def generate_curl_example(
 def render_curl_example(
     function: str,
     api_url: str,
-    exclude: Optional[List[str]] = None,
-    include: Optional[List[str]] = None,
 ) -> List[str]:
     """A simple wrapper around generate_curl_example."""
     parts = function.split(":")
@@ -360,9 +359,18 @@ def render_curl_example(
     if len(parts) > 3:
         kwargs["auth_api_key"] = parts[3]
     kwargs["api_url"] = api_url
-    kwargs["exclude"] = exclude
-    kwargs["include"] = include
-    return generate_curl_example(endpoint, method, **kwargs)
+    rendered_example = []
+    for element in get_curl_include_exclude(endpoint, method):
+        kwargs["include"] = None
+        kwargs["exclude"] = None
+        if element["type"] == "include":
+            kwargs["include"] = element["parameters"]["enum"]
+        if element["type"] == "exclude":
+            kwargs["exclude"] = element["parameters"]["enum"]
+        if "description" in element:
+            rendered_example.extend(element["description"].splitlines())
+        rendered_example = rendered_example + generate_curl_example(endpoint, method, **kwargs)
+    return rendered_example
 
 
 SUPPORTED_LANGUAGES: Dict[str, Any] = {
