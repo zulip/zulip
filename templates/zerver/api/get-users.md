@@ -13,10 +13,6 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=[""])|/users:get|example}
-
-You may pass the `client_gravatar` query parameter as follows:
-
 {generate_code_example(curl)|/users:get|example}
 
 {end_tabs}

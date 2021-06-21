@@ -56,7 +56,7 @@ potentially messy races, etc.
 
 {tab|curl}
 
-{generate_code_example(curl, include=["event_types"])|/register:post|example}
+{generate_code_example(curl)|/register:post|example}
 
 {end_tabs}
 

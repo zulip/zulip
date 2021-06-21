@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, exclude=["emoji_code","reaction_type"])|/messages/{message_id}/reactions:post|example}
+{generate_code_example(curl)|/messages/{message_id}/reactions:post|example}
 
 {end_tabs}
 

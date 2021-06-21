@@ -13,10 +13,6 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=[""])|/users/me/subscriptions:get|example}
-
-You may pass the `include_subscribers` query parameter as follows:
-
 {generate_code_example(curl)|/users/me/subscriptions:get|example}
 
 {end_tabs}
