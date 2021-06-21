@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
-import render_delete_message_modal from "../templates/delete_message_modal.hbs";
+import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
