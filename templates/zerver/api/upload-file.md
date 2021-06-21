@@ -37,6 +37,8 @@ to 25MB.
 
 {generate_return_values_table|zulip.yaml|/user_uploads:post}
 
+{generate_response_description(/user_uploads:post)}
+
 #### Example response
 
 {generate_code_example|/user_uploads:post|fixture(200)}

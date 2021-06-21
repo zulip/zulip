@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/realm/playgrounds:post}
 
+{generate_response_description(/realm/playgrounds:post)}
+
 #### Example response
 
 {generate_code_example|/realm/playgrounds:post|fixture(200)}

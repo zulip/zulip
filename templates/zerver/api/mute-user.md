@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/users/me/muted_users/{muted_user_id}:post)}
+
 #### Example response
 
 {generate_code_example|/users/me/muted_users/{muted_user_id}:post|fixture(200)}

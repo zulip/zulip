@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/realm/filters/{filter_id}:patch}
 
+{generate_response_description(/realm/filters/{filter_id}:patch)}
+
 #### Example response
 
 {generate_code_example|/realm/filters/{filter_id}:patch|fixture(200)}

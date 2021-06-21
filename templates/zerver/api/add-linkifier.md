@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/realm/filters:post}
 
+{generate_response_description(/realm/filters:post)}
+
 #### Example response
 
 {generate_code_example|/realm/filters:post|fixture(200)}

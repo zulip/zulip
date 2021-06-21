@@ -31,6 +31,8 @@ present in all Zulip API responses).
 
 {generate_return_values_table|zulip.yaml|/messages:get}
 
+{generate_response_description(/messages:get)}
+
 #### Example response
 
 {generate_code_example|/messages:get|fixture(200)}

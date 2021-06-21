@@ -28,6 +28,8 @@
 {generate_return_values_table|zulip.yaml|/realm/emoji:get}
 
 
+{generate_response_description(/realm/emoji:get)}
+
 #### Example response
 
 {generate_code_example|/realm/emoji:get|fixture(200)}

@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/user_groups/{user_group_id}:delete)}
+
 #### Example response
 
 {generate_code_example|/user_groups/{user_group_id}:delete|fixture(200)}

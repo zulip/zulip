@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/users/me/subscriptions/properties:post}
 
+{generate_response_description(/users/me/subscriptions/properties:post)}
+
 #### Example response
 
 {generate_code_example|/users/me/subscriptions/properties:post|fixture(200)}

@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/realm/filters/{filter_id}:delete)}
+
 #### Example response
 
 {generate_code_example|/realm/filters/{filter_id}:delete|fixture(200)}

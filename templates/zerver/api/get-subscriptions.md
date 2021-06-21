@@ -27,6 +27,8 @@
 
 {generate_return_values_table|zulip.yaml|/users/me/subscriptions:get}
 
+{generate_response_description(/users/me/subscriptions:get)}
+
 #### Example response
 
 {generate_code_example|/users/me/subscriptions:get|fixture(200)}

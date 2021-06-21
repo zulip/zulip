@@ -29,6 +29,8 @@
 
 {generate_return_values_table|zulip.yaml}|/users/{email}:get}
 
+{generate_response_description(/users/{email}:get)}
+
 #### Example response
 
 {generate_code_example|/users/{email}:get|fixture(200)}

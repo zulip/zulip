@@ -37,6 +37,8 @@ will only contain data for the modified fields (e.g. if only the topic
 was edited, `prev_content`, `prev_rendered_content`, and
 `content_html_diff` will not appear).
 
+{generate_response_description(/messages/{message_id}/history:get)}
+
 #### Example response
 
 {generate_code_example|/messages/{message_id}/history:get|fixture(200)}

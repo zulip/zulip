@@ -73,6 +73,8 @@ file.
 
 {generate_return_values_table|zulip.yaml|/messages:post}
 
+{generate_response_description(/messages:post)}
+
 #### Example response
 
 {generate_code_example|/messages:post|fixture(200)}

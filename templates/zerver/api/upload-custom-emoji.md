@@ -41,6 +41,8 @@ to 5MB.
 [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
 {generate_parameter_description(/realm/emoji/{emoji_name}:post)}
 
+
+{generate_response_description(/realm/emoji/{emoji_name}:post)}
 ## Response
 #### Example response
 

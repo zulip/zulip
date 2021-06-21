@@ -25,6 +25,8 @@
 
 ## Response
 
+{generate_response_description(/users/{user_id}/reactivate:post)}
+
 #### Example response
 
 {generate_code_example|/users/{user_id}/reactivate:post|fixture(200)}

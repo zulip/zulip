@@ -99,6 +99,8 @@
 
 {generate_return_values_table|zulip.yaml|/messages/flags:post}
 
+{generate_response_description(/messages/flags:post)}
+
 #### Example response
 
 {generate_code_example|/messages/flags:post|fixture(200)}
