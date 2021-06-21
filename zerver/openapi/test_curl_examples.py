@@ -80,6 +80,8 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             # example, and then run that to test it.
             curl_command_html = md_engine.convert(line.strip())
             unescaped_html = html.unescape(curl_command_html)
+            curl_regex = re.compile(r"<code>curl\n(.*?)</code>", re.DOTALL)
+            commands = re.findall(curl_regex, unescaped_html)
             curl_command_text = unescaped_html[len("<p><code>curl\n") : -len("</code></p>")]
             curl_command_text = curl_command_text.replace(
                 "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
