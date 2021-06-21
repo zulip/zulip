@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=["left_side_userlist", "emojiset"])|/settings/display:patch|example}
+{generate_code_example(curl)|/settings/display:patch|example}
 
 {end_tabs}
 

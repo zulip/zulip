@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, exclude=["topic"])|/typing:post|example}
+{generate_code_example(curl)|/typing:post|example}
 
 {end_tabs}
 

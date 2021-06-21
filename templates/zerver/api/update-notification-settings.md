@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=["enable_offline_push_notifications", "enable_online_push_notifications"])|/settings/notifications:patch|example}
+{generate_code_example(curl)|/settings/notifications:patch|example}
 
 {end_tabs}
 
