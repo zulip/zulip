@@ -240,12 +240,14 @@ function show_stream_subcription_info({
     remove_class,
     subscribed_users,
     already_subscribed_users,
+    ignored_deactivated_users,
 }) {
     const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
     const html = render_stream_subscription_info({
         message,
         subscribed_users,
         already_subscribed_users,
+        ignored_deactivated_users,
     });
     ui.get_content_element(stream_subscription_info_elem).html(html);
     if (add_class) {
@@ -266,6 +268,14 @@ function submit_add_subscriber_form(e) {
     let user_ids = user_pill.get_user_ids(pill_widget);
     user_ids = user_ids.concat(stream_pill.get_user_ids(pill_widget));
     user_ids = user_ids.concat(user_group_pill.get_user_ids(pill_widget));
+    const deactivated_users = new Set();
+    user_ids = user_ids.filter((user_id) => {
+        if (!people.is_person_active(user_id)) {
+            deactivated_users.add(user_id);
+            return false;
+        }
+        return true;
+    });
 
     user_ids = new Set(user_ids);
 
@@ -275,11 +285,19 @@ function submit_add_subscriber_form(e) {
         // case occurs when creating user pills from a stream.
         user_ids.delete(page_params.user_id);
     }
+    let ignored_deactivated_users;
+    if (deactivated_users.size > 0) {
+        ignored_deactivated_users = Array.from(deactivated_users);
+        ignored_deactivated_users = ignored_deactivated_users.map((user_id) =>
+            people.get_by_user_id(user_id),
+        );
+    }
     if (user_ids.size === 0) {
         show_stream_subcription_info({
             message: $t({defaultMessage: "No user to subscribe."}),
             add_class: "text-error",
             remove_class: "text-success",
+            ignored_deactivated_users,
         });
         return;
     }
@@ -299,6 +317,7 @@ function submit_add_subscriber_form(e) {
             remove_class: "text-error",
             subscribed_users,
             already_subscribed_users,
+            ignored_deactivated_users,
         });
     }
 

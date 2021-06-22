@@ -337,4 +337,13 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
+
+    function is_person_active(user_id) {
+        return user_id === mark.user_id;
+    }
+    // Deactivated user_id is not included in request.
+    override(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
+    override(people, "is_person_active", is_person_active);
+    expected_user_ids = [mark.user_id];
+    add_subscribers_handler(event);
 });
