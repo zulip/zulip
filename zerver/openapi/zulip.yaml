@@ -4567,7 +4567,13 @@ paths:
       tags: ["messages"]
       description: |
         Add or remove personal message flags like `read` and `starred`
-        on a collection of message IDs.
+        on a collection of message IDs. This endpoint can only modify
+        the directly modifiable flags. i.e. read, starred and collapsed.
+        Other flags are added/removed either from
+        [message_events](/api/get-events#message) or
+        [update_message_events](/api/get-events#update_message).
+        The ways by which each flag could be modified is listed in the
+        table below.
 
         `POST {{ api_url }}/v1/messages/flags`
 

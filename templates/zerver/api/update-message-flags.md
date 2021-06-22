@@ -26,8 +26,9 @@
     <table>
         <thead>
             <tr>
-                <th style="width:30%">Flag</th>
-                <th style="width:70%">Purpose</th>
+                <th style="width:20%">Flag</th>
+                <th style="width:55%">Purpose</th>
+                <th style="width:25%">Modified by</th>
             </tr>
         </thead>
         <tbody>
@@ -39,14 +40,17 @@
                     themself sent using a non-API client) and can
                     later be marked as read.
                 </td>
+                <td>the user directly, <a href="/api/get-events#update_message_flags-add">update_message_flags_event</a></td>
             </tr>
             <tr>
                 <td><code>starred</code></td>
                 <td>Whether the user has <a href="/help/star-a-message">starred this message</a>.</td>
+                <td>the user directly, <a href="/api/get-events#update_message_flags-add">update_message_flags_event</a></td>
             </tr>
             <tr>
                 <td><code>collapsed</code></td>
                 <td>Whether the user has <a href="/help/collapse-a-message">collapsed this message</a>.</td>
+                <td>the user directly, <a href="/api/get-events#update_message_flags-add">update_message_flags_event</a></td>
             </tr>
             <tr>
                 <td><code>mentioned</code></td>
@@ -58,6 +62,10 @@
                     can change if the message is edited to add/remove
                     a mention of the current user.
                 </td>
+                <td>
+                    <a href="/api/get-events#message">message_event</a>,
+                    <a href="/api/get-events#update_message">update_message_event</a>
+                </td>
             </tr>
             <tr>
                 <td><code>wildcard_mentioned</code></td>
@@ -67,6 +75,10 @@
                     like @**all**. Cannot be changed by the user directly, but
                     can change if the message is edited to add/remove
                     a wildcard mention.
+                </td>
+                <td>
+                    <a href="/api/get-events#message">message_event</a>,
+                    <a href="/api/get-events#update_message">update_message_event</a>
                 </td>
             </tr>
             <tr>
@@ -78,6 +90,10 @@
                     can change if the message is edited to add/remove
                     one of the current user's alert words.
                 </td>
+                <td>
+                    <a href="/api/get-events#message">message_event</a>,
+                    <a href="/api/get-events#update_message">update_message_event</a>
+                </td>
             </tr>
             <tr>
                 <td><code>historical</code></td>
@@ -88,6 +104,10 @@
                     reacted to a message sent to a public stream
                     before they subscribed to that stream). Cannot be
                     changed by the user directly.
+                </td>
+                <td>
+                    <a href="/api/get-events#message">message_event</a>,
+                    <a href="/api/get-events#update_message">update_message_event</a>
                 </td>
             </tr>
         </tbody>
