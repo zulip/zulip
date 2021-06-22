@@ -1,7 +1,9 @@
 // For documentation on i18n in Zulip, see:
 // https://zulip.readthedocs.io/en/latest/translating/internationalization.html
 
+import type {MessageDescriptor} from "@formatjs/intl";
 import {DEFAULT_INTL_CONFIG, IntlErrorCode, createIntl, createIntlCache} from "@formatjs/intl";
+import type {FormatXMLElementFn, PrimitiveType} from "intl-messageformat";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
@@ -28,26 +30,29 @@ export const $t = intl.formatMessage;
 export const default_html_elements = Object.fromEntries(
     ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
         tag,
-        (content_html) => `<${tag}>${content_html}</${tag}>`,
+        (content_html: string) => `<${tag}>${content_html}</${tag}>`,
     ]),
 );
 
-export function $t_html(descriptor, values) {
+export function $t_html(
+    descriptor: MessageDescriptor,
+    values?: Record<string, PrimitiveType | FormatXMLElementFn<string, string>>,
+): string {
     return intl.formatMessage(descriptor, {
         ...default_html_elements,
         ...Object.fromEntries(
             Object.entries(values ?? {}).map(([key, value]) => [
                 key,
-                typeof value === "function" ? value : _.escape(value),
+                typeof value === "function" ? value : _.escape(value?.toString()),
             ]),
         ),
     });
 }
 
-export let language_list;
+export let language_list: typeof page_params["language_list"];
 
-export function get_language_name(language_code) {
-    const language_list_map = {};
+export function get_language_name(language_code: string): string {
+    const language_list_map: Record<string, string> = {};
 
     // One-to-one mapping from code to name for all languages
     for (const language of language_list) {
@@ -56,7 +61,7 @@ export function get_language_name(language_code) {
     return language_list_map[language_code];
 }
 
-export function initialize(language_params) {
+export function initialize(language_params: {language_list: typeof language_list}): void {
     const language_list_raw = language_params.language_list;
 
     // Limit offered languages to options with percentage translation >= 5%
@@ -75,13 +80,22 @@ export function initialize(language_params) {
 
 // This formats language data for the language selection modal in a
 // 2-column format.
-export function get_language_list_columns(default_language) {
-    const formatted_list = [];
+type LanguageListColumn = {
+    [prop in "first" | "second"]?: {
+        code: string;
+        name: string;
+        name_with_percent: string;
+        selected: boolean;
+    };
+};
+
+export function get_language_list_columns(default_language: string): LanguageListColumn[] {
+    const formatted_list: LanguageListColumn[] = [];
     const language_len = language_list.length;
     const firsts_end = Math.floor(language_len / 2) + (language_len % 2);
     const firsts = _.range(0, firsts_end);
     const seconds = _.range(firsts_end, language_len);
-    const longest_zip = [];
+    const longest_zip: [number, number][] = [];
 
     // Create a zip (itertool.zip_longest in python)
     for (const value of firsts) {
@@ -89,11 +103,11 @@ export function get_language_list_columns(default_language) {
     }
 
     for (const row of longest_zip) {
-        const item = {};
+        const item: LanguageListColumn = {};
         const zip_row = [
             ["first", row[0]],
             ["second", row[1]],
-        ];
+        ] as const;
         for (const zip_value of zip_row) {
             if (zip_value[1] !== undefined) {
                 const lang = language_list[zip_value[1]];

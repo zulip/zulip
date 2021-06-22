@@ -152,6 +152,13 @@ paths:
         calls to this endpoint.  It is guaranteed to be higher than
         heartbeat frequency and should be respected by clients to
         avoid breaking when heartbeat frequency increases.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - queue_id
+                - last_event_id
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
@@ -3305,15 +3312,6 @@ paths:
 
                                         **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
                                         Zulip 4.0 (feature level 62).
-                                    default_language:
-                                      type: string
-                                      description: |
-                                        The default UI language for new users joining this organization.
-                                    default_twenty_four_hour_time:
-                                      type: boolean
-                                      description: |
-                                        Whether new members of this organization will see times displayed in
-                                        24-hour time (true) or 12-hour time (false).
                                     description:
                                       type: string
                                       description: |
@@ -4109,6 +4107,14 @@ paths:
         avoid generating very large HTTP responses. A maximum of 5000 messages
         can be obtained per request; attempting to exceed this will result in an
         error.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - client_gravatar
+                - apply_markdown
+                - use_first_unread_anchor
       parameters:
         - name: anchor
           in: query
@@ -4664,6 +4670,13 @@ paths:
         Add an [emoji reaction](/help/emoji-reactions) to a message.
 
         `POST {{ api_url }}/v1/messages/{message_id}/reactions`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - emoji_code
+                - reaction_type
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - name: emoji_name
@@ -4708,6 +4721,13 @@ paths:
         Remove an [emoji reaction](/help/emoji-reactions) from a message.
 
         `DELETE {{ api_url }}/v1/messages/{message_id}/reactions`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - emoji_code
+                - reaction_type
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - name: emoji_name
@@ -4901,6 +4921,12 @@ paths:
 
         `{msg_id}` in the above URL should be replaced with the ID of the
         message you wish you update.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - stream_id
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - name: topic
@@ -5159,6 +5185,18 @@ paths:
         `GET {{ api_url }}/v1/users`
 
         You can also [fetch details on a single user](/api/get-user).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may pass the `client_gravatar` query parameter as follows:
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
@@ -5758,6 +5796,18 @@ paths:
       # operationId can be used to record which view function
       # corresponds to an endpoint.  TODO: Add these for more
       # endpoints, and perhaps use this to provide links to implementations.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            description: |
+              You may pass the `include_subscribers` query parameter as follows:
+            parameters:
+              enum:
+                - ""
       parameters:
         - $ref: "#/components/parameters/IncludeSubscribers"
       responses:
@@ -5833,6 +5883,20 @@ paths:
         If any of the specified streams do not exist, they are automatically
         created.  The initial [stream settings](/api/update-stream) will be determined
         by the optional parameters like `invite_only` detailed below.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - subscriptions
+          - type: include
+            description: |
+              To subscribe another user to a stream, you may pass in
+              the `principals` parameter, like so:
+            parameters:
+              enum:
+                - subscriptions
+                - principals
       parameters:
         - name: subscriptions
           in: query
@@ -6076,6 +6140,21 @@ paths:
         Unsubscribe yourself or other users from one or more streams.
 
         `DELETE {{ api_url }}/v1/users/me/subscriptions`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            description: |
+              **Note**: Unsubscribing another user from a stream requires
+              administrative privileges.
+            parameters:
+              enum:
+                - subscriptions
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may specify the `principals` parameter like so:
       parameters:
         - name: subscriptions
           in: query
@@ -6145,6 +6224,12 @@ paths:
 
         `PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics`
 
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - stream_id
       parameters:
         - name: stream
           in: query
@@ -6814,6 +6899,18 @@ paths:
         [change their email address](/help/change-your-email-address).
 
         *This endpoint is new in Zulip Server 4.0 (feature level 39).*
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
       parameters:
         - name: email
           in: path
@@ -6899,6 +6996,18 @@ paths:
         or [by email](/api/get-user-by-email).
 
         *This endpoint is new in Zulip Server 3.0 (feature level 1).*
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/ClientGravatar"
@@ -7336,6 +7445,12 @@ paths:
         (subscribed to certain types of "events", or updates to the messages and
         other Zulip data the current user has access to), as well as to fetch
         the current state of that data.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - event_types
       parameters:
         - name: apply_markdown
           in: query
@@ -9622,6 +9737,13 @@ paths:
         per-stream notification settings.
 
         `PATCH {{ api_url }}/v1/settings/notifications`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - enable_offline_push_notifications
+                - enable_online_push_notifications
       parameters:
         - name: enable_stream_desktop_notifications
           in: query
@@ -9856,6 +9978,13 @@ paths:
         This endpoint is used to edit the current user's user interface settings.
 
         `PATCH {{ api_url }}/v1/settings/display`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - left_side_userlist
+                - emojiset
       parameters:
         - name: twenty_four_hour_time
           in: query
@@ -10092,6 +10221,19 @@ paths:
         Get all streams that the user has access to.
 
         `GET {{ api_url }}/v1/streams`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: include
+            parameters:
+              enum:
+                - include_public
+            description: |
+              You may pass in one or more of the parameters mentioned above
+              as URL query parameters, like so:
       parameters:
         - name: include_public
           in: query
@@ -10294,6 +10436,14 @@ paths:
         send](/help/stream-sending-policy).
 
         `PATCH {{ api_url }}/v1/streams/{stream_id}`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - new_name
+                - description
+                - is_private
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: description
@@ -10402,6 +10552,12 @@ paths:
         See
         [the typing notification docs](https://zulip.readthedocs.io/en/latest/subsystems/typing-indicators.html)
         for additional design details on Zulip's typing notifications protocol.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - topic
       parameters:
         - name: type
           in: query
@@ -10550,6 +10706,12 @@ paths:
         Update the members of a [user group](/help/user-groups).
 
         `POST {{ api_url }}/v1/user_groups/{user_group_id}/members`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - delete
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - name: delete

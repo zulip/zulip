@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=["new_name", "description", "is_private"])|/streams/{stream_id}:patch|example}
+{generate_code_example(curl)|/streams/{stream_id}:patch|example}
 
 {end_tabs}
 

@@ -2,7 +2,7 @@ import _ from "lodash";
 
 import * as colorspace from "./colorspace";
 
-export function get_threshold() {
+export function get_threshold(): number {
     // sRGB color component for dark label text.
     // 0x33 to match the color #333333 set by Bootstrap.
     const label_color = 0x33;
@@ -23,10 +23,10 @@ const lightness_threshold = get_threshold();
 // already saved on the server, etc.
 //
 // This gets called on every message, so cache the results.
-export const get_css_class = _.memoize((color) => {
+export const get_css_class = _.memoize((color: string) => {
     let match;
     let i;
-    const channel = [0, 0, 0];
+    const channel: [number, number, number] = [0, 0, 0];
     let mult = 1;
 
     match = /^#([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})$/.exec(color);

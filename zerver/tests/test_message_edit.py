@@ -953,7 +953,6 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
-                mention_user_ids=set(),
                 mention_data=None,
             )
 
@@ -1968,6 +1967,18 @@ class EditMessageTest(EditMessageTestCase):
         )
         id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
 
+        # Check that we don't incorrectly send "unresolve topic"
+        # notifications when asking the preserve the current topic.
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": original_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "Nothing to change")
+
         resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),
@@ -1987,6 +1998,32 @@ class EditMessageTest(EditMessageTestCase):
             )
 
         messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        # Now move to a weird state and confirm no new messages
+        weird_topic = "✔ ✔✔" + original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": weird_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                weird_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, weird_topic)
         self.assert_length(messages, 3)
         self.assertEqual(
             messages[2].content,

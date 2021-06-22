@@ -383,14 +383,13 @@ def notify_new_user(user_profile: UserProfile) -> None:
     try:
         # Check whether the stream exists
         signups_stream = get_signups_stream(admin_realm)
-        with override_language(admin_realm.default_language):
-            # We intentionally use the same strings as above to avoid translation burden.
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-                user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
-            )
-            internal_send_stream_message(
-                sender, signups_stream, user_profile.realm.display_subdomain, message
-            )
+        # We intentionally use the same strings as above to avoid translation burden.
+        message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+            user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
+        )
+        internal_send_stream_message(
+            sender, signups_stream, user_profile.realm.display_subdomain, message
+        )
 
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
@@ -1956,36 +1955,31 @@ def do_send_messages(
         else:
             user_list = list(user_ids)
 
-        user_data_objects: List[UserMessageNotificationsData] = []
+        users: List[Dict[str, Union[int, List[str]]]] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
-            wildcard_mention_notify = (
-                user_id in send_request.wildcard_mention_user_ids and "wildcard_mentioned" in flags
-            )
-            user_data_objects.append(
-                UserMessageNotificationsData(
-                    id=user_id,
-                    flags=flags,
-                    mentioned=("mentioned" in flags),
-                    online_push_enabled=(user_id in send_request.online_push_user_ids),
-                    stream_push_notify=(user_id in send_request.stream_push_user_ids),
-                    stream_email_notify=(user_id in send_request.stream_email_user_ids),
-                    wildcard_mention_notify=wildcard_mention_notify,
-                    sender_is_muted=(user_id in send_request.muted_sender_user_ids),
-                )
-            )
-
-        users = [asdict(user_data_object) for user_data_object in user_data_objects]
+            users.append(dict(id=user_id, flags=flags))
 
         sender = send_request.message.sender
         message_type = wide_message_dict["type"]
+        active_users_data = [
+            UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=user_flags.get(user_id, []),
+                online_push_user_ids=send_request.online_push_user_ids,
+                stream_push_user_ids=send_request.stream_push_user_ids,
+                stream_email_user_ids=send_request.stream_email_user_ids,
+                wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
+                muted_sender_user_ids=send_request.muted_sender_user_ids,
+            )
+            for user_id in send_request.active_user_ids
+        ]
 
         presence_idle_user_ids = get_active_presence_idle_user_ids(
             realm=sender.realm,
             sender_id=sender.id,
             message_type=message_type,
-            active_user_ids=send_request.active_user_ids,
-            user_flags=user_flags,
+            active_users_data=active_users_data,
         )
 
         event = dict(
@@ -1993,6 +1987,11 @@ def do_send_messages(
             message=send_request.message.id,
             message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
+            online_push_user_ids=list(send_request.online_push_user_ids),
+            stream_push_user_ids=list(send_request.stream_push_user_ids),
+            stream_email_user_ids=list(send_request.stream_email_user_ids),
+            wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
+            muted_sender_user_ids=list(send_request.muted_sender_user_ids),
         )
 
         if send_request.message.is_stream_message():
@@ -2853,6 +2852,9 @@ def check_update_message(
     # use REQ_topic as well (or otherwise are guaranteed to strip input).
     if topic_name is not None:
         topic_name = topic_name.strip()
+        if topic_name == message.topic_name():
+            topic_name = None
+
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
@@ -2892,7 +2894,6 @@ def check_update_message(
     rendered_content = None
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
-    mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
     if content is not None:
         if content.rstrip() == "":
@@ -2918,8 +2919,6 @@ def check_update_message(
             mention_data=mention_data,
         )
         links_for_embed |= message.links_for_preview
-
-        mention_user_ids = message.mentions_user_ids
 
     new_stream = None
     number_changed = 0
@@ -2951,7 +2950,6 @@ def check_update_message(
         content,
         rendered_content,
         prior_mention_user_ids,
-        mention_user_ids,
         mention_data,
     )
 
@@ -4890,8 +4888,7 @@ def do_create_realm(
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     admin_realm = sender.realm
     # Send a notification to the admin realm
-    with override_language(admin_realm.default_language):
-        signup_message = _("Signups enabled")
+    signup_message = _("Signups enabled")
 
     try:
         signups_stream = get_signups_stream(admin_realm)
@@ -5642,13 +5639,37 @@ def maybe_send_resolve_topic_notifications(
     old_topic: str,
     new_topic: str,
 ) -> None:
+    # Note that topics will have already been stripped in check_update_message.
+    #
+    # This logic is designed to treat removing a weird "✔ ✔✔ "
+    # prefix as unresolving the topic.
     if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
         return
 
-    if new_topic.startswith(RESOLVED_TOPIC_PREFIX):
+    if new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
+        RESOLVED_TOPIC_PREFIX
+    ):
         notification_string = _("{user} has marked this topic as resolved.")
-    else:
+    elif old_topic.startswith(RESOLVED_TOPIC_PREFIX) and not new_topic.startswith(
+        RESOLVED_TOPIC_PREFIX
+    ):
         notification_string = _("{user} has marked this topic as unresolved.")
+    else:
+        # If there's some other weird topic that does not toggle the
+        # state of "topic starts with RESOLVED_TOPIC_PREFIX", we do
+        # nothing. Any other logic could result in cases where we send
+        # these notifications in a non-alternating fashion.
+        #
+        # Note that it is still possible for an individual topic to
+        # have multiple "This topic was marked as resolved"
+        # notifications in a row: one can send new messages to the
+        # pre-resolve topic and then resolve the topic created that
+        # way to get multiple in the resolved topic. And then an
+        # administrator can the messages in between. We consider this
+        # to be a fundamental risk of irresponsible message deletion,
+        # not a bug with the "resolve topics" feature.
+        return
+
     sender = get_system_bot(settings.NOTIFICATION_BOT)
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     with override_language(stream.realm.default_language):
@@ -5837,7 +5858,6 @@ def do_update_message(
     content: Optional[str],
     rendered_content: Optional[str],
     prior_mention_user_ids: Set[int],
-    mention_user_ids: Set[int],
     mention_data: Optional[MentionData] = None,
 ) -> int:
     """
@@ -5944,7 +5964,6 @@ def do_update_message(
         event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
         event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-        event["mention_user_ids"] = list(mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
         if target_message.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
@@ -6569,15 +6588,13 @@ def get_active_presence_idle_user_ids(
     realm: Realm,
     sender_id: int,
     message_type: str,
-    active_user_ids: Set[int],
-    user_flags: Dict[int, List[str]],
+    active_users_data: List[UserMessageNotificationsData],
 ) -> List[int]:
     """
     Given a list of active_user_ids, we build up a subset
     of those users who fit these criteria:
 
-        * They are likely to need notifications (either due
-          to mentions, alert words, or being PM'ed).
+        * They are likely to need notifications.
         * They are no longer "present" according to the
           UserPresence table.
     """
@@ -6585,16 +6602,17 @@ def get_active_presence_idle_user_ids(
     if realm.presence_disabled:
         return []
 
-    is_pm = message_type == "private"
+    is_private_message = message_type == "private"
 
     user_ids = set()
-    for user_id in active_user_ids:
-        flags = user_flags.get(user_id, [])
-        mentioned = "mentioned" in flags or "wildcard_mentioned" in flags
-        private_message = is_pm and user_id != sender_id
-        alerted = "has_alert_word" in flags
-        if mentioned or private_message or alerted:
-            user_ids.add(user_id)
+    for user_data in active_users_data:
+        alerted = "has_alert_word" in user_data.flags
+
+        # We only need to know the presence idle state for a user if this message would be notifiable
+        # for them if they were indeed idle. Only including those users in the calculation below is a
+        # very important optimization for open communities with many inactive users.
+        if user_data.is_notifiable(is_private_message, sender_id, idle=True) or alerted:
+            user_ids.add(user_data.id)
 
     return filter_presence_idle_user_ids(user_ids)
 

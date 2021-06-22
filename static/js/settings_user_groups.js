@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_confirm_delete_user from "../templates/confirm_delete_user.hbs";
+import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_admin_user_group_list from "../templates/settings/admin_user_group_list.hbs";
 
 import * as channel from "./channel";

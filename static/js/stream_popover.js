@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
-import render_delete_topic_modal from "../templates/delete_topic_modal.hbs";
+import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";

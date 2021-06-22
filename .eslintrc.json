@@ -145,6 +145,7 @@
                 "no-duplicate-imports": "off",
                 "no-unused-vars": "off",
                 "no-useless-constructor": "off",
+                "no-use-before-define": "off",
 
                 "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/await-thenable": "error",

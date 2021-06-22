@@ -16,12 +16,12 @@ if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
 
-function pad(num, width) {
+function pad(num: number, width: number): string {
     return num.toString().padStart(width, "0");
 }
 
-function make_logger_func(name) {
-    return function Logger_func(...args) {
+function make_logger_func(name: "debug" | "log" | "info" | "warn" | "error") {
+    return function Logger_func(this: Logger, ...args: unknown[]) {
         const now = new Date();
         const date_str =
             now.getUTCFullYear() +
@@ -56,31 +56,32 @@ function make_logger_func(name) {
 }
 
 class Logger {
-    _memory_log = [];
+    debug = make_logger_func("debug");
+    log = make_logger_func("log");
+    info = make_logger_func("info");
+    warn = make_logger_func("warn");
+    error = make_logger_func("error");
 
-    get_log() {
+    _memory_log: string[] = [];
+    get_log(): string[] {
         return this._memory_log;
     }
 }
 
-for (const name of ["debug", "log", "info", "warn", "error"]) {
-    Logger.prototype[name] = make_logger_func(name);
-}
-
 const logger = new Logger();
 
-export function get_log() {
+export function get_log(): string[] {
     return logger.get_log();
 }
 
-const reported_errors = new Set();
-const last_report_attempt = new Map();
+const reported_errors = new Set<string>();
+const last_report_attempt = new Map<string, number>();
 
 function report_error(
-    msg,
+    msg: string,
     stack = "No stacktrace available",
-    {show_ui_msg = false, more_info} = {},
-) {
+    {show_ui_msg = false, more_info}: {show_ui_msg?: boolean; more_info?: unknown} = {},
+): void {
     if (page_params.development_environment) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
@@ -88,11 +89,12 @@ function report_error(
     }
 
     const key = ":" + msg + stack;
+    const last_report_time = last_report_attempt.get(key);
     if (
         reported_errors.has(key) ||
-        (last_report_attempt.has(key) &&
+        (last_report_time !== undefined &&
             // Only try to report a given error once every 5 minutes
-            Date.now() - last_report_attempt.get(key) <= 60 * 5 * 1000)
+            Date.now() - last_report_time <= 60 * 5 * 1000)
     ) {
         return;
     }
@@ -173,8 +175,8 @@ function report_error(
 
 class BlueslipError extends Error {
     name = "BlueslipError";
-
-    constructor(msg, more_info) {
+    more_info?: unknown;
+    constructor(msg: string, more_info: unknown) {
         super(msg);
         if (more_info !== undefined) {
             this.more_info = more_info;
@@ -182,7 +184,13 @@ class BlueslipError extends Error {
     }
 }
 
-export function exception_msg(ex) {
+export function exception_msg(
+    ex: Error & {
+        // Unsupported properties avaliable on some browsers
+        fileName?: string;
+        lineNumber?: number;
+    },
+): string {
     let message = ex.message;
     if (ex.fileName !== undefined) {
         message += " at " + ex.fileName;
@@ -194,38 +202,44 @@ export function exception_msg(ex) {
 }
 
 $(window).on("error", (event) => {
-    const ex = event.originalEvent.error;
+    const {originalEvent} = event;
+    if (!(originalEvent instanceof ErrorEvent)) {
+        return;
+    }
+
+    const ex = originalEvent.error;
     if (!ex || ex instanceof BlueslipError) {
         return;
     }
+
     const message = exception_msg(ex);
     report_error(message, ex.stack);
 });
 
-function build_arg_list(msg, more_info) {
-    const args = [msg];
+function build_arg_list(msg: string, more_info: unknown): [string, string?, unknown?] {
+    const args: [string, string?, unknown?] = [msg];
     if (more_info !== undefined) {
         args.push("\nAdditional information: ", more_info);
     }
     return args;
 }
 
-export function debug(msg, more_info) {
+export function debug(msg: string, more_info: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.debug(...args);
 }
 
-export function log(msg, more_info) {
+export function log(msg: string, more_info: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.log(...args);
 }
 
-export function info(msg, more_info) {
+export function info(msg: string, more_info: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.info(...args);
 }
 
-export function warn(msg, more_info) {
+export function warn(msg: string, more_info: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
     if (page_params.development_environment) {
@@ -233,7 +247,7 @@ export function warn(msg, more_info) {
     }
 }
 
-export function error(msg, more_info, stack = new Error("dummy").stack) {
+export function error(msg: string, more_info: unknown, stack = new Error("dummy").stack): void {
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
     report_error(msg, stack, {more_info});
@@ -248,7 +262,7 @@ export function error(msg, more_info, stack = new Error("dummy").stack) {
 
 export const timings = new Map();
 
-export function measure_time(label, f) {
+export function measure_time<T>(label: string, f: () => T): T {
     const t1 = performance.now();
     const ret = f();
     const t2 = performance.now();
@@ -261,8 +275,8 @@ export function measure_time(label, f) {
 // only used for including in error report emails; be sure to discuss
 // with other developers before using it in a user-facing context
 // because it is not XSS-safe.
-export function preview_node(node) {
-    if (node instanceof $) {
+export function preview_node(node: JQuery | HTMLElement): string {
+    if (!(node instanceof HTMLElement)) {
         node = node[0];
     }
 

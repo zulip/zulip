@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, exclude=["delete"])|/user_groups/{user_group_id}/members:post|example}
+{generate_code_example(curl)|/user_groups/{user_group_id}/members:post|example}
 
 {end_tabs}
 

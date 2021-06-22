@@ -13,12 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=[""])|/streams:get|example}
-
-You may pass in one or more of the parameters mentioned above
-as URL query parameters, like so:
-
-{generate_code_example(curl, include=["include_public"])|/streams:get|example}
+{generate_code_example(curl)|/streams:get|example}
 
 {end_tabs}
 

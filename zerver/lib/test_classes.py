@@ -55,6 +55,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
@@ -1321,6 +1322,18 @@ Output:
         django_tornado_api.process_notification = real_event_queue_process_notification
 
         self.assert_length(lst, expected_num_events)
+
+    def create_user_notifications_data_object(self, **kwargs: Any) -> UserMessageNotificationsData:
+        return UserMessageNotificationsData(
+            id=kwargs.get("id", self.example_user("hamlet").id),
+            flags=kwargs.get("flags", []),
+            mentioned=kwargs.get("mentioned", False),
+            online_push_enabled=kwargs.get("online_push_enabled", False),
+            stream_email_notify=kwargs.get("stream_email_notify", False),
+            stream_push_notify=kwargs.get("stream_push_notify", False),
+            wildcard_mention_notify=kwargs.get("wildcard_mention_notify", False),
+            sender_is_muted=kwargs.get("sender_is_muted", False),
+        )
 
     def get_maybe_enqueue_notifications_parameters(self, **kwargs: Any) -> Dict[str, Any]:
         """

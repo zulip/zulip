@@ -1,9 +1,9 @@
 import $ from "jquery";
 
+import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
-import render_settings_deactivation_user_modal from "../templates/settings/deactivation_user_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -490,7 +490,7 @@ function open_bot_form(person) {
 
 function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
-    const modal_parent = $("#admin-user-list");
+    const modal_parent = $("#settings_content .organization-box");
     const opts = {
         username: user.full_name,
         email: user.email,

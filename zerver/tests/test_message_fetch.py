@@ -3724,7 +3724,6 @@ class MessageHasKeywordsTest(ZulipTestCase):
             content,
             rendered_content,
             set(),
-            set(),
             mention_data=mention_data,
         )
 

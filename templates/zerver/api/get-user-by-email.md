@@ -13,10 +13,6 @@
 
 {tab|curl}
 
-{generate_code_example(curl, include=[""])|/users/{email}:get|example}
-
-You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
-
 {generate_code_example(curl)|/users/{email}:get|example}
 
 {end_tabs}

@@ -108,9 +108,15 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-function get_validated_filename(fn) {
+exports.mock_cjs = (module_path, obj) => {
+    if (module_path === "jquery") {
+        throw new Error(
+            "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
+        );
+    }
+
     const filename = Module._resolveFilename(
-        fn,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -123,18 +129,7 @@ function get_validated_filename(fn) {
         throw new Error(`It is too late to mock ${filename}; call this earlier.`);
     }
 
-    return filename;
-}
-
-exports.mock_cjs = (fn, obj) => {
-    if (fn === "jquery") {
-        throw new Error(
-            "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
-        );
-    }
-    const filename = get_validated_filename(fn);
     module_mocks.set(filename, obj);
-
     return obj;
 };
 
@@ -154,25 +149,19 @@ exports.mock_template = (fn, exercise_template) => {
 
     obj.f.__default = true;
 
-    const filename = get_validated_filename("../../static/templates/" + fn);
-
-    // We update module_mocks with our object, but load() will return
-    // its own function that calls our obj.f.
-    module_mocks.set(filename, obj);
-
-    return obj;
+    return exports.mock_cjs("../../static/templates/" + fn, obj);
 };
 
-exports.mock_esm = (fn, obj = {}) => {
+exports.mock_esm = (module_path, obj = {}) => {
     if (typeof obj !== "object") {
         throw new TypeError("An ES module must be mocked with an object");
     }
-    return exports.mock_cjs(fn, {...obj, __esModule: true});
+    return exports.mock_cjs(module_path, {...obj, __esModule: true});
 };
 
-exports.unmock_module = (request) => {
+exports.unmock_module = (module_path) => {
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );

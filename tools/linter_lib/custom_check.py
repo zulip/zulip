@@ -132,7 +132,7 @@ js_rules = RuleList(
             "exclude": {
                 "static/js/portico",
                 "static/js/lightbox.js",
-                "static/js/ui_report.js",
+                "static/js/ui_report.ts",
                 "static/js/confirm_dialog.js",
                 "frontend_tests/",
             },
@@ -190,7 +190,7 @@ js_rules = RuleList(
             "description": "Use channel module for AJAX calls",
             "exclude": {
                 # Internal modules can do direct network calls
-                "static/js/blueslip.js",
+                "static/js/blueslip.ts",
                 "static/js/channel.js",
                 # External modules that don't include channel.js
                 "static/js/stats/",
@@ -202,14 +202,12 @@ js_rules = RuleList(
         },
         {
             "pattern": "style ?=",
+            "exclude_pattern": r"(const |\S)style ?=",
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
                 "frontend_tests/node_tests/copy_and_paste.js",
-                "frontend_tests/node_tests/upload.js",
-                "static/js/upload.js",
-                "static/js/stream_color.js",
             },
-            "good_lines": ["#my-style {color: blue;}"],
+            "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
         },
         {
@@ -705,7 +703,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/upgrade.html",
             # Miscellaneous violations to be cleaned up
             "static/templates/user_info_popover_title.hbs",
-            "static/templates/subscription_invites_warning_modal.hbs",
+            "static/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
             "templates/zerver/config_error.html",
             "templates/zerver/dev_env_email_access_details.html",

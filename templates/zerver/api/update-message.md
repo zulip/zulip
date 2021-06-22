@@ -13,7 +13,7 @@
 
 {tab|curl}
 
-{generate_code_example(curl, exclude=["stream_id"])|/messages/{message_id}:patch|example}
+{generate_code_example(curl)|/messages/{message_id}:patch|example}
 
 {end_tabs}
 
