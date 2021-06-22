@@ -1129,25 +1129,24 @@ def process_message_update_event(
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
-        flags = user_event["flags"]
-        wildcard_mentioned = "wildcard_mentioned" in flags
-        wildcard_mention_notify = wildcard_mentioned and (
-            user_profile_id in wildcard_mention_user_ids
+
+        flags: Collection[str] = user_event["flags"]
+        user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
+            user_id=user_profile_id,
+            flags=flags,
+            online_push_user_ids=online_push_user_ids,
+            stream_push_user_ids=stream_push_user_ids,
+            stream_email_user_ids=stream_email_user_ids,
+            wildcard_mention_user_ids=wildcard_mention_user_ids,
+            muted_sender_user_ids=muted_sender_user_ids,
         )
-        mentioned = "mentioned" in user_event["flags"]
 
         maybe_enqueue_notifications_for_message_update(
-            user_profile_id=user_profile_id,
+            user_data=user_notifications_data,
             message_id=message_id,
             private_message=(stream_name is None),
-            mentioned=mentioned,
-            wildcard_mention_notify=wildcard_mention_notify,
-            stream_push_notify=(user_profile_id in stream_push_user_ids),
-            stream_email_notify=(user_profile_id in stream_email_user_ids),
             stream_name=stream_name,
-            online_push_enabled=(user_profile_id in online_push_user_ids),
             presence_idle=(user_profile_id in presence_idle_user_ids),
-            muted_sender=(user_profile_id in muted_sender_user_ids),
             prior_mentioned=(user_profile_id in prior_mention_user_ids),
         )
 
@@ -1159,20 +1158,14 @@ def process_message_update_event(
 
 
 def maybe_enqueue_notifications_for_message_update(
-    user_profile_id: int,
+    user_data: UserMessageNotificationsData,
     message_id: int,
     private_message: bool,
-    mentioned: bool,
-    wildcard_mention_notify: bool,
-    stream_push_notify: bool,
-    stream_email_notify: bool,
     stream_name: Optional[str],
-    online_push_enabled: bool,
     presence_idle: bool,
-    muted_sender: bool,
     prior_mentioned: bool,
 ) -> None:
-    if muted_sender:
+    if user_data.sender_is_muted:
         # Never send notifications if the sender has been muted
         return
 
@@ -1197,7 +1190,7 @@ def maybe_enqueue_notifications_for_message_update(
         # without extending the UserMessage data model.
         return
 
-    if stream_push_notify or stream_email_notify:
+    if user_data.stream_push_notify or user_data.stream_email_notify:
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously
@@ -1205,18 +1198,18 @@ def maybe_enqueue_notifications_for_message_update(
         # model.
         return
 
-    idle = presence_idle or receiver_is_off_zulip(user_profile_id)
+    idle = presence_idle or receiver_is_off_zulip(user_data.id)
 
     maybe_enqueue_notifications(
-        user_profile_id=user_profile_id,
+        user_profile_id=user_data.id,
         message_id=message_id,
         private_message=private_message,
-        mentioned=mentioned,
-        wildcard_mention_notify=wildcard_mention_notify,
-        stream_push_notify=stream_push_notify,
-        stream_email_notify=stream_email_notify,
+        mentioned=user_data.mentioned,
+        wildcard_mention_notify=user_data.wildcard_mention_notify,
+        stream_push_notify=user_data.stream_push_notify,
+        stream_email_notify=user_data.stream_email_notify,
         stream_name=stream_name,
-        online_push_enabled=online_push_enabled,
+        online_push_enabled=user_data.online_push_enabled,
         idle=idle,
         already_notified={},
     )
