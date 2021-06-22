@@ -6652,7 +6652,9 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     return sorted(idle_user_ids)
 
 
-def do_send_confirmation_email(invitee: PreregistrationUser, referrer: UserProfile) -> str:
+def do_send_confirmation_email(
+    invitee: PreregistrationUser, referrer: UserProfile, email_language: str
+) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
     """
@@ -6667,7 +6669,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser, referrer: UserProfi
         "zerver/emails/invitation",
         to_emails=[invitee.email],
         from_address=FromAddress.tokenized_no_reply_address(),
-        language=referrer.realm.default_language,
+        language=email_language,
         context=context,
         realm=referrer.realm,
     )
@@ -6829,7 +6831,11 @@ def do_invite_users(
         stream_ids = [stream.id for stream in streams]
         prereg_user.streams.set(stream_ids)
 
-        event = {"prereg_id": prereg_user.id, "referrer_id": user_profile.id}
+        event = {
+            "prereg_id": prereg_user.id,
+            "referrer_id": user_profile.id,
+            "email_language": user_profile.realm.default_language,
+        }
         queue_json_publish("invites", event)
 
     if skipped:
@@ -6951,6 +6957,7 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     event = {
         "prereg_id": prereg_user.id,
         "referrer_id": prereg_user.referred_by.id,
+        "email_language": prereg_user.referred_by.realm.default_language,
     }
     queue_json_publish("invites", event)
 
