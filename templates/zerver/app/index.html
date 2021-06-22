@@ -11,24 +11,34 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed" />
 <style>
-    #app-loading-logo {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 24px;
+    #app-loading {
+        background-color: hsl(0, 0%, 100%);
+        position: fixed;
+        height: 100%;
+        width: 100%;
+        padding: 10px;
+        top: 0px;
+        left: 0px;
+        z-index: 9001;
     }
-    #app-loading, #app-loading-reload  {
+    #app-loading-middle-content, #app-loading-bottom-content {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        background-color: #fff;
         padding: 10px;
-        z-index: 9001;
+        z-index: 9002;
     }
-    #app-loading h3 {
+    #app-loading-logo {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 24px;
+        z-index: 9002;
+    }
+    #app-loading-middle-content h3 {
         text-align: center;
     }
-    #app-loading-reload {
+    #app-loading-bottom-content {
         top: unset;
         bottom: 0;
     }
@@ -40,25 +50,23 @@
 </div>
 
 <div id="app-loading">
-    <div id="app-loading-logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-            <circle cx="386.56" cy="386.56" r="386.56"></circle>
-            <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"></path>
-        </svg>
+    <div id="app-loading-middle-content">
+        <div id="app-loading-logo">
+            <img src="/static/images/zulip-logo.svg">
+        </div>
+        <h3>{{ _('Loading...') }}</h3>
     </div>
-    <h3>{{ _('Loading...') }}</h3>
-</div>
-
-<div id="app-loading-reload">
-    <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
-    <script nonce="{{ csp_nonce }}">
-        document.addEventListener('DOMContentLoaded', function () {
-            function reload() {
-                location.reload(true);
-            }
-            document.getElementById('reload-lnk').addEventListener('click', reload);
-        });
-    </script>
+    <div id="app-loading-bottom-content">
+        <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
+        <script nonce="{{ csp_nonce }}">
+            document.addEventListener('DOMContentLoaded', function () {
+                function reload() {
+                    location.reload(true);
+                }
+                document.getElementById('reload-lnk').addEventListener('click', reload);
+            });
+        </script>
+    </div>
 </div>
 
 <div class="subscriptions">
