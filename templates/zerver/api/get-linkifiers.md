@@ -21,9 +21,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/linkifiers:get}
 
+{generate_parameter_description(/realm/linkifiers:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/realm/linkifiers:get}
+
+{generate_response_description(/realm/linkifiers:get)}
 
 #### Example response
 

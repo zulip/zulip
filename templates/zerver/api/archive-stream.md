@@ -23,7 +23,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/streams/{stream_id}:delete}
 
+{generate_parameter_description(/streams/{stream_id}:delete)}
+
 ## Response
+
+{generate_response_description(/streams/{stream_id}:delete)}
 
 #### Example response
 

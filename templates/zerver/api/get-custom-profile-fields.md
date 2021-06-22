@@ -21,10 +21,14 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/profile_fields:get}
 
+{generate_parameter_description(/realm/profile_fields:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/realm/profile_fields:get}
 
+
+{generate_response_description(/realm/profile_fields:get)}
 
 #### Example response
 

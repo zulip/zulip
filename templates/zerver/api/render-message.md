@@ -21,9 +21,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages/render:post}
 
+{generate_parameter_description(/messages/render:post)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/messages/render:post}
+
+{generate_response_description(/messages/render:post)}
 
 #### Example response
 

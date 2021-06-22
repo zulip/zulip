@@ -93,10 +93,13 @@
         </tbody>
     </table>
 </div>
+{generate_parameter_description(/messages/flags:post)}
 
 ## Response
 
 {generate_return_values_table|zulip.yaml|/messages/flags:post}
+
+{generate_response_description(/messages/flags:post)}
 
 #### Example response
 

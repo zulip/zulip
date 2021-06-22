@@ -23,6 +23,8 @@
 
 {generate_return_values_table|zulip.yaml|/users/me/subscriptions:delete}
 
+{generate_response_description(/users/me/subscriptions:delete)}
+
 #### Example response
 
 {generate_code_example|/users/me/subscriptions:delete|fixture(200)}

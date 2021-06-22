@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages:get}
 
+{generate_parameter_description(/messages:get)}
+
 ## Response
 
 When a request is successful, this endpoint returns a dictionary
@@ -28,6 +30,8 @@ containing the following (in addition to the `msg` and `result` keys
 present in all Zulip API responses).
 
 {generate_return_values_table|zulip.yaml|/messages:get}
+
+{generate_response_description(/messages:get)}
 
 #### Example response
 

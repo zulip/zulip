@@ -21,7 +21,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/mark_all_as_read:post}
 
+{generate_parameter_description(/mark_all_as_read:post)}
+
 ## Response
+
+{generate_response_description(/mark_all_as_read:post)}
 
 #### Example response
 
@@ -54,7 +58,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/mark_stream_as_read:post}
 
+{generate_parameter_description(/mark_all_as_read:post)}
+
 ## Response
+
+{generate_response_description(/mark_all_as_read:post)}
 
 #### Example response
 
@@ -88,7 +96,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/mark_topic_as_read:post}
 
+{generate_parameter_description(/mark_all_as_read:post)}
+
 ## Response
+
+{generate_response_description(/mark_all_as_read:post)}
 
 #### Example response
 

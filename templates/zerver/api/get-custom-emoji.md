@@ -21,10 +21,14 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/emoji:get}
 
+{generate_parameter_description(/realm/emoji:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/realm/emoji:get}
 
+
+{generate_response_description(/realm/emoji:get)}
 
 #### Example response
 

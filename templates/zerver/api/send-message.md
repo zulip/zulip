@@ -67,9 +67,13 @@ file.
 
 {generate_api_arguments_table|zulip.yaml|/messages:post}
 
+{generate_parameter_description(/messages:post)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/messages:post}
+
+{generate_response_description(/messages:post)}
 
 #### Example response
 

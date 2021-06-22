@@ -30,7 +30,11 @@ You only have permission to edit a message if:
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}:patch}
 
+{generate_parameter_description(/messages/{message_id}:patch)}
+
 ## Response
+
+{generate_response_description(/messages/{message_id}:patch)}
 
 #### Example response
 

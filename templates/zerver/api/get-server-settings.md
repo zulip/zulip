@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/server_settings:get}
 
+{generate_parameter_description(/server_settings:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/server_settings:get}
@@ -36,6 +38,8 @@ response, for two reasons:
 * If a `/server_settings` request is made to the root domain of a
   multi-subdomain server, like the root domain of zulip.com, the settings
   that are realm-specific are not known and thus not provided.
+
+{generate_response_description(/server_settings:get)}
 
 #### Example response
 

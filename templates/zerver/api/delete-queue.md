@@ -21,7 +21,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/events:delete}
 
+{generate_parameter_description(/events:delete)}
+
 ## Response
+
+{generate_response_description(/events:delete)}
 
 #### Example response
 

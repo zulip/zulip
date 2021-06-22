@@ -21,9 +21,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages/matches_narrow:get}
 
+{generate_parameter_description(/messages/matches_narrow:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/messages/matches_narrow:get}
+
+{generate_response_description(/messages/matches_narrow:get)}
 
 #### Example response
 

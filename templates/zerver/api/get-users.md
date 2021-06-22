@@ -23,9 +23,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/users:get}
 
+{generate_parameter_description(/users:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/users:get}
+
+{generate_response_description(/users:get)}
 
 #### Example response
 

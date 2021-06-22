@@ -21,9 +21,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/realm/filters:post}
 
+{generate_parameter_description(/realm/filters:post)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/realm/filters:post}
+
+{generate_response_description(/realm/filters:post)}
 
 #### Example response
 

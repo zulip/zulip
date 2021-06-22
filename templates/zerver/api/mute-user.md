@@ -21,7 +21,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/me/muted_users/{muted_user_id}:post}
 
+{generate_parameter_description(/users/me/muted_users/{muted_user_id}:post)}
+
 ## Response
+
+{generate_response_description(/users/me/muted_users/{muted_user_id}:post)}
 
 #### Example response
 

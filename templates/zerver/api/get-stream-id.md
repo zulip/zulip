@@ -23,9 +23,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/get_stream_id:get}
 
+{generate_parameter_description(/get_stream_id:get)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/get_stream_id:get}
+
+{generate_response_description(/get_stream_id:get)}
 
 #### Example response
 

@@ -21,7 +21,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/streams/{stream_id}:patch}
 
+{generate_parameter_description(/streams/{stream_id}:patch)}
+
 ## Response
+
+{generate_response_description(/streams/{stream_id}:patch)}
 
 #### Example response
 

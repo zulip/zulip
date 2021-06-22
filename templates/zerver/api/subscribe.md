@@ -21,9 +21,13 @@
 
 {generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:post}
 
+{generate_parameter_description(/users/me/subscriptions:post)}
+
 ## Response
 
 {generate_return_values_table|zulip.yaml|/users/me/subscriptions:post}
+
+{generate_response_description(/users/me/subscriptions:post)}
 
 #### Example response
 

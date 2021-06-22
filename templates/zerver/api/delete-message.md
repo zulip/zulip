@@ -23,7 +23,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/messages/{message_id}:delete}
 
+{generate_parameter_description(/messages/{message_id}:delete)}
+
 ## Response
+
+{generate_response_description(/messages/{message_id}:delete)}
 
 #### Example response
 

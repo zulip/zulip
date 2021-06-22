@@ -21,6 +21,8 @@
 
 {generate_api_arguments_table|zulip.yaml|/settings/notifications:patch}
 
+{generate_parameter_description(/settings/notifications:patch)}
+
 ## Response
 
 #### Return values
@@ -29,6 +31,8 @@ The server will return the settings that have been changed after the request,
 with their new value. Please note that this doesn't necessarily mean that it
 will return all the settings passed as parameters in the request, but only
 those ones that were different than the already existing setting.
+
+{generate_response_description(/settings/notifications:patch)}
 
 #### Example response
 

@@ -21,7 +21,11 @@
 
 {generate_api_arguments_table|zulip.yaml|/user_groups/{user_group_id}/members:post}
 
+{generate_parameter_description(/user_groups/{user_group_id}/members:post)}
+
 ## Response
+
+{generate_response_description(/user_groups/{user_group_id}/members:post)}
 
 #### Example response
 

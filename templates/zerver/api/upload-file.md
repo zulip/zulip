@@ -31,10 +31,13 @@ in the [server's settings][1]. `MAX_FILE_UPLOAD_SIZE` defaults
 to 25MB.
 
 [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
+{generate_parameter_description(/user_uploads:post)}
 
 ## Response
 
 {generate_return_values_table|zulip.yaml|/user_uploads:post}
+
+{generate_response_description(/user_uploads:post)}
 
 #### Example response
 
