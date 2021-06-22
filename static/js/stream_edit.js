@@ -234,6 +234,28 @@ export function invite_user_to_stream(user_ids, sub, success, failure) {
     });
 }
 
+function show_stream_subcription_info({
+    message,
+    add_class,
+    remove_class,
+    subscribed_users,
+    already_subscribed_users,
+}) {
+    const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
+    const html = render_stream_subscription_info({
+        message,
+        subscribed_users,
+        already_subscribed_users,
+    });
+    ui.get_content_element(stream_subscription_info_elem).html(html);
+    if (add_class) {
+        stream_subscription_info_elem.addClass(add_class);
+    }
+    if (remove_class) {
+        stream_subscription_info_elem.removeClass(remove_class);
+    }
+}
+
 function submit_add_subscriber_form(e) {
     const sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -241,7 +263,6 @@ function submit_add_subscriber_form(e) {
         return;
     }
 
-    const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
     let user_ids = user_pill.get_user_ids(pill_widget);
     user_ids = user_ids.concat(stream_pill.get_user_ids(pill_widget));
     user_ids = user_ids.concat(user_group_pill.get_user_ids(pill_widget));
@@ -255,10 +276,11 @@ function submit_add_subscriber_form(e) {
         user_ids.delete(page_params.user_id);
     }
     if (user_ids.size === 0) {
-        stream_subscription_info_elem
-            .text($t({defaultMessage: "No user to subscribe."}))
-            .addClass("text-error")
-            .removeClass("text-success");
+        show_stream_subcription_info({
+            message: $t({defaultMessage: "No user to subscribe."}),
+            add_class: "text-error",
+            remove_class: "text-success",
+        });
         return;
     }
     user_ids = Array.from(user_ids);
@@ -272,17 +294,21 @@ function submit_add_subscriber_form(e) {
             people.get_by_email(email),
         );
 
-        const html = render_stream_subscription_info({subscribed_users, already_subscribed_users});
-        ui.get_content_element(stream_subscription_info_elem).html(html);
-        stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
+        show_stream_subcription_info({
+            add_class: "text-success",
+            remove_class: "text-error",
+            subscribed_users,
+            already_subscribed_users,
+        });
     }
 
     function invite_failure(xhr) {
         const error = JSON.parse(xhr.responseText);
-        stream_subscription_info_elem
-            .text(error.msg)
-            .addClass("text-error")
-            .removeClass("text-success");
+        show_stream_subcription_info({
+            message: error.msg,
+            add_class: "text-error",
+            remove_class: "text-success",
+        });
     }
 
     invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
@@ -829,29 +855,30 @@ export function initialize() {
             blueslip.error(".subscriber_list_remove form submit fails");
             return;
         }
-        const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
+        let message;
 
         function removal_success(data) {
             if (data.removed.length > 0) {
                 // Remove the user from the subscriber list.
                 list_entry.remove();
-                stream_subscription_info_elem.text(
-                    $t({defaultMessage: "Unsubscribed successfully!"}),
-                );
+                message = $t({defaultMessage: "Unsubscribed successfully!"});
                 // The rest of the work is done via the subscription -> remove event we will get
             } else {
-                stream_subscription_info_elem.text(
-                    $t({defaultMessage: "User is already not subscribed."}),
-                );
+                message = $t({defaultMessage: "User is already not subscribed."});
             }
-            stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
+            show_stream_subcription_info({
+                message,
+                add_class: "text-success",
+                remove_class: "text-remove",
+            });
         }
 
         function removal_failure() {
-            stream_subscription_info_elem
-                .text($t({defaultMessage: "Error removing user from this stream."}))
-                .addClass("text-error")
-                .removeClass("text-success");
+            show_stream_subcription_info({
+                message: $t({defaultMessage: "Error removing user from this stream."}),
+                add_class: "text-error",
+                remove_class: "text-success",
+            });
         }
 
         function remove_user_from_private_stream() {

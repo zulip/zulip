@@ -1,3 +1,7 @@
+{{#if message}}
+{{message}}
+<br />
+{{/if}}
 {{#each subscribed_users}}
     {{#if @first}}
     {{t "Successfully subscribed users:" }}
