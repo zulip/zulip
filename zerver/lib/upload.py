@@ -387,12 +387,10 @@ class S3UploadBackend(ZulipUploadBackend):
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
         self._boto_client = None
+        self.public_upload_url_pattern = self.construct_public_upload_url_pattern()
 
-    def get_public_upload_url(
-        self,
-        key: str,
-    ) -> str:
-        # Return the public URL for a key in the S3 Avatar bucket.
+    def construct_public_upload_url_pattern(self) -> str:
+        # Return the pattern for public URL for a key in the S3 Avatar bucket.
         # For Amazon S3 itself, this will return the following:
         #     f"https://{self.avatar_bucket.name}.{network_location}/{key}"
         #
@@ -401,14 +399,35 @@ class S3UploadBackend(ZulipUploadBackend):
         # different URL format. Configuring no signature and providing
         # no access key makes `generate_presigned_url` just return the
         # normal public URL for a key.
-        return self.get_boto_client().generate_presigned_url(
+        #
+        # It unfortunately takes 2ms per query to call
+        # generate_presigned_url, even with our cached boto
+        # client. Since we need to potentially compute hundreds of
+        # avatar URLs in single `GET /messages` request, we instead
+        # back-compute the URL pattern here.
+
+        DUMMY_KEY = "dummy_key_ignored"
+        foo_url = self.get_boto_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
-                "Key": key,
+                "Key": DUMMY_KEY,
             },
             ExpiresIn=0,
         )
+        parsed = urllib.parse.urlparse(foo_url)
+        base_path = os.path.dirname(parsed.path)
+
+        url_pattern = urllib.parse.urlunparse(
+            parsed._replace(path=os.path.join(base_path, "{key}"))
+        )
+        return url_pattern
+
+    def get_public_upload_url(
+        self,
+        key: str,
+    ) -> str:
+        return self.public_upload_url_pattern.format(key=key)
 
     def get_boto_client(self) -> botocore.client.BaseClient:
         """
