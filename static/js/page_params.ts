@@ -14,7 +14,7 @@ export const page_params: {
     translation_data: Record<string, string>;
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();
-window.page_params_parse_time = t2 - t1;
+export const page_params_parse_time = t2 - t1;
 if (!page_params) {
     throw new Error("Missing page-params");
 }
