@@ -13,4 +13,5 @@ export {get_by_user_id as get_person_by_user_id, get_user_id_from_name} from "./
 export {last_visible as last_visible_row, id as row_id} from "./rows";
 export {cancel as cancel_compose} from "./compose_actions";
 export {page_params} from "./page_params";
+export {cleanup_event_queue} from "./server_events";
 export {initiate as initiate_reload} from "./reload";

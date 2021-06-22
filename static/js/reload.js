@@ -96,6 +96,11 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     const token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
 
     ls.set("reload:" + token, url);
+    console.log("Stored token", token, url);
+    // Sleep for a few seconds so that we can see the log.
+    const now = new Date().getTime();
+    while(new Date().getTime() < now + 2000) {};
+
     window.location.replace("#reload:" + token);
 }
 
@@ -114,6 +119,7 @@ export function initialize() {
     // storage.  Afterwards, we clear the reload entry from local
     // storage to avoid a local storage space leak.
     const ls = localstorage();
+    console.log("hash" , hash_fragment);
     let fragment = ls.get(hash_fragment);
     if (fragment === undefined) {
         // Since this can happen sometimes with hand-reloading, it's
@@ -124,6 +130,7 @@ export function initialize() {
         hashchange.changehash("");
         return;
     }
+    console.log("Delete hash", hash_fragment);
     ls.remove(hash_fragment);
 
     fragment = fragment.replace(/^reload:/, "");
@@ -190,6 +197,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
         try {
+            console.log("preserve_state");
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
         } catch (error) {
             blueslip.error("Failed to preserve state", undefined, error.stack);
