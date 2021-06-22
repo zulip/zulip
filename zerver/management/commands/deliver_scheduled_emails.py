@@ -35,7 +35,7 @@ Usage: ./manage.py deliver_scheduled_emails
     def handle(self, *args: Any, **options: Any) -> None:
         while True:
             found_rows = False
-            with transaction.atomic():
+            with transaction.atomic(savepoint=False):
                 email_jobs_to_deliver = ScheduledEmail.objects.filter(
                     scheduled_timestamp__lte=timezone_now()
                 ).select_for_update()

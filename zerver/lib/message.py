@@ -674,7 +674,7 @@ def access_message(
     `SELECT FOR UPDATE` feature to ensure that other processes cannot
     delete the message during the current transaction, which is
     important to prevent rare race conditions. Callers must only
-    pass lock_message when inside a @transaction.atomic block.
+    pass lock_message when inside a @transaction.atomic(savepoint=False) block.
     """
     try:
         base_query = Message.objects.select_related()

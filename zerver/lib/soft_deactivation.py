@@ -252,7 +252,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
         (user_batch, users) = (users[0:BATCH_SIZE], users[BATCH_SIZE:])
         if len(user_batch) == 0:
             break
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             realm_logs = []
             for user in user_batch:
                 do_soft_deactivate_user(user)

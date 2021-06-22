@@ -117,7 +117,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
         internal_send_private_message(welcome_bot, send_request.message.sender, content)
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
     # Make sure each stream created in the realm creation process has at least one message below

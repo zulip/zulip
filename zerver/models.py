@@ -3060,7 +3060,7 @@ def get_huddle(id_list: List[int]) -> Huddle:
     lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600 * 24 * 7
 )
 def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
         if created:
             recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)

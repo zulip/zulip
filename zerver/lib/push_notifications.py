@@ -434,7 +434,7 @@ def add_push_device_token(
     # devices configured, and is also where we will store encryption
     # keys for mobile push notifications.
     try:
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             token = PushDeviceToken.objects.create(
                 user_id=user_profile.id,
                 kind=kind,

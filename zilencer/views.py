@@ -117,7 +117,7 @@ def register_remote_push_device(
     server = validate_bouncer_token_request(entity, token, token_kind)
 
     try:
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             RemotePushDeviceToken.objects.create(
                 user_id=user_id,
                 server=server,

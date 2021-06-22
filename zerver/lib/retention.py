@@ -132,13 +132,13 @@ def run_archiving_in_chunks(
     # archived-and-deleted or not transactionally.
     #
     # We implement this design by executing queries that archive messages and their related objects
-    # (such as UserMessage, Reaction, and Attachment) inside the same transaction.atomic() block.
+    # (such as UserMessage, Reaction, and Attachment) inside the same transaction.atomic(savepoint=False) block.
     assert type in (ArchiveTransaction.MANUAL, ArchiveTransaction.RETENTION_POLICY_BASED)
 
     message_count = 0
     while True:
         start_time = time.time()
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             archive_transaction = ArchiveTransaction.objects.create(type=type, realm=realm)
             new_chunk = move_rows(
                 Message,
@@ -603,11 +603,11 @@ def restore_attachment_messages_from_archive(archive_transaction_id: int) -> Non
 
 def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
     logger.info("Restoring %s", archive_transaction)
-    # transaction.atomic needs to be used here, rather than being a wrapper on the whole function,
+    # transaction.atomic(savepoint=False) needs to be used here, rather than being a wrapper on the whole function,
     # so that when we log "Finished", the process has indeed finished - and that happens only after
     # leaving the atomic block - Django does work committing the changes to the database when
     # the block ends.
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         msg_ids = restore_messages_from_archive(archive_transaction.id)
         restore_models_with_message_key_from_archive(archive_transaction.id)
         restore_attachments_from_archive(archive_transaction.id)

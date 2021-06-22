@@ -290,7 +290,7 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = N
         source=stripe_token,
     )
     event_time = timestamp_to_datetime(stripe_customer.created)
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         RealmAuditLog.objects.create(
             realm=user.realm,
             acting_user=user,
@@ -357,7 +357,7 @@ def customer_has_credit_card_as_default_source(customer: Customer) -> bool:
 
 # event_time should roughly be timezone_now(). Not designed to handle
 # event_times in the past or future
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def make_end_of_cycle_updates_if_needed(
     plan: CustomerPlan, event_time: datetime
 ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
@@ -584,8 +584,8 @@ def process_initial_upgrade(
             )
 
     # TODO: The correctness of this relies on user creation, deactivation, etc being
-    # in a transaction.atomic() with the relevant RealmAuditLog entries
-    with transaction.atomic():
+    # in a transaction.atomic(savepoint=False) with the relevant RealmAuditLog entries
+    with transaction.atomic(savepoint=False):
         # billed_licenses can greater than licenses if users are added between the start of
         # this function (process_initial_upgrade) and now
         billed_licenses = max(get_latest_seat_count(realm), licenses)

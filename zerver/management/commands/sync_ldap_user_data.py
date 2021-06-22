@@ -19,7 +19,7 @@ def sync_ldap_user_data(
     user_profiles: List[UserProfile], deactivation_protection: bool = True
 ) -> None:
     logger.info("Starting update.")
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         realms = {u.realm.string_id for u in user_profiles}
 
         for u in user_profiles:

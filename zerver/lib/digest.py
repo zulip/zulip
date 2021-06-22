@@ -344,7 +344,7 @@ def get_digest_context(user: UserProfile, cutoff: float) -> Dict[str, Any]:
     return bulk_get_digest_context([user], cutoff)[user.id]
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def bulk_handle_digest_email(user_ids: List[int], cutoff: float) -> None:
     # We go directly to the database to get user objects,
     # since inactive users are likely to not be in the cache.

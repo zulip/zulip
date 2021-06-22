@@ -584,7 +584,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             # We need to wrap a transaction here to avoid the
             # IntegrityError that will be thrown in here from breaking
             # the unittest transaction.
-            with transaction.atomic():
+            with transaction.atomic(savepoint=False):
                 result = self.uuid_post(
                     self.server_uuid,
                     "/api/v1/remotes/server/analytics",

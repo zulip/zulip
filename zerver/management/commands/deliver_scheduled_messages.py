@@ -51,7 +51,7 @@ Usage: ./manage.py deliver_scheduled_messages
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             while True:
-                with transaction.atomic():
+                with transaction.atomic(savepoint=False):
                     messages_to_deliver = ScheduledMessage.objects.filter(
                         scheduled_timestamp__lte=timezone_now(), delivered=False
                     ).select_for_update()

@@ -14,8 +14,8 @@ from zerver.lib.widget import get_widget_type
 from zerver.models import UserProfile
 
 
-# transaction.atomic is required since we use FOR UPDATE queries in access_message.
-@transaction.atomic
+# transaction.atomic(savepoint=False) is required since we use FOR UPDATE queries in access_message.
+@transaction.atomic(savepoint=False)
 @has_request_variables
 def process_submessage(
     request: HttpRequest,

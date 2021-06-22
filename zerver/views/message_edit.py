@@ -143,7 +143,7 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     return
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 @has_request_variables
 def delete_message_backend(
     request: HttpRequest,

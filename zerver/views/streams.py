@@ -362,7 +362,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
     """
 
     json_dict: Dict[str, Any] = {}
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         for thunk in thunks:
             response = thunk()
             if response.status_code != 200:
@@ -740,7 +740,7 @@ def get_topics_backend(
     return json_success(dict(topics=result))
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 @require_realm_admin
 @has_request_variables
 def delete_in_topic(

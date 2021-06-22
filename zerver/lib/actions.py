@@ -708,7 +708,7 @@ def do_create_user(
 
 
 def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
         user_profile.set_unusable_password()
@@ -746,7 +746,7 @@ def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserPro
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, True)
 
         event_time = timezone_now()
@@ -1175,7 +1175,7 @@ def do_deactivate_user(
         for profile in bot_profiles:
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
             # For zephyr mirror users, we need to make them a mirror dummy
             # again; otherwise, other users won't get the correct behavior
@@ -1860,7 +1860,7 @@ def do_send_messages(
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
         # Claim attachments in message
@@ -3776,7 +3776,7 @@ def bulk_add_subscriptions(
 # subscribing users to streams; we use a transaction to ensure that
 # the RealmAuditLog entries are created atomically with the
 # Subscription object creation (and updates).
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
     acting_user: Optional[UserProfile],
@@ -4018,7 +4018,7 @@ def bulk_remove_subscriptions(
 
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         occupied_streams_before = list(get_occupied_streams(our_realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
@@ -4854,7 +4854,7 @@ def do_create_realm(
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
 
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         realm.save()
 
@@ -5584,7 +5584,7 @@ def do_update_message_flags(
         if flag != "starred":
             raise JsonableError(_("Invalid message(s)"))
 
-        with transaction.atomic():
+        with transaction.atomic(savepoint=False):
             # Validate that the user could have read the relevant message
             message, user_message = access_message(user_profile, messages[0])
 
@@ -5854,8 +5854,8 @@ class DeleteMessagesEvent(TypedDict, total=False):
     stream_id: int
 
 
-# We use transaction.atomic to support select_for_update in the attachment codepath.
-@transaction.atomic
+# We use transaction.atomic(savepoint=False) to support select_for_update in the attachment codepath.
+@transaction.atomic(savepoint=False)
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
@@ -7489,7 +7489,7 @@ def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: List[Dict[str, Union[int, str, List[int]]]],
 ) -> None:
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         for custom_profile_field in data:
             field_value, created = CustomProfileFieldValue.objects.get_or_create(
                 user_profile=user_profile, field_id=custom_profile_field["id"]

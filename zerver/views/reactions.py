@@ -13,8 +13,8 @@ from zerver.lib.response import json_success
 from zerver.models import Reaction, UserProfile
 
 
-# transaction.atomic is required since we use FOR UPDATE queries in access_message
-@transaction.atomic
+# transaction.atomic(savepoint=False) is required since we use FOR UPDATE queries in access_message
+@transaction.atomic(savepoint=False)
 @has_request_variables
 def add_reaction(
     request: HttpRequest,
@@ -29,8 +29,8 @@ def add_reaction(
     return json_success()
 
 
-# transaction.atomic is required since we use FOR UPDATE queries in access_message
-@transaction.atomic
+# transaction.atomic(savepoint=False) is required since we use FOR UPDATE queries in access_message
+@transaction.atomic(savepoint=False)
 @has_request_variables
 def remove_reaction(
     request: HttpRequest,
