@@ -996,7 +996,7 @@ export function initialize() {
         open_create_stream();
     });
 
-    $(".subscriptions").on("click", "[data-dismiss]", (e) => {
+    $(".subscriptions").on("click", "#stream_creation_form [data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "Enter" would
