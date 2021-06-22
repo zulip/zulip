@@ -6957,7 +6957,6 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     event = {
         "prereg_id": prereg_user.id,
         "referrer_id": prereg_user.referred_by.id,
-        "email_body": None,
     }
     queue_json_publish("invites", event)
 
