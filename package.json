@@ -70,6 +70,7 @@
     "stacktrace-gps": "^3.0.4",
     "style-loader": "^2.0.0",
     "terser-webpack-plugin": "^4.1.0",
+    "text-field-edit": "^3.1.0",
     "tippy.js": "^6.2.7",
     "turndown": "^7.0.0",
     "url-loader": "^4.1.1",
