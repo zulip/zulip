@@ -197,7 +197,7 @@ if [ -f /etc/os-release ]; then
     )"
     {
         read -r os_id
-        read -r os_id_like
+        read -r os_id_like || true
         read -r os_version_id
         read -r os_version_codename || true
     } <<<"$os_info"
