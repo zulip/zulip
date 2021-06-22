@@ -443,6 +443,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
+            "help/change-the-topic-of-a-message",
             "help/configure-missed-message-emails",
             "help/community-topic-edits",
             "help/delete-a-stream",

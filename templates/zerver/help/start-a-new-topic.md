@@ -25,8 +25,6 @@ yourself wanting topics in a PM, we recommend
 
 ## Related articles
 
-* [Change the topic of a message](/help/change-the-topic-of-a-message)
-
 * [Rename a topic](/help/rename-a-topic)
 
 * [Require topics](/help/require-topics) for all stream messages
