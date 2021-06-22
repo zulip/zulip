@@ -424,7 +424,11 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         logger.info(
             "Sending invitation for realm %s to %s", referrer.realm.string_id, invitee.email
         )
-        activate_url = do_send_confirmation_email(invitee, referrer)
+        if "email_language" in data:
+            email_language = data["email_language"]
+        else:
+            email_language = referrer.realm.default_language
+        activate_url = do_send_confirmation_email(invitee, referrer, email_language)
 
         # queue invitation reminder
         if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
@@ -440,7 +444,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 referrer.realm,
                 to_emails=[invitee.email],
                 from_address=FromAddress.tokenized_no_reply_placeholder,
-                language=referrer.realm.default_language,
+                language=email_language,
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2),
             )
