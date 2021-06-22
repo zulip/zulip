@@ -12,33 +12,33 @@
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed" />
 <style>
     #app-loading {
-        background-color: hsl(0, 0%, 100%);
-        position: fixed;
-        height: 100%;
-        width: 100%;
-        padding: 10px;
-        top: 0px;
-        left: 0px;
-        z-index: 9001;
+    background-color: hsl(0, 0%, 100%);
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    top: 0px;
+    left: 0px;
+    z-index: 9001;
     }
     #app-loading-middle-content, #app-loading-bottom-content {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        padding: 10px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
     }
     #app-loading-logo {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 24px;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 24px;
     }
     #app-loading-middle-content h3 {
-        text-align: center;
+    text-align: center;
     }
     #app-loading-bottom-content {
-        top: unset;
-        bottom: 0;
+    top: unset;
+    bottom: 0;
     }
 </style>
 {% endblock %}
@@ -50,7 +50,7 @@
 <div id="app-loading">
     <div id="app-loading-middle-content">
         <div id="app-loading-logo">
-            <img src="/static/images/zulip-logo.svg">
+            <img src="/static/images/zulip-logo.svg" />
         </div>
         <h3>{{ _('Loading...') }}</h3>
     </div>
