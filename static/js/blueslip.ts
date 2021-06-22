@@ -12,6 +12,7 @@ import * as blueslip_stacktrace from "./blueslip_stacktrace";
 import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
+export let last_stacktrace: string | undefined;
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -169,7 +170,7 @@ function report_error(
         // = False on your development server, or else this code path
         // won't execute to begin with -- useful for testing
         // (un)minification.)
-        window.last_stacktrace = stack;
+        last_stacktrace = stack;
     }
 }
 
