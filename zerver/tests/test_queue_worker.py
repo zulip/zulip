@@ -441,9 +441,9 @@ class WorkerTest(ZulipTestCase):
             email=self.nonreg_email("bob"), referred_by=inviter, realm=inviter.realm
         )
         data: List[Dict[str, Any]] = [
-            dict(prereg_id=prereg_alice.id, referrer_id=inviter.id, email_body=None),
+            dict(prereg_id=prereg_alice.id, referrer_id=inviter.id),
             # Nonexistent prereg_id, as if the invitation was deleted
-            dict(prereg_id=-1, referrer_id=inviter.id, email_body=None),
+            dict(prereg_id=-1, referrer_id=inviter.id),
         ]
         for element in data:
             fake_client.enqueue("invites", element)
