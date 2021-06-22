@@ -453,7 +453,6 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendered_content = render_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
-        mentioned_user_ids: Set[int] = set()
         mention_data = MentionData(
             realm_id=self.user_profile.realm_id,
             content=content,
@@ -471,7 +470,6 @@ class NormalActionsTest(BaseAction):
                 content,
                 rendered_content,
                 prior_mention_user_ids,
-                mentioned_user_ids,
                 mention_data,
             ),
             state_change_expected=True,
@@ -514,7 +512,6 @@ class NormalActionsTest(BaseAction):
                 True,
                 None,
                 None,
-                set(),
                 set(),
                 None,
             ),

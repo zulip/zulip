@@ -953,7 +953,6 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
-                mention_user_ids=set(),
                 mention_data=None,
             )
 

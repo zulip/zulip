@@ -1105,7 +1105,6 @@ def process_message_update_event(
     # belong in the actual events.
     event_template = dict(orig_event)
     prior_mention_user_ids = set(event_template.pop("prior_mention_user_ids", []))
-    mention_user_ids = set(event_template.pop("mention_user_ids", []))
     presence_idle_user_ids = set(event_template.pop("presence_idle_user_ids", []))
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
@@ -1130,16 +1129,18 @@ def process_message_update_event(
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
-        wildcard_mentioned = "wildcard_mentioned" in user_event["flags"]
+        flags = user_event["flags"]
+        wildcard_mentioned = "wildcard_mentioned" in flags
         wildcard_mention_notify = wildcard_mentioned and (
             user_profile_id in wildcard_mention_user_ids
         )
+        mentioned = "mentioned" in user_event["flags"]
 
         maybe_enqueue_notifications_for_message_update(
             user_profile_id=user_profile_id,
             message_id=message_id,
             private_message=(stream_name is None),
-            mentioned=(user_profile_id in mention_user_ids),
+            mentioned=mentioned,
             wildcard_mention_notify=wildcard_mention_notify,
             stream_push_notify=(user_profile_id in stream_push_user_ids),
             stream_email_notify=(user_profile_id in stream_email_user_ids),

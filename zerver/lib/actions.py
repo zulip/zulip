@@ -2894,7 +2894,6 @@ def check_update_message(
     rendered_content = None
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
-    mention_user_ids: Set[int] = set()
     mention_data: Optional[MentionData] = None
     if content is not None:
         if content.rstrip() == "":
@@ -2920,8 +2919,6 @@ def check_update_message(
             mention_data=mention_data,
         )
         links_for_embed |= message.links_for_preview
-
-        mention_user_ids = message.mentions_user_ids
 
     new_stream = None
     number_changed = 0
@@ -2953,7 +2950,6 @@ def check_update_message(
         content,
         rendered_content,
         prior_mention_user_ids,
-        mention_user_ids,
         mention_data,
     )
 
@@ -5862,7 +5858,6 @@ def do_update_message(
     content: Optional[str],
     rendered_content: Optional[str],
     prior_mention_user_ids: Set[int],
-    mention_user_ids: Set[int],
     mention_data: Optional[MentionData] = None,
 ) -> int:
     """
@@ -5969,7 +5964,6 @@ def do_update_message(
         event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
         event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-        event["mention_user_ids"] = list(mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
         if target_message.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
