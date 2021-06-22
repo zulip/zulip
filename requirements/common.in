@@ -183,3 +183,6 @@ pyuca
 
 # Handle connection retries with exponential backoff
 backoff
+
+# Needed for reading bson files in rocketchat import tool
+pymongo

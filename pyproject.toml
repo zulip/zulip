@@ -51,6 +51,7 @@ module = [
     "boto3.*",
     "botocore.*",
     "bs4.*",
+    "bson.*",
     "cairosvg.*",
     "commonmark.*",
     "coverage.*",
