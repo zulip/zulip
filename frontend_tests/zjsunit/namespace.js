@@ -108,15 +108,15 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-exports.mock_cjs = (request, obj) => {
-    if (request === "jquery") {
+exports.mock_cjs = (module_path, obj) => {
+    if (module_path === "jquery") {
         throw new Error(
             "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
         );
     }
 
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -152,16 +152,16 @@ exports.mock_template = (fn, exercise_template) => {
     return exports.mock_cjs("../../static/templates/" + fn, obj);
 };
 
-exports.mock_esm = (request, obj = {}) => {
+exports.mock_esm = (module_path, obj = {}) => {
     if (typeof obj !== "object") {
         throw new TypeError("An ES module must be mocked with an object");
     }
-    return exports.mock_cjs(request, {...obj, __esModule: true});
+    return exports.mock_cjs(module_path, {...obj, __esModule: true});
 };
 
-exports.unmock_module = (request) => {
+exports.unmock_module = (module_path) => {
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
