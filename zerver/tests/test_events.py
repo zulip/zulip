@@ -196,6 +196,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     get_client,
     get_stream,
     get_user_by_delivery_email,
@@ -954,23 +955,45 @@ class NormalActionsTest(BaseAction):
                 user_profile=self.user_profile,
                 away=True,
                 status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
             )
         )
 
-        check_user_status("events[0]", events[0], {"away", "status_text"})
-
+        check_user_status(
+            "events[0]",
+            events[0],
+            {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
+        )
         events = self.verify_action(
             lambda: do_update_user_status(
-                user_profile=self.user_profile, away=False, status_text="", client_id=client.id
+                user_profile=self.user_profile,
+                away=False,
+                status_text="",
+                emoji_name="",
+                emoji_code="",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                client_id=client.id,
             )
         )
 
-        check_user_status("events[0]", events[0], {"away", "status_text"})
+        check_user_status(
+            "events[0]",
+            events[0],
+            {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
+        )
 
         events = self.verify_action(
             lambda: do_update_user_status(
-                user_profile=self.user_profile, away=True, status_text=None, client_id=client.id
+                user_profile=self.user_profile,
+                away=True,
+                status_text=None,
+                emoji_name=None,
+                emoji_code=None,
+                reaction_type=None,
+                client_id=client.id,
             )
         )
 
@@ -981,6 +1004,9 @@ class NormalActionsTest(BaseAction):
                 user_profile=self.user_profile,
                 away=None,
                 status_text="at the beach",
+                emoji_name=None,
+                emoji_code=None,
+                reaction_type=None,
                 client_id=client.id,
             )
         )

@@ -59,6 +59,7 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
+    UserStatus,
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
@@ -1092,6 +1093,9 @@ def apply_event(
         user_status = state["user_status"]
         away = event.get("away")
         status_text = event.get("status_text")
+        emoji_name = event.get("emoji_name")
+        emoji_code = event.get("emoji_code")
+        reaction_type = event.get("reaction_type")
 
         if user_id_str not in user_status:
             user_status[user_id_str] = {}
@@ -1107,6 +1111,24 @@ def apply_event(
                 user_status[user_id_str].pop("status_text", None)
             else:
                 user_status[user_id_str]["status_text"] = status_text
+
+            if emoji_name is not None:
+                if emoji_name == "":
+                    user_status[user_id_str].pop("emoji_name", None)
+                else:
+                    user_status[user_id_str]["emoji_name"] = emoji_name
+
+                if emoji_code is not None:
+                    if emoji_code == "":
+                        user_status[user_id_str].pop("emoji_code", None)
+                    else:
+                        user_status[user_id_str]["emoji_code"] = emoji_code
+
+                if reaction_type is not None:
+                    if reaction_type == UserStatus.UNICODE_EMOJI and emoji_name == "":
+                        user_status[user_id_str].pop("reaction_type", None)
+                    else:
+                        user_status[user_id_str]["reaction_type"] = reaction_type
 
         if not user_status[user_id_str]:
             user_status.pop(user_id_str, None)

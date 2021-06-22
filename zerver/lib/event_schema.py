@@ -1653,6 +1653,9 @@ user_status_event = event_dict_type(
         # force vertical
         ("away", bool),
         ("status_text", str),
+        ("emoji_name", str),
+        ("emoji_code", str),
+        ("reaction_type", str),
     ],
 )
 _check_user_status = make_checker(user_status_event)

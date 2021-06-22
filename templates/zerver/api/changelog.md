@@ -11,6 +11,15 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 86**
+
+* [`GET /events`](/api/get-events): Added `emoji_name`,
+  `emoji_code`, and `reaction_type` fields to `user_status` objects.
+* [`POST /register`](/api/register-queue): Added `emoji_name`,
+  `emoji_code`, and `reaction_type` fields to `user_status` objects.
+* `POST /users/me/status`: Added support for new `emoji_name`,
+  `emoji_code`, and `reaction_type` parameters.
+
 **Feature level 85**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `add_emoji_by_admins_only`

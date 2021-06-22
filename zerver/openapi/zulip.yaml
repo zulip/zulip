@@ -1430,6 +1430,24 @@ paths:
                                   type: string
                                   description: |
                                     The text content of the status message.
+                                emoji_name:
+                                  type: string
+                                  description: |
+                                    The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                emoji_code:
+                                  type: string
+                                  description: |
+                                    The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                reaction_type:
+                                  type: string
+                                  description: |
+                                    The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                    **Changes**; New in Zulip 5.0 (feature level 86).
                                 user_id:
                                   type: integer
                                   description: |
@@ -1440,6 +1458,9 @@ paths:
                                   "user_id": 10,
                                   "away": true,
                                   "status_text": "out to lunch",
+                                  "emoji_name": "car",
+                                  "emoji_code": "1f697",
+                                  "reaction_type": "unicode_emoji",
                                   "id": 0,
                                 }
                             - type: object
@@ -8360,12 +8381,19 @@ paths:
                           error messages when a search returns limited results because
                           a stop word in the query was ignored.
                       user_status:
-                        type: object
+                        allOf:
+                          - $ref: "#/components/schemas/EmojiBase"
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
                           A dictionary which contains the [status](/help/status-and-availability)
                           of all users in the Zulip organization who have set a status.
+
+                          **Changes**: The emoji parameters are new in Zulip 5.0 (feature level 86).
+                          Previously, Zulip did not support emoji associated with statuses.
+
+                          A status that does not have an emoji associated with it is encoded
+                          with `emoji_name=""`.
                         additionalProperties:
                           description: |
                             `{user_id}`: Object containing the status details of a user
@@ -12241,7 +12269,7 @@ components:
             reaction_type: {}
             user_id: {}
             user: {}
-    EmojiReactionBase:
+    EmojiBase:
       type: object
       properties:
         emoji_code:
@@ -12267,42 +12295,47 @@ components:
               (`emoji_code` will be its ID).
             * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
               namespace the `zulip` emoji.
-        user_id:
-          type: integer
-          description: |
-            The ID of the user who added the reaction.
-
-            **Changes**: New in Zulip 3.0 (feature level 2). The `user`
-            object is deprecated and will be removed in the future.
-        user:
-          type: object
-          additionalProperties: false
-          deprecated: true
-          description: |
-            Dictionary with data on the user who added the reaction, including
-            the user ID as the `id` field.  **Note**: In the [events
-            API](/api/get-events), this `user` dictionary
-            confusing had the user ID in a field called `user_id`
-            instead.  We recommend ignoring fields other than the user
-            ID.  **Deprecated** and to be removed in a future release
-            once core clients have migrated to use the `user_id` field.
-          properties:
-            id:
+    EmojiReactionBase:
+      allOf:
+        - $ref: "#/components/schemas/EmojiBase"
+        - properties:
+            user_id:
               type: integer
               description: |
-                ID of the user.
-            email:
-              type: string
-              description: |
-                Email of the user.
-            full_name:
-              type: string
-              description: |
-                Full name of the user.
-            is_mirror_dummy:
-              type: boolean
+                The ID of the user who added the reaction.
+
+                **Changes**: New in Zulip 3.0 (feature level 2). The `user`
+                object is deprecated and will be removed in the future.
+            user:
+              type: object
+              additionalProperties: false
+              deprecated: true
               description: |
                 Whether the user is a mirror dummy.
+                Dictionary with data on the user who added the reaction, including
+                the user ID as the `id` field.  **Note**: In the [events
+                API](/api/get-events), this `user` dictionary
+                confusing had the user ID in a field called `user_id`
+                instead.  We recommend ignoring fields other than the user
+                ID.  **Deprecated** and to be removed in a future release
+                once core clients have migrated to use the `user_id` field.
+              properties:
+                id:
+                  type: integer
+                  description: |
+                    ID of the user.
+                email:
+                  type: string
+                  description: |
+                    Email of the user.
+                full_name:
+                  type: string
+                  description: |
+                    Full name of the user.
+                is_mirror_dummy:
+                  type: boolean
+                  description: |
+                    Whether the user is a mirror dummy.
     Messages:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
