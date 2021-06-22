@@ -226,6 +226,15 @@ python_rules = RuleList(
     langs=["py"],
     rules=[
         {
+            "pattern": "transaction[.]atomic[(][)]|transaction[.]atomic$",
+            "description": "Always use `savepoint=False` to handle nested transactions.",
+            "good_lines": [
+                "with transaction.atomic(savepoint=False)",
+                "@transaction.atomic(savepoint=False)",
+            ],
+            "bad_lines": ["with transaction.atomic()", "@transaction.atomic"],
+        },
+        {
             "pattern": "subject|SUBJECT",
             "exclude_pattern": "subject to the|email|outbox",
             "description": "avoid subject as a var",
