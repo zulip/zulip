@@ -633,9 +633,12 @@ html_rules: List["Rule"] = [
     {
         "pattern": r"""\Walt=["'][^{"']""",
         "description": "alt argument should be enclosed by _() or it should be an empty string.",
-        "exclude": {
-            "static/templates/settings/display_settings.hbs",
-            "templates/zerver/app/keyboard_shortcuts.html",
+        "exclude_line": {
+            (
+                # Emoji should not be tagged for translation.
+                "static/templates/keyboard_shortcuts.hbs",
+                '<img alt=":thumbs_up:"',
+            ),
         },
         "good_lines": ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
         "bad_lines": ['<img alt="Foo Image" />'],

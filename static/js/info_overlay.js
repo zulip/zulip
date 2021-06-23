@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
 
 import * as browser_history from "./browser_history";
@@ -163,6 +164,9 @@ export function set_up_toggler() {
         rendered_markdown.update_elements($(this));
     });
     $(".informational-overlays .overlay-body").append($markdown_help);
+
+    const $keyboard_shortcuts = $(render_keyboard_shortcut());
+    $(".informational-overlays .overlay-body").append($keyboard_shortcuts);
 
     const opts = {
         selected: 0,

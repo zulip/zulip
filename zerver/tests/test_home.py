@@ -256,8 +256,6 @@ class HomeTest(ZulipTestCase):
             "Exclude messages with topic",
             "Keyboard shortcuts",
             "Loading...",
-            "Narrow to topic",
-            "Next message",
             "Filter streams",
             # Verify that the app styles get included
             "app-stubentry.js",
