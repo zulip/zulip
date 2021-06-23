@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
@@ -9,6 +10,7 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
@@ -553,14 +555,6 @@ export function set_up() {
         }
     });
 
-    $("#user_deactivate_account_button").on("click", (e) => {
-        // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
-        e.preventDefault();
-        e.stopPropagation();
-        overlays.open_modal("#deactivate_self_modal");
-    });
-
     $("#account-settings").on("click", ".custom_user_field .remove_date", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -585,52 +579,65 @@ export function set_up() {
         }
     });
 
-    $("#do_deactivate_self_button").on("click", () => {
-        $("#do_deactivate_self_button .loader").css("display", "inline-block");
-        $("#do_deactivate_self_button span").hide();
-        $("#do_deactivate_self_button object").on("load", function () {
-            const doc = this.getSVGDocument();
-            const $svg = $(doc).find("svg");
-            $svg.find("rect").css("fill", "#000");
-        });
+    $("#user_deactivate_account_button").on("click", (e) => {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        e.preventDefault();
+        e.stopPropagation();
 
-        setTimeout(() => {
-            channel.del({
-                url: "/json/users/me",
-                success() {
-                    overlays.close_modal("#deactivate_self_modal");
-                    window.location.href = "/login/";
-                },
-                error(xhr) {
-                    const error_last_owner = $t_html({
-                        defaultMessage: "Error: Cannot deactivate the only organization owner.",
-                    });
-                    const error_last_user = $t_html(
-                        {
-                            defaultMessage:
-                                "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
-                        },
-                        {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
-                        },
-                    );
-                    let rendered_error_msg;
-                    if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
-                        if (xhr.responseJSON.is_last_owner) {
-                            rendered_error_msg = error_last_owner;
-                        } else {
-                            rendered_error_msg = error_last_user;
+        function handle_confirm() {
+            setTimeout(() => {
+                channel.del({
+                    url: "/json/users/me",
+                    success() {
+                        confirm_dialog.hide_confirm_dialog_spinner();
+                        overlays.close_modal("#confirm_dialog_modal");
+                        window.location.href = "/login/";
+                    },
+                    error(xhr) {
+                        const error_last_owner = $t_html({
+                            defaultMessage: "Error: Cannot deactivate the only organization owner.",
+                        });
+                        const error_last_user = $t_html(
+                            {
+                                defaultMessage:
+                                    "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
+                            },
+                            {
+                                "z-link": (content_html) =>
+                                    `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                            },
+                        );
+                        let rendered_error_msg;
+                        if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
+                            if (xhr.responseJSON.is_last_owner) {
+                                rendered_error_msg = error_last_owner;
+                            } else {
+                                rendered_error_msg = error_last_user;
+                            }
                         }
-                    }
-                    overlays.close_modal("#deactivate_self_modal");
-                    $("#account-settings-status")
-                        .addClass("alert-error")
-                        .html(rendered_error_msg)
-                        .show();
-                },
-            });
-        }, 5000);
+                        confirm_dialog.hide_confirm_dialog_spinner();
+                        overlays.close_modal("#confirm_dialog_modal");
+                        $("#account-settings-status")
+                            .addClass("alert-error")
+                            .html(rendered_error_msg)
+                            .show();
+                    },
+                });
+            }, 5000);
+        }
+        const html_body = render_confirm_deactivate_own_user();
+        const modal_parent = $("#account-settings .account-settings-form");
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: handle_confirm,
+            help_link: "/help/deactivate-your-account",
+            fade: true,
+            loading_spinner: true,
+        });
     });
 
     $("#show_my_user_profile_modal").on("click", () => {
