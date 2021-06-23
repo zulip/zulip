@@ -19,7 +19,7 @@
 
 ## Parameters
 
-This endpoint takes no parameters.
+This endpoint does not accept any parameters.
 
 {generate_parameter_description(/users/me:get)}
 

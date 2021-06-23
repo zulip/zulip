@@ -142,7 +142,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/api/get-events", "dont_block")
         self._test("/api/delete-queue", "Delete a previously registered queue")
         self._test("/api/update-message", "propagate_mode")
-        self._test("/api/get-own-user", "takes no parameters")
+        self._test("/api/get-own-user", "does not accept any parameters.")
         self._test("/api/subscribe", "authorization_errors_fatal")
         self._test("/api/create-user", "zuliprc-admin")
         self._test("/api/unsubscribe", "not_removed")
