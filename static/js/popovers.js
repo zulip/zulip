@@ -431,11 +431,11 @@ export function show_user_profile(user) {
         callback(name, key) {
             $(".tabcontent").hide();
             $("#" + key).show();
-            switch (name) {
-                case "User groups":
+            switch (key) {
+                case "groups-tab":
                     render_user_group_list(groups_of_user, user);
                     break;
-                case "Streams":
+                case "streams-tab":
                     render_user_stream_list(user_streams, user);
                     break;
             }
