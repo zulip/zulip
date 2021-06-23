@@ -920,8 +920,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
     # Handle rendering of stream descriptions for import from non-Zulip
     for stream in data["zerver_stream"]:
-        if "rendered_description" in stream:
-            continue
         stream["rendered_description"] = render_stream_description(stream["description"])
     bulk_import_model(data, Stream)
 
