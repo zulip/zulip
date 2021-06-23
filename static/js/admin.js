@@ -137,6 +137,9 @@ export function build_page() {
         realm_invite_required: page_params.realm_invite_required,
         can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         policy_values: settings_config.common_policy_values,
+        realm_delete_own_message_policy: page_params.realm_delete_own_message_policy,
+        DELETE_OWN_MESSAGE_POLICY_ADMINS_ONLY:
+            settings_config.common_message_policy_values.by_admins_only.code,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         color_scheme_values: settings_config.color_scheme_values,

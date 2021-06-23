@@ -109,9 +109,6 @@ export function get_organization_settings_options() {
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
-    options.delete_own_message_policy_values = get_sorted_options_list(
-        settings_config.delete_own_message_policy_values,
-    );
     return options;
 }
 
@@ -249,18 +246,32 @@ function set_msg_edit_limit_dropdown() {
     settings_ui.disable_sub_setting_onchange(value !== "never", "id_realm_edit_topic_policy", true);
 }
 
+function message_delete_limit_setting_enabled() {
+    // This function is used to check whether the time-limit setting
+    // should be enabled. The setting is disabled when delete_own_message_policy
+    // is set to 'admins only' as admins can delete messages irrespective of
+    // time limit.
+    if (
+        page_params.realm_delete_own_message_policy ===
+        settings_config.common_message_policy_values.by_admins_only.code
+    ) {
+        return false;
+    }
+    return true;
+}
+
 function set_delete_own_message_policy_dropdown() {
     const value = get_property_value("realm_delete_own_message_policy");
     $("#id_realm_delete_own_message_policy").val(value);
     settings_ui.disable_sub_setting_onchange(
-        value !== settings_config.delete_own_message_policy_values.by_admins_only.code,
+        message_delete_limit_setting_enabled(),
         "id_realm_msg_delete_limit_setting",
         true,
     );
     const limit_value = get_property_value("realm_msg_delete_limit_setting");
     if (limit_value === "custom_limit") {
         settings_ui.disable_sub_setting_onchange(
-            value !== settings_config.delete_own_message_policy_values.by_admins_only.code,
+            message_delete_limit_setting_enabled(),
             "id_realm_message_content_delete_limit_minutes",
             true,
         );

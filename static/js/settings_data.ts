@@ -121,6 +121,13 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
+    /* At present, by_everyone is not present in common_policy_values,
+     * but we include a check for it here, so that code using
+     * common_message_policy_values or other supersets can use this function. */
+    if (policy_value === settings_config.common_message_policy_values.by_everyone.code) {
+        return true;
+    }
+
     if (page_params.is_guest) {
         return false;
     }
@@ -190,6 +197,10 @@ export function user_can_edit_topic_of_any_message(): boolean {
         return true;
     }
     return user_has_permission(page_params.realm_edit_topic_policy);
+}
+
+export function user_can_delete_own_message(): boolean {
+    return user_has_permission(page_params.realm_delete_own_message_policy);
 }
 
 export function using_dark_theme(): boolean {

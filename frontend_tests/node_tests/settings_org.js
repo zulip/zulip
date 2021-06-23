@@ -576,7 +576,7 @@ function test_discard_changes_button(discard_changes) {
     page_params.realm_allow_message_editing = true;
     page_params.realm_message_content_edit_limit_seconds = 3600;
     page_params.realm_delete_own_message_policy =
-        settings_config.delete_own_message_policy_values.by_everyone.code;
+        settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_message_content_delete_limit_seconds = 120;
 
     const allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);

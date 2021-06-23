@@ -255,19 +255,6 @@ export const common_message_policy_values = {
     },
 };
 
-export const delete_own_message_policy_values = {
-    by_everyone: {
-        order: 1,
-        code: 5,
-        description: $t({defaultMessage: "Admins, members and guests"}),
-    },
-    by_admins_only: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-};
-
 const time_limit_dropdown_values = new Map([
     [
         "any_time",
