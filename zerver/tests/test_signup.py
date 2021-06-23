@@ -2,7 +2,7 @@ import datetime
 import re
 import time
 import urllib
-from typing import Any, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
@@ -3257,6 +3257,52 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["LOCATION"], url)
 
+    def verify_signup(
+        self,
+        *,
+        email: str = "newguy@zulip.com",
+        password: str = "newpassword",
+        full_name: str = "New user's name",
+        realm: Optional[Realm] = None,
+        subdomain: Optional[str] = None,
+    ) -> UserProfile:
+        """Common test function for signup tests.  It is a goal to use this
+        common function for all signup tests to avoid code duplication; doing
+        so will likely require adding new parameters."""
+
+        if not realm:
+            realm = get_realm("zulip")
+
+        client_kwargs: Dict[str, Any] = {}
+        if subdomain:
+            client_kwargs["subdomain"] = subdomain
+
+        result = self.client_post("/accounts/home/", {"email": email}, **client_kwargs)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"], **client_kwargs)
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url, **client_kwargs)
+        self.assertEqual(result.status_code, 200)
+
+        # Pick a password and agree to the ToS. This should create our
+        # account, log us in, and redirect to the app.
+        result = self.submit_reg_form_for_user(
+            email, password, full_name=full_name, **client_kwargs
+        )
+
+        # Verify that we were served a redirect to the app.
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "http://lear.testserver/")
+
+        # Verify that we successfully logged in.
+        user_profile = get_user(email, realm)
+        self.assert_logged_in_user_id(user_profile.id)
+        return user_profile
+
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
         Make sure we redirect for EmailNotDeliveredException.
@@ -3377,21 +3423,7 @@ class UserSignUpTest(InviteUserBase):
         Check if signing up with an email used in another realm succeeds.
         """
         email = self.example_email("hamlet")
-        password = "newpassword"
-        realm = get_realm("lear")
-
-        result = self.client_post("/accounts/home/", {"email": email}, subdomain="lear")
-        self.assertEqual(result.status_code, 302)
-        result = self.client_get(result["Location"], subdomain="lear")
-
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url, subdomain="lear")
-        self.assertEqual(result.status_code, 200)
-
-        result = self.submit_reg_form_for_user(email, password, subdomain="lear")
-        self.assertEqual(result.status_code, 302)
-
-        get_user(email, realm)
+        self.verify_signup(email=email, realm=get_realm("lear"), subdomain="lear")
         self.assertEqual(UserProfile.objects.filter(delivery_email=email).count(), 2)
 
     def test_signup_invalid_name(self) -> None:
