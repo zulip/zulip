@@ -2990,7 +2990,7 @@ select.inline_select_topic_edit {
 }
 
 #login_to_access_modal {
-    .go_back_button .fa {
+    .spectator_go_back .fa {
         position: fixed;
         top: 11px;
         left: 30px;

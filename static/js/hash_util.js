@@ -308,3 +308,7 @@ export function is_web_public_compatible(hash) {
 
     return web_public_allowed_hashes.includes(main_hash);
 }
+
+export function current_hash_as_next() {
+    return `next=/${window.location.hash}`;
+}
