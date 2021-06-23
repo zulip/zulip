@@ -429,27 +429,16 @@ export function show_user_profile(user) {
             {label: $t({defaultMessage: "User groups"}), key: "groups-tab"},
         ],
         callback(name, key) {
-            function hide_profile_tab() {
-                $("#profile-tab").hide();
-                $(".subscription-group-list").show();
-            }
+            $(".tabcontent").hide();
+            $("#" + key).show();
             switch (name) {
                 case "User groups":
-                    hide_profile_tab();
-                    $("#streams-tab").hide();
                     render_user_group_list(groups_of_user, user);
                     break;
                 case "Streams":
-                    hide_profile_tab();
-                    $("#groups-tab").hide();
                     render_user_stream_list(user_streams, user);
                     break;
-                default:
-                    // default is profile section
-                    $(".subscription-group-list").hide();
-                    break;
             }
-            $("#" + key).show();
         },
     };
 
