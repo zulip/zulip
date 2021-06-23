@@ -30,12 +30,12 @@
     </div>
     <div id="page_loading_indicator"></div>
     <div id="empty_narrow_message" class="empty_feed_notice">
-        <h4>{{ _("Nothing's been sent here yet!") }}</h4>
+        <h4>{{ _("Error: Search operator" + " " + "cannot be used with" + ".") }}</h4>
 
         <p>
             {% trans %}
-            Why not <a href="#" class="empty_feed_compose_stream">
-            start the conversation</a>?
+            See <a href="https://chat.zulip.org/help/search-for-messages" class="empty_feed_compose_stream">
+            Searching for messages help page for details</a>.
             {% endtrans %}
         </p>
     </div>
