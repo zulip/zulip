@@ -23,8 +23,8 @@ from zerver.data_import.mattermost import (
     reset_mirror_dummy_users,
     write_emoticon_data,
 )
-from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.sequencer import IdMapper
+from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase

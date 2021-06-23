@@ -35,8 +35,8 @@ from zerver.data_import.import_util import (
     make_subscriber_map,
     make_user_messages,
 )
-from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
+from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
