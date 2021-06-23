@@ -34,6 +34,14 @@ const markdown_help_rows = [
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
     },
     {
+        markdown: "Zulip website",
+        output_html:
+            '<p><a href="https://zulip.org" target="_blank" rel="noopener noreferrer" title="https://zulip.org/">Zulip website</a></p>',
+        usage_html:
+            "(Pasting a link using <kbd>Ctrl</kbd>+<kbd>V</kbd> having some text selected.)",
+        effect_html: "(Converts pasted url to named link)",
+    },
+    {
         markdown: `\
 * Milk
 * Tea
