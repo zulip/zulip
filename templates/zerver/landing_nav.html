@@ -16,26 +16,94 @@
         </a>
         <ul>
             <div class="exit">&times;</div>
-            <li data-on-page="hello">
-                <a href="/hello/">Home</a>
-            </li>
-            <li data-on-page="why-zulip">
-                <a href="/why-zulip/">Why Zulip</a>
-            </li>
-            <li data-on-page="features">
-                <a href="/features/">Features</a>
-            </li>
+            <div class="dropdown nav-dropdown">
+                <div class="dropdown-label first">Product<i class="fa fa-chevron-down"></i></div>
+                <ul class="dropdown-list product-options">
+                    <li>
+                        <a href="/hello">Home</a>
+                    </li>
+                    <li>
+                        <a href="/why-zulip">Why Zulip</a>
+                    </li>
+                    <li>
+                        <a href="/features/">Features</a>
+                    </li>
+                    <li>
+                        <a href="/security/">Security</a>
+                    </li>
+                    <li>
+                        <a href="/integrations/">Integrations</a>
+                    </li>
+                    <li>
+                        <a href="/api/">REST API</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="dropdown nav-dropdown">
+                <div class="dropdown-label">Solutions<i class="fa fa-chevron-down"></i></div>
+                <ul class="dropdown-list solutions-options">
+                    <li>
+                        <a href="/for/companies/">Companies</a>
+                    </li>
+                    <li>
+                        <a href="/for/open-source/">Open source projects</a>
+                    </li>
+                    <li>
+                        <a href="/for/working-groups-and-communities/">Working groups and communities</a>
+                    </li>
+                </ul>
+            </div>
             <li data-on-page="plans">
-                <a href="/plans/">Plans</a>
+                <a href="/plans/">Pricing</a>
             </li>
+            <div class="dropdown nav-dropdown">
+                <div class="dropdown-label">Resources<i class="fa fa-chevron-down"></i></div>
+                <ul class="dropdown-list resources-options">
+                    <div class="dropdown-column">
+                        <li class="nav-header">For users</li>
+                        <li>
+                            <a href="/help/getting-started-with-zulip">Getting started</a>
+                        </li>
+                        <li>
+                            <a href="/help">Help center</a>
+                        </li>
+                        <li>
+                            <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html" target=”_blank”>
+                                Community chat
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/help/contact-support">Contact support</a>
+                        </li>
+                        <li>
+                            <a href="https://blog.zulip.com/">Blog</a>
+                        </li>
+                    </div>
+                    <div class="dropdown-column">
+                        <li class="nav-header">For administrators</li>
+                        <li>
+                            <a href="/help/getting-your-organization-started-with-zulip">
+                                Setting up your organization
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://zulip.readthedocs.io/en/stable/production/install.html">
+                                Installing a Zulip server
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">
+                                Upgrading a Zulip server
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/zulip/zulip" target="_blank" rel="noopener noreferer">GitHub</a>
+                        </li>
+                    </div>
+                </ul>
+            </div>
             <li data-on-page="apps">
-                <a href="{{ apps_page_url }}">Apps</a>
-            </li>
-            <li data-on-page="integrations">
-                <a href="/integrations/">Integrations</a>
-            </li>
-            <li data-on-page="security">
-                <a href="/security/">Security</a>
+                <a href="{{ apps_page_url }}">Download</a>
             </li>
             {% if user_is_authenticated %}
                 {% include 'zerver/portico-header-dropdown.html' %}
@@ -57,6 +125,9 @@
             {% else %}
             <li>
                 <a href="/accounts/find/">Find accounts</a>
+            </li>
+            <li>
+                <a href="/new">New organization</a>
             </li>
             {% endif %}
         </ul>

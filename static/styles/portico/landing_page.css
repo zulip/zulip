@@ -287,7 +287,8 @@ nav {
             user-select: none;
         }
 
-        li {
+        li,
+        div.dropdown-label {
             position: relative;
             display: inline-block;
             margin: 10px;
@@ -309,6 +310,42 @@ nav {
                     left: calc(50% - 4px);
                     font-weight: 100;
                     transform: scaleX(2) scaleY(0.5);
+                }
+            }
+
+            i.fa-chevron-down {
+                position: relative;
+                top: -2px;
+                font-size: 0.6em;
+                margin-left: 5px;
+                transition: all 0.2s ease;
+            }
+        }
+    }
+
+    .nav-dropdown {
+        padding-bottom: 3px;
+        ul {
+            width: 300px;
+        }
+
+        @media (width > 686px) {
+            ul.product-options {
+                width: 125px;
+            }
+
+            ul.solutions-options {
+                width: 175px;
+            }
+
+            ul.resources-options {
+                width: 350px;
+
+                div.dropdown-column {
+                    float: left;
+                    &:first-of-type {
+                        width: 40%;
+                    }
                 }
             }
         }
@@ -3486,6 +3523,8 @@ nav {
 
             transition: all 0.5s ease;
 
+            overflow-y: auto;
+
             &.show {
                 transform: translate(0, 0);
             }
@@ -3501,15 +3540,12 @@ nav {
                 color: initial;
             }
 
-            li {
+            li,
+            div.dropdown div.dropdown-label {
                 display: block;
                 font-size: 1.5em;
                 font-weight: 300;
                 line-height: 1.5;
-
-                &:first-of-type {
-                    margin-top: 20px;
-                }
 
                 &.active {
                     font-weight: 400;
@@ -3523,13 +3559,53 @@ nav {
                     }
                 }
             }
+
+            div.dropdown div.dropdown-label.first {
+                margin-top: 30px;
+            }
+
+            div.dropdown ul.dropdown-list {
+                position: relative;
+                box-shadow: none;
+                padding-left: 10px;
+                border: none;
+
+                li {
+                    &:hover {
+                        background-color: unset;
+                    }
+                }
+            }
+
+            .nav-dropdown {
+                ul.resources-options {
+                    div.dropdown-column {
+                        float: none;
+
+                        &:first-child {
+                            padding-bottom: 20px;
+                        }
+
+                        li.nav-header {
+                            font-size: 1em;
+                        }
+                    }
+                }
+            }
+        }
+
+        &.portico-header {
+            div.content ul div.nav-dropdown {
+                display: block;
+                padding-bottom: 0;
+            }
         }
     }
 
     .portico-header .content > ul::before {
         content: "Zulip";
         display: block;
-        margin-top: 20px;
+        margin-top: 25px;
         padding-top: 5px;
         margin-left: 10px;
 
@@ -3555,6 +3631,7 @@ nav {
 
     nav ul li,
     nav ul li a,
+    nav ul div.dropdown div.dropdown-label,
     .portico-header .dropdown-pill .realm-name {
         color: hsl(0, 0%, 27%) !important;
     }

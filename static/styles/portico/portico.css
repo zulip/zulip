@@ -589,7 +589,7 @@ input.text-error {
             right: 0;
             margin: 10px 0 0 0;
             list-style-type: none;
-            width: 200px;
+            width: 300px;
             background-color: hsl(0, 0%, 100%);
             padding: 5px 0;
             border-radius: 4px;
@@ -636,6 +636,16 @@ input.text-error {
                 a i {
                     margin-right: 5px;
                 }
+
+                &.nav-header {
+                    background-color: transparent;
+                    cursor: default;
+                }
+            }
+
+            &.dropdown-list {
+                margin-top: 3px;
+                margin-right: 3px;
             }
         }
 
