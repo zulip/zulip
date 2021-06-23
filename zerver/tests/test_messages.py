@@ -23,8 +23,8 @@ class MissedMessageTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
         user_data_objects = [
-            self.create_user_notifications_data_object(id=hamlet.id),
-            self.create_user_notifications_data_object(id=othello.id),
+            self.create_user_notifications_data_object(user_id=hamlet.id),
+            self.create_user_notifications_data_object(user_id=othello.id),
         ]
         message_type = "private"
 

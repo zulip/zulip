@@ -969,7 +969,7 @@ def process_message_event(
         # Remove fields sent through other pipes to save some space.
         internal_data = asdict(user_notifications_data)
         internal_data.pop("flags")
-        internal_data.pop("id")
+        internal_data.pop("user_id")
         extra_user_data[user_profile_id] = dict(internal_data=internal_data)
 
         # If the message isn't notifiable had the user been idle, then the user
@@ -1199,10 +1199,10 @@ def maybe_enqueue_notifications_for_message_update(
         # model.
         return
 
-    idle = presence_idle or receiver_is_off_zulip(user_data.id)
+    idle = presence_idle or receiver_is_off_zulip(user_data.user_id)
 
     maybe_enqueue_notifications(
-        user_profile_id=user_data.id,
+        user_profile_id=user_data.user_id,
         message_id=message_id,
         private_message=private_message,
         mentioned=user_data.mentioned,

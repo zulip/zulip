@@ -6612,7 +6612,7 @@ def get_active_presence_idle_user_ids(
         # for them if they were indeed idle. Only including those users in the calculation below is a
         # very important optimization for open communities with many inactive users.
         if user_data.is_notifiable(is_private_message, sender_id, idle=True) or alerted:
-            user_ids.add(user_data.id)
+            user_ids.add(user_data.user_id)
 
     return filter_presence_idle_user_ids(user_ids)
 

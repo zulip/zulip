@@ -4,7 +4,7 @@ from typing import Collection, Set
 
 @dataclass
 class UserMessageNotificationsData:
-    id: int
+    user_id: int
     flags: Collection[str]
     mentioned: bool
     online_push_enabled: bool
@@ -34,7 +34,7 @@ class UserMessageNotificationsData:
             user_id in wildcard_mention_user_ids and "wildcard_mentioned" in flags
         )
         return cls(
-            id=user_id,
+            user_id=user_id,
             flags=flags,
             mentioned=("mentioned" in flags),
             online_push_enabled=(user_id in online_push_user_ids),
@@ -57,7 +57,7 @@ class UserMessageNotificationsData:
         if not idle and not self.online_push_enabled:
             return False
 
-        if self.id == sender_id:
+        if self.user_id == sender_id:
             return False
 
         if self.sender_is_muted:
@@ -74,7 +74,7 @@ class UserMessageNotificationsData:
         if not idle:
             return False
 
-        if self.id == sender_id:
+        if self.user_id == sender_id:
             return False
 
         if self.sender_is_muted:

@@ -1323,9 +1323,11 @@ Output:
 
         self.assert_length(lst, expected_num_events)
 
-    def create_user_notifications_data_object(self, **kwargs: Any) -> UserMessageNotificationsData:
+    def create_user_notifications_data_object(
+        self, *, user_id: int, **kwargs: Any
+    ) -> UserMessageNotificationsData:
         return UserMessageNotificationsData(
-            id=kwargs.get("id", self.example_user("hamlet").id),
+            user_id=user_id,
             flags=kwargs.get("flags", []),
             mentioned=kwargs.get("mentioned", False),
             online_push_enabled=kwargs.get("online_push_enabled", False),
