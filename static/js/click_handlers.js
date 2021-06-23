@@ -41,6 +41,7 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
+import * as user_profile from "./user_profile";
 import * as util from "./util";
 
 export function initialize() {
@@ -582,6 +583,7 @@ export function initialize() {
     }
 
     popovers.register_click_handlers();
+    user_profile.register_click_handlers();
     emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
     notifications.register_click_handlers();

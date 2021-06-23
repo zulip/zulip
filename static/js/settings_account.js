@@ -17,13 +17,13 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
-import * as popovers from "./popovers";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as setup from "./setup";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
+import * as user_profile from "./user_profile";
 
 let password_quality; // Loaded asynchronously
 
@@ -644,7 +644,7 @@ export function set_up() {
         overlays.close_overlay("settings");
         const user = people.get_by_user_id(people.my_current_user_id());
         setTimeout(() => {
-            popovers.show_user_profile(user);
+            user_profile.show_user_profile(user);
         }, 100);
 
         // If user opened the "preview profile" modal from user
