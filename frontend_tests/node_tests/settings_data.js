@@ -182,45 +182,46 @@ test_policy(
     settings_data.user_can_move_messages_between_streams,
 );
 
-run_test("user_can_edit_topic_of_any_message", () => {
-    const can_edit_topic_of_any_message = settings_data.user_can_edit_topic_of_any_message;
+function test_message_policy(label, policy, validation_func) {
+    run_test(label, () => {
+        page_params.is_admin = true;
+        page_params[policy] = settings_config.common_message_policy_values.by_admins_only.code;
+        assert.equal(validation_func(), true);
 
-    page_params.is_admin = true;
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_admins_only.code;
-    assert.equal(can_edit_topic_of_any_message(), true);
+        page_params.is_admin = false;
+        page_params.is_moderator = true;
+        assert.equal(validation_func(), false);
 
-    page_params.is_admin = false;
-    page_params.is_moderator = true;
-    assert.equal(can_edit_topic_of_any_message(), false);
+        page_params[policy] = settings_config.common_message_policy_values.by_moderators_only.code;
+        assert.equal(validation_func(), true);
 
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_moderators_only.code;
-    assert.equal(can_edit_topic_of_any_message(), true);
+        page_params.is_moderator = false;
+        assert.equal(validation_func(), false);
 
-    page_params.is_moderator = false;
-    assert.equal(can_edit_topic_of_any_message(), false);
+        page_params.is_guest = true;
+        page_params[policy] = settings_config.common_message_policy_values.by_everyone.code;
+        assert.equal(validation_func(), true);
 
-    page_params.is_guest = true;
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_everyone.code;
-    assert.equal(can_edit_topic_of_any_message(), true);
+        page_params[policy] = settings_config.common_message_policy_values.by_members.code;
+        assert.equal(validation_func(), false);
 
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_members.code;
-    assert.equal(can_edit_topic_of_any_message(), false);
+        page_params.is_guest = false;
+        assert.equal(validation_func(), true);
 
-    page_params.is_guest = false;
-    assert.equal(can_edit_topic_of_any_message(), true);
+        page_params[policy] = settings_config.common_message_policy_values.by_full_members.code;
+        page_params.user_id = 30;
+        people.add_active_user(isaac);
+        isaac.date_joined = new Date(Date.now());
+        page_params.realm_waiting_period_threshold = 10;
+        assert.equal(validation_func(), false);
 
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_full_members.code;
-    page_params.user_id = 30;
-    people.add_active_user(isaac);
-    isaac.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-    assert.equal(can_edit_topic_of_any_message(), false);
+        isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+        assert.equal(validation_func(), true);
+    });
+}
 
-    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-    assert.equal(can_edit_topic_of_any_message(), true);
-});
+test_message_policy(
+    "user_can_edit_topic_of_any_message",
+    "realm_edit_topic_policy",
+    settings_data.user_can_edit_topic_of_any_message,
+);
