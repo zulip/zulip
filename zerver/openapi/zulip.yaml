@@ -10044,6 +10044,11 @@ paths:
           schema:
             type: boolean
           example: true
+      x-response-description: |
+        The server will return the settings that have been changed after the request,
+        with their new value. Please note that this doesn't necessarily mean that it
+        will return all the settings passed as parameters in the request, but only
+        those ones that were different than the already existing setting.
       responses:
         "200":
           description: Success.
