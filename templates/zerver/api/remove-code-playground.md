@@ -5,7 +5,6 @@
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/realm/playgrounds/{playground_id}:delete|example}
 

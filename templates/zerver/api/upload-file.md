@@ -6,7 +6,6 @@
 
 {start_tabs}
 
-{tab|python}
 
 {generate_code_example(python)|/user_uploads:post|example}
 

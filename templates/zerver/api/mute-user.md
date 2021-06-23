@@ -5,7 +5,6 @@
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/users/me/muted_users/{muted_user_id}:post|example}
 

@@ -129,6 +129,8 @@ def extract_code_example(
 def render_python_code_example(
     function: str, admin_config: bool = False, **kwargs: Any
 ) -> List[str]:
+    if function not in zerver.openapi.python_examples.TEST_FUNCTIONS:
+        return []
     method = zerver.openapi.python_examples.TEST_FUNCTIONS[function]
     function_source_lines = inspect.getsourcelines(method)[0]
 
@@ -139,7 +141,7 @@ def render_python_code_example(
 
     snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
-    code_example = []
+    code_example = ["{tab|python}\n"]
     code_example.append("```python")
     code_example.extend(config)
 

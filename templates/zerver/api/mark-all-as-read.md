@@ -5,7 +5,6 @@
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/mark_all_as_read:post|example}
 
@@ -42,7 +41,6 @@
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/mark_stream_as_read:post|example}
 
@@ -80,7 +78,6 @@
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/mark_topic_as_read:post|example}
 

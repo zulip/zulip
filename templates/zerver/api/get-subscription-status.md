@@ -5,7 +5,6 @@
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/users/{user_id}/subscriptions/{stream_id}:get|example}
 

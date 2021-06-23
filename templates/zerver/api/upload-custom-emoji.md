@@ -6,7 +6,6 @@
 
 {start_tabs}
 
-{tab|python}
 
 {generate_code_example(python)|/realm/emoji/{emoji_name}:post|example}
 
