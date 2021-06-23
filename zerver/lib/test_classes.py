@@ -1337,26 +1337,28 @@ Output:
             sender_is_muted=kwargs.get("sender_is_muted", False),
         )
 
-    def get_maybe_enqueue_notifications_parameters(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_maybe_enqueue_notifications_parameters(
+        self, *, message_id: int, user_id: int, sender_id: int, **kwargs: Any
+    ) -> Dict[str, Any]:
         """
         Returns a dictionary with the passed parameters, after filling up the
         missing data with default values, for testing what was passed to the
         `maybe_enqueue_notifications` method.
         """
-        parameters: Dict[str, Any] = dict(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={"email_notified": False, "push_notified": False},
+        user_notifications_data = self.create_user_notifications_data_object(
+            user_id=user_id, **kwargs
         )
-
-        # Values from `kwargs` will replace those from `parameters`
-        return {**parameters, **kwargs}
+        return dict(
+            user_data=user_notifications_data,
+            message_id=message_id,
+            sender_id=sender_id,
+            private_message=kwargs.get("private_message", False),
+            stream_name=kwargs.get("stream_name", None),
+            idle=kwargs.get("idle", True),
+            already_notified=kwargs.get(
+                "already_notified", {"email_notified": False, "push_notified": False}
+            ),
+        )
 
 
 class WebhookTestCase(ZulipTestCase):
