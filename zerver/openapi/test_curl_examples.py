@@ -53,10 +53,6 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         if os.path.exists(file_name):
             f = open(file_name, "r")
             for line in f:
-                # Set AUTHENTICATION_LINE to default_authentication_line.
-                # Set this every iteration, because deactivate_own_user
-                # will override this for its test.
-                AUTHENTICATION_LINE[0] = default_authentication_line
                 # A typical example from the Markdown source looks like this:
                 #     {generate_code_example(curl, ...}
                 if line.startswith("{generate_code_example(curl"):
@@ -78,10 +74,17 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             # that will be actually shown to users, we use the
             # Markdown rendering pipeline to compute the user-facing
             # example, and then run that to test it.
+
+            # Set AUTHENTICATION_LINE to default_authentication_line.
+            # Set this every iteration, because deactivate_own_user
+            # will override this for its test.
+            AUTHENTICATION_LINE[0] = default_authentication_line
+
             curl_command_html = md_engine.convert(line.strip())
             unescaped_html = html.unescape(curl_command_html)
             curl_regex = re.compile(r"<code>curl\n(.*?)</code>", re.DOTALL)
             commands = re.findall(curl_regex, unescaped_html)
+
             for curl_command_text in commands:
                 curl_command_text = curl_command_text.replace(
                     "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
