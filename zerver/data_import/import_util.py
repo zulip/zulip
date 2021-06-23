@@ -88,6 +88,8 @@ def build_user_profile(
     realm_id: int,
     short_name: str,
     timezone: Optional[str],
+    is_bot: bool = False,
+    bot_type: Optional[int] = None,
 ) -> ZerverFieldsT:
     obj = UserProfile(
         avatar_source=avatar_source,
@@ -101,6 +103,8 @@ def build_user_profile(
         role=role,
         realm_id=realm_id,
         timezone=timezone,
+        is_bot=is_bot,
+        bot_type=bot_type,
     )
     dct = model_to_dict(obj)
 
@@ -462,6 +466,7 @@ def build_stream(
     stream_id: int,
     deactivated: bool = False,
     invite_only: bool = False,
+    stream_post_policy: int = 1,
 ) -> ZerverFieldsT:
     stream = Stream(
         name=name,
@@ -471,6 +476,7 @@ def build_stream(
         date_created=date_created,
         invite_only=invite_only,
         id=stream_id,
+        stream_post_policy=stream_post_policy,
     )
     stream_dict = model_to_dict(stream, exclude=["realm"])
     stream_dict["realm"] = realm_id
