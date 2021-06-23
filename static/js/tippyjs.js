@@ -65,6 +65,15 @@ export function initialize() {
             // We target the message table and check for removal of it, it's children
             // and the reactions individually down in the subtree.
             const target_node = elem.parents(".message_table.focused_table").get(0);
+            if (!target_node) {
+                // The `reaction` was removed from DOM before we reached here.
+                // In that case, we simply hide the tooltip.
+                // We have to be smart about hiding the instance, so we hide it as soon
+                // as it is displayed.
+                setTimeout(instance.hide, 0);
+                return;
+            }
+
             const nodes_to_check_for_removal = [
                 elem.parents(".recipient_row").get(0),
                 elem.parents(".message_reactions").get(0),
@@ -87,7 +96,9 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            observer.disconnect();
+            if (observer) {
+                observer.disconnect();
+            }
         },
         appendTo: () => document.body,
     });
