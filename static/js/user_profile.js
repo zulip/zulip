@@ -154,6 +154,8 @@ export function show_user_profile(user) {
         profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
+        is_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
         date_joined: dateFormat.format(parseISO(user.date_joined)),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         show_email: settings_data.show_email(),
@@ -298,6 +300,10 @@ export function register_click_handlers() {
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
+    $("body").on("click", "#user-profile-modal .manage_user_group", () => {
+        hide_user_profile();
+    });
+
     $("body").on("click", "#user-profile-modal #name #edit-button", () => {
         hide_user_profile();
     });

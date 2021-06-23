@@ -453,6 +453,13 @@ ul {
             }
         }
     }
+
+    p.manage_user_group {
+        padding-left: 10px;
+        a {
+            text-decoration: none;
+        }
+    }
 }
 
 @media (width < $md_min) {
