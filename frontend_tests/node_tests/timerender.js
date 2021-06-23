@@ -106,7 +106,7 @@ run_test("render_date_renders_time_html", () => {
 
     const actual = timerender.render_date(message_time, undefined, today);
     assert.equal(actual.html(), expected_html);
-    assert.equal(attrs.title, "Friday, April 12, 2019");
+    assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
 });
 

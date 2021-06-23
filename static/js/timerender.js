@@ -31,7 +31,7 @@ export function clear_for_testing() {
 export function render_now(time, today = new Date()) {
     let time_str = "";
     let needs_update = false;
-    // render formal time to be used as title attr tooltip
+    // render formal time to be used for tippy tooltip
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
     const formal_time_str = format(time, "EEEE,\u00A0MMMM\u00A0d,\u00A0yyyy");
@@ -146,7 +146,7 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
         return elem;
     }
     elem.append(_.escape(rendered_time.time_str));
-    return elem.attr("title", rendered_time.formal_time_str);
+    return elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 
 // Given an Date object 'time', return a DOM node that initially

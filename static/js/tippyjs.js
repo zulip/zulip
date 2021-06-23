@@ -165,4 +165,14 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        target: ".recipient_row_date > span",
+        allowHTML: true,
+        placement: "top",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
