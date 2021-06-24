@@ -233,6 +233,13 @@ def check_requires_administrator(endpoint: str, method: str) -> bool:
     )
 
 
+def check_additional_imports(endpoint: str, method: str) -> Optional[List[str]]:
+    """Fetch the additional imports required for an endpoint."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-python-examples-extra-imports", None
+    )
+
+
 def get_responses_description(endpoint: str, method: str) -> str:
     """Fetch responses description of an endpoint."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(

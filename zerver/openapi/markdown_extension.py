@@ -19,6 +19,7 @@ from markdown.preprocessors import Preprocessor
 
 import zerver.openapi.python_examples
 from zerver.openapi.openapi import (
+    check_additional_imports,
     check_requires_administrator,
     generate_openapi_fixture,
     get_curl_include_exclude,
@@ -135,9 +136,18 @@ def render_python_code_example(
     function_source_lines = inspect.getsourcelines(method)[0]
 
     if admin_config:
-        config = PYTHON_CLIENT_ADMIN_CONFIG.splitlines()
+        config_string = PYTHON_CLIENT_ADMIN_CONFIG
     else:
-        config = PYTHON_CLIENT_CONFIG.splitlines()
+        config_string = PYTHON_CLIENT_CONFIG
+
+    endpoint, endpoint_method = function.split(":")
+    extra_imports = check_additional_imports(endpoint, endpoint_method)
+    if extra_imports:
+        extra_imports = sorted(extra_imports + ["zulip"])
+        extra_imports = [f"import {each_import}" for each_import in extra_imports]
+        config_string = config_string.replace("import zulip", "\n".join(extra_imports))
+
+    config = config_string.splitlines()
 
     snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 

@@ -165,6 +165,7 @@ paths:
         `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
         [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
         endpoint and a queue would be registered in the absence of a `queue_id`.
+      x-python-examples-extra-imports: ["sys"]
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
