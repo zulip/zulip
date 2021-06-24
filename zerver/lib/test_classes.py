@@ -608,7 +608,7 @@ Output:
     def submit_reg_form_for_user(
         self,
         email: str,
-        password: str,
+        password: Optional[str],
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
         from_confirmation: str = "",
@@ -632,7 +632,6 @@ Output:
             full_name = email.replace("@", "_")
         payload = {
             "full_name": full_name,
-            "password": password,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "key": key if key is not None else find_key_by_email(email),
@@ -642,6 +641,8 @@ Output:
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
         }
+        if password is not None:
+            payload["password"] = password
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post("/accounts/register/", payload, **kwargs)

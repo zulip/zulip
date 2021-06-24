@@ -3261,7 +3261,7 @@ class UserSignUpTest(InviteUserBase):
         self,
         *,
         email: str = "newguy@zulip.com",
-        password: str = "newpassword",
+        password: Optional[str] = "newpassword",
         full_name: str = "New user's name",
         realm: Optional[Realm] = None,
         subdomain: Optional[str] = None,
