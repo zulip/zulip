@@ -62,10 +62,10 @@ export function update_name_change_display() {
 
 export function update_email_change_display() {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $("#change_email .button").prop("disabled", true);
+        $("#change_email").prop("disabled", true);
         $(".change_email_tooltip").show();
     } else {
-        $("#change_email .button").prop("disabled", false);
+        $("#change_email").prop("disabled", false);
         $(".change_email_tooltip").hide();
     }
 }
