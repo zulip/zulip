@@ -1,6 +1,6 @@
 {generate_api_title(/register:post)}
 
-{generate_api_description(API_ENDPOINT_NAME)}
+{generate_api_description(/register:post)}
 
 ## Usage examples
 
@@ -21,16 +21,16 @@
 
 {generate_api_arguments_table|zulip.yaml|/register:post}
 
-{generate_parameter_description(API_ENDPOINT_NAME)}
+{generate_parameter_description(/register:post)}
 
 ## Response
 
 {generate_return_values_table|zulip.yaml|/register:post}
 
-{generate_response_description(API_ENDPOINT_NAME)}
+{generate_response_description(/register:post)}
 
 #### Example response
 
 {generate_code_example|/register:post|fixture(200)}
 
-{generate_code_example|API_ENDPOINT_NAME|fixture(400)}
+{generate_code_example|/register:post|fixture(400)}
