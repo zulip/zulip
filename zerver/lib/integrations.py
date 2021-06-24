@@ -423,6 +423,9 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         stream_name="opbeat",
         function="zerver.webhooks.opbeat.view.api_opbeat_webhook",
     ),
+    WebhookIntegration(
+        "opencollective", ["communication"], display_name="Open Collective Incoming Webhook"
+    ),
     WebhookIntegration("opsgenie", ["meta-integration", "monitoring"]),
     WebhookIntegration("pagerduty", ["monitoring"], display_name="PagerDuty"),
     WebhookIntegration("papertrail", ["monitoring"]),
@@ -761,6 +764,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
         ScreenshotConfig("incident_closed.json", "003.png"),
     ],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
+    "opencollective": [ScreenshotConfig("one_time_donation.json")],
     "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
     "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
