@@ -5023,8 +5023,12 @@ paths:
         `{msg_id}` in the above URL should be replaced with the ID of the
         message you wish you update.
 
-        **Note**: See [configuring message editing][config-message-editing] for detailed documentation on under what
-        circumstances users are allowed to edit topics.
+        You can [resolve topics](/help/resolve-a-topic) by editing the
+        topic to `✔ {original_topic}`.
+
+        **Note**: See [configuring message
+        editing][config-message-editing] for detailed documentation on
+        when users are allowed to edit topics.
 
         [config-message-editing]: /help/configure-message-editing-and-deletion
       x-curl-examples-parameters:

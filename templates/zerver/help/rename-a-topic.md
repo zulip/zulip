@@ -100,3 +100,7 @@ option.
 {end_tabs}
 
 [move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
+
+## Related articles
+
+* [Resolve a topic](/help/resolve-a-topic)
