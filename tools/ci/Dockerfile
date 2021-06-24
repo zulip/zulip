@@ -21,11 +21,11 @@
 # then borrows from the CircleCI Dockerfile.
 
 # To rebuild from this file for a given release, say bionic:
-#   1. $ tools/ci/generate-dockerfiles
-#   2. $ docker build tools/ci/images/$RELEASE/ --tag zulip/ci:$RELEASE
-#   3. $ docker push zulip/ci:$RELEASE
+#   docker build . --build-arg=BASE_IMAGE=buildpack-deps:bionic-scm --pull --tag=zulip/ci:bionic
+#   docker push zulip/ci:bionic
 
-FROM {base_image}
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
 
 RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci \
   && echo 'DPkg::Options "--force-confnew";' >> /etc/apt/apt.conf.d/90circleci
@@ -52,9 +52,9 @@ ENV LC_ALL C.UTF-8
 # Docker core...
 RUN set -e \
   && export DOCKER_VERSION=$(curl --silent --fail --retry 3 https://download.docker.com/linux/static/stable/x86_64/ | grep -o -e 'docker-[.0-9]*-ce\.tgz' | sort -r | head -n 1) \
-  && DOCKER_URL="https://download.docker.com/linux/static/stable/x86_64/${{DOCKER_VERSION}}" \
+  && DOCKER_URL="https://download.docker.com/linux/static/stable/x86_64/${DOCKER_VERSION}" \
   && echo Docker URL: $DOCKER_URL \
-  && curl --silent --show-error --location --fail --retry 3 --output /tmp/docker.tgz "${{DOCKER_URL}}" \
+  && curl --silent --show-error --location --fail --retry 3 --output /tmp/docker.tgz "${DOCKER_URL}" \
   && ls -lha /tmp/docker.tgz \
   && tar -xz -C /tmp -f /tmp/docker.tgz \
   && mv /tmp/docker/* /usr/bin \
