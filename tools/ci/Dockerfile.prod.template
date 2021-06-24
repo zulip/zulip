@@ -10,14 +10,9 @@ FROM {base_image}
 RUN sudo rm -rf /var/lib/rabbitmq/mnesia/*
 
 # The bionic hack used in production suite
-RUN if [ -f /etc/os-release ]; then \
-    . /etc/os-release \
-    && os_codename=$VERSION_CODENAME \
-    && if [ "$os_codename" = "bionic" ]; then \
+RUN if (. /etc/os-release && [ "$ID $VERSION_ID" = 'ubuntu 18.04' ]); then \
       sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf; \
-    fi; \
-  fi
-
+    fi
 
 # Download the release tarball, start rabbitmq server and install the server
 RUN cd $(mktemp -d) \

@@ -199,7 +199,7 @@ elif "debian" in os_families():
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
-    if distro_info["VERSION_CODENAME"] == "bullseye":
+    if vendor == "debian" and os_version == "11":
         DEBIAN_DEPENDECIES.remove("libappindicator1")
         DEBIAN_DEPENDECIES.append("libgroonga0")
 
