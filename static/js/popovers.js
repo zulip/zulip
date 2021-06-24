@@ -932,7 +932,7 @@ export function register_click_handlers() {
     $("body").on("click", ".update_status_text", (e) => {
         hide_all();
 
-        user_status_ui.open_overlay();
+        user_status_ui.open_user_status_modal();
 
         e.stopPropagation();
         e.preventDefault();
