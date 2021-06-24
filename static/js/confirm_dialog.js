@@ -4,7 +4,6 @@ import render_confirm_dialog from "../templates/confirm_dialog.hbs";
 import render_confirm_dialog_heading from "../templates/confirm_dialog_heading.hbs";
 
 import * as blueslip from "./blueslip";
-import * as loading from "./loading";
 import * as overlays from "./overlays";
 
 /*
@@ -37,15 +36,20 @@ import * as overlays from "./overlays";
 */
 
 export function hide_confirm_dialog_spinner() {
-    const spinner = $("#confirm_dialog_spinner");
-    loading.destroy_indicator(spinner);
-    $("#confirm_dialog_modal > div.modal-footer > button").show();
+    $(".confirm_dialog_yes_button .loader").hide();
+    $(".confirm_dialog_yes_button span").show();
+    $(".confirm_dialog_yes_button").prop("disabled", false);
 }
 
 export function show_confirm_dialog_spinner() {
-    const spinner = $("#confirm_dialog_spinner");
-    $("#confirm_dialog_modal > div.modal-footer > button").hide();
-    loading.make_indicator(spinner);
+    $(".confirm_dialog_yes_button .loader").css("display", "inline-block");
+    $(".confirm_dialog_yes_button span").hide();
+    $(".confirm_dialog_yes_button").prop("disabled", true);
+    $(".confirm_dialog_yes_button object").on("load", function () {
+        const doc = this.getSVGDocument();
+        const $svg = $(doc).find("svg");
+        $svg.find("rect").css("fill", "#000");
+    });
 }
 
 export function launch(conf) {
@@ -85,10 +89,11 @@ export function launch(conf) {
     );
     confirm_dialog.find(".confirm_dialog_body").prepend(conf.html_body);
 
+    const yes_button_span = confirm_dialog.find(".confirm_dialog_yes_button span");
+
+    yes_button_span.html(conf.html_yes_button);
+
     const yes_button = confirm_dialog.find(".confirm_dialog_yes_button");
-
-    yes_button.html(conf.html_yes_button);
-
     // Set up handlers.
     yes_button.on("click", () => {
         if (conf.loading_spinner) {
