@@ -131,6 +131,7 @@ export function show_user_profile(user) {
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
+        user_id: user.user_id,
         full_name: user.full_name,
         email: people.get_visible_email(user),
         profile_data,
