@@ -122,8 +122,8 @@ COMMON_DEPENDENCIES = [
     "rabbitmq-server",
     "supervisor",
     "git",
-    "wget",
-    "ca-certificates",  # Explicit dependency in case e.g. wget is already installed
+    "curl",
+    "ca-certificates",  # Explicit dependency in case e.g. curl is already installed
     "puppet",  # Used by lint (`puppet parser validate`)
     "gettext",  # Used by makemessages i18n
     "transifex-client",  # Needed to sync translations from transifex

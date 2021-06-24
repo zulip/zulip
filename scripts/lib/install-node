@@ -36,11 +36,11 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
         [ "$(nvm --version)" != "$nvm_version" ]
     }; then
         mkdir -p "$NVM_DIR"
-        wget_opts=(-nv)
+        curl_opts=(-L)
         if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
-            wget_opts+=(--ca-certificate "${CUSTOM_CA_CERTIFICATES}")
+            curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
         fi
-        wget "${wget_opts[@]}" -O- "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
+        curl "${curl_opts[@]}" "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
         # shellcheck source=/dev/null
         . "$NVM_DIR/nvm.sh"
     fi

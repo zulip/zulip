@@ -34,7 +34,6 @@ mkdir /tmp/production-build
 mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/production-build
 cp -a \
     tools/ci/success-http-headers.template.txt \
-    tools/ci/success-http-headers.template.debian.txt \
     tools/ci/production-install \
     tools/ci/production-verify \
     tools/ci/production-upgrade \

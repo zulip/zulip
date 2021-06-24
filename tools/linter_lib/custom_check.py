@@ -58,6 +58,7 @@ shebang_rules: List["Rule"] = [
 trailing_whitespace_rule: "Rule" = {
     "pattern": r"\s+$",
     "strip": "\n",
+    "exclude": {"tools/ci/success-http-headers.template.txt"},
     "description": "Fix trailing whitespace",
 }
 whitespace_rules: List["Rule"] = [
@@ -70,10 +71,6 @@ whitespace_rules: List["Rule"] = [
     {
         "pattern": "\t",
         "strip": "\n",
-        "exclude": {
-            "tools/ci/success-http-headers.template.txt",
-            "tools/ci/success-http-headers.template.debian.txt",
-        },
         "description": "Fix tab-based whitespace",
     },
 ]
