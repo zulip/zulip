@@ -7,26 +7,7 @@
 {start_tabs}
 {tab|python}
 
-```
-#!/usr/bin/env python
-
-import sys
-import zulip
-
-# Pass the path to your zuliprc file here.
-client = zulip.Client(config_file="~/zuliprc")
-
-# If you already have a queue registered and thus, have a queue_id
-# on hand, you may use client.get_events() and pass in the above
-# parameters, like so:
-print(client.get_events(
-    queue_id="1515010080:4",
-    last_event_id=-1
-))
-```
-
-`call_on_each_message` and `call_on_each_event` will automatically register
-a queue for you.
+{generate_code_example(python)|/events:get|example}
 
 {generate_code_example(javascript)|/events:get|example}
 

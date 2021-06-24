@@ -1097,6 +1097,18 @@ def deregister_queue(client: Client, queue_id: str) -> None:
     validate_against_openapi_schema(result, "/events", "delete", "400")
 
 
+@openapi_test_function("/events:get")
+def get_queue(client: Client, queue_id: str) -> None:
+
+    # {code_example|start}
+    # If you already have a queue registered and thus, have a queue_id
+    # on hand, you may use client.get_events() and pass in the above
+    # parameters, like so:
+    result = client.get_events(queue_id=queue_id, last_event_id=-1)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/events", "get", "200")
+
+
 @openapi_test_function("/server_settings:get")
 def get_server_settings(client: Client) -> None:
 
@@ -1511,6 +1523,7 @@ def test_queues(client: Client) -> None:
     # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth
     # the effort to come up with asynchronous logic for testing those here.
     queue_id = register_queue(client)
+    get_queue(client, queue_id)
     deregister_queue(client, queue_id)
     register_queue_all_events(client)
 
