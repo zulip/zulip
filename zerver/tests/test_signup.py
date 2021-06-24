@@ -2,7 +2,7 @@ import datetime
 import re
 import time
 import urllib
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
@@ -3594,7 +3594,7 @@ class UserSignUpTest(InviteUserBase):
         full_name: str = "New user's name",
         realm: Optional[Realm] = None,
         subdomain: Optional[str] = None,
-    ) -> UserProfile:
+    ) -> Union[UserProfile, HttpResponse]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
         so will likely require adding new parameters."""
@@ -3622,6 +3622,13 @@ class UserSignUpTest(InviteUserBase):
         result = self.submit_reg_form_for_user(
             email, password, full_name=full_name, **client_kwargs
         )
+
+        if result.status_code == 200:
+            # This usually indicated an error returned when submitting the form.
+            # Return the result for the caller to deal with reacting to this, since
+            # in many tests this is expected and the caller wants to assert the content
+            # of the error.
+            return result
 
         # Verify that we were served a redirect to the app.
         self.assertEqual(result.status_code, 302)
@@ -3759,22 +3766,8 @@ class UserSignUpTest(InviteUserBase):
         """
         Check if an invalid name during signup is handled properly.
         """
-        email = "newguy@zulip.com"
-        password = "newpassword"
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(email, password, full_name="<invalid>")
+        result = self.verify_signup(full_name="<invalid>")
         self.assert_in_success_response(["Invalid characters in name!"], result)
 
         # Verify that the user is asked for name and password
