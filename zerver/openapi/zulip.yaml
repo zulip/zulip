@@ -5056,6 +5056,9 @@ paths:
             `message_id`, messages in the same topic that had been sent after this
             one, or all of them.
 
+            Only the default value of `change_one` is valid when
+            editing only the content of a message.
+
             This parameter determines both which messages get moved and also whether
             clients that are currently narrowed to the topic containing the message
             should navigate or adjust their compose box recipient to point to the
