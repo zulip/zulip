@@ -28,7 +28,7 @@ to a new Zulip release:
     release with:
 
     ```
-    wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+    curl -LO https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
     ```
 
     You also have the option of upgrading Zulip [to a version in a Git

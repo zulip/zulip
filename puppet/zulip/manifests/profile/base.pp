@@ -39,8 +39,9 @@ class zulip::profile::base {
         'python3-yaml',
         'puppet',
         'git',
-        # Used in scripts including install-yarn.sh
+        # Used for most downloads
         'curl',
+        # Used in check_website_response.sh
         'wget',
         'jq',
         'procps',

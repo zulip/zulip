@@ -37,7 +37,7 @@ export DEBIAN_FRONTEND=noninteractive
 (
     apt-get -qy update
     apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
-    apt-get -qy install jq unzip wget
+    apt-get -qy install jq unzip curl
     apt-get -qy autoclean
 )
 
