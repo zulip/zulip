@@ -826,31 +826,6 @@ def render_markdown(
     sent_by_bot = sender.is_bot
     translate_emoticons = sender.translate_emoticons
 
-    result = do_render_markdown(
-        message=message,
-        content=content,
-        realm=realm,
-        realm_alert_words_automaton=realm_alert_words_automaton,
-        sent_by_bot=sent_by_bot,
-        translate_emoticons=translate_emoticons,
-        mention_data=mention_data,
-        email_gateway=email_gateway,
-    )
-
-    return result
-
-
-def do_render_markdown(
-    message: Message,
-    content: str,
-    realm: Realm,
-    sent_by_bot: bool,
-    translate_emoticons: bool,
-    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
-    mention_data: Optional[MentionData] = None,
-    email_gateway: bool = False,
-) -> MessageRenderingResult:
-    # DO MAIN WORK HERE -- call markdown_convert to convert
     rendering_result = markdown_convert(
         content,
         realm_alert_words_automaton=realm_alert_words_automaton,
@@ -861,6 +836,7 @@ def do_render_markdown(
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
+
     return rendering_result
 
 
