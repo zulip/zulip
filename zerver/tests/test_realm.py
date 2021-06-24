@@ -660,7 +660,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.description, "")
         self.assertTrue(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.LIMITED)
-        self.assertEqual(realm.org_type, Realm.CORPORATE)
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["unspecified"]["id"])
         self.assertEqual(type(realm.date_created), datetime.datetime)
 
         self.assertTrue(
@@ -690,7 +690,7 @@ class RealmTest(ZulipTestCase):
             description="realm description",
             invite_required=False,
             plan_type=Realm.STANDARD_FREE,
-            org_type=Realm.COMMUNITY,
+            org_type=Realm.ORG_TYPES["community"]["id"],
         )
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
@@ -699,7 +699,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.description, "realm description")
         self.assertFalse(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
-        self.assertEqual(realm.org_type, Realm.COMMUNITY)
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["community"]["id"])
         self.assertEqual(realm.date_created, date_created)
 
         self.assertTrue(

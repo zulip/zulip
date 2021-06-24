@@ -48,6 +48,20 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 <div class="input-box">
+                    <div class="inline-block relative">
+                        <select name="realm_type" id="realm_type">
+                            {% for realm_type in sorted_realm_types %}
+                                {% if not realm_type.hidden %}
+                                <option value="{{ realm_type.id }}">{{ _(realm_type.name) }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                </div>
+
+                <div class="input-box">
                     <label class="static org-url">
                         {{ _('Organization URL') }}
                     </label>

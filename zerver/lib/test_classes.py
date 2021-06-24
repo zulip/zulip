@@ -627,6 +627,7 @@ Output:
         default_stream_groups: Sequence[str] = [],
         source_realm_id: str = "",
         key: Optional[str] = None,
+        realm_type: Optional[int] = Realm.ORG_TYPES["business"]["id"],
         **kwargs: Any,
     ) -> HttpResponse:
         """
@@ -643,6 +644,7 @@ Output:
             "full_name": full_name,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
+            "realm_type": realm_type,
             "key": key if key is not None else find_key_by_email(email),
             "timezone": timezone,
             "terms": True,

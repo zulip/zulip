@@ -2869,7 +2869,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(user.role, UserProfile.ROLE_REALM_OWNER)
 
         # Check defaults
-        self.assertEqual(realm.org_type, Realm.CORPORATE)
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["business"]["id"])
         self.assertEqual(realm.emails_restricted_to_domains, False)
         self.assertEqual(realm.invite_required, True)
 

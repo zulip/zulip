@@ -404,10 +404,86 @@ class Realm(models.Model):
     # Messages older than this message ID in the organization are inaccessible.
     first_visible_message_id: int = models.IntegerField(default=0)
 
-    # Valid org_types are {CORPORATE, COMMUNITY}
-    CORPORATE = 1
-    COMMUNITY = 2
-    org_type: int = models.PositiveSmallIntegerField(default=CORPORATE)
+    # Valid org types
+    ORG_TYPES: Dict[str, Dict[str, Any]] = {
+        "unspecified": {
+            "name": "Unspecified",
+            "id": 0,
+            "hidden": True,
+            "display_order": 0,
+        },
+        "business": {
+            "name": "Business",
+            "id": 10,
+            "hidden": False,
+            "display_order": 1,
+        },
+        "opensource": {
+            "name": "Open-source project",
+            "id": 20,
+            "hidden": False,
+            "display_order": 2,
+        },
+        "education": {
+            "name": "Education",
+            "id": 30,
+            "hidden": False,
+            "display_order": 3,
+        },
+        "research": {
+            "name": "Research",
+            "id": 40,
+            "hidden": False,
+            "display_order": 4,
+        },
+        "event": {
+            "name": "Event or conference",
+            "id": 50,
+            "hidden": False,
+            "display_order": 5,
+        },
+        "nonprofit": {
+            "name": "Non-profit (registered)",
+            "id": 60,
+            "hidden": False,
+            "display_order": 6,
+        },
+        "government": {
+            "name": "Government",
+            "id": 70,
+            "hidden": False,
+            "display_order": 7,
+        },
+        "political_group": {
+            "name": "Political group",
+            "id": 80,
+            "hidden": False,
+            "display_order": 8,
+        },
+        "community": {
+            "name": "Community",
+            "id": 90,
+            "hidden": False,
+            "display_order": 9,
+        },
+        "personal": {
+            "name": "Personal",
+            "id": 100,
+            "hidden": False,
+            "display_order": 100,
+        },
+        "other": {
+            "name": "Other",
+            "id": 1000,
+            "hidden": False,
+            "display_order": 1000,
+        },
+    }
+
+    org_type: int = models.PositiveSmallIntegerField(
+        default=ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in ORG_TYPES.values()],
+    )
 
     UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature

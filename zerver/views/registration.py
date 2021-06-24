@@ -308,7 +308,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if realm_creation:
             string_id = form.cleaned_data["realm_subdomain"]
             realm_name = form.cleaned_data["realm_name"]
-            realm = do_create_realm(string_id, realm_name)
+            realm_type = form.cleaned_data["realm_type"]
+            realm = do_create_realm(string_id, realm_name, org_type=realm_type)
             setup_realm_internal_bots(realm)
         assert realm is not None
 
@@ -484,6 +485,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
             "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
             "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "sorted_realm_types": sorted(
+                Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
+            ),
         },
     )
 

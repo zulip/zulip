@@ -312,7 +312,7 @@ class Command(BaseCommand):
                 "  It's great for testing!",
                 invite_required=False,
                 plan_type=Realm.SELF_HOSTED,
-                org_type=Realm.CORPORATE,
+                org_type=Realm.ORG_TYPES["business"]["id"],
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             assert zulip_realm.notifications_stream is not None
@@ -327,7 +327,7 @@ class Command(BaseCommand):
                     emails_restricted_to_domains=True,
                     invite_required=False,
                     plan_type=Realm.SELF_HOSTED,
-                    org_type=Realm.CORPORATE,
+                    org_type=Realm.ORG_TYPES["business"]["id"],
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
@@ -337,7 +337,7 @@ class Command(BaseCommand):
                     emails_restricted_to_domains=False,
                     invite_required=False,
                     plan_type=Realm.SELF_HOSTED,
-                    org_type=Realm.CORPORATE,
+                    org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 
                 # Default to allowing all members to send mentions in
