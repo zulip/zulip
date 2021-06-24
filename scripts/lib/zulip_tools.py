@@ -412,8 +412,9 @@ def parse_os_release() -> Dict[str, str]:
      'PRETTY_NAME': 'Ubuntu 18.04.3 LTS',
     }
 
-    VERSION_CODENAME (e.g. 'bionic') is nice and human-readable, but
-    we avoid using it, as it is not available on RHEL-based platforms.
+    VERSION_CODENAME (e.g. 'bionic') is nice and readable to Ubuntu
+    developers, but we avoid using it, as it is not available on
+    RHEL-based platforms.
     """
     distro_info = {}  # type: Dict[str, str]
     with open("/etc/os-release") as fp:
