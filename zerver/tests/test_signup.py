@@ -3270,7 +3270,7 @@ class UserSignUpTest(InviteUserBase):
         common function for all signup tests to avoid code duplication; doing
         so will likely require adding new parameters."""
 
-        if not realm:
+        if realm is None:  # nocoverage
             realm = get_realm("zulip")
 
         client_kwargs: Dict[str, Any] = {}
