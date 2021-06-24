@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -186,6 +187,25 @@ function update_spectrum(popover, update_func) {
     }
 
     popover_root.css("top", top + "px");
+}
+
+// Builds the `Copy link to topic` topic action.
+function build_topic_link_clipboard(url) {
+    if (!url) {
+        return;
+    }
+
+    const copy_event = new ClipboardJS(".sidebar-popover-copy-link-to-topic", {
+        text() {
+            return url;
+        },
+    });
+
+    // Hide the topic popover once the url is successfully
+    // copied to clipboard.
+    copy_event.on("success", () => {
+        hide_topic_popover();
+    });
 }
 
 function build_stream_popover(opts) {
@@ -391,12 +411,15 @@ export function register_click_handlers() {
         const stream_li = $(elt).closest(".narrow-filter").expectOne();
         const stream_id = elem_to_stream_id(stream_li);
         const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
+        const url = $(elt).closest("li").find(".topic-name").expectOne().prop("href");
 
         build_topic_popover({
             elt,
             stream_id,
             topic_name,
         });
+
+        build_topic_link_clipboard(url);
     });
 
     $("#global_filters").on("click", ".all-messages-sidebar-menu-icon", build_all_messages_popover);
