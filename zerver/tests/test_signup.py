@@ -3778,29 +3778,12 @@ class UserSignUpTest(InviteUserBase):
         Check if signing up without a password works properly when
         password_auth_enabled is False.
         """
-
         email = self.nonreg_email("newuser")
-
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
         with patch("zerver.views.registration.password_auth_enabled", return_value=False):
-            result = self.client_post(
-                "/accounts/register/",
-                {"full_name": "New User", "key": find_key_by_email(email), "terms": True},
-            )
+            user_profile = self.verify_signup(email=email, password=None)
 
+        assert isinstance(user_profile, UserProfile)
         # User should now be logged in.
-        self.assertEqual(result.status_code, 302)
-        user_profile = self.nonreg_user("newuser")
         self.assert_logged_in_user_id(user_profile.id)
 
     def test_signup_without_full_name(self) -> None:
