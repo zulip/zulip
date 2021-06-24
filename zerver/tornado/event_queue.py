@@ -809,16 +809,9 @@ def maybe_enqueue_notifications(
 
     if user_data.is_push_notifiable(private_message, sender_id, idle):
         notice = build_offline_notification(user_data.user_id, message_id)
-        if private_message:
-            notice["trigger"] = "private_message"
-        elif user_data.mentioned:
-            notice["trigger"] = "mentioned"
-        elif user_data.wildcard_mention_notify:
-            notice["trigger"] = "wildcard_mentioned"
-        elif user_data.stream_push_notify:
-            notice["trigger"] = "stream_push_notify"
-        else:
-            raise AssertionError("Unknown notification trigger!")
+        notice["trigger"] = user_data.get_push_notification_trigger(
+            private_message, sender_id, idle
+        )
         notice["stream_name"] = stream_name
         if not already_notified.get("push_notified"):
             queue_json_publish("missedmessage_mobile_notifications", notice)
@@ -830,16 +823,9 @@ def maybe_enqueue_notifications(
     # above.
     if user_data.is_email_notifiable(private_message, sender_id, idle):
         notice = build_offline_notification(user_data.user_id, message_id)
-        if private_message:
-            notice["trigger"] = "private_message"
-        elif user_data.mentioned:
-            notice["trigger"] = "mentioned"
-        elif user_data.wildcard_mention_notify:
-            notice["trigger"] = "wildcard_mentioned"
-        elif user_data.stream_email_notify:
-            notice["trigger"] = "stream_email_notify"
-        else:
-            raise AssertionError("Unknown notification trigger!")
+        notice["trigger"] = user_data.get_email_notification_trigger(
+            private_message, sender_id, idle
+        )
         notice["stream_name"] = stream_name
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)

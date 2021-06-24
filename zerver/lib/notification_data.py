@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Collection, Set
+from typing import Collection, Optional, Set
 
 
 @dataclass
@@ -54,35 +54,53 @@ class UserMessageNotificationsData:
         ) or self.is_push_notifiable(private_message, sender_id, idle)
 
     def is_push_notifiable(self, private_message: bool, sender_id: int, idle: bool) -> bool:
+        return self.get_push_notification_trigger(private_message, sender_id, idle) is not None
+
+    def get_push_notification_trigger(
+        self, private_message: bool, sender_id: int, idle: bool
+    ) -> Optional[str]:
         if not idle and not self.online_push_enabled:
-            return False
+            return None
 
         if self.user_id == sender_id:
-            return False
+            return None
 
         if self.sender_is_muted:
-            return False
+            return None
 
-        return (
-            private_message
-            or self.mentioned
-            or self.wildcard_mention_notify
-            or self.stream_push_notify
-        )
+        if private_message:
+            return "private_message"
+        elif self.mentioned:
+            return "mentioned"
+        elif self.wildcard_mention_notify:
+            return "wildcard_mentioned"
+        elif self.stream_push_notify:
+            return "stream_push_notify"
+        else:
+            return None
 
     def is_email_notifiable(self, private_message: bool, sender_id: int, idle: bool) -> bool:
+        return self.get_email_notification_trigger(private_message, sender_id, idle) is not None
+
+    def get_email_notification_trigger(
+        self, private_message: bool, sender_id: int, idle: bool
+    ) -> Optional[str]:
         if not idle:
-            return False
+            return None
 
         if self.user_id == sender_id:
-            return False
+            return None
 
         if self.sender_is_muted:
-            return False
+            return None
 
-        return (
-            private_message
-            or self.mentioned
-            or self.wildcard_mention_notify
-            or self.stream_email_notify
-        )
+        if private_message:
+            return "private_message"
+        elif self.mentioned:
+            return "mentioned"
+        elif self.wildcard_mention_notify:
+            return "wildcard_mentioned"
+        elif self.stream_email_notify:
+            return "stream_email_notify"
+        else:
+            return None

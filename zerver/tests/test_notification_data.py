@@ -8,32 +8,65 @@ class TestNotificationData(ZulipTestCase):
 
         # Boring case
         user_data = self.create_user_notifications_data_object(user_id=user_id)
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_push_notifiable(private_message=False, sender_id=sender_id, idle=True)
         )
 
-        # Notifiable cases for PMs, mentions, stream notifications
+        # Private message
         user_data = self.create_user_notifications_data_object(user_id=user_id)
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=True
+            ),
+            "private_message",
+        )
         self.assertTrue(
             user_data.is_push_notifiable(private_message=True, sender_id=sender_id, idle=True)
         )
 
+        # Mention
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, flags=["mentioned"], mentioned=True
         )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            "mentioned",
+        )
         self.assertTrue(
             user_data.is_push_notifiable(private_message=False, sender_id=sender_id, idle=True)
         )
 
+        # Wildcard mention
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, flags=["wildcard_mentioned"], wildcard_mention_notify=True
         )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            "wildcard_mentioned",
+        )
         self.assertTrue(
             user_data.is_push_notifiable(private_message=False, sender_id=sender_id, idle=True)
         )
 
+        # Stream notification
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, stream_push_notify=True
+        )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            "stream_push_notify",
         )
         self.assertTrue(
             user_data.is_push_notifiable(private_message=False, sender_id=sender_id, idle=True)
@@ -42,6 +75,12 @@ class TestNotificationData(ZulipTestCase):
         # Now, test the `online_push_enabled` property
         # Test no notifications when not idle
         user_data = self.create_user_notifications_data_object(user_id=user_id)
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=False
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_push_notifiable(private_message=True, sender_id=sender_id, idle=False)
         )
@@ -49,6 +88,12 @@ class TestNotificationData(ZulipTestCase):
         # Test notifications are sent when not idle but `online_push_enabled = True`
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, online_push_enabled=True
+        )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=False
+            ),
+            "private_message",
         )
         self.assertTrue(
             user_data.is_push_notifiable(private_message=True, sender_id=sender_id, idle=False)
@@ -66,6 +111,12 @@ class TestNotificationData(ZulipTestCase):
             stream_email_notify=True,
             stream_push_notify=True,
         )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=True
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_push_notifiable(private_message=True, sender_id=sender_id, idle=True)
         )
@@ -80,6 +131,12 @@ class TestNotificationData(ZulipTestCase):
             stream_email_notify=True,
             stream_push_notify=True,
         )
+        self.assertEqual(
+            user_data.get_push_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=True
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_push_notifiable(private_message=True, sender_id=sender_id, idle=True)
         )
@@ -90,32 +147,65 @@ class TestNotificationData(ZulipTestCase):
 
         # Boring case
         user_data = self.create_user_notifications_data_object(user_id=user_id)
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_email_notifiable(private_message=False, sender_id=sender_id, idle=True)
         )
 
-        # Notifiable cases for PMs, mentions, stream notifications
+        # Private message
         user_data = self.create_user_notifications_data_object(user_id=user_id)
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=True
+            ),
+            "private_message",
+        )
         self.assertTrue(
             user_data.is_email_notifiable(private_message=True, sender_id=sender_id, idle=True)
         )
 
+        # Mention
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, flags=["mentioned"], mentioned=True
         )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            "mentioned",
+        )
         self.assertTrue(
             user_data.is_email_notifiable(private_message=False, sender_id=sender_id, idle=True)
         )
 
+        # Wildcard mention
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, flags=["wildcard_mentioned"], wildcard_mention_notify=True
         )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            "wildcard_mentioned",
+        )
         self.assertTrue(
             user_data.is_email_notifiable(private_message=False, sender_id=sender_id, idle=True)
         )
 
+        # Stream notification
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, stream_email_notify=True
+        )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=False, sender_id=sender_id, idle=True
+            ),
+            "stream_email_notify",
         )
         self.assertTrue(
             user_data.is_email_notifiable(private_message=False, sender_id=sender_id, idle=True)
@@ -123,6 +213,12 @@ class TestNotificationData(ZulipTestCase):
 
         # Test no notifications when not idle
         user_data = self.create_user_notifications_data_object(user_id=user_id)
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=False
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_email_notifiable(private_message=True, sender_id=sender_id, idle=False)
         )
@@ -139,6 +235,12 @@ class TestNotificationData(ZulipTestCase):
             stream_email_notify=True,
             stream_push_notify=True,
         )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=True
+            ),
+            None,
+        )
         self.assertFalse(
             user_data.is_email_notifiable(private_message=True, sender_id=sender_id, idle=True)
         )
@@ -152,6 +254,12 @@ class TestNotificationData(ZulipTestCase):
             mentioned=True,
             stream_email_notify=True,
             stream_push_notify=True,
+        )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(
+                private_message=True, sender_id=sender_id, idle=True
+            ),
+            None,
         )
         self.assertFalse(
             user_data.is_email_notifiable(private_message=True, sender_id=sender_id, idle=True)
