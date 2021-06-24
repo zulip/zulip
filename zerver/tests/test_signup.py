@@ -3793,27 +3793,7 @@ class UserSignUpTest(InviteUserBase):
         """
         email = "newguy@zulip.com"
         password = "newpassword"
-
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.client_post(
-            "/accounts/register/",
-            {
-                "password": password,
-                "key": find_key_by_email(email),
-                "terms": True,
-                "from_confirmation": "1",
-            },
-        )
+        result = self.verify_signup(email=email, password=password, full_name="")
         self.assert_in_success_response(["We just need you to do one last thing."], result)
 
         # Verify that the user is asked for name and password
