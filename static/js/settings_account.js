@@ -693,8 +693,4 @@ export function set_up() {
     }
 
     avatar.build_user_avatar_widget(upload_avatar);
-
-    if (page_params.realm_name_changes_disabled) {
-        $(".name_change_container").hide();
-    }
 }
