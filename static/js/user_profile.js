@@ -30,7 +30,8 @@ function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
 }
 
-function format_user_stream_list_item(stream, show_unsubscribe_button) {
+function format_user_stream_list_item(stream, user) {
+    const show_unsubscribe_button = people.is_my_user_id(user.user_id) || settings_data.user_can_unsubscribe_other_users();
     return render_user_stream_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
@@ -53,12 +54,10 @@ function render_user_stream_list(streams, user) {
     streams.sort(compare_by_name);
     const container = $("#user-profile-modal .user-stream-list");
     container.empty();
-    const show_unsubscribe_button =
-        people.is_my_user_id(user.user_id) || settings_data.user_can_unsubscribe_other_users();
     ListWidget.create(container, streams, {
         name: `user-${user.user_id}-stream-list`,
         modifier(item) {
-            return format_user_stream_list_item(item, show_unsubscribe_button);
+            return format_user_stream_list_item(item, user);
         },
         simplebar_container: $("#user-profile-modal .modal-body"),
     });
