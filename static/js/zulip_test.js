@@ -5,7 +5,7 @@
 export {
     set_wildcard_mention_large_stream_threshold,
     wildcard_mention_large_stream_threshold,
-} from "./compose";
+} from "./compose_validate";
 export {private_message_recipient} from "./compose_state";
 export {current as current_msg_list} from "./message_lists";
 export {get_stream_id, get_sub, get_subscriber_count} from "./stream_data";

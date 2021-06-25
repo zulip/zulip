@@ -50,7 +50,6 @@ const compose = zrequire("compose");
 const echo = zrequire("echo");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const upload = zrequire("upload");
 
@@ -111,58 +110,6 @@ function initialize_handlers({override}) {
     override(resize, "watch_manual_resize", () => {});
     compose.initialize();
 }
-
-test_ui("test_wildcard_mention_allowed", () => {
-    page_params.user_id = me.user_id;
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_everyone.code;
-    page_params.is_guest = true;
-    page_params.is_admin = false;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.nobody.code;
-    page_params.is_admin = true;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_members.code;
-    page_params.is_guest = true;
-    page_params.is_admin = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    page_params.is_guest = false;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code;
-    page_params.is_moderator = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    page_params.is_moderator = true;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
-    page_params.is_admin = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    // TODO: Add a by_admins_only case when we implement stream-level administrators.
-
-    page_params.is_admin = true;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_full_members.code;
-    const person = people.get_by_user_id(page_params.user_id);
-    person.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-
-    assert.ok(compose.wildcard_mention_allowed());
-    page_params.is_admin = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-});
 
 test_ui("right-to-left", () => {
     const textarea = $("#compose-textarea");

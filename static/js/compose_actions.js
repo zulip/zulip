@@ -11,6 +11,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -105,11 +106,11 @@ function clear_box() {
     compose.clear_invites();
 
     // TODO: Better encapsulate at-mention warnings.
-    compose.clear_all_everyone_warnings();
-    compose.clear_announce_warnings();
+    compose_validate.clear_all_everyone_warnings();
+    compose_validate.clear_announce_warnings();
     compose.clear_private_stream_alert();
-    compose.reset_user_acknowledged_all_everyone_flag();
-    compose.reset_user_acknowledged_announce_flag();
+    compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
+    compose_validate.set_user_acknowledged_announce_flag(undefined);
 
     clear_textarea();
     $("#compose-textarea").removeData("draft-id");

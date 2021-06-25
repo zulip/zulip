@@ -49,6 +49,7 @@ EXEMPT_FILES = {
     "static/js/compose_closed_ui.js",
     "static/js/composebox_typeahead.js",
     "static/js/compose_fade.js",
+    "static/js/compose_validate.js",
     "static/js/compose.js",
     "static/js/condense.js",
     "static/js/confirm_dialog.js",
