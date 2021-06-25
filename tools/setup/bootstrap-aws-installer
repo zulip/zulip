@@ -41,7 +41,7 @@ export DEBIAN_FRONTEND=noninteractive
     apt-get -qy autoclean
 )
 
-# The following line gets subbed in with the contents of bootstrap-awscli
+# The following line gets subbed in with the contents of bootstrap-awscli.sh
 AWS=
 
 # Set up AWS so we can use the role credentials we were started with, which give secrets access

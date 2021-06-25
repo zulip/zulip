@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 
 AWS_CLI_VERSION="2.0.30"
 AWS_CLI_SHA="7ee475f22c1b35cc9e53affbf96a9ffce91706e154a9441d0d39cbf8366b718e"

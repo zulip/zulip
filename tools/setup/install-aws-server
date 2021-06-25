@@ -31,7 +31,7 @@ set -x
 
 cd "$(dirname "$0")"
 
-source ./bootstrap-awscli
+source ./bootstrap-awscli.sh
 
 zulip_install_config_file="$HOME/.zulip-install-server.conf"
 if [ ! -f "$zulip_install_config_file" ]; then
@@ -105,7 +105,7 @@ BOOTDATA=$(mktemp)
     echo "REPO_URL=$REPO_URL"
     echo "BRANCH=$BRANCH"
     echo "SSH_SECRET_ID=$SSH_SECRET_ID"
-    sed '/^AWS=/ r ./bootstrap-awscli' bootstrap-aws-installer
+    sed '/^AWS=/ r ./bootstrap-awscli.sh' bootstrap-aws-installer
 } >>"$BOOTDATA"
 
 TAG_ROLE_NAMES=$(echo "$ROLES" | perl -pe 's/\w+::profile::(\w+)/$1/g')
