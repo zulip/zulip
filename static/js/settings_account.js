@@ -586,45 +586,43 @@ export function set_up() {
         e.stopPropagation();
 
         function handle_confirm() {
-            setTimeout(() => {
-                channel.del({
-                    url: "/json/users/me",
-                    success() {
-                        confirm_dialog.hide_confirm_dialog_spinner();
-                        overlays.close_modal("#confirm_dialog_modal");
-                        window.location.href = "/login/";
-                    },
-                    error(xhr) {
-                        const error_last_owner = $t_html({
-                            defaultMessage: "Error: Cannot deactivate the only organization owner.",
-                        });
-                        const error_last_user = $t_html(
-                            {
-                                defaultMessage:
-                                    "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
-                            },
-                        );
-                        let rendered_error_msg;
-                        if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
-                            if (xhr.responseJSON.is_last_owner) {
-                                rendered_error_msg = error_last_owner;
-                            } else {
-                                rendered_error_msg = error_last_user;
-                            }
+            channel.del({
+                url: "/json/users/me",
+                success() {
+                    confirm_dialog.hide_confirm_dialog_spinner();
+                    overlays.close_modal("#confirm_dialog_modal");
+                    window.location.href = "/login/";
+                },
+                error(xhr) {
+                    const error_last_owner = $t_html({
+                        defaultMessage: "Error: Cannot deactivate the only organization owner.",
+                    });
+                    const error_last_user = $t_html(
+                        {
+                            defaultMessage:
+                                "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                        },
+                    );
+                    let rendered_error_msg;
+                    if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
+                        if (xhr.responseJSON.is_last_owner) {
+                            rendered_error_msg = error_last_owner;
+                        } else {
+                            rendered_error_msg = error_last_user;
                         }
-                        confirm_dialog.hide_confirm_dialog_spinner();
-                        overlays.close_modal("#confirm_dialog_modal");
-                        $("#account-settings-status")
-                            .addClass("alert-error")
-                            .html(rendered_error_msg)
-                            .show();
-                    },
-                });
-            }, 5000);
+                    }
+                    confirm_dialog.hide_confirm_dialog_spinner();
+                    overlays.close_modal("#confirm_dialog_modal");
+                    $("#account-settings-status")
+                        .addClass("alert-error")
+                        .html(rendered_error_msg)
+                        .show();
+                },
+            });
         }
         const html_body = render_confirm_deactivate_own_user();
         const modal_parent = $("#account-settings .account-settings-form");
