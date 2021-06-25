@@ -86,7 +86,7 @@ parameters, or specify no parameters for interactive user creation."""
                         break
                     except ValidationError:
                         print("Invalid email address.", file=sys.stderr)
-                full_name = input("Full name: ")
+                full_name = input("Name: ")
 
         try:
             if options["password_file"] is not None:

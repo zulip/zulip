@@ -5660,7 +5660,7 @@ paths:
                       full_name:
                         type: string
                         description: |
-                          Full name of the requesting user.
+                          Name of the requesting user.
                         example: "Iago"
                       is_admin:
                         type: boolean
@@ -12150,7 +12150,7 @@ components:
             full_name:
               type: string
               description: |
-                Full name of the user.
+                Name of the user.
             is_mirror_dummy:
               type: boolean
               description: |
@@ -12226,7 +12226,7 @@ components:
                   full_name:
                     type: string
                     description: |
-                      Full name of the user.
+                      Name of the user.
                   is_mirror_dummy:
                     type: boolean
                     description: |
@@ -12471,7 +12471,7 @@ components:
         full_name:
           type: string
           description: |
-            Full name of the user or bot, used for all display purposes.
+            Name of the user or bot, used for all display purposes.
         is_admin:
           type: boolean
           description: |
