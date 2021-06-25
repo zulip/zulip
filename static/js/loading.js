@@ -2,8 +2,7 @@ import $ from "jquery";
 
 import render_loader from "../templates/loader.hbs";
 
-export function make_indicator(outer_container, opts) {
-    opts = opts || {};
+export function make_indicator(outer_container, {abs_positioned = false, text} = {}) {
     let container = outer_container;
 
     // TODO: We set white-space to 'nowrap' because under some
@@ -15,7 +14,7 @@ export function make_indicator(outer_container, opts) {
 
     container.empty();
 
-    if (opts.abs_positioned !== undefined && opts.abs_positioned) {
+    if (abs_positioned) {
         // Create some additional containers to facilitate absolutely
         // positioned spinners.
         const container_id = container.attr("id");
@@ -32,12 +31,12 @@ export function make_indicator(outer_container, opts) {
     container.append(spinner_elem);
     let text_width = 0;
 
-    if (opts.text !== undefined && opts.text !== "") {
+    if (text !== undefined) {
         const text_elem = $('<span class="loading_indicator_text"></span>');
-        text_elem.text(opts.text);
+        text_elem.text(text);
         container.append(text_elem);
         // See note, below
-        if (!(opts.abs_positioned !== undefined && opts.abs_positioned)) {
+        if (!abs_positioned) {
             text_width = 20 + text_elem.width();
         }
     }
