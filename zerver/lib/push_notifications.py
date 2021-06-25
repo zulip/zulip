@@ -14,6 +14,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
@@ -629,7 +630,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         return plain_text
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
-        return "***REDACTED***"
+        return "***" + _("REDACTED") + "***"
 
     elem = lxml.html.fromstring(rendered_content)
     plain_text = process(elem)
@@ -744,17 +745,18 @@ def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dic
     )
 
     assert message.rendered_content is not None
-    content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
-    apns_data = {
-        "alert": {
-            "title": get_apns_alert_title(message),
-            "subtitle": get_apns_alert_subtitle(message),
-            "body": content,
-        },
-        "sound": "default",
-        "badge": get_apns_badge_count(user_profile),
-        "custom": {"zulip": zulip_data},
-    }
+    with override_language(user_profile.default_language):
+        content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+        apns_data = {
+            "alert": {
+                "title": get_apns_alert_title(message),
+                "subtitle": get_apns_alert_subtitle(message),
+                "body": content,
+            },
+            "sound": "default",
+            "badge": get_apns_badge_count(user_profile),
+            "custom": {"zulip": zulip_data},
+        }
     return apns_data
 
 
@@ -765,17 +767,18 @@ def get_message_payload_gcm(
     """A `message` payload + options, for Android via GCM/FCM."""
     data = get_message_payload(user_profile, message)
     assert message.rendered_content is not None
-    content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-    data.update(
-        event="message",
-        alert=get_gcm_alert(message),
-        zulip_message_id=message.id,  # message_id is reserved for CCS
-        time=datetime_to_timestamp(message.date_sent),
-        content=content,
-        content_truncated=truncated,
-        sender_full_name=message.sender.full_name,
-        sender_avatar_url=absolute_avatar_url(message.sender),
-    )
+    with override_language(user_profile.default_language):
+        content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+        data.update(
+            event="message",
+            alert=get_gcm_alert(message),
+            zulip_message_id=message.id,  # message_id is reserved for CCS
+            time=datetime_to_timestamp(message.date_sent),
+            content=content,
+            content_truncated=truncated,
+            sender_full_name=message.sender.full_name,
+            sender_avatar_url=absolute_avatar_url(message.sender),
+        )
     gcm_options = {"priority": "high"}
     return data, gcm_options
 
