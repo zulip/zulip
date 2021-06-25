@@ -312,7 +312,7 @@ class MutedUsersTests(ZulipTestCase):
             self.assert_json_success(result)
             m.assert_called_once()
             # `maybe_enqueue_notificaions` was called for Hamlet after message edit mentioned him.
-            self.assertEqual(m.call_args_list[0][1]["user_data"].user_id, hamlet.id)
+            self.assertEqual(m.call_args_list[0][1]["user_notifications_data"].user_id, hamlet.id)
 
         # Hamlet mutes Cordelia.
         self.login("hamlet")

@@ -1350,7 +1350,7 @@ Output:
             user_id=user_id, **kwargs
         )
         return dict(
-            user_data=user_notifications_data,
+            user_notifications_data=user_notifications_data,
             message_id=message_id,
             acting_user_id=acting_user_id,
             private_message=kwargs.get("private_message", False),

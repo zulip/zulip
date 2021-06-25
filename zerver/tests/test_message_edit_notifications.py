@@ -105,7 +105,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia_calls = [
             call_args
             for call_args in m.call_args_list
-            if call_args[1]["user_data"].user_id == cordelia.id
+            if call_args[1]["user_notifications_data"].user_id == cordelia.id
         ]
 
         if expect_short_circuit:

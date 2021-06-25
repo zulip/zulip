@@ -767,7 +767,7 @@ def missedmessage_hook(
             email_notified=internal_data.get("email_notified", False),
         )
         maybe_enqueue_notifications(
-            user_data=user_notifications_data,
+            user_notifications_data=user_notifications_data,
             acting_user_id=sender_id,
             message_id=message_id,
             private_message=private_message,
@@ -790,7 +790,7 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
 
 def maybe_enqueue_notifications(
     *,
-    user_data: UserMessageNotificationsData,
+    user_notifications_data: UserMessageNotificationsData,
     acting_user_id: int,
     message_id: int,
     private_message: bool,
@@ -807,9 +807,9 @@ def maybe_enqueue_notifications(
     """
     notified: Dict[str, bool] = {}
 
-    if user_data.is_push_notifiable(private_message, acting_user_id, idle):
-        notice = build_offline_notification(user_data.user_id, message_id)
-        notice["trigger"] = user_data.get_push_notification_trigger(
+    if user_notifications_data.is_push_notifiable(private_message, acting_user_id, idle):
+        notice = build_offline_notification(user_notifications_data.user_id, message_id)
+        notice["trigger"] = user_notifications_data.get_push_notification_trigger(
             private_message, acting_user_id, idle
         )
         notice["stream_name"] = stream_name
@@ -821,9 +821,9 @@ def maybe_enqueue_notifications(
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
-    if user_data.is_email_notifiable(private_message, acting_user_id, idle):
-        notice = build_offline_notification(user_data.user_id, message_id)
-        notice["trigger"] = user_data.get_email_notification_trigger(
+    if user_notifications_data.is_email_notifiable(private_message, acting_user_id, idle):
+        notice = build_offline_notification(user_notifications_data.user_id, message_id)
+        notice["trigger"] = user_notifications_data.get_email_notification_trigger(
             private_message, acting_user_id, idle
         )
         notice["stream_name"] = stream_name
@@ -963,7 +963,7 @@ def process_message_event(
 
         extra_user_data[user_profile_id]["internal_data"].update(
             maybe_enqueue_notifications(
-                user_data=user_notifications_data,
+                user_notifications_data=user_notifications_data,
                 acting_user_id=sender_id,
                 message_id=message_id,
                 private_message=private_message,
@@ -1131,7 +1131,7 @@ def process_message_update_event(
         )
 
         maybe_enqueue_notifications_for_message_update(
-            user_data=user_notifications_data,
+            user_notifications_data=user_notifications_data,
             message_id=message_id,
             acting_user_id=acting_user_id,
             private_message=(stream_name is None),
@@ -1148,7 +1148,7 @@ def process_message_update_event(
 
 
 def maybe_enqueue_notifications_for_message_update(
-    user_data: UserMessageNotificationsData,
+    user_notifications_data: UserMessageNotificationsData,
     message_id: int,
     acting_user_id: int,
     private_message: bool,
@@ -1156,7 +1156,7 @@ def maybe_enqueue_notifications_for_message_update(
     presence_idle: bool,
     prior_mentioned: bool,
 ) -> None:
-    if user_data.sender_is_muted:
+    if user_notifications_data.sender_is_muted:
         # Never send notifications if the sender has been muted
         return
 
@@ -1181,7 +1181,7 @@ def maybe_enqueue_notifications_for_message_update(
         # without extending the UserMessage data model.
         return
 
-    if user_data.stream_push_notify or user_data.stream_email_notify:
+    if user_notifications_data.stream_push_notify or user_notifications_data.stream_email_notify:
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously
@@ -1189,10 +1189,10 @@ def maybe_enqueue_notifications_for_message_update(
         # model.
         return
 
-    idle = presence_idle or receiver_is_off_zulip(user_data.user_id)
+    idle = presence_idle or receiver_is_off_zulip(user_notifications_data.user_id)
 
     maybe_enqueue_notifications(
-        user_data=user_data,
+        user_notifications_data=user_notifications_data,
         message_id=message_id,
         acting_user_id=acting_user_id,
         private_message=private_message,
