@@ -496,6 +496,16 @@ class CommonUtils {
         );
     }
 
+    async open_message_actions_popovoer(page: Page): Promise<void> {
+        await page.evaluate(() => {
+            $("#zhome .message_row")
+                .last()
+                .find(".message_control_button.actions_hover .zulip-icon-ellipsis-v-solid")
+                .trigger("click");
+        });
+        await page.waitForSelector("[data-tippy-root]", {visible: true});
+    }
+
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.

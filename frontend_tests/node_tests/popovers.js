@@ -11,7 +11,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 const noop = function () {};
 
 const rows = mock_esm("../../static/js/rows");
-const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
 });
@@ -25,9 +24,6 @@ const message_lists = mock_esm("../../static/js/message_lists", {
         },
     },
 });
-mock_esm("../../static/js/message_viewport", {
-    height: () => 500,
-});
 mock_esm("../../static/js/stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
@@ -38,7 +34,6 @@ mock_esm("../../static/js/stream_popover", {
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const message_edit = zrequire("message_edit");
 const emoji = zrequire("../shared/js/emoji");
 
 // Bypass some scary code that runs when we import the module.
@@ -213,62 +208,4 @@ test_ui("sender_hover", ({override, mock_template}) => {
     assert.equal(avatar_img.src.toString(), expected_url.toString());
 
     // todo: load image
-});
-
-test_ui("actions_popover", ({override, mock_template}) => {
-    override($.fn, "popover", noop);
-
-    const target = $.create("click target");
-
-    const handler = $("#main_div").get_on_handler("click", ".actions_hover");
-
-    window.location = {
-        protocol: "http:",
-        host: "chat.zulip.org",
-        pathname: "/",
-    };
-
-    const message = {
-        id: 999,
-        topic: "Actions (1)",
-        type: "stream",
-        stream_id: 123,
-    };
-
-    message_lists.current.get = (msg_id) => {
-        assert.equal(msg_id, message.id);
-        return message;
-    };
-
-    message_lists.current.view.message_containers.get = (msg_id) => {
-        assert.equal(msg_id, message.id);
-        return {
-            is_hidden: false,
-        };
-    };
-
-    override(message_edit, "get_editability", () => 4);
-
-    stream_data.id_to_slug = (stream_id) => {
-        assert.equal(stream_id, 123);
-        return "Bracket ( stream";
-    };
-
-    target.closest = (sel) => {
-        assert.equal(sel, ".message_row");
-        return {
-            toggleClass: noop,
-        };
-    };
-
-    mock_template("actions_popover_content.hbs", false, (opts) => {
-        // TODO: Test all the properties of the popover
-        assert.equal(
-            opts.conversation_time_uri,
-            "http://chat.zulip.org/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
-        );
-        return "actions-content";
-    });
-
-    handler.call(target, e);
 });

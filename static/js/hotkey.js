@@ -29,6 +29,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -334,7 +335,7 @@ export function process_escape_key(e) {
 }
 
 function handle_popover_events(event_name) {
-    if (popovers.actions_popped()) {
+    if (popover_menus.message_actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
     }

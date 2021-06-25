@@ -720,19 +720,6 @@ export function register_click_handlers() {
         toggle_emoji_popover(this, message_id);
     });
 
-    $("body").on("click", ".actions_popover .reaction_button", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        e.preventDefault();
-        e.stopPropagation();
-        // HACK: Because we need the popover to be based off an
-        // element that definitely exists in the page even if the
-        // message wasn't sent by us and thus the .reaction_hover
-        // element is not present, we use the message's
-        // .fa-chevron-down element as the base for the popover.
-        const elem = $(".selected_message .actions_hover")[0];
-        toggle_emoji_popover(elem, message_id);
-    });
-
     $("body").on("click", ".emoji-popover-tab-item", function (e) {
         e.stopPropagation();
         e.preventDefault();
