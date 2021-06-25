@@ -75,8 +75,7 @@ export function process_read_messages_event(message_ids) {
 
 // Takes a list of messages and marks them as read.
 // Skips any messages that are already marked as read.
-export function notify_server_messages_read(messages, options) {
-    options = options || {};
+export function notify_server_messages_read(messages, options = {}) {
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
