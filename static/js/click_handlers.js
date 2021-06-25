@@ -14,6 +14,7 @@ import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
@@ -607,7 +608,7 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
-        $("#compose-send-status").stop(true).fadeOut(500);
+        compose_error.hide();
     });
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {

@@ -20,3 +20,7 @@ export function show_not_subscribed(error_html, bad_input) {
     show(error_html, bad_input, "home-error-bar");
     $(".compose-send-status-close").hide();
 }
+
+export function hide() {
+    $("#compose-send-status").stop(true).fadeOut(500);
+}
