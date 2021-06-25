@@ -768,7 +768,7 @@ def missedmessage_hook(
         )
         maybe_enqueue_notifications(
             user_data=user_notifications_data,
-            sender_id=sender_id,
+            acting_user_id=sender_id,
             message_id=message_id,
             private_message=private_message,
             stream_name=stream_name,
@@ -791,7 +791,7 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
 def maybe_enqueue_notifications(
     *,
     user_data: UserMessageNotificationsData,
-    sender_id: int,
+    acting_user_id: int,
     message_id: int,
     private_message: bool,
     stream_name: Optional[str],
@@ -807,10 +807,10 @@ def maybe_enqueue_notifications(
     """
     notified: Dict[str, bool] = {}
 
-    if user_data.is_push_notifiable(private_message, sender_id, idle):
+    if user_data.is_push_notifiable(private_message, acting_user_id, idle):
         notice = build_offline_notification(user_data.user_id, message_id)
         notice["trigger"] = user_data.get_push_notification_trigger(
-            private_message, sender_id, idle
+            private_message, acting_user_id, idle
         )
         notice["stream_name"] = stream_name
         if not already_notified.get("push_notified"):
@@ -821,10 +821,10 @@ def maybe_enqueue_notifications(
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
-    if user_data.is_email_notifiable(private_message, sender_id, idle):
+    if user_data.is_email_notifiable(private_message, acting_user_id, idle):
         notice = build_offline_notification(user_data.user_id, message_id)
         notice["trigger"] = user_data.get_email_notification_trigger(
-            private_message, sender_id, idle
+            private_message, acting_user_id, idle
         )
         notice["stream_name"] = stream_name
         if not already_notified.get("email_notified"):
@@ -952,7 +952,9 @@ def process_message_event(
         # shouldn't receive notifications even if they were online. In that case we can
         # avoid the more expensive `receiver_is_off_zulip` call, and move on to process
         # the next user.
-        if not user_notifications_data.is_notifiable(private_message, sender_id, idle=True):
+        if not user_notifications_data.is_notifiable(
+            private_message, acting_user_id=sender_id, idle=True
+        ):
             continue
 
         idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
@@ -962,7 +964,7 @@ def process_message_event(
         extra_user_data[user_profile_id]["internal_data"].update(
             maybe_enqueue_notifications(
                 user_data=user_notifications_data,
-                sender_id=sender_id,
+                acting_user_id=sender_id,
                 message_id=message_id,
                 private_message=private_message,
                 stream_name=stream_name,
@@ -1100,22 +1102,17 @@ def process_message_update_event(
         user_profile_id = user_data["id"]
 
         if "user_id" in event_template:
-            # This is inaccurate: the user we'll get here will be the
-            # sender if the message's content was edited, which is
-            # typically where we might send new notifications.
-            # However, for topic/stream edits, it could be another
-            # user.  We may need to adjust the format for
-            # update_message events to address this issue.
-            message_sender_id = event_template["user_id"]
+            # The user we'll get here will be the sender if the message's
+            # content was edited, and the editor for topic edits. That's
+            # the correct "acting_user" for both cases.
+            acting_user_id = event_template["user_id"]
         else:
-            # This is also inaccurate, but usefully so.  Events
-            # without a `user_id` field come from the
-            # do_update_embedded_data code path, and represent not an
-            # update to the raw content, but instead just rendering
-            # previews. Setting the current user at the sender is a
-            # hack to simplify notifications logic for this code
-            # path. TODO: Change this to short-circuit more directly.
-            message_sender_id = user_profile_id
+            # Events without a `user_id` field come from the do_update_embedded_data
+            # code path, and represent just rendering previews; there should be no
+            # real content changes.
+            # It doesn't really matter what we set `acting_user_id` in this case,
+            # becuase we know this event isn't meant to send notifications.
+            acting_user_id = user_profile_id
 
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
         for key in user_data.keys():
@@ -1136,7 +1133,7 @@ def process_message_update_event(
         maybe_enqueue_notifications_for_message_update(
             user_data=user_notifications_data,
             message_id=message_id,
-            sender_id=message_sender_id,
+            acting_user_id=acting_user_id,
             private_message=(stream_name is None),
             stream_name=stream_name,
             presence_idle=(user_profile_id in presence_idle_user_ids),
@@ -1153,7 +1150,7 @@ def process_message_update_event(
 def maybe_enqueue_notifications_for_message_update(
     user_data: UserMessageNotificationsData,
     message_id: int,
-    sender_id: int,
+    acting_user_id: int,
     private_message: bool,
     stream_name: Optional[str],
     presence_idle: bool,
@@ -1197,7 +1194,7 @@ def maybe_enqueue_notifications_for_message_update(
     maybe_enqueue_notifications(
         user_data=user_data,
         message_id=message_id,
-        sender_id=sender_id,
+        acting_user_id=acting_user_id,
         private_message=private_message,
         stream_name=stream_name,
         idle=idle,

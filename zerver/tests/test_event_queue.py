@@ -31,7 +31,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # This test is for verifying whether `maybe_enqueue_notifications` returns the
         # `already_notified` data correctly.
         params = self.get_maybe_enqueue_notifications_parameters(
-            message_id=1, user_id=1, sender_id=2
+            message_id=1, user_id=1, acting_user_id=2
         )
 
         with mock_queue_publish(
@@ -160,7 +160,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         ) -> None:
             expected_args_dict = self.get_maybe_enqueue_notifications_parameters(
                 user_id=user_profile.id,
-                sender_id=iago.id,
+                acting_user_id=iago.id,
                 message_id=message_id,
                 **kwargs,
             )

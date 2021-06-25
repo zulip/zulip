@@ -1339,7 +1339,7 @@ Output:
         )
 
     def get_maybe_enqueue_notifications_parameters(
-        self, *, message_id: int, user_id: int, sender_id: int, **kwargs: Any
+        self, *, message_id: int, user_id: int, acting_user_id: int, **kwargs: Any
     ) -> Dict[str, Any]:
         """
         Returns a dictionary with the passed parameters, after filling up the
@@ -1352,7 +1352,7 @@ Output:
         return dict(
             user_data=user_notifications_data,
             message_id=message_id,
-            sender_id=sender_id,
+            acting_user_id=acting_user_id,
             private_message=kwargs.get("private_message", False),
             stream_name=kwargs.get("stream_name", None),
             idle=kwargs.get("idle", True),

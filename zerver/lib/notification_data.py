@@ -48,21 +48,24 @@ class UserMessageNotificationsData:
     # `enable_offline_email_notifications` settings (for PMs and mentions), but currently they
     # don't.
 
-    def is_notifiable(self, private_message: bool, sender_id: int, idle: bool) -> bool:
+    # For these functions, acting_user_id is the user sent a message
+    # (or edited a message) triggering the event for which we need to
+    # determine notifiability.
+    def is_notifiable(self, private_message: bool, acting_user_id: int, idle: bool) -> bool:
         return self.is_email_notifiable(
-            private_message, sender_id, idle
-        ) or self.is_push_notifiable(private_message, sender_id, idle)
+            private_message, acting_user_id, idle
+        ) or self.is_push_notifiable(private_message, acting_user_id, idle)
 
-    def is_push_notifiable(self, private_message: bool, sender_id: int, idle: bool) -> bool:
-        return self.get_push_notification_trigger(private_message, sender_id, idle) is not None
+    def is_push_notifiable(self, private_message: bool, acting_user_id: int, idle: bool) -> bool:
+        return self.get_push_notification_trigger(private_message, acting_user_id, idle) is not None
 
     def get_push_notification_trigger(
-        self, private_message: bool, sender_id: int, idle: bool
+        self, private_message: bool, acting_user_id: int, idle: bool
     ) -> Optional[str]:
         if not idle and not self.online_push_enabled:
             return None
 
-        if self.user_id == sender_id:
+        if self.user_id == acting_user_id:
             return None
 
         if self.sender_is_muted:
@@ -79,16 +82,18 @@ class UserMessageNotificationsData:
         else:
             return None
 
-    def is_email_notifiable(self, private_message: bool, sender_id: int, idle: bool) -> bool:
-        return self.get_email_notification_trigger(private_message, sender_id, idle) is not None
+    def is_email_notifiable(self, private_message: bool, acting_user_id: int, idle: bool) -> bool:
+        return (
+            self.get_email_notification_trigger(private_message, acting_user_id, idle) is not None
+        )
 
     def get_email_notification_trigger(
-        self, private_message: bool, sender_id: int, idle: bool
+        self, private_message: bool, acting_user_id: int, idle: bool
     ) -> Optional[str]:
         if not idle:
             return None
 
-        if self.user_id == sender_id:
+        if self.user_id == acting_user_id:
             return None
 
         if self.sender_is_muted:

@@ -187,7 +187,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_id=cordelia.id,
-            sender_id=hamlet.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
             flags=["mentioned"],
@@ -317,7 +317,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_id=cordelia.id,
-            sender_id=hamlet.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
             stream_name="Scotland",
@@ -354,7 +354,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_id=cordelia.id,
-            sender_id=hamlet.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             stream_name="Scotland",
             online_push_enabled=True,
@@ -391,7 +391,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_id=cordelia.id,
             message_id=message_id,
-            sender_id=self.example_user("hamlet").id,
+            acting_user_id=self.example_user("hamlet").id,
             mentioned=True,
             flags=["mentioned"],
             stream_name="Scotland",
@@ -423,7 +423,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_id=cordelia.id,
-            sender_id=hamlet.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             wildcard_mention_notify=True,
             flags=["wildcard_mentioned"],
@@ -481,7 +481,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
             user_id=cordelia.id,
-            sender_id=hamlet.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
             flags=["mentioned"],
