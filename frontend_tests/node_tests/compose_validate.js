@@ -22,6 +22,7 @@ const render_input_pill = mock_template("input_pill.hbs");
 
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
+const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -145,7 +146,7 @@ test_ui("validate", ({override}) => {
     }
 
     initialize_pm_pill();
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.ok(!$("#sending-indicator").visible());
     assert.ok(!$("#compose-send-button").is_focused());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -155,7 +156,7 @@ test_ui("validate", ({override}) => {
     );
 
     reminder.is_deferred_delivery = () => true;
-    compose.validate();
+    compose_validate.validate();
     assert.equal($("#sending-indicator").text(), "translated: Scheduling...");
     reminder.is_deferred_delivery = () => {};
 
@@ -168,7 +169,7 @@ test_ui("validate", ({override}) => {
         }
         return false;
     };
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.ok(zephyr_checked);
     assert.equal(
         $("#compose-error-msg").html(),
@@ -184,7 +185,7 @@ test_ui("validate", ({override}) => {
     compose_state.set_message_type("private");
 
     compose_state.private_message_recipient("");
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Please specify at least one valid recipient"}),
@@ -194,7 +195,7 @@ test_ui("validate", ({override}) => {
     add_content_to_compose_box();
     compose_state.private_message_recipient("foo@zulip.com");
 
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
 
     assert.equal(
         $("#compose-error-msg").html(),
@@ -202,7 +203,7 @@ test_ui("validate", ({override}) => {
     );
 
     compose_state.private_message_recipient("foo@zulip.com,alice@zulip.com");
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
 
     assert.equal(
         $("#compose-error-msg").html(),
@@ -211,15 +212,15 @@ test_ui("validate", ({override}) => {
 
     people.add_active_user(bob);
     compose_state.private_message_recipient("bob@example.com");
-    assert.ok(compose.validate());
+    assert.ok(compose_validate.validate());
 
     page_params.realm_is_zephyr_mirror_realm = true;
-    assert.ok(compose.validate());
+    assert.ok(compose_validate.validate());
     page_params.realm_is_zephyr_mirror_realm = false;
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Please specify a stream"}),
@@ -228,7 +229,7 @@ test_ui("validate", ({override}) => {
     compose_state.stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Please specify a topic"}),
@@ -271,7 +272,7 @@ test_ui("validate_stream_message", ({override}) => {
     };
     stream_data.add_sub(sub);
     compose_state.stream_name("social");
-    assert.ok(compose.validate());
+    assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
     assert.ok(!$("#compose-send-status").visible());
 
@@ -290,14 +291,14 @@ test_ui("validate_stream_message", ({override}) => {
 
     override(compose, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.ok(!$("#compose-send-status").visible());
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert.ok($("#compose-all-everyone").visible());
 
     override(compose, "wildcard_mention_allowed", () => false);
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({
@@ -324,7 +325,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({override}) => {
     compose_state.topic("subject102");
     compose_state.stream_name("stream102");
     stream_data.add_sub(sub);
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
@@ -338,7 +339,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({override}) => {
 
     compose_state.topic("subject102");
     compose_state.stream_name("stream102");
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
@@ -362,7 +363,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({override})
     compose_state.topic("subject104");
     compose_state.stream_name("stream104");
     stream_data.add_sub(sub);
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({
@@ -399,7 +400,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({override
     compose_state.topic("subject103");
     compose_state.stream_name("stream103");
     stream_data.add_sub(sub);
-    assert.ok(!compose.validate());
+    assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Guests are not allowed to post to this stream."}),
