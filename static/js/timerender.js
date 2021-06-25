@@ -325,20 +325,3 @@ export function get_full_datetime(time) {
         time: time.toLocaleTimeString(page_params.request_language, time_string_options),
     };
 }
-
-function render_tippy_tooltip(message, time_elem) {
-    time_elem.attr("data-tippy-content", message.full_date_str + "<br/>" + message.full_time_str);
-}
-
-// Date.toLocaleDateString and Date.toLocaleTimeString are
-// expensive, so we delay running the following code until we need
-// the full date and time strings.
-export const set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
-    const time = new Date(message.timestamp * 1000);
-    const full_datetime = get_full_datetime(time);
-
-    message.full_date_str = full_datetime.date;
-    message.full_time_str = full_datetime.time;
-
-    render_tippy_tooltip(message, time_elem);
-};

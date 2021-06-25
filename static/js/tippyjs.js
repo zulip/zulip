@@ -1,8 +1,10 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
+import * as message_lists from "./message_lists";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
+import * as timerender from "./timerender";
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -151,6 +153,14 @@ export function initialize() {
         allowHTML: true,
         placement: "top",
         appendTo: () => document.body,
+        onShow(instance) {
+            const time_elem = $(instance.reference);
+            const row = time_elem.closest(".message_row");
+            const message = message_lists.current.get(rows.id(row));
+            const time = new Date(message.timestamp * 1000);
+            const full_datetime = timerender.get_full_datetime(time);
+            instance.setContent(full_datetime.date + "<br/>" + full_datetime.time);
+        },
         onHidden(instance) {
             instance.destroy();
         },

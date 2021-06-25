@@ -219,59 +219,35 @@ run_test("absolute_time_24_hour", () => {
     assert.equal(actual, expected);
 });
 
-function test_set_full_datetime(message, expected_tooltip_content) {
-    const time_element = $("<span/>");
-    const attrs = {};
+run_test("get_full_datetime", () => {
+    const time = new Date(1495141973000); // 2017/5/18 9:12:53 PM (UTC+0)
+    let expected_date = "Thursday, May 18, 2017";
+    let expected_time = "9:12:53 PM Coordinated Universal Time";
+    assert.deepEqual(timerender.get_full_datetime(time), {
+        date: expected_date,
+        time: expected_time,
+    });
 
-    time_element.attr = (name, val = null) => {
-        if (val === null) {
-            return attrs[name];
-        }
-        attrs[name] = val;
-        return val;
-    };
-
-    timerender.set_full_datetime(message, time_element);
-    assert.equal(attrs["data-tippy-content"], expected_tooltip_content);
-
-    // Removing `data-tippy-content` and re-running should
-    // set `data-tippy-content` value again.
-    delete attrs["data-tippy-content"];
-    timerender.set_full_datetime(message, time_element);
-    assert.equal(attrs["data-tippy-content"], expected_tooltip_content);
-}
-
-run_test("set_full_datetime", () => {
-    let message = {
-        timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
-    };
-
-    // The formatting of the string time.toLocale(Date|Time)String() on Node
-    // might differ from the browser.
-    let time = new Date(message.timestamp * 1000);
-    let expected = `${time.toLocaleDateString("en", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-    })}<br/>7:12:53 AM Coordinated Universal Time`;
-    test_set_full_datetime(message, expected);
-
-    // Check year is hidden if current year.
-    time = new Date();
-    message = {
-        timestamp: Math.floor(time.getTime() / 1000),
-    };
-    // Also check 24hour time format is shown.
+    // test 24 hour time setting.
     page_params.twenty_four_hour_time = true;
-    const date_string = time.toLocaleDateString("en", {
+    expected_time = "21:12:53 Coordinated Universal Time";
+    assert.deepEqual(timerender.get_full_datetime(time), {
+        date: expected_date,
+        time: expected_time,
+    });
+
+    // Test year not shown if current.
+    const current_year = new Date().getFullYear();
+    time.setFullYear(current_year);
+    expected_date = time.toLocaleDateString(undefined, {
         weekday: "long",
         month: "long",
         day: "numeric",
     });
-    const time_string = time.toLocaleString("en", {timeStyle: "full", hourCycle: "h24"});
-    expected = `${date_string}<br/>${time_string}`;
-    test_set_full_datetime(message, expected);
+    assert.deepEqual(timerender.get_full_datetime(time), {
+        date: expected_date,
+        time: expected_time,
+    });
 });
 
 run_test("last_seen_status_from_date", () => {

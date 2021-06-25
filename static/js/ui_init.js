@@ -327,13 +327,6 @@ export function initialize_kitchen_sink_stuff() {
         }
     });
 
-    $("#main_div").on("mouseenter", ".message_time", (e) => {
-        const time_elem = $(e.target);
-        const row = time_elem.closest(".message_row");
-        const message = message_lists.current.get(rows.id(row));
-        timerender.set_full_datetime(message, time_elem);
-    });
-
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
