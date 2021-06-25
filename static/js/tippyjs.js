@@ -38,15 +38,19 @@ tippy.setDefaultProps({
 });
 
 export function initialize() {
+    // Our default tooltip configuration. For this, one simply needs to:
+    // * Set `class="tippy-zulip-tooltip"` on an element for enable this.
+    // * Set `data-tippy-content="{{t 'Tooltip content' }}"`, often
+    //   replacing a `title` attribute on an element that had both.
+    // * Set placement; we typically use `data-tippy-placement="top"`.
     delegate("body", {
-        // Add elements here which are not displayed on
-        // initial load but are displayed later through
-        // some means.
-        //
-        // Make all html elements having this class
-        // show tippy styled tooltip on hover.
         target: ".tippy-zulip-tooltip",
     });
+
+    // The below definitions are for specific tooltips that require
+    // custom JavaScript code or configuration.  Note that since the
+    // below specify the target directly, elements using those should
+    // not have the tippy-zulip-tooltip class.
 
     // message reaction tooltip showing who reacted.
     let observer;
