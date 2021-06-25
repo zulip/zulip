@@ -38,5 +38,5 @@ define service{
         use                             generic-service
         host_name                       nagios
         service_description             Check Camo is operational
-        check_command                   check_website_response!<%= @nagios_camo_check_url %>!6000!12000!
+        check_command                   check_camo!<%= @nagios_camo_check_host %>!<%= @nagios_camo_check_path %>!6!12
         }
