@@ -88,7 +88,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     });
     await page.click(".submit-modal-button");
 
-    const edit_linkifier_pattern_status_selector = "div#edit-linkifier-status";
+    const edit_linkifier_pattern_status_selector = "div#edit-fields-modal-status";
     await page.waitForSelector(edit_linkifier_pattern_status_selector, {visible: true});
     const edit_linkifier_pattern_status = await common.get_text_from_selector(
         page,
