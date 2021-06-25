@@ -181,8 +181,7 @@ export function initialize() {
         // on the other hand, on mobile it should be done with a long tap.
     } else {
         $("#main_div").on("longtap", ".messagebox", function (e) {
-            // find the correct selection API for the browser.
-            const sel = window.getSelection ? window.getSelection() : document.selection;
+            const sel = window.getSelection();
             // if one matches, remove the current selections.
             // after a longtap that is valid, there should be no text selected.
             if (sel) {

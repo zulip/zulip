@@ -117,20 +117,12 @@ export function get_active_data() {
 }
 
 function selectText(element) {
-    let range;
-    let sel;
-    if (window.getSelection) {
-        sel = window.getSelection();
-        range = document.createRange();
-        range.selectNodeContents(element);
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(element);
 
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (document.body.createTextRange) {
-        range = document.body.createTextRange();
-        range.moveToElementText(element);
-        range.select();
-    }
+    sel.removeAllRanges();
+    sel.addRange(range);
 }
 
 function should_list_all_streams() {
