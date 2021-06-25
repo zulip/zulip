@@ -2,6 +2,7 @@ import logging
 import urllib
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
+from zerver.lib.response import json_success
 
 import pytz
 from django.conf import settings
@@ -47,6 +48,7 @@ from zerver.lib.actions import (
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
@@ -752,3 +754,35 @@ def realm_redirect(request: HttpRequest) -> HttpResponse:
         form = RealmRedirectForm()
 
     return render(request, "zerver/realm_redirect.html", context={"form": form})
+
+
+def import_realm(request: HttpRequest) -> HttpResponse:
+    return render(request, "zerver/import_realm.html")
+
+
+import boto3
+from botocore.exceptions import ClientError
+
+@has_request_variables
+def generate_presigned_post_for_realm_import_upload(request, user: Optional[UserProfile]=None,  filename: str=REQ(default=None)):
+    import pdb
+    pdb.set_trace()
+    client = boto3.client(
+        "s3",
+        aws_access_key_id=settings.S3_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+        region_name=settings.S3_REGION,
+        endpoint_url=settings.S3_ENDPOINT_URL,
+    )
+    try:
+        response = client.generate_presigned_post(
+            settings.S3_AUTH_UPLOADS_BUCKET,
+            filename,
+            Fields=None,
+            Conditions=None,
+            ExpiresIn=8600,
+        )
+    except ClientError as e:
+        logging.error(e)
+        return None
+    return response(data={"url": response["url"]}, fields=response["fields"], method="post")

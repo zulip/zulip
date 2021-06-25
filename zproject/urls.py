@@ -129,6 +129,8 @@ from zerver.views.registration import (
     check_prereg_key_and_redirect,
     create_realm,
     find_account,
+    import_realm,
+    generate_presigned_post_for_realm_import_upload,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -495,6 +497,7 @@ v1_api_and_json_patterns = [
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
+    rest_path("import/generate_presigned_url", POST=generate_presigned_post_for_realm_import_upload),
 ]
 
 integrations_view = IntegrationView.as_view()
@@ -594,6 +597,7 @@ i18n_urls = [
     # Realm creation
     path("new/", create_realm),
     path("new/<creation_key>", create_realm, name="create_realm"),
+    path("import/", import_realm),
     # Realm reactivation
     path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
     # Global public streams (Zulip's way of doing archives)

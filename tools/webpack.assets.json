@@ -66,6 +66,7 @@
     ],
     "signup": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
     "register": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
+    "import": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/import"],
     "confirm-preregistrationuser": [
         "./static/js/bundles/common",
         "./static/js/portico/confirm-preregistrationuser"
