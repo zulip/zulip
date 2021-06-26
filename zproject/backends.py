@@ -1296,11 +1296,23 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
         ]
 
 
-def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
+def redirect_to_signup(realm: Realm) -> HttpResponseRedirect:
+    signup_url = reverse("register")
+    redirect_url = realm.uri + signup_url
+    return HttpResponseRedirect(redirect_url)
+
+
+def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
+    login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
+    redirect_url = realm.uri + login_url
+    return HttpResponseRedirect(redirect_url)
+
+
+def redirect_deactivated_user_to_login(realm: Realm) -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = login_url + "?is_deactivated=true"
+    redirect_url = realm.uri + login_url + "?is_deactivated=true"
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1508,18 +1520,19 @@ def social_auth_finish(
         # form on.
         return HttpResponseRedirect(reverse("find_account"))
 
+    realm = Realm.objects.get(id=return_data["realm_id"])
     if inactive_user:
         backend.logger.info(
             "Failed login attempt for deactivated account: %s@%s",
             return_data["inactive_user_id"],
             return_data["realm_string_id"],
         )
-        return redirect_deactivated_user_to_login()
+        return redirect_deactivated_user_to_login(realm)
 
     if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
-        return None
+        return redirect_to_login(realm)
 
     if invalid_email:
         # In case of invalid email, we will end up on registration page.
@@ -1528,11 +1541,11 @@ def social_auth_finish(
             "%s got invalid email argument.",
             backend.auth_backend_name,
         )
-        return None
+        return redirect_to_signup(realm)
 
     if auth_failed_reason:
         backend.logger.info(auth_failed_reason)
-        return None
+        return redirect_to_login(realm)
 
     # Structurally, all the cases where we don't have an authenticated
     # email for the user should be handled above; this assertion helps
@@ -1545,7 +1558,6 @@ def social_auth_finish(
     email_address = return_data["validated_email"]
     full_name = return_data["full_name"]
     redirect_to = strategy.session_get("next")
-    realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get("multiuse_object_key", "")
 
     mobile_flow_otp = strategy.session_get("mobile_flow_otp")
