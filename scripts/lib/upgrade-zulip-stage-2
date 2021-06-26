@@ -167,7 +167,8 @@ subprocess.check_call(
 )
 
 # Make sure the right version of node is installed
-subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"), deploy_path])
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node")])
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-yarn")])
 
 # Generate any new secrets that were added in the new version required.
 # TODO: Do caching to only run this when it has changed.
