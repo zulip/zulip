@@ -1,6 +1,5 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import _ from "lodash";
 
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
@@ -681,45 +680,13 @@ export function register_topic_handlers() {
         e.stopPropagation();
     });
 
-    function mark_topic_as_resolved(stream_id, topic_name) {
-        const request = {
-            propagate_mode: "change_all",
-            topic: message_edit.RESOLVED_TOPIC_PREFIX + topic_name,
-            send_notification_to_old_thread: false,
-            send_notification_to_new_thread: true,
-        };
-        with_first_message_id(stream_id, topic_name, (message_id) => {
-            channel.patch({
-                url: "/json/messages/" + message_id,
-                data: request,
-            });
-        });
-    }
-
-    function mark_topic_as_unresolved(stream_id, topic_name) {
-        const request = {
-            propagate_mode: "change_all",
-            topic: _.trimStart(topic_name, message_edit.RESOLVED_TOPIC_PREFIX),
-            send_notification_to_old_thread: false,
-            send_notification_to_new_thread: true,
-        };
-        with_first_message_id(stream_id, topic_name, (message_id) => {
-            channel.patch({
-                url: "/json/messages/" + message_id,
-                data: request,
-            });
-        });
-    }
-
     $("body").on("click", ".sidebar-popover-toggle-resolved", (e) => {
         const topic_row = $(e.currentTarget);
         const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
         const topic_name = topic_row.attr("data-topic-name");
-        if (topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
-            mark_topic_as_unresolved(stream_id, topic_name);
-        } else {
-            mark_topic_as_resolved(stream_id, topic_name);
-        }
+        with_first_message_id(stream_id, topic_name, (message_id) => {
+            message_edit.toggle_resolve_topic(message_id, topic_name);
+        });
 
         hide_topic_popover();
         e.stopPropagation();

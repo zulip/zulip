@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import _ from "lodash";
 
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
@@ -591,6 +592,27 @@ export function start(row, edit_box_open_callback) {
                 start_edit_with_content(row, message.raw_content, edit_box_open_callback);
             }
         },
+    });
+}
+
+export function toggle_resolve_topic(message_id, old_topic_name) {
+    let new_topic_name;
+    if (old_topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        new_topic_name = _.trimStart(old_topic_name, RESOLVED_TOPIC_PREFIX);
+    } else {
+        new_topic_name = RESOLVED_TOPIC_PREFIX + old_topic_name;
+    }
+
+    const request = {
+        propagate_mode: "change_all",
+        topic: new_topic_name,
+        send_notification_to_old_thread: false,
+        send_notification_to_new_thread: true,
+    };
+
+    channel.patch({
+        url: "/json/messages/" + message_id,
+        data: request,
     });
 }
 
