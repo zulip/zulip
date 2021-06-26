@@ -176,4 +176,13 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    // In case of recipient bar icons, following change
+    // ensures that tooltip doesn't hide behind the message
+    // box or it is not limited by the parent container.
+    delegate("body", {
+        target: ".recipient_bar_icon",
+        placement: "top",
+        appendTo: () => document.body,
+    });
 }
