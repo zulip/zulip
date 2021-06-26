@@ -1,9 +1,11 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import {media_breakpoints} from "./css_variables";
+import {media_breakpoints_num} from "./css_variables";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
 import * as rows from "./rows";
 import * as util from "./util";
 
@@ -314,7 +316,7 @@ export function is_narrow() {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
     // test for this.
-    return window.innerWidth < Number(media_breakpoints.xl_min.slice(0, -2));
+    return window.innerWidth < media_breakpoints_num.xl;
 }
 
 export function system_initiated_animate_scroll(scroll_amount) {
@@ -340,9 +342,7 @@ export function user_initiated_animate_scroll(scroll_amount) {
     });
 }
 
-export function recenter_view(message, opts) {
-    opts = opts || {};
-
+export function recenter_view(message, {from_scroll = false, force_center = false} = {}) {
     // BarnOwl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
@@ -359,7 +359,7 @@ export function recenter_view(message, opts) {
     const is_above = message_top < top_threshold;
     const is_below = message_bottom > bottom_threshold;
 
-    if (opts.from_scroll) {
+    if (from_scroll) {
         // If the message you're trying to center on is already in view AND
         // you're already trying to move in the direction of that message,
         // don't try to recenter. This avoids disorienting jumps when the
@@ -373,7 +373,7 @@ export function recenter_view(message, opts) {
         }
     }
 
-    if (is_above || opts.force_center) {
+    if (is_above || force_center) {
         set_message_position(message_top, message_height, viewport_info, 1 / 2);
     } else if (is_below) {
         set_message_position(message_top, message_height, viewport_info, 1 / 7);
@@ -472,4 +472,15 @@ export function initialize() {
     $(document).on("message_selected.zulip wheel", () => {
         stop_auto_scrolling();
     });
+}
+
+export function is_visible_and_focused() {
+    if (
+        overlays.is_active() ||
+        !notifications.is_window_focused() ||
+        !$("#message_feed_container").is(":visible")
+    ) {
+        return false;
+    }
+    return true;
 }

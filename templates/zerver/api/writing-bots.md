@@ -43,7 +43,7 @@ can use this as boilerplate code for developing your own bot.
 
 Every bot is built upon this structure:
 
-```
+```python
 class MyBotHandler(object):
     '''
     A docstring documenting this bot.
@@ -126,9 +126,9 @@ Response: 12.0 meter = 13.12336 yard
 
 > zulip-terminal -b ~/followup.conf followup
 
-Enter your message: "Task Completed"
+Enter your message: "Task completed"
 Response: stream: followup topic: foo_sender@zulip.com
-          from foo_sender@zulip.com: Task Completed
+          from foo_sender@zulip.com: Task completed
 
 ```
 
@@ -167,7 +167,7 @@ is called to retrieve information about the bot.
 
 #### Example implementation
 
-```
+```python
 def usage(self):
     return '''
         This plugin will allow users to flag messages
@@ -198,7 +198,7 @@ None.
 
 #### Example implementation
 
-```
+```python
   def handle_message(self, message, bot_handler):
      original_content = message['content']
      original_sender = message['sender_email']
@@ -226,7 +226,7 @@ about where the message is sent to.
 
 #### Example implementation
 
-```
+```python
 bot_handler.send_message(dict(
     type='stream', # can be 'stream' or 'private'
     to=stream_name, # either the stream name or user's email
@@ -262,7 +262,7 @@ will edit the content of a previously sent message.
 
 From `zulip_bots/bots/incrementor/incrementor.py`:
 
-```
+```python
 bot_handler.update_message(dict(
     message_id=self.message_id, # id of message to be updated
     content=str(self.number), # string with which to update message with
@@ -304,7 +304,7 @@ will store the value `value` in the entry `key`.
 
 ##### Example
 
-```
+```python
 bot_handler.storage.put("foo", "bar")  # set entry "foo" to "bar"
 ```
 
@@ -320,7 +320,7 @@ will retrieve the value for the entry `key`.
 
 ##### Example
 
-```
+```python
 bot_handler.storage.put("foo", "bar")
 print(bot_handler.storage.get("foo"))  # print "bar"
 ```
@@ -337,7 +337,7 @@ will check if the entry `key` exists.
 
 ##### Example
 
-```
+```python
 bot_handler.storage.contains("foo")  # False
 bot_handler.storage.put("foo", "bar")
 bot_handler.storage.contains("foo")  # True
@@ -388,7 +388,7 @@ refactor them.
  https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/helloworld)
  bot.
 
-```
+```python
 from zulip_bots.test_lib import StubBotTestCase
 
 class TestHelpBot(StubBotTestCase):
@@ -450,7 +450,7 @@ system and gives your test "dummy data" instead.
 
 Some bots, such as [Giphy](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
-depend on a third-party service, such as the Giphy webapp, in order to work. Because
+depend on a third-party service, such as the Giphy web app, in order to work. Because
 we want our test suite to be reliable and not add load to these third-party APIs, tests
 for these services need to have "test fixtures": sample HTTP request/response pairs to
 be used by the tests. You can specify which one to use in your test code using the
@@ -462,7 +462,7 @@ following helper method:
 `mock_http_conversation(fixture_name)` patches `requests.get` and returns the data specified
 in the file `fixtures/{fixture_name}.json`. Use the following JSON code as a skeleton for new
 fixtures:
-```
+```json
 {
   "request": {
     "api_url": "http://api.example.com/",

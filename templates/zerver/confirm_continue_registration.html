@@ -26,14 +26,14 @@
                                     {{ _("Log in with another account") }}
                                 </button>
                             </form>
-                            <br>
+                            <br />
                             <form class="form-inline" id="send_confirm" name="send_confirm"
                               action="{{ continue_link }}" method="get">
                                 <button class="outline">
                                     {{ _("Continue to registration") }}
                                 </button>
                                 {% if full_name %}
-                                <input type="hidden" name="full_name" value="{{ full_name }}">
+                                <input type="hidden" name="full_name" value="{{ full_name }}" />
                                 {% endif %}
                             </form>
                         </div>

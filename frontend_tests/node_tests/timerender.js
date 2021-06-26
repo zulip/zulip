@@ -5,22 +5,20 @@ const {strict: assert} = require("assert");
 const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
-const {i18n} = require("../zjsunit/i18n");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {$t} = require("../zjsunit/i18n");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.twenty_four_hour_time = true;
 
-mock_cjs("jquery", $);
-
 const timerender = zrequire("timerender");
 
 run_test("render_now_returns_today", () => {
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     const expected = {
-        time_str: i18n.t("Today"),
+        time_str: $t({defaultMessage: "Today"}),
         formal_time_str: "Friday, April 12, 2019",
         needs_update: true,
     };
@@ -34,7 +32,7 @@ run_test("render_now_returns_yesterday", () => {
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     const yesterday = add(today, {days: -1});
     const expected = {
-        time_str: i18n.t("Yesterday"),
+        time_str: $t({defaultMessage: "Yesterday"}),
         formal_time_str: "Thursday, April 11, 2019",
         needs_update: true,
     };
@@ -91,7 +89,7 @@ run_test("render_date_renders_time_html", () => {
 
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     const message_time = today;
-    const expected_html = i18n.t("Today");
+    const expected_html = $t({defaultMessage: "Today"});
 
     const attrs = {};
     const span_stub = $("<span />");
@@ -108,7 +106,7 @@ run_test("render_date_renders_time_html", () => {
 
     const actual = timerender.render_date(message_time, undefined, today);
     assert.equal(actual.html(), expected_html);
-    assert.equal(attrs.title, "Friday, April 12, 2019");
+    assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
 });
 
@@ -127,10 +125,10 @@ run_test("render_date_renders_time_above_html", () => {
 
     const expected = [
         '<i class="date-direction fa fa-caret-up"></i>',
-        i18n.t("Yesterday"),
+        $t({defaultMessage: "Yesterday"}),
         '<hr class="date-line">',
         '<i class="date-direction fa fa-caret-down"></i>',
-        i18n.t("Today"),
+        $t({defaultMessage: "Today"}),
     ];
 
     timerender.render_date(message_time, message_time_above, today);
@@ -221,24 +219,35 @@ run_test("absolute_time_24_hour", () => {
     assert.equal(actual, expected);
 });
 
-run_test("set_full_datetime", () => {
-    const message = {
-        timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
-    };
-    const time_element = $("<span/>");
-    const attrs = {};
+run_test("get_full_datetime", () => {
+    const time = new Date(1495141973000); // 2017/5/18 9:12:53 PM (UTC+0)
+    let expected_date = "Thursday, May 18, 2017";
+    let expected_time = "9:12:53 PM Coordinated Universal Time";
+    assert.deepEqual(timerender.get_full_datetime(time), {
+        date: expected_date,
+        time: expected_time,
+    });
 
-    time_element.attr = (name, val) => {
-        attrs[name] = val;
-        return time_element;
-    };
+    // test 24 hour time setting.
+    page_params.twenty_four_hour_time = true;
+    expected_time = "21:12:53 Coordinated Universal Time";
+    assert.deepEqual(timerender.get_full_datetime(time), {
+        date: expected_date,
+        time: expected_time,
+    });
 
-    // The formatting of the string time.toLocale(Date|Time)String() on Node
-    // might differ from the browser.
-    const time = new Date(message.timestamp * 1000);
-    const expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
-    timerender.set_full_datetime(message, time_element);
-    assert.equal(attrs.title, expected);
+    // Test year not shown if current.
+    const current_year = new Date().getFullYear();
+    time.setFullYear(current_year);
+    expected_date = time.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+    });
+    assert.deepEqual(timerender.get_full_datetime(time), {
+        date: expected_date,
+        time: expected_time,
+    });
 });
 
 run_test("last_seen_status_from_date", () => {
@@ -251,47 +260,49 @@ run_test("last_seen_status_from_date", () => {
         assert.equal(actual_status, expected_status);
     }
 
-    assert_same({seconds: -20}, i18n.t("Just now"));
+    assert_same({seconds: -20}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -1}, i18n.t("Just now"));
+    assert_same({minutes: -1}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -2}, i18n.t("Just now"));
+    assert_same({minutes: -2}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -30}, i18n.t("30 minutes ago"));
+    assert_same({minutes: -30}, $t({defaultMessage: "30 minutes ago"}));
 
-    assert_same({hours: -1}, i18n.t("Yesterday"));
+    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
-    assert_same({hours: -2}, i18n.t("Yesterday"));
+    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -20}, i18n.t("Yesterday"));
+    assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
 
-    assert_same({days: -1}, i18n.t("Yesterday"));
+    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 
-    assert_same({days: -2}, i18n.t("2 days ago"));
+    assert_same({hours: -48}, $t({defaultMessage: "2 days ago"}));
 
-    assert_same({days: -61}, i18n.t("61 days ago"));
+    assert_same({days: -2}, $t({defaultMessage: "2 days ago"}));
 
-    assert_same({days: -300}, i18n.t("May 06,\u00A02015"));
+    assert_same({days: -61}, $t({defaultMessage: "61 days ago"}));
 
-    assert_same({days: -366}, i18n.t("Mar 01,\u00A02015"));
+    assert_same({days: -300}, $t({defaultMessage: "May 06,\u00A02015"}));
 
-    assert_same({years: -3}, i18n.t("Mar 01,\u00A02013"));
+    assert_same({days: -366}, $t({defaultMessage: "Mar 01,\u00A02015"}));
+
+    assert_same({years: -3}, $t({defaultMessage: "Mar 01,\u00A02013"}));
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new Date(2016, 4, 1, 0, 30);
 
-    assert_same({days: -91}, i18n.t("Jan\u00A031"));
+    assert_same({days: -91}, $t({defaultMessage: "Jan\u00A031"}));
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
 
-    assert_same({hours: -1}, i18n.t("An hour ago"));
+    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
-    assert_same({hours: -2}, i18n.t("2 hours ago"));
+    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -12}, i18n.t("12 hours ago"));
+    assert_same({hours: -12}, $t({defaultMessage: "12 hours ago"}));
 
-    assert_same({hours: -24}, i18n.t("Yesterday"));
+    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 });
 
 run_test("set_full_datetime", () => {

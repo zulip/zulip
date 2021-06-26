@@ -15,7 +15,6 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    Mapping,
     Optional,
     Tuple,
     TypeVar,
@@ -51,10 +50,10 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    get_client,
     get_realm,
     get_stream,
 )
-from zerver.tornado import django_api as django_tornado_api
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
 from zerver.worker import queue_processors
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
@@ -91,43 +90,6 @@ def stub_event_queue_user_events(
 def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
     with mock.patch.object(queue_processors, "SimpleQueueClient", client):
         yield
-
-
-@contextmanager
-def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
-    real_event_queue_process_notification = django_tornado_api.process_notification
-    django_tornado_api.process_notification = lambda notice: lst.append(notice)
-    # process_notification takes a single parameter called 'notice'.
-    # lst.append takes a single argument called 'object'.
-    # Some code might call process_notification using keyword arguments,
-    # so mypy doesn't allow assigning lst.append to process_notification
-    # So explicitly change parameter name to 'notice' to work around this problem
-    yield
-    django_tornado_api.process_notification = real_event_queue_process_notification
-
-
-class EventInfo:
-    def populate(self, call_args_list: List[Any]) -> None:
-        args = call_args_list[0][0]
-        self.realm_id = args[0]
-        self.payload = args[1]
-        self.user_ids = args[2]
-
-
-@contextmanager
-def capture_event(event_info: EventInfo) -> Iterator[None]:
-    # Use this for simple endpoints that throw a single event
-    # in zerver.lib.actions.
-    with mock.patch("zerver.lib.actions.send_event") as m:
-        yield
-
-    if len(m.call_args_list) == 0:
-        raise AssertionError("No event was sent inside actions.py")
-
-    if len(m.call_args_list) > 1:
-        raise AssertionError("Too many events sent by action")
-
-    event_info.populate(m.call_args_list)
 
 
 @contextmanager
@@ -327,10 +289,13 @@ class HostRequestMock:
         post_data: Dict[str, Any] = {},
         user_profile: Optional[UserProfile] = None,
         host: str = settings.EXTERNAL_HOST,
+        client_name: Optional[str] = None,
     ) -> None:
         self.host = host
         self.GET: Dict[str, Any] = {}
         self.method = ""
+        if client_name is not None:
+            self.client = get_client(client_name)
 
         # Convert any integer parameters passed into strings, even
         # though of course the HTTP API would do so.  Ideally, we'd
@@ -348,28 +313,10 @@ class HostRequestMock:
         self.user = user_profile
         self.body = ""
         self.content_type = ""
+        self.client_name = ""
 
     def get_host(self) -> str:
         return self.host
-
-
-class MockPythonResponse:
-    def __init__(
-        self, text: str, status_code: int, headers: Optional[Dict[str, str]] = None
-    ) -> None:
-        self.content = text.encode()
-        self.text = text
-        self.status_code = status_code
-        if headers is None:
-            headers = {"content-type": "text/html"}
-        self.headers = headers
-
-    @property
-    def ok(self) -> bool:
-        return self.status_code == 200
-
-    def iter_content(self, n: int) -> Generator[str, Any, None]:
-        yield self.text[:n]
 
 
 INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
@@ -496,9 +443,14 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
+            "help/configure-missed-message-emails",
+            "help/community-topic-edits",
+            "help/delete-a-stream",
+            "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
             "flush_caches",
+            "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
@@ -687,6 +639,9 @@ def mock_queue_publish(
 ) -> Iterator[mock.MagicMock]:
     inner = mock.MagicMock(**kwargs)
 
+    # This helper ensures that events published to the queues are
+    # serializable as JSON; unserializable events would make RabbitMQ
+    # crash in production.
     def verify_serialize(
         queue_name: str,
         event: Dict[str, object],

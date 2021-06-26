@@ -17,6 +17,8 @@ run_test("user_groups", () => {
 
     const params = {};
     params.realm_user_groups = [students];
+    const user_id_not_in_any_group = 0;
+    const user_id_part_of_a_group = 2;
 
     user_groups.initialize(params);
     assert.equal(user_groups.get_user_group_from_id(students.id), students);
@@ -71,8 +73,15 @@ run_test("user_groups", () => {
     assert.equal(user_groups_array[1].name, "Everyone");
     assert.equal(user_groups_array[0].name, "new admins");
 
-    assert(!user_groups.is_member_of(admins.id, 4));
-    assert(user_groups.is_member_of(admins.id, 3));
+    const groups_of_users = user_groups.get_user_groups_of_user(user_id_part_of_a_group);
+    assert.equal(groups_of_users.length, 1);
+    assert.equal(groups_of_users[0].name, "Everyone");
+
+    const groups_of_users_nomatch = user_groups.get_user_groups_of_user(user_id_not_in_any_group);
+    assert.equal(groups_of_users_nomatch.length, 0);
+
+    assert.ok(!user_groups.is_member_of(admins.id, 4));
+    assert.ok(user_groups.is_member_of(admins.id, 3));
 
     user_groups.add_members(all.id, [5, 4]);
     assert.deepEqual(user_groups.get_user_group_from_id(all.id).members, new Set([1, 2, 3, 5, 4]));
@@ -80,12 +89,12 @@ run_test("user_groups", () => {
     user_groups.remove_members(all.id, [1, 4]);
     assert.deepEqual(user_groups.get_user_group_from_id(all.id).members, new Set([2, 3, 5]));
 
-    assert(user_groups.is_user_group(admins));
+    assert.ok(user_groups.is_user_group(admins));
     const object = {
         name: "core",
         id: 3,
     };
-    assert(!user_groups.is_user_group(object));
+    assert.ok(!user_groups.is_user_group(object));
 
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);

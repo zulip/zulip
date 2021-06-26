@@ -6,7 +6,7 @@ import orjson
 import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
@@ -42,7 +42,7 @@ def send_to_push_bouncer(
 
     * 400 errors from the push bouncer.  Here there are 2 categories:
       Our server failed to connect to the push bouncer (should throw)
-      vs. client-side errors like and invalid token.
+      vs. client-side errors like an invalid token.
 
     """
     url = urllib.parse.urljoin(

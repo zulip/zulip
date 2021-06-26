@@ -94,36 +94,6 @@ stopasgroup=true              ; Without this, we leak processes every restart
 killasgroup=true              ; Without this, we leak processes every restart
 <% end %>
 
-[program:zulip_deliver_enqueued_emails]
-command=nice -n15 /home/zulip/deployments/current/manage.py deliver_email
-environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
-priority=350                   ; the relative start priority (default 999)
-autostart=true                 ; start at supervisord start (default: true)
-autorestart=true               ; whether/when to restart (default: unexpected)
-stopsignal=TERM                ; signal used to kill process (default TERM)
-topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
-user=zulip                    ; setuid to this UNIX account to run the program
-redirect_stderr=true           ; redirect proc stderr to stdout (default false)
-stdout_logfile=/var/log/zulip/events_deliver_enqueued_emails.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
-directory=/home/zulip/deployments/current/
-
-[program:zulip_deliver_scheduled_messages]
-command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_messages
-environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
-priority=350                   ; the relative start priority (default 999)
-autostart=true                 ; start at supervisord start (default: true)
-autorestart=true               ; whether/when to restart (default: unexpected)
-stopsignal=TERM                ; signal used to kill process (default TERM)
-topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
-user=zulip                    ; setuid to this UNIX account to run the program
-redirect_stderr=true           ; redirect proc stderr to stdout (default false)
-stdout_logfile=/var/log/zulip/events_scheduled_message_deliverer.log         ; stdout log path, NONE for none; default AUTO
-stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
-stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
-directory=/home/zulip/deployments/current/
-
 ; The below sample group section shows all possible group values,
 ; create one or more 'real' group: sections to create "heterogeneous"
 ; process groups.
@@ -131,9 +101,9 @@ directory=/home/zulip/deployments/current/
 [group:zulip-workers]
 <% if @queues_multiprocess %>
 ; each refers to 'x' in [program:x] definitions
-programs=zulip_deliver_enqueued_emails, zulip_deliver_scheduled_messages, <% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
+programs=<% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
 <% else %>
-programs=zulip_deliver_enqueued_emails, zulip_events, zulip_deliver_scheduled_messages
+programs=zulip_events
 <% end %>
 
 ; The [include] section can just contain the "files" setting.  This

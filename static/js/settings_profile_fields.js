@@ -1,7 +1,7 @@
 import $ from "jquery";
 import {Sortable} from "sortablejs";
 
-import render_admin_profile_field_list from "../templates/admin_profile_field_list.hbs";
+import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
 import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
 
 import * as channel from "./channel";
@@ -114,7 +114,7 @@ function create_choice_row(container) {
 function clear_form_data() {
     $("#profile_field_name").val("").closest(".control-group").show();
     $("#profile_field_hint").val("").closest(".control-group").show();
-    // Set default type "Short Text" in field type dropdown
+    // Set default type "Short text" in field type dropdown
     $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from select field form
     $("#profile_field_choices").html("");

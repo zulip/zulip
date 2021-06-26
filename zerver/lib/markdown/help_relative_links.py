@@ -20,7 +20,7 @@ gear_info = {
     "settings": ["Settings", "/#settings/your-account"],
     "manage-organization": ["Manage organization", "/#organization/organization-profile"],
     "integrations": ["Integrations", "/integrations"],
-    "stats": ["Statistics", "/stats"],
+    "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans"],
     "billing": ["Billing", "/billing"],
     "invite": ["Invite users", "/#invite"],
@@ -71,7 +71,7 @@ LINK_TYPE_HANDLERS = {
 
 class RelativeLinksHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
-        """ Add RelativeLinksHelpExtension to the Markdown instance. """
+        """Add RelativeLinksHelpExtension to the Markdown instance."""
         md.registerExtension(self)
         md.preprocessors.register(RelativeLinks(), "help_relative_links", 520)
 

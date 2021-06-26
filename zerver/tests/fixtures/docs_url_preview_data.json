@@ -21,6 +21,6 @@
     },
     "https://zulip.readthedocs.io/en/latest/translating/translating.html": {
         "description": "To make Zulip even better for users around the world, the Zulip UI is\nbeing translated into a number of major languages, including Spanish,\nGerman, Hindi, French, Chinese, Russian, and Japanese, with varying levels of\nprogress. If you speak a language other than English, your help with\ntranslating Zulip would be greatly appreciated!",
-        "title": "Translation Guidelines — Zulip 1.7.1+git documentation"
+        "title": "Translation guidelines — Zulip 1.7.1+git documentation"
     }
 }

@@ -2,11 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const people = zrequire("people");
 
@@ -17,7 +16,7 @@ let pills = {
     pill: {},
 };
 
-run_test("pills", (override) => {
+run_test("pills", ({override}) => {
     override(compose_actions, "update_placeholder_text", () => {});
 
     const othello = {
@@ -38,6 +37,10 @@ run_test("pills", (override) => {
         full_name: "Hamlet",
     };
 
+    people.add_active_user(othello);
+    people.add_active_user(iago);
+    people.add_active_user(hamlet);
+
     people.get_realm_users = () => [iago, othello, hamlet];
 
     const recipient_stub = $("#private_message_recipient");
@@ -49,7 +52,7 @@ run_test("pills", (override) => {
 
     pills.appendValidatedData = (item) => {
         const id = item.user_id;
-        assert(!all_pills.has(id));
+        assert.ok(!all_pills.has(id));
         all_pills.set(id, item);
     };
     pills.items = () => Array.from(all_pills.values());
@@ -102,24 +105,36 @@ run_test("pills", (override) => {
     function test_create_item(handler) {
         (function test_rejection_path() {
             const item = handler(othello.email, pills.items());
-            assert(get_by_email_called);
+            assert.ok(get_by_email_called);
             assert.equal(item, undefined);
         })();
 
         (function test_success_path() {
             get_by_email_called = false;
             const res = handler(iago.email, pills.items());
-            assert(get_by_email_called);
+            assert.ok(get_by_email_called);
             assert.equal(typeof res, "object");
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
+        })();
+
+        (function test_deactivated_pill() {
+            people.deactivate(iago);
+            get_by_email_called = false;
+            const res = handler(iago.email, pills.items());
+            assert.ok(get_by_email_called);
+            assert.equal(typeof res, "object");
+            assert.equal(res.user_id, iago.user_id);
+            assert.equal(res.display_value, iago.full_name + " (deactivated)");
+            assert.ok(res.deactivated);
+            people.add_active_user(iago);
         })();
     }
 
     function input_pill_stub(opts) {
         assert.equal(opts.container, pill_container_stub);
         create_item_handler = opts.create_item_from_text;
-        assert(create_item_handler);
+        assert.ok(create_item_handler);
         return pills;
     }
 
@@ -137,7 +152,7 @@ run_test("pills", (override) => {
     };
 
     compose_pm_pill.initialize();
-    assert(compose_pm_pill.widget);
+    assert.ok(compose_pm_pill.widget);
 
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
@@ -153,17 +168,19 @@ run_test("pills", (override) => {
 
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
-    assert.deepEqual(items, [{email: "iago@zulip.com", user_id: 2, full_name: "Iago"}]);
+    assert.deepEqual(items, [
+        {email: "iago@zulip.com", user_id: 2, full_name: "Iago", is_moderator: false},
+    ]);
 
     test_create_item(create_item_handler);
 
     compose_pm_pill.set_from_emails("othello@example.com");
-    assert(compose_pm_pill.widget);
+    assert.ok(compose_pm_pill.widget);
 
-    assert(get_by_user_id_called);
-    assert(pills_cleared);
-    assert(appendValue_called);
-    assert(text_cleared);
+    assert.ok(get_by_user_id_called);
+    assert.ok(pills_cleared);
+    assert.ok(appendValue_called);
+    assert.ok(text_cleared);
 });
 
 run_test("has_unconverted_data", () => {

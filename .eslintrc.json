@@ -15,6 +15,10 @@
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
+    "plugins": ["formatjs"],
+    "settings": {
+        "additionalFunctionNames": ["$t", "$t_html"]
+    },
     "reportUnusedDisableDirectives": true,
     "rules": {
         "array-callback-return": "error",
@@ -24,6 +28,12 @@
         "curly": "error",
         "dot-notation": "error",
         "eqeqeq": "error",
+        "formatjs/enforce-default-message": ["error", "literal"],
+        "formatjs/enforce-placeholders": [
+            "error",
+            {"ignoreList": ["b", "code", "em", "i", "kbd", "p", "strong"]}
+        ],
+        "formatjs/no-id": "error",
         "guard-for-in": "error",
         "import/extensions": "error",
         "import/first": "error",
@@ -87,6 +97,7 @@
             }
         ],
         "radix": "error",
+        "sort-imports": ["error", {"ignoreDeclarationSort": true}],
         "spaced-comment": ["error", "always", {"markers": ["/"]}],
         "strict": "error",
         "unicorn/consistent-function-scoping": "off",
@@ -97,6 +108,9 @@
         "unicorn/no-process-exit": "off",
         "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "off",
+        "unicorn/numeric-separators-style": "off",
+        "unicorn/prefer-module": "off",
+        "unicorn/prefer-node-protocol": "off",
         "unicorn/prefer-spread": "off",
         "unicorn/prefer-ternary": "off",
         "unicorn/prevent-abbreviations": "off",
@@ -114,8 +128,7 @@
         {
             "files": ["static/js/**"],
             "globals": {
-                "StripeCheckout": false,
-                "zxcvbn": false
+                "StripeCheckout": false
             }
         },
         {
@@ -124,11 +137,15 @@
             "parserOptions": {
                 "project": "tsconfig.json"
             },
+            "globals": {
+                "JQuery": false
+            },
             "rules": {
                 // Disable base rule to avoid conflict
                 "no-duplicate-imports": "off",
                 "no-unused-vars": "off",
                 "no-useless-constructor": "off",
+                "no-use-before-define": "off",
 
                 "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/await-thenable": "error",
@@ -172,7 +189,10 @@
                 "window": false
             },
             "rules": {
-                "no-sync": "off"
+                "formatjs/no-id": "off",
+                "new-cap": "off",
+                "no-sync": "off",
+                "unicorn/prefer-prototype-methods": "off"
             }
         },
         {

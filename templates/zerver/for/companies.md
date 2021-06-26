@@ -53,7 +53,7 @@ Zulip teams are still snappy at thousands of users.
 
 ### Hundreds of integrations.
 
-Get events from GitHub, Stripe, Travis CI, JIRA, and
+Get events from GitHub, Stripe, Travis CI, Jira, and
 [hundreds of other tools](/integrations) right in Zulip. Use topics to give
 each issue or decision its own place for discussion. Link to tickets in
 external sites with

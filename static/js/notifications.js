@@ -7,7 +7,7 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
@@ -91,14 +91,16 @@ export function initialize() {
 }
 
 function update_notification_sound_source() {
-    const audio_file_without_extension =
-        "/static/audio/notification_sounds/" + page_params.notification_sound;
+    const notification_sound = page_params.notification_sound;
+    const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
     $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
     $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
 
-    // Load it so that it is ready to be played; without this the old sound
-    // is played.
-    $("#notification-sound-audio")[0].load();
+    if (notification_sound !== "none") {
+        // Load it so that it is ready to be played; without this the old sound
+        // is played.
+        $("#notification-sound-audio")[0].load();
+    }
 }
 
 export function permission_state() {
@@ -415,6 +417,12 @@ export function should_send_desktop_notification(message) {
 }
 
 export function should_send_audible_notification(message) {
+    // If `None` is selected as the notification sound, never send
+    // audible notifications regardless of other configuration.
+    if (page_params.notification_sound === "none") {
+        return false;
+    }
+
     // For streams, ding if sounds are enabled for all messages on
     // this stream.
     if (
@@ -509,14 +517,18 @@ function get_message_header(message) {
         return message.stream + " > " + message.topic;
     }
     if (message.display_recipient.length > 2) {
-        return i18n.t("group private messages with __- recipient__", {
-            recipient: message.display_reply_to,
-        });
+        return $t(
+            {defaultMessage: "group private messages with {recipient}"},
+            {recipient: message.display_reply_to},
+        );
     }
     if (people.is_current_user(message.reply_to)) {
-        return i18n.t("private messages with yourself");
+        return $t({defaultMessage: "private messages with yourself"});
     }
-    return i18n.t("private messages with __- recipient__", {recipient: message.display_reply_to});
+    return $t(
+        {defaultMessage: "private messages with {recipient}"},
+        {recipient: message.display_reply_to},
+    );
 }
 
 export function get_local_notify_mix_reason(message) {
@@ -528,11 +540,11 @@ export function get_local_notify_mix_reason(message) {
     }
 
     if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
-        return i18n.t("Sent! Your message was sent to a topic you have muted.");
+        return $t({defaultMessage: "Sent! Your message was sent to a topic you have muted."});
     }
 
     if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
-        return i18n.t("Sent! Your message was sent to a stream you have muted.");
+        return $t({defaultMessage: "Sent! Your message was sent to a stream you have muted."});
     }
 
     // offscreen because it is outside narrow
@@ -544,7 +556,7 @@ export function get_local_notify_mix_reason(message) {
         current_filter.can_apply_locally() &&
         !current_filter.predicate()(message)
     ) {
-        return i18n.t("Sent! Your message is outside your current narrow.");
+        return $t({defaultMessage: "Sent! Your message is outside your current narrow."});
     }
 
     return undefined;
@@ -583,7 +595,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         if (!reason) {
             if (need_user_to_scroll) {
-                reason = i18n.t("Sent! Scroll down to view your message.");
+                reason = $t({defaultMessage: "Sent! Scroll down to view your message."});
                 notify_above_composebox(reason, "", null, "");
                 setTimeout(() => {
                     $("#out-of-view-notification").hide();
@@ -597,9 +609,10 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         const link_msg_id = message.id;
         const link_class = "compose_notification_narrow_by_topic";
-        const link_text = i18n.t("Narrow to __- message_recipient__", {
-            message_recipient: get_message_header(message),
-        });
+        const link_text = $t(
+            {defaultMessage: "Narrow to {message_recipient}"},
+            {message_recipient: get_message_header(message)},
+        );
 
         notify_above_composebox(reason, link_class, link_msg_id, link_text);
     }
@@ -612,11 +625,12 @@ export function notify_messages_outside_current_search(messages) {
         if (!people.is_current_user(message.sender_email)) {
             continue;
         }
-        const link_text = i18n.t("Narrow to __- message_recipient__", {
-            message_recipient: get_message_header(message),
-        });
+        const link_text = $t(
+            {defaultMessage: "Narrow to {message_recipient}"},
+            {message_recipient: get_message_header(message)},
+        );
         notify_above_composebox(
-            i18n.t("Sent! Your recent message is outside the current search."),
+            $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
             "compose_notification_narrow_by_topic",
             message.id,
             link_text,

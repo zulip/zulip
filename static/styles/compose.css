@@ -1,8 +1,11 @@
 #compose_buttons {
     text-align: right;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 
     .new_message_button {
-        padding-top: 1.1em;
+        margin-left: 4px;
 
         .button.small {
             font-size: 1em;
@@ -16,42 +19,50 @@
                 font-weight: 400;
                 line-height: 1em;
             }
-
-            @media (width >= $sm_min) {
-                display: none;
-            }
         }
 
         .message-control-link {
             float: left;
         }
+    }
 
-        .alert-draft {
-            font-size: 14px;
-            color: hsl(170, 48%, 54%);
-            padding: 3px 12px;
-            font-weight: 400;
+    .reply_button_container {
+        flex: 1;
+        min-width: 0;
+        margin-left: 0;
+
+        .compose_reply_button {
+            width: 100%;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            .compose_reply_button_recipient_label {
+                color: hsl(215, 47%, 30%);
+            }
+        }
+    }
+
+    .mobile_button_container {
+        @media (width >= $sm_min) {
             display: none;
         }
+    }
 
+    .stream_button_container,
+    .private_button_container {
         @media (width < $sm_min) {
-            .compose_stream_button,
-            .compose_private_button {
-                display: none;
-            }
+            display: none;
         }
     }
 }
 
-.compose-content {
+/* Main geometry for this element is in zulip.css */
+#compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
-
-    padding: 8px 10px 8px 10px;
-    margin-left: 250px;
-    margin-right: 250px;
-    position: relative;
-
+    padding: 4px 4px 8px 4px;
     border-left: 1px solid hsl(0, 0%, 93%);
     border-right: 1px solid hsl(0, 0%, 93%);
 }
@@ -130,7 +141,7 @@
     .message-control-link {
         position: relative;
         margin-right: 5px;
-        top: 2px;
+        top: 3px;
     }
 }
 
@@ -177,6 +188,7 @@
     display: none;
     position: absolute;
     right: 0;
+    opacity: 0.7;
 }
 
 #compose_invite_users,
@@ -240,13 +252,6 @@ div[id^="message-edit-send-status"],
 #compose-send-status .progress {
     height: 10px;
     margin-bottom: 10px;
-}
-
-#nonexistent_stream_reply_error {
-    padding: 8px 14px 8px 14px;
-    margin-bottom: 8px;
-    line-height: 20px;
-    display: none;
 }
 
 /* Like .alert .close */
@@ -398,14 +403,20 @@ input.recipient_box {
     display: inline-block;
 }
 
-a.message-control-button {
+.compose_giphy_link .compose_gif_icon {
+    position: relative;
+    font-size: 23px;
+    top: -4px;
+}
+
+a.compose_control_button {
     display: block;
-    opacity: 0.4;
+    opacity: 0.7;
     color: inherit;
     text-decoration: none;
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+    font-size: 15px;
+    width: auto;
+    height: 15px;
     margin-right: 8px;
     padding-top: 5px;
     text-align: center;
@@ -414,6 +425,14 @@ a.message-control-button {
     &:hover {
         opacity: 1;
     }
+}
+
+/* This is used to override the
+ * properties of `a.compose_control_button`
+ * without using `!important`.
+ */
+a.compose_control_button.hide {
+    display: none;
 }
 
 .drag {
@@ -439,10 +458,11 @@ a.message-control-button {
     /* minus 5px padding. */
     width: calc(100% - 12px);
     padding: 5px;
+    margin-top: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
-    min-height: 36px;
+    min-height: 42px;
     overflow: auto;
 
     border: 1px solid hsl(0, 0%, 67%);
@@ -451,18 +471,7 @@ a.message-control-button {
     cursor: not-allowed;
 }
 
-#preview_message_area {
-    margin-top: 5px;
-    min-height: 42px;
-}
-
-a#undo_markdown_preview {
-    text-decoration: none;
-    position: relative;
-    font-size: 15px;
-}
-
-#markdown_preview_spinner {
+.markdown_preview_spinner {
     margin: auto;
 }
 
@@ -499,13 +508,13 @@ a#undo_markdown_preview {
 
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
-    .compose-content {
+    #compose-content {
         margin-right: 7px;
     }
 }
 
 @media (width < $md_min) {
-    .compose-content {
+    #compose-content {
         margin-right: 7px;
         margin-left: 7px;
     }
@@ -517,7 +526,7 @@ a#undo_markdown_preview {
         min-width: 95px;
     }
 
-    .compose-content {
+    #compose-content {
         margin-right: 5px;
         margin-left: 5px;
     }

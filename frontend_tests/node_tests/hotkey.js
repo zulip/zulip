@@ -3,7 +3,6 @@
 const {strict: assert} = require("assert");
 
 const {
-    mock_cjs,
     mock_esm,
     set_global,
     with_field,
@@ -12,8 +11,6 @@ const {
 } = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
 
 // Important note on these tests:
 
@@ -40,7 +37,6 @@ set_global("navigator", {
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-mock_cjs("jquery", $);
 const browser_history = mock_esm("../../static/js/browser_history");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const condense = mock_esm("../../static/js/condense");
@@ -74,11 +70,17 @@ const popovers = mock_esm("../../static/js/popovers", {
 });
 const reactions = mock_esm("../../static/js/reactions");
 const search = mock_esm("../../static/js/search");
+const settings_data = mock_esm("../../static/js/settings_data");
 const stream_list = mock_esm("../../static/js/stream_list");
 const subs = mock_esm("../../static/js/subs");
 
-mock_esm("../../static/js/hashchange", {
-    in_recent_topics_hash: () => false,
+mock_esm("../../static/js/hotspots", {
+    is_open: () => false,
+});
+
+mock_esm("../../static/js/recent_topics_util", {
+    is_visible: () => false,
+    is_in_focus: () => false,
 });
 
 mock_esm("../../static/js/stream_popover", {
@@ -86,15 +88,6 @@ mock_esm("../../static/js/stream_popover", {
     topic_popped: () => false,
     all_messages_popped: () => false,
     starred_messages_popped: () => false,
-});
-
-mock_esm("../../static/js/hotspots", {
-    is_open: () => false,
-});
-
-mock_esm("../../static/js/recent_topics", {
-    is_visible: () => false,
-    is_in_focus: () => false,
 });
 
 message_lists.current = {
@@ -237,7 +230,7 @@ function process(s) {
 
 function assert_mapping(c, module, func_name, shiftKey) {
     stubbing(module, func_name, (stub) => {
-        assert(process(c, shiftKey));
+        assert.ok(process(c, shiftKey));
         assert.equal(stub.num_calls, 1);
     });
 }
@@ -256,7 +249,7 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", (override) => {
+run_test("allow normal typing when processing text", ({override}) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
@@ -284,14 +277,14 @@ run_test("allow normal typing when processing text", (override) => {
     }
 });
 
-run_test("streams", (override) => {
-    page_params.can_create_streams = true;
+run_test("streams", ({override}) => {
+    settings_data.user_can_create_streams = () => true;
     override(overlays, "streams_open", () => true);
     override(overlays, "is_active", () => true);
     assert_mapping("S", subs, "keyboard_sub");
     assert_mapping("V", subs, "view_stream");
     assert_mapping("n", subs, "open_create_stream");
-    page_params.can_create_streams = false;
+    settings_data.user_can_create_streams = () => false;
     assert_unmapped("n");
 });
 
@@ -310,21 +303,21 @@ run_test("basic mappings", () => {
     assert_mapping("g", gear_menu, "open");
 });
 
-run_test("drafts open", (override) => {
+run_test("drafts open", ({override}) => {
     override(overlays, "is_active", () => true);
     override(overlays, "drafts_open", () => true);
     assert_mapping("d", overlays, "close_overlay");
 });
 
-run_test("drafts closed w/other overlay", (override) => {
+run_test("drafts closed w/other overlay", ({override}) => {
     override(overlays, "is_active", () => true);
     override(overlays, "drafts_open", () => false);
     test_normal_typing();
 });
 
-run_test("drafts closed launch", (override) => {
+run_test("drafts closed launch", ({override}) => {
     override(overlays, "is_active", () => false);
-    assert_mapping("d", drafts, "launch");
+    assert_mapping("d", browser_history, "go_to_location");
 });
 
 run_test("misc", () => {
@@ -363,24 +356,24 @@ run_test("misc", () => {
     assert_mapping("e", message_edit, "start");
 });
 
-run_test("lightbox overlay open", (override) => {
+run_test("lightbox overlay open", ({override}) => {
     override(overlays, "is_active", () => true);
     override(overlays, "lightbox_open", () => true);
     assert_mapping("v", overlays, "close_overlay");
 });
 
-run_test("lightbox closed w/other overlay open", (override) => {
+run_test("lightbox closed w/other overlay open", ({override}) => {
     override(overlays, "is_active", () => true);
     override(overlays, "lightbox_open", () => false);
     test_normal_typing();
 });
 
-run_test("v w/no overlays", (override) => {
+run_test("v w/no overlays", ({override}) => {
     override(overlays, "is_active", () => false);
     assert_mapping("v", lightbox, "show_from_selected_message");
 });
 
-run_test("emoji picker", (override) => {
+run_test("emoji picker", ({override}) => {
     override(emoji_picker, "reactions_popped", () => true);
     assert_mapping(":", emoji_picker, "navigate", true);
 });
@@ -436,7 +429,7 @@ run_test("motion_keys", () => {
 
     function assert_mapping(key_name, module, func_name) {
         stubbing(module, func_name, (stub) => {
-            assert(process(key_name));
+            assert.ok(process(key_name));
             assert.equal(stub.num_calls, 1);
         });
     }

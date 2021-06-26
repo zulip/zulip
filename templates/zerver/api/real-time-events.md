@@ -13,8 +13,8 @@ The simplest way to use Zulip's real-time events API is by using
 `call_on_each_event` from our Python bindings.  You just need to write
 a Python function (in the examples below, the `lambda`s) and pass it
 into `call_on_each_event`; your function will be called whenever a new
-event matching the specific `event_type` and/or `narrow` parameters
-occurs in Zulip.
+event matching the specified parameters (`event_types`, `narrow`,
+etc.) occurs in Zulip.
 
 `call_on_each_event` takes care of all the potentially tricky details
 of long-polling, error handling, exponential backoff in retries, etc.

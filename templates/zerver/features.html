@@ -1,7 +1,7 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-{% set OPEN_GRAPH_TITLE = 'Zulip Features' %}
+{% set OPEN_GRAPH_TITLE = 'Zulip features' %}
 {% set OPEN_GRAPH_DESCRIPTION = 'First class threading on top of everything you could want from real-time chat.' %}
 
 {% block portico_content %}
@@ -27,8 +27,15 @@
                     Express your ideas clearly with bulleted lists,
                     bold, italics,
                     and <a href="/help/format-your-message-using-markdown">much
-                    more</a>.  Zulip even supports discussing math
-                    with LaTeX.
+                    more</a>.
+
+                    <a href="/help/format-your-message-using-markdown#quote">Quote
+                    blocks</a>,
+                    <a href="/help/format-your-message-using-markdown#spoilers">spoilers</a>,
+                    <a href="/help/format-your-message-using-markdown#latex">LaTeX/math blocks</a>
+                    and
+                    <a href="/help/create-a-poll">polls</a> make it
+                    easy to discuss ideas and make decisions in one place.
                 </p>
             </div>
             <div class="feature-block">
@@ -49,11 +56,13 @@
                 </p>
             </div>
             <div class="feature-block">
-                <h3>CODE AND QUOTE BLOCKS</h3>
+                <h3>CODE BLOCKS</h3>
                 <p>
-                    Discuss code with ease using Markdown code blocks
-                    (and syntax highlighting).  And discuss blocks of
-                    text with ease with block quotes.
+                    Discuss code with ease using Markdown code blocks,
+                    syntax highlighting, and
+                    <a href="/help/code-blocks#code-playgrounds">code playgrounds</a>.
+
+
                 </p>
             </div>
             <div class="feature-block">
@@ -184,20 +193,19 @@
             <p>Enjoy the benefits of threaded conversations while
             controlling your audience and privacy.</p>
         </a>
-        <div class="feature-block">
-            <h3>PERSISTENCE</h3>
-            <p>We’re always receiving messages for you, even when
-            you’re logged out or away from your computer.</p>
-        </div>
+        <a class="feature-block" href="/help/mute-a-user" target="_blank" rel="noopener noreferrer">
+            <h3>MUTE USER</h3>
+            <p>Users can mute anyone they'd rather not interact with.</p>
+        </a>
         <a class="feature-block" href="/help/edit-or-delete-a-message" target="_blank" rel="noopener noreferrer">
             <h3>MESSAGE EDITING</h3>
             <p>Don’t worry, you can always fix that typo, either in
             the body of message or its topic.</p>
         </a>
-        <div class="feature-block">
+        <a class="feature-block" href="/help/status-and-availability#typing-notifications" target="_blank" rel="noopener noreferrer">
             <h3>TYPING NOTIFICATIONS</h3>
             <p>Know when other users are composing messages to you.</p>
-        </div>
+        </a>
         <a class="feature-block" href="/help/view-and-edit-your-message-drafts" target="_blank" rel="noopener noreferrer">
             <h3>SAVED DRAFTS</h3>
             <p>Zulip’s drafts make it easy to write longer messages
@@ -264,7 +272,7 @@
         <a class="feature-block" href="/help/create-your-organization-profile" target="_blank" rel="noopener noreferrer">
             <h3>CUSTOM BRANDING</h3>
             <p>
-                Use your logo instead of Zulip’s in the desktop and webapp.
+                Use your logo instead of Zulip’s in the desktop and web app.
             </p>
         </a>
         <a class="feature-block" href="/integrations/communication" target="_blank" rel="noopener noreferrer">
@@ -285,6 +293,13 @@
             <p>
                 No vendor lock-in. Export your hosted Zulip to an
                 on-premises installation at any time.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/animated-gifs-from-giphy" target="_blank" rel="noopener noreferrer">
+            <h3>GIPHY INTEGRATION</h3>
+            <p>
+                Enjoy animated GIFs with Zulip's native GIPHY
+                integration.
             </p>
         </a>
         <a class="feature-block" href="https://github.com/zulip/zulip/" target="_blank" rel="noopener noreferrer">

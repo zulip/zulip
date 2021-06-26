@@ -2,19 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
 mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
 const all_messages_data = mock_esm("../../static/js/all_messages_data");
 const channel = mock_esm("../../static/js/channel");
-const compose = mock_esm("../../static/js/compose");
 const compose_actions = mock_esm("../../static/js/compose_actions");
+const compose_closed_ui = mock_esm("../../static/js/compose_closed_ui");
 const hashchange = mock_esm("../../static/js/hashchange");
 const message_fetch = mock_esm("../../static/js/message_fetch");
 const message_list = mock_esm("../../static/js/message_list", {
@@ -38,8 +36,7 @@ const top_left_corner = mock_esm("../../static/js/top_left_corner");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui_util = mock_esm("../../static/js/ui_util");
 const unread_ops = mock_esm("../../static/js/unread_ops");
-mock_esm("../../static/js/recent_topics", {
-    hide: () => {},
+mock_esm("../../static/js/recent_topics_util", {
     is_visible: () => {},
 });
 
@@ -79,6 +76,7 @@ function test_helper() {
     }
 
     stub(compose_actions, "on_narrow");
+    stub(compose_closed_ui, "update_reply_recipient_label");
     stub(hashchange, "save_narrow");
     stub(message_scroll, "hide_indicators");
     stub(message_scroll, "show_loading_older");
@@ -92,8 +90,8 @@ function test_helper() {
     stub(typing_events, "render_notifications_for_narrow");
     stub(ui_util, "change_tab_to");
     stub(unread_ops, "process_visible");
-    stub(compose, "update_closed_compose_buttons_for_stream");
-    stub(compose, "update_closed_compose_buttons_for_private");
+    stub(compose_closed_ui, "update_buttons_for_stream");
+    stub(compose_closed_ui, "update_buttons_for_private");
 
     return {
         clear: () => {
@@ -201,7 +199,8 @@ run_test("basics", () => {
         [ui_util, "change_tab_to"],
         [unread_ops, "process_visible"],
         [hashchange, "save_narrow"],
-        [compose, "update_closed_compose_buttons_for_stream"],
+        [compose_closed_ui, "update_buttons_for_stream"],
+        [compose_closed_ui, "update_reply_recipient_label"],
         [search, "update_button_visibility"],
         [compose_actions, "on_narrow"],
         [top_left_corner, "handle_narrow_activated"],

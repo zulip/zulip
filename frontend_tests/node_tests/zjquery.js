@@ -37,11 +37,11 @@ run_test("basics", () => {
     }
 
     // Before we call show_my_form, we can assert that my-form is hidden:
-    assert(!$("#my-form").visible());
+    assert.ok(!$("#my-form").visible());
 
     // Then calling show_my_form() should make it visible.
     show_my_form();
-    assert($("#my-form").visible());
+    assert.ok($("#my-form").visible());
 
     // Next, look at how several functions correctly simulate setting
     // and getting for you.
@@ -62,8 +62,8 @@ run_test("basics", () => {
     widget.html("<b>hello</b>");
     assert.equal(widget.html(), "<b>hello</b>");
 
-    widget.prop("title", "My Widget");
-    assert.equal(widget.prop("title"), "My Widget");
+    widget.prop("title", "My widget");
+    assert.equal(widget.prop("title"), "My widget");
 
     widget.val("42");
     assert.equal(widget.val(), "42");
@@ -108,7 +108,7 @@ run_test("finding_related_objects", () => {
 
     elem.set_parents_result(".folder", my_parents);
     elem.parents(".folder").addClass("active");
-    assert(my_parents.hasClass("active"));
+    assert.ok(my_parents.hasClass("active"));
 });
 
 run_test("clicks", () => {
@@ -128,8 +128,8 @@ run_test("clicks", () => {
 
     // Setting up the click handlers doesn't change state right away.
     set_up_click_handlers();
-    assert(!state.clicked);
-    assert(!state.keydown);
+    assert.ok(!state.clicked);
+    assert.ok(!state.keydown);
 
     // But we can simulate clicks.
     $("#widget1").trigger("click");
@@ -192,8 +192,8 @@ run_test("create", () => {
     const obj2 = $.create("the collection of rows in the table");
 
     obj1.show();
-    assert(obj1.visible());
+    assert.ok(obj1.visible());
 
     obj2.addClass(".striped");
-    assert(obj2.hasClass(".striped"));
+    assert.ok(obj2.hasClass(".striped"));
 });

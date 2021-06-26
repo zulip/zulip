@@ -38,7 +38,6 @@ class Command(BaseCommand):
             os.makedirs(dest_dir)
 
         with open(options["destination"], "wb") as result:
-            result.write(b"[")
             messages = Message.objects.filter(id__gt=latest - amount, id__lte=latest).order_by("id")
             for message in queryset_iterator(messages):
                 content = message.content
@@ -59,9 +58,7 @@ class Command(BaseCommand):
                         {
                             "id": message.id,
                             "content": render_markdown(message, content),
-                        }
+                        },
+                        option=orjson.OPT_APPEND_NEWLINE,
                     )
                 )
-                if message.id != latest:
-                    result.write(b",")
-            result.write(b"]")

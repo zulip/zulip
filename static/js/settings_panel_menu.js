@@ -62,14 +62,21 @@ export class SettingsPanelMenu {
     }
 
     set_key_handlers(toggler) {
+        const {vim_left, vim_right, vim_up, vim_down} = keydown_util;
         keydown_util.handle({
             elem: this.main_elem,
             handlers: {
-                left_arrow: toggler.maybe_go_left,
-                right_arrow: toggler.maybe_go_right,
-                enter_key: () => this.enter_panel(),
-                up_arrow: () => this.prev(),
-                down_arrow: () => this.next(),
+                ArrowLeft: toggler.maybe_go_left,
+                ArrowRight: toggler.maybe_go_right,
+                Enter: () => this.enter_panel(),
+                ArrowUp: () => this.prev(),
+                ArrowDown: () => this.next(),
+
+                // Binding vim keys as well
+                [vim_left]: toggler.maybe_go_left,
+                [vim_right]: toggler.maybe_go_right,
+                [vim_up]: () => this.prev(),
+                [vim_down]: () => this.next(),
             },
         });
     }
@@ -114,7 +121,9 @@ export class SettingsPanelMenu {
         this.curr_li.addClass("active");
 
         const settings_section_hash = "#" + this.hash_prefix + section;
-        browser_history.update(settings_section_hash);
+
+        // It could be that the hash has already been set.
+        browser_history.update_hash_internally_if_required(settings_section_hash);
 
         $(".settings-section").removeClass("show");
 

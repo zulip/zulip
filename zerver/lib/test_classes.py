@@ -6,7 +6,22 @@ import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
+from datetime import timedelta
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 from unittest import TestResult, mock
 
 import lxml.html
@@ -24,19 +39,23 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
+from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_send_message,
     check_send_stream_message,
+    do_set_realm_property,
     gather_subscriptions,
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
@@ -74,6 +93,7 @@ from zerver.models import (
     get_user_by_delivery_email,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
+from zerver.tornado import django_api as django_tornado_api
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -184,7 +204,7 @@ Output:
             # An API request; use mobile as the default user agent
             default_user_agent = "ZulipMobile/26.22.145 (iOS 10.3.1)"
         else:
-            # A webapp request; use a browser User-Agent string.
+            # A web app request; use a browser User-Agent string.
             default_user_agent = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 + "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -479,7 +499,7 @@ Output:
         self.assert_json_error(result, assert_json_error_msg)
 
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
-        """Helper for parsing page_params after fetching the webapp's home view."""
+        """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
         [div] = doc.xpath("//div[@id='page-params']")
         page_params_json = div.get("data-params")
@@ -488,22 +508,22 @@ Output:
 
     def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
-        and not for a logged-out web-public visitor."""
+        and not for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_visitor` to verify
+        # It is important to check `is_spectator` to verify
         # that we treated this request as a normal logged-in session,
-        # not as a web-public visitor.
-        self.assertEqual(page_params["is_web_public_visitor"], False)
+        # not as a spectator.
+        self.assertEqual(page_params["is_spectator"], False)
 
-    def check_rendered_web_public_visitor(self, result: HttpResponse) -> None:
+    def check_rendered_spectator(self, result: HttpResponse) -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
-        for a logged-out web-public visitor."""
+        for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_visitor` to verify
-        # that we treated this request to render for a `web_public_visitor`
-        self.assertEqual(page_params["is_web_public_visitor"], True)
+        # It is important to check `is_spectator` to verify
+        # that we treated this request to render for a `spectator`
+        self.assertEqual(page_params["is_spectator"], True)
 
     def login_with_return(
         self, email: str, password: Optional[str] = None, **kwargs: Any
@@ -588,7 +608,7 @@ Output:
     def submit_reg_form_for_user(
         self,
         email: str,
-        password: str,
+        password: Optional[str],
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
         from_confirmation: str = "",
@@ -596,7 +616,7 @@ Output:
         timezone: str = "",
         realm_in_root_domain: Optional[str] = None,
         default_stream_groups: Sequence[str] = [],
-        source_realm: str = "",
+        source_realm_id: str = "",
         key: Optional[str] = None,
         **kwargs: Any,
     ) -> HttpResponse:
@@ -612,7 +632,6 @@ Output:
             full_name = email.replace("@", "_")
         payload = {
             "full_name": full_name,
-            "password": password,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "key": key if key is not None else find_key_by_email(email),
@@ -620,8 +639,10 @@ Output:
             "terms": True,
             "from_confirmation": from_confirmation,
             "default_stream_group": default_stream_groups,
-            "source_realm": source_realm,
+            "source_realm_id": source_realm_id,
         }
+        if password is not None:
+            payload["password"] = password
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post("/accounts/register/", payload, **kwargs)
@@ -631,6 +652,8 @@ Output:
         email_address: str,
         *,
         url_pattern: Optional[str] = None,
+        email_subject_contains: Optional[str] = None,
+        email_body_contains: Optional[str] = None,
     ) -> str:
         from django.core.mail import outbox
 
@@ -643,6 +666,13 @@ Output:
             ):
                 match = re.search(url_pattern, message.body)
                 assert match is not None
+
+                if email_subject_contains:
+                    self.assertIn(email_subject_contains, message.subject)
+
+                if email_body_contains:
+                    self.assertIn(email_body_contains, message.body)
+
                 [confirmation_url] = match.groups()
                 return confirmation_url
         else:
@@ -833,7 +863,7 @@ Output:
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
         return json
 
-    def get_json_error(self, result: HttpResponse, status_code: int = 400) -> Dict[str, Any]:
+    def get_json_error(self, result: HttpResponse, status_code: int = 400) -> str:
         try:
             json = orjson.loads(result.content)
         except orjson.JSONDecodeError:  # nocoverage
@@ -849,14 +879,14 @@ Output:
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, items: List[Any], count: int) -> None:
+    def assert_length(self, items: Collection[Any], count: int) -> None:
         actual_count = len(items)
         if actual_count != count:  # nocoverage
-            print("ITEMS:\n")
+            print("\nITEMS:\n")
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError("List is unexpected size!")
+            raise AssertionError(f"{str(type(items))} is of unexpected size!")
 
     def assert_json_error_contains(
         self, result: HttpResponse, msg_substring: str, status_code: int = 400
@@ -959,13 +989,13 @@ Output:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
-        bulk_add_subscriptions(realm, [stream], [user_profile])
+        bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
         client = get_client("website")
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream], client)
+        bulk_remove_subscriptions([user_profile], [stream], client, acting_user=None)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(
@@ -993,7 +1023,7 @@ Output:
         streams = sorted(streams, key=lambda x: x.name)
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
 
-        self.assertEqual(len(subscribed_streams), len(streams))
+        self.assert_length(subscribed_streams, len(streams))
 
         for x, y in zip(subscribed_streams, streams):
             self.assertEqual(x["name"], y.name)
@@ -1150,6 +1180,15 @@ Output:
 
         self.mock_ldap.directory[dn][attr_name] = [data]
 
+    def remove_ldap_user_attr(self, username: str, attr_name: str) -> None:
+        """
+        Method for removing the value of an attribute of a user entry in the mock
+        directory. This changes the attribute only for the specific test function
+        that calls this method, and is isolated from other tests.
+        """
+        dn = f"uid={username},ou=users,dc=zulip,dc=com"
+        self.mock_ldap.directory[dn].pop(attr_name, None)
+
     def ldap_username(self, username: str) -> str:
         """
         Maps Zulip username to the name of the corresponding LDAP user
@@ -1179,6 +1218,148 @@ Output:
         """
         # See email_display_from, above.
         return email_message.from_email
+
+    def check_has_permission_policies(
+        self, policy: str, validation_func: Callable[[UserProfile], bool]
+    ) -> None:
+
+        realm = get_realm("zulip")
+        admin_user = self.example_user("iago")
+        moderator_user = self.example_user("shiva")
+        member_user = self.example_user("hamlet")
+        new_member_user = self.example_user("othello")
+        guest_user = self.example_user("polonius")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
+        new_member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold - 1)
+        )
+        new_member_user.save()
+
+        member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold + 1)
+        )
+        member_user.save()
+
+        do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+    def subscribe_realm_to_manual_license_management_plan(
+        self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
+    ) -> Tuple[CustomerPlan, LicenseLedger]:
+        customer, _ = Customer.objects.get_or_create(realm=realm)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            automanage_licenses=False,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=billing_schedule,
+            tier=CustomerPlan.STANDARD,
+        )
+        ledger = LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=timezone_now(),
+            licenses=licenses,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+        realm.plan_type = Realm.STANDARD
+        realm.save(update_fields=["plan_type"])
+        return plan, ledger
+
+    def subscribe_realm_to_monthly_plan_on_manual_license_management(
+        self, realm: Realm, licenses: int, licenses_at_next_renewal: int
+    ) -> Tuple[CustomerPlan, LicenseLedger]:
+        return self.subscribe_realm_to_manual_license_management_plan(
+            realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
+        )
+
+    @contextmanager
+    def tornado_redirected_to_list(
+        self, lst: List[Mapping[str, Any]], expected_num_events: int
+    ) -> Iterator[None]:
+        lst.clear()
+        real_event_queue_process_notification = django_tornado_api.process_notification
+
+        # process_notification takes a single parameter called 'notice'.
+        # lst.append takes a single argument called 'object'.
+        # Some code might call process_notification using keyword arguments,
+        # so mypy doesn't allow assigning lst.append to process_notification
+        # So explicitly change parameter name to 'notice' to work around this problem
+        django_tornado_api.process_notification = lambda notice: lst.append(notice)
+
+        # Some `send_event` calls need to be executed only after the current transaction
+        # commits (using `on_commit` hooks). Because the transaction in Django tests never
+        # commits (rather, gets rolled back after the test completes), such events would
+        # never be sent in tests, and we would be unable to verify them. Hence, we use
+        # this helper to make sure the `send_event` calls actually run.
+        with self.captureOnCommitCallbacks(execute=True):
+            yield
+
+        django_tornado_api.process_notification = real_event_queue_process_notification
+
+        self.assert_length(lst, expected_num_events)
+
+    def create_user_notifications_data_object(
+        self, *, user_id: int, **kwargs: Any
+    ) -> UserMessageNotificationsData:
+        return UserMessageNotificationsData(
+            user_id=user_id,
+            flags=kwargs.get("flags", []),
+            mentioned=kwargs.get("mentioned", False),
+            online_push_enabled=kwargs.get("online_push_enabled", False),
+            stream_email_notify=kwargs.get("stream_email_notify", False),
+            stream_push_notify=kwargs.get("stream_push_notify", False),
+            wildcard_mention_notify=kwargs.get("wildcard_mention_notify", False),
+            sender_is_muted=kwargs.get("sender_is_muted", False),
+        )
+
+    def get_maybe_enqueue_notifications_parameters(
+        self, *, message_id: int, user_id: int, acting_user_id: int, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """
+        Returns a dictionary with the passed parameters, after filling up the
+        missing data with default values, for testing what was passed to the
+        `maybe_enqueue_notifications` method.
+        """
+        user_notifications_data = self.create_user_notifications_data_object(
+            user_id=user_id, **kwargs
+        )
+        return dict(
+            user_notifications_data=user_notifications_data,
+            message_id=message_id,
+            acting_user_id=acting_user_id,
+            private_message=kwargs.get("private_message", False),
+            stream_name=kwargs.get("stream_name", None),
+            idle=kwargs.get("idle", True),
+            already_notified=kwargs.get(
+                "already_notified", {"email_notified": False, "push_notified": False}
+            ),
+        )
 
 
 class WebhookTestCase(ZulipTestCase):

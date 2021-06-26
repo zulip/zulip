@@ -22,6 +22,8 @@ import "../desktop_integration";
 import "../zulip_test";
 
 // Import styles
+import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light-border.css";
 import "../../third/bootstrap-tooltip/tooltip.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
@@ -31,7 +33,7 @@ import "../../styles/components.css";
 import "../../styles/app_components.css";
 import "../../styles/rendered_markdown.css";
 import "../../styles/zulip.css";
-import "../../styles/alerts.css";
+import "../../styles/modal.css";
 import "../../styles/settings.css";
 import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";

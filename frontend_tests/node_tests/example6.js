@@ -13,7 +13,7 @@ const {run_test} = require("../zjsunit/test");
     second and just explore a contrived example.
 */
 
-run_test("explore make_stub", (override) => {
+run_test("explore make_stub", ({override}) => {
     // Let's say you have to test the following code.
 
     const app = {

@@ -2,9 +2,11 @@ from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.safestring import SafeString
+from django.utils.translation import get_language
 
 from version import (
     LATEST_MAJOR_VERSION,
@@ -12,7 +14,6 @@ from version import (
     LATEST_RELEASE_VERSION,
     ZULIP_VERSION,
 )
-from zerver.decorator import get_client_name
 from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
@@ -27,6 +28,11 @@ from zproject.backends import (
     password_auth_enabled,
     require_email_format_usernames,
 )
+
+DEFAULT_PAGE_PARAMS = {
+    "development_environment": settings.DEVELOPMENT,
+    "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
+}
 
 
 def common_context(user: UserProfile) -> Dict[str, Any]:
@@ -66,6 +72,12 @@ def get_valid_realm_from_request(request: HttpRequest) -> Realm:
     return realm
 
 
+def get_apps_page_url() -> str:
+    if settings.ZILENCER_ENABLED:
+        return "/apps/"
+    return "https://zulip.com/apps/"
+
+
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
     passed in.  Designed to provide the long list of variables at the
@@ -100,10 +112,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         find_team_link_disabled = False
         allow_search_engine_indexing = True
 
-    apps_page_url = "https://zulip.com/apps/"
-    if settings.ZILENCER_ENABLED:
-        apps_page_url = "/apps/"
-
     apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
 
     user_is_authenticated = False
@@ -124,10 +132,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
     )
 
-    # We can't use request.client here because we might not be using
-    # an auth decorator that sets it, but we can call its helper to
-    # get the same result.
-    platform = get_client_name(request)
+    default_page_params = {
+        **DEFAULT_PAGE_PARAMS,
+        "request_language": get_language(),
+    }
 
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
@@ -144,7 +152,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "realm_name": realm_name,
         "realm_icon": realm_icon,
         "root_domain_uri": settings.ROOT_DOMAIN_URI,
-        "apps_page_url": apps_page_url,
+        "apps_page_url": get_apps_page_url(),
         "apps_page_web": apps_page_web,
         "open_realm_creation": settings.OPEN_REALM_CREATION,
         "development_environment": settings.DEVELOPMENT,
@@ -158,9 +166,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,
-        "platform": platform,
+        "platform": request.client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
+        "default_page_params": default_page_params,
     }
 
     context["OPEN_GRAPH_URL"] = f"{realm_uri}{request.path}"

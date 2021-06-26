@@ -7,8 +7,9 @@ export function create_ajax_request(
     url,
     form_name,
     stripe_token = null,
-    numeric_inputs = [],
+    ignored_inputs = [],
     redirect_to = "/billing",
+    type = "POST",
 ) {
     const form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
@@ -32,18 +33,18 @@ export function create_ajax_request(
 
     const data = {};
     if (stripe_token) {
-        data.stripe_token = JSON.stringify(stripe_token.id);
+        data.stripe_token = stripe_token.id;
     }
 
     for (const item of form.serializeArray()) {
-        if (numeric_inputs.includes(item.name)) {
-            data[item.name] = item.value;
-        } else {
-            data[item.name] = JSON.stringify(item.value);
+        if (ignored_inputs.includes(item.name)) {
+            continue;
         }
+        data[item.name] = item.value;
     }
 
-    $.post({
+    $.ajax({
+        type,
         url,
         data,
         success() {

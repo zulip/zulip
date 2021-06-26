@@ -2,10 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
@@ -19,7 +18,6 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
 const message_lists = mock_esm("../../static/js/message_lists");
 mock_esm("../../static/js/reload_state", {
@@ -66,7 +64,7 @@ const server_events = zrequire("server_events");
 
 server_events.home_view_loaded();
 
-run_test("message_event", (override) => {
+run_test("message_event", ({override}) => {
     const event = {
         type: "message",
         message: {
@@ -82,7 +80,7 @@ run_test("message_event", (override) => {
     });
 
     server_events._get_events_success([event]);
-    assert(inserted);
+    assert.ok(inserted);
 });
 
 // Start blueslip tests here

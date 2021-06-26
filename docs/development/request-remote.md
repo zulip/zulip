@@ -11,7 +11,7 @@ development environment already set up.
 The machines (droplets) are being generously provided by
 [DigitalOcean](https://www.digitalocean.com/). Thank you DigitalOcean!
 
-## Step 1: Join GitHub and create SSH Keys
+## Step 1: Join GitHub and create SSH keys
 
 To contribute to Zulip and to use a remote Zulip developer instance, you'll
 need a GitHub account. If you don't already have one, sign up
@@ -63,13 +63,16 @@ Once your remote dev instance is ready:
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
 - While the dev server is running, you can see the Zulip server in your browser
-  at http://username.zulipdev.org:9991.
+  at http://zulip.username.zulipdev.org:9991.
+- The development server actually runs on all subdomains of
+  `username.zulipdev.org`; this is important for testing Zulip's
+  support for multiple organizations in your development server.
 
 Once you've confirmed you can connect to your remote server, take a look at:
 
 * [developing remotely](../development/remote.md) for tips on using the remote dev
   instance, and
-* our [Git & GitHub Guide](../git/index.md) to learn how to use Git with Zulip.
+* our [Git & GitHub guide](../git/index.md) to learn how to use Git with Zulip.
 
 Next, read the following to learn more about developing for Zulip:
 

@@ -1,13 +1,15 @@
 import os
 import shutil
 from io import BytesIO
-from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterator, List, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY, call
 
 import orjson
+import responses
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from requests.models import PreparedRequest
 
 from zerver.data_import.import_util import (
     build_defaultstream,
@@ -50,31 +52,22 @@ def remove_folder(path: str) -> None:
         shutil.rmtree(path)
 
 
-class MockResponse:
-    def __init__(self, json_data: Optional[Dict[str, Any]], status_code: int) -> None:
-        self.json_data = json_data
-        self.status_code = status_code
+def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+    if request.url != "https://slack.com/api/users.list":
+        return (404, {}, b"")
 
-    def json(self) -> Optional[Dict[str, Any]]:
-        return self.json_data
+    if request.headers.get("Authorization") != "Bearer xoxp-valid-token":
+        return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
-
-# This method will be used by the mock to replace requests.get
-def mocked_requests_get(*args: str, headers: Dict[str, str]) -> MockResponse:
-    if args != ("https://slack.com/api/users.list",):
-        return MockResponse(None, 404)
-
-    if headers.get("Authorization") != "Bearer xoxp-valid-token":
-        return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
-
-    return MockResponse({"ok": True, "members": "user_data"}, 200)
+    return (200, {}, orjson.dumps({"ok": True, "members": "user_data"}))
 
 
 class SlackImporter(ZulipTestCase):
-    @mock.patch("requests.get", side_effect=mocked_requests_get)
-    def test_get_slack_api_data(self, mock_get: mock.Mock) -> None:
+    @responses.activate
+    def test_get_slack_api_data(self) -> None:
         token = "xoxp-valid-token"
         slack_user_list_url = "https://slack.com/api/users.list"
+        responses.add_callback(responses.GET, slack_user_list_url, callback=request_callback)
         self.assertEqual(
             get_slack_api_data(slack_user_list_url, "members", token=token), "user_data"
         )
@@ -89,6 +82,7 @@ class SlackImporter(ZulipTestCase):
 
         token = "xoxp-status404"
         wrong_url = "https://slack.com/api/wrong"
+        responses.add_callback(responses.GET, wrong_url, callback=request_callback)
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(wrong_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("HTTP error accessing the Slack API.",))
@@ -174,7 +168,7 @@ class SlackImporter(ZulipTestCase):
         fetch_shared_channel_users(users, slack_data_dir, "token")
 
         # Normal users
-        self.assertEqual(len(users), 5)
+        self.assert_length(users, 5)
         self.assertEqual(users[0]["id"], "U061A1R2R")
         self.assertEqual(users[0]["is_mirror_dummy"], False)
         self.assertFalse("team_domain" in users[0])
@@ -386,7 +380,7 @@ class SlackImporter(ZulipTestCase):
         for name in cpf_name:
             self.assertTrue(name.startswith("Slack custom field "))
 
-        self.assertEqual(len(customprofilefield_value), 6)
+        self.assert_length(customprofilefield_value, 6)
         self.assertEqual(customprofilefield_value[0]["field"], 0)
         self.assertEqual(customprofilefield_value[0]["user_profile"], 1)
         self.assertEqual(customprofilefield_value[3]["user_profile"], 0)
@@ -394,9 +388,9 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assertEqual(len(avatar_list), 8)
+        self.assert_length(avatar_list, 8)
 
-        self.assertEqual(len(zerver_userprofile), 8)
+        self.assert_length(zerver_userprofile, 8)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -664,18 +658,18 @@ class SlackImporter(ZulipTestCase):
             passed_realm["zerver_realm"][0]["description"], "Organization imported from Slack!"
         )
         self.assertEqual(passed_realm["zerver_userpresence"], [])
-        self.assertEqual(len(passed_realm.keys()), 14)
+        self.assert_length(passed_realm.keys(), 15)
 
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
         self.assertEqual(realm["zerver_realmemoji"], [])
         self.assertEqual(realm["zerver_customprofilefield"], [])
         self.assertEqual(realm["zerver_customprofilefieldvalue"], [])
-        self.assertEqual(len(realm.keys()), 5)
+        self.assert_length(realm.keys(), 5)
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {"subtype": "file", "type": "message", "file": {"user": "U064KUGRJ"}}
-        message_without_file = {"subtype": "file", "type": "messge", "user": "U064KUGRJ"}
+        message_without_file = {"subtype": "file", "type": "message", "user": "U064KUGRJ"}
 
         user_file = get_message_sending_user(message_with_file)
         self.assertEqual(user_file, "U064KUGRJ")
@@ -865,7 +859,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assertEqual(len(zerver_message), 9)
+        self.assert_length(zerver_message, 9)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -1050,7 +1044,7 @@ class SlackImporter(ZulipTestCase):
         self.assertTrue(os.path.exists(realm_icon_records_path))
         with open(realm_icon_records_path, "rb") as f:
             records = orjson.loads(f.read())
-            self.assertEqual(len(records), 2)
+            self.assert_length(records, 2)
             self.assertEqual(records[0]["path"], "0/icon.original")
             self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[0]["path"])))
 
@@ -1069,7 +1063,11 @@ class SlackImporter(ZulipTestCase):
         realmauditlog_event_type = {log.event_type for log in realmauditlog}
         self.assertEqual(
             realmauditlog_event_type,
-            {RealmAuditLog.SUBSCRIPTION_CREATED, RealmAuditLog.REALM_PLAN_TYPE_CHANGED},
+            {
+                RealmAuditLog.SUBSCRIPTION_CREATED,
+                RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                RealmAuditLog.REALM_CREATED,
+            },
         )
 
         Realm.objects.filter(name=test_realm_subdomain).delete()
@@ -1129,8 +1127,8 @@ class SlackImporter(ZulipTestCase):
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
         )
-        self.assertEqual(len(zerver_attachment), 1)
-        self.assertEqual(len(uploads_list), 1)
+        self.assert_length(zerver_attachment, 1)
+        self.assert_length(uploads_list, 1)
 
         image_path = zerver_attachment[0]["path_id"]
         self.assertIn("/SlackImportAttachment/", image_path)

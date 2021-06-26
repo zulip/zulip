@@ -21,12 +21,8 @@ from zerver.views.alert_words import add_alert_words, list_alert_words, remove_a
 from zerver.views.archive import archive, get_web_public_topics_backend
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
-    api_dev_fetch_api_key,
-    api_dev_list_users,
     api_fetch_api_key,
-    api_fetch_google_client_id,
     api_get_server_settings,
-    dev_direct_login,
     json_fetch_api_key,
     log_into_subdomain,
     login_page,
@@ -40,7 +36,6 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
-from zerver.views.camo import handle_camo_url
 from zerver.views.compatibility import check_global_compatibility
 from zerver.views.custom_profile_fields import (
     create_realm_custom_profile_field,
@@ -80,7 +75,7 @@ from zerver.views.message_flags import (
     update_message_flags,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
-from zerver.views.muting import update_muted_topic
+from zerver.views.muting import mute_user, unmute_user, update_muted_topic
 from zerver.views.portico import (
     app_download_link_redirect,
     apps_view,
@@ -118,9 +113,15 @@ from zerver.views.realm_domains import (
 )
 from zerver.views.realm_emoji import delete_emoji, list_emoji, upload_emoji
 from zerver.views.realm_export import delete_realm_export, export_realm, get_realm_exports
-from zerver.views.realm_filters import create_filter, delete_filter, list_filters
 from zerver.views.realm_icon import delete_icon_backend, get_icon_backend, upload_icon
+from zerver.views.realm_linkifiers import (
+    create_linkifier,
+    delete_linkifier,
+    list_linkifiers,
+    update_linkifier,
+)
 from zerver.views.realm_logo import delete_logo_backend, get_logo_backend, upload_logo
+from zerver.views.realm_playgrounds import add_realm_playground, delete_realm_playground
 from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
@@ -128,7 +129,6 @@ from zerver.views.registration import (
     check_prereg_key_and_redirect,
     create_realm,
     find_account,
-    generate_204,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -247,8 +247,6 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 v1_api_and_json_patterns = [
     # realm-level calls
     rest_path("realm", PATCH=update_realm),
-    # Returns a 204, used by desktop app to verify connectivity status
-    path("generate_204", generate_204),
     path("realm/subdomain/<subdomain>", check_subdomain_available),
     # realm/domains -> zerver.views.realm_domains
     rest_path("realm/domains", GET=list_realm_domains, POST=create_realm_domain),
@@ -265,9 +263,13 @@ v1_api_and_json_patterns = [
     rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
-    # realm/filters -> zerver.views.realm_filters
-    rest_path("realm/filters", GET=list_filters, POST=create_filter),
-    rest_path("realm/filters/<int:filter_id>", DELETE=delete_filter),
+    # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
+    rest_path("realm/linkifiers", GET=list_linkifiers),
+    rest_path("realm/filters", POST=create_linkifier),
+    rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier, PATCH=update_linkifier),
+    # realm/playgrounds -> zerver.views.realm_playgrounds
+    rest_path("realm/playgrounds", POST=add_realm_playground),
+    rest_path("realm/playgrounds/<int:playground_id>", DELETE=delete_realm_playground),
     # realm/profile_fields -> zerver.views.custom_profile_fields
     rest_path(
         "realm/profile_fields",
@@ -396,7 +398,7 @@ v1_api_and_json_patterns = [
         POST=(
             mark_hotspot_as_read,
             # This endpoint is low priority for documentation as
-            # it is part of the webapp-specific tutorial.
+            # it is part of the web app-specific tutorial.
             {"intentionally_undocumented"},
         ),
     ),
@@ -462,6 +464,7 @@ v1_api_and_json_patterns = [
     ),
     # muting -> zerver.views.muting
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=events_register_backend),
     # events -> zerver.tornado.views
@@ -469,7 +472,7 @@ v1_api_and_json_patterns = [
     # report -> zerver.views.report
     #
     # These endpoints are for internal error/performance reporting
-    # from the browser to the webapp, and we don't expect to ever
+    # from the browser to the web app, and we don't expect to ever
     # include in our API documentation.
     rest_path(
         "report/error",
@@ -522,7 +525,6 @@ i18n_urls = [
         "accounts/register/social/<backend>/<extra_arg>", start_social_signup, name="signup-social"
     ),
     path("accounts/login/subdomain/<token>", log_into_subdomain),
-    path("accounts/login/local/", dev_direct_login, name="login-local"),
     # We have two entries for accounts/login; only the first one is
     # used for URL resolution.  The second here is to allow
     # reverse("login") in templates to
@@ -663,8 +665,8 @@ urls += [
         "user_uploads/<realm_id_str>/<path:filename>",
         GET=(serve_file_backend, {"override_api_url_scheme"}),
     ),
-    # This endpoint serves thumbnailed versions of images using thumbor;
-    # it requires an exception for the same reason.
+    # This endpoint redirects to camo; it requires an exception for the
+    # same reason.
     rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
@@ -678,14 +680,6 @@ urls += [
 # We use this endpoint to just log these reports.
 urls += [
     path("report/csp_violations", report_csp_violations),
-]
-
-# This URL serves as a way to provide backward compatibility to messages
-# rendered at the time Zulip used camo for doing http -> https conversion for
-# such links with images previews. Now thumbor can be used for serving such
-# images.
-urls += [
-    path("external_content/<digest>/<received_url>", handle_camo_url),
 ]
 
 # Incoming webhook URLs
@@ -717,15 +711,6 @@ v1_api_mobile_patterns = [
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     path("fetch_api_key", api_fetch_api_key),
-    # This is for the signing in through the devAuthBackEnd on mobile apps.
-    path("dev_fetch_api_key", api_dev_fetch_api_key),
-    # This is for fetching the emails of the admins and the users.
-    path("dev_list_users", api_dev_list_users),
-    # Used to present the GOOGLE_CLIENT_ID to mobile apps
-    path("fetch_google_client_id", api_fetch_google_client_id),
-]
-urls += [
-    path("api/v1/", include(v1_api_mobile_patterns)),
 ]
 
 # View for uploading messages from email mirror
@@ -764,6 +749,19 @@ api_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
 )
 urls += [
+    # Redirects due to us having moved the docs:
+    path(
+        "help/delete-a-stream", RedirectView.as_view(url="/help/archive-a-stream", permanent=True)
+    ),
+    path("api/delete-stream", RedirectView.as_view(url="/api/archive-stream", permanent=True)),
+    path(
+        "help/configure-missed-message-emails",
+        RedirectView.as_view(url="/help/configure-message-notification-emails", permanent=True),
+    ),
+    path(
+        "help/community-topic-edits",
+        RedirectView.as_view(url="/help/configure-who-can-edit-topics", permanent=True),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
@@ -777,6 +775,11 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
+    v1_api_mobile_patterns += dev_urls.v1_api_mobile_patterns
+
+urls += [
+    path("api/v1/", include(v1_api_mobile_patterns)),
+]
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend

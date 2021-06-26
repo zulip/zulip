@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -19,17 +19,15 @@ const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
 
-page_params.annual_price = 8000;
-page_params.monthly_price = 800;
-page_params.seat_count = 8;
-page_params.percent_off = 20;
-
-mock_cjs("jquery", $);
-
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
-run_test("initialize", (override) => {
+run_test("initialize", ({override}) => {
+    page_params.annual_price = 8000;
+    page_params.monthly_price = 800;
+    page_params.seat_count = 8;
+    page_params.percent_off = 20;
+
     let token_func;
     override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
@@ -38,25 +36,29 @@ run_test("initialize", (override) => {
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__(
         "create_ajax_request",
-        (url, form_name, stripe_token, numeric_inputs, redirect_to) => {
+        (url, form_name, stripe_token, ignored_inputs, redirect_to) => {
             create_ajax_request_form_call_count += 1;
-            if (form_name === "autopay") {
-                assert.equal(url, "/json/billing/upgrade");
-                assert.equal(stripe_token, "stripe_add_card_token");
-                assert.deepEqual(numeric_inputs, ["licenses"]);
-                assert.equal(redirect_to, undefined);
-            } else if (form_name === "invoice") {
-                assert.equal(url, "/json/billing/upgrade");
-                assert.equal(stripe_token, undefined);
-                assert.deepEqual(numeric_inputs, ["licenses"]);
-                assert.equal(redirect_to, undefined);
-            } else if (form_name === "sponsorship") {
-                assert.equal(url, "/json/billing/sponsorship");
-                assert.equal(stripe_token, undefined);
-                assert.equal(numeric_inputs, undefined);
-                assert.equal(redirect_to, "/");
-            } else {
-                throw new Error("Unhandled case");
+            switch (form_name) {
+                case "autopay":
+                    assert.equal(url, "/json/billing/upgrade");
+                    assert.equal(stripe_token, "stripe_add_card_token");
+                    assert.equal(ignored_inputs, undefined);
+                    assert.equal(redirect_to, undefined);
+                    break;
+                case "invoice":
+                    assert.equal(url, "/json/billing/upgrade");
+                    assert.equal(stripe_token, undefined);
+                    assert.equal(ignored_inputs, undefined);
+                    assert.equal(redirect_to, undefined);
+                    break;
+                case "sponsorship":
+                    assert.equal(url, "/json/billing/sponsorship");
+                    assert.equal(stripe_token, undefined);
+                    assert.equal(ignored_inputs, undefined);
+                    assert.equal(redirect_to, "/");
+                    break;
+                default:
+                    throw new Error("Unhandled case");
             }
         },
     );
@@ -223,15 +225,15 @@ run_test("autopay_form_fields", () => {
     assert.equal(schedule_options[0].value, "monthly");
     assert.equal(schedule_options[1].value, "annual");
 
-    assert(document.querySelector("#autopay-error"));
-    assert(document.querySelector("#autopay-loading"));
-    assert(document.querySelector("#autopay"));
-    assert(document.querySelector("#autopay-success"));
-    assert(document.querySelector("#autopay_loading_indicator"));
+    assert.ok(document.querySelector("#autopay-error"));
+    assert.ok(document.querySelector("#autopay-loading"));
+    assert.ok(document.querySelector("#autopay"));
+    assert.ok(document.querySelector("#autopay-success"));
+    assert.ok(document.querySelector("#autopay_loading_indicator"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
-    assert(document.querySelector("#free-trial-alert-message"));
+    assert.ok(document.querySelector("#free-trial-alert-message"));
 });
 
 run_test("invoice_form_fields", () => {
@@ -255,13 +257,13 @@ run_test("invoice_form_fields", () => {
     assert.equal(schedule_options.length, 1);
     assert.equal(schedule_options[0].value, "annual");
 
-    assert(document.querySelector("#invoice-error"));
-    assert(document.querySelector("#invoice-loading"));
-    assert(document.querySelector("#invoice"));
-    assert(document.querySelector("#invoice-success"));
-    assert(document.querySelector("#invoice_loading_indicator"));
+    assert.ok(document.querySelector("#invoice-error"));
+    assert.ok(document.querySelector("#invoice-loading"));
+    assert.ok(document.querySelector("#invoice"));
+    assert.ok(document.querySelector("#invoice-success"));
+    assert.ok(document.querySelector("#invoice_loading_indicator"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
-    assert(document.querySelector("#free-trial-alert-message"));
+    assert.ok(document.querySelector("#free-trial-alert-message"));
 });

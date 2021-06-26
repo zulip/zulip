@@ -64,7 +64,7 @@ def body(message: Dict[str, Any]) -> str:
     body = f"**:alert: {title} *{name}* has been triggered!**\n\n{message['Intro']}\n\n"
 
     if "IncidentHash" in message:
-        body += f"**Incident Id:** `{message['IncidentHash']}`\n"
+        body += f"**Incident ID:** `{message['IncidentHash']}`\n"
 
     if "Token" in message:
         body += f"**Token:** `{message['Token']}`\n"
@@ -79,7 +79,7 @@ def body(message: Dict[str, Any]) -> str:
         body += f"**Canary IP:** `{message['CanaryIP']}`\n"
 
     if "CanaryLocation" in message:
-        body += f"**Canary Location:** {message['CanaryLocation']}\n"
+        body += f"**Canary location:** {message['CanaryLocation']}\n"
 
     if "Triggered" in message:
         unit = "times" if message["Triggered"] > 1 else "time"

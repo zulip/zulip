@@ -17,9 +17,9 @@
     {{/each}}
 </div>
 
-<br>
+<br />
 <input class="add-user-list-filter" name="user_list_filter" type="text"
-  autocomplete="off" placeholder="{{t "Filter" }}" />
+  autocomplete="off" placeholder="{{t 'Filter' }}" />
 
 
 <div>
@@ -27,12 +27,6 @@
     <a href="#" draggable="false" class="subs_unset_all_users">{{t "Uncheck all" }}</a>
 </div>
 
-<div id="user-checkboxes">
-    {{#each users}}
-    <label class="checkbox add-user-label" data-user-id="{{this.user_id}}">
-        <input type="checkbox" name="user" {{#if @first}}checked="checked"{{#unless is_admin}} disabled="disabled"{{/unless}}{{/if}}/>
-        <span></span>
-        {{this.full_name}} ({{this.email}})
-    </label>
-    {{/each}}
+<div id="user-checkboxes-simplebar-wrapper" data-simplebar>
+    <div id="user-checkboxes"></div>
 </div>

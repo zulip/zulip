@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Any, Dict, List, NoReturn, Optional, Type, TypeVar
+from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type, TypeVar
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 T = TypeVar("T", bound="AbstractEnum")
 
@@ -358,3 +358,20 @@ class InvalidSubdomainError(JsonableError):
 class ZephyrMessageAlreadySentException(Exception):
     def __init__(self, message_id: int) -> None:
         self.message_id = message_id
+
+
+class InvitationError(JsonableError):
+    code = ErrorCode.INVITATION_FAILED
+    data_fields = ["errors", "sent_invitations", "license_limit_reached"]
+
+    def __init__(
+        self,
+        msg: str,
+        errors: List[Tuple[str, str, bool]],
+        sent_invitations: bool,
+        license_limit_reached: bool = False,
+    ) -> None:
+        self._msg: str = msg
+        self.errors: List[Tuple[str, str, bool]] = errors
+        self.sent_invitations: bool = sent_invitations
+        self.license_limit_reached: bool = license_limit_reached

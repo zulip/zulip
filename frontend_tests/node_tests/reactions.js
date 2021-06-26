@@ -2,8 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -39,7 +38,8 @@ const sample_message = {
     ],
 };
 
-mock_cjs("jquery", $);
+const render_message_reaction = mock_template("message_reaction.hbs");
+
 const channel = mock_esm("../../static/js/channel");
 const emoji_picker = mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover() {},
@@ -59,7 +59,6 @@ message_lists.current = {
     },
 };
 set_global("document", "document-stub");
-page_params.user_id = alice_user_id;
 
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const emoji = zrequire("../shared/js/emoji");
@@ -117,7 +116,14 @@ people.add_active_user(bob);
 people.add_active_user(cali);
 people.add_active_user(alexus);
 
-run_test("open_reactions_popover (sent by me)", () => {
+function test(label, f) {
+    run_test(label, ({override}) => {
+        page_params.user_id = alice_user_id;
+        f({override});
+    });
+}
+
+test("open_reactions_popover (sent by me)", () => {
     message_lists.current.selected_message = () => ({sent_by_me: true});
     $(".selected-row").set_find_results(".actions_hover", ["action-stub"]);
 
@@ -128,11 +134,11 @@ run_test("open_reactions_popover (sent by me)", () => {
         assert.equal(target, "action-stub");
     };
 
-    assert(reactions.open_reactions_popover());
-    assert(called);
+    assert.ok(reactions.open_reactions_popover());
+    assert.ok(called);
 });
 
-run_test("open_reactions_popover (not sent by me)", () => {
+test("open_reactions_popover (not sent by me)", () => {
     message_lists.current.selected_message = () => ({sent_by_me: false});
     $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
 
@@ -143,16 +149,16 @@ run_test("open_reactions_popover (not sent by me)", () => {
         assert.equal(target, "reaction-stub");
     };
 
-    assert(reactions.open_reactions_popover());
-    assert(called);
+    assert.ok(reactions.open_reactions_popover());
+    assert.ok(called);
 });
 
-run_test("basics", () => {
+test("basics", () => {
     const message = {...sample_message};
 
     const result = reactions.get_message_reactions(message);
-    assert(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
-    assert(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
+    assert.ok(reactions.current_user_has_reacted_to_emoji(message, "unicode_emoji,1f642"));
+    assert.ok(!reactions.current_user_has_reacted_to_emoji(message, "bogus"));
 
     result.sort((a, b) => a.count - b.count);
 
@@ -210,8 +216,7 @@ run_test("basics", () => {
             local_id: "unicode_emoji,1f680",
             count: 3,
             user_ids: [5, 6, 7],
-            label:
-                "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
+            label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
         },
@@ -230,7 +235,7 @@ run_test("basics", () => {
     assert.deepEqual(result, expected_result);
 });
 
-run_test("unknown realm emojis (add)", () => {
+test("unknown realm emojis (add)", () => {
     blueslip.expect("error", "Cannot find/add realm emoji for code 'broken'.");
     reactions.add_clean_reaction({
         reaction_type: "realm_emoji",
@@ -239,7 +244,7 @@ run_test("unknown realm emojis (add)", () => {
     });
 });
 
-run_test("unknown realm emojis (insert)", () => {
+test("unknown realm emojis (insert)", () => {
     blueslip.expect("error", "Cannot find/insert realm emoji for code 'bogus'.");
     reactions.view.insert_new_reaction({
         reaction_type: "realm_emoji",
@@ -248,7 +253,7 @@ run_test("unknown realm emojis (insert)", () => {
     });
 });
 
-run_test("sending", (override) => {
+test("sending", ({override}) => {
     const message = {...sample_message};
     assert.equal(message.id, 1001);
     override(message_store, "get", (message_id) => {
@@ -278,8 +283,8 @@ run_test("sending", (override) => {
 
         // similarly, we only exercise the failure codepath
         // Since this path calls blueslip.warn, we need to handle it.
-        blueslip.expect("warn", "XHR Error Message.");
-        channel.xhr_error_message = () => "XHR Error Message.";
+        blueslip.expect("warn", "XHR error message.");
+        channel.xhr_error_message = () => "XHR error message.";
         args.error();
     }
     emoji_name = "alien"; // not set yet
@@ -336,7 +341,7 @@ run_test("sending", (override) => {
     reactions.toggle_emoji_reaction(message.id, emoji_name);
 });
 
-run_test("set_reaction_count", () => {
+test("set_reaction_count", () => {
     const count_element = $.create("count-stub");
     const reaction_element = $.create("reaction-stub");
 
@@ -347,7 +352,7 @@ run_test("set_reaction_count", () => {
     assert.equal(count_element.text(), "5");
 });
 
-run_test("find_reaction", (override) => {
+test("find_reaction", ({override}) => {
     const message_id = 99;
     const local_id = "unicode_emoji,1f44b";
     const reaction_section = $.create("section-stub");
@@ -366,7 +371,7 @@ run_test("find_reaction", (override) => {
     assert.equal(reactions.find_reaction(message_id, local_id), reaction_stub);
 });
 
-run_test("get_reaction_section", () => {
+test("get_reaction_section", () => {
     const message_table = $.create(".message_table");
     const message_row = $.create("some-message-row");
     const message_reactions = $.create("our-reactions-section");
@@ -379,7 +384,7 @@ run_test("get_reaction_section", () => {
     assert.equal(section, message_reactions);
 });
 
-run_test("emoji_reaction_title", (override) => {
+test("emoji_reaction_title", ({override}) => {
     const message = {...sample_message};
     override(message_store, "get", () => message);
     const local_id = "unicode_emoji,1f642";
@@ -390,7 +395,7 @@ run_test("emoji_reaction_title", (override) => {
     );
 });
 
-run_test("add_reaction/remove_reaction", (override) => {
+test("add_reaction/remove_reaction", ({override}) => {
     // This function tests reaction events by mocking out calls to
     // the view.
 
@@ -566,7 +571,7 @@ run_test("add_reaction/remove_reaction", (override) => {
     });
 });
 
-run_test("view.insert_new_reaction (me w/unicode emoji)", (override) => {
+test("view.insert_new_reaction (me w/unicode emoji)", ({override}) => {
     const opts = {
         message_id: 501,
         reaction_type: "unicode_emoji",
@@ -587,10 +592,7 @@ run_test("view.insert_new_reaction (me w/unicode emoji)", (override) => {
         return "reaction-button-stub";
     };
 
-    let template_called;
-    stub_templates((template_name, data) => {
-        template_called = true;
-        assert.equal(template_name, "message_reaction");
+    override(render_message_reaction, "f", (data) => {
         assert.deepEqual(data, {
             count: 1,
             emoji_alt_code: false,
@@ -611,11 +613,10 @@ run_test("view.insert_new_reaction (me w/unicode emoji)", (override) => {
     };
 
     reactions.view.insert_new_reaction(opts);
-    assert(template_called);
-    assert(insert_called);
+    assert.ok(insert_called);
 });
 
-run_test("view.insert_new_reaction (them w/zulip emoji)", (override) => {
+test("view.insert_new_reaction (them w/zulip emoji)", ({override}) => {
     const zulip_emoji = emoji_params.realm_emoji.zulip;
     const opts = {
         message_id: 502,
@@ -638,10 +639,7 @@ run_test("view.insert_new_reaction (them w/zulip emoji)", (override) => {
         return "reaction-button-stub";
     };
 
-    let template_called;
-    stub_templates((template_name, data) => {
-        template_called = true;
-        assert.equal(template_name, "message_reaction");
+    override(render_message_reaction, "f", (data) => {
         assert.deepEqual(data, {
             count: 1,
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
@@ -664,11 +662,10 @@ run_test("view.insert_new_reaction (them w/zulip emoji)", (override) => {
     };
 
     reactions.view.insert_new_reaction(opts);
-    assert(template_called);
-    assert(insert_called);
+    assert.ok(insert_called);
 });
 
-run_test("view.update_existing_reaction (me)", (override) => {
+test("view.update_existing_reaction (me)", ({override}) => {
     const opts = {
         message_id: 503,
         reaction_type: "unicode_emoji",
@@ -693,14 +690,14 @@ run_test("view.update_existing_reaction (me)", (override) => {
 
     reactions.view.update_existing_reaction(opts);
 
-    assert(our_reaction.hasClass("reacted"));
+    assert.ok(our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
     );
 });
 
-run_test("view.update_existing_reaction (them)", (override) => {
+test("view.update_existing_reaction (them)", ({override}) => {
     const opts = {
         message_id: 504,
         reaction_type: "unicode_emoji",
@@ -725,14 +722,14 @@ run_test("view.update_existing_reaction (them)", (override) => {
 
     reactions.view.update_existing_reaction(opts);
 
-    assert(!our_reaction.hasClass("reacted"));
+    assert.ok(!our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: You (click to remove), Bob van Roberts, Cali and Alexus reacted with :8ball:",
     );
 });
 
-run_test("view.remove_reaction (me)", (override) => {
+test("view.remove_reaction (me)", ({override}) => {
     const opts = {
         message_id: 505,
         reaction_type: "unicode_emoji",
@@ -758,14 +755,14 @@ run_test("view.remove_reaction (me)", (override) => {
 
     reactions.view.remove_reaction(opts);
 
-    assert(!our_reaction.hasClass("reacted"));
+    assert.ok(!our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: Bob van Roberts and Cali reacted with :8ball:",
     );
 });
 
-run_test("view.remove_reaction (them)", (override) => {
+test("view.remove_reaction (them)", ({override}) => {
     const opts = {
         message_id: 506,
         reaction_type: "unicode_emoji",
@@ -792,14 +789,14 @@ run_test("view.remove_reaction (them)", (override) => {
     our_reaction.addClass("reacted");
     reactions.view.remove_reaction(opts);
 
-    assert(our_reaction.hasClass("reacted"));
+    assert.ok(our_reaction.hasClass("reacted"));
     assert.equal(
         our_reaction.attr("aria-label"),
         "translated: You (click to remove) reacted with :8ball:",
     );
 });
 
-run_test("view.remove_reaction (last person)", (override) => {
+test("view.remove_reaction (last person)", ({override}) => {
     const opts = {
         message_id: 507,
         reaction_type: "unicode_emoji",
@@ -822,10 +819,10 @@ run_test("view.remove_reaction (last person)", (override) => {
         removed = true;
     };
     reactions.view.remove_reaction(opts);
-    assert(removed);
+    assert.ok(removed);
 });
 
-run_test("error_handling", (override) => {
+test("error_handling", ({override}) => {
     override(message_store, "get", () => {});
 
     blueslip.expect("error", "reactions: Bad message id: 55");
@@ -844,7 +841,7 @@ run_test("error_handling", (override) => {
     reactions.remove_reaction(bogus_event);
 });
 
-run_test("remove spurious user", (override) => {
+test("remove spurious user", ({override}) => {
     // get coverage for removing non-user (it should just
     // silently fail)
 
@@ -862,7 +859,7 @@ run_test("remove spurious user", (override) => {
     reactions.remove_reaction(event);
 });
 
-run_test("remove last user", (override) => {
+test("remove last user", ({override}) => {
     const message = {...sample_message};
 
     override(message_store, "get", () => message);
@@ -889,7 +886,7 @@ run_test("remove last user", (override) => {
     assert_names(["smile", "tada", "rocket", "wave", "inactive_realm_emoji"]);
 });
 
-run_test("local_reaction_id", () => {
+test("local_reaction_id", () => {
     const reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_code: "1f44d",
@@ -898,18 +895,13 @@ run_test("local_reaction_id", () => {
     assert.equal(local_id, "unicode_emoji,1f44d");
 });
 
-run_test("process_reaction_click", (override) => {
+test("process_reaction_click", ({override}) => {
     override(reactions.view, "remove_reaction", () => {});
 
     const message = {...sample_message};
     override(message_store, "get", () => message);
 
-    let expected_reaction_info = {
-        reaction_type: "unicode_emoji",
-        emoji_code: "1f3b1",
-    };
-
-    expected_reaction_info = {
+    const expected_reaction_info = {
         reaction_type: "unicode_emoji",
         emoji_name: "smile",
         emoji_code: "1f642",
@@ -925,7 +917,7 @@ run_test("process_reaction_click", (override) => {
     }
 });
 
-run_test("warnings", () => {
+test("warnings", () => {
     const message = {
         id: 3001,
         reactions: [
@@ -950,7 +942,7 @@ run_test("warnings", () => {
     reactions.get_message_reactions(message);
 });
 
-run_test("code coverage", (override) => {
+test("code coverage", ({override}) => {
     /*
         We just silently fail in a few places in the reaction
         code, since events may come for messages that we don't
@@ -972,7 +964,7 @@ run_test("code coverage", (override) => {
     });
 });
 
-run_test("duplicates", () => {
+test("duplicates", () => {
     const dup_reaction_message = {
         id: 1001,
         reactions: [
@@ -988,14 +980,14 @@ run_test("duplicates", () => {
     reactions.set_clean_reactions(dup_reaction_message);
 });
 
-run_test("process_reaction_click undefined", (override) => {
+test("process_reaction_click undefined", ({override}) => {
     override(message_store, "get", () => undefined);
     blueslip.expect("error", "reactions: Bad message id: 55");
     blueslip.expect("error", "message_id for reaction click is unknown: 55");
     reactions.process_reaction_click(55, "whatever");
 });
 
-run_test("process_reaction_click bad local id", (override) => {
+test("process_reaction_click bad local id", ({override}) => {
     const stub_message = {id: 4001, reactions: []};
     override(message_store, "get", () => stub_message);
     blueslip.expect(

@@ -2,7 +2,9 @@ import * as hash_util from "./hash_util";
 import * as muting from "./muting";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
+import * as topic_list from "./topic_list";
 import * as unread from "./unread";
+import * as util from "./util";
 
 const max_topics = 5;
 const max_topics_with_unread = 8;
@@ -17,7 +19,11 @@ export function get_list_info(stream_id, zoomed) {
         active_topic = active_topic.toLowerCase();
     }
 
-    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+    let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+    if (zoomed) {
+        const search_term = topic_list.get_topic_search_term();
+        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+    }
 
     const items = [];
 

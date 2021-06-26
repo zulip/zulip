@@ -375,7 +375,7 @@ CacheItemT = TypeVar("CacheItemT")
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar("CompressedItemT")
 
-# Required Arguments are as follows:
+# Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
 # * query_function: [object_ids] => [objects from database]
@@ -519,6 +519,7 @@ realm_user_dict_fields: List[str] = [
     "avatar_version",
     "is_active",
     "role",
+    "is_billing_admin",
     "is_bot",
     "realm_id",
     "timezone",
@@ -532,6 +533,10 @@ realm_user_dict_fields: List[str] = [
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:
     return f"realm_user_dicts:{realm_id}"
+
+
+def get_muting_users_cache_key(muted_user_id: int) -> str:
+    return f"muting_users_list:{muted_user_id}"
 
 
 def get_realm_used_upload_space_cache_key(realm: "Realm") -> str:
@@ -550,7 +555,7 @@ bot_dict_fields: List[str] = [
     "api_key",
     "avatar_source",
     "avatar_version",
-    "bot_owner__id",
+    "bot_owner_id",
     "bot_type",
     "default_all_public_streams",
     "default_events_register_stream__name",
@@ -640,6 +645,11 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     # changed the fields in the dict or become (in)active
     if user_profile.is_bot and changed(kwargs, bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
+
+
+def flush_muting_users_cache(sender: Any, **kwargs: Any) -> None:
+    mute_object = kwargs["instance"]
+    cache_delete(get_muting_users_cache_key(mute_object.muted_user_id))
 
 
 # Called by models.py to flush various caches whenever we save

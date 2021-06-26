@@ -14,7 +14,7 @@ import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
@@ -76,7 +76,7 @@ function process_result(data, opts) {
     huddle_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_topics.process_messages(messages);
+    recent_topics_ui.process_messages(messages);
 
     stream_list.maybe_scroll_narrow_into_view();
 
@@ -185,7 +185,7 @@ export function load_messages(opts) {
         // floating point temporary IDs, which is intended to be a.
         // completely client-side detail.  We need to round these to
         // the nearest integer before sending a request to the server.
-        opts.anchor = opts.anchor.toFixed();
+        opts.anchor = opts.anchor.toFixed(0);
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
@@ -456,11 +456,11 @@ export function initialize(home_view_loaded) {
     // more performant (i.e. avoids this unnecessary extra fetch the
     // results of which are basically discarded) and better represents
     // more than a few hundred messages' history, but this strategy
-    // allows "Recent Topics" to always show current data (with gaps)
+    // allows "Recent topics" to always show current data (with gaps)
     // on page load; the data will be complete once the algorithm
-    // above catched up to present.
+    // above catches up to present.
     //
-    // (Users will see a weird artifact where Recent Topics has a gap
+    // (Users will see a weird artifact where Recent topics has a gap
     // between E.g. 6 days ago and 37 days ago while the catchup
     // process runs, so this strategy still results in problematic
     // visual artifacts shortly after page load; just more forgiveable

@@ -8,7 +8,7 @@
 
 1. Under **Deactivate organization**, click **Deactivate organization**.
 
-1. Confirm by clicking **Deactivate organization**.
+1. Approve by clicking **Confirm**.
 
 {end_tabs}
 

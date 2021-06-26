@@ -82,7 +82,7 @@ class TestServiceBotBasics(ZulipTestCase):
             recipient_type=Recipient.STREAM,
         )
 
-        self.assertEqual(len(event_dict), 0)
+        self.assert_length(event_dict, 0)
 
     def test_service_events_for_stream_mentions(self) -> None:
         sender = self.example_user("hamlet")
@@ -136,7 +136,7 @@ class TestServiceBotBasics(ZulipTestCase):
             recipient_type=Recipient.PERSONAL,
         )
 
-        self.assertEqual(len(event_dict), 0)
+        self.assert_length(event_dict, 0)
 
     def test_service_events_with_unexpected_bot_type(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -161,7 +161,7 @@ class TestServiceBotBasics(ZulipTestCase):
                 recipient_type=Recipient.PERSONAL,
             )
 
-        self.assertEqual(len(event_dict), 0)
+        self.assert_length(event_dict, 0)
         self.assertEqual(
             m.output,
             [f"ERROR:root:Unexpected bot_type for Service bot id={bot.id}: {wrong_bot_type}"],
@@ -398,12 +398,12 @@ class TestServiceBotConfigHandler(ZulipTestCase):
     def test_load_bot_config_template(self) -> None:
         bot_config = load_bot_config_template("giphy")
         self.assertTrue(isinstance(bot_config, dict))
-        self.assertEqual(len(bot_config), 1)
+        self.assert_length(bot_config, 1)
 
     def test_load_bot_config_template_for_bot_without_config_data(self) -> None:
         bot_config = load_bot_config_template("converter")
         self.assertTrue(isinstance(bot_config, dict))
-        self.assertEqual(len(bot_config), 0)
+        self.assert_length(bot_config, 0)
 
     def test_bot_send_pm_with_empty_recipients_list(self) -> None:
         with self.assertRaisesRegex(

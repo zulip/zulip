@@ -34,7 +34,7 @@ Hello, world.
     def test_message_with_actions(self) -> None:
         expected_topic = "C1H9RESGL"
         expected_message = """
-Danny Torrence left the following review for your property:
+Danny Torrence left the following *review* for your property:
 
 [Overlook Hotel](https://google.com) \n :star: \n Doors had too many axe holes, guest in room 237 was far too rowdy, whole place felt stuck in the 1920s.
 [Haunted hotel image](https://is5-ssl.mzstatic.com/image/thumb/Purple3/v4/d3/72/5c/d3725c8f-c642-5d69-1904-aa36e4297885/source/256x256bb.jpg)

@@ -27,7 +27,7 @@ rules:
           - pattern: from zerver import $X
           - pattern: from analytics import $X
           - pattern: from confirmation import $X
-    message: "Don't import models or other code in migrations; see docs/subsystems/schema-migrations.md"
+    message: "Don't import models or other code in migrations; see https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html"
     languages: [python]
     severity: ERROR
     paths:
@@ -70,16 +70,16 @@ rules:
   - id: translated-format
     languages: [python]
     pattern-either:
-      - pattern: django.utils.translation.ugettext(... .format(...))
-      - pattern: django.utils.translation.ugettext(f"...")
-      - pattern: django.utils.translation.ugettext_lazy(... .format(...))
-      - pattern: django.utils.translation.ugettext_lazy(f"...")
+      - pattern: django.utils.translation.gettext(... .format(...))
+      - pattern: django.utils.translation.gettext(f"...")
+      - pattern: django.utils.translation.gettext_lazy(... .format(...))
+      - pattern: django.utils.translation.gettext_lazy(f"...")
     severity: ERROR
     message: "Format strings after translation, not before"
 
   - id: translated-format-lazy
     languages: [python]
-    pattern: django.utils.translation.ugettext_lazy(...).format(...)
+    pattern: django.utils.translation.gettext_lazy(...).format(...)
     severity: ERROR
     message: "Immediately formatting a lazily translated string destroys its laziness"
 
@@ -123,8 +123,8 @@ rules:
     languages: [python]
     pattern-either:
       - pattern: '"..." % ...'
-      - pattern: django.utils.translation.ugettext(...) % ...
-      - pattern: django.utils.translation.ugettext_lazy(...) % ...
+      - pattern: django.utils.translation.gettext(...) % ...
+      - pattern: django.utils.translation.gettext_lazy(...) % ...
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
 

@@ -2,7 +2,7 @@ import base64
 import os
 import re
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 from unittest import mock, skipUnless
 
 import orjson
@@ -18,7 +18,6 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     cachify,
-    get_client_name,
     internal_notify_view,
     is_local_addr,
     rate_limit,
@@ -69,6 +68,7 @@ from zerver.lib.validator import (
     check_int_in,
     check_list,
     check_none_or,
+    check_or,
     check_short_string,
     check_string,
     check_string_fixed_length,
@@ -82,6 +82,7 @@ from zerver.lib.validator import (
     to_non_negative_int,
     to_positive_or_allowed_int,
 )
+from zerver.middleware import parse_client
 from zerver.models import Realm, UserProfile, get_realm, get_user
 
 if settings.ZILENCER_ENABLED:
@@ -89,41 +90,41 @@ if settings.ZILENCER_ENABLED:
 
 
 class DecoratorTestCase(ZulipTestCase):
-    def test_get_client_name(self) -> None:
+    def test_parse_client(self) -> None:
         req = HostRequestMock()
-        self.assertEqual(get_client_name(req), "Unspecified")
+        self.assertEqual(parse_client(req), ("Unspecified", None))
 
         req.META[
             "HTTP_USER_AGENT"
         ] = "ZulipElectron/4.0.3 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36"
-        self.assertEqual(get_client_name(req), "ZulipElectron")
+        self.assertEqual(parse_client(req), ("ZulipElectron", "4.0.3"))
 
         req.META["HTTP_USER_AGENT"] = "ZulipDesktop/0.4.4 (Mac)"
-        self.assertEqual(get_client_name(req), "ZulipDesktop")
+        self.assertEqual(parse_client(req), ("ZulipDesktop", "0.4.4"))
 
         req.META["HTTP_USER_AGENT"] = "ZulipMobile/26.22.145 (Android 10)"
-        self.assertEqual(get_client_name(req), "ZulipMobile")
+        self.assertEqual(parse_client(req), ("ZulipMobile", "26.22.145"))
 
         req.META["HTTP_USER_AGENT"] = "ZulipMobile/26.22.145 (iOS 13.3.1)"
-        self.assertEqual(get_client_name(req), "ZulipMobile")
+        self.assertEqual(parse_client(req), ("ZulipMobile", "26.22.145"))
 
         # TODO: This should ideally be Firefox.
         req.META[
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0"
-        self.assertEqual(get_client_name(req), "Mozilla")
+        self.assertEqual(parse_client(req), ("Mozilla", None))
 
         # TODO: This should ideally be Chrome.
         req.META[
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.43 Safari/537.36"
-        self.assertEqual(get_client_name(req), "Mozilla")
+        self.assertEqual(parse_client(req), ("Mozilla", None))
 
         # TODO: This should ideally be Mobile Safari if we had better user-agent parsing.
         req.META[
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36"
-        self.assertEqual(get_client_name(req), "Mozilla")
+        self.assertEqual(parse_client(req), ("Mozilla", None))
 
     def test_REQ_aliases(self) -> None:
         @has_request_variables
@@ -167,7 +168,7 @@ class DecoratorTestCase(ZulipTestCase):
 
         @has_request_variables
         def get_total(
-            request: HttpRequest, numbers: Iterable[int] = REQ(converter=my_converter)
+            request: HttpRequest, numbers: Sequence[int] = REQ(converter=my_converter)
         ) -> int:
             return sum(numbers)
 
@@ -202,7 +203,7 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_validator(self) -> None:
         @has_request_variables
         def get_total(
-            request: HttpRequest, numbers: Iterable[int] = REQ(validator=check_list(check_int))
+            request: HttpRequest, numbers: Sequence[int] = REQ(json_validator=check_list(check_int))
         ) -> int:
             return sum(numbers)
 
@@ -787,12 +788,20 @@ class ValidatorTestCase(ZulipTestCase):
             self.assertEqual(to_non_negative_int(str(2 ** 32)))
 
     def test_to_positive_or_allowed_int(self) -> None:
+        self.assertEqual(to_positive_or_allowed_int()("5"), 5)
         self.assertEqual(to_positive_or_allowed_int(-1)("5"), 5)
+
         self.assertEqual(to_positive_or_allowed_int(-1)("-1"), -1)
         with self.assertRaisesRegex(ValueError, "argument is negative"):
             to_positive_or_allowed_int(-1)("-5")
+        with self.assertRaisesRegex(ValueError, "argument is negative"):
+            to_positive_or_allowed_int()("-5")
+
         with self.assertRaises(ValueError):
             to_positive_or_allowed_int(-1)("0")
+        with self.assertRaises(ValueError):
+            to_positive_or_allowed_int()("0")
+        self.assertEqual(to_positive_or_allowed_int(0)("0"), 0)
 
     def test_check_float(self) -> None:
         x: Any = 5.5
@@ -922,7 +931,7 @@ class ValidatorTestCase(ZulipTestCase):
         x = {
             "names": ["alice", "bob"],
             "city": "Boston",
-            "food": ["Lobster Spaghetti"],
+            "food": ["Lobster spaghetti"],
         }
 
         check_dict(keys)("x", x)  # since _allow_only_listed_keys is False
@@ -935,7 +944,7 @@ class ValidatorTestCase(ZulipTestCase):
         x = {
             "names": ["alice", "bob"],
             "city": "Boston",
-            "food": "Lobster Spaghetti",
+            "food": "Lobster spaghetti",
         }
         with self.assertRaisesRegex(ValidationError, r'x\["food"\] is not a list'):
             check_dict_only(keys, optional_keys)("x", x)
@@ -1029,6 +1038,25 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValidationError, r"x is not a string or integer"):
             check_string_or_int("x", x)
 
+    def test_check_or(self) -> None:
+        x: Any = "valid"
+        check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = "http://zulip-bots.example.com/"
+        check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = "invalid"
+        with self.assertRaisesRegex(ValidationError, r"x is not a URL"):
+            check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = "http://127.0.0"
+        with self.assertRaisesRegex(ValidationError, r"x is not a URL"):
+            check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = 1
+        with self.assertRaisesRegex(ValidationError, r"x is not a string"):
+            check_or(check_string_in(["valid"]), check_url)("x", x)
+
 
 class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self) -> None:
@@ -1037,7 +1065,7 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         realm = get_realm("zulip")
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=None)
 
         result = self.client_post(
             "/json/messages",
@@ -1107,7 +1135,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         Using a webhook while in a deactivated realm fails
 
         """
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=None)
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
@@ -1748,6 +1776,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         request.META["PATH_INFO"] = ""
         request.user = hamlet = self.example_user("hamlet")
         request.user.is_verified = lambda: False
+        request.client_name = ""
         self.login_user(hamlet)
         request.session = self.client.session
         request.get_host = lambda: "zulip.testserver"
@@ -1763,6 +1792,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META["PATH_INFO"] = ""
             request.user = hamlet = self.example_user("hamlet")
             request.user.is_verified = lambda: False
+            request.client_name = ""
             self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: "zulip.testserver"
@@ -1789,6 +1819,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             request.META["PATH_INFO"] = ""
             request.user = hamlet = self.example_user("hamlet")
             request.user.is_verified = lambda: True
+            request.client_name = ""
             self.login_user(hamlet)
             request.session = self.client.session
             request.get_host = lambda: "zulip.testserver"
@@ -1801,14 +1832,15 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
 
 class TestRequireDecorators(ZulipTestCase):
     def test_require_server_admin_decorator(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
+        realm_owner = self.example_user("desdemona")
+        self.login_user(realm_owner)
 
         result = self.client_get("/activity")
         self.assertEqual(result.status_code, 302)
 
-        user.is_staff = True
-        user.save()
+        server_admin = self.example_user("iago")
+        self.login_user(server_admin)
+        self.assertEqual(server_admin.is_staff, True)
 
         result = self.client_get("/activity")
         self.assertEqual(result.status_code, 200)

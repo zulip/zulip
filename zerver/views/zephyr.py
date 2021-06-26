@@ -8,7 +8,7 @@ from typing import Optional
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import authenticated_json_view
 from zerver.lib.ccache import make_ccache
@@ -71,6 +71,6 @@ def webathena_kerberos_login(
         )
     except subprocess.CalledProcessError:
         logging.exception("Error updating the user's ccache", stack_info=True)
-        return json_error(_("We were unable to setup mirroring for you"))
+        return json_error(_("We were unable to set up mirroring for you"))
 
     return json_success()

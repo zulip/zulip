@@ -70,10 +70,11 @@ def request_event_queue(
     client_gravatar: bool,
     slim_presence: bool,
     queue_lifespan_secs: int,
-    event_types: Optional[Iterable[str]] = None,
+    event_types: Optional[Sequence[str]] = None,
     all_public_streams: bool = False,
     narrow: Iterable[Sequence[str]] = [],
     bulk_message_deletion: bool = False,
+    stream_typing_notifications: bool = False,
 ) -> Optional[str]:
 
     if not settings.USING_TORNADO:
@@ -93,6 +94,7 @@ def request_event_queue(
         "secret": settings.SHARED_SECRET,
         "lifespan_secs": queue_lifespan_secs,
         "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
+        "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
     }
 
     if event_types is not None:
@@ -145,9 +147,8 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
 def send_event(
     realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
 ) -> None:
-    """`users` is a list of user IDs, or in the case of `message` type
-    events, a list of dicts describing the users and metadata about
-    the user/message pair."""
+    """`users` is a list of user IDs, or in some special cases like message
+    send/update or embeds, dictionaries containing extra data."""
     port = get_tornado_port(realm)
     queue_json_publish(
         notify_tornado_queue_name(port),

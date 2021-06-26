@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 import subprocess
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from scripts.lib.zulip_tools import run
 
@@ -33,19 +33,22 @@ def generate_sha1sum_node_modules(
         setup_dir = os.path.realpath(os.getcwd())
     PACKAGE_JSON_FILE_PATH = os.path.join(setup_dir, "package.json")
     YARN_LOCK_FILE_PATH = os.path.join(setup_dir, "yarn.lock")
-    sha1sum = hashlib.sha1()
-    with open(PACKAGE_JSON_FILE_PATH, "rb") as fb:
-        sha1sum.update(fb.read().strip())
+    data: Dict[str, object] = {}
+    with open(PACKAGE_JSON_FILE_PATH, "r") as f:
+        data[PACKAGE_JSON_FILE_PATH] = f.read().strip()
     if os.path.exists(YARN_LOCK_FILE_PATH):
         # For backwards compatibility, we can't assume yarn.lock exists
-        with open(YARN_LOCK_FILE_PATH, "rb") as fb:
-            sha1sum.update(fb.read().strip())
+        with open(YARN_LOCK_FILE_PATH, "r") as f:
+            data[YARN_LOCK_FILE_PATH] = f.read().strip()
     with open(YARN_PACKAGE_JSON) as f:
-        yarn_version = json.load(f)["version"]
-        sha1sum.update(yarn_version.encode("utf8"))
-    sha1sum.update(subprocess.check_output(["node", "--version"]).strip())
-    yarn_args = get_yarn_args(production=production)
-    sha1sum.update("".join(sorted(yarn_args)).encode("utf8"))
+        data["yarn-package-version"] = json.load(f)["version"]
+    data["node-version"] = subprocess.check_output(
+        ["node", "--version"], universal_newlines=True
+    ).strip()
+    data["yarn-args"] = get_yarn_args(production=production)
+
+    sha1sum = hashlib.sha1()
+    sha1sum.update(json.dumps(data, sort_keys=True).encode("utf-8"))
     return sha1sum.hexdigest()
 
 

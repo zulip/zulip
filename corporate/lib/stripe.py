@@ -13,9 +13,9 @@ from django.conf import settings
 from django.core.signing import Signer
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
 
 from corporate.models import (
     Customer,
@@ -71,6 +71,26 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 
+def validate_licenses(charge_automatically: bool, licenses: Optional[int], seat_count: int) -> None:
+    min_licenses = seat_count
+    max_licenses = None
+    if not charge_automatically:
+        min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
+        max_licenses = MAX_INVOICED_LICENSES
+
+    if licenses is None or licenses < min_licenses:
+        raise BillingError(
+            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
+        )
+
+    if max_licenses is not None and licenses > max_licenses:
+        message = _(
+            "Invoices with more than {} licenses can't be processed from this page. To complete "
+            "the upgrade, please contact {}."
+        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+        raise BillingError("too many licenses", message)
+
+
 # Be extremely careful changing this function. Historical billing periods
 # are not stored anywhere, and are just computed on the fly using this
 # function. Any change you make here should return the same value (or be
@@ -116,7 +136,7 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
 
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
-    if plan.status == CustomerPlan.FREE_TRIAL:
+    if plan.is_free_trial():
         assert plan.next_invoice_date is not None  # for mypy
         return plan.next_invoice_date
 
@@ -170,10 +190,14 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
     return f"ledger_entry:{ledger_entry.id}"  # nocoverage
 
 
+def cents_to_dollar_string(cents: int) -> str:
+    return f"{cents / 100.:,.2f}"
+
+
 class BillingError(Exception):
     # error messages
-    CONTACT_SUPPORT = ugettext_lazy("Something went wrong. Please contact {email}.")
-    TRY_RELOADING = ugettext_lazy("Something went wrong. Please reload the page.")
+    CONTACT_SUPPORT = gettext_lazy("Something went wrong. Please contact {email}.")
+    TRY_RELOADING = gettext_lazy("Something went wrong. Please reload the page.")
 
     # description is used only for tests
     def __init__(self, description: str, message: Optional[str] = None) -> None:
@@ -181,6 +205,10 @@ class BillingError(Exception):
         if message is None:
             message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         self.message = message
+
+
+class LicenseLimitError(Exception):
+    pass
 
 
 class StripeCardError(BillingError):
@@ -279,8 +307,9 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = N
         customer, created = Customer.objects.update_or_create(
             realm=realm, defaults={"stripe_customer_id": stripe_customer.id}
         )
-        user.is_billing_admin = True
-        user.save(update_fields=["is_billing_admin"])
+        from zerver.lib.actions import do_make_user_billing_admin
+
+        do_make_user_billing_admin(user)
     return customer
 
 
@@ -313,6 +342,19 @@ def do_replace_payment_source(
     return updated_stripe_customer
 
 
+def stripe_customer_has_credit_card_as_default_source(stripe_customer: stripe.Customer) -> bool:
+    if not stripe_customer.default_source:
+        return False
+    return stripe_customer.default_source.object == "card"
+
+
+def customer_has_credit_card_as_default_source(customer: Customer) -> bool:
+    if not customer.stripe_customer_id:
+        return False
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+    return stripe_customer_has_credit_card_as_default_source(stripe_customer)
+
+
 # event_time should roughly be timezone_now(). Not designed to handle
 # event_times in the past or future
 @transaction.atomic
@@ -333,7 +375,7 @@ def make_end_of_cycle_updates_if_needed(
                 licenses=last_ledger_entry.licenses_at_next_renewal,
                 licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal,
             )
-        if plan.status == CustomerPlan.FREE_TRIAL:
+        if plan.is_free_trial():
             plan.invoiced_through = last_ledger_entry
             assert plan.next_invoice_date is not None
             plan.billing_cycle_anchor = plan.next_invoice_date.replace(microsecond=0)
@@ -476,6 +518,10 @@ def decimal_to_float(obj: object) -> object:
     raise TypeError  # nocoverage
 
 
+def is_free_trial_offer_enabled() -> bool:
+    return settings.FREE_TRIAL_DAYS not in (None, 0)
+
+
 # Only used for cloud signups
 @catch_stripe_errors
 def process_initial_upgrade(
@@ -488,7 +534,7 @@ def process_initial_upgrade(
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
     charge_automatically = stripe_token is not None
-    free_trial = settings.FREE_TRIAL_DAYS not in (None, 0)
+    free_trial = is_free_trial_offer_enabled()
 
     if get_current_plan_by_customer(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
@@ -606,7 +652,31 @@ def process_initial_upgrade(
 
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(realm, Realm.STANDARD)
+    do_change_plan_type(realm, Realm.STANDARD, acting_user=user)
+
+
+def update_license_ledger_for_manual_plan(
+    plan: CustomerPlan,
+    event_time: datetime,
+    licenses: Optional[int] = None,
+    licenses_at_next_renewal: Optional[int] = None,
+) -> None:
+    if licenses is not None:
+        assert get_latest_seat_count(plan.customer.realm) <= licenses
+        assert licenses > plan.licenses()
+        LicenseLedger.objects.create(
+            plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
+        )
+    elif licenses_at_next_renewal is not None:
+        assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
+        LicenseLedger.objects.create(
+            plan=plan,
+            event_time=event_time,
+            licenses=plan.licenses(),
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+    else:
+        raise AssertionError("Pass licenses or licenses_at_next_renewal")
 
 
 def update_license_ledger_for_automanaged_plan(
@@ -736,29 +806,67 @@ def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
         invoice_plan(plan, event_time)
 
 
-def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
-    Customer.objects.update_or_create(realm=realm, defaults={"default_discount": discount})
+def is_realm_on_free_trial(realm: Realm) -> bool:
+    plan = get_current_plan_by_realm(realm)
+    return plan is not None and plan.is_free_trial()
+
+
+def attach_discount_to_realm(
+    realm: Realm, discount: Decimal, *, acting_user: Optional[UserProfile]
+) -> None:
+    customer = get_customer_by_realm(realm)
+    old_discount: Optional[Decimal] = None
+    if customer is not None:
+        old_discount = customer.default_discount
+        customer.default_discount = discount
+        customer.save(update_fields=["default_discount"])
+    else:
+        Customer.objects.create(realm=realm, default_discount=discount)
     plan = get_current_plan_by_realm(realm)
     if plan is not None:
         plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
         plan.discount = discount
         plan.save(update_fields=["price_per_license", "discount"])
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
+        event_time=timezone_now(),
+        extra_data={"old_discount": old_discount, "new_discount": discount},
+    )
 
 
-def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
+def update_sponsorship_status(
+    realm: Realm, sponsorship_pending: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     customer, _ = Customer.objects.get_or_create(realm=realm)
     customer.sponsorship_pending = sponsorship_pending
     customer.save(update_fields=["sponsorship_pending"])
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            "sponsorship_pending": sponsorship_pending,
+        },
+    )
 
 
-def approve_sponsorship(realm: Realm) -> None:
+def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     from zerver.lib.actions import do_change_plan_type, internal_send_private_message
 
-    do_change_plan_type(realm, Realm.STANDARD_FREE)
+    do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
         customer.save(update_fields=["sponsorship_pending"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.REALM_SPONSORSHIP_APPROVED,
+            event_time=timezone_now(),
+        )
     notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
     for billing_admin in realm.get_human_billing_admin_users():
         with override_language(billing_admin.default_language):
@@ -770,6 +878,10 @@ def approve_sponsorship(realm: Realm) -> None:
                 f"You have been upgraded to {plan_name}, free of charge."
             )
             internal_send_private_message(notification_bot, billing_admin, message)
+
+
+def is_sponsored_realm(realm: Realm) -> bool:
+    return realm.plan_type == Realm.STANDARD_FREE
 
 
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
@@ -793,7 +905,7 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 def process_downgrade(plan: CustomerPlan) -> None:
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(plan.customer.realm, Realm.LIMITED)
+    do_change_plan_type(plan.customer.realm, Realm.LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])
 
@@ -811,6 +923,14 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         # TODO: Decimal stuff
         annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
     return annual_revenue
+
+
+def get_realms_to_default_discount_dict() -> Dict[str, Decimal]:
+    realms_to_default_discount = {}
+    customers = Customer.objects.exclude(default_discount=None).exclude(default_discount=0)
+    for customer in customers:
+        realms_to_default_discount[customer.realm.string_id] = customer.default_discount
+    return realms_to_default_discount
 
 
 # During realm deactivation we instantly downgrade the plan to Limited.
@@ -846,8 +966,19 @@ def void_all_open_invoices(realm: Realm) -> int:
     return voided_invoices_count
 
 
-def update_billing_method_of_current_plan(realm: Realm, charge_automatically: bool) -> None:
+def update_billing_method_of_current_plan(
+    realm: Realm, charge_automatically: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     plan = get_current_plan_by_realm(realm)
     if plan is not None:
         plan.charge_automatically = charge_automatically
         plan.save(update_fields=["charge_automatically"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "charge_automatically": charge_automatically,
+            },
+        )

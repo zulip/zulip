@@ -5,8 +5,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
-import * as overlays from "./overlays";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as reload from "./reload";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -37,7 +36,7 @@ function process_newly_read_message(message, options) {
         message_list.narrowed.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
-    recent_topics.update_topic_unread_count(message);
+    recent_topics_ui.update_topic_unread_count(message);
 }
 
 export function process_read_messages_event(message_ids) {
@@ -76,8 +75,7 @@ export function process_read_messages_event(message_ids) {
 
 // Takes a list of messages and marks them as read.
 // Skips any messages that are already marked as read.
-export function notify_server_messages_read(messages, options) {
-    options = options || {};
+export function notify_server_messages_read(messages, options = {}) {
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
@@ -104,11 +102,8 @@ export function notify_server_message_read(message, options) {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 export function process_visible() {
-    if (overlays.is_active() || !notifications.is_window_focused()) {
-        return;
-    }
-
     if (
+        message_viewport.is_visible_and_focused() &&
         message_viewport.bottom_message_visible() &&
         message_lists.current.can_mark_messages_read()
     ) {

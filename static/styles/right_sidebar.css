@@ -1,6 +1,4 @@
 .right-sidebar {
-    font-size: 14px;
-
     a:hover {
         text-decoration: none;
     }
@@ -126,24 +124,12 @@
     align-items: flex-start;
     justify-content: space-between;
 
-    .count {
-        float: right;
-        padding: 0 4px;
-        background-color: hsl(105, 2%, 50%);
-        color: hsl(0, 0%, 100%);
-        font-size: 12px;
-        line-height: 14px;
-        height: 15px;
-        font-weight: normal;
-        letter-spacing: 0.6px;
-        position: relative;
-        top: 3px;
-        border-radius: 4px;
-        margin-left: 5px;
+    .unread_count {
         display: none;
+        margin-top: 2.5px;
     }
 
-    &.user-with-count .count {
+    &.user-with-count .unread_count {
         display: block;
     }
 }
@@ -189,7 +175,6 @@
     }
 
     #user_filter_icon {
-        font-size: 13px;
         opacity: 0.5;
         margin-right: 5px;
 
@@ -214,6 +199,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin-top: 5px;
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */

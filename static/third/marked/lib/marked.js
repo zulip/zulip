@@ -544,8 +544,8 @@ inline.zulip = merge({}, inline.breaks, {
                        '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
                        '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
-  usermention: /^(@(_?)(?:\*\*([^\*]+)\*\*))/, // Match potentially multi-word string between @** **
-  groupmention: /^@\*([^\*]+)\*/, // Match multi-word string between @* *
+  usermention: /^@(_?)(?:\*\*([^\*]+)\*\*)/, // Match potentially multi-word string between @** **
+  groupmention: /^@(_?)(?:\*([^\*]+)\*)/, // Match multi-word string between @* *
   stream_topic: /^#\*\*([^\*>]+)>([^\*]+)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
@@ -560,58 +560,6 @@ inline.zulip = merge({}, inline.breaks, {
     ('^[', '^^\\${3,}|^^[')
     ()
 });
-
-function shorten_links(href) {
-  // This value must match what is used in the backend.
-  const COMMIT_ID_PREFIX_LENGTH = 12;
-  const url = new URL(href);
-  if (url.protocol === 'https:' && ['github.com'].includes(url.hostname)) {
-    // The following part of the code was necessary because unlike Python, str.split
-    // method in javascript does not return the remaining part of the string.
-    var parts = url.pathname.split('/').slice(1);
-    parts = parts.slice(0, 4)
-      .concat(parts.slice(4).join('/'))
-      .concat(Array(5).fill(''))
-      .slice(0, 5);
-
-    const organisation = parts[0]
-      , repository = parts[1]
-      , artifact = parts[2]
-      , value = parts[3]
-      , remaining_path = parts[4];
-
-    if (!organisation || !repository || !artifact || !value) {
-      return href;
-    }
-
-    const repo_short_text = organisation + '/' + repository;
-
-    if (remaining_path || url.hash) {
-      return href;
-    }
-
-    if (url.hostname === 'github.com') {
-      return shorten_github_links(href, artifact, repo_short_text,
-                                  value, COMMIT_ID_PREFIX_LENGTH);
-    }
-  }
-  return href;
-}
-
-/**
- * Shorten GitHub Links
- */
-
-function shorten_github_links(href, artifact, repo_short_text,
-                              value, commit_id_prefix_length) {
-  if (['pull', 'issues'].includes(artifact)) {
-    return repo_short_text + '#' + value;
-  }
-  if (artifact == 'commit') {
-    return repo_short_text + '@' + value.slice(0, commit_id_prefix_length);
-  }
-  return href;
-}
 
 /**
  * Inline Lexer & Compiler
@@ -734,8 +682,8 @@ InlineLexer.prototype.output = function(src) {
     // url (gfm)
     if (!this.inLink && (cap = this.rules.url.exec(src))) {
       src = src.substring(cap[0].length);
-      href = escape(cap[1]);
-      text = shorten_links(href)
+      text = escape(cap[1]);
+      href = text;
       out += this.renderer.link(href, null, text);
       continue;
     }
@@ -795,14 +743,14 @@ InlineLexer.prototype.output = function(src) {
     // usermention (Zulip)
     if (cap = this.rules.usermention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.usermention(unescape(cap[3] || cap[4]), cap[1], cap[2]);
+      out += this.usermention(unescape(cap[2]), cap[0], cap[1]);
       continue;
     }
 
     // groupmention (Zulip)
     if (cap = this.rules.groupmention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.groupmention(unescape(cap[1]), cap[0]);
+      out += this.groupmention(unescape(cap[2]), cap[0], cap[1]);
       continue;
     }
 
@@ -963,14 +911,14 @@ InlineLexer.prototype.usermention = function (username, orig, silent) {
   return orig;
 };
 
-InlineLexer.prototype.groupmention = function (groupname, orig) {
+InlineLexer.prototype.groupmention = function (groupname, orig, silent) {
   orig = escape(orig);
   if (typeof this.options.groupMentionHandler !== 'function')
   {
     return orig;
   }
 
-  var handled = this.options.groupMentionHandler(groupname);
+  var handled = this.options.groupMentionHandler(groupname, silent === '_');
   if (handled !== undefined) {
     return handled;
   }

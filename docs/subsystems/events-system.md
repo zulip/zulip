@@ -98,7 +98,7 @@ client.  This approach is reasonably efficient and works everywhere
 (unlike websockets, which have a decreasing but nonzero level of
 client compatibility problems).
 
-For each connected client, the **Event Queue Server** maintains an
+For each connected client, the **event queue server** maintains an
 **event queue**, which contains any events that are to be delivered to
 that client which have not yet been acknowledged by that client.
 Ignoring the subtle details around error handling, the protocol is
@@ -156,15 +156,15 @@ requesting events; its handler for this case should just restart the
 client / reload the browser so that it refetches initial data the same
 way it would on startup.  Since clients have to implement their
 startup process anyway, this approach adds minimal technical
-complexity to clients.  A nice side effect is that if the Event Queue
-Server (which stores queues in memory) were to crash and lose
+complexity to clients.  A nice side effect is that if the event queue
+server (which stores queues in memory) were to crash and lose
 its data, clients would recover, just as if they had lost Internet
 access briefly (there is some DoS risk to manage, though).
 
 Note that the garbage-collection system has hooks that are important
 for the implementation of [notifications](../subsystems/notifications.md).
 
-(The Event Queue Server is designed to save any event queues to disk
+(The event queue server is designed to save any event queues to disk
 and reload them when the server is restarted, and catches exceptions
 carefully, so such incidents are very rare, but it's nice to have a
 design that handles them without leaving broken out-of-date clients
@@ -386,7 +386,7 @@ coverage data.
 
 #### page_params
 
-In the Zulip webapp, the data returned by the `register` API is
+In the Zulip web app, the data returned by the `register` API is
 available via the `page_params` parameter.
 
 ### Messages
@@ -399,4 +399,48 @@ correctly, clients are responsible for discarding events related to
 messages that the client has not yet fetched.
 
 Additionally, see
-[the master documentation on sending messages](../subsystems/sending-messages.md)
+[the master documentation on sending messages](../subsystems/sending-messages.md).
+
+## Schema changes
+
+When changing the format of events sent into Tornado, it's important
+to make sure we handle backwards-compatibility properly.
+
+* If we're adding a new event type or new fields to an existing event
+  type, we just need to carefully document the changes in the [API
+  documentation](../documentation/api.md), being careful to bump
+  `API_FEATURE_LEVEL` and include a `**Changes**` entry in the updated
+  `GET /events` API documentation.  It's also a good idea to and open
+  issues with the mobile and terminal projects to notify them.
+* If we're making changes that could confuse existing client app logic
+  that parses events (E.g. changing the type/meaning of an existing
+  field, or removing a field), we need to be very careful, since Zulip
+  supports old clients connecting to a modern server.  See our
+  [release lifecycle](../overview/release-lifecycle.md) documentation
+  for more details on the policy.  Our technical solution is to add a
+  `client_capabilities` flag for the new format and have the code
+  continue sending data in the old format for clients that don't
+  declare support for the new capability.  `bulk_message_deletion` is
+  a good example to crib from.  (A few years later, we'll make the
+  client capability required and remove support for not having it).
+* For most event types, Tornado just passes the event through
+  transparently, and `event_queue.py` requires no changes.
+* However, when changing the format of data used by Tornado code, like
+  renaming the `presence_idle_user_ids` field in `message` events, we
+  need to be careful, because pre-upgrade events may be present in
+  Tornado's queue when we upgrade Tornado.  So it's essential to write
+  logic in `event_queue.py` to translate the old format into the new
+  format, or Tornado may crash when upgrading past the relevant
+  commit. We attempt to contain that sort of logic in the `from_dict`
+  function (which is used for changing event queue formats) and
+  `client_capabilities` conditionals (E.g. in
+  `process_deletion_event`). Compatibility code not related to a
+  `client_capabilities` entry should be marked with a
+  `# TODO/compatibility: ...` comment noting when it can be safely deleted;
+  we grep for these comments entries during major releases.
+* Schema changes are a sensitive operation, and like with database
+  schema changes, it's critical to do thoughtful manual testing.
+  E.g. run the mobile app against your test server and verify it
+  handles the new event properly, or arrange for your new Tornado code
+  to actually process a pre-upgrade event and verify via the browser
+  console what came out.

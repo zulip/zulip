@@ -2,7 +2,6 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
@@ -130,11 +129,13 @@ export function render_emoji(item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.has(item.emoji_name)) {
+
+    if (item.emoji_url) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
     }
+
     return render_typeahead_item(args);
 }
 
@@ -250,6 +251,24 @@ export function compare_by_popularity(lang_a, lang_b) {
     return util.strcmp(lang_a, lang_b);
 }
 
+function retain_unique_language_aliases(matches) {
+    // We make the typeahead a little more nicer but only showing one alias per language.
+    // For example if the user searches for prefix "j", then the typeahead list should contain
+    // "javascript" only, and not "js" and "javascript".
+    const seen_aliases = new Set();
+    const unique_aliases = [];
+    for (const lang of matches) {
+        // The matched list is already sorted based on popularity and has exact matches
+        // at the top, so we don't need to worry about sorting again.
+        const canonical_name = _.get(pygments_data.langs, [lang, "pretty_name"], lang);
+        if (!seen_aliases.has(canonical_name)) {
+            seen_aliases.add(canonical_name);
+            unique_aliases.push(lang);
+        }
+    }
+    return unique_aliases;
+}
+
 export function sort_languages(matches, query) {
     const results = typeahead.triage(query, matches);
 
@@ -265,17 +284,17 @@ export function sort_languages(matches, query) {
 
     // Languages that have the query somewhere in their name
     results.rest = results.rest.sort(compare_by_popularity);
-    return results.matches.concat(results.rest);
+    return retain_unique_language_aliases(results.matches.concat(results.rest));
 }
 
-export function sort_recipients(
+export function sort_recipients({
     users,
     query,
     current_stream,
     current_topic,
     groups = [],
     max_num_items = 20,
-) {
+}) {
     function sort_relevance(items) {
         return sort_people_for_relevance(items, current_stream, current_topic);
     }
@@ -378,11 +397,4 @@ export function sort_streams(matches, query) {
     desc_results.rest = desc_results.rest.sort(compare_by_activity);
 
     return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
-}
-
-export function sort_recipientbox_typeahead(query, matches, current_stream) {
-    // input_text may be one or more pm recipients
-    const cleaned = get_cleaned_pm_recipients(query);
-    query = cleaned[cleaned.length - 1];
-    return sort_recipients(matches, query, current_stream);
 }

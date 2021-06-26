@@ -10,10 +10,12 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
+import * as deprecated_feature_notice from "./deprecated_feature_notice";
 import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
+import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
@@ -29,8 +31,10 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
+import * as settings_data from "./settings_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as subs from "./subs";
@@ -220,11 +224,13 @@ export function in_content_editable_widget(e) {
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
     if (
-        hashchange.in_recent_topics_hash() &&
-        recent_topics.change_focused_element($(e.target), "escape")
+        recent_topics_util.is_in_focus() &&
+        // This will return false if `e.target` is not
+        // any of the recent topics elements by design.
+        recent_topics_ui.change_focused_element($(e.target), "escape")
     ) {
-        // Recent topics uses escape to make focus from RT search / filters to topics table.
-        // If focus already in table it returns false.
+        // Recent topics uses escape to switch focus from RT search / filters to topics table.
+        // If focus is already on the table it returns false.
         return true;
     }
 
@@ -274,7 +280,22 @@ export function process_escape_key(e) {
             return true;
         }
 
+        if (giphy.is_popped_from_edit_messsage()) {
+            giphy.focus_current_edit_message();
+            // Hide after setting focus so that `edit_message_id` is
+            // still set in giphy.
+            giphy.hide_giphy_popover();
+            return true;
+        }
+
         if (compose_state.composing()) {
+            // Check if the giphy popover was open using compose box.
+            // Hide GIPHY popover if it's open.
+            if (!giphy.is_popped_from_edit_messsage() && giphy.hide_giphy_popover()) {
+                $("#compose-textarea").trigger("focus");
+                return true;
+            }
+
             // Check for errors in compose box; close errors if they exist
             if ($("#compose-send-status").css("display") !== "none") {
                 $("#compose-send-status").hide();
@@ -313,7 +334,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    hashchange.show_default_view();
+    hashchange.set_hash_to_default_view();
     return true;
 }
 
@@ -410,7 +431,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    // This handles when pressing Rnter while looking at drafts.
+    // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
         drafts.drafts_handle_events(e, "enter");
@@ -530,8 +551,8 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (recent_topics.is_in_focus()) {
-                return recent_topics.change_focused_element($(e.target), event_name);
+            if (recent_topics_util.is_in_focus()) {
+                return recent_topics_ui.change_focused_element($(e.target), event_name);
             }
     }
 
@@ -552,6 +573,8 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "up_arrow":
         case "down_arrow":
+        case "vim_up":
+        case "vim_down":
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
@@ -651,26 +674,39 @@ export function process_hotkey(e, hotkey) {
         }
 
         if (
-            (event_name === "up_arrow" || event_name === "down_arrow") &&
+            (event_name === "up_arrow" ||
+                event_name === "down_arrow" ||
+                event_name === "page_up" ||
+                event_name === "page_down" ||
+                event_name === "home" ||
+                event_name === "end") &&
             compose_state.focus_in_empty_compose()
         ) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
-        } else if (event_name === "page_up") {
-            $(":focus").caret(0).animate({scrollTop: 0}, "fast");
-            return true;
-        } else if (event_name === "page_down") {
-            // so that it always goes to the end of the text box.
-            const height = $(":focus")[0].scrollHeight;
-            $(":focus").caret(Number.POSITIVE_INFINITY).animate({scrollTop: height}, "fast");
-            return true;
-        } else if (event_name === "search_with_k") {
-            // Do nothing; this allows one to use Ctrl+K inside compose.
-        } else if (event_name === "star_message") {
-            // Do nothing; this allows one to use Ctrl+S inside compose.
         } else {
-            // Let the browser handle the key normally.
-            return false;
+            switch (event_name) {
+                case "page_up":
+                    $(":focus").caret(0).animate({scrollTop: 0}, "fast");
+                    return true;
+                case "page_down": {
+                    // so that it always goes to the end of the text box.
+                    const height = $(":focus")[0].scrollHeight;
+                    $(":focus")
+                        .caret(Number.POSITIVE_INFINITY)
+                        .animate({scrollTop: height}, "fast");
+                    return true;
+                }
+                case "search_with_k":
+                    // Do nothing; this allows one to use Ctrl+K inside compose.
+                    break;
+                case "star_message":
+                    // Do nothing; this allows one to use Ctrl+S inside compose.
+                    break;
+                default:
+                    // Let the browser handle the key normally.
+                    return false;
+            }
         }
     }
 
@@ -703,7 +739,11 @@ export function process_hotkey(e, hotkey) {
             subs.view_stream();
             return true;
         }
-        if (event_name === "n_key" && overlays.streams_open() && page_params.can_create_streams) {
+        if (
+            event_name === "n_key" &&
+            overlays.streams_open() &&
+            settings_data.user_can_create_streams()
+        ) {
             subs.open_create_stream();
             return true;
         }
@@ -752,15 +792,13 @@ export function process_hotkey(e, hotkey) {
             return true;
     }
 
-    // We don't want hotkeys below this to work when recent topics is
-    // open. These involve compose box hotkeys and hotkeys that can only
-    // be done performed on a message.
-    if (recent_topics.is_visible()) {
-        return true;
-    }
-
-    // Compose box hotkeys
+    // Shortcuts that are useful with an empty message feed, like opening compose.
     switch (event_name) {
+        case "reply_message": // 'r': respond to message
+            // Note that you can "Enter" to respond to messages as well,
+            // but that is handled in process_enter_key().
+            compose_actions.respond_to_message({trigger: "hotkey"});
+            return true;
         case "compose": // 'c': compose
             compose_actions.start("stream", {trigger: "compose_hotkey"});
             return true;
@@ -768,29 +806,28 @@ export function process_hotkey(e, hotkey) {
             compose_actions.start("private", {trigger: "compose_hotkey"});
             return true;
         case "open_drafts":
-            drafts.launch();
-            return true;
-        case "reply_message": // 'r': respond to message
-            // Note that you can "Enter" to respond to messages as well,
-            // but that is handled in process_enter_key().
-            compose_actions.respond_to_message({trigger: "hotkey"});
+            browser_history.go_to_location("drafts");
             return true;
         case "C_deprecated":
-            ui.maybe_show_deprecation_notice("C");
+            deprecated_feature_notice.maybe_show_deprecation_notice("C");
             return true;
         case "star_deprecated":
-            ui.maybe_show_deprecation_notice("*");
+            deprecated_feature_notice.maybe_show_deprecation_notice("*");
             return true;
-        case "copy_with_c":
-            copy_and_paste.copy_handler();
-            return true;
+    }
+
+    // We don't want hotkeys below this to work when recent topics is
+    // open. These involve hotkeys that can only be performed on a message.
+    if (recent_topics_util.is_visible()) {
+        return false;
     }
 
     if (message_lists.current.empty()) {
         return false;
     }
 
-    // Navigation shortcuts
+    // Shortcuts for navigation and other applications that require a
+    // nonempty message feed but do not depend on the selected message.
     switch (event_name) {
         case "down_arrow":
         case "vim_down":
@@ -816,6 +853,9 @@ export function process_hotkey(e, hotkey) {
         case "vim_page_down":
         case "spacebar":
             navigate.page_down();
+            return true;
+        case "copy_with_c":
+            copy_and_paste.copy_handler();
             return true;
     }
 

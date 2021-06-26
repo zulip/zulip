@@ -2,7 +2,7 @@ import logging
 import re
 import sys
 from types import TracebackType
-from typing import Iterable, Optional, Type, cast
+from typing import Optional, Sequence, Type, cast
 
 
 class ExtraConsoleOutputInTestException(Exception):
@@ -81,7 +81,7 @@ class TeeStderrAndFindExtraConsoleOutput:
         self.stderr_stream.write(data)
         self.extra_output_finder.find_extra_output(data)
 
-    def writelines(self, data: Iterable[str]) -> None:
+    def writelines(self, data: Sequence[str]) -> None:
         self.stderr_stream.writelines(data)
         lines = "".join(data)
         self.extra_output_finder.find_extra_output(lines)
@@ -110,7 +110,7 @@ class TeeStdoutAndFindExtraConsoleOutput:
         self.stdout_stream.write(data)
         self.extra_output_finder.find_extra_output(data)
 
-    def writelines(self, data: Iterable[str]) -> None:
+    def writelines(self, data: Sequence[str]) -> None:
         self.stdout_stream.writelines(data)
         lines = "".join(data)
         self.extra_output_finder.find_extra_output(lines)

@@ -2,7 +2,7 @@
 {% set entrypoint = "integrations" %}
 
 {% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endblock %}
 
 {% block hello_page_container %} hello-main{% endblock %}
@@ -26,8 +26,7 @@
                     <h2 class="portico-page-subheading">
                         {% trans %}
                         And hundreds more through
-                        <a href="/integrations/doc/hubot">Hubot</a>,
-                        <a href="/integrations/doc/zapier">Zapier</a>,
+                        <a href="/integrations/doc/zapier">Zapier</a>
                         and
                         <a href="/integrations/doc/ifttt">IFTTT</a>.
                         {% endtrans %}
@@ -85,7 +84,7 @@
                             </h4>
                         </a>
                         {% endfor %}
-                        <hr>
+                        <hr />
                         <h3>{% trans %}Custom integrations{% endtrans %}</h3>
                         <a href="/api/incoming-webhooks-overview">
                             <h4>{% trans %}Incoming webhooks{% endtrans %}</h4>
@@ -125,14 +124,19 @@
                             </a>
                             {% endif %}
                         {% endfor %}
-                        <a href="/api/integrations-overview">
-                            <div class="integration-lozenge integration-create-your-own">
-                                <div class="integration-logo">
-                                    <i class="fa fa-plus" aria-hidden="true"></i>
-                                </div>
-                                <h3 class="integration-name create-your-own">{% trans %}Create your own!{% endtrans %}</h3>
-                            </div>
-                        </a>
+                        <hr />
+                        <div class="integration-request center">
+                            <p>Don't see an integration you need? We'd love to help.</p>
+                            <a href="/api/integrations-overview" class="button green">
+                                Create your own
+                            </a>
+                            <span class="integration-divider">
+                                or
+                            </span>
+                            <a href="/help/request-an-integration" class="button green">
+                                Request an integration
+                            </a>
+                        </div>
                     </div>
                 </div>
 

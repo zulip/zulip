@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Sequence
 
 from django.http import HttpRequest, HttpResponse
 
@@ -23,7 +23,7 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
 def api_netlify_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type="body"),
+    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     message_template = get_template(request, payload)

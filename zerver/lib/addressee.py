@@ -1,6 +1,6 @@
 from typing import Iterable, List, Optional, Sequence, Union, cast
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import (

@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as common from "../common";
+import {password_quality, password_warning} from "../password_quality";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -10,19 +11,36 @@ $(() => {
     if (password_field.length > 0) {
         $.validator.addMethod(
             "password_strength",
-            (value) => common.password_quality(value, undefined, password_field),
-            () => common.password_warning(password_field.val(), password_field),
+            (value) => password_quality(value, undefined, password_field),
+            () => password_warning(password_field.val(), password_field),
         );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
-        common.password_quality(password_field.val(), $("#pw_strength .bar"), password_field);
+        password_quality(password_field.val(), $("#pw_strength .bar"), password_field);
 
         password_field.on("input", function () {
             // Update the password strength bar even if we aren't validating
             // the field yet.
-            common.password_quality($(this).val(), $("#pw_strength .bar"), $(this));
+            password_quality($(this).val(), $("#pw_strength .bar"), $(this));
         });
     }
+
+    common.setup_password_visibility_toggle(
+        "#ldap-password",
+        "#ldap-password ~ .password_visibility_toggle",
+    );
+    common.setup_password_visibility_toggle(
+        "#id_password",
+        "#id_password ~ .password_visibility_toggle",
+    );
+    common.setup_password_visibility_toggle(
+        "#id_new_password1",
+        "#id_new_password1 ~ .password_visibility_toggle",
+    );
+    common.setup_password_visibility_toggle(
+        "#id_new_password2",
+        "#id_new_password2 ~ .password_visibility_toggle",
+    );
 
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
@@ -85,6 +103,14 @@ $(() => {
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
+    $("#registration").on("submit", () => {
+        if ($("#registration").valid()) {
+            $(".register-button .loader").css("display", "inline-block");
+            $(".register-button").prop("disabled", true);
+            $(".register-button span").hide();
+        }
+    });
+
     // Code in this block will be executed when the /accounts/send_confirm
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
@@ -129,8 +155,8 @@ $(() => {
         "focusout keydown",
         function (e) {
             // check if it is the "focusout" or if it is a keydown, then check if
-            // the keycode was the one for "enter" (13).
-            if (e.type === "focusout" || e.which === 13) {
+            // the keycode was the one for "Enter".
+            if (e.type === "focusout" || e.key === "Enter") {
                 $(this).val($(this).val().trim());
             }
         },
@@ -180,7 +206,7 @@ $(() => {
     function update_full_name_section() {
         if (
             $("#source_realm_select").length &&
-            $("#source_realm_select").find(":selected").val() !== "on"
+            $("#source_realm_select").find(":selected").val() !== ""
         ) {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();

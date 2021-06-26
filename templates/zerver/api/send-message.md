@@ -1,17 +1,12 @@
-# Send a message
+{generate_api_title(/messages:post)}
 
 {generate_api_description(/messages:post)}
 
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/messages:post|example}
-
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 
 {generate_code_example(javascript)|/messages:post|example}
 
@@ -71,23 +66,16 @@ file.
 
 {generate_api_arguments_table|zulip.yaml|/messages:post}
 
-## Response
+{generate_parameter_description(/messages:post)}
 
-#### Return values
+## Response
 
 {generate_return_values_table|zulip.yaml|/messages:post}
 
+{generate_response_description(/messages:post)}
+
 #### Example response
-A typical successful JSON response may look like:
 
 {generate_code_example|/messages:post|fixture(200)}
 
-A typical failed JSON response for when a stream message is sent to a stream
-that does not exist:
-
-{generate_code_example|/messages:post|fixture(400_0)}
-
-A typical failed JSON response for when a private message is sent to a user
-that does not exist:
-
-{generate_code_example|/messages:post|fixture(400_1)}
+{generate_code_example|/messages:post|fixture(400)}

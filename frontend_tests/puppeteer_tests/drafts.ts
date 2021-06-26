@@ -37,7 +37,7 @@ async function test_empty_drafts(page: Page): Promise<void> {
 }
 
 async function create_stream_message_draft(page: Page): Promise<void> {
-    console.log("Creating Stream Message Draft");
+    console.log("Creating stream message draft");
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream-message", {visible: true});
     await common.fill_form(page, "form#send_message_form", {
@@ -63,7 +63,7 @@ async function open_compose_markdown_preview(page: Page): Promise<void> {
     await page.waitForSelector(new_topic_button, {visible: true});
     await page.click(new_topic_button);
 
-    const markdown_preview_button = "#markdown_preview"; // eye icon.
+    const markdown_preview_button = "#compose .markdown_preview"; // eye icon.
     await page.waitForSelector(markdown_preview_button, {visible: true});
     await page.click(markdown_preview_button);
 }
@@ -104,7 +104,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             ".draft-row .message_header_private_message .stream_label",
         ),
-        "You and Cordelia Lear, King Hamlet",
+        "You and Cordelia, Lear's daughter, King Hamlet",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -116,7 +116,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
 }
 
 async function test_restore_message_draft(page: Page): Promise<void> {
-    console.log("Restoring Stream Message Draft");
+    console.log("Restoring stream message draft");
     await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     await wait_for_drafts_to_dissapear(page);
     await page.waitForSelector("#stream-message", {visible: true});
@@ -137,7 +137,7 @@ async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.fill_form(page, "form#send_message_form", {
         stream_message_recipient_stream: "all",
         stream_message_recipient_topic: "tests",
-        content: "Updated Stream Message",
+        content: "Updated stream message",
     });
     await page.click("#compose_close");
 }
@@ -166,7 +166,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
             page,
             ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
         ),
-        "Updated Stream Message",
+        "Updated stream message",
     );
 }
 
@@ -183,7 +183,7 @@ async function test_restore_private_message_draft(page: Page): Promise<void> {
     await common.pm_recipient.expect(page, `${cordelia_internal_email},${hamlet_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "Cordelia Lear, King Hamlet - Zulip Dev - Zulip",
+        "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
         "Didn't narrow to the private messages with cordelia and hamlet",
     );
     await page.click("#compose_close");
@@ -230,7 +230,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
             page,
             ".draft-row .message_header_private_message .stream_label",
         ),
-        "You and Cordelia Lear",
+        "You and Cordelia, Lear's daughter",
     );
     assert.strictEqual(
         await common.get_text_from_selector(

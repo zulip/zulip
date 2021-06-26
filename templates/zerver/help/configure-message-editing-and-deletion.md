@@ -13,6 +13,7 @@ is highly configurable. Two things are true under any configuration:
 * Message content can only ever be modified by the original author.
 * Any message can be deleted at any time by an organization administrator.
 
+<div class="centered_table"></div>
 |                                    | Admins   | Members |
 |---                                 |---       |---      |
 | Edit your message content          | [1]      | [1]     |
@@ -20,14 +21,18 @@ is highly configurable. Two things are true under any configuration:
 | Edit your message topics           | [1]      | [1]     |
 | Add a topic to a topicless message | [1]      | [1]     |
 | Edit others' message topics        | [1]      | [2]     |
+| Move topics between streams        | [4]      | [4]     |
 | Delete your messages               | &#10004; | [3]     |
 | Delete others' messages            | &#10004; |         |
 
 [1] Controlled by **Allow message editing**.
 
-[2] Controlled by **Users can edit the topic of any message**.
+[2] Controlled by **Who can edit topic of any message**.
 
 [3] Controlled by **Allow message deleting**.
+
+[4] Controlled by **Who can move messages between streams**, in
+addition to other restrictions on editing topics.
 
 There are a few useful things to understand about the message editing
 settings.
@@ -50,10 +55,25 @@ You can access the message editing and deletion settings as follows.
 
 {start_tabs}
 
-{settings_tab|organization-settings}
+{settings_tab|organization-permissions}
 
 4. Under **Message editing**, configure **Allow message editing**,
-   **Users can edit the topic of any message**, and **Allow message deleting**.
+   **Who can edit topic of any message**, and **Allow message deleting**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+### Configure who can move topics between streams
+
+By default, only organization administrators can move topics between
+streams.  You can configure which roles have permission to do so:
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+2. Under **Message editing**, configure **Who can move messages between streams**.
 
 {!save-changes.md!}
 
@@ -63,3 +83,5 @@ You can access the message editing and deletion settings as follows.
 
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Configure message retention policy](/help/message-retention-policy)
+* [Rename a topic](/help/rename-a-topic)
+* [Restrict topic editing](/help/configure-who-can-edit-topics)

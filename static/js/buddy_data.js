@@ -1,7 +1,8 @@
 import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
+import * as muting from "./muting";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -54,14 +55,14 @@ export function status_description(user_id) {
 
     switch (status) {
         case "active":
-            return i18n.t("Active");
+            return $t({defaultMessage: "Active"});
         case "idle":
-            return i18n.t("Idle");
+            return $t({defaultMessage: "Idle"});
         case "away_them":
         case "away_me":
-            return i18n.t("Unavailable");
+            return $t({defaultMessage: "Unavailable"});
         default:
-            return i18n.t("Offline");
+            return $t({defaultMessage: "Offline"});
     }
 }
 
@@ -122,28 +123,6 @@ export function sort_users(user_ids) {
     return user_ids;
 }
 
-function filter_user_ids(user_filter_text, user_ids) {
-    if (user_filter_text === "") {
-        return user_ids;
-    }
-
-    user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
-
-    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
-    search_terms = search_terms.map((s) => s.trim());
-
-    const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
-
-    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-    return Array.from(user_id_dict.keys());
-}
-
-export function matches_filter(user_filter_text, user_id) {
-    // This is a roundabout way of checking a user if you look
-    // too hard at it, but it should be fine for now.
-    return filter_user_ids(user_filter_text, [user_id]).length === 1;
-}
-
 function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
 }
@@ -154,34 +133,43 @@ export function get_my_user_status(user_id) {
     }
 
     if (user_status.is_away(user_id)) {
-        return i18n.t("(unavailable)");
+        return $t({defaultMessage: "(unavailable)"});
     }
 
-    return i18n.t("(you)");
+    return $t({defaultMessage: "(you)"});
 }
 
 export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
     if (status === "active") {
-        return i18n.t("Active now");
+        return $t({defaultMessage: "Active now"});
     }
 
+    if (status === "idle") {
+        // When we complete our presence API rewrite to have the data
+        // plumbed, we may want to change this to also mention when
+        // they were last active.
+        return $t({defaultMessage: "Idle"});
+    }
+
+    const last_active_date = presence.last_active_date(user_id);
+    let last_seen;
     if (page_params.realm_is_zephyr_mirror_realm) {
         // We don't send presence data to clients in Zephyr mirroring realms
-        return i18n.t("Unknown");
+        last_seen = $t({defaultMessage: "Unknown"});
+    } else if (last_active_date === undefined) {
+        // There are situations where the client has incomplete presence
+        // history on a user.  This can happen when users are deactivated,
+        // or when they just haven't been present in a long time (and we
+        // may have queries on presence that go back only N weeks).
+        //
+        // We give this vague status for such users; we will get to
+        // delete this code when we finish rewriting the presence API.
+        last_seen = $t({defaultMessage: "More than 2 weeks ago"});
+    } else {
+        last_seen = timerender.last_seen_status_from_date(last_active_date);
     }
-
-    // There are situations where the client has incomplete presence
-    // history on a user.  This can happen when users are deactivated,
-    // or when they just haven't been present in a long time (and we
-    // may have queries on presence that go back only N weeks).
-    //
-    // We give the somewhat vague status of "Unknown" for these users.
-    const last_active_date = presence.last_active_date(user_id);
-    if (last_active_date === undefined) {
-        return i18n.t("More than 2 weeks ago");
-    }
-    return timerender.last_seen_status_from_date(last_active_date);
+    return $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
 }
 
 export function info_for(user_id) {
@@ -202,15 +190,6 @@ export function info_for(user_id) {
     };
 }
 
-function get_last_seen(active_status, last_seen) {
-    if (active_status === "active") {
-        return last_seen;
-    }
-
-    const last_seen_text = i18n.t("Last active: __- last_seen__", {last_seen});
-    return last_seen_text;
-}
-
 export function get_title_data(user_ids_string, is_group) {
     if (is_group === true) {
         // For groups, just return a string with recipient names.
@@ -229,7 +208,10 @@ export function get_title_data(user_ids_string, is_group) {
         const bot_owner = people.get_bot_owner_user(person);
 
         if (bot_owner) {
-            const bot_owner_name = i18n.t("Owner: __name__", {name: bot_owner.full_name});
+            const bot_owner_name = $t(
+                {defaultMessage: "Owner: {name}"},
+                {name: bot_owner.full_name},
+            );
 
             return {
                 first_line: person.full_name,
@@ -248,23 +230,25 @@ export function get_title_data(user_ids_string, is_group) {
 
     // For buddy list and individual PMS.  Since is_group=False, it's
     // a single, human, user.
-    const active_status = presence.get_status(user_id);
     const last_seen = user_last_seen_time_status(user_id);
+    const is_my_user = people.is_my_user_id(user_id);
 
     // Users has a status.
     if (user_status.get_status_text(user_id)) {
         return {
             first_line: person.full_name,
             second_line: user_status.get_status_text(user_id),
-            third_line: get_last_seen(active_status, last_seen),
+            third_line: last_seen,
+            show_you: is_my_user,
         };
     }
 
     // Users does not have a status.
     return {
         first_line: person.full_name,
-        second_line: get_last_seen(active_status, last_seen),
+        second_line: last_seen,
         third_line: "",
+        show_you: is_my_user,
     };
 }
 
@@ -272,6 +256,31 @@ export function get_item(user_id) {
     const info = info_for(user_id);
     compose_fade_users.update_user_info([info], fade_config);
     return info;
+}
+
+export function get_items_for_users(user_ids) {
+    const user_info = user_ids.map((user_id) => info_for(user_id));
+    compose_fade_users.update_user_info(user_info, fade_config);
+    return user_info;
+}
+
+export function huddle_fraction_present(huddle) {
+    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
+
+    let num_present = 0;
+
+    for (const user_id of user_ids) {
+        if (presence.is_active(user_id)) {
+            num_present += 1;
+        }
+    }
+
+    if (num_present === user_ids.length) {
+        return 1;
+    } else if (num_present !== 0) {
+        return 0.5;
+    }
+    return undefined;
 }
 
 function user_is_recently_active(user_id) {
@@ -299,20 +308,9 @@ function maybe_shrink_list(user_ids, user_filter_text) {
     return user_ids;
 }
 
-function get_user_id_list(user_filter_text) {
-    let user_ids;
-
-    if (user_filter_text) {
-        // If there's a filter, select from all users, not just those
-        // recently active.
-        user_ids = filter_user_ids(user_filter_text, people.get_active_user_ids());
-    } else {
-        // From large realms, the user_ids in presence may exclude
-        // users who have been idle more than three weeks.  When the
-        // filter text is blank, we show only those recently active users.
-        user_ids = presence.get_user_ids();
-    }
-
+function filter_user_ids(user_filter_text, user_ids) {
+    // This first filter is for whether the user is eligible to be
+    // displayed in the right sidebar at all.
     user_ids = user_ids.filter((user_id) => {
         const person = people.get_by_user_id(user_id);
 
@@ -321,40 +319,65 @@ function get_user_id_list(user_filter_text) {
             return false;
         }
 
-        // if the user is bot, do not show in presence data.
-        return !person.is_bot;
+        if (person.is_bot) {
+            // Bots should never appear in the right sidebar.  This
+            // case should never happen, since bots cannot have
+            // presence data.
+            return false;
+        }
+
+        if (muting.is_user_muted(user_id)) {
+            // Muted users are hidden from the right sidebar entirely.
+            return false;
+        }
+
+        return true;
     });
+
+    if (!user_filter_text) {
+        return user_ids;
+    }
+
+    // If a query is present in "Search people", we return matches.
+    user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
+
+    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
+    search_terms = search_terms.map((s) => s.trim());
+
+    const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
+
+    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+
+    return Array.from(user_id_dict.keys());
+}
+
+function get_filtered_user_id_list(user_filter_text) {
+    let base_user_id_list;
+
+    if (user_filter_text) {
+        // If there's a filter, select from all users, not just those
+        // recently active.
+        base_user_id_list = people.get_active_user_ids();
+    } else {
+        // From large realms, the user_ids in presence may exclude
+        // users who have been idle more than three weeks.  When the
+        // filter text is blank, we show only those recently active users.
+        base_user_id_list = presence.get_user_ids();
+    }
+
+    const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
     return user_ids;
 }
 
 export function get_filtered_and_sorted_user_ids(user_filter_text) {
     let user_ids;
-    user_ids = get_user_id_list(user_filter_text);
+    user_ids = get_filtered_user_id_list(user_filter_text);
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
     return sort_users(user_ids);
 }
 
-export function get_items_for_users(user_ids) {
-    const user_info = user_ids.map((user_id) => info_for(user_id));
-    compose_fade_users.update_user_info(user_info, fade_config);
-    return user_info;
-}
-
-export function huddle_fraction_present(huddle) {
-    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
-
-    let num_present = 0;
-
-    for (const user_id of user_ids) {
-        if (presence.is_active(user_id)) {
-            num_present += 1;
-        }
-    }
-
-    if (num_present === user_ids.length) {
-        return 1;
-    } else if (num_present !== 0) {
-        return 0.5;
-    }
-    return undefined;
+export function matches_filter(user_filter_text, user_id) {
+    // This is a roundabout way of checking a user if you look
+    // too hard at it, but it should be fine for now.
+    return filter_user_ids(user_filter_text, [user_id]).length === 1;
 }

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import orjson
 from defusedxml.ElementTree import fromstring as xml_fromstring
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
@@ -72,6 +72,7 @@ UNSUPPORTED_EVENT_TYPES = [
     "story_delete_activity",
     "story_move_into_project_activity",
     "epic_update_activity",
+    "label_create_activity",
 ]
 
 

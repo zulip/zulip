@@ -4,7 +4,7 @@ This is mostly from
 
 ## Fixing the last commit
 ### Changing the last commit message
-1. `git commit --amend -m "New Message"`
+1. `git commit --amend -m "New message"`
 
 ### Changing the last commit
 1. Make your changes to the files

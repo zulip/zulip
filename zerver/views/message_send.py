@@ -6,7 +6,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import (
@@ -31,7 +31,6 @@ from zerver.models import (
     RealmDomain,
     UserProfile,
     email_to_domain,
-    get_realm,
     get_user_including_cross_realm,
 )
 
@@ -228,14 +227,9 @@ def send_message_backend(
 
     realm = None
     if realm_str and realm_str != user_profile.realm.string_id:
-        if not can_forge_sender:
-            # The email gateway bot needs to be able to send messages in
-            # any realm.
-            return json_error(_("User not authorized for this query"))
-        try:
-            realm = get_realm(realm_str)
-        except Realm.DoesNotExist:
-            return json_error(_("Unknown organization '{}'").format(realm_str))
+        # The realm_str parameter does nothing, because it has to match
+        # the user's realm - but we keep it around for backward compatibility.
+        return json_error(_("User not authorized for this query"))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -331,5 +325,5 @@ def render_message_backend(
     message.content = content
     message.sending_client = request.client
 
-    rendered_content = render_markdown(message, content, realm=user_profile.realm)
-    return json_success({"rendered": rendered_content})
+    rendering_result = render_markdown(message, content, realm=user_profile.realm)
+    return json_success({"rendered": rendering_result.rendered_content})

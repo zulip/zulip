@@ -4,7 +4,7 @@ import _ from "lodash";
 let emoji_codes = {};
 
 // `emojis_by_name` is the central data source that is supposed to be
-// used by every widget in the webapp for gathering data for displaying
+// used by every widget in the web app for gathering data for displaying
 // emojis. Emoji picker uses this data to derive data for its own use.
 export const emojis_by_name = new Map();
 

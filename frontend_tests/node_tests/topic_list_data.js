@@ -16,6 +16,10 @@ const narrow_state = mock_esm("../../static/js/narrow_state", {
     topic() {},
 });
 
+const topic_list = mock_esm("../../static/js/topic_list", {
+    get_topic_search_term() {},
+});
+
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
@@ -34,13 +38,13 @@ function get_list_info(zoomed) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_topic_history.reset();
-        f(override);
+        f({override});
     });
 }
 
-test("get_list_info w/real stream_topic_history", (override) => {
+test("get_list_info w/real stream_topic_history", ({override}) => {
     let list_info;
     const empty_list_info = get_list_info();
 
@@ -50,13 +54,15 @@ test("get_list_info w/real stream_topic_history", (override) => {
         num_possible_topics: 0,
     });
 
-    for (const i of _.range(7)) {
-        const topic_name = "topic " + i;
+    function add_topic_message(topic_name, message_id) {
         stream_topic_history.add_message({
             stream_id: general.stream_id,
             topic_name,
-            message_id: 1000 + i,
+            message_id,
         });
+    }
+    for (const i of _.range(7)) {
+        add_topic_message("topic " + i, 1000 + i);
     }
 
     override(narrow_state, "topic", () => "topic 6");
@@ -75,15 +81,27 @@ test("get_list_info w/real stream_topic_history", (override) => {
         url: "#narrow/stream/556-general/topic/topic.206",
     });
 
-    // If we zoom in, we'll show all 7 topics.
+    // If we zoom in, our results based on topic filter.
+    // If topic search input is empty, we show all 7 topics.
+
     const zoomed = true;
+    override(topic_list, "get_topic_search_term", () => "");
     list_info = get_list_info(zoomed);
     assert.equal(list_info.items.length, 7);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.num_possible_topics, 7);
+
+    add_topic_message("After Brooklyn", 1008);
+    add_topic_message("Catering", 1009);
+    // when topic search is open then we list topics based on search term.
+    override(topic_list, "get_topic_search_term", () => "b,c");
+    list_info = get_list_info(zoomed);
+    assert.equal(list_info.items.length, 2);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.num_possible_topics, 2);
 });
 
-test("get_list_info unreads", (override) => {
+test("get_list_info unreads", ({override}) => {
     let list_info;
 
     override(stream_topic_history, "get_recent_topic_names", () =>

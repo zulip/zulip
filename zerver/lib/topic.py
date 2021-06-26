@@ -126,35 +126,51 @@ def user_message_exists_for_topic(
     ).exists()
 
 
+def update_edit_history(
+    message: Message, last_edit_time: datetime, edit_history_event: Dict[str, Any]
+) -> None:
+    message.last_edit_time = last_edit_time
+    if message.edit_history is not None:
+        edit_history = orjson.loads(message.edit_history)
+        edit_history.insert(0, edit_history_event)
+    else:
+        edit_history = [edit_history_event]
+    message.edit_history = orjson.dumps(edit_history).decode()
+
+
 def update_messages_for_topic_edit(
-    message: Message,
+    acting_user: UserProfile,
+    edited_message: Message,
     propagate_mode: str,
     orig_topic_name: str,
     topic_name: Optional[str],
     new_stream: Optional[Stream],
-    old_recipient_id: Optional[int],
+    old_stream: Stream,
     edit_history_event: Dict[str, Any],
     last_edit_time: datetime,
 ) -> List[Message]:
-    assert (new_stream and old_recipient_id) or (not new_stream and not old_recipient_id)
-
-    if old_recipient_id is not None:
-        recipient_id = old_recipient_id
-    else:
-        recipient_id = message.recipient_id
-
-    propagate_query = Q(recipient_id=recipient_id, subject__iexact=orig_topic_name)
+    propagate_query = Q(recipient_id=old_stream.recipient_id, subject__iexact=orig_topic_name)
     if propagate_mode == "change_all":
-        propagate_query = propagate_query & ~Q(id=message.id)
+        propagate_query = propagate_query & ~Q(id=edited_message.id)
     if propagate_mode == "change_later":
-        propagate_query = propagate_query & Q(id__gt=message.id)
+        propagate_query = propagate_query & Q(id__gt=edited_message.id)
 
     messages = Message.objects.filter(propagate_query).select_related()
 
     update_fields = ["edit_history", "last_edit_time"]
 
-    # Evaluate the query before running the update
-    messages_list = list(messages)
+    if new_stream is not None:
+        # If we're moving the messages between streams, only move
+        # messages that the acting user can access, so that one cannot
+        # gain access to messages through moving them.
+        from zerver.lib.message import bulk_access_messages
+
+        messages_list = bulk_access_messages(acting_user, messages, stream=old_stream)
+    else:
+        # For single-message edits or topic moves within a stream, we
+        # allow moving history the user may not have access in order
+        # to keep topics together.
+        messages_list = list(messages)
 
     # The cached ORM objects are not changed by the upcoming
     # messages.update(), and the remote cache update (done by the
@@ -170,13 +186,7 @@ def update_messages_for_topic_edit(
             m.set_topic_name(topic_name)
 
     for message in messages_list:
-        message.last_edit_time = last_edit_time
-        if message.edit_history is not None:
-            edit_history = orjson.loads(message.edit_history)
-            edit_history.insert(0, edit_history_event)
-        else:
-            edit_history = [edit_history_event]
-        message.edit_history = orjson.dumps(edit_history).decode()
+        update_edit_history(message, last_edit_time, edit_history_event)
 
     Message.objects.bulk_update(messages_list, update_fields)
 

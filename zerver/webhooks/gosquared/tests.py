@@ -22,7 +22,7 @@ class GoSquaredHookTests(WebhookTestCase):
         )
 
     def test_chat_message(self) -> None:
-        expected_topic = "Live Chat Session - Zulip Chat"
+        expected_topic = "Live chat session - Zulip Chat"
         expected_message = CHAT_MESSAGE_TEMPLATE.format(
             status="visitor",
             name="John Smith",

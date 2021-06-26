@@ -23,7 +23,7 @@ class zulip_ops::profile::zmirror {
     require => Exec['setup_apt_repo_debathena'],
   }
 
-  file { '/etc/supervisor/conf.d/zmirror.conf':
+  file { "${zulip::common::supervisor_conf_dir}/zmirror.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
@@ -57,6 +57,13 @@ class zulip_ops::profile::zmirror {
     group   => 'root',
     mode    => '0755',
     source  => 'puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror',
+  }
+
+  # Allow the relevant UDP ports
+  concat::fragment { 'iptables-zmirror':
+    target => '/etc/iptables/rules.v4',
+    source => 'puppet:///modules/zulip_ops/iptables/zmirror',
+    order  => '20',
   }
 
   # TODO: Do the rest of our setup, which includes at least:

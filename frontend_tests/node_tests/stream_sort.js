@@ -45,9 +45,9 @@ function sort_groups(query) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
@@ -62,7 +62,7 @@ test("no_subscribed_streams", () => {
     assert.equal(stream_sort.first_stream_id(), undefined);
 });
 
-test("basics", (override) => {
+test("basics", ({override}) => {
     stream_data.add_sub(scalene);
     stream_data.add_sub(fast_tortoise);
     stream_data.add_sub(pneumonia);

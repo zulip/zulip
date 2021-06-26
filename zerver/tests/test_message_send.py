@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional, Set
+from typing import Any, List, Mapping, Optional, Set
 from unittest import mock
 
 import orjson
@@ -15,6 +15,7 @@ from zerver.lib.actions import (
     build_message_send_dict,
     check_message,
     check_send_stream_message,
+    do_add_realm_domain,
     do_change_can_forge_sender,
     do_change_stream_post_policy,
     do_create_realm,
@@ -47,7 +48,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Message,
     Realm,
@@ -521,7 +521,7 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assertEqual(len(recent_conversations), 1)
+        self.assert_length(recent_conversations, 1)
         recent_conversation = list(recent_conversations.values())[0]
         recipient_id = list(recent_conversations.keys())[0]
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
@@ -541,7 +541,7 @@ class MessagePOSTTest(ZulipTestCase):
         self_message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        self.assertEqual(len(recent_conversations), 2)
+        self.assert_length(recent_conversations, 2)
         recent_conversation = recent_conversations[recipient_id]
         self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
         self.assertEqual(recent_conversation["max_message_id"], message_id)
@@ -899,12 +899,14 @@ class MessagePOSTTest(ZulipTestCase):
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content, "  I like whitespace at the end!")
 
+    @override_settings(MAX_MESSAGE_LENGTH=25)
     def test_long_message(self) -> None:
         """
         Sending a message longer than the maximum message length succeeds but is
         truncated.
         """
         self.login("hamlet")
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {
             "type": "stream",
@@ -971,12 +973,10 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "User not authorized for this query")
 
-    def test_send_message_as_superuser_to_domain_that_dont_exist(self) -> None:
+    def test_send_message_with_can_forge_sender_to_different_domain(self) -> None:
         user = self.example_user("default_bot")
-        password = "test_password"
-        user.set_password(password)
-        user.can_forge_sender = True
-        user.save()
+        do_change_can_forge_sender(user, True)
+        # To a non-existing realm:
         result = self.api_post(
             user,
             "/api/v1/messages",
@@ -989,9 +989,52 @@ class MessagePOSTTest(ZulipTestCase):
                 "realm_str": "non-existing",
             },
         )
-        user.can_forge_sender = False
-        user.save()
-        self.assert_json_error(result, "Unknown organization 'non-existing'")
+        self.assert_json_error(result, "User not authorized for this query")
+
+        # To an existing realm:
+        zephyr_realm = get_realm("zephyr")
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "test suite",
+                "content": "Test message",
+                "topic": "Test topic",
+                "realm_str": zephyr_realm.string_id,
+            },
+        )
+        self.assert_json_error(result, "User not authorized for this query")
+
+    def test_send_message_forging_message_to_another_realm(self) -> None:
+        """
+        Test for a specific vulnerability that allowed a .can_forge_sender
+        user to forge a message as a cross-realm bot to a stream in another realm,
+        by setting up an appropriate RealmDomain and specifying JabberMirror as client
+        to cause the vulnerable codepath to be executed.
+        """
+        user = self.example_user("default_bot")
+        do_change_can_forge_sender(user, True)
+
+        zephyr_realm = get_realm("zephyr")
+        self.make_stream("Verona", zephyr_realm)
+        do_add_realm_domain(zephyr_realm, "zulip.com", False)
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "JabberMirror",
+                "content": "Test message",
+                "topic": "Test topic",
+                "forged": "true",
+                "sender": "notification-bot@zulip.com",
+                "realm_str": zephyr_realm.string_id,
+            },
+        )
+        self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_when_sender_is_not_set(self) -> None:
         result = self.api_post(
@@ -1510,7 +1553,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
-            message_dict = build_message_send_dict({"message": message})
+            message_dict = build_message_send_dict(message=message)
             do_send_messages([message_dict])
 
         before_um_count = UserMessage.objects.count()
@@ -1557,7 +1600,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 12)
+        self.assert_length(queries, 13)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")
@@ -1618,14 +1661,14 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
-        with mock.patch("zerver.lib.actions.send_event") as m:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             self.send_stream_message(
                 user,
                 stream_name,
                 content=content,
             )
-        self.assertEqual(m.call_count, 1)
-        users = m.call_args[0][2]
+        users = events[0]["users"]
         user_ids = {u["id"] for u in users}
         return user_ids
 
@@ -1633,7 +1676,7 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
-        stream_name = "Test Stream"
+        stream_name = "Test stream"
 
         self.subscribe(hamlet, stream_name)
 
@@ -1642,7 +1685,7 @@ class StreamMessagesTest(ZulipTestCase):
         ).delete()
 
         def mention_cordelia() -> Set[int]:
-            content = "test @**Cordelia Lear** rules"
+            content = "test @**Cordelia, Lear's daughter** rules"
 
             user_ids = self._send_stream_message(
                 user=hamlet,
@@ -1673,7 +1716,7 @@ class StreamMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        stream_name = "Test Stream"
+        stream_name = "Test stream"
 
         self.subscribe(hamlet, stream_name)
 
@@ -1785,14 +1828,24 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
         self.send_and_verify_wildcard_mention_message("iago")
 
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            acting_user=None,
+        )
+        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("shiva")
+
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
         )
-        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on small streams.
-        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("shiva", sub_count=10)
         self.send_and_verify_wildcard_mention_message("iago")
 
         do_set_realm_property(
@@ -1894,10 +1947,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertIn(message2_id, msg_data["huddle_dict"].keys())
 
         # only these two messages are present in msg_data
-        self.assertEqual(len(msg_data["huddle_dict"].keys()), 2)
+        self.assert_length(msg_data["huddle_dict"].keys(), 2)
 
         recent_conversations = get_recent_private_conversations(users[1])
-        self.assertEqual(len(recent_conversations), 1)
+        self.assert_length(recent_conversations, 1)
         recent_conversation = list(recent_conversations.values())[0]
         self.assertEqual(
             set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}
@@ -2420,6 +2473,114 @@ class CheckMessageTest(ZulipTestCase):
         addressee = Addressee.for_stream_name(stream_name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret.message.sender.id, sender.id)
+
+    def test_check_message_normal_user_cant_send_to_stream_in_another_realm(self) -> None:
+        mit_user = self.mit_user("sipbtest")
+
+        client = make_client(name="test suite")
+        stream = get_stream("Denmark", get_realm("zulip"))
+        topic_name = "issue"
+        message_content = "whatever"
+        addressee = Addressee.for_stream(stream, topic_name)
+
+        with self.assertRaisesRegex(JsonableError, "User not authorized for this query"):
+            check_message(
+                mit_user,
+                client,
+                addressee,
+                message_content,
+            )
+
+    def test_check_message_cant_forge_message_as_other_realm_user(self) -> None:
+        """
+        Verifies that the .can_forge_sender permission doesn't allow
+        forging another realm's user as sender of a message to a stream
+        in the forwarder's realm.
+        """
+        forwarder_user_profile = self.example_user("othello")
+        do_change_can_forge_sender(forwarder_user_profile, True)
+
+        mit_user = self.mit_user("sipbtest")
+        notification_bot = self.notification_bot()
+
+        client = make_client(name="test suite")
+        stream = get_stream("Denmark", forwarder_user_profile.realm)
+        topic_name = "issue"
+        message_content = "whatever"
+        addressee = Addressee.for_stream(stream, topic_name)
+
+        with self.assertRaisesRegex(JsonableError, "User not authorized for this query"):
+            check_message(
+                mit_user,
+                client,
+                addressee,
+                message_content,
+                forged=True,
+                forwarder_user_profile=forwarder_user_profile,
+            )
+        with self.assertRaisesRegex(JsonableError, "User not authorized for this query"):
+            check_message(
+                notification_bot,
+                client,
+                addressee,
+                message_content,
+                forged=True,
+                forwarder_user_profile=forwarder_user_profile,
+            )
+
+    def test_check_message_cant_forge_message_to_stream_in_different_realm(self) -> None:
+        """
+        Verifies that the .can_forge_sender permission doesn't allow
+        forging another realm's user as sender of a message to a stream
+        in the forged user's realm..
+        """
+        forwarder_user_profile = self.example_user("othello")
+        do_change_can_forge_sender(forwarder_user_profile, True)
+
+        mit_user = self.mit_user("sipbtest")
+        notification_bot = self.notification_bot()
+
+        client = make_client(name="test suite")
+        stream_name = "España y Francia"
+        stream = self.make_stream(stream_name, realm=mit_user.realm)
+        self.subscribe(mit_user, stream_name)
+        topic_name = "issue"
+        message_content = "whatever"
+        addressee = Addressee.for_stream(stream, topic_name)
+
+        with self.assertRaisesRegex(JsonableError, "User not authorized for this query"):
+            check_message(
+                mit_user,
+                client,
+                addressee,
+                message_content,
+                forged=True,
+                forwarder_user_profile=forwarder_user_profile,
+            )
+        with self.assertRaisesRegex(JsonableError, "User not authorized for this query"):
+            check_message(
+                notification_bot,
+                client,
+                addressee,
+                message_content,
+                forged=True,
+                forwarder_user_profile=forwarder_user_profile,
+            )
+
+        # Make sure the special case of sending a message forged as cross-realm bot
+        # to a stream in the bot's realm isn't allowed either.
+        stream = self.make_stream(stream_name, realm=notification_bot.realm)
+        self.subscribe(notification_bot, stream_name)
+        addressee = Addressee.for_stream(stream, topic_name)
+        with self.assertRaisesRegex(JsonableError, "User not authorized for this query"):
+            check_message(
+                notification_bot,
+                client,
+                addressee,
+                message_content,
+                forged=True,
+                forwarder_user_profile=forwarder_user_profile,
+            )
 
     def test_guest_user_can_send_message(self) -> None:
         # Guest users can write to web_public streams.

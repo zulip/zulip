@@ -32,11 +32,11 @@ def convert_markdown(text: str) -> str:
     # Converts Slack-style Markdown to Zulip format
     # Implemented mainly for AppFollow messages
     # Not ready for general use as some edge-cases not handled
-    # Convert Bold
+    # Convert bold
     text = re.sub(r"(?:(?<=\s)|(?<=^))\*(.+?\S)\*(?=\s|$)", r"**\1**", text)
-    # Convert Italics
+    # Convert italics
     text = re.sub(r"\b_(\s*)(.+?)(\s*)_\b", r"\1*\2*\3", text)
-    # Convert Strikethrough
+    # Convert strikethrough
     text = re.sub(r"(?:(?<=\s)|(?<=^))~(.+?\S)~(?=\s|$)", r"~~\1~~", text)
 
     return text

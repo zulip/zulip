@@ -4,9 +4,9 @@ set -eo pipefail
 ZULIP_PATH="$(dirname "$0")/../.."
 ZULIP_SRV="/srv"
 YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=14.16.0
+node_version=14.17.0
 yarn_version=1.22.10
-nvm_version=0.37.2
+nvm_version=0.38.0
 
 # This is a fix for the fact that nvm uses $HOME to determine which
 # user account's home directory to ~/.config to.  Ideally, we'd have a
@@ -36,17 +36,21 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
         [ "$(nvm --version)" != "$nvm_version" ]
     }; then
         mkdir -p "$NVM_DIR"
-        wget_opts=(-nv)
+        curl_opts=(-L)
         if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
-            wget_opts+=(--ca-certificate "${CUSTOM_CA_CERTIFICATES}")
+            curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
         fi
-        wget "${wget_opts[@]}" -O- "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
+        curl "${curl_opts[@]}" "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
         # shellcheck source=/dev/null
         . "$NVM_DIR/nvm.sh"
     fi
 
-    nvm install "$node_version" && nvm alias default "$node_version"
-    NODE_BIN="$(nvm which default)"
+    # Tell NVM that we don't want it messing around with $PATH; we'll
+    # adjust which npm to use by symlinks below.
+    nvm alias default system
+
+    nvm install "$node_version"
+    NODE_BIN="$(nvm which $node_version)"
 
     # Fix messed-up uid=500 and group write bits produced by nvm
     n=${NODE_BIN%/bin/node}

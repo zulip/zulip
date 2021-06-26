@@ -15,6 +15,7 @@ const message_store = zrequire("message_store");
 const muting = zrequire("muting");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const sub_store = zrequire("sub_store");
 const unread = zrequire("unread");
 
 const me = {
@@ -54,10 +55,10 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         unread.declare_bankruptcy();
         muting.set_muted_topics([]);
-        f(override);
+        f({override});
     });
 }
 
@@ -118,9 +119,9 @@ test("changing_topics", () => {
 
     count = unread.num_unread_for_topic(stream_id, "Lunch");
     assert.equal(count, 2);
-    assert(unread.topic_has_any_unread(stream_id, "lunch"));
-    assert(!unread.topic_has_any_unread(wrong_stream_id, "lunch"));
-    assert(!unread.topic_has_any_unread(stream_id, "NOT lunch"));
+    assert.ok(unread.topic_has_any_unread(stream_id, "lunch"));
+    assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "lunch"));
+    assert.ok(!unread.topic_has_any_unread(stream_id, "NOT lunch"));
 
     count = unread.num_unread_for_topic(stream_id, "NOT lunch");
     assert.equal(count, 0);
@@ -148,13 +149,13 @@ test("changing_topics", () => {
 
     count = unread.num_unread_for_topic(stream_id, "lunch");
     assert.equal(count, 0);
-    assert(!unread.topic_has_any_unread(stream_id, "lunch"));
-    assert(!unread.topic_has_any_unread(wrong_stream_id, "lunch"));
+    assert.ok(!unread.topic_has_any_unread(stream_id, "lunch"));
+    assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "lunch"));
 
     count = unread.num_unread_for_topic(stream_id, "snack");
     assert.equal(count, 1);
-    assert(unread.topic_has_any_unread(stream_id, "snack"));
-    assert(!unread.topic_has_any_unread(wrong_stream_id, "snack"));
+    assert.ok(unread.topic_has_any_unread(stream_id, "snack"));
+    assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "snack"));
 
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
@@ -179,12 +180,12 @@ test("changing_topics", () => {
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");
     assert.equal(count, 1);
-    assert(sticky_message.unread);
+    assert.ok(sticky_message.unread);
 
     unread.mark_as_read(sticky_message.id);
     count = unread.num_unread_for_topic(stream_id, "sticky");
     assert.equal(count, 0);
-    assert(!sticky_message.unread);
+    assert.ok(!sticky_message.unread);
 
     event = {
         topic: "sticky",
@@ -241,14 +242,14 @@ test("muting", () => {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 });
 
-test("num_unread_for_topic", (override) => {
+test("num_unread_for_topic", ({override}) => {
     // Test the num_unread_for_topic() function using many
     // messages.
     const stream_id = 301;
 
-    override(stream_data, "get_sub_by_id", (arg) => {
+    override(sub_store, "get", (arg) => {
         if (arg === stream_id) {
-            return {name: "Some Stream"};
+            return {name: "Some stream"};
         }
         throw new Error(`Unknown stream ${arg}`);
     });
@@ -314,13 +315,13 @@ test("num_unread_for_topic", (override) => {
     assert.deepEqual(msg_ids, []);
 });
 
-test("home_messages", (override) => {
+test("home_messages", ({override}) => {
     override(stream_data, "is_subscribed", () => true);
     override(stream_data, "is_muted", () => false);
 
     const stream_id = 401;
 
-    override(stream_data, "get_sub_by_id", () => ({
+    override(sub_store, "get", () => ({
         name: "whatever",
     }));
 
@@ -593,9 +594,9 @@ test("declare_bankruptcy", () => {
 
 test("message_unread", () => {
     // Test some code that might be overly defensive, for line coverage sake.
-    assert(!unread.message_unread(undefined));
-    assert(unread.message_unread({unread: true}));
-    assert(!unread.message_unread({unread: false}));
+    assert.ok(!unread.message_unread(undefined));
+    assert.ok(unread.message_unread({unread: true}));
+    assert.ok(!unread.message_unread({unread: false}));
 });
 
 test("server_counts", () => {

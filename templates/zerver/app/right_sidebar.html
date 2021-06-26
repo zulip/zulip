@@ -2,8 +2,12 @@
     <div class="right-sidebar-items">
         <div id="user-list">
             <div id="userlist-header">
-                <h4 class='sidebar-title' id='userlist-title' data-toggle="tooltip" title="{{ _('Filter users') }}">{{ _('USERS') }}</h4>
-                <i id="user_filter_icon" class='fa fa-search' aria-hidden="true" aria-label="{{ _('Filter users') }}" data-toggle="tooltip" title="{{ _('Filter users') }} (w)"></i>
+                <h4 class='sidebar-title tippy-zulip-tooltip'
+                  id='userlist-title' data-tippy-content="{{ _('Search people') }} (w)">{{ _('USERS') }}</h4>
+                <i id="user_filter_icon" class="fa fa-search tippy-zulip-tooltip"
+                  aria-hidden="true" aria-label="{{ _('Search people') }}"
+                  data-tippy-content="{{ _('Search people') }} (w)">
+                </i>
             </div>
             <div class="input-append notdisplayed" id="user_search_section">
                 <input class="user-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{ _('Search people') }}" />
@@ -21,7 +25,7 @@
             <a id="invite-user-link" href="#invite"><i class="fa fa-user-plus" aria-hidden="true"></i>{{ _('Invite more users') }}</a>
             {% endif %}
             <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts">
-                <i class="fa fa-keyboard-o fa-2x" id="keyboard-icon" data-html="true" data-toggle="tooltip" title="{{ _('Keyboard shortcuts') }} <span class='hotkey-hint'>(?)</span>"></i>
+                <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tippy-allowHtml="true" data-tippy-content="{{ _('Keyboard shortcuts') }} <span class='hotkey-hint'>(?)</span>"></i>
             </a>
         </div>
     </div>

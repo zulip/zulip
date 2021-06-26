@@ -4,6 +4,10 @@ A user's profile includes their name, email, role, the date they joined,
 when they were last active, and any
 [custom profile fields](/help/add-custom-profile-fields) they've filled out.
 
+It also contains additional tabs showing a user's susbcribed streams
+and user groups. Note that the information in those tabs is limited to
+streams for which [you can see all subscribers](/help/stream-permissions).
+
 ## View someone's profile
 
 ### Via the message list
@@ -22,7 +26,7 @@ when they were last active, and any
 
 1. Hover over a user's name in the right sidebar.
 
-1. Click on the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to
+1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to
    the right of their name.
 
 1. Click **View full profile**.

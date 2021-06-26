@@ -4,7 +4,7 @@
     {% elif stream_email_notify or mention %} #{{ stream_header }}
     {% endif %}
 {% else %}
-    {% trans %}New missed messages{% endtrans %}
+    {% trans %}New messages{% endtrans %}
 {% endif %}
 {% if realm_name_in_notifications %} [{{ realm_str }}]
 {% endif %}

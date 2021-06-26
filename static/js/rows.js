@@ -142,6 +142,10 @@ export function get_closest_group(element) {
     return $(element).closest("div.recipient_row");
 }
 
+export function get_closest_row(element) {
+    return $(element).closest("div.message_row");
+}
+
 export function first_message_in_group(message_group) {
     return $("div.message_row", message_group).first();
 }

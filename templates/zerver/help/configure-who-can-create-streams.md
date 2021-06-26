@@ -6,6 +6,7 @@ By default, anyone other than guests can create new streams. However, you can re
 creation to:
 
 * Organization administrators
+* Organization administrators and moderators
 * Organization administrators and all members
 * Organization administrators and [full members](/help/restrict-permissions-of-new-members)
 
@@ -19,7 +20,7 @@ heavy use has as many streams as users.
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can create streams**.
+2. Under **Stream permissions**, configure **Who can create streams**.
 
 {!save-changes.md!}
 

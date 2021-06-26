@@ -30,7 +30,7 @@ from django.dispatch import Signal, receiver
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
@@ -43,6 +43,7 @@ from social_core.backends.base import BaseAuth
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
+from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.backends.saml import SAMLAuth, SAMLIdentityProvider
 from social_core.exceptions import (
     AuthCanceled,
@@ -64,7 +65,6 @@ from zerver.lib.actions import (
 )
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
-from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
@@ -78,6 +78,7 @@ from zerver.models import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
+    PasswordTooWeakError,
     PreregistrationUser,
     Realm,
     UserProfile,
@@ -378,14 +379,14 @@ class EmailAuthBackend(ZulipAuthMixin):
     @rate_limit_auth
     def authenticate(
         self,
-        request: Optional[HttpRequest] = None,
+        request: HttpRequest,
         *,
         username: str,
         password: str,
         realm: Realm,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
-        """ Authenticate a user based on email address as the user name. """
+        """Authenticate a user based on email address as the user name."""
         if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data["password_auth_disabled"] = True
@@ -403,7 +404,25 @@ class EmailAuthBackend(ZulipAuthMixin):
         user_profile = common_get_active_user(username, realm, return_data=return_data)
         if user_profile is None:
             return None
-        if user_profile.check_password(password):
+
+        try:
+            is_password_correct = user_profile.check_password(password)
+        except PasswordTooWeakError:
+            # In some rare cases when password hasher is changed and the user has
+            # a weak password, PasswordTooWeakError will be raised.
+            self.logger.info(
+                "User %s password can't be rehashed due to being too weak.", user_profile.id
+            )
+            if return_data is not None:
+                return_data["password_reset_needed"] = True
+                return None
+            else:
+                # Since we can't communicate the situation via return_data,
+                # we have to raise an error - a silent failure would not be right
+                # because the password actually is correct, just can't be re-hashed.
+                raise JsonableError(_("You need to reset your password."))
+
+        if is_password_correct:
             return user_profile
         return None
 
@@ -632,12 +651,46 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return ldap_disabled
 
     def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
-        if "org_membership" not in settings.AUTH_LDAP_USER_ATTR_MAP:
+        # org_membership takes priority over AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL.
+        if "org_membership" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
+            allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
+            if is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs):
+                return False
+            # If Advanced is not configured, forbid access
+            if settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL is None:
+                return True
+
+        # If neither setting is configured, allow access.
+        if settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL is None:
             return False
 
-        org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
-        allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
-        return not is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs)
+        # With settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL, we
+        # allow access if and only if one of the entries for the
+        # target subdomain matches the user's LDAP attributes.
+        realm_access_control = settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL
+        if not (
+            isinstance(realm_access_control, dict)
+            and realm.subdomain in realm_access_control
+            and isinstance(realm_access_control[realm.subdomain], list)
+            and len(realm_access_control[realm.subdomain]) > 0
+        ):
+            # If configuration is wrong, do not allow access
+            return True
+
+        # Go through every "or" check
+        for attribute_group in realm_access_control[realm.subdomain]:
+            access = True
+            for attribute in attribute_group:
+                if not (
+                    attribute in ldap_user.attrs
+                    and attribute_group[attribute] in ldap_user.attrs[attribute]
+                ):
+                    access = False
+            if access:
+                return False
+
+        return True
 
     @classmethod
     def get_mapped_name(cls, ldap_user: _LDAPUser) -> str:
@@ -684,36 +737,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 continue
             values_by_var_name[var_name] = value
 
-        fields_by_var_name: Dict[str, CustomProfileField] = {}
-        custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
-        for field in custom_profile_fields:
-            var_name = "_".join(field.name.lower().split(" "))
-            fields_by_var_name[var_name] = field
-
-        existing_values = {}
-        for data in user_profile.profile_data:
-            var_name = "_".join(data["name"].lower().split(" "))
-            existing_values[var_name] = data["value"]
-
-        profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
-        for var_name, value in values_by_var_name.items():
-            try:
-                field = fields_by_var_name[var_name]
-            except KeyError:
-                raise ZulipLDAPException(f"Custom profile field with name {var_name} not found.")
-            if existing_values.get(var_name) == value:
-                continue
-            try:
-                validate_user_custom_profile_field(user_profile.realm.id, field, value)
-            except ValidationError as error:
-                raise ZulipLDAPException(f"Invalid data for {var_name} field: {error.message}")
-            profile_data.append(
-                {
-                    "id": field.id,
-                    "value": value,
-                }
-            )
-        do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+        try:
+            sync_user_profile_custom_fields(user_profile, values_by_var_name)
+        except SyncUserException as e:
+            raise ZulipLDAPException(str(e)) from e
 
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
@@ -805,6 +832,16 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # deactivated, so we shouldn't create a new user account
             raise ZulipLDAPException("Realm has been deactivated")
 
+        try:
+            validate_email(username)
+        except ValidationError:
+            error_message = f"{username} is not a valid email address."
+            # This indicates a misconfiguration of ldap settings
+            # or a malformed email value in the ldap directory,
+            # so we should log a warning about this before failing.
+            self.logger.warning(error_message)
+            raise ZulipLDAPException(error_message)
+
         # Makes sure that email domain hasn't be restricted for this
         # realm.  The main thing here is email_allowed_for_realm; but
         # we also call validate_email_not_already_in_realm just for consistency,
@@ -829,7 +866,11 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             invited_as = self._prereg_user.invited_as
             realm_creation = self._prereg_user.realm_creation
             opts["prereg_user"] = self._prereg_user
-            opts["role"] = get_role_for_new_user(invited_as, realm_creation)
+
+            opts["role"] = invited_as
+            if realm_creation:
+                opts["role"] = UserProfile.ROLE_REALM_OWNER
+
             opts["realm_creation"] = realm_creation
             # TODO: Ideally, we should add a mechanism for the user
             # entering which default stream groups they've selected in
@@ -1176,6 +1217,45 @@ class ExternalAuthResult:
         pass
 
 
+class SyncUserException(Exception):
+    pass
+
+
+def sync_user_profile_custom_fields(
+    user_profile: UserProfile, custom_field_name_to_value: Dict[str, Any]
+) -> None:
+    fields_by_var_name: Dict[str, CustomProfileField] = {}
+    custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
+    for field in custom_profile_fields:
+        var_name = "_".join(field.name.lower().split(" "))
+        fields_by_var_name[var_name] = field
+
+    existing_values = {}
+    for data in user_profile.profile_data:
+        var_name = "_".join(data["name"].lower().split(" "))
+        existing_values[var_name] = data["value"]
+
+    profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
+    for var_name, value in custom_field_name_to_value.items():
+        try:
+            field = fields_by_var_name[var_name]
+        except KeyError:
+            raise SyncUserException(f"Custom profile field with name {var_name} not found.")
+        if existing_values.get(var_name) == value:
+            continue
+        try:
+            validate_user_custom_profile_field(user_profile.realm.id, field, value)
+        except ValidationError as error:
+            raise SyncUserException(f"Invalid data for {var_name} field: {error.message}")
+        profile_data.append(
+            {
+                "id": field.id,
+                "value": value,
+            }
+        )
+    do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+
+
 @external_auth_method
 class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
     """Authentication backend that reads the Apache REMOTE_USER variable.
@@ -1369,6 +1449,8 @@ def social_associate_user_helper(
         # strip removes the unnecessary ' '
         return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()
 
+    return_data["extra_attrs"] = kwargs["details"].get("extra_attrs", {})
+
     return user_profile
 
 
@@ -1476,6 +1558,28 @@ def social_auth_finish(
         is_signup = strategy.session_get("is_signup") == "1"
     else:
         is_signup = False
+
+    extra_attrs = return_data.get("extra_attrs", {})
+    attrs_by_backend = settings.SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.get(realm.subdomain, {})
+    if user_profile is not None and extra_attrs and attrs_by_backend:
+        # This is only supported for SAML right now, though the design
+        # is meant to be easy to extend this to other backends if desired.
+        # Unlike with LDAP, here we can only do syncing during the authentication
+        # flow, as that's when the data is provided and we don't have a way to query
+        # for it otherwise.
+        assert backend.name == "saml"
+        custom_profile_field_name_to_attr_name = attrs_by_backend.get(backend.name, {})
+        custom_profile_field_name_to_value = {}
+        for field_name, attr_name in custom_profile_field_name_to_attr_name.items():
+            custom_profile_field_name_to_value[field_name] = extra_attrs.get(attr_name)
+        try:
+            sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
+        except SyncUserException as e:
+            backend.logger.warning(
+                "Exception while syncing custom profile fields for user %s: %s",
+                user_profile.id,
+                str(e),
+            )
 
     # At this point, we have now confirmed that the user has
     # demonstrated control over the target email address.
@@ -1825,7 +1929,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Overriden to correctly grab the user's name from the request params,
+        Overridden to correctly grab the user's name from the request params,
         as current upstream code expects it in the id_token and Apple changed
         the API.
         Taken from https://github.com/python-social-auth/social-core/pull/483
@@ -1896,6 +2000,24 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             return None
 
 
+class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
+    def get_user_details(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Overriden to support plumbing of additional Attributes
+        from the SAMLResponse.
+        """
+        result = super().get_user_details(attributes)
+
+        extra_attr_names = self.conf.get("extra_attrs", [])
+        result["extra_attrs"] = {}
+        for extra_attr_name in extra_attr_names:
+            result["extra_attrs"][extra_attr_name] = self.get_attr(
+                attributes=attributes, conf_key=None, default_attribute=extra_attr_name
+            )
+
+        return result
+
+
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
@@ -1931,6 +2053,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
+
+    def get_idp(self, idp_name: str) -> ZulipSAMLIdentityProvider:
+        """Given the name of an IdP, get a SAMLIdentityProvider instance.
+        Forked to use our subclass of SAMLIdentityProvider for more flexibility."""
+        idp_config = self.setting("ENABLED_IDPS")[idp_name]
+        return ZulipSAMLIdentityProvider(idp_name, **idp_config)
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
@@ -2205,6 +2333,56 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             result.append(saml_dict)
 
         return result
+
+
+@external_auth_method
+class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
+    name = "oidc"
+    auth_backend_name = "OpenID Connect"
+    sort_order = 100
+
+    # Hack: We don't yet support multiple IdPs, but we want this
+    # module to import if nothing has been configured yet.
+    settings_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [{}])[0]
+
+    display_icon = settings_dict.get("display_icon")
+    display_name = settings_dict.get("display_name", "OIDC")
+
+    full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
+
+    # Discovery endpoint for the superclass to read all the appropriate
+    # configuration from.
+    OIDC_ENDPOINT = settings_dict.get("oidc_url")
+
+    def get_key_and_secret(self) -> Tuple[str, str]:
+        client_id = self.settings_dict.get("client_id", "")
+        secret = self.settings_dict.get("secret", "")
+        return client_id, secret
+
+    @classmethod
+    def check_config(cls) -> bool:
+        if len(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.keys()) != 1:
+            # Only one IdP supported for now.
+            return False
+
+        mandatory_config_keys = ["oidc_url", "client_id", "secret"]
+        idp_config_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values())[0]
+        if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+            return False
+
+        return True
+
+    @classmethod
+    def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
+        return [
+            dict(
+                name=f"oidc:{cls.name}",
+                display_name=cls.display_name,
+                display_icon=cls.display_icon,
+                login_url=reverse("login-social", args=(cls.name,)),
+                signup_url=reverse("signup-social", args=(cls.name,)),
+            )
+        ]
 
 
 def validate_otp_params(

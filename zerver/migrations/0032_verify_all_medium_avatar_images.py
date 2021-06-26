@@ -27,7 +27,7 @@ def patched_user_avatar_path(user_profile: UserProfile) -> str:
 def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model("zerver", "UserProfile")
     for user_profile in user_profile_model.objects.filter(avatar_source="U"):
-        upload_backend.ensure_medium_avatar_image(user_profile)
+        upload_backend.ensure_avatar_image(user_profile, is_medium=True)
 
 
 class Migration(migrations.Migration):

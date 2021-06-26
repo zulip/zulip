@@ -1,10 +1,10 @@
 import $ from "jquery";
 
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
-import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
+import render_uploaded_files_list from "../templates/settings/uploaded_files_list.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -30,20 +30,20 @@ export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
 }
 
 export function percentage_used_space(uploads_size) {
-    if (page_params.realm_upload_quota === null) {
+    if (page_params.realm_upload_quota_mib === null) {
         return null;
     }
-    return ((100 * uploads_size) / page_params.realm_upload_quota).toFixed(1);
+    return ((100 * uploads_size) / page_params.realm_upload_quota_mib).toFixed(1);
 }
 
 function set_upload_space_stats() {
-    if (page_params.realm_upload_quota === null) {
+    if (page_params.realm_upload_quota_mib === null) {
         return;
     }
     const args = {
         show_upgrade_message: page_params.realm_plan_type === 2,
         percent_used: percentage_used_space(upload_space_used),
-        upload_quota: bytes_to_size(page_params.realm_upload_quota, true),
+        upload_quota: bytes_to_size(page_params.realm_upload_quota_mib, true),
     };
     const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
@@ -55,10 +55,10 @@ function delete_attachments(attachment) {
         url: "/json/attachments/" + attachment,
         idempotent: true,
         error(xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
         },
         success() {
-            ui_report.success(i18n.t("Attachment deleted"), status);
+            ui_report.success($t_html({defaultMessage: "Attachment deleted"}), status);
         },
     });
 }
@@ -162,7 +162,7 @@ export function set_up_attachments() {
         },
         error(xhr) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            ui_report.error(i18n.t("Failed"), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
         },
     });
 }

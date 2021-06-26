@@ -308,15 +308,18 @@ def get_subscription_status(client: Client) -> None:
     )
 
 
-@openapi_test_function("/realm/filters:get")
-def get_realm_filters(client: Client) -> None:
+@openapi_test_function("/realm/linkifiers:get")
+def get_realm_linkifiers(client: Client) -> None:
 
     # {code_example|start}
     # Fetch all the filters in this organization
-    result = client.get_realm_filters()
+    result = client.call_endpoint(
+        url="/realm/linkifiers",
+        method="GET",
+    )
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/realm/filters", "get", "200")
+    validate_against_openapi_schema(result, "/realm/linkifiers", "get", "200")
 
 
 @openapi_test_function("/realm/profile_fields:get")
@@ -347,7 +350,7 @@ def reorder_realm_profile_fields(client: Client) -> None:
 def create_realm_profile_field(client: Client) -> None:
     # {code_example|start}
     # Create a custom profile field in the user's organization.
-    request = {"name": "Phone", "hint": "Contact No.", "field_type": 1}
+    request = {"name": "Phone", "hint": "Contact no.", "field_type": 1}
 
     result = client.call_endpoint(url="/realm/profile_fields", method="POST", request=request)
     # {code_example|end}
@@ -369,6 +372,25 @@ def add_realm_filter(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
 
 
+@openapi_test_function("/realm/filters/{filter_id}:patch")
+def update_realm_filter(client: Client) -> None:
+
+    # {code_example|start}
+    # Update the linkifier (realm_filter) with ID 1
+    filter_id = 1
+    request = {
+        "pattern": "#(?P<id>[0-9]+)",
+        "url_format_string": "https://github.com/zulip/zulip/issues/%(id)s",
+    }
+
+    result = client.call_endpoint(
+        url=f"/realm/filters/{filter_id}", method="PATCH", request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "patch", "200")
+
+
 @openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client: Client) -> None:
 
@@ -378,6 +400,33 @@ def remove_realm_filter(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
+
+
+@openapi_test_function("/realm/playgrounds:post")
+def add_realm_playground(client: Client) -> None:
+
+    # {code_example|start}
+    # Add a realm playground for Python
+    request = {
+        "name": "Python playground",
+        "pygments_language": "Python",
+        "url_prefix": "https://python.example.com",
+    }
+    result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/playgrounds", "post", "200")
+
+
+@openapi_test_function("/realm/playgrounds/{playground_id}:delete")
+def remove_realm_playground(client: Client) -> None:
+
+    # {code_example|start}
+    # Remove the playground with ID 1
+    result = client.call_endpoint(url="/realm/playgrounds/1", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/playgrounds/{playground_id}", "delete", "200")
 
 
 @openapi_test_function("/users/me:get")
@@ -424,19 +473,19 @@ def get_stream_id(client: Client) -> int:
 
 
 @openapi_test_function("/streams/{stream_id}:delete")
-def delete_stream(client: Client, stream_id: int) -> None:
+def archive_stream(client: Client, stream_id: int) -> None:
     result = client.add_subscriptions(
         streams=[
             {
-                "name": "stream to be deleted",
+                "name": "stream to be archived",
                 "description": "New stream for testing",
             },
         ],
     )
 
     # {code_example|start}
-    # Delete the stream named 'stream to be deleted'
-    stream_id = client.get_stream_id("stream to be deleted")["stream_id"]
+    # Archive the stream named 'stream to be archived'
+    stream_id = client.get_stream_id("stream to be archived")["stream_id"]
     result = client.delete_stream(stream_id)
     # {code_example|end}
     validate_against_openapi_schema(result, "/streams/{stream_id}", "delete", "200")
@@ -599,6 +648,32 @@ def toggle_mute_topic(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
+
+
+@openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
+def add_user_mute(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    # {code_example|start}
+    # Mute user with ID 10
+    muted_user_id = 10
+    result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="POST")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/muted_users/{muted_user_id}", "post", "200")
+
+
+@openapi_test_function("/users/me/muted_users/{muted_user_id}:delete")
+def remove_user_mute(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    # {code_example|start}
+    # Unmute user with ID 10
+    muted_user_id = 10
+    result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(
+        result, "/users/me/muted_users/{muted_user_id}", "delete", "200"
+    )
 
 
 @openapi_test_function("/mark_all_as_read:post")
@@ -1048,6 +1123,22 @@ def update_notification_settings(client: Client) -> None:
     validate_against_openapi_schema(result, "/settings/notifications", "patch", "200")
 
 
+@openapi_test_function("/settings/display:patch")
+def update_display_settings(client: Client) -> None:
+
+    # {code_example|start}
+    # Show user list on left sidebar in narrow windows.
+    # Change emoji set used for display to Google modern.
+    request = {
+        "left_side_userlist": True,
+        "emojiset": "google",
+    }
+    result = client.call_endpoint("settings/display", method="PATCH", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/settings/display", "patch", "200")
+
+
 @openapi_test_function("/user_uploads:post")
 def upload_file(client: Client) -> None:
     path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1095,6 +1186,7 @@ def set_typing_status(client: Client) -> None:
         "to": [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1109,6 +1201,41 @@ def set_typing_status(client: Client) -> None:
         "to": [user_id1, user_id2],
     }
     result = client.set_typing_status(request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/typing", "post", "200")
+
+    # {code_example|start}
+    # The user has started to type in topic "typing status" of stream "Denmark"
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+    topic = "typing status"
+
+    request = {
+        "type": "stream",
+        "op": "start",
+        "to": [stream_id],
+        "topic": topic,
+    }
+    result = client.set_typing_status(request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/typing", "post", "200")
+
+    # {code_example|start}
+    # The user has finished typing in topic "typing status" of stream "Denmark"
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+    topic = "typing status"
+
+    request = {
+        "type": "stream",
+        "op": "stop",
+        "to": [stream_id],
+        "topic": topic,
+    }
+    result = client.set_typing_status(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1338,6 +1465,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_subscription_status(client)
     get_profile(client)
     update_notification_settings(client)
+    update_display_settings(client)
     upload_file(client)
     get_attachments(client)
     set_typing_status(client)
@@ -1352,6 +1480,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_alert_words(client)
     remove_alert_words(client)
     deactivate_own_user(client, owner_client)
+    add_user_mute(client)
+    remove_user_mute(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
@@ -1368,7 +1498,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     update_subscription_settings(client)
     update_notification_settings(client)
     get_stream_topics(client, 1)
-    delete_stream(client, stream_id)
+    archive_stream(client, stream_id)
 
     test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)
@@ -1387,10 +1517,13 @@ def test_queues(client: Client) -> None:
 
 def test_server_organizations(client: Client) -> None:
 
-    get_realm_filters(client)
+    get_realm_linkifiers(client)
     add_realm_filter(client)
+    update_realm_filter(client)
+    add_realm_playground(client)
     get_server_settings(client)
     remove_realm_filter(client)
+    remove_realm_playground(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
     get_realm_profile_fields(client)

@@ -415,7 +415,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = get_realm("zulip")
         result = self.client_patch(
             "/json/realm/profile_fields/100",
-            info={"name": "Phone Number", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "Phone number", "field_type": CustomProfileField.SHORT_TEXT},
         )
         self.assert_json_error(result, "Field id 100 not found.")
 
@@ -617,7 +617,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         expected_rendered_value: Dict[Union[int, float, str, None], Union[str, None]] = {}
         for f in data:
             if f["field"].is_renderable():
-                expected_rendered_value[f["id"]] = markdown_convert(f["value"])
+                expected_rendered_value[f["id"]] = markdown_convert(f["value"]).rendered_content
             else:
                 expected_rendered_value[f["id"]] = None
 
@@ -713,7 +713,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         with mock.patch("zerver.lib.actions.notify_user_update_custom_profile_data") as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
-            # if always_notify is disabled, shouldn't trigger notify.
+            # shouldn't trigger notify.
             do_update_user_custom_profile_data_if_changed(iago, data)
             mock_notify.assert_not_called()
 
@@ -725,7 +725,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         content = result.json()
-        self.assertEqual(len(content["custom_fields"]), self.original_count)
+        self.assert_length(content["custom_fields"], self.original_count)
 
     def test_list_order(self) -> None:
         self.login("iago")
@@ -753,7 +753,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
                 "/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"}
             )
 
-        self.assertEqual(len(queries), 4)
+        self.assert_length(queries, 4)
 
         self.assertEqual(response.status_code, 200)
         raw_users_data = response.json()["members"]
@@ -780,8 +780,10 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "avatar_version",
             "is_admin",
             "is_guest",
+            "is_billing_admin",
             "is_bot",
             "is_owner",
+            "role",
             "full_name",
             "timezone",
             "is_active",
@@ -801,6 +803,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_guest",
             "is_bot",
             "is_owner",
+            "is_billing_admin",
+            "role",
             "full_name",
             "timezone",
             "is_active",
@@ -832,6 +836,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_bot",
             "is_admin",
             "is_owner",
+            "is_billing_admin",
+            "role",
             "profile_data",
             "avatar_version",
             "timezone",

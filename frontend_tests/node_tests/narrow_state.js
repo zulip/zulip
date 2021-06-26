@@ -19,33 +19,33 @@ function set_filter(operators) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         narrow_state.reset_current_filter();
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
 test("stream", () => {
     assert.equal(narrow_state.public_operators(), undefined);
-    assert(!narrow_state.active());
+    assert.ok(!narrow_state.active());
 
     const test_stream = {name: "Test", stream_id: 15};
     stream_data.add_sub(test_stream);
 
-    assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
+    assert.ok(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
     set_filter([
         ["stream", "Test"],
         ["topic", "Bar"],
         ["search", "yo"],
     ]);
-    assert(narrow_state.active());
+    assert.ok(narrow_state.active());
 
     assert.equal(narrow_state.stream(), "Test");
     assert.equal(narrow_state.stream_sub().stream_id, test_stream.stream_id);
     assert.equal(narrow_state.topic(), "Bar");
-    assert(narrow_state.is_for_stream_id(test_stream.stream_id));
+    assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
 
     const expected_operators = [
         {negated: false, operator: "stream", operand: "Test"},
@@ -59,68 +59,68 @@ test("stream", () => {
 });
 
 test("narrowed", () => {
-    assert(!narrow_state.narrowed_to_pms());
-    assert(!narrow_state.narrowed_by_reply());
-    assert(!narrow_state.narrowed_by_pm_reply());
-    assert(!narrow_state.narrowed_by_topic_reply());
-    assert(!narrow_state.narrowed_to_search());
-    assert(!narrow_state.narrowed_to_topic());
-    assert(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.narrowed_to_pms());
+    assert.ok(!narrow_state.narrowed_by_reply());
+    assert.ok(!narrow_state.narrowed_by_pm_reply());
+    assert.ok(!narrow_state.narrowed_by_topic_reply());
+    assert.ok(!narrow_state.narrowed_to_search());
+    assert.ok(!narrow_state.narrowed_to_topic());
+    assert.ok(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_sub(), undefined);
-    assert(!narrow_state.narrowed_to_starred());
+    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["stream", "Foo"]]);
-    assert(!narrow_state.narrowed_to_pms());
-    assert(!narrow_state.narrowed_by_reply());
-    assert(!narrow_state.narrowed_by_pm_reply());
-    assert(!narrow_state.narrowed_by_topic_reply());
-    assert(!narrow_state.narrowed_to_search());
-    assert(!narrow_state.narrowed_to_topic());
-    assert(narrow_state.narrowed_by_stream_reply());
-    assert(!narrow_state.narrowed_to_starred());
+    assert.ok(!narrow_state.narrowed_to_pms());
+    assert.ok(!narrow_state.narrowed_by_reply());
+    assert.ok(!narrow_state.narrowed_by_pm_reply());
+    assert.ok(!narrow_state.narrowed_by_topic_reply());
+    assert.ok(!narrow_state.narrowed_to_search());
+    assert.ok(!narrow_state.narrowed_to_topic());
+    assert.ok(narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["pm-with", "steve@zulip.com"]]);
-    assert(narrow_state.narrowed_to_pms());
-    assert(narrow_state.narrowed_by_reply());
-    assert(narrow_state.narrowed_by_pm_reply());
-    assert(!narrow_state.narrowed_by_topic_reply());
-    assert(!narrow_state.narrowed_to_search());
-    assert(!narrow_state.narrowed_to_topic());
-    assert(!narrow_state.narrowed_by_stream_reply());
-    assert(!narrow_state.narrowed_to_starred());
+    assert.ok(narrow_state.narrowed_to_pms());
+    assert.ok(narrow_state.narrowed_by_reply());
+    assert.ok(narrow_state.narrowed_by_pm_reply());
+    assert.ok(!narrow_state.narrowed_by_topic_reply());
+    assert.ok(!narrow_state.narrowed_to_search());
+    assert.ok(!narrow_state.narrowed_to_topic());
+    assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([
         ["stream", "Foo"],
         ["topic", "bar"],
     ]);
-    assert(!narrow_state.narrowed_to_pms());
-    assert(narrow_state.narrowed_by_reply());
-    assert(!narrow_state.narrowed_by_pm_reply());
-    assert(narrow_state.narrowed_by_topic_reply());
-    assert(!narrow_state.narrowed_to_search());
-    assert(narrow_state.narrowed_to_topic());
-    assert(!narrow_state.narrowed_by_stream_reply());
-    assert(!narrow_state.narrowed_to_starred());
+    assert.ok(!narrow_state.narrowed_to_pms());
+    assert.ok(narrow_state.narrowed_by_reply());
+    assert.ok(!narrow_state.narrowed_by_pm_reply());
+    assert.ok(narrow_state.narrowed_by_topic_reply());
+    assert.ok(!narrow_state.narrowed_to_search());
+    assert.ok(narrow_state.narrowed_to_topic());
+    assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["search", "grail"]]);
-    assert(!narrow_state.narrowed_to_pms());
-    assert(!narrow_state.narrowed_by_reply());
-    assert(!narrow_state.narrowed_by_pm_reply());
-    assert(!narrow_state.narrowed_by_topic_reply());
-    assert(narrow_state.narrowed_to_search());
-    assert(!narrow_state.narrowed_to_topic());
-    assert(!narrow_state.narrowed_by_stream_reply());
-    assert(!narrow_state.narrowed_to_starred());
+    assert.ok(!narrow_state.narrowed_to_pms());
+    assert.ok(!narrow_state.narrowed_by_reply());
+    assert.ok(!narrow_state.narrowed_by_pm_reply());
+    assert.ok(!narrow_state.narrowed_by_topic_reply());
+    assert.ok(narrow_state.narrowed_to_search());
+    assert.ok(!narrow_state.narrowed_to_topic());
+    assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["is", "starred"]]);
-    assert(!narrow_state.narrowed_to_pms());
-    assert(!narrow_state.narrowed_by_reply());
-    assert(!narrow_state.narrowed_by_pm_reply());
-    assert(!narrow_state.narrowed_by_topic_reply());
-    assert(!narrow_state.narrowed_to_search());
-    assert(!narrow_state.narrowed_to_topic());
-    assert(!narrow_state.narrowed_by_stream_reply());
-    assert(narrow_state.narrowed_to_starred());
+    assert.ok(!narrow_state.narrowed_to_pms());
+    assert.ok(!narrow_state.narrowed_by_reply());
+    assert.ok(!narrow_state.narrowed_by_pm_reply());
+    assert.ok(!narrow_state.narrowed_by_topic_reply());
+    assert.ok(!narrow_state.narrowed_to_search());
+    assert.ok(!narrow_state.narrowed_to_topic());
+    assert.ok(!narrow_state.narrowed_by_stream_reply());
+    assert.ok(narrow_state.narrowed_to_starred());
 });
 
 test("operators", () => {
@@ -147,25 +147,25 @@ test("operators", () => {
 
 test("excludes_muted_topics", () => {
     set_filter([["stream", "devel"]]);
-    assert(narrow_state.excludes_muted_topics());
+    assert.ok(narrow_state.excludes_muted_topics());
 
     narrow_state.reset_current_filter(); // not narrowed, basically
-    assert(narrow_state.excludes_muted_topics());
+    assert.ok(narrow_state.excludes_muted_topics());
 
     set_filter([
         ["stream", "devel"],
         ["topic", "mac"],
     ]);
-    assert(!narrow_state.excludes_muted_topics());
+    assert.ok(!narrow_state.excludes_muted_topics());
 
     set_filter([["search", "whatever"]]);
-    assert(!narrow_state.excludes_muted_topics());
+    assert.ok(!narrow_state.excludes_muted_topics());
 
     set_filter([["is", "private"]]);
-    assert(!narrow_state.excludes_muted_topics());
+    assert.ok(!narrow_state.excludes_muted_topics());
 
     set_filter([["is", "starred"]]);
-    assert(!narrow_state.excludes_muted_topics());
+    assert.ok(!narrow_state.excludes_muted_topics());
 });
 
 test("set_compose_defaults", () => {

@@ -2,15 +2,23 @@
 set -x
 set -e
 
-LOCALDISK=/dev/nvme0n1
+# This file only exists on the server, ignore its non-existence locally
+# shellcheck disable=SC1091
+. "/sys/dev/block/259:0/uevent"
 
-if ! grep -q $LOCALDISK /etc/fstab; then
+LOCALDISK="/dev/$DEVNAME"
+if ! grep -q "$LOCALDISK" /etc/fstab; then
     echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >>/etc/fstab
 fi
 
 if ! mountpoint -q /srv; then
-    mkfs.xfs $LOCALDISK
+    mkfs.xfs "$LOCALDISK"
+    # Move any existing files/directories out of the way
+    TMPDIR=$(mktemp -d)
+    mv /srv/* "$TMPDIR"
     mount /srv
+    mv "$TMPDIR/"* /srv
+    rmdir "$TMPDIR"
 fi
 
 if [ ! -L /var/lib/postgresql ]; then

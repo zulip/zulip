@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
     from typing_extensions import TypedDict
 
+    from zerver.lib.types import SAMLIdPConfigDict
+
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
@@ -63,6 +65,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 # Detailed docs in zproject/dev_settings.py.
 FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = None
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
@@ -80,7 +83,7 @@ SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
 SOCIAL_AUTH_SAML_ORG_INFO: Optional[Dict[str, Dict[str, str]]] = None
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[Dict[str, str]] = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[Dict[str, str]] = None
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Dict[str, str]] = {}
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, "SAMLIdPConfigDict"] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
@@ -95,6 +98,12 @@ SOCIAL_AUTH_APPLE_KEY = get_secret("social_auth_apple_key", development_only=Tru
 SOCIAL_AUTH_APPLE_TEAM = get_secret("social_auth_apple_team", development_only=True)
 SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
+
+# Generic OpenID Connect:
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Dict[str, Optional[str]]] = {}
+SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
+
+SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: Dict[str, Dict[str, Dict[str, str]]] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
@@ -121,6 +130,7 @@ LOGGING_SHOW_PID = False
 SENTRY_DSN: Optional[str] = None
 
 # File uploads and avatars
+# TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
 DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
 DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
 S3_AVATAR_BUCKET = ""
@@ -132,6 +142,9 @@ MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL = "https://meet.jit.si"
+
+# GIPHY API key.
+GIPHY_API_KEY = get_secret("giphy_api_key")
 
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
@@ -154,8 +167,6 @@ REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ""
 REMOTE_POSTGRES_PORT = ""
 REMOTE_POSTGRES_SSLMODE = ""
-THUMBOR_URL = ""
-THUMBOR_SERVES_CAMO = False
 THUMBNAIL_IMAGES = False
 SENDFILE_BACKEND: Optional[str] = None
 
@@ -178,6 +189,7 @@ PASSWORD_MIN_GUESSES = 10000
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 PUSH_NOTIFICATION_REDACT_CONTENT = False
 SUBMIT_USAGE_STATISTICS = True
+PROMOTE_SPONSORING_ZULIP = True
 RATE_LIMITING = True
 RATE_LIMITING_AUTHENTICATE = True
 SEND_LOGIN_EMAILS = True
@@ -240,9 +252,6 @@ SYSTEM_BOT_REALM = "zulipinternal"
 # than a separate app.
 EXTRA_INSTALLED_APPS = ["analytics"]
 
-# Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
-
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.
 EXTERNAL_URI_SCHEME = "https://"
@@ -303,10 +312,10 @@ ZULIP_IOS_APP_ID = "org.zulip.Zulip"
 
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
-MAX_AVATAR_FILE_SIZE = 5
-MAX_ICON_FILE_SIZE = 5
-MAX_LOGO_FILE_SIZE = 5
-MAX_EMOJI_FILE_SIZE = 5
+MAX_AVATAR_FILE_SIZE_MIB = 5
+MAX_ICON_FILE_SIZE_MIB = 5
+MAX_LOGO_FILE_SIZE_MIB = 5
+MAX_EMOJI_FILE_SIZE_MIB = 5
 
 # Limits to help prevent spam, in particular by sending invitations.
 #
@@ -325,13 +334,6 @@ INVITES_NEW_REALM_DAYS = 7
 REGISTER_LINK_DISABLED: Optional[bool] = None
 LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
-
-# Controls if the server should run certain jobs like deliver_email or
-# deliver_scheduled_messages. This setting in long term is meant for
-# handling jobs for which we don't have a means of establishing a locking
-# mechanism that works with multiple servers running these jobs.
-# TODO: We should rename this setting so that it reflects its purpose actively.
-EMAIL_DELIVERER_DISABLED = False
 
 # What domains to treat like the root domain
 # "auth" is by default a reserved subdomain for the use by python-social-auth.
@@ -410,6 +412,10 @@ STAGING_ERROR_NOTIFICATIONS = False
 # default_settings, since it likely isn't usefully user-configurable.
 OFFLINE_THRESHOLD_SECS = 5 * 60
 
+# Specifies the number of active users in the realm
+# above which sending of presence update events will be disabled.
+USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
+
 # How many days deleted messages data should be kept before being
 # permanently deleted.
 ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
@@ -441,3 +447,17 @@ NAGIOS_BOT_HOST = EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
+
+# How long after the last upgrade to nag users that the server needs
+# to be upgraded because of likely security releases in the meantime.
+# Default is 18 months, constructed as 12 months before someone should
+# upgrade, plus 6 months for the system administrator to get around to it.
+SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 18
+
+# How long servers have to respond to outgoing webhook requests
+OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
+
+# Maximum length of message content allowed.
+# Any message content exceeding this limit will be truncated.
+# See: `_internal_prep_message` function in zerver/lib/actions.py.
+MAX_MESSAGE_LENGTH = 10000

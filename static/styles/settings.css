@@ -85,9 +85,6 @@ h3 .fa-question-circle-o {
         ul {
             text-align: left;
         }
-        &.button i.fa.fa-pencil {
-            margin-left: 3px;
-        }
     }
     /* this is because the input[type=text] is also 200px wide but has
     12px of padding and 2px worth of borders. These don't apply to
@@ -110,10 +107,8 @@ h3 .fa-question-circle-o {
     }
 }
 
-#change_email_modal {
-    max-width: 460px;
-}
-
+#change_password_modal,
+#change_email_modal,
 #change_full_name_modal {
     max-width: 480px;
 }
@@ -142,6 +137,10 @@ h3 .fa-question-circle-o {
         font-size: 22px;
         cursor: pointer;
     }
+}
+
+#notification_sound {
+    text-transform: capitalize;
 }
 
 .attributions_title {
@@ -188,6 +187,14 @@ h3 .fa-question-circle-o {
 #linkifier-settings {
     #linkifier_pattern,
     #linkifier_format_string {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
+#playground-settings {
+    #playground_pygments_language,
+    #playground_name,
+    #playground_url_prefix {
         width: calc(100% - 10em - 6em);
     }
 }
@@ -249,16 +256,22 @@ td .button {
         }
     }
 
+    .table-sticky-headers th {
+        position: sticky;
+        top: 0;
+    }
+
     .table-striped {
         table-layout: auto;
+        border-collapse: separate;
 
         tbody {
             border-bottom: none;
         }
 
         thead th {
-            background-color: inherit;
             color: inherit;
+            background-color: hsl(0, 0%, 100%);
             border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
             border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
 
@@ -284,7 +297,7 @@ td .button {
 
             &[data-sort]:hover {
                 cursor: pointer;
-                background-color: hsla(0, 0%, 0%, 0.05);
+                background-color: hsla(0, 0%, 95%);
                 transition: background-color 100ms ease-in-out;
 
                 &:not(.active)::after {
@@ -349,6 +362,14 @@ td .button {
 
     .inline {
         display: inline !important;
+    }
+
+    /* Messy implementation of buttons with text and a pencil icon in them
+       having spacing before the pencil icon. */
+    button.btn-link i.fa-pencil,
+    button[data-dismiss="modal"] i.fa-pencil,
+    .dropdown-toggle i.fa-pencil {
+        margin-left: 3px;
     }
 }
 
@@ -494,6 +515,10 @@ input[type="checkbox"] {
     margin-top: 1px;
 }
 
+.alert_word_status_text {
+    word-break: break-word;
+}
+
 .alert-notification {
     display: inline-block;
     vertical-align: top;
@@ -506,7 +531,6 @@ input[type="checkbox"] {
     margin-left: 10px;
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
-    font-size: 15px;
 
     &:not(:empty) {
         border: 1px solid hsl(156, 30%, 50%);
@@ -580,7 +604,6 @@ input[type="checkbox"] {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
-        font-size: 14px;
         padding-left: 0;
         margin-left: 5px;
         border: none;
@@ -657,7 +680,8 @@ input[type="checkbox"] {
 }
 
 .add-new-profile-field-box,
-.add-new-linkifier-box {
+.add-new-linkifier-box,
+.add-new-playground-box {
     button {
         margin-left: calc(10em + 20px) !important;
     }
@@ -799,7 +823,7 @@ input[type="checkbox"] {
     }
 
     .api_key .api-key-value-and-button {
-        font-family: Inconsolata, Menlo, monospace;
+        font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
         display: flex;
     }
@@ -823,6 +847,10 @@ input[type="checkbox"] {
 .edit_bot h3 {
     margin: 0;
     font-weight: 400;
+}
+
+.bot_edit_errors {
+    margin: 20px 20px 0 20px;
 }
 
 #bots_lists_navbar .active a {
@@ -876,6 +904,7 @@ input[type="checkbox"] {
 #create_alert_word_form,
 .admin-emoji-form,
 .admin-linkifier-form,
+.admin-playground-form,
 .admin-profile-field-form,
 .edit_bot_form {
     .control-label {
@@ -927,6 +956,29 @@ input[type="checkbox"] {
         position: absolute;
         right: 20px;
         top: 0;
+    }
+}
+
+#api_key_form,
+#change_password_modal {
+    .password-div {
+        position: relative;
+
+        input[type="text"] {
+            margin-bottom: 10px;
+        }
+
+        .password_visibility_toggle {
+            position: absolute;
+            left: 190px;
+            top: 28px;
+            width: 14px;
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 }
 
@@ -1089,14 +1141,14 @@ input[type="checkbox"] {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
-        font-size: 14px;
         padding: 3px 14px 4px 11px;
         text-decoration: none;
         color: hsl(0, 0%, 47%);
         min-width: 80px;
-        line-height: 16px;
+        line-height: 1.2;
 
-        &:hover {
+        &:hover,
+        &:focus {
             background-color: hsl(0, 0%, 100%);
             border: 1px solid hsl(0, 0%, 61%);
             color: hsl(0, 0%, 18%);
@@ -1111,7 +1163,8 @@ input[type="checkbox"] {
             color: hsl(0, 0%, 100%);
             border: 1px solid hsl(155, 30%, 50%);
 
-            &:hover {
+            &:hover,
+            &:focus {
                 background-color: hsl(166, 35%, 57%);
                 border: 1px solid hsl(166, 35%, 57%);
             }
@@ -1128,9 +1181,8 @@ input[type="checkbox"] {
         }
 
         .save-discard-widget-button-icon {
-            vertical-align: bottom;
+            vertical-align: middle;
             margin-right: 3px;
-            margin-bottom: 1px;
             font-size: 15px;
             font-weight: 500;
         }
@@ -1387,16 +1439,13 @@ input[type="checkbox"] {
         .exit-sign {
             float: right;
             position: relative;
-            top: 3px;
+            top: 1px;
             margin-left: 3px;
             font-size: 1.5rem;
+            line-height: 1;
             font-weight: 600;
             cursor: pointer;
         }
-    }
-
-    #change_password_modal {
-        width: auto;
     }
 
     .custom_user_field {
@@ -1478,27 +1527,8 @@ input[type="checkbox"] {
     }
 }
 
-.modal {
-    box-shadow: 0 0 75px hsla(0, 0%, 0%, 0.5);
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
-    border: none;
-    border-radius: 0;
-
-    &.fade {
-        /* Ensure the modal is entirely off-screen while we fade the background */
-        top: -50%;
-        transition: opacity 0.3s linear;
-        transform: translateY(-50%);
-
-        &.in {
-            top: 50%;
-            pointer-events: all;
-        }
-    }
-}
-
 #account-settings,
-#admin-human-form {
+#user-name-form {
     .user-role button {
         cursor: default;
     }
@@ -1522,19 +1552,28 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     background-color: hsl(0, 0%, 100%);
 }
 
-#confirm_dialog_modal,
-#deactivation_user_modal.fade.in {
+#confirm_dialog_modal {
     top: calc(50% - 120px);
 }
 
+/* These have enough space for "Admins and full members" in German. */
 #desktop_icon_count_display,
 #id_realm_waiting_period_setting,
 #id_realm_create_stream_policy,
 #id_realm_invite_to_stream_policy,
-#id_realm_org_join_restrictions,
+#id_realm_private_message_policy,
+#id_realm_add_emoji_by_admins_only,
+#id_realm_user_group_edit_policy,
+#id_realm_email_address_visibility,
+#id_realm_wildcard_mention_policy,
+#id_realm_move_messages_between_streams_policy,
+#id_realm_invite_to_realm_policy {
+    width: 250px;
+}
+
 #id_realm_bot_creation_policy,
-#id_realm_user_invite_restriction,
-#id_realm_wildcard_mention_policy {
+#id_realm_giphy_rating,
+#id_realm_org_join_restrictions {
     width: 100%;
 }
 
@@ -1542,29 +1581,38 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     margin-top: 10px;
 }
 
-#do_deactivate_self_button .loader {
+.confirm_dialog_yes_button .loader {
     display: none;
     vertical-align: top;
     position: relative;
     height: 30px;
     margin-top: -10px;
     top: 5px;
+    width: 30px;
 }
 
 .dropdown-list-widget {
     button {
         margin: 0 5px;
-
-        &.dropdown_list_reset_button {
-            /* Prevent night mode from overriding background. */
-            background: unset !important;
-            border: none;
-
-            &:disabled {
-                display: none;
-            }
+        &.dropdown-toggle {
+            /* Matches bootstrap hardcoded 30px height for select elements,
+               which we want to match the size of. */
+            height: 30px;
+            padding: 0;
         }
+
         &:disabled i {
+            display: none;
+        }
+    }
+
+    a.dropdown_list_reset_button {
+        /* Prevent night mode from overriding background. */
+        background: unset !important;
+        border: none;
+        margin-left: 10px;
+
+        &:disabled {
             display: none;
         }
     }
@@ -1831,11 +1879,13 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     #linkifier-settings .new-linkifier-form,
+    #playground-settings .new-playground-form,
     #profile-field-settings .new-profile-field-form {
         width: 100%;
     }
 
     #linkifier-settings .new-linkifier-form .control-label,
+    #playground-settings .new-playground-form .control-label,
     #profile-field-settings .new-profile-field-form .control-label {
         display: block;
         width: 120px;
@@ -1847,6 +1897,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     #linkifier-settings .new-linkifier-form .controls,
+    #playground-settings .new-playground-form .controls,
     #profile-field-settings .new-profile-field-form .controls {
         margin: auto;
         text-align: center;
@@ -1876,5 +1927,26 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     .bots_list .bot-information-box {
         width: calc(100% - 10px);
         max-height: unset;
+    }
+}
+
+#edit-fields-modal-status {
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
+#edit-linkifier-form {
+    #edit-linkifier-pattern,
+    #edit-linkifier-url-format-string {
+        width: 400px;
+    }
+
+    label {
+        margin-bottom: 4px;
+    }
+
+    #edit-linkifier-pattern-status,
+    #edit-linkifier-format-status {
+        margin-top: 10px;
     }
 }

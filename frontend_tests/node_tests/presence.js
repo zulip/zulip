@@ -76,9 +76,9 @@ people.add_active_user(jane);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         presence.clear_internal_data();
-        f(override);
+        f({override});
     });
 }
 
@@ -86,7 +86,7 @@ test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
 });
 
-test("unknown user", (override) => {
+test("unknown user", ({override}) => {
     const unknown_user_id = 999;
     const now = 888888;
     const presences = {};
@@ -181,7 +181,7 @@ test("set_presence_info", () => {
 
     const params = {};
     params.presences = presences;
-    params.initial_servertime = now;
+    params.server_timestamp = now;
     presence.initialize(params);
 
     assert.deepEqual(presence.presence_info.get(alice.user_id), {
@@ -210,7 +210,7 @@ test("set_presence_info", () => {
     assert.equal(presence.get_status(zoe.user_id), "offline");
     assert.equal(presence.last_active_date(zoe.user_id), undefined);
 
-    assert(!presence.presence_info.has(bot.user_id));
+    assert.ok(!presence.presence_info.has(bot.user_id));
     assert.equal(presence.get_status(bot.user_id), "offline");
 
     assert.deepEqual(presence.presence_info.get(john.user_id), {
@@ -279,8 +279,8 @@ test("big realms", () => {
     const get_active_human_count = people.get_active_human_count;
     people.get_active_human_count = () => 1000;
     presence.set_info(presences, now);
-    assert(presence.presence_info.has(sally.user_id));
-    assert(!presence.presence_info.has(zoe.user_id));
+    assert.ok(presence.presence_info.has(sally.user_id));
+    assert.ok(!presence.presence_info.has(zoe.user_id));
     people.get_active_human_count = get_active_human_count;
 });
 

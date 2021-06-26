@@ -2,7 +2,8 @@ import os
 import random
 import re
 from collections import OrderedDict
-from typing import Any, Dict, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -14,8 +15,17 @@ from zerver.decorator import add_google_analytics_context
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, WebhookIntegration
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.templates import render_markdown_path
 from zerver.models import Realm
-from zerver.templatetags.app_filters import render_markdown_path
+from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_summary
+
+
+@dataclass
+class DocumentationArticle:
+    article_path: str
+    article_http_status: int
+    endpoint_path: Optional[str]
+    endpoint_method: Optional[str]
 
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
@@ -60,7 +70,7 @@ class ApiURLView(TemplateView):
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
 
-    def get_path(self, article: str) -> Tuple[str, int]:
+    def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
         if article == "":
             article = "index"
@@ -74,28 +84,61 @@ class MarkdownDirectoryView(ApiURLView):
             http_status = 404
 
         path = self.path_template % (article,)
+        endpoint_name = None
+        endpoint_method = None
+
+        # The following is a somewhat hacky approach to extract titles from articles.
+        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
+        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
+
+        if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
+            endpoint_path = article.replace("-", "_")
+            try:
+                endpoint_name, endpoint_method = get_endpoint_from_operationid(endpoint_path)
+                path = "/zerver/api/api-doc-template.md"
+            except AssertionError:
+                return DocumentationArticle(
+                    article_path=self.path_template % ("missing",),
+                    article_http_status=404,
+                    endpoint_path=None,
+                    endpoint_method=None,
+                )
         try:
             loader.get_template(path)
-            return (path, http_status)
+            return DocumentationArticle(
+                article_path=path,
+                article_http_status=http_status,
+                endpoint_path=endpoint_name,
+                endpoint_method=endpoint_method,
+            )
         except loader.TemplateDoesNotExist:
-            return (self.path_template % ("missing",), 404)
+            return DocumentationArticle(
+                article_path=self.path_template % ("missing",),
+                article_http_status=404,
+                endpoint_path=None,
+                endpoint_method=None,
+            )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
         context: Dict[str, Any] = super().get_context_data()
-        (context["article"], http_status_ignored) = self.get_path(article)
+
+        documentation_article = self.get_path(article)
+        context["article"] = documentation_article.article_path
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not context["article"].endswith("/index.md")
         if self.path_template == "/zerver/help/%s.md":
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
-            (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
+            sidebar_article = self.get_path("include/sidebar_index")
+            sidebar_index = sidebar_article.article_path
             title_base = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
-            (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
+            sidebar_article = self.get_path("sidebar_index")
+            sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
@@ -105,7 +148,19 @@ class MarkdownDirectoryView(ApiURLView):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
             # Strip the header and then use the first line to get the article title
-            article_title = first_line.lstrip("#").strip()
+            if context["article"] == "/zerver/api/api-doc-template.md":
+                endpoint_name, endpoint_method = (
+                    documentation_article.endpoint_path,
+                    documentation_article.endpoint_method,
+                )
+                article_title = get_openapi_summary(endpoint_name, endpoint_method)
+            elif self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
+                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1].replace("-", "_")
+                endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
+                article_title = get_openapi_summary(endpoint_name, endpoint_method)
+            else:
+                article_title = first_line.lstrip("#").strip()
+                endpoint_name = endpoint_method = None
             if context["not_index_page"]:
                 context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
             else:
@@ -121,11 +176,14 @@ class MarkdownDirectoryView(ApiURLView):
         add_api_uri_context(api_uri_context, self.request)
         api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
+        if endpoint_name and endpoint_method:
+            context["api_uri_context"]["API_ENDPOINT_NAME"] = endpoint_name + ":" + endpoint_method
         add_google_analytics_context(context)
         return context
 
     def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
-        (path, http_status) = self.get_path(article)
+        documentation_article = self.get_path(article)
+        http_status = documentation_article.article_http_status
         result = super().get(self, article=article)
         if http_status != 200:
             result.status_code = http_status
@@ -148,8 +206,8 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
     path_name = request.path.rstrip("/").split("/")[-1]
     description = (
         "Zulip comes with over a hundred native integrations out of the box, "
-        "and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. "
-        "Connect the apps you use everyday to Zulip."
+        "and integrates with Zapier and IFTTT to provide hundreds more. "
+        "Connect the apps you use every day to Zulip."
     )
 
     if path_name in INTEGRATIONS:

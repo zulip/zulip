@@ -76,7 +76,7 @@ context is defined and where it can be found.
 ### Backend templates
 
 For text generated in the backend, including logged-out ("portico")
-pages and the webapp's base content, we use the [Jinja2][] template
+pages and the web app's base content, we use the [Jinja2][] template
 engine (files in `templates/zerver`).
 
 The syntax for using conditionals and other common structures can be
@@ -134,6 +134,10 @@ whenever a template is changed.
 All user-facing strings (excluding pages only visible to sysadmins or
 developers) should be tagged for [translation][].
 
+### Tooltips
+
+Zulip uses [TippyJS](https://atomiks.github.io/tippyjs/) for its tooltips.
+
 ## Static asset pipeline
 
 This section documents additional information that may be useful when
@@ -148,11 +152,11 @@ relevant background as well.
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
 we are working on migrating these to TypeScript modules.  Stylesheets
-are written in CSS extended by various PostCSS plugins; they
-are converted from plain CSS, and we have yet to take full advantage of
+are written in CSS extended by various PostCSS plugins; they are
+converted from plain CSS, and we have yet to take full advantage of
 the features PostCSS offers.  We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
-points specified in `tools/webpack.assets.json`; source maps are
+points specified in `tools/webpack.*assets.json`; source maps are
 generated in the process for better debugging experience.
 
 In development mode, bundles are built and served on the fly using
@@ -164,8 +168,8 @@ webpack build, JS minification and a host of other steps for getting the assets
 ready for deployment.
 
 You can trace which source files are included in which HTML templates
-by comparing the `render_entrypoint` calls in the HTML templates under
-`templates/` with the bundles declared in `tools/webpack.assets.json`.
+by comparing the `entrypoint` variables in the HTML templates under
+`templates/` with the bundles declared in `tools/webpack.*assets.json`.
 
 ### Adding static files
 
@@ -196,8 +200,8 @@ first add it to the appropriate place under `static/`.
   `static/assets/icons/template.hbs` template.
 
 For your asset to be included in a development/production bundle, it
-needs to be accessible from one of the entry points defined in
-`tools/webpack.assets.json`.
+needs to be accessible from one of the entry points defined either in
+`tools/webpack.assets.json` or `tools/webpack.dev-assets.json`.
 
 * If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
@@ -206,10 +210,13 @@ needs to be accessible from one of the entry points defined in
   logged-out/portico pages, import it to
   `static/js/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
-* If it's just used on a single standalone page (e.g. `/stats`),
-  create a new entry point in `tools/webpack.assets.json`. Use the
-  `bundle` macro (defined in `templates/zerver/base.html`) in the
-  relevant Jinja2 template to inject the compiled JS and CSS.
+* If it's just used on a single standalone page which is only used in
+  a development environment (e.g. `/devlogin`) create a new entry
+  point in `tools/webpack.dev-assets.json` or it's used in both
+  production and development (e.g. `/stats`) create a new entry point
+  in `tools/webpack.assets.json`. Use the `bundle` macro (defined in
+  `templates/zerver/base.html`) in the relevant Jinja2 template to
+  inject the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
 `DEBUG =` line in `zproject/default_settings.py` and set it to `False`.
@@ -220,7 +227,7 @@ A few useful notes are:
 * Zulip installs static assets in production in
 `/home/zulip/prod-static`.  When a new version is deployed, before the
 server is restarted, files are copied into that directory.
-* We use the VFL (Versioned File Layout) strategy, where each file in
+* We use the VFL (versioned file layout) strategy, where each file in
   the codebase (e.g. `favicon.ico`) gets a new name
   (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it.  Each
   deployment, has a manifest file
@@ -277,8 +284,6 @@ function in those scenarios, add it to `zulip_test`.  This is also
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[i18next]: https://www.i18next.com
-[official]: https://www.i18next.com/plurals.html
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
 [translation]: ../translating/translating.md

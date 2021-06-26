@@ -25,8 +25,8 @@ const util = zrequire("util");
 // The most basic unit tests load up code, call functions,
 // and assert truths:
 
-assert(!util.find_wildcard_mentions("boring text"));
-assert(util.find_wildcard_mentions("mention @**everyone**"));
+assert.ok(!util.find_wildcard_mentions("boring text"));
+assert.ok(util.find_wildcard_mentions("mention @**everyone**"));
 
 // Let's test with people.js next.  We'll show this technique:
 //  * get a false value
@@ -44,9 +44,9 @@ const isaac = {
 // the tests in people.js in the same directory as this file.
 
 // Let's exercise the code and use assert to verify it works!
-assert(!people.is_known_user_id(isaac.user_id));
+assert.ok(!people.is_known_user_id(isaac.user_id));
 people.add_active_user(isaac);
-assert(people.is_known_user_id(isaac.user_id));
+assert.ok(people.is_known_user_id(isaac.user_id));
 
 // Let's look at stream_data next, and we will start by putting
 // some data at module scope. (You could also declare this inside

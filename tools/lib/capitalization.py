@@ -29,7 +29,6 @@ IGNORED_PHRASES = [
     r"ID",
     r"IDs",
     r"IP",
-    r"JIRA",
     r"JSON",
     r"Kerberos",
     r"LDAP",
@@ -140,8 +139,8 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with __- recipient__",
-    r"private messages with __- recipient__",
+    r"group private messages with {recipient}",
+    r"private messages with {recipient}",
     r"private messages with yourself",
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
@@ -157,6 +156,9 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Used in GIPHY popover.
+    r"GIFs",
+    r"GIPHY",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

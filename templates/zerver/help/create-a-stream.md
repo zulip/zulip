@@ -4,7 +4,7 @@ By default, all users other than guests can create streams.
 
 Organization administrators can
 [restrict stream creation](/help/configure-who-can-create-streams) to
-admins only, or to members meeting a minimum account age.
+admins only, moderators only or to members meeting a minimum account age.
 
 If you are an administrator setting up streams for the first time, we highly
 recommend reading our

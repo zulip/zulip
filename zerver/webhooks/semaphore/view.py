@@ -10,7 +10,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-# Semaphore Classic Templates
+# Semaphore Classic templates
 
 BUILD_TEMPLATE = """
 [Build {build_number}]({build_url}) {status}:
@@ -25,7 +25,7 @@ DEPLOY_TEMPLATE = """
 * **Server**: {server_name}
 """.strip()
 
-# Semaphore 2.0 Templates
+# Semaphore 2.0 templates
 
 # Currently, Semaphore 2.0 only supports GitHub, while Semaphore Classic
 # supports Bitbucket too. The payload does not have URLs for commits, tags,
@@ -49,14 +49,14 @@ PUSH_TEMPLATE = """
 
 GH_PULL_REQUEST_TEMPLATE = """
 [{pipeline_name}]({workflow_url}) pipeline **{pipeline_result}**:
-* **Pull Request**: [{pull_request_title}]({pull_request_url})
+* **Pull request**: [{pull_request_title}]({pull_request_url})
 * **Branch**: {branch_name}
 * **Author**: [{author_name}]({author_url})
 """.strip()
 
 PULL_REQUEST_TEMPLATE = """
 [{pipeline_name}]({workflow_url}) pipeline **{pipeline_result}**:
-* **Pull Request**: {pull_request_title} (#{pull_request_number})
+* **Pull request**: {pull_request_title} (#{pull_request_number})
 * **Branch**: {branch_name}
 * **Author**: {author_name}
 """.strip()

@@ -738,7 +738,7 @@ def convert_slack_workspace_messages(
         message_json = dict(zerver_message=zerver_message, zerver_usermessage=zerver_usermessage)
 
         message_file = f"/messages-{dump_file_id:06}.json"
-        logging.info("Writing Messages to %s\n", output_dir + message_file)
+        logging.info("Writing messages to %s\n", output_dir + message_file)
         create_converted_data_files(message_json, output_dir, message_file)
 
         total_reactions += reactions
@@ -1246,7 +1246,7 @@ def fetch_team_icons(
     return records
 
 
-def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int = 6) -> None:
+def do_convert_data(original_path: str, output_dir: str, token: str, threads: int = 6) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
@@ -1254,15 +1254,23 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     check_token_access(token)
 
-    slack_data_dir = slack_zip_file.replace(".zip", "")
-    if not os.path.exists(slack_data_dir):
-        os.makedirs(slack_data_dir)
-
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):
         raise Exception("Output directory should be empty!")
 
-    subprocess.check_call(["unzip", "-q", slack_zip_file, "-d", slack_data_dir])
+    if os.path.isfile(original_path) and original_path.endswith(".zip"):
+        slack_data_dir = original_path.replace(".zip", "")
+        if not os.path.exists(slack_data_dir):
+            os.makedirs(slack_data_dir)
+
+        subprocess.check_call(["unzip", "-q", original_path, "-d", slack_data_dir])
+    elif os.path.isdir(original_path):
+        slack_data_dir = original_path
+    else:
+        raise ValueError(f"Don't know how to import Slack data from {original_path}")
+
+    if not os.path.isfile(os.path.join(slack_data_dir, "channels.json")):
+        raise ValueError(f"{original_path} does not have the layout we expect from a Slack export!")
 
     # We get the user data from the legacy token method of Slack API, which is depreciated
     # but we use it as the user email data is provided only in this method
@@ -1332,7 +1340,9 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(realm_icon_records, output_dir, "/realm_icons/records.json")
 
-    rm_tree(slack_data_dir)
+    # Clean up the directory if we unpacked it ourselves.
+    if original_path != slack_data_dir:
+        rm_tree(slack_data_dir)
     subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
@@ -1352,6 +1362,8 @@ def check_token_access(token: str) -> None:
         data = requests.get(
             "https://slack.com/api/team.info", headers={"Authorization": "Bearer {}".format(token)}
         )
+        if data.status_code != 200 or not data.json()["ok"]:
+            raise ValueError("Invalid Slack token: {}".format(token))
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         required_scopes = set(["emoji:read", "users:read", "users:read.email", "team:read"])
         missing_scopes = required_scopes - has_scopes

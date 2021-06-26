@@ -51,6 +51,11 @@ export function do_process_submessages(in_opts) {
         return;
     }
 
+    if (events[0].sender_id !== message.sender_id) {
+        blueslip.warn(`User ${events[0].sender_id} tried to hijack message ${message.id}`);
+        return;
+    }
+
     const row = in_opts.row;
 
     // Right now, our only use of submessages is widgets.
@@ -123,7 +128,7 @@ export function handle_event(submsg) {
     try {
         data = JSON.parse(submsg.content);
     } catch {
-        blueslip.error("server sent us invalid json in handle_event: " + submsg.content);
+        blueslip.warn("server sent us invalid json in handle_event: " + submsg.content);
         return;
     }
 

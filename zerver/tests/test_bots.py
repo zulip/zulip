@@ -17,12 +17,7 @@ from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import (
-    avatar_disk_path,
-    get_test_image_file,
-    queries_captured,
-    tornado_redirected_to_list,
-)
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, queries_captured
 from zerver.models import (
     Realm,
     Service,
@@ -47,7 +42,7 @@ stripe_sample_config_options = [
         "stripe",
         ["financial"],
         display_name="Stripe",
-        config_options=[("Stripe API Key", "stripe_api_key", _check_string)],
+        config_options=[("Stripe API key", "stripe_api_key", _check_string)],
     ),
 ]
 
@@ -171,7 +166,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -337,7 +332,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -391,7 +386,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["' + iago.email + '"]',
         }
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=3):
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], request_data)
             self.assert_json_success(result)
 
@@ -408,17 +403,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["hambot-bot@zulip.testserver"]',
         }
         events_bot: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events_bot):
+        with self.tornado_redirected_to_list(events_bot, expected_num_events=2):
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], bot_request_data)
             self.assert_json_success(result)
 
         # No notification message event or invitation email is sent because of bot.
         msg_event = [e for e in events_bot if e["event"]["type"] == "message"]
         self.assert_length(msg_event, 0)
-        self.assertEqual(len(events_bot), len(events) - 1)
+        self.assert_length(events_bot, len(events) - 1)
 
         # Test runner automatically redirects all sent email to a dummy 'outbox'.
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
     def test_add_bot_with_default_sending_stream_private_allowed(self) -> None:
         self.login("hamlet")
@@ -429,7 +424,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -501,7 +496,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")

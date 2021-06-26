@@ -2,12 +2,68 @@ body.night-mode {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
 
+    .placeholder {
+        color: hsl(0, 0%, 55%);
+        opacity: 1;
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+        @extend .placeholder;
+    }
+
     a:hover {
         color: hsl(200, 79%, 66%);
     }
 
     ul.filters a:hover {
         color: inherit;
+    }
+
+    table.table-striped thead.table-sticky-headers th {
+        background-color: hsl(0, 0%, 0%);
+
+        &:hover {
+            background-color: hsl(211, 29%, 14%);
+        }
+    }
+
+    /* Extend the 'light-border' TippyJS theme, which is intended for
+       popovers/menus that should use default background colors, to use
+       our night theme colors in Zulip's night theme.
+     */
+    .tippy-box[data-theme~="light-border"] {
+        .tippy-content a {
+            color: hsl(236, 33%, 90%);
+        }
+        &[data-placement^="top"] {
+            > .tippy-arrow {
+                &::before {
+                    border-top-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+        &[data-placement^="bottom"] {
+            > .tippy-arrow {
+                &::before {
+                    border-bottom-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+        &[data-placement^="left"] {
+            > .tippy-arrow {
+                &::before {
+                    border-left-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
+        &[data-placement^="right"] {
+            > .tippy-arrow {
+                &::before {
+                    border-right-color: hsl(235, 18%, 7%);
+                }
+            }
+        }
     }
 
     .app-main,
@@ -22,6 +78,13 @@ body.night-mode {
     #settings_page .form-sidebar,
     #settings_page .right {
         background-color: hsl(212, 28%, 18%);
+    }
+
+    #compose_buttons
+        .reply_button_container
+        .compose_reply_button
+        .compose_reply_button_recipient_label {
+        color: hsl(215, 47%, 80%);
     }
 
     .compose-send-status-close {
@@ -165,8 +228,9 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 90%);
     }
 
-    .topic-unread-count,
-    .private_message_count {
+    .recent_topics_container .unread_count,
+    .topic-list-item .unread_count,
+    .expanded_private_message .unread_count {
         background-color: hsla(105, 2%, 50%, 0.5);
     }
 
@@ -221,6 +285,11 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    /* Disable blue link styling for the message timestamp link. */
+    .message_time {
+        color: hsl(236, 33%, 90%);
+    }
+
     .emoji-popover .reaction:focus {
         box-shadow: 0 0 1px hsl(0, 0%, 98%);
     }
@@ -241,7 +310,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark mode */
-    .compose-content,
+    #compose-content,
     .message_list .recipient_row,
     .message_row,
     .draft-row .draft-info-box,
@@ -272,7 +341,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsla(0, 0%, 90%, 1);
     }
 
-    .overlay,
+    div.overlay,
     #subscription_overlay
         #stream-creation
         #stream_creation_form
@@ -283,13 +352,14 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(212, 28%, 8%, 0.75);
     }
 
-    .overlay .flex.overlay-content > div,
+    div.overlay .flex.overlay-content > div,
     .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {
         box-shadow: 0 0 30px hsl(212, 32%, 7%);
     }
 
+    .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
     .dropdown .dropdown-menu,
     .popover,
@@ -307,6 +377,13 @@ on a dark background, and don't change the dark labels dark either. */
     hr {
         color: hsl(212, 28%, 18%);
         opacity: 0.2;
+    }
+
+    #gear_menu_about_zulip {
+        .white_zulip_icon_without_text {
+            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
+                brightness(99%) contrast(89%);
+        }
     }
 
     .nav .dropdown-menu::after,
@@ -414,12 +491,7 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
-    .recent_topic_unread_count {
-        background-color: hsl(0, 0%, 15%) !important;
-        color: hsl(0, 0%, 100%);
-    }
-
-    .recent_avatars_others {
+    .recent_topics_participant_overflow {
         color: hsl(0, 0%, 100%) !important;
         background-color: hsl(211, 18%, 25%) !important;
     }
@@ -454,9 +526,6 @@ on a dark background, and don't change the dark labels dark either. */
     .btn-recent-selected,
     #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
-        &:hover {
-            background-color: hsl(211, 29%, 14%) !important;
-        }
     }
 
     #recent_topics_table td a {
@@ -517,7 +586,8 @@ on a dark background, and don't change the dark labels dark either. */
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
     #subscription_overlay ul.grey-box li,
-    #stream_privacy_modal ul.grey-box li,
+    #subscription_overlay .grey-box .radio-input-parent,
+    #stream_privacy_modal .grey-box .radio-input-parent,
     #settings_page .sidebar,
     #settings_page .sidebar *,
     table,
@@ -774,6 +844,11 @@ on a dark background, and don't change the dark labels dark either. */
 
         .close {
             color: inherit;
+            opacity: 0.8;
+        }
+
+        .close:hover {
+            opacity: 1;
         }
     }
 
@@ -855,6 +930,12 @@ on a dark background, and don't change the dark labels dark either. */
                     color: hsl(236, 33%, 90%);
                 }
             }
+        }
+
+        .subscription-group-list,
+        .subscription-group-list .user-stream-list tr,
+        .subscription-group-list .user-group-list tr {
+            border-color: hsla(0, 0%, 0%, 0.4);
         }
     }
 

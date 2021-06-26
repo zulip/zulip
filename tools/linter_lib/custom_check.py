@@ -25,6 +25,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/tests/test_new_users.py",
     "zerver/tests/test_email_mirror.py",
     "zerver/tests/test_email_notifications.py",
+    # This uses subject in authentication protocols sense:
+    "zerver/tests/test_auth_backends.py",
     # These are tied more to our API than our DB model.
     "zerver/openapi/python_examples.py",
     "zerver/tests/test_openapi.py",
@@ -56,6 +58,7 @@ shebang_rules: List["Rule"] = [
 trailing_whitespace_rule: "Rule" = {
     "pattern": r"\s+$",
     "strip": "\n",
+    "exclude": {"tools/ci/success-http-headers.template.txt"},
     "description": "Fix trailing whitespace",
 }
 whitespace_rules: List["Rule"] = [
@@ -68,10 +71,6 @@ whitespace_rules: List["Rule"] = [
     {
         "pattern": "\t",
         "strip": "\n",
-        "exclude": {
-            "tools/ci/success-http-headers.template.txt",
-            "tools/ci/success-http-headers.template.debian.txt",
-        },
         "description": "Fix tab-based whitespace",
     },
 ]
@@ -105,7 +104,7 @@ markdown_whitespace_rules: List["Rule"] = [
 
 
 js_rules = RuleList(
-    langs=["js"],
+    langs=["js", "ts"],
     rules=[
         {
             "pattern": "subject|SUBJECT",
@@ -120,31 +119,19 @@ js_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": r"i18n\.t\([^)]+[^,\{\)]$",
-            "description": "i18n string should not be a multiline string",
-        },
-        {
-            "pattern": r"""i18n\.t\(['"].+?['"]\s*\+""",
-            "description": "Do not concatenate arguments within i18n.t()",
-        },
-        {
-            "pattern": r"""i18n\.t\([a-zA-Z]""",
-            "exclude": {"static/js/templates.js"},
-            "description": "Do not pass a variable into i18n.t; it will not be exported to Transifex for translation.",
-        },
-        {
-            "pattern": r"i18n\.t\(.+\).*\+",
+            "pattern": r"\$t\(.+\).*\+",
             "description": "Do not concatenate i18n strings",
         },
-        {"pattern": r"\+.*i18n\.t\(.+\)", "description": "Do not concatenate i18n strings"},
+        {"pattern": r"\+.*\$t\(.+\)", "description": "Do not concatenate i18n strings"},
         {
             "pattern": "[.]html[(]",
-            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|i18n\.t|rendered_|$|\)|error_text|widget_elem|\$error|\$\("<p>"\))""",
+            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
                 "static/js/portico",
                 "static/js/lightbox.js",
-                "static/js/ui_report.js",
+                "static/js/ui_report.ts",
                 "static/js/confirm_dialog.js",
+                "static/js/edit_fields_modal.js",
                 "frontend_tests/",
             },
             "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.",
@@ -153,17 +140,15 @@ js_rules = RuleList(
             "pattern": "[\"']json/",
             "description": "Relative URL for JSON route not supported by i18n",
         },
-        # This rule is constructed with + to avoid triggering on itself
-        {"pattern": "^[ ]*//[A-Za-z0-9]", "description": "Missing space after // in comment"},
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
-            "description": "Strings passed to $().text should be wrapped in i18n.t() for internationalization",
+            "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
             "exclude": {"frontend_tests/node_tests/"},
         },
         {
             "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to compose_error should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"ui.report_success\(",
@@ -171,8 +156,8 @@ js_rules = RuleList(
         },
         {
             "pattern": r"""report.success\(["']""",
-            "description": "Argument to ui_report.success should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.success should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"ui.report_error\(",
@@ -180,15 +165,15 @@ js_rules = RuleList(
         },
         {
             "pattern": r"""report.error\(["'][^'"]""",
-            "description": "Argument to ui_report.error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.error("")', 'ui_report.error(_("text"))'],
             "bad_lines": ['ui_report.error("test")'],
         },
         {
             "pattern": r"""report.client_error\(["'][^'"]""",
-            "description": "Argument to ui_report.client_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.client_error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.client_error("")', 'ui_report.client_error(_("text"))'],
             "bad_lines": ['ui_report.client_error("test")'],
         },
@@ -203,7 +188,7 @@ js_rules = RuleList(
             "description": "Use channel module for AJAX calls",
             "exclude": {
                 # Internal modules can do direct network calls
-                "static/js/blueslip.js",
+                "static/js/blueslip.ts",
                 "static/js/channel.js",
                 # External modules that don't include channel.js
                 "static/js/stats/",
@@ -215,15 +200,19 @@ js_rules = RuleList(
         },
         {
             "pattern": "style ?=",
+            "exclude_pattern": r"(const |\S)style ?=",
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
                 "frontend_tests/node_tests/copy_and_paste.js",
-                "frontend_tests/node_tests/upload.js",
-                "static/js/upload.js",
-                "static/js/stream_color.js",
             },
-            "good_lines": ["#my-style {color: blue;}"],
+            "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
+        },
+        {
+            "pattern": r"assert\(",
+            "description": "Use 'assert.ok' instead of 'assert'. We avoid the use of 'assert' as it can easily be confused with 'assert.equal'.",
+            "good_lines": ["assert.ok(...)"],
+            "bad_lines": ["assert(...)"],
         },
         *whitespace_rules,
     ],
@@ -283,6 +272,12 @@ python_rules = RuleList(
             "bad_lines": ["assertEquals(1, 2)"],
         },
         {
+            "pattern": "assertEqual[(]len[(][^ ]*[)],",
+            "description": "Use the assert_length helper instead of assertEqual(len(..), ..).",
+            "good_lines": ["assert_length(data, 2)"],
+            "bad_lines": ["assertEqual(len(data), 2)"],
+        },
+        {
             "pattern": r"#\s*type:\s*ignore(?!\[[^][]+\] +# +\S)",
             "exclude": {"tools/tests", "zerver/lib/test_runner.py", "zerver/tests"},
             "description": '"type: ignore" should always end with "# type: ignore[code] # explanation for why"',
@@ -307,6 +302,7 @@ python_rules = RuleList(
         {
             "pattern": "django.utils.translation",
             "include_only": {"test/", "zerver/views/development/"},
+            "exclude": {"zerver/views/development/dev_login.py"},
             "description": "Test strings should not be tagged for translation",
             "good_lines": [""],
             "bad_lines": ["django.utils.translation"],
@@ -547,7 +543,7 @@ html_rules: List["Rule"] = [
     *prose_style_rules,
     {
         "pattern": "subject|SUBJECT",
-        "exclude": {"templates/zerver/email.html"},
+        "exclude": {"templates/zerver/email.html", "zerver/tests/fixtures/email"},
         "exclude_pattern": "email subject",
         "description": "avoid subject in templates",
         "good_lines": ["topic_name"],
@@ -560,9 +556,14 @@ html_rules: List["Rule"] = [
             ("templates/zerver/register.html", 'placeholder="acme"'),
             ("templates/zerver/register.html", 'placeholder="Acme or Ακμή"'),
         },
-        "exclude": {"templates/analytics/support.html"},
+        "exclude": {
+            "templates/analytics/support.html",
+            # We have URL prefix and Pygments language name as placeholders
+            # in the below template which we don't want to be translatable.
+            "static/templates/settings/playground_settings_admin.hbs",
+        },
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ['<input placeholder="foo">'],
     },
@@ -582,7 +583,7 @@ html_rules: List["Rule"] = [
         "pattern": "placeholder='[^{]",
         "description": "`placeholder` value should be translatable.",
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
     },
@@ -610,7 +611,6 @@ html_rules: List["Rule"] = [
             "templates/zerver/hello.html",
             "templates/corporate/upgrade.html",
         },
-        "good_lines": ["{{ render_entrypoint('landing-page') }}"],
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
         ],
@@ -651,7 +651,10 @@ html_rules: List["Rule"] = [
         "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
         "the DOM is ready (inside a $(function () {...}) block).",
-        "exclude": {"templates/zerver/dev_login.html", "templates/corporate/upgrade.html"},
+        "exclude": {
+            "templates/zerver/development/dev_login.html",
+            "templates/corporate/upgrade.html",
+        },
         "good_lines": ["($('#foo').on('click', function () {}"],
         "bad_lines": [
             "<button id='foo' onclick='myFunction()'>Foo</button>",
@@ -677,7 +680,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/emails/email_base_messages.html",
             # Email log templates; should clean up.
             "templates/zerver/email.html",
-            "templates/zerver/email_log.html",
+            "templates/zerver/development/email_log.html",
             # Social backend logos are dynamically loaded
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
@@ -698,7 +701,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/upgrade.html",
             # Miscellaneous violations to be cleaned up
             "static/templates/user_info_popover_title.hbs",
-            "static/templates/subscription_invites_warning_modal.hbs",
+            "static/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
             "templates/zerver/config_error.html",
             "templates/zerver/dev_env_email_access_details.html",
@@ -752,6 +755,10 @@ handlebars_rules = RuleList(
             "pattern": '{{t "[^"]+ " }}',
             "description": "Translatable strings should not have trailing spaces.",
         },
+        {
+            "pattern": r'"{{t "',
+            "description": "Invalid quoting for HTML element with translated string.",
+        },
     ],
 )
 
@@ -766,6 +773,11 @@ jinja2_rules = RuleList(
         {
             "pattern": r"{{ _(.+) }}[\.\?!]",
             "description": "Period should be part of the translatable string.",
+        },
+        {
+            "pattern": r'{% set entrypoint = "dev-',
+            "exclude": {"templates/zerver/development/"},
+            "description": "Development entrypoints (dev-) must not be imported in production.",
         },
     ],
 )
@@ -833,6 +845,12 @@ markdown_rules = RuleList(
                 "docs/overview/readme.md",
                 "docs/README.md",
                 "docs/subsystems/email.md",
+            },
+            "exclude_line": {
+                (
+                    "docs/overview/changelog.md",
+                    "[latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html",
+                ),
             },
             "include_only": {"docs/"},
             "description": "Use relative links (../foo/bar.html) to other documents in docs/",

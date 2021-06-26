@@ -5,6 +5,8 @@ const path = require("path");
 
 const callsites = require("callsites");
 
+const $ = require("../zjsunit/zjquery");
+
 const new_globals = new Set();
 let old_globals = {};
 
@@ -15,16 +17,55 @@ const used_module_mocks = new Set();
 const jquery_path = require.resolve("jquery");
 const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
 
+let in_mid_render = false;
+let jquery_function;
+
 function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
-        return module_mocks.get(filename);
+        const obj = module_mocks.get(filename);
+
+        // Normal mocks are just objects.
+        if (!obj.__template_fn) {
+            return obj;
+        }
+
+        const actual_render = actual_load(request, parent, isMain);
+
+        // For template mocks, we have an underlying object that
+        // we wrap with a render function.
+        const render = (...args) => {
+            if (in_mid_render) {
+                return actual_render(...args);
+            }
+
+            if (obj.f.__default) {
+                throw new Error(`
+                    You did render_foo = mock_template("${obj.__template_fn}")
+                    but you also need to do override(render_foo, "f", () => {...}
+                `);
+            }
+
+            const data = args[0];
+
+            if (obj.exercise_template) {
+                in_mid_render = true;
+                const html = actual_render(...args);
+                in_mid_render = false;
+
+                // User will override "f" for now, which is a bit hacky.
+                return obj.f(data, html);
+            }
+
+            return obj.f(data);
+        };
+
+        return render;
     }
+
     if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        // jQuery exposes an incompatible API to Node vs. browser, so
-        // this wouldn't work.
-        throw new Error("This test will need jquery mocked using zjquery or real_jquery");
+        return jquery_function || $;
     }
 
     return actual_load(request, parent, isMain);
@@ -67,9 +108,15 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-exports.mock_cjs = (request, obj) => {
+exports.mock_cjs = (module_path, obj) => {
+    if (module_path === "jquery") {
+        throw new Error(
+            "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
+        );
+    }
+
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -86,16 +133,35 @@ exports.mock_cjs = (request, obj) => {
     return obj;
 };
 
-exports.mock_esm = (request, obj = {}) => {
+exports.mock_jquery = ($) => {
+    jquery_function = $;
+    return $;
+};
+
+exports.mock_template = (fn, exercise_template) => {
+    // We create an object with an f() function that the test author
+    // can override.
+    const obj = {
+        f: () => {},
+        __template_fn: fn,
+        exercise_template: Boolean(exercise_template),
+    };
+
+    obj.f.__default = true;
+
+    return exports.mock_cjs("../../static/templates/" + fn, obj);
+};
+
+exports.mock_esm = (module_path, obj = {}) => {
     if (typeof obj !== "object") {
         throw new TypeError("An ES module must be mocked with an object");
     }
-    return exports.mock_cjs(request, {...obj, __esModule: true});
+    return exports.mock_cjs(module_path, {...obj, __esModule: true});
 };
 
-exports.unmock_module = (request) => {
+exports.unmock_module = (module_path) => {
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -130,11 +196,19 @@ exports.set_global = function (name, val) {
 };
 
 exports.zrequire = function (short_fn) {
+    if (short_fn === "templates") {
+        throw new Error(`
+            There is no need to zrequire templates.js.
+
+            The test runner automatically registers the
+            Handlebar extensions.
+        `);
+    }
+
     return require(`../../static/js/${short_fn}`);
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
-const templatesPath = staticPath + "templates" + path.sep;
 
 exports.complain_about_unused_mocks = function () {
     for (const filename of module_mocks.keys()) {
@@ -153,6 +227,8 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
+    jquery_function = undefined;
+
     if (actual_load === undefined) {
         throw new Error("namespace.finish was called without namespace.start.");
     }
@@ -163,7 +239,7 @@ exports.finish = function () {
     used_module_mocks.clear();
 
     for (const path of Object.keys(require.cache)) {
-        if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
+        if (path.startsWith(staticPath)) {
             delete require.cache[path];
         }
     }
@@ -273,9 +349,13 @@ exports.with_overrides = function (test_function) {
         }
     }
 
-    for (const module_unused_funcs of unused_funcs.values()) {
+    for (const [obj, module_unused_funcs] of unused_funcs.entries()) {
         for (const unused_name of module_unused_funcs.keys()) {
-            throw new Error(unused_name + " never got invoked!");
+            if (obj.__template_fn) {
+                throw new Error(`The ${obj.__template_fn} template was never rendered.`);
+            } else {
+                throw new Error(unused_name + " never got invoked!");
+            }
         }
     }
 };

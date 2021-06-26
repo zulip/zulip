@@ -1,27 +1,27 @@
 from django.conf.urls import include
 from django.urls import path
 
-from analytics.views import (
-    get_activity,
+from analytics.views.installation_activity import get_installation_activity
+from analytics.views.realm_activity import get_realm_activity
+from analytics.views.stats import (
     get_chart_data,
     get_chart_data_for_installation,
     get_chart_data_for_realm,
     get_chart_data_for_remote_installation,
     get_chart_data_for_remote_realm,
-    get_realm_activity,
-    get_user_activity,
     stats,
     stats_for_installation,
     stats_for_realm,
     stats_for_remote_installation,
     stats_for_remote_realm,
-    support,
 )
+from analytics.views.support import support
+from analytics.views.user_activity import get_user_activity
 from zerver.lib.rest import rest_path
 
 i18n_urlpatterns = [
     # Server admin (user_profile.is_staff) visible stats pages
-    path("activity", get_activity),
+    path("activity", get_installation_activity),
     path("activity/support", support, name="support"),
     path("realm_activity/<realm_str>/", get_realm_activity),
     path("user_activity/<email>/", get_user_activity),

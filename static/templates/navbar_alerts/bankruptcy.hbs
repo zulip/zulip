@@ -1,0 +1,17 @@
+<div data-step="1">
+    {{#tr}}
+        Welcome back!  You have <z-link>{unread_msgs_count}</z-link> unread messages.
+        Do you want to mark them all as read?
+        {{#*inline "z-link"}}<span class="bankruptcy_unread_count">{{> @partial-block}}</span>{{/inline}}
+    {{/tr}}
+    <span class="buttons">
+        <a class="alert-link accept-bankruptcy" role="button" tabindex=0>{{t "Yes, please!" }}</a>
+        &bull;
+        <a class="alert-link exit" role="button" tabindex=0>{{t "No, I'll catch up." }}</a>
+    </span>
+</div>
+<div data-step="2" style="display: none;">
+    {{#tr}}
+    Marking all messages as read…
+    {{/tr}}
+</div>

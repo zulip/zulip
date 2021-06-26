@@ -1,10 +1,16 @@
 import datetime
+from unittest import mock
 
 from django.conf import settings
 from django.core import mail
 from django.utils.timezone import now
 
-from confirmation.models import Confirmation, confirmation_url, generate_key
+from confirmation.models import (
+    Confirmation,
+    confirmation_url,
+    create_confirmation_link,
+    generate_key,
+)
 from zerver.lib.actions import do_set_realm_property, do_start_email_change_process
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
@@ -46,15 +52,10 @@ class EmailChangeTestCase(ZulipTestCase):
             user_profile=user_profile,
             realm=user_profile.realm,
         )
-        key = generate_key()
         date_sent = now() - datetime.timedelta(days=2)
-        Confirmation.objects.create(
-            content_object=obj,
-            date_sent=date_sent,
-            confirmation_key=key,
-            type=Confirmation.EMAIL_CHANGE,
-        )
-        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
+        with mock.patch("confirmation.models.timezone_now", return_value=date_sent):
+            url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
+
         response = self.client_get(url)
         self.assert_in_success_response(
             ["The confirmation link has expired or been deactivated."], response
@@ -79,14 +80,7 @@ class EmailChangeTestCase(ZulipTestCase):
             user_profile=user_profile,
             realm=user_profile.realm,
         )
-        key = generate_key()
-        Confirmation.objects.create(
-            content_object=obj,
-            date_sent=now(),
-            confirmation_key=key,
-            type=Confirmation.EMAIL_CHANGE,
-        )
-        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
+        url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -107,9 +101,9 @@ class EmailChangeTestCase(ZulipTestCase):
         data = {"email": "hamlet-new@zulip.com"}
         self.login("hamlet")
         url = "/json/settings"
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assert_in_success_response(["Check your email for a confirmation link."], result)
         email_message = mail.outbox[0]
         self.assertEqual(
@@ -147,7 +141,7 @@ class EmailChangeTestCase(ZulipTestCase):
         )
         url = "/json/settings"
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Email address changes are disabled in this organization.", result)
         # Realm admins can change their email address even setting is disabled.
@@ -164,7 +158,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
         url = "/json/settings"
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Already has an account", result)
 
@@ -173,9 +167,9 @@ class EmailChangeTestCase(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         url = "/json/settings"
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         result = self.client_patch(url, data)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assert_in_success_response(["Check your email for a confirmation link."], result)
         email_message = mail.outbox[0]
         self.assertEqual(
@@ -233,14 +227,7 @@ class EmailChangeTestCase(ZulipTestCase):
             user_profile=user_profile,
             realm=user_profile.realm,
         )
-        key = generate_key()
-        Confirmation.objects.create(
-            content_object=obj,
-            date_sent=now(),
-            confirmation_key=key,
-            type=Confirmation.EMAIL_CHANGE,
-        )
-        url = confirmation_url(key, user_profile.realm, Confirmation.EMAIL_CHANGE)
+        url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)

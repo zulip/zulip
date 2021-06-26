@@ -1,7 +1,7 @@
 from unittest import mock
 
+from zerver.lib.compatibility import find_mobile_os, is_outdated_desktop_app, version_lt
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.views.compatibility import find_mobile_os, is_outdated_desktop_app, version_lt
 
 
 class VersionTest(ZulipTestCase):
@@ -109,6 +109,8 @@ class CompatibilityTest(ZulipTestCase):
             else:
                 assert False  # nocoverage
 
+    @mock.patch("zerver.lib.compatibility.DESKTOP_MINIMUM_VERSION", "5.0.0")
+    @mock.patch("zerver.lib.compatibility.DESKTOP_WARNING_VERSION", "5.2.0")
     def test_insecure_desktop_app(self) -> None:
         self.assertEqual(is_outdated_desktop_app("ZulipDesktop/0.5.2 (Mac)"), (True, True, True))
         self.assertEqual(
@@ -132,7 +134,7 @@ class CompatibilityTest(ZulipTestCase):
         )
 
         # Verify what happens if DESKTOP_MINIMUM_VERSION < v < DESKTOP_WARNING_VERSION
-        with mock.patch("zerver.views.compatibility.DESKTOP_MINIMUM_VERSION", "4.0.3"):
+        with mock.patch("zerver.lib.compatibility.DESKTOP_MINIMUM_VERSION", "4.0.3"):
             self.assertEqual(
                 is_outdated_desktop_app(
                     "ZulipElectron/4.0.3 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36"

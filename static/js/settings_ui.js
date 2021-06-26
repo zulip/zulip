@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 
@@ -12,9 +12,9 @@ export function display_checkmark($elem) {
 }
 
 export const strings = {
-    success: i18n.t("Saved"),
-    failure: i18n.t("Save failed"),
-    saving: i18n.t("Saving"),
+    success_html: $t_html({defaultMessage: "Saved"}),
+    failure_html: $t_html({defaultMessage: "Save failed"}),
+    saving: $t({defaultMessage: "Saving"}),
 };
 
 // Generic function for informing users about changes to the settings
@@ -26,7 +26,8 @@ export function do_settings_change(
     data,
     status_element,
     {
-        success_msg = strings.success,
+        success_msg_html = strings.success_html,
+        failure_msg_html = strings.failure_html,
         success_continuation,
         error_continuation,
         sticky = false,
@@ -44,7 +45,7 @@ export function do_settings_change(
         data,
         success(reponse_data) {
             setTimeout(() => {
-                ui_report.success(success_msg, spinner, remove_after);
+                ui_report.success(success_msg_html, spinner, remove_after);
                 display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
@@ -54,9 +55,9 @@ export function do_settings_change(
         error(xhr) {
             if (error_msg_element) {
                 loading.destroy_indicator(spinner);
-                ui_report.error(strings.failure, xhr, error_msg_element);
+                ui_report.error(failure_msg_html, xhr, error_msg_element);
             } else {
-                ui_report.error(strings.failure, xhr, spinner);
+                ui_report.error(failure_msg_html, xhr, spinner);
             }
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
@@ -75,13 +76,7 @@ export function do_settings_change(
 export function disable_sub_setting_onchange(is_checked, sub_setting_id, disable_on_uncheck) {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
-        $(`#${CSS.escape(sub_setting_id)}_label`)
-            .parent()
-            .removeClass("control-label-disabled");
     } else if ((is_checked && !disable_on_uncheck) || (!is_checked && disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", true);
-        $(`#${CSS.escape(sub_setting_id)}_label`)
-            .parent()
-            .addClass("control-label-disabled");
     }
 }

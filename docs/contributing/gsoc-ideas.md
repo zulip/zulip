@@ -75,7 +75,7 @@ working on a proposal until 2 weeks before the deadline.
 
 ## Getting started
 
-We have an easy-to-setup development environment, and a library of
+We have an easy-to-set-up development environment, and a library of
 tasks that are great for first-time contributors. Use
 [our first-time Zulip developer guide](../overview/contributing.html#your-first-codebase-contribution)
 to get your Zulip development environment set up and to find your first issue. If you have any
@@ -222,7 +222,7 @@ skills needed, and try to emphasize where strong skills with
 particular tools are likely to be important for a given project.
 
 For all of our projects, an important skill to develop is a good
-command of Git; read [our Git Guide](../git/overview.md) in full to
+command of Git; read [our Git guide](../git/overview.md) in full to
 learn how to use it well.  Of particular importance is mastering using
 Git rebase so that you can construct commits that are clearly correct
 and explain why they are correct. We highly recommend investing in
@@ -238,8 +238,8 @@ work from the student.
 
 More important to us than specific deliverables in a project proposal
 is a clear body of work to focus on; E.g. if we see a proposal with 8
-markdown processor issues, we'll interpret this as a student excited
-to work on the markdown processor for the summer, even if the specific
+Markdown processor issues, we'll interpret this as a student excited
+to work on the Markdown processor for the summer, even if the specific
 set of 8 issues may not be the right ones to invest in.
 
 ### Focus areas
@@ -258,10 +258,10 @@ the areas mentioned above are not your main strength.
 
 As a data point, in Summer 2017, we had 4 students working on the
 React Native mobile app (1 focused primarily on visual design), 1 on
-the Electron desktop app, 2 on bots/integrations, 1 on webapp visual
+the Electron desktop app, 2 on bots/integrations, 1 on web app visual
 design, 2 on our development tooling and automated testing
 infrastructure, and the remaining 4 on various other parts of the
-backend and core webapp.
+backend and core web app.
 
 ### Full stack and web frontend focused projects
 
@@ -306,7 +306,7 @@ CSS](https://github.com/zulip/zulip/).
   Expert: Eeshan Garg.
 
 - Optimize performance and scalability, either for the web frontend or
-  the server.  Zulip is already one of the faster webapps out there,
+  the server.  Zulip is already one of the faster web apps out there,
   but there are a bunch of ideas for how to make it substantially
   faster.  This is likely a particularly challenging project to do
   well, since there are a lot of subtle interactions to understand.
@@ -322,8 +322,8 @@ CSS](https://github.com/zulip/zulip/).
 
 [prod-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+production%22
 
-- Extract JavaScript logic modules from the Zulip webapp that we'd
-  like to be able to share with the Zulip webapp.  This work can have
+- Extract JavaScript logic modules from the Zulip web app that we'd
+  like to be able to share with the Zulip web app.  This work can have
   big benefits it terms of avoiding code duplication for complex
   logic.  We have prototyped for a few modules by migrating them to
   `static/shared/`; this project will involve closely collaborating
@@ -391,10 +391,8 @@ CSS](https://github.com/zulip/zulip/).
   being built into Zulip.  And then for built-in bots, one should be able to click a few
   buttons of configuration on the web to set them up and include them in
   your organization.  We've developed a number of example bots
-  at `contrib_bots/` in the main Zulip repository that can be used for
-  testing; the design document for the deployment part of this vision
-  (likely part 1) is
-  [here](../subsystems/custom-apps.md).
+  in the (`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
+  PyPI package.
   **Skills recommended**: Python and JavaScript/CSS, plus devops
   skills (Linux deployment, Docker, Puppet etc.) are all useful here.
   Experience writing tools using various popular APIs is helpful for
@@ -513,7 +511,7 @@ Zulip React Native mobile app.
   problems that nobody has found yet; in the short term, it needs
   polish, bug finding/squashing, and debugging.  So browse the open
   issues, play with the app, and get involved!  Goals include parity
-  with the webapp (in terms of what you can do), parity with Slack (in
+  with the web app (in terms of what you can do), parity with Slack (in
   terms of the visuals), world-class scrolling and narrowing
   performance, and a great codebase.
 
@@ -558,7 +556,7 @@ Experts: Aman Agrawal, Neil Pilgrim.
 
 - Work on Zulip Terminal, the official terminal client for Zulip.
   zulip-terminal is already a basic usable client, but it needs a lot
-  of work to approach the webapp's quality level.  We would be happy
+  of work to approach the web app's quality level.  We would be happy
   to accept multiple strong students to work on this project.  Our
   goal for this summer is to improve its quality enough that we can
   upgrade it from an alpha to an advertised feature.  **Skills

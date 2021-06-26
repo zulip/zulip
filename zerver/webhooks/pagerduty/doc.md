@@ -4,13 +4,14 @@ Get Zulip notifications for your PagerDuty services!
 
 1. {!create-bot-construct-url-indented.md!}
 
-1. On your PagerDuty homepage, click on **Configuration**, and
-   select **Services**. Select the service you'd like to be notified
-   about. Click the **Integration** tab, and click **+ New Extension**.
+1. Open the **Integrations** tab, and click **Generic Webhooks (v3)**.
 
-1. Set **Extension Type** to **Generic V1 Webhook**. Set **Name** to a name
-   of your choice, such as `Zulip`. Under **Details**, set **URL** to the
-   URL constructed above, and click **Save**.
+1. Click **Add Webhook**.
+
+1. Set **Webhook URL** to the URL constructed above,
+   configure the **Scope Type** and **Scope** you want to receive notifications for,
+   select the events you want to send under **Events to Send**,
+   and click **Add Webhook**.
 
 {!congrats.md!}
 

@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List
+from typing import List
 
 from django.utils.timezone import now as timezone_now
 
@@ -22,17 +22,18 @@ class MissedMessageTest(ZulipTestCase):
         realm = sender.realm
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
-        recipient_ids = {hamlet.id, othello.id}
-        message_type = "stream"
-        user_flags: Dict[int, List[str]] = {}
+        user_data_objects = [
+            self.create_user_notifications_data_object(user_id=hamlet.id),
+            self.create_user_notifications_data_object(user_id=othello.id),
+        ]
+        message_type = "private"
 
         def assert_missing(user_ids: List[int]) -> None:
             presence_idle_user_ids = get_active_presence_idle_user_ids(
                 realm=realm,
                 sender_id=sender.id,
                 message_type=message_type,
-                active_user_ids=recipient_ids,
-                user_flags=user_flags,
+                active_users_data=user_data_objects,
             )
             self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
 
@@ -48,16 +49,34 @@ class MissedMessageTest(ZulipTestCase):
         message_type = "private"
         assert_missing([hamlet.id, othello.id])
 
+        # We have already thoroughly tested the `is_notifiable` function elsewhere,
+        # so we needn't test all cases here. This test exists mainly to avoid a bug
+        # which existed earlier with `get_active_presence_idle_user_ids` only looking
+        # at `private_message` and the `mentioned` flag, not stream level notifications.
+        # Simulate Hamlet has turned on notifications for the stream, and test that he's
+        # in the list.
         message_type = "stream"
-        user_flags[hamlet.id] = ["mentioned"]
+        user_data_objects[0].stream_email_notify = True
         assert_missing([hamlet.id])
 
+        # We don't currently send push or email notifications for alert words -- only
+        # desktop notifications, so `is_notifiable` will return False even if the flags contain
+        # alert words. Test that `get_active_presence_idle_user_ids` correctly includes even
+        # the alert word case in the list.
+        user_data_objects[0].stream_email_notify = False
+        user_data_objects[0].flags = ["has_alert_word"]
+        assert_missing([hamlet.id])
+
+        # Hamlet is idle (and the message has an alert word), so he should be in the list.
         set_presence(hamlet, "iPhone", ago=5000)
         assert_missing([hamlet.id])
 
-        set_presence(hamlet, "webapp", ago=15)
+        # If Hamlet is active, don't include him in the `presence_idle` list.
+        set_presence(hamlet, "website", ago=15)
         assert_missing([])
 
+        # Hamlet is active now, so only Othello should be in the list for a huddle
+        # message.
         message_type = "private"
         assert_missing([othello.id])
 

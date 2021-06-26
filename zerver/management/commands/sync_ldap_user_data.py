@@ -46,10 +46,10 @@ def sync_ldap_user_data(
                     is_bot=False,
                     is_active=True,
                     realm__string_id=string_id,
-                    role__gte=UserProfile.ROLE_REALM_ADMINISTRATOR,
+                    role=UserProfile.ROLE_REALM_OWNER,
                 ).exists():
                     error_msg = (
-                        "Ldap sync would have deactivated all administrators of realm %s. "
+                        "Ldap sync would have deactivated all owners of realm %s. "
                         + "This is most likely due "
                         + "to a misconfiguration of LDAP settings. Rolling back...\n"
                         + "Use the --force option if the mass deactivation is intended."

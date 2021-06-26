@@ -126,14 +126,19 @@ Import your existing organization from [Slack](/help/import-from-slack),
 [Mattermost](/help/import-from-mattermost), or
 [Gitter](/help/import-from-gitter).
 
-### Syntax highlighting.
+### Collaborate on code and formulas
 
-[Full Markdown support](/help/format-your-message-using-markdown), including
-syntax highlighting, makes it easy to discuss code, paste an error message,
-or explain a complicated point. Full LaTeX support as well.
+[Markdown code blocks](/help/code-blocks)
+with syntax highlighting make it easy to discuss code, paste an error
+message, or explain a complicated point. Native LaTeX support provides
+the same benefits when talking about math.
+
+You can also instantly copy a code block to your clipboard or transfer
+it to an [external code playground](/help/code-blocks#code-playgrounds) to
+interactively run and debug the code.
 
 If your community primarily uses a single programming language,
-consider setting a default language for syntax highlighting.
+consider setting a [default code block language](/help/code-blocks#default-code-block-language).
 
 ### Permalink to conversations.
 
@@ -152,7 +157,7 @@ your organization.
 
 ### Hundreds of integrations.
 
-Get events from GitHub, Travis CI, JIRA, and
+Get events from GitHub, Travis CI, Jira, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
 

@@ -1,4 +1,5 @@
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_config from "./settings_config";
 
 /*
@@ -11,6 +12,31 @@ import * as settings_config from "./settings_config";
     about page_params and settings_config details.
 */
 
+function user_can_access_delivery_email() {
+    // This function checks whether the current user should expect to
+    // see .delivery_email fields on user objects that it can access.
+    //
+    // If false, either everyone has access to emails (and there is no
+    // delivery_email field for anyone) or this user does not have
+    // access to emails (and this client will never receive a user
+    // object with a delivery_email field).
+    if (
+        page_params.realm_email_address_visibility ===
+        settings_config.email_address_visibility_values.admins_only.code
+    ) {
+        return page_params.is_admin;
+    }
+
+    if (
+        page_params.realm_email_address_visibility ===
+        settings_config.email_address_visibility_values.moderators.code
+    ) {
+        return page_params.is_admin || page_params.is_moderator;
+    }
+
+    return false;
+}
+
 export function show_email() {
     if (
         page_params.realm_email_address_visibility ===
@@ -18,13 +44,7 @@ export function show_email() {
     ) {
         return true;
     }
-    if (
-        page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.admins_only.code
-    ) {
-        return page_params.is_admin;
-    }
-    return undefined;
+    return user_can_access_delivery_email();
 }
 
 export function email_for_user_settings(person) {
@@ -32,12 +52,7 @@ export function email_for_user_settings(person) {
         return undefined;
     }
 
-    if (
-        page_params.is_admin &&
-        person.delivery_email &&
-        page_params.realm_email_address_visibility ===
-            settings_config.email_address_visibility_values.admins_only.code
-    ) {
+    if (person.delivery_email && user_can_access_delivery_email()) {
         return person.delivery_email;
     }
 
@@ -79,4 +94,63 @@ export function user_can_change_avatar() {
 
 export function user_can_change_logo() {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
+}
+
+function user_has_permission(policy_value) {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    if (page_params.is_guest) {
+        return false;
+    }
+
+    if (policy_value === settings_config.common_policy_values.by_admins_only.code) {
+        return false;
+    }
+
+    if (page_params.is_moderator) {
+        return true;
+    }
+
+    if (policy_value === settings_config.common_policy_values.by_moderators_only.code) {
+        return false;
+    }
+
+    if (policy_value === settings_config.common_policy_values.by_members.code) {
+        return true;
+    }
+
+    const person = people.get_by_user_id(page_params.user_id);
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+
+    return days >= page_params.realm_waiting_period_threshold;
+}
+
+export function user_can_invite_others_to_realm() {
+    return user_has_permission(page_params.realm_invite_to_realm_policy);
+}
+
+export function user_can_subscribe_other_users() {
+    return user_has_permission(page_params.realm_invite_to_stream_policy);
+}
+
+export function user_can_create_streams() {
+    return user_has_permission(page_params.realm_create_stream_policy);
+}
+
+export function user_can_move_messages_between_streams() {
+    return user_has_permission(page_params.realm_move_messages_between_streams_policy);
+}
+
+export function user_can_edit_topic_of_any_message() {
+    if (
+        page_params.realm_edit_topic_policy ===
+        settings_config.common_message_policy_values.by_everyone.code
+    ) {
+        return true;
+    }
+    return user_has_permission(page_params.realm_edit_topic_policy);
 }

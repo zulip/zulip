@@ -1,4 +1,3 @@
-import orjson
 from django.conf import settings
 
 from zerver.lib.actions import internal_send_private_message
@@ -27,7 +26,7 @@ class TutorialTests(ZulipTestCase):
             ("finished", UserProfile.TUTORIAL_FINISHED),
         ]
         for incoming_status, expected_db_status in cases:
-            params = dict(status=orjson.dumps(incoming_status).decode())
+            params = dict(status=incoming_status)
             result = self.client_post("/json/users/me/tutorial_status", params)
             self.assert_json_success(result)
             user = self.example_user("hamlet")

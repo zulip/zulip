@@ -415,9 +415,9 @@ annotation).
  def update_realm(
      request: HttpRequest,
      user_profile: UserProfile,
-     name: Optional[str] = REQ(validator=check_string, default=None),
+     name: Optional[str] = REQ(str_validator=check_string, default=None),
      # ...
-+    mandatory_topics: Optional[bool] = REQ(validator=check_bool, default=None),
++    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
      # ...
  ):
      # ...

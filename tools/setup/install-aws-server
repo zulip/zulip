@@ -38,16 +38,24 @@ if [ ! -f "$zulip_install_config_file" ]; then
     echo "No configuration file found in $zulip_install_config_file"
     exit 1
 fi
+
 REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
 if [ -z "$BRANCH" ]; then
     BRANCH=$(crudini --get "$zulip_install_config_file" repo default_branch)
 fi
 
-AWS_ZONE_ID=$(crudini --get "$zulip_install_config_file" aws zone_id)
-SECURITY_GROUPS=$(crudini --get "$zulip_install_config_file" aws security_groups)
-AMI_ID=$(crudini --get "$zulip_install_config_file" aws image_id)
-INSTANCE_TYPE=$(crudini --get "$zulip_install_config_file" aws instance_type)
-SSH_SECRET_ID=$(crudini --get "$zulip_install_config_file" aws ssh_secret_id)
+function lookup() {
+    KEY="$1"
+    crudini --get "$zulip_install_config_file" "aws-$ROLES" "$KEY" 2>/dev/null \
+        || crudini --get "$zulip_install_config_file" aws "$KEY"
+}
+
+AWS_ZONE_ID=$(lookup zone_id)
+SECURITY_GROUPS=$(lookup security_groups)
+AMI_ID=$(lookup image_id)
+INSTANCE_TYPE=$(lookup instance_type)
+SSH_SECRET_ID=$(lookup ssh_secret_id)
+AUTO_SCALING_GROUP=$(lookup auto_scaling_group || true)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
@@ -59,6 +67,32 @@ EXISTING_RECORDS=$($AWS route53 list-resource-record-sets \
 if [ "$EXISTING_RECORDS" != "0" ]; then
     echo "$HOSTNAME already exists!"
     exit 1
+fi
+
+# Find the ASG, if there is one
+EXTRA_ARGS=()
+if [ -n "$AUTO_SCALING_GROUP" ]; then
+    ASG_DESC=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$AUTO_SCALING_GROUP" | jq '.AutoScalingGroups[0]')
+    LAUNCH_TEMPLATE=$(echo "$ASG_DESC" | jq '.LaunchTemplate | {Version, LaunchTemplateId}')
+    # We have to move things _into_ the ASG after we create them, but
+    # can only do so if they're in one of the AZ's that the ASG is
+    # for.  Choose the AZ that is least-full.
+    POSSIBLE_AZS=$(echo "$ASG_DESC" | jq -r ".AvailabilityZones[]")
+    CURRENT_AZS=$(echo "$ASG_DESC" | jq -r '.Instances[] | .AvailabilityZone')
+    CHOSEN_AZ=$(echo -e "$POSSIBLE_AZS\n$CURRENT_AZS" | sort | uniq -c | sort -n | head -n1 | awk '{print $2}')
+
+    EXTRA_ARGS+=(
+        --launch-template "$LAUNCH_TEMPLATE"
+        --placement "AvailabilityZone=$CHOSEN_AZ"
+    )
+else
+    EXTRA_ARGS+=(
+        --iam-instance-profile "Name=\"EC2ProdInstance\""
+        --image-id "$AMI_ID"
+        --instance-type "$INSTANCE_TYPE"
+        --security-group-ids "$SECURITY_GROUPS"
+        --monitoring Enabled=true
+    )
 fi
 
 # Build up the provisioning script
@@ -74,13 +108,11 @@ BOOTDATA=$(mktemp)
     sed '/^AWS=/ r ./bootstrap-awscli' bootstrap-aws-installer
 } >>"$BOOTDATA"
 
-TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$ROLES\"}]"
+TAG_ROLE_NAMES=$(echo "$ROLES" | perl -pe 's/\w+::profile::(\w+)/$1/g')
+TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$TAG_ROLE_NAMES\"}]"
 INSTANCE_DATA=$($AWS ec2 run-instances \
-    --iam-instance-profile 'Name="EC2ProdInstance"' \
-    --image-id "$AMI_ID" \
-    --instance-type "$INSTANCE_TYPE" \
-    --security-group-ids "$SECURITY_GROUPS" \
     --tag-specifications "ResourceType=instance,Tags=$TAGS" \
+    "${EXTRA_ARGS[@]}" \
     --user-data "file://$BOOTDATA")
 INSTANCEID=$(echo "$INSTANCE_DATA" | jq -r .Instances[0].InstanceId)
 
@@ -112,6 +144,13 @@ cat >"$ROUTE53_CHANGES" <<EOF
 EOF
 $AWS route53 change-resource-record-sets --hosted-zone-id "$AWS_ZONE_ID" --change-batch "file://$ROUTE53_CHANGES"
 rm "$ROUTE53_CHANGES"
+
+# Attach to the ASG
+if [ -n "$AUTO_SCALING_GROUP" ]; then
+    # We need to wait for it to be "running" first
+    aws ec2 wait instance-running --instance-ids "$INSTANCEID"
+    aws autoscaling attach-instances --instance-ids "$INSTANCEID" --auto-scaling-group-name "$AUTO_SCALING_GROUP"
+fi
 
 set +x
 echo

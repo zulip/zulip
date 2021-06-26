@@ -7,7 +7,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
+from typing_extensions import TypedDict
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -269,7 +270,14 @@ def access_user_by_id(
     return target
 
 
-def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
+class Accounts(TypedDict):
+    realm_name: str
+    realm_id: int
+    full_name: str
+    avatar: Optional[str]
+
+
+def get_accounts_for_email(email: str) -> List[Accounts]:
     profiles = (
         UserProfile.objects.select_related("realm")
         .filter(
@@ -280,15 +288,17 @@ def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
         )
         .order_by("date_joined")
     )
-    return [
-        {
-            "realm_name": profile.realm.name,
-            "string_id": profile.realm.string_id,
-            "full_name": profile.full_name,
-            "avatar": avatar_url(profile),
-        }
-        for profile in profiles
-    ]
+    accounts: List[Accounts] = []
+    for profile in profiles:
+        accounts.append(
+            dict(
+                realm_name=profile.realm.name,
+                realm_id=profile.realm.id,
+                full_name=profile.full_name,
+                avatar=avatar_url(profile),
+            )
+        )
+    return accounts
 
 
 def get_api_key(user_profile: UserProfile) -> str:
@@ -346,13 +356,18 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     if user_profile.is_guest:
         return False, False
 
-    if user_profile.is_realm_admin:
-        return True, True
+    return user_profile.can_invite_others_to_realm(), True
 
-    if user_profile.realm.invite_by_admins_only:
-        return False, True
 
-    return True, True
+def can_access_delivery_email(user_profile: UserProfile) -> bool:
+    realm = user_profile.realm
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        return user_profile.is_realm_admin
+
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
+        return user_profile.is_realm_admin or user_profile.is_moderator
+
+    return False
 
 
 def format_user_row(
@@ -380,6 +395,8 @@ def format_user_row(
         is_admin=is_admin,
         is_owner=is_owner,
         is_guest=is_guest,
+        is_billing_admin=row["is_billing_admin"],
+        role=row["role"],
         is_bot=is_bot,
         full_name=row["full_name"],
         timezone=canonicalize_timezone(row["timezone"]),
@@ -417,10 +434,7 @@ def format_user_row(
             client_gravatar=client_gravatar,
         )
 
-    if acting_user is not None and (
-        realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        and acting_user.is_realm_admin
-    ):
+    if acting_user is not None and can_access_delivery_email(acting_user):
         result["delivery_email"] = row["delivery_email"]
 
     if is_bot:

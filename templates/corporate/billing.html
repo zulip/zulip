@@ -2,7 +2,7 @@
 {% set entrypoint = "billing" %}
 
 {% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
@@ -26,7 +26,7 @@
                     <li><a data-toggle="tab" href="#settings">Settings</a></li>
                 </ul>
 
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 <div class="tab-content">
                     <div class="tab-pane active" id="overview">
                         {% if free_trial %}
@@ -35,7 +35,7 @@
                         <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
                         {% endif %}
                         <p>
-                            You are using <strong>{{ licenses_used }} of {{ licenses }} licenses</strong>.
+                            You are using <strong>{{ seat_count }} of {{ licenses }} licenses</strong>.
                             {% if automanage_licenses %}
                             Licenses are automatically managed by Zulip; when you add or deactivate a user, the number of
                             licenses will be immediately updated to reflect your new usage.
@@ -66,6 +66,7 @@
                         <div id="cardchange-error" class="alert alert-danger"></div>
                         <div id="cardchange-input-section">
                             <form id="cardchange-form">
+                                <p>Billing email: <strong>{{ stripe_email }}</strong></p>
                                 <p>Current payment method: <strong>{{ payment_method }}</strong></p>
                                 {% if charge_automatically %}
                                 <button id="update-card-button" class="stripe-button-el">
@@ -87,7 +88,45 @@
                             Card updated. The page will now reload.
                         </div>
                     </div>
+
                     <div class="tab-pane" id="settings">
+                        {% if not automanage_licenses and not downgrade_at_end_of_cycle %}
+                        <div id="licensechange-error" class="alert alert-danger"></div>
+                        <div id="licensechange-input-section" data-licenses="{{ licenses }}">
+                            <form id="licensechange-form">
+                                <h3>Licenses</h3>
+                                <h4>Number of licenses in the current billing period</h4>
+                                <p>
+                                    You can only increase the number of licenses.
+                                </p>
+                                <input min="{{ licenses }}" type="number" name="licenses" value="{{ licenses }}" autocomplete="off" id="new_licenses_input" required/>
+                                <br />
+                                <button class="btn-info" id="update-licenses-button">Update</button>
+                                <br />
+                                <br />
+                                <h4>Licenses in next renewal</h4>
+                                <p>
+                                    You can increase or decrease the number of licenses.
+                                </p>
+                                <input type="number" name="licenses_at_next_renewal" value="{{ licenses_at_next_renewal }}" autocomplete="off" id="licenses_at_next_renewal_input"/>
+                                <br />
+                                <button class="btn-info" id="update-licenses-at-next-renewal-button">Update</button>
+                            </form>
+                        </div>
+                        <div id="licensechange-loading">
+                            <div class="zulip-loading-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                    <circle cx="386.56" cy="386.56" r="386.56"/>
+                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                                </svg>
+                            </div>
+                            <div id="licensechange_loading_indicator"></div>
+                        </div>
+                        <div id="licensechange-success" class="alert alert-success">
+                            Plan updated. The page will now reload.
+                        </div>
+                        {% endif %}
+
                         <div id="planchange-error" class="alert alert-danger"></div>
                         <div id="planchange-input-section">
                             <form id="planchange-form">
@@ -127,23 +166,24 @@
                         <div id="planchange-success" class="alert alert-success">
                             Plan updated. The page will now reload.
                         </div>
-                    </div>
-                    <div class="tab-pane" id="loading">
+                        <div class="tab-pane" id="loading">
+                        </div>
                     </div>
                 </div>
+
                 <div id="goto-zulip-organization-link">
                     {% if onboarding %}
-                    <br>
+                    <br />
                     <h3>
                         <b><a href="/">Go to your Zulip organization</a></b>
                     </h3>
                     {% endif %}
                 </div>
-                <hr>
+                <hr />
                 <div class="support-link">
                     <p>
                         Contact <a href="mailto:support@zulip.com">support@zulip.com</a>
-                        for billing history or to make changes to your subscription.
+                        for billing history or to make changes to your subscription or billing email.
                     </p>
                 </div>
                 {% elif admin_access and not has_active_plan %}
@@ -182,6 +222,30 @@
                 {% endif %}
             </div>
         </div>
+    </div>
+</div>
+
+
+<div id="confirm-licenses-modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="deactivation_self_modal_label">Confirm license increase</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            Are you sure you want to increase the licenses from
+            <b><span id="current_license_count_holder"></span></b> to
+            <b><span id="new_license_count_holder"></span></b>?
+        </p>
+        <p>
+            You would be charged for the additional licenses.
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="button" data-dismiss="modal">Cancel</button>
+        <button class="button btn-success rounded" id="confirm-license-update-button" data-dismiss="modal" aria-hidden="true">
+            <span id="confirm-license-update">Confirm</span>
+        </button>
     </div>
 </div>
 {% endblock %}

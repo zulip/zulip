@@ -1,7 +1,9 @@
 import $ from "jquery";
 
+import render_gear_menu from "../templates/gear_menu.hbs";
+
 import * as hashchange from "./hashchange";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -21,16 +23,19 @@ Our gear menu has these choices:
 hash:  Manage streams
 hash:  Settings
 hash:  Organization settings
+link:  Usage statistics
 ---
 link:  Help center
 info:  Keyboard shortcuts
 info:  Message formatting
 info:  Search operators
+hash:  About Zulip
 ---
 link:  Desktop & mobile apps
 link:  Integrations
 link:  API documentation
-link:  Statistics
+link:  Sponsor Zulip
+link:  Plans and pricing
 ---
 hash:   Invite users
 ---
@@ -53,12 +58,13 @@ links:
     #streams
     #settings
     #organization
+    #about-zulip
     #invite
 
 When you click on the links there is a function
 called hashchanged() in static/js/hashchange.js
-that gets invoked.  (We use window.onhashchange
-to register the handler.)  This function then
+that gets invoked.  (We register this as a listener
+for the hashchange event.)  This function then
 launches the appropriate modal for each menu item.
 Look for things like subs.launch(...) or
 invite.launch() in that code.
@@ -85,13 +91,15 @@ const scroll_positions = new Map();
 export function update_org_settings_menu_item() {
     const item = $(".admin-menu-item").expectOne();
     if (page_params.is_admin) {
-        item.find("span").text(i18n.t("Manage organization"));
+        item.find("span").text($t({defaultMessage: "Manage organization"}));
     } else {
-        item.find("span").text(i18n.t("Organization settings"));
+        item.find("span").text($t({defaultMessage: "Organization settings"}));
     }
 }
 
 export function initialize() {
+    const rendered_gear_menu = render_gear_menu({page_params});
+    $("#navbar-buttons").html(rendered_gear_menu);
     update_org_settings_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {

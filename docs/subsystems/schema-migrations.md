@@ -42,14 +42,18 @@ migrations.
     prompt unnecessarily less, but it will update the working tree for
     you automatically (you still need to do all the `git add`
     commands, etc.).
-
 * **Large tables**: For our very largest tables (e.g. Message and
   UserMessage), we often need to take precautions when adding columns
   to the table, performing data backfills, or building indexes. We
   have a `zerver/lib/migrate.py` library to help with adding columns
-  and backfilling data.  For building indexes on these tables, we
-  should do this using SQL with PostgreSQL's CONCURRENTLY keyword.
-
+  and backfilling data.
+* **Adding indexes** Regular `CREATE INDEX` SQL (corresponding to Django's
+  `AddIndex` operation) locks writes to the affected table. This can be
+  problematic when dealing with larger tables in particular and we've
+  generally preferred to use `CREATE INDEX CONCURRENTLY` to allow the index
+  to be built while the server is active. While in historical migrations
+  we've used `RunSQL` directly, newer versions of Django add the corresponding
+  operation `AddIndexConcurrently` and thus that's what should normally be used.
 * **Atomicity**.  By default, each Django migration is run atomically
   inside a transaction.  This can be problematic if one wants to do
   something in a migration that touches a lot of data and would best
@@ -85,6 +89,17 @@ migrations.
   work for doing something like `Realm.objects.filter(..)`, but
   shouldn't be used for accessing properties like `Realm.subdomain` or
   anything not related to the Django ORM.
+
+  Another important note is that making changes to the data in a table
+  via `RunPython` code and `ALTER TABLE` operations within a single,
+  atomic migration don't mix well. If you encounter an error such as
+  ```
+  django.db.utils.OperationalError: cannot ALTER TABLE "table_name" because it has pending trigger events
+  ```
+  when testing the migration, the reason is often that these operations
+  were incorrectly mixed. To resolve this, consider making the migration
+  non-atomic, splitting it into two migration files (recommended), or replacing the
+  `RunPython` logic with pure SQL (though this can generally be difficult).
 
 * **Making large migrations work**.  Major migrations should have a
 few properties:

@@ -46,7 +46,9 @@ def inline_template(template_source_name: str) -> None:
 
     with open(template_path) as template_source_file:
         template_str = template_source_file.read()
-    output = Premailer(template_str, external_styles=[CSS_SOURCE_PATH]).transform()
+    output = Premailer(
+        template_str, external_styles=[CSS_SOURCE_PATH], allow_loading_external_files=True
+    ).transform()
 
     output = escape_jinja2_characters(output)
 

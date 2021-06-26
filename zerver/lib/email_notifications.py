@@ -13,8 +13,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 from lxml.cssselect import CSSSelector
 
 from confirmation.models import one_click_unsubscribe_link
@@ -184,7 +184,7 @@ def build_message_list(
     stream_map: Dict[int, Stream],  # only needs id, name
 ) -> List[Dict[str, Any]]:
     """
-    Builds the message list object for the missed message email template.
+    Builds the message list object for the message notification email template.
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
@@ -379,10 +379,6 @@ def do_send_missedmessage_events_reply_in_zulip(
     """
     from zerver.context_processors import common_context
 
-    # Disabled missedmessage emails internally
-    if not user_profile.enable_offline_email_notifications:
-        return
-
     recipients = {
         (msg["message"].recipient_id, msg["message"].topic_name()) for msg in missed_messages
     }
@@ -502,11 +498,11 @@ def do_send_missedmessage_events_reply_in_zulip(
         )
 
     with override_language(user_profile.default_language):
-        from_name: str = _("Zulip missed messages")
+        from_name: str = _("Zulip notifications")
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
-        # missed message emails directly back to the original sender.
+        # message notification emails directly back to the original sender.
         # However, one must ensure the Zulip server is in the SPF
         # record for the domain, or there will be spam/deliverability
         # problems.
@@ -646,7 +642,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         realm_name=user.realm.name,
         realm_creation=realm_creation,
         email=user.delivery_email,
-        is_realm_admin=user.role == UserProfile.ROLE_REALM_ADMINISTRATOR,
+        is_realm_admin=user.is_realm_admin,
     )
     if user.is_realm_admin:
         context["getting_started_link"] = (

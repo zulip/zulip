@@ -1,10 +1,11 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
-from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
+import time
+from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.lib.actions import (
@@ -21,6 +22,7 @@ from zerver.lib.actions import (
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
@@ -45,9 +47,11 @@ from zerver.lib.stream_subscription import handle_stream_notifications_compatibi
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Message,
@@ -58,10 +62,18 @@ from zerver.models import (
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
+    get_realm_playgrounds,
+    linkifiers_for_realm,
     realm_filters_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
+
+
+class RestartEventException(Exception):
+    """
+    Special error for handling restart events in apply_events.
+    """
 
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
@@ -69,7 +81,7 @@ def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
     state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
-    state["max_logo_file_size"] = settings.MAX_LOGO_FILE_SIZE
+    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE_MIB
 
 
 def always_want(msg_type: str) -> bool:
@@ -96,7 +108,7 @@ def fetch_initial_state_data(
     include_streams: bool = True,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
-    webapp's `page_params` and `/api/v1/register` (for mobile/terminal
+    web app's `page_params` and `/api/v1/register` (for mobile/terminal
     apps).  Can also fetch a subset as determined by `event_types`.
 
     The user_profile=None code path is used for logged-out public
@@ -159,12 +171,38 @@ def fetch_initial_state_data(
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
+    if want("muted_users"):
+        state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
+
     if want("presence"):
         state["presences"] = (
             {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
         )
+        # Send server_timestamp, to match the format of `GET /presence` requests.
+        state["server_timestamp"] = time.time()
 
     if want("realm"):
+        # The realm bundle includes both realm properties and server
+        # properties, since it's rare that one would one one and not
+        # the other. We expect most clients to want it.
+        #
+        # A note on naming: For some settings, one could imagine
+        # having a server-level value and a realm-level value (with
+        # the server value serving as the default for the realm
+        # value). For such settings, we prefer the following naming
+        # scheme:
+        #
+        # * realm_inline_image_preview (current realm setting)
+        # * server_inline_image_preview (server-level default)
+        #
+        # In situations where for backwards-compatibility reasons we
+        # have an unadorned name, we should arrange that clients using
+        # that unadorned name work correctly (i.e. that should be the
+        # currently active setting, not a server-level default).
+        #
+        # Other settings, which are just server-level settings or data
+        # about the version of Zulip, can be named without prefixes,
+        # e.g. giphy_rating_options or development_environment.
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
@@ -173,20 +211,21 @@ def fetch_initial_state_data(
         # fit into that framework.
         state["realm_authentication_methods"] = realm.authentication_methods_dict()
 
-        # We pretend these features are disabled because guests can't
-        # access them.  In the future, we may want to move this logic
-        # to the frontends, so that we can correctly display what
-        # these fields are in the settings.
+        # We pretend these features are disabled because anonymous
+        # users can't access them.  In the future, we may want to move
+        # this logic to the frontends, so that we can correctly
+        # display what these fields are in the settings.
         state["realm_allow_message_editing"] = (
             False if user_profile is None else realm.allow_message_editing
         )
-        state["realm_allow_community_topic_editing"] = (
-            False if user_profile is None else realm.allow_community_topic_editing
+        state["realm_edit_topic_policy"] = (
+            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_allow_message_deleting"] = (
             False if user_profile is None else realm.allow_message_deleting
         )
 
+        # TODO: Can we delete these lines?  They seem to be in property_types...
         state["realm_message_content_edit_limit_seconds"] = realm.message_content_edit_limit_seconds
         state[
             "realm_message_content_delete_limit_seconds"
@@ -201,37 +240,55 @@ def fetch_initial_state_data(
         # future choose to move this logic to the frontend.
         state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
+        # Important: Encode units in the client-facing API name.
+        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
+        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
+        state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
+        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
+
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
-        state["max_icon_file_size"] = settings.MAX_ICON_FILE_SIZE
         add_realm_logo_fields(state, realm)
-        state["realm_bot_domain"] = realm.get_bot_domain()
+
         state["realm_uri"] = realm.uri
+        state["realm_bot_domain"] = realm.get_bot_domain()
         state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
+
         state["realm_digest_emails_enabled"] = (
             realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         )
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["realm_email_auth_enabled"] = email_auth_enabled(realm)
         state["realm_password_auth_enabled"] = password_auth_enabled(realm)
-        state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_upload_quota"] = realm.upload_quota_bytes()
+
+        state["server_generation"] = settings.SERVER_GENERATION
+        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
+        state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
-        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
-        state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
-        state["development_environment"] = settings.DEVELOPMENT
-        state["server_generation"] = settings.SERVER_GENERATION
+
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
-        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
-        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
+        state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+
+        state["server_needs_upgrade"] = is_outdated_server(user_profile)
+        state[
+            "event_queue_longpoll_timeout_seconds"
+        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+
+        # TODO: Should these have the realm prefix replaced with server_?
+        state["realm_push_notifications_enabled"] = push_notifications_enabled()
+        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
+
+        if settings.JITSI_SERVER_URL is not None:
+            state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
+        else:  # nocoverage
+            state["jitsi_server_url"] = None
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
@@ -245,14 +302,26 @@ def fetch_initial_state_data(
         else:
             state["realm_signup_notifications_stream_id"] = -1
 
+        state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
+        state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
+        state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
+
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
 
     if want("realm_emoji"):
         state["realm_emoji"] = realm.get_emoji()
 
+    if want("realm_linkifiers"):
+        state["realm_linkifiers"] = linkifiers_for_realm(realm.id)
+
+    # Backwards compatibility code.
     if want("realm_filters"):
         state["realm_filters"] = realm_filters_for_realm(realm.id)
+
+    if want("realm_playgrounds"):
+        state["realm_playgrounds"] = get_realm_playgrounds(realm)
 
     if want("realm_user_groups"):
         state["realm_user_groups"] = user_groups_in_realm_serialized(realm)
@@ -276,6 +345,7 @@ def fetch_initial_state_data(
             # restrictions apply to these users as well, and it lets
             # us avoid unnecessary conditionals.
             role=UserProfile.ROLE_GUEST,
+            is_billing_admin=False,
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
@@ -307,9 +377,12 @@ def fetch_initial_state_data(
 
         state["can_create_streams"] = settings_user.can_create_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
+        state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
+        state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
+        state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["enter_sends"] = settings_user.enter_sends
         state["email"] = settings_user.email
@@ -393,19 +466,19 @@ def fetch_initial_state_data(
 
     if want("stream"):
         if include_streams:
-            # The webapp doesn't use the data from here; instead,
+            # The web app doesn't use the data from here; instead,
             # it uses data from state["subscriptions"] and other
             # places.
             if user_profile is not None:
-                state["streams"] = do_get_streams(user_profile)
+                state["streams"] = do_get_streams(
+                    user_profile, include_all_active=user_profile.is_realm_admin
+                )
             else:
-                # TODO: This line isn't used by the webapp because it
+                # TODO: This line isn't used by the web app because it
                 # gets these data via the `subscriptions` key; it will
                 # be used when the mobile apps support logged-out
                 # access.
                 state["streams"] = get_web_public_streams(realm)  # nocoverage
-        state["stream_name_max_length"] = Stream.MAX_NAME_LENGTH
-        state["stream_description_max_length"] = Stream.MAX_DESCRIPTION_LENGTH
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
@@ -444,6 +517,18 @@ def fetch_initial_state_data(
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
 
+    if want("giphy"):
+        # Normally, it would be a nasty security bug to send a
+        # server's API key to end users. However, GIPHY's API key
+        # security model is precisely to do that; every service
+        # publishes its API key (and GIPHY's client-side JS libraries
+        # require the API key to work).  This security model makes
+        # sense because GIPHY API keys are all essentially equivalent
+        # in letting one search for GIFs; GIPHY only requires API keys
+        # to exist at all so that they can deactivate them in cases of
+        # abuse.
+        state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+
     return state
 
 
@@ -452,12 +537,14 @@ def apply_events(
     *,
     state: Dict[str, Any],
     events: Iterable[Dict[str, Any]],
-    fetch_event_types: Optional[Iterable[str]],
+    fetch_event_types: Optional[Collection[str]],
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
 ) -> None:
     for event in events:
+        if event["type"] == "restart":
+            raise RestartEventException()
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -567,10 +654,12 @@ def apply_event(
                 if "role" in person:
                     state["is_admin"] = is_administrator_role(person["role"])
                     state["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
+                    state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_streams"] = user_profile.can_create_streams()
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
+                    state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
 
                     # TODO: Probably rather than writing the perfect
                     # live-update code for the case of racing with the
@@ -586,9 +675,18 @@ def apply_event(
                         state["never_subscribed"] = sub_info.never_subscribed
 
                     if "streams" in state:
-                        state["streams"] = do_get_streams(user_profile)
+                        state["streams"] = do_get_streams(
+                            user_profile, include_all_active=user_profile.is_realm_admin
+                        )
 
-                for field in ["delivery_email", "email", "full_name"]:
+                    if state["is_guest"]:
+                        state["realm_default_streams"] = []
+                    else:
+                        state["realm_default_streams"] = streams_to_dicts_sorted(
+                            get_default_streams_for_realm(user_profile.realm_id)
+                        )
+
+                for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -623,6 +721,8 @@ def apply_event(
                         p["is_admin"] = is_administrator_role(person["role"])
                         p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                         p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
+                    if "is_billing_admin" in person:
+                        p["is_billing_admin"] = person["is_billing_admin"]
                     if "custom_profile_field" in person:
                         custom_field_id = person["custom_profile_field"]["id"]
                         custom_field_new_value = person["custom_profile_field"]["value"]
@@ -722,11 +822,12 @@ def apply_event(
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
-                state["realm_upload_quota"] = event["extra_data"]["upload_quota"]
+                state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
                 "create_stream_policy": "can_create_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
+                "invite_to_realm_policy": "can_invite_others_to_realm",
             }
 
             # Tricky interaction: Whether we can create streams and can subscribe other users
@@ -957,8 +1058,14 @@ def apply_event(
         state["alert_words"] = event["alert_words"]
     elif event["type"] == "muted_topics":
         state["muted_topics"] = event["muted_topics"]
+    elif event["type"] == "muted_users":
+        state["muted_users"] = event["muted_users"]
     elif event["type"] == "realm_filters":
         state["realm_filters"] = event["realm_filters"]
+    elif event["type"] == "realm_linkifiers":
+        state["realm_linkifiers"] = event["realm_linkifiers"]
+    elif event["type"] == "realm_playgrounds":
+        state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
         assert event["setting_name"] in UserProfile.property_types
         state[event["setting_name"]] = event["setting"]
@@ -1029,14 +1136,14 @@ def do_events_register(
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
-    event_types: Optional[Iterable[str]] = None,
+    event_types: Optional[Sequence[str]] = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: Dict[str, bool] = {},
-    narrow: Iterable[Sequence[str]] = [],
-    fetch_event_types: Optional[Iterable[str]] = None,
+    narrow: Collection[Sequence[str]] = [],
+    fetch_event_types: Optional[Collection[str]] = None,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -1048,29 +1155,12 @@ def do_events_register(
     user_avatar_url_field_optional = client_capabilities.get(
         "user_avatar_url_field_optional", False
     )
+    stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If real email addresses are not available to the user, their
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
-
-    # Note that we pass event_types, not fetch_event_types here, since
-    # that's what controls which future events are sent.
-    queue_id = request_event_queue(
-        user_profile,
-        user_client,
-        apply_markdown,
-        client_gravatar,
-        slim_presence,
-        queue_lifespan_secs,
-        event_types,
-        all_public_streams,
-        narrow=narrow,
-        bulk_message_deletion=bulk_message_deletion,
-    )
-
-    if queue_id is None:
-        raise JsonableError(_("Could not allocate event queue"))
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
@@ -1082,28 +1172,58 @@ def do_events_register(
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
-    ret = fetch_initial_state_data(
-        user_profile,
-        event_types=event_types_set,
-        queue_id=queue_id,
-        client_gravatar=client_gravatar,
-        user_avatar_url_field_optional=user_avatar_url_field_optional,
-        slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
-        include_streams=include_streams,
-    )
+    while True:
+        # Note that we pass event_types, not fetch_event_types here, since
+        # that's what controls which future events are sent.
+        queue_id = request_event_queue(
+            user_profile,
+            user_client,
+            apply_markdown,
+            client_gravatar,
+            slim_presence,
+            queue_lifespan_secs,
+            event_types,
+            all_public_streams,
+            narrow=narrow,
+            bulk_message_deletion=bulk_message_deletion,
+            stream_typing_notifications=stream_typing_notifications,
+        )
 
-    # Apply events that came in while we were fetching initial data
-    events = get_user_events(user_profile, queue_id, -1)
-    apply_events(
-        user_profile,
-        state=ret,
-        events=events,
-        fetch_event_types=fetch_event_types,
-        client_gravatar=client_gravatar,
-        slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
-    )
+        if queue_id is None:
+            raise JsonableError(_("Could not allocate event queue"))
+
+        ret = fetch_initial_state_data(
+            user_profile,
+            event_types=event_types_set,
+            queue_id=queue_id,
+            client_gravatar=client_gravatar,
+            user_avatar_url_field_optional=user_avatar_url_field_optional,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+            include_streams=include_streams,
+        )
+
+        # Apply events that came in while we were fetching initial data
+        events = get_user_events(user_profile, queue_id, -1)
+        try:
+            apply_events(
+                user_profile,
+                state=ret,
+                events=events,
+                fetch_event_types=fetch_event_types,
+                client_gravatar=client_gravatar,
+                slim_presence=slim_presence,
+                include_subscribers=include_subscribers,
+            )
+        except RestartEventException:
+            # This represents a rare race condition, where Tornado
+            # restarted (and sent `restart` events) while we were waiting
+            # for fetch_initial_state_data to return. To avoid the client
+            # needing to reload shortly after loading, we recursively call
+            # do_events_register here.
+            continue
+        else:
+            break
 
     post_process_state(user_profile, ret, notification_settings_null)
 

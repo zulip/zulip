@@ -11,6 +11,10 @@ class zulip_ops::app_frontend {
   package { $app_packages: ensure => 'installed' }
   $redis_hostname = zulipconf('redis', 'hostname', undef)
 
+  zulip_ops::firewall_allow{ 'smtp': }
+  zulip_ops::firewall_allow{ 'http': }
+  zulip_ops::firewall_allow{ 'https': }
+
   file { '/etc/logrotate.d/zulip':
     ensure => file,
     owner  => 'root',
@@ -19,7 +23,7 @@ class zulip_ops::app_frontend {
     source => 'puppet:///modules/zulip/logrotate/zulip',
   }
 
-  file { '/etc/supervisor/conf.d/redis_tunnel.conf':
+  file { "${zulip::common::supervisor_conf_dir}/redis_tunnel.conf":
     ensure  => file,
     require => Package['supervisor', 'autossh'],
     owner   => 'root',

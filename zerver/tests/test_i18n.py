@@ -160,19 +160,15 @@ class FrontendRegexTestCase(ZulipTestCase):
 
         data = [
             (
-                "{{#tr context}}english text with __variable__{{/tr}}{{/tr}}",
-                "english text with __variable__",
+                "{{#tr}}english text with {variable}{{/tr}}{{/tr}}",
+                "english text with {variable}",
             ),
             ('{{t "english text" }}, "extra"}}', "english text"),
             ("{{t 'english text' }}, 'extra'}}", "english text"),
             ("{{> template var=(t 'english text') }}, 'extra'}}", "english text"),
-            ('i18n.t("english text"), "extra",)', "english text"),
-            ('i18n.t("english text", context), "extra",)', "english text"),
-            ("i18n.t('english text'), 'extra',)", "english text"),
-            ("i18n.t('english text', context), 'extra',)", "english text"),
         ]
 
         for input_text, expected in data:
             result = command.extract_strings(input_text)
-            self.assertEqual(len(result), 1)
+            self.assert_length(result, 1)
             self.assertEqual(result[0], expected)

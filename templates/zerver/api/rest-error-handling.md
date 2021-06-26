@@ -1,4 +1,4 @@
-# Error Handling
+# Error handling
 
 Zulip's API will always return a JSON format response.
 The HTTP status code indicates whether the request was successful

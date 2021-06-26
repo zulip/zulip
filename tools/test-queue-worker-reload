@@ -56,7 +56,7 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
 
 
 if __name__ == "__main__":
-    print("\nStarting Development Server")
+    print("\nStarting development server")
     args = [f"{TOOLS_DIR}/run-dev.py"]
     run_dev = subprocess.Popen(
         args,

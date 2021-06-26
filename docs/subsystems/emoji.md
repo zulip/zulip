@@ -43,7 +43,7 @@ able to support deprecating old realm emoji in a sensible way.
 We use the [iamcal emoji data package][iamcal] to provide sprite
 sheets and individual images for our emoji, as well as a data set of
 emoji categories, code points, etc.  The sprite sheets are used
-by the Zulip webapp to display emoji in messages, emoji reactions,
+by the Zulip web app to display emoji in messages, emoji reactions,
 etc.  However, we can't use the sprite sheets in some contexts, such
 as missed-message and digest emails, that need to have self-contained
 assets.  For those, we use individual emoji files under

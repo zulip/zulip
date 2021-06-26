@@ -1,5 +1,4 @@
 # Library code for use in management commands
-import signal
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any, Dict, List, Optional
 
@@ -31,11 +30,6 @@ def check_config() -> None:
         raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
 
 
-def sleep_forever() -> None:
-    while True:  # nocoverage
-        signal.pause()
-
-
 class ZulipBaseCommand(BaseCommand):
 
     # Fix support for multi-line usage
@@ -45,7 +39,7 @@ class ZulipBaseCommand(BaseCommand):
         return parser
 
     def add_realm_args(
-        self, parser: ArgumentParser, required: bool = False, help: Optional[str] = None
+        self, parser: ArgumentParser, *, required: bool = False, help: Optional[str] = None
     ) -> None:
         if help is None:
             help = """The numeric or string ID (subdomain) of the Zulip organization to modify.

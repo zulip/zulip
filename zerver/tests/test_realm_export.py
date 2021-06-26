@@ -171,7 +171,7 @@ class RealmExportTest(ZulipTestCase):
         self.login_user(admin)
 
         current_log = RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_EXPORTED)
-        self.assertEqual(len(current_log), 0)
+        self.assert_length(current_log, 0)
 
         exports = []
         for i in range(0, 5):

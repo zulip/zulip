@@ -1,9 +1,57 @@
 #!/usr/bin/env bash
+set -e
 
-if [ "$(node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)" -ge 1 ]; then
-    echo "ERROR: svgo detected unoptimized SVG files in the \`static/images/integrations/logos\` folder." 1>&2
-    echo "Please run \`svgo -f static/images/integrations/logos\` and commit the file changes to optimize them."
+usage() {
+    cat <<'EOF'
+Usage:
+  optimize-svg --check
+  optimize-svg --help
+
+Options:
+  --check
+      This will check for unoptimized SVG files rather than automatically optimizing them.
+      This allows us to run the script in CI.
+
+EOF
+}
+
+# Shell option parsing.  Over time, we'll want to move some of the
+# environment variables below into this self-documenting system.
+args="$(getopt -o '' --long help,check -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+        --check)
+            CHECK_UNOPTIMIZED=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+if [ "$#" -gt 0 ]; then
+    usage >&2
     exit 1
+fi
+
+ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
+
+if [ -n "$CHECK_UNOPTIMIZED" ]; then
+    if [ "$(node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)" -ge 1 ]; then
+        echo "ERROR: svgo detected unoptimized SVG files in the \`static/images/integrations/logos\` folder." 1>&2
+        echo "Please run tools/setup/optimize-svg and commit the file changes to optimize them."
+        exit 1
+    else
+        echo "SUCCESS: SVG files in static/images/integrations/logos are all optimized!"
+    fi
 else
-    echo "SUCCESS: SVG files in static/images/integrations/logos are all optimized!"
+    yarn run svgo -q -f static/images/integrations/logos
+    "$ZULIP_PATH"/tools/setup/generate_integration_bots_avatars.py
 fi

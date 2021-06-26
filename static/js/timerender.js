@@ -1,6 +1,6 @@
 import {
-    differenceInMinutes,
     differenceInCalendarDays,
+    differenceInMinutes,
     format,
     formatISO,
     isEqual,
@@ -9,8 +9,9 @@ import {
     startOfToday,
 } from "date-fns";
 import $ from "jquery";
+import _ from "lodash";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
 let next_timerender_id = 0;
@@ -30,7 +31,7 @@ export function clear_for_testing() {
 export function render_now(time, today = new Date()) {
     let time_str = "";
     let needs_update = false;
-    // render formal time to be used as title attr tooltip
+    // render formal time to be used for tippy tooltip
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
     const formal_time_str = format(time, "EEEE,\u00A0MMMM\u00A0d,\u00A0yyyy");
@@ -44,10 +45,10 @@ export function render_now(time, today = new Date()) {
     const days_old = differenceInCalendarDays(today, time);
 
     if (days_old === 0) {
-        time_str = i18n.t("Today");
+        time_str = $t({defaultMessage: "Today"});
         needs_update = true;
     } else if (days_old === 1) {
-        time_str = i18n.t("Yesterday");
+        time_str = $t({defaultMessage: "Yesterday"});
         needs_update = true;
     } else if (time.getFullYear() !== today.getFullYear()) {
         // For long running servers, searching backlog can get ambiguous
@@ -71,41 +72,43 @@ export function render_now(time, today = new Date()) {
 export function last_seen_status_from_date(last_active_date, current_date = new Date()) {
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes <= 2) {
-        return i18n.t("Just now");
+        return $t({defaultMessage: "Just now"});
     }
     if (minutes < 60) {
-        return i18n.t("__minutes__ minutes ago", {minutes});
+        return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date);
     const hours = Math.floor(minutes / 60);
 
-    if (days_old === 0) {
+    if (hours < 24) {
         if (hours === 1) {
-            return i18n.t("An hour ago");
+            return $t({defaultMessage: "An hour ago"});
         }
-        return i18n.t("__hours__ hours ago", {hours});
+        return $t({defaultMessage: "{hours} hours ago"}, {hours});
     }
 
     if (days_old === 1) {
-        return i18n.t("Yesterday");
+        return $t({defaultMessage: "Yesterday"});
     }
 
     if (days_old < 90) {
-        return i18n.t("__days_old__ days ago", {days_old});
+        return $t({defaultMessage: "{days_old} days ago"}, {days_old});
     } else if (
         days_old > 90 &&
         days_old < 365 &&
         last_active_date.getFullYear() === current_date.getFullYear()
     ) {
         // Online more than 90 days ago, in the same year
-        return i18n.t("__last_active_date__", {
-            last_active_date: format(last_active_date, "MMM\u00A0dd"),
-        });
+        return $t(
+            {defaultMessage: "{last_active_date}"},
+            {last_active_date: format(last_active_date, "MMM\u00A0dd")},
+        );
     }
-    return i18n.t("__last_active_date__", {
-        last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy"),
-    });
+    return $t(
+        {defaultMessage: "{last_active_date}"},
+        {last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy")},
+    );
 }
 
 // List of the dates that need to be updated when the day changes.
@@ -134,16 +137,16 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
     if (rendered_time_above !== undefined) {
         const pieces = [
             '<i class="date-direction fa fa-caret-up"></i>',
-            rendered_time_above.time_str,
+            _.escape(rendered_time_above.time_str),
             '<hr class="date-line">',
             '<i class="date-direction fa fa-caret-down"></i>',
-            rendered_time.time_str,
+            _.escape(rendered_time.time_str),
         ];
         elem.append(pieces);
         return elem;
     }
-    elem.append(rendered_time.time_str);
-    return elem.attr("title", rendered_time.formal_time_str);
+    elem.append(_.escape(rendered_time.time_str));
+    return elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 
 // Given an Date object 'time', return a DOM node that initially
@@ -304,29 +307,21 @@ export const absolute_time = (function () {
 })();
 
 export function get_full_datetime(time) {
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    const tz_offset = -time.getTimezoneOffset() / 60;
-    return {
-        date: time.toLocaleDateString(),
-        time: time.toLocaleTimeString() + " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
-    };
-}
+    const date_string_options = {weekday: "long", month: "long", day: "numeric"};
+    const time_string_options = {timeStyle: "full"};
 
-// Date.toLocaleDateString and Date.toLocaleTimeString are
-// expensive, so we delay running the following code until we need
-// the full date and time strings.
-export const set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
-    if (message.full_date_str !== undefined) {
-        return;
+    if (page_params.twenty_four_hour_time) {
+        time_string_options.hourCycle = "h24";
     }
 
-    const time = new Date(message.timestamp * 1000);
-    const full_datetime = get_full_datetime(time);
+    const current_date = new Date();
+    if (time.getFullYear() !== current_date.getFullYear()) {
+        // Show year only if not current year.
+        date_string_options.year = "numeric";
+    }
 
-    message.full_date_str = full_datetime.date;
-    message.full_time_str = full_datetime.time;
-
-    time_elem.attr("title", message.full_date_str + " " + message.full_time_str);
-};
+    return {
+        date: time.toLocaleDateString(page_params.request_language, date_string_options),
+        time: time.toLocaleTimeString(page_params.request_language, time_string_options),
+    };
+}

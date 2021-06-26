@@ -134,7 +134,7 @@ def get_body(payload: Dict[str, Any]) -> str:
     pull_request_info = ""
     if len(payload["pull_requests"]) > 0:
         pull_request_url = payload["pull_requests"][0]["url"]
-        pull_request_info = f"- **Pull Request:** {pull_request_url}"
+        pull_request_info = f"- **Pull request:** {pull_request_url}"
     authors_and_committers_info = get_authors_and_committer_info(payload)
 
     body = f"""

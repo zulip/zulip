@@ -1,6 +1,7 @@
-# Changelog
+# API Changelog
 
-This page documents changes to the Zulip Server API over time.
+This page documents changes to the Zulip Server API over time. See also
+the [Zulip server changelog][server-changelog].
 
 The recommended way for a client like the Zulip mobile or desktop apps
 that needs to support interaction with a wide range of different Zulip
@@ -8,7 +9,204 @@ server versions is to check the `zulip_feature_level` parameter in the
 `/register` and `/server_settings` responses to determine which of the
 below features are supported.
 
+## Changes in Zulip 5.0
+
+**Feature level 75**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `allow_community_topic_editing`
+  field with an integer field `edit_topic_policy`.
+
+**Feature level 74**
+
+* [`POST /register`](/api/register-queue): Added `server_needs_upgrade`
+  and `event_queue_longpoll_timeout_seconds` field when fetching
+  realm data.
+
+**Feature level 73**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `is_billing_admin` field to
+  returned user objects.
+* [`GET /events`](/api/get-events): Added `is_billing_admin` field to
+  user objects sent in `realm_user` events.
+* [`POST /register`](/api/register-queue): Added `is_billing_admin` field
+  in the user objects returned in the `realm_users` field.
+
+**Feature level 72**
+
+* [`POST /register`](/api/register-queue): Renamed `max_icon_file_size` to
+  `max_icon_file_size_mib`, `realm_upload_quota` to `realm_upload_quota_mib`
+  and `max_logo_file_size` to `max_logo_file_size_mib`.
+
+**Feature level 71**
+
+* [`GET /events`](/api/get-events): Added `is_web_public` field to
+  `stream` events changing `invite_only`.
+
+**Feature level 70**
+
+* [`POST /register`](/api/register-queue): Added new top-level
+  `server_timestamp` field when fetching presence data, to match the
+  existing presence API.
+
+Feature levels 66-69 are reserved for future use in 4.x maintenance
+releases.
+
 ## Changes in Zulip 4.0
+
+**Feature level 65**
+
+No changes; feature level used for Zulip 4.0 release.
+
+**Feature level 64**
+
+* `PATCH /streams/{stream_id}`: Removed unnecessary JSON-encoding of string
+  parameters `new_name` and `description`.
+* `PATCH /settings/display`: Removed unnecessary JSON-encoding of string
+  parameters `default_view`, `emojiset` and `timezone`.
+
+**Feature level 63**
+
+* `PATCH /settings/notifications`: Removed unnecessary JSON-encoding of string
+  parameter `notification_sound`.
+* `PATCH /settings/display`: Removed unnecessary JSON-encoding of string
+  parameter `default_language`.
+* `POST /users/me/tutorial_status`: Removed unnecessary JSON-encoding of string
+  parameter `status`.
+* `POST /realm/domains`: Removed unnecessary JSON-encoding of string
+  parameter `domain`.
+* `PATCH /default_stream_groups/{user_id}`: Removed unnecessary JSON-encoding of string
+  parameters `new_group_name` and `new_description`.
+* `POST /users/me/hotspots`: Removed unnecessary JSON-encoding of string
+  parameter `hotspot`.
+
+**Feature level 62**
+
+* Added `moderators only` option for `wildcard_mention_policy`.
+
+**Feature level 61**
+
+* Added support for inviting users as moderators to the invitation
+  endpoints.
+
+**Feature level 60**
+
+* [`POST /register`](/api/register-queue): Added a new boolean field
+  `is_moderator`, similar to the existing `is_admin`, `is_owner` and
+  `is_guest` fields, to the response.
+* [`PATCH /users/{user_id}`](/api/update-user): Added support for
+  changing a user's organization-level role to moderator.
+* API endpoints that return `role` values can now return `300`, the
+  encoding of the moderator role.
+
+**Feature level 59**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `role` field to returned
+  user objects.
+* [`GET /events`](/api/get-events): Added `role` field to
+  user objects sent in `realm_user` events.
+* [`POST /register`](/api/register-queue): Added `role` field
+  in the user objects returned in the `realm_users` field.
+* [`GET /events`](/api/get-events): Added new `zulip_version` and
+  `zulip_feature_level` fields to the `restart` event.
+
+**Feature level 58**
+
+* [`POST /register`](/api/register-queue): Added the new
+  `stream_typing_notifications` property to supported
+  `client_capabilities`.
+* [`GET /events`](/api/get-events): Extended format for `typing`
+  events to support typing notifications in stream messages. These new
+  events are only sent to clients with `client_capabilities`
+  showing support for `stream_typing_notifications`.
+* [`POST /set-typing-status`](/api/set-typing-status): Added support
+  for sending typing notifications for stream messages.
+
+**Feature level 57**
+
+* [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): New
+  endpoint added to update a realm linkifier.
+
+**Feature level 56**
+
+* [`POST /register`](/api/register-queue): Added a new setting
+  `move_messages_between_streams_policy` for controlling who can
+  move messages between streams.
+
+**Feature level 55**
+
+* [`POST /register`](/api/register-queue): Added `realm_giphy_rating`
+  and `giphy_rating_options` fields.
+* `PATCH /realm`: Added `giphy_rating` parameter.
+
+**Feature level 54**
+
+* `GET /realm/filters` has been removed and replace with [`GET
+  /realm/linkifiers`](/api/get-linkifiers) which returns the data in a
+  cleaner dictionary format.
+* [`GET /events`](/api/get-events): Introduced new event type
+  `realm_linkifiers`.  The previous `realm_filters` event type is
+  still supported for backwards compatibility, but will be removed in
+  a future release.
+* [`POST /register`](/api/register-queue): The response now supports a
+  `realm_linkifiers` event type, containing the same data as the
+  legacy `realm_filters` key, with a more extensible object
+  format. The previous `realm_filters` event type is still supported
+  for backwards compatibility, but will be removed in a future
+  release. The legacy `realm_filters` key is deprecated but remains
+  available for backwards compatibility.
+
+**Feature level 53**
+
+* [`POST /register`](/api/register-queue): Added `max_topic_length`
+  and `max_message_length`, and renamed `max_stream_name_length` and
+  `max_stream_description_length` to allow clients to transparently
+  support these values changing in a future server version.
+
+**Feature level 52**
+
+* `PATCH /realm`: Removed unnecessary JSON-encoding of string
+  parameters `name`, `description`, `default_language`, and
+  `default_code_block_language`.
+
+**Feature level 51**
+
+* [`POST /register`](/api/register-queue): Added a new boolean field
+`can_invite_others_to_realm`.
+
+**Feature level 50**
+
+* [`POST /register`](/api/register-queue): Replaced `invite_by_admins_only`
+field with an integer field `invite_to_realm_policy`.
+
+**Feature level 49**
+
+* Added new [`POST /realm/playground`](/api/add-code-playground) and
+  [`DELETE /realm/playground/{playground_id}`](/api/remove-code-playground)
+  endpoints for code playgrounds.
+* [`GET /events`](/api/get-events): A new `realm_playgrounds` events
+  is sent when changes are made to a set of configured code playgrounds for
+  an organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_playgrounds`
+  field, which is required to fetch the set of configured code playgrounds for
+  an organization.
+
+**Feature level 48**
+
+* [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),
+  [`DELETE /users/me/muted_users/{muted_user_id}`](/api/unmute-user):
+  New endpoints added to mute/unmute users.
+* [`GET /events`](/api/get-events): Added new event type `muted_users`
+  which will be sent to a user when the set of users muted by them has
+  changed.
+
+**Feature level 47**
+
+* [`POST /register`](/api/register-queue): Added a new `giphy_api_key`
+  field, which is required to fetch GIFs using the GIPHY API.
 
 **Feature level 46**
 
@@ -430,3 +628,5 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue): Added `slim_presence`
   parameter.  Changes the format of presence events, but is still
   being changed and should not be used by clients.
+
+[server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html

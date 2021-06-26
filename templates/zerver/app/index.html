@@ -4,12 +4,12 @@
 {# Includes some other templates as tabs. #}
 
 {% block meta_viewport %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 {% endblock %}
 
 {% block customhead %}
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed" />
 <style>
     #app-loading {
     background-color: hsl(0, 0%, 100%);
@@ -42,14 +42,16 @@
     </script>
 </div>
 
-{% include "zerver/app/lightbox_overlay.html" %}
-{% include "zerver/app/subscriptions.html" %}
-{% include "zerver/app/drafts.html" %}
+<div class="subscriptions">
+    <div id="subscriptions_table">
+    </div>
+</div>
+<div id="drafts_table"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
     {% include "zerver/app/settings_overlay.html" %}
 </div>
 
-{% include "zerver/app/navbar_alerts.html" %}
+<div id="navbar_alerts_wrapper"></div>
 {% include "zerver/app/navbar.html" %}
 
 <div class="fixed-app">
@@ -123,6 +125,9 @@
                     </div>
                     {% include "zerver/app/home.html" %}
                 </div>
+                <div id="compose" {% if embedded %}data-embedded{% endif %}>
+                    <div id="compose-container"></div>
+                </div>
             </div><!--/tab-content-->
         </div>
         <div class="column-right">
@@ -140,42 +145,14 @@
             </div>
         </div>
     </div>
-    <div class="user_status_overlay overlay new-style" data-overlay="user_status_overlay" aria-hidden="true">
-        <div class="overlay-content modal-bg">
-            <div class="user-status-header">
-                <h1>Set a status</h1>
-                <div class="exit">
-                    <span class="exit-sign">&times;</span>
-                </div>
-            </div>
-            <div class="modal-body">
-                <label for="user_status">Status message</label>
-                <input type="text" class="user_status" maxlength="60" />
-                <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
-                    <i class="fa fa-remove" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="user-status-options">
-                <button type="button" class="button no-style user-status-value" data-user-status-value="In a meeting">In a meeting</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Commuting">Commuting</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Out sick">Out sick</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Vacationing">Vacationing</button>
-                <button type="button" class="button no-style user-status-value" data-user-status-value="Working remotely">Working remotely</button>
-            </div>
-            <div class="modal-footer">
-                <button class="button exit small rounded">Cancel</button>
-                <button class="sea-green small rounded button set_user_status">
-                    Save
-                </button>
-            </div>
-        </div>
+    <div class="hidden">
+        <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+        </form>
     </div>
-    {% include "zerver/app/invite_user.html" %}
-    {% include "zerver/app/logout.html" %}
-    {% include "zerver/app/deprecation_notice.html" %}
     <div id="user-profile-modal-holder"></div>
     <div id="delete-topic-modal-holder"></div>
     <div class="left-sidebar-modal-holder"></div>
+    <div class="mute-user-modal-holder"></div>
     <div id="move-a-topic-modal-holder"></div>
 </div>
 {% endblock %}

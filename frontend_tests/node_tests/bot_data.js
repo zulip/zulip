@@ -34,14 +34,14 @@ const bot_data_params = {
 };
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         bot_data.initialize(bot_data_params);
         // Our startup logic should have added Bot 0 from page_params.
         assert.equal(bot_data.get(42).full_name, "Bot 0");
         assert.equal(bot_data.get(314).full_name, "Outgoing webhook");
-        f(override);
+        f({override});
     });
 }
 
@@ -116,7 +116,7 @@ test("test_basics", () => {
 
         bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);
-        assert(bot.is_active);
+        assert.ok(bot.is_active);
         bot_data.deactivate(43);
         bot = bot_data.get(43);
         assert.equal(bot.is_active, false);
@@ -135,7 +135,7 @@ test("test_basics", () => {
 
         bot = bot_data.get(43);
         assert.equal("Bot 1", bot.full_name);
-        assert(bot.is_active);
+        assert.ok(bot.is_active);
         bot_data.del(43);
         bot = bot_data.get(43);
         assert.equal(bot, undefined);

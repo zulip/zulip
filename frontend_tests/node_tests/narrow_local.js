@@ -22,7 +22,7 @@ function test_with(fixture) {
     if (fixture.unread_info.flavor === "found") {
         for (const msg of fixture.all_messages) {
             if (msg.id === fixture.unread_info.msg_id) {
-                assert(filter.predicate()(msg));
+                assert.ok(filter.predicate()(msg));
             }
         }
     }
@@ -44,15 +44,15 @@ function test_with(fixture) {
         },
         empty: () => fixture.empty,
         all_messages: () => {
-            assert(fixture.all_messages !== undefined);
+            assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
         first: () => {
-            assert(fixture.all_messages !== undefined);
+            assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages[0];
         },
         last: () => {
-            assert(fixture.all_messages !== undefined);
+            assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages[fixture.all_messages.length - 1];
         },
     };
@@ -179,9 +179,9 @@ run_test("is private with no target", () => {
         },
         has_found_newest: true,
         all_messages: [
-            {id: 450, type: "private"},
-            {id: 500, type: "private"},
-            {id: 550, type: "private"},
+            {id: 450, type: "private", to_user_ids: "1,2"},
+            {id: 500, type: "private", to_user_ids: "1,2"},
+            {id: 550, type: "private", to_user_ids: "1,2"},
         ],
         expected_id_info: {
             target_id: undefined,
@@ -244,9 +244,9 @@ run_test("is:private with target and no unreads", () => {
         empty: false,
         all_messages: [
             {id: 350},
-            {id: 400, type: "private"},
-            {id: 450, type: "private"},
-            {id: 500, type: "private"},
+            {id: 400, type: "private", to_user_ids: "1,2"},
+            {id: 450, type: "private", to_user_ids: "1,2"},
+            {id: 500, type: "private", to_user_ids: "1,2"},
         ],
         expected_id_info: {
             target_id: 450,

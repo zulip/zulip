@@ -23,6 +23,7 @@ class zulip::profile::base {
         /^8\.[0-9]*$/  => 'jessie',
         /^9\.[0-9]*$/  => 'stretch',
         /^10\.[0-9]*$/ => 'buster',
+        /^11\.[0-9]*$/ => 'bullseye',
         # Ubuntu releases
         '12.04' => 'precise',
         '14.04' => 'trusty',
@@ -38,10 +39,12 @@ class zulip::profile::base {
         'python3-yaml',
         'puppet',
         'git',
-        # Used in scripts including install-yarn.sh
+        # Used for most downloads
         'curl',
+        # Used in check_website_response.sh
         'wget',
         'jq',
+        'procps',
         # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
         # Accurate time is essential

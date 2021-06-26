@@ -40,7 +40,7 @@ class TestQueueImplementation(ZulipTestCase):
 
         queue_client.start_json_consumer("test_suite", collect)
 
-        self.assertEqual(len(output), 1)
+        self.assert_length(output, 1)
         self.assertEqual(output[0]["event"], "my_event")
 
     @override_settings(USING_RABBITMQ=True)
@@ -68,7 +68,7 @@ class TestQueueImplementation(ZulipTestCase):
 
         # Confirm that we processed the event fully once
         self.assertEqual(count, 2)
-        self.assertEqual(len(output), 1)
+        self.assert_length(output, 1)
         self.assertEqual(output[0]["event"], "my_event")
 
     @override_settings(USING_RABBITMQ=True)

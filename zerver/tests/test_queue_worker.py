@@ -1,6 +1,5 @@
 import base64
 import os
-import smtplib
 import time
 from collections import defaultdict
 from inspect import isabstract
@@ -16,7 +15,7 @@ from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
-from zerver.lib.send_email import FromAddress
+from zerver.lib.send_email import EmailNotDeliveredException, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, simulated_queue_client
 from zerver.models import PreregistrationUser, UserActivity, get_client, get_realm, get_stream
@@ -96,7 +95,7 @@ class WorkerTest(ZulipTestCase):
                 user_profile=user.id,
                 client=get_client("ios"),
             )
-            self.assertEqual(len(activity_records), 1)
+            self.assert_length(activity_records, 1)
             self.assertEqual(activity_records[0].count, 2)
 
         # Now process the event a second time and confirm count goes
@@ -111,7 +110,7 @@ class WorkerTest(ZulipTestCase):
                 user_profile=user.id,
                 client=get_client("ios"),
             )
-            self.assertEqual(len(activity_records), 1)
+            self.assert_length(activity_records, 1)
             self.assertEqual(activity_records[0].count, 3)
 
     def test_missed_message_worker(self) -> None:
@@ -357,7 +356,7 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 2)
 
-                # However, missed message emails don't get rate limited:
+                # However, message notification emails don't get rate limited:
                 with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                     address = "mm" + ("x" * 32) + "@example.com"
                     event = dict(
@@ -421,14 +420,14 @@ class WorkerTest(ZulipTestCase):
             worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch(
-                "zerver.lib.send_email.build_email", side_effect=smtplib.SMTPServerDisconnected
+                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredException
             ), mock_queue_publish(
                 "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
             ), self.assertLogs(
                 level="ERROR"
             ) as m:
                 worker.start()
-                self.assertIn("failed due to exception SMTPServerDisconnected", m.output[0])
+                self.assertIn("failed due to exception EmailNotDeliveredException", m.output[0])
 
         self.assertEqual(data["failed_tries"], 1 + MAX_REQUEST_RETRIES)
 
@@ -442,9 +441,14 @@ class WorkerTest(ZulipTestCase):
             email=self.nonreg_email("bob"), referred_by=inviter, realm=inviter.realm
         )
         data: List[Dict[str, Any]] = [
-            dict(prereg_id=prereg_alice.id, referrer_id=inviter.id, email_body=None),
+            dict(prereg_id=prereg_alice.id, referrer_id=inviter.id),
+            dict(
+                prereg_id=prereg_alice.id,
+                referrer_id=inviter.id,
+                email_language="en",
+            ),
             # Nonexistent prereg_id, as if the invitation was deleted
-            dict(prereg_id=-1, referrer_id=inviter.id, email_body=None),
+            dict(prereg_id=-1, referrer_id=inviter.id),
         ]
         for element in data:
             fake_client.enqueue("invites", element)
@@ -456,7 +460,7 @@ class WorkerTest(ZulipTestCase):
                 "zerver.worker.queue_processors.send_future_email"
             ) as send_mock:
                 worker.start()
-                self.assertEqual(send_mock.call_count, 1)
+                self.assertEqual(send_mock.call_count, 2)
 
     def test_error_handling(self) -> None:
         processed = []

@@ -17,7 +17,7 @@ teammates know when you were last active.
 
 1. Hover over your name in the right sidebar.
 
-1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
 
 1. Click **Set a status message**.
 
@@ -46,12 +46,6 @@ There are four possible availabilities:
 * **Unavailable** (<span class="indicator grey-line"></span>): You can
   always manually set your availability to unavailable.
 
-For [Group PMs](/help/private-messages), a green circle
-(<span class="indicator green solid"></span>)
-means all users in the group are active. A pale green circle (<span
-class="indicator green"></span>) means that some are active and some are
-not. A white circle (<span class="indicator grey"></span>) means that none
-are active.
 
 You can see when someone was last recorded as active by hovering over
 their name in the left or right sidebar (even if the user is marked as
@@ -63,11 +57,13 @@ unavailable).
 
 1. Hover over your name in the right sidebar.
 
-1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
 
 1. Click **Set yourself as unavailable**.
 
 {end_tabs}
+
+You can use the same menu to mark yourself available again as well.
 
 ## Disable updating availability
 
@@ -91,3 +87,14 @@ the UI will be frozen as the time you enabled this setting.
 Note that because this setting works by making your availability stop
 updating, you'll still appear to other users as active for a few
 minutes after disabling updates to your availability.
+
+## Typing notifications
+
+Zulip displays typing notifications when viewing a private message or
+group private message conversation to which one of the other
+participants is currently composing a message.
+
+Typing notifications are only sent while one is actively editing text
+in the compose box, and they disappear if typing is paused for about
+15 seconds.  Just having the compose box open will not send a typing
+notification.

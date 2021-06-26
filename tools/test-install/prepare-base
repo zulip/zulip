@@ -48,7 +48,7 @@ run apt-get dist-upgrade -y
 # As an optimization, we install a bunch of packages the installer
 # would install for itself.
 run apt-get install -y --no-install-recommends \
-    xvfb parallel unzip zip jq python3-pip wget curl eatmydata \
+    xvfb parallel unzip zip jq python3-pip curl eatmydata \
     git crudini openssl ssl-cert \
     build-essential python3-dev \
     memcached redis-server \
@@ -60,8 +60,8 @@ run apt-get install -y --no-install-recommends \
     "${extra_packages[@]}"
 
 run ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
-run locale-gen en_US.UTF-8 || true
-echo "LC_ALL=en_US.UTF-8" | run tee /etc/default/locale
+run locale-gen C.UTF-8 || true
+echo "LC_ALL=C.UTF-8" | run tee /etc/default/locale
 
 # TODO: on failure, either stop or print message
 lxc-stop -n "$CONTAINER_NAME"

@@ -51,7 +51,7 @@ service (or back):
   replication](#postgresql-streaming-replication) and the [S3 file
   upload
   backend](../production/upload-backends.html#s3-backend-configuration)
-  as part of a high evailability environment.
+  as part of a high availability environment.
 
 ## Backups
 
@@ -70,7 +70,7 @@ The backup tool provides the following options:
   console output will show the path to the output tarball.
 - `--skip-db`: Skip backup of the database.  Useful if you're using a
   remote PostgreSQL host with its own backup system and just need to
-  backup non-database state.
+  back up non-database state.
 - `--skip-uploads`: If `LOCAL_UPLOADS_DIR` is set, user-uploaded files
   in that directory will be ignored.
 
@@ -126,7 +126,7 @@ server, including the database, settings, secrets from
 `/etc/zulip`, and user-uploaded files stored on the Zulip server.
 
 The following data is not included in these backup archives,
-and you may want to backup separately:
+and you may want to back up separately:
 
 * The server access/error logs from `/var/log/zulip`.  The Zulip
   server only appends to logs, and they can be very large compared to
@@ -257,7 +257,7 @@ For best results, you'll want to shut down access to the organization
 before exporting; so that nobody can send new messages (etc.)  while
 you're exporting data.  There are two ways to do this:
 
-1. `supervisorctl stop all`, which stops the whole server.  This is
+1. `./scripts/stop-server`, which stops the whole server.  This is
 preferred if you're not hosting multiple organizations, because it has
 no side effects other than disabling the Zulip server for the
 duration.
@@ -282,7 +282,7 @@ following commands:
 
 ```
 cd /home/zulip/deployments/current
-# supervisorctl stop all                  # Stops the Zulip server
+# ./scripts/stop-server
 # export DEACTIVATE_FLAG="--deactivate"   # Deactivates the organization
 ./manage.py export -r '' $DEACTIVATE_FLAG # Exports the data
 ```
@@ -316,7 +316,7 @@ archive of all the organization's uploaded files.
       several months of development ahead of the latest release.
 
     * Note that if your server has limited free RAM, you'll want to
-      shut down the Zulip server with `supervisorctl stop all` while
+      shut down the Zulip server with `./scripts/stop-server` while
       you run the import, since our minimal system requirements do not
       budget extra RAM for running the data import tool.
 

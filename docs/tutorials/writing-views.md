@@ -178,21 +178,26 @@ in
 
 REQ also helps us with request variable validation. For example:
 
-* `msg_ids = REQ(validator=check_list(check_int))` will check that the
-  `msg_ids` HTTP parameter is a list of integers, marshalled as JSON,
-  and pass it into the function as the `msg_ids` Python keyword
-  argument.
+* `msg_ids = REQ(json_validator=check_list(check_int))` will check
+  that the `msg_ids` HTTP parameter is a list of integers, marshalled
+  as JSON, and pass it into the function as the `msg_ids` Python
+  keyword argument.
 
 * `streams_raw = REQ("subscriptions",
-  validator=check_list(check_string))` will check that the
+  json_validator=check_list(check_string))` will check that the
   "subscriptions" HTTP parameter is a list of strings, marshalled as
   JSON, and pass it into the function with the Python keyword argument
   `streams_raw`.
 
 * `message_id=REQ(converter=to_non_negative_int)` will check that the
   `message_id` HTTP parameter is a string containing a non-negative
-  integer (`converter` differs from `validator` in that it does not
-  automatically marshall the input from JSON).
+  integer (`converter` differs from `json_validator` in that it does
+  not automatically marshall the input from JSON).
+
+* Since there is no need to JSON-encode strings, usually simply
+  `my_string=REQ()` is correct.  One can pass e.g.
+  `str_validator=check_string_in(...)` where one wants to run a
+  validator on the value of a string.
 
 See
 [zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
@@ -261,7 +266,7 @@ For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/mast
 @has_request_variables
 def update_realm(
     request: HttpRequest, user_profile: UserProfile,
-    name: Optional[str]=REQ(validator=check_string, default=None),
+    name: Optional[str]=REQ(str_validator=check_string, default=None),
     # ...
 ):
     realm = user_profile.realm
@@ -291,7 +296,7 @@ channel.patch({
     data: data,
     success: function (response_data) {
         if (response_data.name !== undefined) {
-            ui_report.success(i18n.t("Name changed!"), name_status);
+            ui_report.success($t({defaultMessage: "Name changed!"}), name_status);
         }
         ...
 ```

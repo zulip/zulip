@@ -18,6 +18,8 @@ preparing a new release.
     with changes since the last release. While doing so, take notes on
     things that might need follow-up work or documentation before we
     can happily advertise them in a release blog post.
+  * Inspect all `TODO/compatibility` comments for whether we can
+    remove any backwards-compatibility code in this release.
 * Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
 * Draft the release blog post (a.k.a. the release notes) in Paper.  In
@@ -45,6 +47,8 @@ preparing a new release.
   release branch (for minor releases):
   * Copy the Markdown release notes for the release into
     `docs/overview/changelog.md`.
+  * _Except minor releases:_ Adjust the `changelog.md` heading to have
+    the stable release series boilerplate.
   * Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
   * _Except minor releases:_ Update `API_FEATURE_LEVEL` to a feature
     level for the final release, and document a reserved range.
@@ -82,9 +86,10 @@ preparing a new release.
     update commit with a `-dev` suffix, e.g. `5.0-dev`.  Push the tag
     to both zulip.git and zulip-internal.git to get a correct version
     number for future Cloud deployments.
-* Following a minor release (e.g. 3.2):
-  * On the release branch, update `ZULIP_VERSION` to the present
-    release with a `+git` suffix, e.g. `3.2+git`.
+  * Consider removing a few old releases from ReadTheDocs; we keep about
+    two years of back-versions.
+* Following a minor release (e.g. 3.2), on the release branch:
+  * Update `ZULIP_VERSION` to the present release with a `+git`
+    suffix, e.g. `3.2+git`.
+  * Update `LATEST_RELEASE_VERSION` with the released version.
   * Cherry-pick the changelog changes back to `master`.
-* Consider removing a few old releases from ReadTheDocs; we keep about
-  two years of back-versions.

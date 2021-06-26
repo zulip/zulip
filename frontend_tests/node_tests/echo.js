@@ -13,7 +13,6 @@ const markdown = mock_esm("../../static/js/markdown");
 const message_lists = mock_esm("../../static/js/message_lists");
 
 let disparities = [];
-let messages_to_rerender = [];
 
 mock_esm("../../static/js/ui", {
     show_failed_message_success: () => {},
@@ -31,16 +30,9 @@ mock_esm("../../static/js/message_store", {
     update_booleans: () => {},
 });
 
-message_lists.home = {
-    view: {
-        rerender_messages: (msgs) => {
-            messages_to_rerender = msgs;
-        },
-    },
-};
-
 mock_esm("../../static/js/message_list");
 message_lists.current = "";
+message_lists.home = {view: {}};
 
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -57,7 +49,13 @@ run_test("process_from_server for un-echoed messages", () => {
     assert.deepEqual(non_echo_messages, server_messages);
 });
 
-run_test("process_from_server for differently rendered messages", () => {
+run_test("process_from_server for differently rendered messages", ({override}) => {
+    let messages_to_rerender = [];
+
+    override(message_lists.home.view, "rerender_messages", (msgs) => {
+        messages_to_rerender = msgs;
+    });
+
     // Test that we update all the booleans and the content of the message
     // in local echo.
     const old_value = "old_value";
@@ -85,7 +83,6 @@ run_test("process_from_server for differently rendered messages", () => {
         },
     ];
     echo._patch_waiting_for_ack(waiting_for_ack);
-    messages_to_rerender = [];
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
@@ -193,7 +190,7 @@ run_test("update_message_lists", () => {
     assert.equal(view_args.new, 402);
 });
 
-run_test("insert_local_message streams", (override) => {
+run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
     MockDate.set(new Date(fake_now * 1000));
 
@@ -229,12 +226,12 @@ run_test("insert_local_message streams", (override) => {
     };
     echo.insert_local_message(message_request, local_id_float);
 
-    assert(apply_markdown_called);
-    assert(add_topic_links_called);
-    assert(insert_message_called);
+    assert.ok(apply_markdown_called);
+    assert.ok(add_topic_links_called);
+    assert.ok(insert_message_called);
 });
 
-run_test("insert_local_message PM", (override) => {
+run_test("insert_local_message PM", ({override}) => {
     const local_id_float = 102;
 
     page_params.user_id = 123;
@@ -276,9 +273,9 @@ run_test("insert_local_message PM", (override) => {
         sender_id: 123,
     };
     echo.insert_local_message(message_request, local_id_float);
-    assert(add_topic_links_called);
-    assert(apply_markdown_called);
-    assert(insert_message_called);
+    assert.ok(add_topic_links_called);
+    assert.ok(apply_markdown_called);
+    assert.ok(insert_message_called);
 });
 
 MockDate.reset();

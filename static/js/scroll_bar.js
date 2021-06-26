@@ -40,6 +40,9 @@ let sbWidth;
 export function initialize() {
     // Workaround for browsers with fixed scrollbars
     sbWidth = getScrollbarWidth();
+    // These need to agree with zulip.css
+    const left_sidebar_width = 270;
+    const right_sidebar_width = 250;
 
     if (sbWidth > 0) {
         $(".header").css("left", "-" + sbWidth + "px");
@@ -52,23 +55,23 @@ export function initialize() {
         $(".column-right").css("right", sbWidth + "px");
         $(".app-main .right-sidebar").css({
             "margin-left": sbWidth + "px",
-            width: 250 - sbWidth + "px",
+            width: right_sidebar_width - sbWidth + "px",
         });
 
         $("#compose").css("left", "-" + sbWidth + "px");
-        $(".compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
+        $("#compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
         $("#keyboard-icon").css({"margin-right": sbWidth + "px"});
 
         $("head").append(
             "<style> @media (min-width: " +
                 media_breakpoints.xl_min +
-                ") { .compose-content, .header-main .column-middle { margin-right: " +
-                (250 + sbWidth) +
+                ") { #compose-content, .header-main .column-middle { margin-right: " +
+                (right_sidebar_width + sbWidth) +
                 "px !important; } } " +
                 "@media (min-width: " +
                 media_breakpoints.md_min +
                 ") { .fixed-app .column-middle { margin-left: " +
-                (250 + sbWidth) +
+                (left_sidebar_width + sbWidth) +
                 "px !important; } } " +
                 "</style>",
         );

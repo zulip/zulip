@@ -50,7 +50,7 @@ parser.add_argument(
     dest="clear_memcached",
     help="Do not clear memcached on startup",
 )
-parser.add_argument("--streamlined", action="store_true", help="Avoid thumbor, etc.")
+parser.add_argument("--streamlined", action="store_true", help="Avoid process_queue, etc.")
 parser.add_argument(
     "--enable-tornado-logging",
     action="store_true",
@@ -98,7 +98,6 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
-thumbor_port = base_port + 4
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -149,7 +148,7 @@ def server_processes() -> List[List[str]]:
 
     if options.streamlined:
         # The streamlined operation allows us to do many
-        # things, but search/thumbor/etc. features won't work.
+        # things, but search/etc. features won't work.
         return main_cmds
 
     other_cmds = [
@@ -161,11 +160,6 @@ def server_processes() -> List[List[str]]:
             "--quiet",
         ],
         ["./manage.py", "deliver_scheduled_messages"],
-        [
-            "/srv/zulip-thumbor-venv/bin/thumbor",
-            "--conf=./zthumbor/thumbor_settings.py",
-            f"--port={thumbor_port}",
-        ],
     ]
 
     # NORMAL (but slower) operation:
@@ -200,8 +194,6 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     host = ":".join((target_host, str(target_port)))
     # Here we are going to rewrite the path a bit so that it is in parity with
     # what we will have for production
-    if path.startswith("/thumbor"):
-        path = path[len("/thumbor") :]
     newpath = urlunparse((protocol, host, path, "", query, ""))
     return newpath
 
@@ -320,10 +312,6 @@ class TornadoHandler(BaseHandler):
     target_port = tornado_port
 
 
-class ThumborHandler(BaseHandler):
-    target_port = thumbor_port
-
-
 class ErrorHandler(BaseHandler):
     @web.asynchronous
     def prepare(self) -> None:
@@ -333,17 +321,12 @@ class ErrorHandler(BaseHandler):
         self.finish()
 
 
-def using_thumbor() -> bool:
-    return not options.streamlined
-
-
 class Application(web.Application):
     def __init__(self, enable_logging: bool = False) -> None:
         handlers = [
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
-            (r"/thumbor.*", ThumborHandler if using_thumbor() else ErrorHandler),
             (r"/.*", DjangoHandler),
         ]
         super().__init__(handlers, enable_logging=enable_logging)
@@ -366,7 +349,17 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
 
 
 def print_listeners() -> None:
-    external_host = os.getenv("EXTERNAL_HOST", f"localhost:{proxy_port}")
+    # Since we can't import settings from here, we duplicate some
+    # EXTERNAL_HOST logic from dev_settings.py.
+    IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
+    if IS_DEV_DROPLET:
+        # Technically, the `zulip.` is a subdomain of the server, so
+        # this is kinda misleading, but 99% of development is done on
+        # the default/zulip subdomain.
+        default_hostname = "zulip." + os.uname()[1].lower()
+    else:
+        default_hostname = "localhost"
+    external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
     print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
@@ -376,9 +369,6 @@ def print_listeners() -> None:
 
     if not options.test:
         ports.append((webpack_port, "webpack"))
-
-    if using_thumbor():
-        ports.append((thumbor_port, "Thumbor"))
 
     for port, label in ports:
         print(f"   {port}: {label}")

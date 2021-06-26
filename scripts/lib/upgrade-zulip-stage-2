@@ -21,9 +21,9 @@ if TYPE_CHECKING:
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
-os.environ["LC_ALL"] = "en_US.UTF-8"
-os.environ["LANG"] = "en_US.UTF-8"
-os.environ["LANGUAGE"] = "en_US.UTF-8"
+os.environ["LC_ALL"] = "C.UTF-8"
+os.environ["LANG"] = "C.UTF-8"
+os.environ["LANGUAGE"] = "C.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
@@ -32,10 +32,14 @@ from scripts.lib.zulip_tools import (
     get_config_file,
     get_tornado_ports,
     parse_os_release,
+    run_psql_as_postgres,
     su_to_zulip,
 )
 
 assert_running_as_root()
+
+# Set a known, reliable PATH
+os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s", level=logging.INFO)
@@ -101,19 +105,8 @@ IS_SERVER_UP = True
 def shutdown_server() -> None:
     global IS_SERVER_UP
 
-    core_server_services = [
-        "zulip-django",
-        "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*",
-    ]
-    worker_services = ["zulip-workers:*"]
-    # Stop and start thumbor service only if thumbor is installed.
-    if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
-        core_server_services.append("zulip-thumbor")
-
     logging.info("Stopping Zulip...")
-    subprocess.check_call(
-        ["supervisorctl", "stop", *worker_services, *core_server_services], preexec_fn=su_to_zulip
-    )
+    subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
     IS_SERVER_UP = False
 
 
@@ -145,13 +138,9 @@ if os.path.exists("/etc/init.d/postgresql"):
 
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
-    subprocess.check_call(
-        [
-            "su",
-            "postgres",
-            "-c",
-            'psql -v ON_ERROR_STOP=1 zulip -c "DROP EXTENSION IF EXISTS tsearch_extras;"',
-        ]
+    run_psql_as_postgres(
+        config_file=config_file,
+        sql_query="DROP EXTENSION IF EXISTS tsearch_extras;",
     )
     subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
@@ -159,6 +148,12 @@ if not args.skip_puppet:
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
+
+# To bootstrap zulip-puppet-apply, we need to install the system yaml
+# package; new installs get this, but old installs may not have it.
+if not os.path.exists("/usr/share/doc/python3-yaml"):
+    logging.info("Installing system YAML package, for puppet...")
+    subprocess.check_call(["apt-get", "install", "python3-yaml"])
 
 if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
     # This is normally done in unpack-zulip, but for upgrading from
@@ -169,11 +164,6 @@ if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
 # first, creating the production venv.
 subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "lib", "create-production-venv"), deploy_path]
-)
-
-# Set up the thumbor venv
-subprocess.check_call(
-    [os.path.join(deploy_path, "scripts", "lib", "create-thumbor-venv"), deploy_path]
 )
 
 # Make sure the right version of node is installed
@@ -267,11 +257,6 @@ if not args.skip_migrations:
         logging.info("Creating some expensive indexes before starting downtime.")
         subprocess.check_call(["./manage.py", "create_large_indexes"], preexec_fn=su_to_zulip)
 
-# Now we start shutting down services; we start with
-# process-fts-updates, which isn't on the critical serving path.
-if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
-    subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
-
 if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # By default, we shut down the service to apply migrations and
     # Puppet changes, to minimize risk of issues due to inconsistent
@@ -286,7 +271,6 @@ class_renames = {
     "zulip::postgres_appdb_tuned": "zulip::profile::postgresql",
     "zulip::postgres_backups": "zulip::postgresql_backups",
     "zulip::rabbit": "zulip::profile::rabbitmq",
-    "zulip::thumbor": "zulip::profile::thumbor",
     "zulip::voyager": "zulip::profile::standalone",
 }
 classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes"))
@@ -317,7 +301,14 @@ if migrations_needed:
 subprocess.check_call(["./manage.py", "create_realm_internal_bots"], preexec_fn=su_to_zulip)
 
 logging.info("Restarting Zulip...")
-subprocess.check_output(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
+if IS_SERVER_UP or not args.skip_puppet:
+    # Even if the server wasn't up previously, puppet might have
+    # started it if there were supervisord configuration changes, so
+    # we need to use restart-server if puppet ran.
+    subprocess.check_output(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
+else:
+    subprocess.check_output(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
+
 logging.info("Upgrade complete!")
 
 if args.audit_fts_indexes:

@@ -22,6 +22,7 @@ export function create_item_from_email(email, current_items) {
             // so we just create a pill where the display value
             // is the email itself.
             return {
+                type: "user",
                 display_value: email,
                 email,
             };
@@ -42,11 +43,19 @@ export function create_item_from_email(email, current_items) {
     // We must supply display_value for the widget to work.  Everything
     // else is for our own use in callbacks.
     const item = {
+        type: "user",
         display_value: user.full_name,
         user_id: user.user_id,
         email: user.email,
         img_src: avatar_url,
+        deactivated: false,
     };
+
+    // We pass deactivated true for a deactivated user
+    if (!people.is_person_active(user.user_id)) {
+        item.deactivated = true;
+        item.display_value = user.full_name + " (deactivated)";
+    }
 
     return item;
 }
@@ -61,6 +70,7 @@ export function append_person(opts) {
     const avatar_url = people.small_avatar_url_for_person(person);
 
     pill_widget.appendValidatedData({
+        type: "user",
         display_value: person.full_name,
         user_id: person.user_id,
         email: person.email,

@@ -4,10 +4,9 @@ import random
 import shutil
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union, cast
-from unittest import TestLoader, TestSuite, runner
+from unittest import TestLoader, TestSuite, mock, runner
 from unittest.result import TestResult
 
-import mock
 from django.conf import settings
 from django.db import connections
 from django.test import TestCase
@@ -181,7 +180,7 @@ def destroy_test_databases(worker_id: Optional[int] = None) -> None:
             # delete that database, we need to not pass a number
             # argument to destroy_test_db.
             if worker_id is not None:
-                """Modified from the Django original to """
+                """Modified from the Django original to"""
                 database_id = get_database_id(worker_id)
                 connection.creation.destroy_test_db(suffix=database_id)
             else:

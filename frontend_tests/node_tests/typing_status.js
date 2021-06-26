@@ -20,7 +20,7 @@ function returns_time(secs) {
     };
 }
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     typing_status.initialize_state();
 
     // invalid conversation basically does nothing
@@ -84,7 +84,7 @@ run_test("basics", (override) => {
         stopped: false,
         timer_cleared: false,
     });
-    assert(events.idle_callback);
+    assert.ok(events.idle_callback);
 
     // type again 3 seconds later
     worker.get_current_time = returns_time(8);
@@ -100,7 +100,7 @@ run_test("basics", (override) => {
         stopped: false,
         timer_cleared: true,
     });
-    assert(events.idle_callback);
+    assert.ok(events.idle_callback);
 
     // type after 15 secs, so that we can notify the server
     // again
@@ -162,7 +162,7 @@ run_test("basics", (override) => {
         stopped: false,
         timer_cleared: false,
     });
-    assert(events.idle_callback);
+    assert.ok(events.idle_callback);
 
     // Explicitly stop alice.
     call_handler(null);
@@ -192,7 +192,7 @@ run_test("basics", (override) => {
         stopped: false,
         timer_cleared: false,
     });
-    assert(events.idle_callback);
+    assert.ok(events.idle_callback);
 
     // Switch to an invalid conversation.
     call_handler(null);
@@ -236,7 +236,7 @@ run_test("basics", (override) => {
         stopped: false,
         timer_cleared: false,
     });
-    assert(events.idle_callback);
+    assert.ok(events.idle_callback);
 
     // Switch to bob now.
     worker.get_current_time = returns_time(171);
@@ -258,7 +258,7 @@ run_test("basics", (override) => {
         stopped: true,
         timer_cleared: true,
     });
-    assert(events.idle_callback);
+    assert.ok(events.idle_callback);
 
     // test that we correctly detect if worker.get_recipient
     // and typing_status.state.current_recipient are the same

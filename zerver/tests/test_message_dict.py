@@ -13,6 +13,7 @@ from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
     Message,
     Reaction,
+    Realm,
     RealmFilter,
     Recipient,
     Stream,
@@ -181,7 +182,7 @@ class MessageDictTest(ZulipTestCase):
             MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
         self.assert_length(queries, 7)
-        self.assertEqual(len(rows), num_ids)
+        self.assert_length(rows, num_ids)
 
     def test_applying_markdown(self) -> None:
         sender = self.example_user("othello")
@@ -241,26 +242,27 @@ class MessageDictTest(ZulipTestCase):
 
     def test_topic_links_use_stream_realm(self) -> None:
         # Set up a realm filter on 'zulip' and assert that messages
-        # sent to a stream on 'zulip' have the topic linkified from
-        # senders in both the 'zulip' and 'lear' realms as well as
-        # the notification bot.
+        # sent to a stream on 'zulip' have the topic linkified,
+        # and not linkified when sent to a stream in 'lear'.
         zulip_realm = get_realm("zulip")
+        lear_realm = get_realm("lear")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
         links = {"url": "https://trac.example.com/ticket/123", "text": "#123"}
         topic_name = "test #123"
 
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 
-        def get_message(sender: UserProfile) -> Message:
-            msg_id = self.send_stream_message(
-                sender, "Denmark", "hello world", topic_name, zulip_realm
-            )
+        def get_message(sender: UserProfile, realm: Realm) -> Message:
+            stream_name = "Denmark"
+            if not Stream.objects.filter(realm=realm, name=stream_name).exists():
+                self.make_stream(stream_name, realm)
+            msg_id = self.send_stream_message(sender, "Denmark", "hello world", topic_name, realm)
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
@@ -268,13 +270,13 @@ class MessageDictTest(ZulipTestCase):
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
-        assert_topic_links([], get_message(self.example_user("othello")))
-        assert_topic_links([], get_message(self.lear_user("cordelia")))
-        assert_topic_links([], get_message(self.notification_bot()))
-        realm_filter.save()
-        assert_topic_links([links], get_message(self.example_user("othello")))
-        assert_topic_links([links], get_message(self.lear_user("cordelia")))
-        assert_topic_links([links], get_message(self.notification_bot()))
+        assert_topic_links([], get_message(self.example_user("othello"), zulip_realm))
+        assert_topic_links([], get_message(self.lear_user("cordelia"), lear_realm))
+        assert_topic_links([], get_message(self.notification_bot(), zulip_realm))
+        linkifier.save()
+        assert_topic_links([links], get_message(self.example_user("othello"), zulip_realm))
+        assert_topic_links([], get_message(self.lear_user("cordelia"), lear_realm))
+        assert_topic_links([links], get_message(self.notification_bot(), zulip_realm))
 
     def test_reaction(self) -> None:
         sender = self.example_user("othello")
@@ -418,7 +420,7 @@ class MessageHydrationTest(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self.assertEqual(len(messages), 2)
+        self.assert_length(messages, 2)
 
         for message in messages:
             if message["id"] == old_message_id:
@@ -638,7 +640,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
         reactions = Reaction.get_raw_db_rows(needed_ids)
         tied_data = sew_messages_and_reactions(messages, reactions)
         for data in tied_data:
-            self.assertEqual(len(data["reactions"]), 1)
+            self.assert_length(data["reactions"], 1)
             self.assertEqual(data["reactions"][0]["emoji_name"], "simple_smile")
             self.assertTrue(data["id"])
             self.assertTrue(data["content"])

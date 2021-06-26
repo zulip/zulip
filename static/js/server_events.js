@@ -176,9 +176,9 @@ function get_events({dont_block = false} = {}) {
     }
 
     // TODO: In the future, we may implement Tornado support for live
-    // update for web_public_visitor, but until then, there's nothing
+    // update for spectator, but until then, there's nothing
     // to do here.
-    if (page_params.is_web_public_visitor) {
+    if (page_params.is_spectator) {
         return;
     }
 
@@ -211,7 +211,7 @@ function get_events({dont_block = false} = {}) {
         url: "/json/events",
         data: get_events_params,
         idempotent: true,
-        timeout: page_params.poll_timeout,
+        timeout: page_params.event_queue_longpoll_timeout_seconds * 1000,
         success(data) {
             watchdog.set_suspect_offline(false);
             try {
@@ -308,7 +308,7 @@ export function initialize() {
 }
 
 export function cleanup_event_queue() {
-    // Submit a request to the server to cleanup our event queue
+    // Submit a request to the server to clean up our event queue
     if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
         return;
     }

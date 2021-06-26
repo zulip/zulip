@@ -13,3 +13,6 @@ uwsgi_param REMOTE_PORT     $remote_port;
 uwsgi_param SERVER_ADDR     $server_addr;
 uwsgi_param SERVER_PORT     $server_port;
 uwsgi_param SERVER_NAME     $server_name;
+uwsgi_param HTTP_X_REAL_IP  $remote_addr;
+
+uwsgi_pass django;

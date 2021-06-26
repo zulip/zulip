@@ -50,7 +50,7 @@ class CommonUtils {
     };
 
     fullname: Record<string, string> = {
-        cordelia: "Cordelia Lear",
+        cordelia: "Cordelia, Lear's daughter",
         othello: "Othello, the Moor of Venice",
         hamlet: "King Hamlet",
     };
@@ -71,7 +71,6 @@ class CommonUtils {
                 ],
                 // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
                 // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
-                // @ts-expect-error: Because of https://github.com/puppeteer/puppeteer/issues/6885
                 defaultViewport: null,
                 headless: true,
             });
@@ -262,7 +261,7 @@ class CommonUtils {
         // Wait for a email input in login page so we know login
         // page is loaded. Then check that we are at the login url.
         await page.waitForSelector('input[name="username"]');
-        assert(page.url().includes("/login/"));
+        assert.ok(page.url().includes("/login/"));
     }
 
     async ensure_enter_does_not_send(page: Page): Promise<void> {
@@ -406,7 +405,7 @@ class CommonUtils {
      * This method returns a array, which is formmated as:
      *  [
      *    ['stream > topic', ['message 1', 'message 2']],
-     *    ['You and Cordelia Lear', ['message 1', 'message 2']]
+     *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]
      *  ]
      *
      * The messages are sorted chronologically.
@@ -414,33 +413,27 @@ class CommonUtils {
     async get_rendered_messages(page: Page, table = "zhome"): Promise<[string, string[]][]> {
         const recipient_rows = await page.$$(`#${CSS.escape(table)} .recipient_row`);
         return Promise.all(
-            recipient_rows.map(
-                async (element): Promise<[string, string[]]> => {
-                    const stream_label = await element.$(".stream_label");
-                    const stream_name = (await this.get_element_text(stream_label!)).trim();
-                    const topic_label = await element.$(".stream_topic a");
-                    const topic_name =
-                        topic_label === null
-                            ? ""
-                            : (await this.get_element_text(topic_label)).trim();
-                    let key = stream_name;
-                    if (topic_name !== "") {
-                        // If topic_name is '' then this is PMs, so only
-                        // append > topic_name if we are not in PMs or Group PMs.
-                        key = `${stream_name} > ${topic_name}`;
-                    }
+            recipient_rows.map(async (element): Promise<[string, string[]]> => {
+                const stream_label = await element.$(".stream_label");
+                const stream_name = (await this.get_element_text(stream_label!)).trim();
+                const topic_label = await element.$(".stream_topic a");
+                const topic_name =
+                    topic_label === null ? "" : (await this.get_element_text(topic_label)).trim();
+                let key = stream_name;
+                if (topic_name !== "") {
+                    // If topic_name is '' then this is PMs, so only
+                    // append > topic_name if we are not in PMs or Group PMs.
+                    key = `${stream_name} > ${topic_name}`;
+                }
 
-                    const messages = await Promise.all(
-                        (
-                            await element.$$(".message_row .message_content")
-                        ).map(async (message_row) =>
-                            (await this.get_element_text(message_row)).trim(),
-                        ),
-                    );
+                const messages = await Promise.all(
+                    (
+                        await element.$$(".message_row .message_content")
+                    ).map(async (message_row) => (await this.get_element_text(message_row)).trim()),
+                );
 
-                    return [key, messages];
-                },
-            ),
+                return [key, messages];
+            }),
         );
     }
 
@@ -473,7 +466,7 @@ class CommonUtils {
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
         const url = await this.page_url_with_fragment(page);
-        assert(/^http:\/\/[^/]+\/#organization/.test(url), "Unexpected manage organization URL");
+        assert.match(url, /^http:\/\/[^/]+\/#organization/, "Unexpected manage organization URL");
 
         const organization_settings_data_section = "li[data-section='organization-settings']";
         await page.click(organization_settings_data_section);
@@ -491,6 +484,13 @@ class CommonUtils {
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         );
         await entry!.click();
+    }
+
+    async wait_for_modal_to_close(page: Page): Promise<void> {
+        // This function will ensure that the mouse events are enabled for the background for further tests.
+        await page.waitForFunction(
+            () => document.querySelector(".overlay.show")?.getAttribute("style") === null,
+        );
     }
 
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
@@ -552,7 +552,7 @@ class CommonUtils {
             console_ready = (async () => {
                 const frames = await Promise.all(
                     ErrorStackParser.parse(error1).map(async (frame1) => {
-                        let frame = (frame1 as unknown) as StackFrame;
+                        let frame = frame1 as unknown as StackFrame;
                         try {
                             frame = await this.gps.getMappedLocation(frame);
                         } catch {

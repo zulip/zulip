@@ -4,15 +4,13 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
 
 const noop = () => {};
-
-mock_cjs("jquery", $);
 
 function MessageListView() {
     return {};
@@ -21,7 +19,7 @@ mock_esm("../../static/js/message_list_view", {
     MessageListView,
 });
 
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_ui", {
     process_messages: noop,
 });
 mock_esm("../../static/js/ui_report", {
@@ -92,7 +90,7 @@ function config_fake_channel(conf) {
     channel.get = (opts) => {
         assert.equal(opts.url, "/json/messages");
         // There's a separate call with anchor="newest" that happens
-        // unconditionally; do basic verfication of that call.
+        // unconditionally; do basic verification of that call.
         if (opts.data.anchor === "newest") {
             if (!called_with_newest_flag) {
                 called_with_newest_flag = true;
@@ -106,7 +104,7 @@ function config_fake_channel(conf) {
             throw new Error("only use this for one call");
         }
         if (!conf.can_call_again) {
-            assert(self.success === undefined);
+            assert.equal(self.success, undefined);
         }
         assert.deepEqual(opts.data, conf.expected_opts_data);
         self.success = opts.success;
@@ -293,18 +291,15 @@ run_test("initialize", () => {
     step2.prep();
     step1.finish();
 
-    assert(!home_loaded);
+    assert.ok(!home_loaded);
     const idle_config = step2.finish();
-    assert(home_loaded);
+    assert.ok(home_loaded);
 
     test_backfill_idle(idle_config);
 });
 
 function simulate_narrow() {
-    const filter = {
-        predicate: () => () => false,
-        public_operators: () => [{operator: "pm-with", operand: alice.email}],
-    };
+    const filter = new Filter([{operator: "pm-with", operand: alice.email}]);
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",
@@ -372,7 +367,7 @@ run_test("loading_newer", () => {
                 anchor: "444",
                 num_before: 0,
                 num_after: 100,
-                narrow: `[{"operator":"pm-with","operand":[${alice.user_id}]}]`,
+                narrow: `[{"negated":false,"operator":"pm-with","operand":[${alice.user_id}]}]`,
                 client_gravatar: true,
             },
             resp: {

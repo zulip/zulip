@@ -173,17 +173,17 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        json_result = self.client_patch(pattern, {param: orjson.dumps("invalid").decode()})
+        json_result = self.client_patch(pattern, {param: "invalid"})
         self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
 
-        json_result = self.client_patch(pattern, {param: orjson.dumps("ding").decode()})
+        json_result = self.client_patch(pattern, {param: "ding"})
         self.assert_json_success(json_result)
 
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user("hamlet")
         self.assertEqual(getattr(user_profile, param), "ding")
 
-        json_result = self.client_patch(pattern, {param: orjson.dumps("zulip").decode()})
+        json_result = self.client_patch(pattern, {param: "zulip"})
 
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
@@ -353,7 +353,11 @@ class ChangeSettingsTest(ZulipTestCase):
             invalid_value: Any = 100
         else:
             invalid_value = "invalid_" + setting_name
-        data = {setting_name: orjson.dumps(test_value).decode()}
+
+        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
+            data = {setting_name: test_value}
+        else:
+            data = {setting_name: orjson.dumps(test_value).decode()}
 
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
@@ -362,7 +366,10 @@ class ChangeSettingsTest(ZulipTestCase):
 
         # Test to make sure invalid settings are not accepted
         # and saved in the db.
-        data = {setting_name: orjson.dumps(invalid_value).decode()}
+        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
+            data = {setting_name: invalid_value}
+        else:
+            data = {setting_name: orjson.dumps(invalid_value).decode()}
 
         result = self.client_patch("/json/settings/display", data)
         # the json error for multiple word setting names (ex: default_language)
@@ -382,7 +389,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")
-        data = {"emojiset": orjson.dumps(emojiset).decode()}
+        data = {"emojiset": emojiset}
         result = self.client_patch("/json/settings/display", data)
         return result
 

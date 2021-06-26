@@ -51,8 +51,8 @@ run_test("append", () => {
 
     search_pill.append_search_string(is_starred_item.display_value, pill_widget);
 
-    assert(appended);
-    assert(cleared);
+    assert.ok(appended);
+    assert.ok(cleared);
 });
 
 run_test("get_items", () => {
@@ -70,7 +70,7 @@ run_test("get_items", () => {
     );
 });
 
-run_test("create_pills", (override) => {
+run_test("create_pills", ({override}) => {
     let input_pill_create_called = false;
 
     override(input_pill, "create", () => {
@@ -79,6 +79,6 @@ run_test("create_pills", (override) => {
     });
 
     const pills = search_pill.create_pills({});
-    assert(input_pill_create_called);
+    assert.ok(input_pill_create_called);
     assert.deepEqual(pills, {dummy: "dummy"});
 });

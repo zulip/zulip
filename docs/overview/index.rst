@@ -9,5 +9,5 @@ Overview
    contributing
    architecture-overview
    directory-structure
-   roadmap
+   release-lifecycle
    changelog

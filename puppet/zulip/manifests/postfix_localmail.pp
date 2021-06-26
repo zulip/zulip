@@ -1,4 +1,5 @@
 class zulip::postfix_localmail {
+  include zulip::snakeoil
   $postfix_packages = [ 'postfix', ]
 
   if $::fqdn == '' {
@@ -11,6 +12,7 @@ class zulip::postfix_localmail {
   }
 
   service { 'postfix':
+    require => Exec['generate-default-snakeoil'],
   }
 
   file {'/etc/mailname':

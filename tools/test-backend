@@ -26,7 +26,7 @@ target_fully_covered = [
     "analytics/lib/*.py",
     "analytics/models.py",
     "analytics/tests/*.py",
-    "analytics/views.py",
+    "analytics/views/*.py",
     # zerver/ and zerver/lib/ are important core files
     "zerver/*.py",
     "zerver/lib/*.py",
@@ -59,7 +59,11 @@ not_yet_fully_covered = [
     # runs before tests.
     "analytics/lib/fixtures.py",
     # We have 100% coverage on the new stuff; need to refactor old stuff.
-    "analytics/views.py",
+    "analytics/views/activity_common.py",
+    "analytics/views/realm_activity.py",
+    "analytics/views/installation_activity.py",
+    "analytics/views/stats.py",
+    "analytics/views/support.py",
     # Major lib files should have 100% coverage
     "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
@@ -76,7 +80,6 @@ not_yet_fully_covered = [
     "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
     # Other lib files that ideally would coverage, but aren't sorted
-    "zerver/__init__.py",
     "zerver/filters.py",
     "zerver/middleware.py",
     "zerver/lib/bot_lib.py",
@@ -99,7 +102,7 @@ not_yet_fully_covered = [
     "zerver/lib/unminify.py",
     "zerver/lib/utils.py",
     "zerver/lib/zephyr.py",
-    "zerver/templatetags/app_filters.py",
+    "zerver/lib/templates.py",
     "zerver/templatetags/minified_js.py",
     # Low priority for coverage
     "zerver/lib/ccache.py",

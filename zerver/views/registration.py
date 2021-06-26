@@ -1,5 +1,4 @@
 import logging
-import smtplib
 import urllib
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
@@ -13,7 +12,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation import settings as confirmation_settings
@@ -45,11 +44,10 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     lookup_default_stream_groups,
 )
-from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.url_encoding import add_query_to_redirect_url
@@ -88,6 +86,10 @@ from zproject.backends import (
     password_auth_enabled,
 )
 
+if settings.BILLING_ENABLED:
+    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
+    from corporate.lib.stripe import LicenseLimitError
+
 
 def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
@@ -125,16 +127,18 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         key = request.POST.get("key", default="")
         confirmation = Confirmation.objects.get(confirmation_key=key)
     except Confirmation.DoesNotExist:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
     prereg_user = confirmation.content_object
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
 
-    role = get_role_for_new_user(prereg_user.invited_as, realm_creation)
+    role = prereg_user.invited_as
+    if realm_creation:
+        role = UserProfile.ROLE_REALM_OWNER
 
     try:
         validators.validate_email(email)
@@ -180,6 +184,12 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             return redirect_to_email_login_url(email)
+
+        if settings.BILLING_ENABLED:
+            try:
+                check_spare_licenses_available_for_registering_new_user(realm, email)
+            except LicenseLimitError:
+                return render(request, "zerver/no_spare_licenses.html")
 
     name_validated = False
     full_name = None
@@ -310,8 +320,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if "timezone" in request.POST and request.POST["timezone"] in pytz.all_timezones_set:
             timezone = request.POST["timezone"]
 
-        if "source_realm" in request.POST and request.POST["source_realm"] != "on":
-            source_profile = get_source_profile(email, request.POST["source_realm"])
+        if "source_realm_id" in request.POST:
+            # Non-integer realm_id values like "string" are treated
+            # like the "Do not import" value of "".
+            try:
+                source_realm_id = int(request.POST["source_realm_id"])
+            except ValueError:
+                source_profile: Optional[UserProfile] = None
+            else:
+                source_profile = get_source_profile(email, source_realm_id)
         else:
             source_profile = None
 
@@ -413,7 +430,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             )
 
         if realm_creation:
-            bulk_add_subscriptions(realm, [realm.signup_notifications_stream], [user_profile])
+            bulk_add_subscriptions(
+                realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
+            )
             send_initial_realm_messages(realm)
 
             # Because for realm creation, registration happens on the
@@ -525,7 +544,10 @@ def send_confirm_registration_email(
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
         language=language,
-        context={"activate_url": activation_url},
+        context={
+            "create_realm": (realm is None),
+            "activate_url": activation_url,
+        },
         realm=realm,
     )
 
@@ -574,8 +596,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
             try:
                 send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
-            except smtplib.SMTPException as e:
-                logging.error("Error in create_realm: %s", str(e))
+            except EmailNotDeliveredException:
+                logging.error("Error in create_realm")
                 return HttpResponseRedirect("/config-error/smtp")
 
             if key_record is not None:
@@ -629,8 +651,8 @@ def accounts_home(
                 send_confirm_registration_email(
                     email, activation_url, request.LANGUAGE_CODE, realm=realm
                 )
-            except smtplib.SMTPException as e:
-                logging.error("Error in accounts_home: %s", str(e))
+            except EmailNotDeliveredException:
+                logging.error("Error in accounts_home")
                 return HttpResponseRedirect("/config-error/smtp")
 
             return HttpResponseRedirect(reverse("signup_send_confirm", kwargs={"email": email}))
@@ -651,7 +673,7 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     multiuse_object = None
     try:
         multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
-        # Required for oAuth2
+        # Required for OAuth 2
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)
         if realm is None or realm.invite_required:
@@ -659,10 +681,6 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     return accounts_home(
         request, multiuse_object_key=confirmation_key, multiuse_object=multiuse_object
     )
-
-
-def generate_204(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(content=None, status=204)
 
 
 def find_account(request: HttpRequest) -> HttpResponse:

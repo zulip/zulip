@@ -43,7 +43,7 @@ class zulip_ops::profile::munin_server {
     content => template('zulip_ops/munin/munin.conf.erb'),
   }
 
-  file { '/etc/supervisor/conf.d/munin_tunnels.conf':
+  file { "${zulip::common::supervisor_conf_dir}/munin_tunnels.conf":
     ensure  => file,
     require => Package['supervisor', 'autossh'],
     mode    => '0644',

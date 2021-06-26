@@ -18,6 +18,10 @@ go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
+/* These need to agree with scroll_bar.js */
+$left_sidebar_width: 270px;
+$right_sidebar_width: 250px;
+
 body,
 html {
     width: 100%;
@@ -33,7 +37,9 @@ html {
 }
 
 body {
-    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: calc(20 / 14);
+    font-family: "Source Sans 3", sans-serif;
 }
 
 /* Common background color */
@@ -47,8 +53,11 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
+    /* Disable bootstrap size CSS; we want to use our default font size on
+       body for input elements. */
     line-height: normal;
+    font-size: inherit;
 }
 
 blockquote p {
@@ -66,7 +75,34 @@ a {
 
 code,
 pre {
-    font-family: Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
+}
+
+[data-tippy-root] {
+    /* Since tooltip elements are sometimes inside elements
+     * which have different font-family, we force font-family
+     * for tooltips here.
+     */
+    font-family: "Source Sans 3", sans-serif !important;
+
+    .tippy-content {
+        font-size: 13px;
+    }
+
+    .tippy-arrow::before {
+        /* `.tippy-arrow:before` element sometimes
+         * inherits the height of the parent, we
+         * don't want any height here since we
+         * want it to remain an triangle.
+         * The bug was only found in Firefox.
+         */
+        height: 0 !important;
+    }
+    /* If the text in the tooltips stretches to multiple lines,
+     * we want the lines to be left-indented and not right-indented
+     * by default.
+     */
+    text-align: left;
 }
 
 .no-select {
@@ -107,10 +143,6 @@ p.n-margin {
 
 .border-radius {
     border-radius: 4px;
-}
-
-.modal-backdrop {
-    z-index: 102;
 }
 
 .history-limited-box {
@@ -244,11 +276,14 @@ p.n-margin {
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 }
 
-#panels {
+#navbar_alerts_wrapper {
     font-size: 1rem;
     position: relative;
 
     .alert {
+        /* Since alerts are only rendered into the DOM when they are first
+           displayed, display: block is the right default for this setting. */
+        display: block;
         margin: 0;
         padding-top: 12px;
         padding-bottom: 12px;
@@ -327,21 +362,19 @@ p.n-margin {
     left: 0;
 }
 
-.column-left,
 .column-right {
-    width: 250px;
-    max-width: 250px;
-}
-
-.column-left {
+    width: $right_sidebar_width;
+    max-width: $right_sidebar_width;
     position: absolute;
-    left: 0;
+    right: 0;
     top: 0;
 }
 
-.column-right {
+.column-left {
+    width: $left_sidebar_width;
+    max-width: $left_sidebar_width;
     position: absolute;
-    right: 0;
+    left: 0;
     top: 0;
 }
 
@@ -357,7 +390,7 @@ p.n-margin {
     }
 
     .column-left .left-sidebar {
-        width: 242px;
+        width: $left_sidebar_width;
         padding-left: 0;
     }
 
@@ -371,15 +404,16 @@ p.n-margin {
     }
 }
 
-.column-middle {
-    margin-right: 250px;
-    margin-left: 250px;
+.column-middle,
+#compose-content {
+    margin-right: $right_sidebar_width;
+    margin-left: $left_sidebar_width;
     position: relative;
 }
 
 textarea,
 input {
-    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -513,8 +547,8 @@ strong {
 }
 
 .sidebar-title {
-    font-size: 14px;
     color: hsl(0, 0%, 43%);
+    font-size: inherit;
     font-weight: normal;
     display: inline;
 }
@@ -562,8 +596,7 @@ strong {
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
-    font-size: 13px;
-    margin-top: 3px;
+    margin-top: 2px;
     margin-left: 6px;
     opacity: 0.5;
     cursor: pointer;
@@ -678,6 +711,28 @@ li.actual-dropdown-menu i {
     margin-right: 3px;
 }
 
+#gear_menu_about_zulip {
+    .white_zulip_icon_without_text {
+        position: relative;
+        top: 3px;
+        width: 14px;
+        height: 14px;
+        margin-right: 3px;
+        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
+            brightness(20%) contrast(95%);
+    }
+    .about_zulip_text {
+        position: relative;
+        top: 1.4px;
+    }
+
+    :hover {
+        .white_zulip_icon_without_text {
+            filter: none;
+        }
+    }
+}
+
 .settings-dropdown-cog {
     padding: 6px 12px;
 }
@@ -748,8 +803,7 @@ td.pointer {
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
-    line-height: 18px;
-    font-size: 14px;
+
     position: relative;
     max-width: calc(100% - 50px);
 
@@ -780,6 +834,8 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
+    /* Disable blue link styling for the message timestamp link. */
+    color: hsl(0, 0%, 20%);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
@@ -789,7 +845,6 @@ td.pointer {
 .alert-msg {
     position: absolute;
     right: -110px;
-    font-size: 14px;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
@@ -817,23 +872,38 @@ td.pointer {
        doesn't disturb the layout.  Usually that would be just
        visibility: hidden, but that cannot be animated, so we set
        opacity as well, which can be animated. */
-    > div {
+    .message_control_button {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
         width: 16px;
         text-align: center;
+        display: inline-block;
+        position: relative;
+        color: hsl(0, 0%, 73%);
 
         > i {
             vertical-align: middle;
         }
     }
 
+    /* Tooltips should not follow the width restrictions of their parent element. */
+    [data-tippy-root] {
+        width: max-content;
+        word-wrap: unset;
+    }
+
     > .reaction_button {
-        display: inline-block;
-        position: relative;
-        color: hsl(0, 0%, 73%);
         &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    .edit_content {
+        width: 12px;
+
+        &:hover {
+            cursor: pointer;
             color: hsl(200, 100%, 40%);
         }
     }
@@ -862,8 +932,6 @@ td.pointer {
     }
 
     .star_container {
-        display: inline-block;
-
         &:not(.empty-star) {
             color: hsl(106, 77%, 29%);
 
@@ -875,8 +943,6 @@ td.pointer {
 }
 
 .star {
-    font-size: 14px;
-
     &:hover {
         cursor: pointer;
         color: hsl(153, 80%, 25%);
@@ -892,13 +958,8 @@ td.pointer {
 
     &:hover .message_controls,
     &:focus-within .message_controls {
-        .empty-star {
-            opacity: 0.4;
-        }
-
         .empty-star:hover {
             cursor: pointer;
-            opacity: 1;
         }
 
         > div {
@@ -992,23 +1053,6 @@ td.pointer {
         border-width: 11px 0 11px 5px;
         border-color: inherit;
         z-index: 2;
-        transform: scale(0.9999);
-    }
-
-    &::before {
-        left: 100%;
-        top: 50%;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-        margin-top: -14px;
-        border-style: solid;
-        border-width: 14px 0 14px 6px;
-        border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
-            transparent;
-        z-index: 1;
         transform: scale(0.9999);
     }
 }
@@ -1127,7 +1171,6 @@ td.pointer {
         display: inline-block;
         padding: 3px 6px 2px 6px;
         font-weight: normal;
-        font-size: 14px;
         height: 17px;
         line-height: 17px;
         border-left-color: hsl(0, 0%, 27%);
@@ -1227,7 +1270,7 @@ td.pointer {
     vertical-align: top;
     position: relative;
 
-    i.zulip-icon.bot {
+    i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
     }
 }
@@ -1237,8 +1280,6 @@ td.pointer {
     font-weight: 700;
     vertical-align: top;
     line-height: 12px;
-    font-size: 14px;
-    margin-left: -3px;
 }
 
 .sender_name-in-status {
@@ -1253,7 +1294,7 @@ td.pointer {
     }
 }
 
-.popover_info i.zulip-icon.bot {
+.popover_info i.zulip-icon.zulip-icon-bot {
     margin-top: 3px;
 }
 
@@ -1262,7 +1303,6 @@ td.pointer {
 }
 
 .on_hover_topic_edit,
-.on_hover_topic_mute,
 .on_hover_topic_read {
     opacity: 0.2;
 }
@@ -1271,26 +1311,29 @@ td.pointer {
     opacity: 0.7;
 }
 
-.on_hover_topic_edit,
-.always_visible_topic_edit,
-.on_hover_topic_mute,
-.on_hover_topic_unmute,
-.on_hover_topic_read {
+.on_hover_topic_unmute {
+    opacity: 0.7;
+
     &:hover {
         cursor: pointer;
         opacity: 1;
     }
 }
 
-.edit_content {
-    width: 12px;
-    display: inline-block;
-    position: relative;
-    color: hsl(0, 0%, 73%);
-
+.on_hover_topic_mute {
+    opacity: 0.2;
     &:hover {
         cursor: pointer;
-        color: hsl(200, 100%, 40%);
+        opacity: 0.7;
+    }
+}
+
+.on_hover_topic_edit,
+.always_visible_topic_edit,
+.on_hover_topic_read {
+    &:hover {
+        cursor: pointer;
+        opacity: 1;
     }
 }
 
@@ -1335,10 +1378,9 @@ a.dark_background:hover,
     }
 }
 
-.info {
+.settings-forgot-password {
     display: inline-block;
     position: relative;
-    font-size: 14px;
     color: hsl(0, 0%, 73%);
 }
 
@@ -1371,7 +1413,6 @@ div.focused_table {
 .message_content {
     line-height: 1.214;
     min-height: 17px;
-    font-size: 14px;
     margin-left: 46px;
     display: block;
     position: relative;
@@ -1423,8 +1464,7 @@ div.focused_table {
 
 .message-edit-feature-group {
     display: inline-flex;
-    margin-left: 10px;
-    margin-bottom: -5px;
+    margin: -10px auto -5px 10px;
     align-items: baseline;
 }
 
@@ -1436,7 +1476,6 @@ div.focused_table {
         margin: 0;
         padding: 0 10px;
         line-height: 17px;
-        font-size: 14px;
     }
 }
 
@@ -1448,10 +1487,7 @@ div.focused_table {
         display: inline-block;
         padding: 0 3px;
         vertical-align: baseline;
-
         line-height: 0px;
-        font-size: 14px;
-
         box-shadow: none;
     }
 }
@@ -1589,6 +1625,10 @@ div.focused_table {
     &:hover {
         color: hsl(0, 0%, 0%);
     }
+}
+
+.deactivated-pill {
+    background-color: hsl(0, 86%, 86%) !important;
 }
 
 #message_view_header {
@@ -1800,7 +1840,7 @@ div.focused_table {
         padding-right: 20px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans 3";
+        font-family: "Source Sans 3", sans-serif;
         font-weight: 300;
         line-height: $header_height;
     }
@@ -1933,7 +1973,7 @@ div.focused_table {
             top: -3px;
         }
 
-        .dropdown-toggle,
+        .dropdown-toggle:hover,
         li.active .dropdown-toggle:hover {
             opacity: 1;
         }
@@ -1997,7 +2037,9 @@ div.focused_table {
     left: auto;
     right: 0;
     top: 30px;
-    min-width: 180px;
+    /* Match the width of the right sidebar so that we don't have
+       the presence dots distracting you when looking at this. */
+    min-width: 240px;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
     &::after {
@@ -2098,10 +2140,6 @@ nav {
     }
 }
 
-.modal-bg {
-    background-color: hsl(0, 0%, 98%);
-}
-
 div.floating_recipient {
     border-collapse: separate;
     width: 100%;
@@ -2118,12 +2156,12 @@ div.floating_recipient {
 }
 
 .operator_value {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
     color: hsl(353, 70%, 65%);
 }
 
 .operator {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 #loading_older_messages_indicator,
@@ -2166,6 +2204,11 @@ div.floating_recipient {
 .table-striped thead th {
     background-color: hsl(0, 0%, 27%);
     color: hsl(0, 0%, 100%);
+}
+
+#user-checkboxes-simplebar-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 #user-checkboxes {
@@ -2261,25 +2304,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .topic_move_spinner,
-#do_delete_message_spinner {
+#confirm_dialog_spinner {
     margin: 0 auto;
-}
-
-.modal {
-    overflow: hidden;
-    margin-top: 0;
-    top: 5%;
-    /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
-       so avoid the outline it causes */
-    outline: 0;
-
-    form {
-        margin-bottom: 0;
-    }
-}
-
-.modal-body {
-    max-height: 60vh;
 }
 
 #invitee_emails {
@@ -2474,13 +2500,22 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
-#message_edit_form {
+.message_edit_form {
     margin-bottom: 10px;
     cursor: default;
 
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
+
+        .message-control-link {
+            position: relative;
+            top: -1px;
+        }
+
+        .compose_gif_icon {
+            top: 6px;
+        }
     }
 
     textarea {
@@ -2623,6 +2658,33 @@ select.inline_select_topic_edit {
     display: none;
 }
 
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0, 0%, 67%);
+    }
+
+    .overlay-content {
+        width: 440px;
+        border-radius: 4px;
+    }
+
+    .about-zulip-logo {
+        text-align: center;
+        margin: 30px;
+    }
+
+    .about-zulip-logo img {
+        height: 40px;
+    }
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,
@@ -2732,7 +2794,7 @@ select.inline_select_topic_edit {
 
                 height: 100%;
                 padding-left: 10px;
-                width: 250px;
+                width: $left_sidebar_width;
             }
         }
     }

@@ -78,6 +78,30 @@
         }
     }
 
+    /* Since markdown doesn't make it easy to put an HTML element around a
+       markdown table, we instead have a model of putting an empty div
+       before it to configure a specific table's styling. */
+    div.centered_table + table td:not(:first-child),
+    div.centered_table + table th {
+        text-align: center;
+    }
+
+    .legend_symbol {
+        position: absolute;
+        left: calc(40px);
+        transform: translateX(-50%);
+
+        /* Adjust for 50px closed left sidebar state */
+        @media (width <= 800px) {
+            left: calc(5% + 50px);
+        }
+    }
+
+    .legend_label {
+        position: relative;
+        left: calc(30px);
+    }
+
     ul,
     ol {
         margin-left: 30px;
@@ -242,14 +266,14 @@
     .tip::before {
         display: inline;
         content: "\f0eb   Tip:  ";
-        font-family: FontAwesome, Yantramanav, "Source Sans 3";
+        font-family: FontAwesome, "Source Sans 3", sans-serif;
         font-weight: 600;
     }
 
     .keyboard_tip::before {
         display: inline;
-        content: "\f11c   Keyboard Shortcut:  ";
-        font-family: FontAwesome, Yantramanav, "Source Sans 3";
+        content: "\f11c   Keyboard shortcut:  ";
+        font-family: FontAwesome, "Source Sans 3", sans-serif;
         font-weight: 600;
     }
 
@@ -299,7 +323,7 @@
 
     code {
         /* Copied from rendered_markdown.css */
-        font-size: 0.857em;
+        font-size: 0.825em;
         unicode-bidi: embed;
         direction: ltr;
         white-space: initial;

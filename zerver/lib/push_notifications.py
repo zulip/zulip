@@ -13,7 +13,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
@@ -31,7 +31,7 @@ from zerver.models import (
     get_display_recipient,
     get_user_profile_by_id,
     receives_offline_push_notifications,
-    receives_online_notifications,
+    receives_online_push_notifications,
 )
 
 if TYPE_CHECKING:
@@ -852,7 +852,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     user_profile = get_user_profile_by_id(user_profile_id)
     if not (
         receives_offline_push_notifications(user_profile)
-        or receives_online_notifications(user_profile)
+        or receives_online_push_notifications(user_profile)
     ):
         return
 
@@ -893,6 +893,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
                 "Could not find UserMessage with message_id %s and user_id %s",
                 missed_message["message_id"],
                 user_profile_id,
+                exc_info=True,
             )
             return
 

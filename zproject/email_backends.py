@@ -1,3 +1,4 @@
+# https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
 from typing import List

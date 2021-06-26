@@ -257,9 +257,25 @@ ul {
 
 #user-profile-modal {
     border-radius: 4px;
+    height: 60vh;
+    #tab-toggle {
+        font-weight: initial;
+        margin: 6px 4px 6px 0;
+        width: 100%;
+        .tab-switcher {
+            margin-left: 2px;
+        }
+    }
+    .name {
+        color: hsl(0, 0%, 20%);
+        display: inline-block;
+        min-width: 120px;
+        font-weight: 600;
+    }
 
     #exit-sign {
         font-size: 1.5rem;
+        line-height: 1;
     }
 
     #avatar {
@@ -276,38 +292,29 @@ ul {
             outline: 9px solid hsl(0, 0%, 100%);
         }
     }
+    #name {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        max-width: 100%;
+        text-align: center;
+        line-height: 30px;
 
+        #edit-button {
+            font-size: 18px;
+            margin-left: 10px;
+        }
+    }
     #default-section {
-        font-size: 15px;
         display: inline-block;
         vertical-align: top;
 
         .default-field {
             margin-bottom: 5px;
-
-            .name {
-                color: hsl(0, 0%, 20%);
-                display: inline-block;
-                min-width: 120px;
-                font-weight: 600;
-            }
         }
 
         #user-type {
             margin-bottom: 15px;
-        }
-
-        #name {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            max-width: 300px;
-            line-height: 30px;
-
-            #edit-button {
-                font-size: 18px;
-                margin-left: 10px;
-            }
         }
     }
 
@@ -325,10 +332,6 @@ ul {
             .name {
                 color: hsl(0, 0%, 20%);
                 font-weight: 600;
-            }
-
-            .value {
-                font-size: 15px;
             }
 
             &[data-type="2"] .value {
@@ -349,6 +352,62 @@ ul {
             padding-bottom: 10px;
             padding-top: 4px;
             margin: 10px 0;
+        }
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: 20px;
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list {
+        position: relative;
+        border: 1px solid hsl(0, 0%, 83%);
+        border-radius: 4px;
+        overflow: auto;
+        text-align: left;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .user-stream-list,
+        .user-group-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+
+            tr {
+                border-bottom: 1px solid hsl(0, 0%, 87%);
+
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                td {
+                    padding: 4px 0;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+                }
+            }
+
+            tbody:empty::after,
+            &:empty::after {
+                content: attr(data-empty);
+                display: block;
+
+                text-align: center;
+                color: hsl(0, 0%, 67%);
+            }
+
+            &:empty {
+                display: block;
+                padding: 5px;
+            }
         }
     }
 }
@@ -449,29 +508,110 @@ ul {
     }
 }
 
+.popover.top .arrow::after {
+    left: -1px;
+}
+
+#giphy_grid_in_popover {
+    /* 300px of GIPHY grid + 5px is the extra gutter space
+     * between gif columns. */
+    width: 305px;
+    border: 0;
+    padding: 0;
+
+    .giphy-gif {
+        cursor: pointer;
+    }
+
+    .giphy-gif-img:focus {
+        /* Red outline for clear visibility
+         * of which image is in focus.
+         */
+        outline-color: hsl(0, 100%, 50%);
+    }
+
+    .search-box {
+        display: flex;
+        position: sticky;
+        padding: 2px;
+
+        input {
+            flex-grow: 1;
+            margin: 5px;
+            border-radius: 3px;
+        }
+
+        .clear_search_button {
+            position: absolute;
+            top: 5px;
+            right: 3px;
+            font-size: 16px;
+
+            &:focus {
+                .fa-remove {
+                    outline: 2px solid hsl(215, 47%, 50%);
+                }
+            }
+        }
+    }
+
+    .popover-content {
+        overflow: auto;
+        height: 200px;
+        margin: 2px;
+    }
+
+    .popover-footer {
+        text-align: center;
+        background-color: hsl(0, 0%, 0%);
+        border-radius: 0 0 6px 6px;
+
+        img {
+            width: 120px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    #giphy_grid_in_popover {
+        position: static;
+        top: 0 !important;
+        left: 0 !important;
+    }
+}
+
 .user_info_status_text {
     opacity: 0.8;
     padding: 2px 0 3px 0;
 }
 
-#topic_stream_edit_form_error {
-    background-color: hsla(0, 70%, 87%, 0.7);
-    color: hsl(0, 100%, 50%);
-}
-
-.topic_stream_edit_header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-
-    #select_stream_id {
-        border-left: 0;
-        padding-left: 0;
-        border-radius: 3px;
-        margin: 0 5px 5px -10px;
-        text-indent: 10px;
+#move_topic_modal {
+    /* Ensure that the dropdown can overflow the modal. */
+    overflow: visible;
+    .modal-body {
+        overflow: visible;
     }
-    .inline_topic_edit {
-        margin-left: 5px !important;
+
+    .stream_header_colorblock {
+        margin-bottom: 20px;
+    }
+
+    #topic_stream_edit_form_error {
+        background-color: hsla(0, 70%, 87%, 0.7);
+        color: hsl(0, 100%, 50%);
+    }
+
+    .topic_stream_edit_header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+
+        #select_stream_id {
+            border-left: 0;
+            padding-left: 0;
+            border-radius: 3px;
+            margin: 0 5px 5px -10px;
+            text-indent: 10px;
+        }
     }
 }

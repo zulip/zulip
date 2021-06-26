@@ -1,0 +1,26 @@
+<div id="set_user_status_modal" class="modal modal-bg hide fade new-style" tabindex="-1" role="dialog" aria-labelledby="set_user_status_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close close-modal-btn" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="set_user_status_modal_label">{{t "Set status" }} </h3>
+    </div>
+    <div class="modal-body">
+        <label for="user_status">{{t "Status message" }}</label>
+        <input type="text" class="user_status" maxlength="60" />
+        <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
+            <i class="fa fa-remove" aria-hidden="true"></i>
+        </button>
+        <div class="user-status-options">
+            <button type="button" class="button no-style user-status-value">{{t "In a meeting" }}</button>
+            <button type="button" class="button no-style user-status-value">{{t "Commuting" }}</button>
+            <button type="button" class="button no-style user-status-value">{{t "Out sick" }}</button>
+            <button type="button" class="button no-style user-status-value">{{t "Vacationing" }}</button>
+            <button type="button" class="button no-style user-status-value">{{t "Working remotely" }}</button>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="button rounded close-modal-btn" data-dismiss="modal">{{t "Cancel" }}</button>
+        <button class="button rounded sea-green set_user_status">
+            {{t "Save" }}
+        </button>
+    </div>
+</div>

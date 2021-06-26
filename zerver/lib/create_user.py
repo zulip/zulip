@@ -7,15 +7,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.hotspots import copy_hotspots
 from zerver.lib.upload import copy_avatar
 from zerver.lib.utils import generate_api_key
-from zerver.models import (
-    PreregistrationUser,
-    Realm,
-    Recipient,
-    Stream,
-    Subscription,
-    UserProfile,
-    get_fake_email_domain,
-)
+from zerver.models import Realm, Recipient, Stream, Subscription, UserProfile, get_fake_email_domain
 
 
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
@@ -55,16 +47,6 @@ def get_display_email_address(user_profile: UserProfile) -> str:
     if not user_profile.email_address_is_realm_public():
         return f"user{user_profile.id}@{get_fake_email_domain(user_profile.realm)}"
     return user_profile.delivery_email
-
-
-def get_role_for_new_user(invited_as: int, realm_creation: bool = False) -> int:
-    if realm_creation or invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]:
-        return UserProfile.ROLE_REALM_OWNER
-    elif invited_as == PreregistrationUser.INVITE_AS["REALM_ADMIN"]:
-        return UserProfile.ROLE_REALM_ADMINISTRATOR
-    elif invited_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
-        return UserProfile.ROLE_GUEST
-    return UserProfile.ROLE_MEMBER
 
 
 # create_user_profile is based on Django's User.objects.create_user,

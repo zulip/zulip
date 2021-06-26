@@ -1,35 +1,84 @@
 # Version history
 
-All notable changes to the Zulip server are documented in this file.
+This page the release history for the Zulip server.  See also the
+[Zulip release lifecycle](../overview/release-lifecycle.md).
+
+## Zulip 5.x series
+
+### 5.0 -- unreleased
+
+This section is an incomplete draft of the release notes for the next
+major release, and is only updated occasionally.  See the [commit
+log][commit-log] for an up-to-date list of raw changes.
+
+#### Upgrade notes for 5.0
+
+- None yet.
 
 ## Zulip 4.x series
 
-### 4.0 -- Unreleased
+### 4.3 -- 2021-06-02
 
-This section lists notable unreleased changes; it is generally updated
-in bursts.
+- Fixed exception when upgrading older servers with the
+  `JITSI_SERVER_URL` setting set to `None` to disable Jitsi.
+- Fixed GIPHY integration dropdown appearing when the server
+  doesn't have a GIPHY API key configured.
+- The GIPHY API library is no longer loaded for users who are not
+  actively using the GIPHY integration.
+- Improved formatting for Grafana integration.
+- Fixed previews of Dropbox image links.
+- Fixed support for storing avatars/emoji in non-S3 upload backends.
+- Fixed an overly strict database constaint for code playgrounds.
+- Tagged user status strings for translation.
+- Updated translation data from Transifex.
+
+### 4.2 -- 2021-05-13
+
+- Fixed exception in purge-old-deployments when upgrading on
+  a system that has never upgraded using Git.
+- Fixed installation from a directory readable only by root.
+
+### 4.1 -- 2021-05-13
+
+- Fixed exception upgrading to the 4.x series from older releases.
+
+### 4.0 -- 2021-05-13
 
 #### Highlights
 
-- Added copy-to-clipboard button on code blocks, making it convenient
-  to extract code for external use. Code blocks now have a "View in
-  playground" button for certain programming languages.
-- Recent topics is no longer beta, no longer an overlay, and is now
-  the default landing view. The previous default, "All messages", is
-  still available, and the default view can now be configured via
-  "Display settings".
+- Code blocks now have a copy-to-clipboard button and can be
+  integrated with external code playgrounds, making it convenient to
+  work with code while discussing it in Zulip.
+- Added a new organization [Moderator role][roles-and-permissions].
+  Many permissions settings for sensitive features now support only
+  allowing moderators and above to use the feature.
+- Added a native Giphy integration for sending animated GIFs.
+- Added support for muting another user.
+- Recent topics is no longer beta, no longer an overlay, supports
+  composing messages, and is now the default view. The previous
+  default view, "All messages", is still available, and the default
+  view can now be configured via "Display settings".
 - Completed API documentation for Zulip's real-time events system.  It
   is now possible to write a decent Zulip client with minimal
   interaction with the Zulip server development team.
 - Added new organization settings: wildcard mention policy.
-- Integrated [smokescreen][smokescreen], an outgoing proxy designed to
+- Integrated [Smokescreen][smokescreen], an outgoing proxy designed to
   help protect against SSRF attacks; outgoing HTTP requests that can
   be triggered by end users are routed through this service.
   We recommend that self-hosted installations configure it.
-- Links to issues or pull requests on GitHub are now automatically
-  converted to have shorter labels for more convenient reading.
-- Over 20 changes to the [Zulip API](https://zulip.com/api/changelog),
-  largely to support new settings or simplify API documentation.
+- This release contains more than 30 independent changes to the [Zulip
+  API](https://zulip.com/api/changelog), largely to support new
+  features or make the API (and thus its documentation) clearer and
+  easier for clients to implement.  Other new API features support
+  better error handling for the mobile and terminal apps.
+- The frontend internationalization library was switched from i18next
+  to FormatJS.
+- The button for replying was redesigned to show the reply recipient
+  and be more obvious to users coming from other chat apps.
+- Added support for moving topics to private streams, and for configuring
+  which roles can move topics between streams.
+
+[roles-and-permissions]: https://zulip.com/help/roles-and-permissions
 
 #### Upgrade notes for 4.0
 
@@ -47,21 +96,36 @@ in bursts.
   [docker-zulip][docker-zulip]), you'll want to manually update the
   `puppet_classes` variable.
 - Zulip's supervisord configuration now lives in `/etc/supervisor/conf.d/zulip/`
-- Consider enabling [smokescreen][smokescreen]
+- Consider enabling [Smokescreen][smokescreen]
 - Private streams can no longer be default streams (i.e. the ones new
   users are automatically added to).
-- We rewrote the template for `/etc/zulip/settings.py` to be more
-  readable.  Installations that have been running for more than a year
-  may want to carefully resync the comments from
-  `/home/zulip/deployments/current/zproject/prod_settings_template.py`.
+- New `scripts/start-server` and `scripts/stop-server` mean that
+  one no longer needs to use `supervisorctl` directly for these tasks.
+- As this is a major release, we recommend [carefully updating the
+  inline documentation in your
+  `/etc/zulip/settings.py`][update-settings-docs].  Notably, we rewrote the
+  template to be better organized and more readable in this release.
+- The web app will now display a warning in the UI if the Zulip server
+  has not been upgraded in more than 18 months.
+  template to be better organized and more readable.
+- The next time users log in to Zulip with their password after
+  upgrading to this release, they will be logged out of all active
+  browser sessions (i.e. the web and desktop apps).  This is a side
+  effect of improved security settings (increasing the minimum entropy
+  used when salting passwords from 71 bits to 128 bits).
+- We've removed the partial Thumbor integration from Zulip. The
+  Thumbor project appears to be dead upstream, and we no longer feel
+  comfortable including it in Zulip from a security perspective. We
+  hope to introduce a fully supported thumbnailing integration in our next
+  major release.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
+[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
 
 #### Full feature changelog
 
-- Community topic editing time limit increased to 3 days for members.
-- Added support for moving topics to private streams.
+- Added new [release lifecycle documentation](../overview/release-lifecycle.md).
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
   data will fascilitate future features showing a log of activity by
@@ -72,16 +136,26 @@ in bursts.
 - Added live update of compose placeholder text when recipients change.
 - Added keyboard navigation for popover menus that were missing it.
 - Added documentation for all [zulip.conf settings][zulip-conf-settings].
-- Added types for all parameters in the API documentation.
 - Added dozens of new notification sound options.
 - Added menu option to unstar all messages in a topic.
+- Added confirmation dialog before unsubscribing from a private stream.
 - Added confirmation dialog before deleting your profile picture.
+- Added types for all parameters in the API documentation.
 - Added API endpoint to fetch user details by email address.
 - Added API endpoint to fetch presence details by user ID.
 - Added new LDAP configuration options for servers hosting multiple organizations.
 - Added new `@**|user_id**` mention syntax intended for use in bots.
-- Updated integrations: NewRelic, Bitbucket, Zabbix.
-- New integrations: JotForm.
+- Added preliminary support for Zulip on Debian Bullseye; this
+  release is expected to support Bullseye without any further changes.
+- Added several useful new management commands, including
+  `change_realm_subdomain` and `delete_user`.
+- Added support for subscribing all members of a user group to a stream.
+- Added support for sms: and tel: links.
+- Community topic editing time limit increased to 3 days for members.
+- New integrations: Freshping, JotForm, Uptime Robot, and a JSON
+  formatter (which is particularly useful when developing a new
+  integration).
+- Updated integrations: ClubHouse, NewRelic, Bitbucket, Zabbix.
 - Improved formatting of GitHub and GitLab integrations.
 - Improved the user experience for multi-user invitations.
 - Improved several rendered-message styling details.
@@ -90,10 +164,19 @@ in bursts.
 - Redesigned the left sidebar menu icons (now `\vdots`, not a chevron).
 - The Zoom integration is now stable (no longer beta).
 - Favicon unread counts are more attractive and support large numbers.
+- Zulip now displays the total number of starred messages in the left
+  sidebar by default; over 20% of users had enabled this setting manually.
 - Presence circles for users are now shown in mention typeahead.
+- Email notifications for new messages are now referred to as a
+  "Message notification email", not a "Missed message email".
+- Zulip now sets List-Unsubscribe headers in outgoing emails with
+  unsubscribe links.
+- Password forms now have a "Show password" widget.
 - Fixed performance issues when creating hundreds of new users in
   quick succession (E.g. at the start of a conference or event).
+- Fixed performance issues in organizations with thousands of online users.
 - Fixed numerous rare exceptions when running Zulip at scale.
+- Fixed several subtle installer bugs.
 - Fixed various UI and accessibility issues in the registration and new
   user invitation flows.
 - Fixed live update and UI bugs with streams being deactivated or renamed.
@@ -104,14 +187,30 @@ in bursts.
 - Fixed a subtle bug with timestamps for messages that take a long
   time to send.
 - Fixed missing horizontal scrollbar for overflowing rendered LaTeX.
+- Fixed visual issues with bottoms areas of both sidebars.
+- Fixed several error handling bugs with outgoing webhooks.
+- Fixed bugs with recipient bar UI for muting and topic editing.
+- Fixed highlighting of adjacent alert words.
+- Fixed many settings API endpoints with unusual string encoding.
+- Fixed wildcard mentions in blockquotes not being treated as silent.
 - Increased size of typeahead box for mentions from 5 to 8.
 - Typeahead now always ranks exact string matches first.
+- Tooltips have been migrated from Bootstrap to TippyJS, and added
+  in many places that previously just had `title` attributes.
+- Zulip now consistently uses the Source Code Pro font for code
+  blocks, rather than varying by operating system.
 - Redesigned "Alert words" settings UI.
+- Linkifiers can now be edited in their settings page.
+- Tables in settings UI now have sticky headers.
+- Confirmation dialogs now consistently use Confirm/Cancel as button labels.
 - Refactored typeahead and emoji components to be shareable with the
   mobile codebase.
-- Replaced the old CasperJS frontend test suite with Puppeteer.
 - Switched to `orjson` for JSON serialization, resulting in better
   performance and more standards-compliant validation.
+- Outgoing webhooks now enforce a 10 second timeout.
+- Image previews in a Zulip message are now unconditionally proxied by
+  Camo to improve privacy, rather than only when the URL was not HTTPS.
+- Replaced the old CasperJS frontend test suite with Puppeteer.
 - Split the previous `api_super_user` permission into
   `can_create_user` and `can_forge_sender` (used for mirroring).
 - Various API endpoints creating objects now return the ID of the
@@ -121,16 +220,21 @@ in bursts.
 - Fixed transparency issues uploading some animated GIFs as custom emoji.
 - Improved positioning logic for inline YouTube previews.
 - Improved performance of several high-throughput queue processors.
+- Improved performance of queries that fetch all active subscribers to
+  a stream or set of streams.
+- Improved performance of sending messages to streams with thousands
+  of subscribers.
 - Upgraded our ancient forked version of bootstrap, on a path towards
   removing the last forked dependencies from the codebase.
 - Upgraded Django to 3.1 (as well as essentially every other dependency).
-- Updated webapp codebase to use many modern ES6 patterns.
+- Updated web app codebase to use many modern ES6 patterns.
 - Upgraded Zulip's core font to Source Sans 3, which supports more languages.
 - Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
 - Reduced the size of Zulip's main JavaScript bundle by removing `moment.js`.
+- Server logs now display the version number for Zulip clients.
 - Simplified logic for responsive UI with different browser sizes.
 - Fixed several subtle bugs in the compose and message-edit UIs.
-  steady-state load for an idle Zulip server.
+- Reduced the steady-state load for an idle Zulip server.
 - Removed HipChat import tool, because HipChat has been long EOL.
 - Reformatted the Python codebase with Black, and the frontend
   codebase with Prettier.
@@ -139,6 +243,45 @@ in bursts.
 [zulip-conf-settings]: ../production/deployment.html#system-and-deployment-configuration
 
 ## Zulip 3.x series
+
+### 3.4 -- April 14, 2021
+
+- CVE-2021-30487: Prevent administrators from moving topics to
+  disallowed streams.
+- CVE-2021-30479: Prevent guest user access to `all_public_streams`
+  API.
+- CVE-2021-30478: Prevent API super users from forging messages to
+  other organizations.
+- CVE-2021-30477: Prevent outgoing webhook bots from sending arbitrary
+  messages to any stream.
+- Fixed a potential HTML injection bug in outgoing emails.
+- Fixed Postfix configuration error which would prevent outgoing email
+  to any email address containing `.`, `+`, or starting with `mm`, when
+  configured to use the local Postfix to deliver outgoing email.
+- Fixed a backporting error which caused the `manage.py
+  change_user_role` tool to not work for `admin`, `member`, or `guest` roles.
+- Add support for logout events sent from modern versions of the
+  desktop application.
+- Upgraded minor python dependencies.
+- Minor documentation fixes.
+
+### 3.3 -- December 1, 2020
+
+- Guest users should not be allowed to post to streams marked “Only
+  organization full members can post.”  This flaw has existed since
+  the feature was added in Zulip Server 3.0.
+- Permit outgoing mail from postfix; this resolves a bug introduced in
+  Zulip Server 3.2 which prevented Zulip from sending outgoing mail if
+  the local mail server (used mostly for incoming mail) was also used
+  for outgoing email (`MAIL_HOST='localhost'`).
+- Ensure that the `upgrade-postgres` tool upgrades the cluster’s data
+  to the specific PostgreSQL version requested; this resolves a bug
+  where, now that PostgreSQL 13 has been released, `upgrade-postgres`
+  would attempt to upgrade to that version and not PostgreSQL 12.
+- Replace the impenetrably-named `./manage.py knight` with
+  `./manage.py change_user_role`, and extend it to support
+  “Organization owner” roles.
+- Handle realm emojis that have been manually deleted more gracefully.
 
 ### 3.2 -- September 15, 2020
 
@@ -596,10 +739,10 @@ lose the setting and need to re-enable it.
   verify whether your configuration is working correctly.
 - The Zulip web and desktop apps have been converted to directly count
   all unread messages, replacing an old system that just counted the
-  (recent) messages fully fetched by the webapp.  This one-time
+  (recent) messages fully fetched by the web app.  This one-time
   transition may cause some users to notice old messages that were
   sent months or years ago "just became unread".  What actually
-  happened is the user never read these messages, and the Zulip webapp
+  happened is the user never read these messages, and the Zulip web app
   was not displaying that.  Generally, the fix is for users to simply
   mark those messages as read as usual.
 - Previous versions of Zulip's installer would generate the secrets
@@ -625,7 +768,7 @@ lose the setting and need to re-enable it.
 
 #### Full feature changelog
 - Added sortable columns to all tables in settings pages.
-- Added webapp support for self-service public data exports.
+- Added web app support for self-service public data exports.
 - Added 'e' keyboard shortcut for editing currently selected message.
 - Added support for unstarring all starred messages.
 - Added support for using `|` as an OR operator in sidebar search features.
@@ -643,7 +786,7 @@ lose the setting and need to re-enable it.
   convenient to link to profiles on GitHub, Twitter, and other tools.
 - Added support for choosing which email address to use in GitHub auth.
 - Added a new setting to control whether inactive streams are demoted.
-- Added webapp support for new desktop app features: inline reply
+- Added web app support for new desktop app features: inline reply
   from notifications, and detecting user presence from OS APIs.
 - Added Markdown support for headings, implemented using `# heading`,
   and removed several other unnecessary differences from CommonMark.
@@ -738,7 +881,7 @@ lose the setting and need to re-enable it.
 - Fixed guest users seeing UI widgets they can't use.
 - Fixed several issues with click handlers incorrectly closing compose.
 - Fixed buggy behavior of /me messages not ending with a paragraph.
-- Fixed several major UI issues with the mobile webapp.
+- Fixed several major UI issues with the mobile web app.
 - Fixed HTML styling when copy-pasting content out of Zulip's night theme.
 - Fixed obscure traceback with Virtualenv 16.0.0 unexpectedly installed.
 - Added a new visual tool for testing webhook integrations.
@@ -1038,7 +1181,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed several bugs with progress bars when uploading files.
 - Fixed several bugs in `manage.py register_server`.
 - Fixed several minor real-time sync issues with stream settings.
-- Fixed some tricky corner cases with the webapp's caching model and
+- Fixed some tricky corner cases with the web app's caching model and
   narrowing to the first unread message.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.
@@ -1058,7 +1201,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Upgraded to modern versions of most of our stale dependencies.
 - Updated our CSS toolchain to support hot module reloading.
 - Updated numerous pages within the /help/ site.
-- We no longer require re-authing to signup after trying to log in with
+- We no longer require re-authing to sign up after trying to log in with
   an OAuth authentication backend (GitHub or Google).
 - Made major improvements to the Help Center.
 - Improved system for configuring the S3 file uploads backend.
@@ -2009,7 +2152,8 @@ Zulip apps.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-* [Draft upgrade notes for 4.0](#upgrade-notes-for-4-0)
+* [Draft upgrade notes for 5.0](#upgrade-notes-for-5-0)
+* [Upgrade notes for 4.0](#upgrade-notes-for-4-0)
 * [Upgrade notes for 3.0](#upgrade-notes-for-3-0)
 * [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
 * [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)
@@ -2019,3 +2163,5 @@ easily read them all when upgrading across multiple releases.
 * [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
+[commit-log]: https://github.com/zulip/zulip/commits/master
+[latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html

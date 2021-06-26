@@ -10,3 +10,7 @@
 {{ rendered_input }}
 
 {% endblock %}
+
+{% block manage_preferences %}
+<p><a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from marketing emails") }}</a></p>
+{% endblock %}

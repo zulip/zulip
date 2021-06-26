@@ -2,27 +2,35 @@ import datetime
 import hashlib
 import logging
 import os
+import smtplib
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
+import backoff
 import orjson
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
+from django.core.mail.backends.base import BaseEmailBackend
+from django.core.mail.backends.smtp import EmailBackend
+from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
 from django.template import loader
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 
-from confirmation.models import generate_key
+from confirmation.models import generate_key, one_click_unsubscribe_link
 from scripts.setup.inline_email_css import inline_template
 from zerver.lib.logging_util import log_to_file
 from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
+from zproject.email_backends import EmailLogBackEnd, get_forward_address
+
+MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
 
@@ -148,8 +156,25 @@ def build_email(
     if from_address == FromAddress.support_placeholder:
         from_address = FromAddress.SUPPORT
 
-    # Set the "From" that is displayed separately from the envelope-from
+    # Set the "From" that is displayed separately from the envelope-from.
     extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
+    # Check ASCII encoding length.  Amazon SES rejects emails with
+    # From names longer than 320 characters (which appears to be a
+    # misinterpretation of the RFC); in that case we drop the name
+    # from the From line, under the theory that it's better to send
+    # the email with a simplified From field than not.
+    if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
+        extra_headers["From"] = str(Address(addr_spec=from_address))
+
+    # If we have an unsubscribe link for this email, configure it for
+    # "Unsubscribe" buttons in email clients via the List-Unsubscribe header.
+    #
+    # Note that Microsoft ignores URLs in List-Unsubscribe headers, as
+    # they only support the alternative `mailto:` format, which we
+    # have not implemented.
+    if "unsubscribe_link" in context:
+        extra_headers["List-Unsubscribe"] = f"<{context['unsubscribe_link']}>"
+        extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
     reply_to = None
     if reply_to_email is not None:
@@ -199,6 +224,8 @@ def send_email(
     language: Optional[str] = None,
     context: Dict[str, Any] = {},
     realm: Optional[Realm] = None,
+    connection: Optional[BaseEmailBackend] = None,
+    dry_run: bool = False,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -214,13 +241,67 @@ def send_email(
     template = template_prefix.split("/")[-1]
     logger.info("Sending %s email to %s", template, mail.to)
 
-    if mail.send() == 0:
-        logger.error("Error sending %s email to %s", template, mail.to)
+    if dry_run:
+        print(mail.message().get_payload()[0])
+        return
+
+    if connection is None:
+        connection = get_connection()
+
+    try:
+        # This will call .open() for us, which is a no-op if it's already open;
+        # it will only call .close() if it was not open to begin with
+        if connection.send_messages([mail]) == 0:
+            logger.error("Unknown error sending %s email to %s", template, mail.to)
+            raise EmailNotDeliveredException
+    except smtplib.SMTPResponseException as e:
+        logger.exception(
+            "Error sending %s email to %s with error code %s: %s",
+            template,
+            mail.to,
+            e.smtp_code,
+            e.smtp_error,
+            stack_info=True,
+        )
+        raise EmailNotDeliveredException
+    except smtplib.SMTPException as e:
+        logger.exception(
+            "Error sending %s email to %s: %s", template, mail.to, str(e), stack_info=True
+        )
         raise EmailNotDeliveredException
 
 
-def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
-    send_email(**dict(email_dict))
+@backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
+def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
+    if not connection:
+        connection = get_connection()
+
+    if connection.open():
+        # If it's a new connection, no need to no-op to check connectivity
+        return connection
+
+    if isinstance(connection, EmailLogBackEnd) and not get_forward_address():
+        # With the development environment backend and without a
+        # configured forwarding address, we don't actually send emails.
+        #
+        # As a result, the connection cannot be closed by the server
+        # (as there is none), and `connection.noop` is not
+        # implemented, so we need to return the connection early.
+        return connection
+
+    # No-op to ensure that we don't return a connection that has been
+    # closed by the mail server.
+    if isinstance(connection, EmailBackend):
+        try:
+            status = connection.connection.noop()[0]
+        except Exception:
+            status = -1
+        if status != 250:
+            # Close and connect again.
+            connection.close()
+            connection.open()
+
+    return connection
 
 
 def send_future_email(
@@ -346,14 +427,14 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
         del job["to_user_id"]
 
 
-def deliver_email(email: ScheduledEmail) -> None:
+def deliver_scheduled_emails(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
         # This state doesn't make sense, so something must be mutating,
         # or in the process of deleting, the object. We assume it will bring
         # things to a correct state, and we just do nothing except logging this event.
-        logger.warning("ScheduledEmail id %s has empty users and address attributes.", email.id)
+        logger.error("ScheduledEmail id %s has empty users and address attributes.", email.id)
         return
 
     if user_ids:
@@ -378,7 +459,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
         markdown_template_path="/path/to/markdown/file.md",
-        subject="Email Subject",
+        subject="Email subject",
         from_name="Sender Name")
     )
     """
@@ -401,7 +482,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     with open(plain_text_template_path, "w") as f:
         f.write(parsed_email_template.get_payload())
 
-    from zerver.templatetags.app_filters import render_markdown_path
+    from zerver.lib.templates import render_markdown_path
 
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 
@@ -425,6 +506,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
         context = {
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
+            "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
         send_email(
             email_id,
@@ -435,4 +517,8 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
                 options.get("from_name"), parsed_email_template.get("from"), "from_name"
             ),
             context=context,
+            dry_run=options["dry_run"],
         )
+
+        if options["dry_run"]:
+            break

@@ -4,20 +4,13 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
-
-mock_esm("../../static/js/padded_widget", {
-    update_padding: () => {},
-});
-
-mock_esm("../../static/js/message_viewport", {
-    height: () => 550,
-});
+const padded_widget = mock_esm("../../static/js/padded_widget");
+const message_viewport = mock_esm("../../static/js/message_viewport");
 
 const people = zrequire("people");
 const {BuddyList} = zrequire("buddy_list");
@@ -29,7 +22,7 @@ function init_simulated_scrolling() {
         scrollHeight: 0,
     };
 
-    $("#buddy_list_wrapper")[0] = elem;
+    $.create("#buddy_list_wrapper", {children: [elem]});
 
     $("#buddy_list_wrapper_padding").set_height(0);
 
@@ -60,7 +53,7 @@ run_test("get_items", () => {
     assert.deepEqual(items, [alice_li]);
 });
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
@@ -76,6 +69,9 @@ run_test("basics", (override) => {
         return "html-stub";
     });
 
+    override(message_viewport, "height", () => 550);
+    override(padded_widget, "update_padding", () => {});
+
     let appended;
     $("#user_presences").append = (html) => {
         assert.equal(html, "html-stub");
@@ -85,7 +81,7 @@ run_test("basics", (override) => {
     buddy_list.populate({
         keys: [alice.user_id],
     });
-    assert(appended);
+    assert.ok(appended);
 
     const alice_li = {length: 1};
 
@@ -102,7 +98,7 @@ run_test("basics", (override) => {
     assert.equal(li, alice_li);
 });
 
-run_test("big_list", (override) => {
+run_test("big_list", ({override}) => {
     const buddy_list = new BuddyList();
     const elem = init_simulated_scrolling();
 
@@ -114,6 +110,7 @@ run_test("big_list", (override) => {
         elem.scrollHeight += 100;
         chunks_inserted += 1;
     });
+    override(message_viewport, "height", () => 550);
 
     // We will have more than enough users, but still
     // only do 6 chunks of data.
@@ -137,7 +134,7 @@ run_test("big_list", (override) => {
     assert.equal(chunks_inserted, 6);
 });
 
-run_test("force_render", (override) => {
+run_test("force_render", ({override}) => {
     const buddy_list = new BuddyList();
     buddy_list.render_count = 50;
 
@@ -159,7 +156,7 @@ run_test("force_render", (override) => {
     });
 });
 
-run_test("find_li w/force_render", (override) => {
+run_test("find_li w/force_render", ({override}) => {
     const buddy_list = new BuddyList();
 
     // If we call find_li w/force_render set, and the
@@ -186,7 +183,7 @@ run_test("find_li w/force_render", (override) => {
         key,
     });
     assert.equal(empty_li, stub_li);
-    assert(!shown);
+    assert.ok(!shown);
 
     const li = buddy_list.find_li({
         key,
@@ -194,10 +191,10 @@ run_test("find_li w/force_render", (override) => {
     });
 
     assert.equal(li, stub_li);
-    assert(shown);
+    assert.ok(shown);
 });
 
-run_test("find_li w/bad key", (override) => {
+run_test("find_li w/bad key", ({override}) => {
     const buddy_list = new BuddyList();
     override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
@@ -209,9 +206,11 @@ run_test("find_li w/bad key", (override) => {
     assert.deepEqual(undefined_li, []);
 });
 
-run_test("scrolling", (override) => {
+run_test("scrolling", ({override}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
+
+    override(message_viewport, "height", () => 550);
 
     buddy_list.populate({
         keys: [],
@@ -223,10 +222,10 @@ run_test("scrolling", (override) => {
         tried_to_fill = true;
     });
 
-    assert(!tried_to_fill);
+    assert.ok(!tried_to_fill);
 
     buddy_list.start_scroll_handler();
     $(buddy_list.scroll_container_sel).trigger("scroll");
 
-    assert(tried_to_fill);
+    assert.ok(tried_to_fill);
 });

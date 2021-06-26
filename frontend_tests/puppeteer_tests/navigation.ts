@@ -36,6 +36,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
     await page.click(settings_selector);
 
     await page.waitForSelector("#settings_page", {visible: true});
+    await page.waitForFunction(() => location.href.includes("/#settings/")); // eslint-disable-line no-undef
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
@@ -70,7 +71,7 @@ async function test_reload_hash(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
 
     const page_load_time = await page.evaluate(() => zulip_test.page_params.page_load_time);
-    assert(page_load_time > initial_page_load_time, "Page not reloaded.");
+    assert.ok(page_load_time > initial_page_load_time, "Page not reloaded.");
 
     const hash = await page.evaluate(() => window.location.hash);
     assert.strictEqual(hash, initial_hash, "Hash not preserved.");

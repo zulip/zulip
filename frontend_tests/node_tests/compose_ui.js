@@ -4,12 +4,10 @@ const {strict: assert} = require("assert");
 
 const autosize = require("autosize");
 
-const {i18n} = require("../zjsunit/i18n");
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {$t} = require("../zjsunit/i18n");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-
-mock_cjs("jquery", $);
 
 set_global("document", {
     execCommand() {
@@ -81,7 +79,7 @@ function make_textbox(s) {
     return widget;
 }
 
-run_test("autosize_textarea", (override) => {
+run_test("autosize_textarea", ({override}) => {
     const textarea_autosized = {};
 
     override(autosize, "update", (textarea) => {
@@ -93,7 +91,7 @@ run_test("autosize_textarea", (override) => {
     const container = "container-stub";
     compose_ui.autosize_textarea(container);
     assert.equal(textarea_autosized.textarea, container);
-    assert(textarea_autosized.autosized);
+    assert.ok(textarea_autosized.autosized);
 });
 
 run_test("insert_syntax_and_focus", () => {
@@ -108,7 +106,7 @@ run_test("insert_syntax_and_focus", () => {
     compose_ui.insert_syntax_and_focus(":octopus:");
     assert.equal($("#compose-textarea").caret(), 4);
     assert.equal($("#compose-textarea").val(), "xyz :octopus: ");
-    assert($("#compose-textarea").is_focused());
+    assert.ok($("#compose-textarea").is_focused());
 });
 
 run_test("smart_insert", () => {
@@ -119,27 +117,27 @@ run_test("smart_insert", () => {
     assert.equal(textbox.insert_pos, 4);
     assert.equal(textbox.insert_text, " :smile: ");
     assert.equal(textbox.val(), "abc :smile: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":airplane:");
     assert.equal(textbox.insert_text, ":airplane: ");
     assert.equal(textbox.val(), "abc :smile: :airplane: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox.caret(0);
     textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":octopus:");
     assert.equal(textbox.insert_text, ":octopus: ");
     assert.equal(textbox.val(), ":octopus: abc :smile: :airplane: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox.caret(textbox.val().length);
     textbox.trigger("blur");
     compose_ui.smart_insert(textbox, ":heart:");
     assert.equal(textbox.insert_text, ":heart: ");
     assert.equal(textbox.val(), ":octopus: abc :smile: :airplane: :heart: ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     // Test handling of spaces for ```quote
     textbox = make_textbox("");
@@ -148,7 +146,7 @@ run_test("smart_insert", () => {
     compose_ui.smart_insert(textbox, "```quote\nquoted message\n```\n");
     assert.equal(textbox.insert_text, "```quote\nquoted message\n```\n");
     assert.equal(textbox.val(), "```quote\nquoted message\n```\n");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox = make_textbox("");
     textbox.caret(0);
@@ -156,7 +154,7 @@ run_test("smart_insert", () => {
     compose_ui.smart_insert(textbox, "[Quoting…]\n");
     assert.equal(textbox.insert_text, "[Quoting…]\n");
     assert.equal(textbox.val(), "[Quoting…]\n");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     textbox = make_textbox("abc");
     textbox.caret(3);
@@ -164,7 +162,7 @@ run_test("smart_insert", () => {
     compose_ui.smart_insert(textbox, " test with space");
     assert.equal(textbox.insert_text, " test with space ");
     assert.equal(textbox.val(), "abc test with space ");
-    assert(textbox.focused);
+    assert.ok(textbox.focused);
 
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
@@ -194,13 +192,19 @@ run_test("compute_placeholder_text", () => {
     };
 
     // Stream narrows
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Compose your message here"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Compose your message here"}),
+    );
 
     opts.stream = "all";
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message #all"));
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
 
     opts.topic = "Test";
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message #all > Test"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message #all > Test"}),
+    );
 
     // PM Narrows
     opts = {
@@ -209,23 +213,32 @@ run_test("compute_placeholder_text", () => {
         topic: "",
         private_message_recipient: "",
     };
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Compose your message here"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Compose your message here"}),
+    );
 
     opts.private_message_recipient = "bob@zulip.com";
     user_status.set_status_text({
         user_id: bob.user_id,
         status_text: "out to lunch",
     });
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Bob (out to lunch)"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message Bob (out to lunch)"}),
+    );
 
     opts.private_message_recipient = "alice@zulip.com";
     user_status.set_status_text({
         user_id: alice.user_id,
         status_text: "",
     });
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Alice"));
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
 
     // Group PM
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Alice, Bob"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message Alice, Bob"}),
+    );
 });

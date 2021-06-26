@@ -12,7 +12,6 @@ Subsystems documentation
    sending-messages
    notifications
    queuing
-   custom-apps
    pointer
    markdown
    caching
@@ -29,13 +28,10 @@ Subsystems documentation
    client
    logging
    typing-indicators
-   users
    django-upgrades
    release-checklist
    api-release-checklist
-   conversion
    input-pills
-   thumbnailing
    presence
    unread_messages
    billing

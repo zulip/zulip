@@ -2,13 +2,18 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
-
 const noop = () => {};
+
+mock_esm("tippy.js", {
+    default: (arg) => {
+        arg._tippy = {setContent: noop};
+        return arg._tippy;
+    },
+});
 
 set_global("document", {});
 
@@ -17,21 +22,21 @@ const common = zrequire("common");
 run_test("basics", () => {
     common.autofocus("#home");
     $.get_initialize_function()();
-    assert($("#home").is_focused());
+    assert.ok($("#home").is_focused());
     $.clear_initialize_function();
 });
 
 run_test("phrase_match", () => {
-    assert(common.phrase_match("tes", "test"));
-    assert(common.phrase_match("Tes", "test"));
-    assert(common.phrase_match("Tes", "Test"));
-    assert(common.phrase_match("tes", "Stream Test"));
+    assert.ok(common.phrase_match("tes", "test"));
+    assert.ok(common.phrase_match("Tes", "test"));
+    assert.ok(common.phrase_match("Tes", "Test"));
+    assert.ok(common.phrase_match("tes", "Stream Test"));
 
-    assert(!common.phrase_match("tests", "test"));
-    assert(!common.phrase_match("tes", "hostess"));
+    assert.ok(!common.phrase_match("tests", "test"));
+    assert.ok(!common.phrase_match("tes", "hostess"));
 });
 
-run_test("copy_data_attribute_value", (override) => {
+run_test("copy_data_attribute_value", ({override}) => {
     const admin_emails_val = "iago@zulip.com";
 
     const input = $.create("input");
@@ -69,12 +74,12 @@ run_test("copy_data_attribute_value", (override) => {
         faded_in = true;
     };
     common.copy_data_attribute_value(elem, "admin-emails");
-    assert(removed);
-    assert(faded_in);
-    assert(faded_out);
+    assert.ok(removed);
+    assert.ok(faded_in);
+    assert.ok(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", (override) => {
+run_test("adjust_mac_shortcuts non-mac", ({override}) => {
     override(common, "has_mac_keyboard", () => false);
 
     // The adjust_mac_shortcuts has a really simple guard
@@ -83,7 +88,7 @@ run_test("adjust_mac_shortcuts non-mac", (override) => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-run_test("adjust_mac_shortcuts mac", (override) => {
+run_test("adjust_mac_shortcuts mac", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -127,4 +132,41 @@ run_test("adjust_mac_shortcuts mac", (override) => {
         assert.equal(test_item.stub.hasClass("mac-cmd-key"), test_item.is_cmd_key);
         assert.equal(test_item.stub.text(), test_item.mac_key);
     }
+});
+
+run_test("show password", () => {
+    const password_selector = "#id_password ~ .password_visibility_toggle";
+
+    $(password_selector)[0] = () => {};
+
+    function set_attribute(type) {
+        $("#id_password").attr("type", type);
+    }
+
+    function check_assertion(type, present_class, absent_class) {
+        assert.equal($("#id_password").attr("type"), type);
+        assert.ok($(password_selector).hasClass(present_class));
+        assert.ok(!$(password_selector).hasClass(absent_class));
+    }
+
+    const ev = {
+        preventDefault: () => {},
+        stopPropagation: () => {},
+    };
+
+    set_attribute("password");
+    common.setup_password_visibility_toggle("#id_password", password_selector);
+
+    const handler = $(password_selector).get_on_handler("click");
+
+    handler(ev);
+    check_assertion("text", "fa-eye", "fa-eye-slash");
+
+    handler(ev);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
+
+    handler(ev);
+
+    common.reset_password_toggle_icons("#id_password", password_selector);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
 });

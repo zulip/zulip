@@ -46,7 +46,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         original_image_key = bucket.Object(path_id + ".original")
         medium_image_key = bucket.Object(path_id + "-medium.png")
 
-        self.assertEqual(len(list(bucket.objects.all())), 3)
+        self.assert_length(list(bucket.objects.all()), 3)
         with open(avatar_disk_path(user), "rb") as f:
             self.assertEqual(image_key.get()["Body"].read(), f.read())
         with open(avatar_disk_path(user, original=True), "rb") as f:
@@ -68,7 +68,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         attachments = Attachment.objects.all().order_by("id")
 
-        self.assertEqual(len(list(bucket.objects.all())), 2)
+        self.assert_length(list(bucket.objects.all()), 2)
         self.assertEqual(bucket.Object(attachments[0].path_id).get()["Body"].read(), b"zulip1!")
         self.assertEqual(bucket.Object(attachments[1].path_id).get()["Body"].read(), b"zulip2!")
 
@@ -93,7 +93,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             transfer_emoji_to_s3(1)
 
-        self.assertEqual(len(list(bucket.objects.all())), 2)
+        self.assert_length(list(bucket.objects.all()), 2)
         original_key = bucket.Object(emoji_path + ".original")
         resized_key = bucket.Object(emoji_path)
 

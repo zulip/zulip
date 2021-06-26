@@ -6,40 +6,29 @@
         </p>
     </li>
 
-    <hr>
+    <hr />
 
-    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
-    <li>
-        <a tabindex="0" class="narrow_to_topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-bullhorn" aria-hidden="true"></i>
-            {{t "Narrow to topic"}}
-        </a>
-    </li>
-
-
-    {{#if can_mute_topic}}
+    {{#unless topic_muted}}
     <li>
         <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
             {{t "Mute topic"}}
         </a>
     </li>
-    {{/if}}
-
-    {{#if can_unmute_topic}}
+    {{else}}
     <li>
         <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell" aria-hidden="true"></i>
             {{t "Unmute topic"}}
         </a>
     </li>
-    {{/if}}
+    {{/unless}}
 
     {{#if has_starred_messages}}
     <li>
         <a href="#" class="sidebar-popover-unstar-all-in-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-star-o" aria-hidden="true"></i>
-            {{#tr this}}Unstar all messages in topic{{/tr}}
+            {{#tr}}Unstar all messages in topic{{/tr}}
         </a>
     </li>
     {{/if}}
@@ -51,10 +40,35 @@
         </a>
     </li>
 
+    <li>
+        <a tabindex="0" class="sidebar-popover-copy-link-to-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-link" aria-hidden="true"></i>
+            {{t "Copy link to topic"}}
+        </a>
+    </li>
+
+    {{#if can_move_topic}}
+    <hr />
+
+    <li>
+        <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-arrows" aria-hidden="true"></i>
+            {{t "Move topic"}}
+        </a>
+    </li>
+    <li>
+        <a tabindex="0" class="sidebar-popover-toggle-resolved" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-check" aria-hidden="true"></i>
+            {{# if topic_is_resolved }}
+            {{t "Mark as unresolved"}}
+            {{else}}
+            {{t "Mark as resolved"}}
+            {{/if}}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if is_realm_admin}}
-
-    <div class="admin-separator">{{#tr this}}ADMIN ACTIONS{{/tr}}</div>
-
     <li>
         <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-trash" aria-hidden="true"></i>
@@ -62,14 +76,4 @@
         </a>
     </li>
     {{/if}}
-
-    {{#if is_realm_admin}}
-    <li>
-        <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-arrows" aria-hidden="true"></i>
-            {{t "Move topic"}}
-        </a>
-    </li>
-    {{/if}}
-
 </ul>

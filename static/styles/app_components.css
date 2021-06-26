@@ -1,4 +1,4 @@
-/* Reusable, object-oriented CSS base components for the Zulip webapp
+/* Reusable, object-oriented CSS base components for the Zulip web app
    (not included in the portico CSS) */
 
 .flex {
@@ -46,6 +46,26 @@
 
 .invisible {
     visibility: hidden;
+}
+
+/*
+Consistent placeholder styling, introduced to allow us to style the
+Reply box like a placeholder.  Chrome uses color to set placeholder,
+while Firefox uses opacity, so we need to set both properties to avoid
+mixed styling.
+
+While we usually prefer opacity for text color in Zulip, there's some
+evidence Edge may have bugs in its handling of placeholder opacity
+CSS: https://github.com/necolas/normalize.css/issues/741
+*/
+.placeholder {
+    color: hsl(0, 0%, 45%);
+    opacity: 1;
+}
+
+textarea::placeholder,
+input::placeholder {
+    @extend .placeholder;
 }
 
 .new-style {
@@ -271,7 +291,7 @@
 }
 
 /* -- unified overlay design component -- */
-.overlay {
+div.overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -347,7 +367,7 @@
         box-shadow: none;
         z-index: 5;
 
-        .user_status_overlay & {
+        #set_user_status_modal & {
             margin-left: -26px;
             right: 0;
             padding-top: 6px;
@@ -392,6 +412,12 @@
         /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
         width: calc(100% - 34px);
         margin-left: 10px;
+    }
+    .input-append .topic-list-filter {
+        /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 36px);
+        margin-left: 11px;
+        margin-bottom: 5px;
     }
 }
 
@@ -439,6 +465,8 @@
 }
 
 .upgrade-tip {
+    width: max-content;
+
     &::before {
         content: "\f135";
     }
@@ -469,11 +497,69 @@
         display: inline;
         margin-right: 8px;
 
-        font-family: FontAwesome, Yantramanav, "Source Sans 3";
+        font-family: FontAwesome;
         font-weight: 600;
     }
 }
 
 .tip::before {
     content: "\f0a2";
+}
+
+/* We are mostly consistent in how we style
+   unread counts, except for starred messages.
+   This is the common section.
+*/
+.unread_count {
+    float: right;
+    padding: 0 4px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+    border-radius: 4px;
+    background-color: hsl(105, 2%, 50%);
+    color: hsl(0, 0%, 100%);
+}
+
+/* Implement the web app's default-hidden convention for alert
+   elements.  Portico pages lack this CSS and thus show them by
+   default. */
+.alert {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+
+    &#organization-status {
+        margin: 20px;
+    }
+
+    &.stream_create_info {
+        margin: 10px 10px 0 10px;
+    }
+
+    .bankruptcy_unread_count {
+        font-weight: 600;
+    }
+}
+
+.white_zulip_icon_without_text {
+    display: inline-block;
+    background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
+    background-size: cover;
+}
+
+.spectator-view {
+    /* Add this class to elements which a
+     * spectator cannot use. */
+    .hidden-for-spectators {
+        display: none !important;
+    }
+
+    .only-visible-for-spectators {
+        display: unset;
+    }
 }

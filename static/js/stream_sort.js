@@ -1,4 +1,5 @@
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 let previous_pinned;
@@ -14,8 +15,8 @@ export function get_streams() {
 }
 
 function compare_function(a, b) {
-    const stream_a = stream_data.get_sub_by_id(a);
-    const stream_b = stream_data.get_sub_by_id(b);
+    const stream_a = sub_store.get(a);
+    const stream_b = sub_store.get(b);
 
     const stream_name_a = stream_a ? stream_a.name : "";
     const stream_name_b = stream_b ? stream_b.name : "";
@@ -23,28 +24,9 @@ function compare_function(a, b) {
     return util.strcmp(stream_name_a, stream_name_b);
 }
 
-function filter_streams_by_search(streams, search_term) {
-    if (search_term === "") {
-        return streams;
-    }
-
-    let search_terms = search_term.toLowerCase().split(",");
-    search_terms = search_terms.map((s) => s.trim());
-
-    const filtered_streams = streams.filter((stream) =>
-        search_terms.some((search_term) => {
-            const lower_stream_name = stream_data.get_sub_by_id(stream).name.toLowerCase();
-            const cands = lower_stream_name.split(" ");
-            cands.push(lower_stream_name);
-            return cands.some((name) => name.startsWith(search_term));
-        }),
-    );
-
-    return filtered_streams;
-}
-
 export function sort_groups(streams, search_term) {
-    streams = filter_streams_by_search(streams, search_term);
+    const stream_id_to_name = (stream) => sub_store.get(stream).name;
+    streams = util.filter_by_word_prefix_match(streams, search_term, stream_id_to_name);
 
     function is_normal(sub) {
         return stream_data.is_active(sub);
@@ -55,7 +37,7 @@ export function sort_groups(streams, search_term) {
     const dormant_streams = [];
 
     for (const stream of streams) {
-        const sub = stream_data.get_sub_by_id(stream);
+        const sub = sub_store.get(stream);
         const pinned = sub.pin_to_top;
         if (pinned) {
             pinned_streams.push(stream);

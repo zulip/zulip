@@ -13,7 +13,7 @@ scalability problems for a team chat tool like Zulip.
 There's a lot of performance-related details in the backend and
 network protocol design that we won't get into here.  The focus of
 this is what one needs to know to correctly implement a Zulip client's
-presence implementation (e.g. webapp, mobile app, terminal client, or
+presence implementation (e.g. web app, mobile app, terminal client, or
 other tool that's intended to represent whether a user is online and
 using Zulip).
 
@@ -23,11 +23,11 @@ requests contains a few parameters.  The most important is "status",
 which had 2 valid values:
 
 * "active" -- this means the user has interacted with the client
-  recently.  We use this for the "green" state in the webapp.
+  recently.  We use this for the "green" state in the web app.
 * "idle" -- the user has not interacted with the client recently.
   This is important for the case where a user left a Zulip tab open on
   their desktop at work and went home for the weekend.  We use this
-  for the "orange" state in the webapp.
+  for the "orange" state in the web app.
 
 The client receives in the response to that request a data set that,
 for each user, contains their status and timestamp that we last heard

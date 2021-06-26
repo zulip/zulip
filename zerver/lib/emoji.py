@@ -3,7 +3,7 @@ import re
 from typing import Optional, Tuple
 
 import orjson
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import JsonableError
@@ -30,7 +30,7 @@ EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
 terminal_symbols = ",.;?!()\\[\\] \"'\\n\\t"  # from composebox_typeahead.js
-emoticon_regex = (
+EMOTICON_RE = (
     f"(?<![^{terminal_symbols}])(?P<emoticon>("
     + ")|(".join(possible_emoticon_regexes)
     + f"))(?![^{terminal_symbols}])"

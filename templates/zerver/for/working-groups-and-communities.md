@@ -46,3 +46,13 @@ Two additional points of note:
   interesting to users that haven’t checked in in a while. Occasional
   interesting digests sent to inactive users is a great way to bring users
   back into the group.
+
+### Public archive.
+
+Allow search engines to index your chat, with a read-only view of your
+public streams. Zulip’s topic-based threading keeps conversations coherent
+and organized, enabling a meaningful archive indexed by search engines.
+
+Currently implemented as an [out-of-tree
+tool](https://github.com/zulip/zulip-archive), though a native feature
+built into the Zulip server is coming soon.

@@ -6,34 +6,38 @@
     </div>
     <div class="modal-body">
         <p>
-            The following is a few of the languages we have started to
-            support or are hoping to support in the near future. We would
-            love help translating; if you're interested in helping, make an
-            account at <a href='https://www.transifex.com/zulip/zulip/'>
-            https://www.transifex.com/zulip/zulip/</a>, and sign up for a
-            language! You can also request any language we don't currently
-            have. It only takes a few hours to translate the most important
-            parts of the app.
+            {{#tr}}
+            A language is marked as 100% translated only if every string in the web, desktop,
+            and mobile apps is translated, including administrative UI and error messages.
+            {{/tr}}
+        </p>
+        <p>
+            {{#tr}}
+                Zulip's translations are contributed by our amazing community of volunteer
+                translators. If you'd like to help, see the
+                <z-link>Zulip translation guidelines</z-link>.
+                {{#*inline "z-link"}}<a target="_blank" href="{{guidelines_link}}">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
         </p>
         <div>
             <table>
-                {{#each page_params.language_list_dbl_col}}
+                {{#each language_list}}
                 <tr>
                     <td>
                         <a class="language" data-code="{{this.first.code}}" data-name="{{this.first.name}}">
                             {{#if this.first.selected}}
-                            <b>{{this.first.percent}}</b>
+                            <b>{{this.first.name_with_percent}}</b>
                             {{else}}
-                            {{this.first.percent}}
+                            {{this.first.name_with_percent}}
                             {{/if}}
                         </a>
                     </td>
                     <td>
                         <a class="language" data-code="{{this.second.code}}" data-name="{{this.second.name}}">
                             {{#if this.second.selected}}
-                            <b>{{this.second.percent}}</b>
+                            <b>{{this.second.name_with_percent}}</b>
                             {{else}}
-                            {{this.second.percent}}
+                            {{this.second.name_with_percent}}
                             {{/if}}
                         </a>
                     </td>

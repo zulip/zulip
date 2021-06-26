@@ -71,7 +71,7 @@ const WHALE = "/static/images/hotspots/whale.svg";
 export function post_hotspot_as_read(hotspot_name) {
     channel.post({
         url: "/json/users/me/hotspots",
-        data: {hotspot: JSON.stringify(hotspot_name)},
+        data: {hotspot: hotspot_name},
         error(err) {
             blueslip.error(err.responseText);
         },

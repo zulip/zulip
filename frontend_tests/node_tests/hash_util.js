@@ -2,11 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
 const ui_report = mock_esm("../../static/js/ui_report", {
     displayed_error: false,
 
@@ -14,7 +12,7 @@ const ui_report = mock_esm("../../static/js/ui_report", {
         ui_report.displayed_error = true;
     },
 });
-set_global("location", {
+const location = set_global("location", {
     protocol: "https:",
     host: "example.com",
     pathname: "/",
@@ -87,6 +85,9 @@ run_test("test_get_hash_category", () => {
     assert.deepEqual(hash_util.get_hash_category("#settings/display-settings"), "settings");
     assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
     assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
+
+    location.hash = "#settings/your-account";
+    assert.deepEqual(hash_util.get_current_hash_category(), "settings");
 });
 
 run_test("test_get_hash_section", () => {
@@ -97,6 +98,40 @@ run_test("test_get_hash_section", () => {
 
     assert.equal(hash_util.get_hash_section("#drafts"), "");
     assert.equal(hash_util.get_hash_section(""), "");
+
+    location.hash = "#settings/your-account";
+    assert.deepEqual(hash_util.get_current_hash_section(), "your-account");
+});
+
+run_test("build_reload_url", () => {
+    location.hash = "#settings/your-account";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fyour-account");
+
+    location.hash = "#test";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=test");
+
+    location.hash = "#";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+
+    location.hash = "";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+});
+
+run_test("test_active_stream", () => {
+    location.hash = "#streams/1/announce";
+    assert.equal(hash_util.active_stream().id, 1);
+    assert.equal(hash_util.active_stream().name, "announce");
+
+    location.hash = "#test/narrow";
+    assert.equal(hash_util.active_stream(), undefined);
+});
+
+run_test("test_is_create_new_stream_narrow", () => {
+    location.hash = "#streams/new";
+    assert.equal(hash_util.is_create_new_stream_narrow(), true);
+
+    location.hash = "#some/random/hash";
+    assert.equal(hash_util.is_create_new_stream_narrow(), false);
 });
 
 run_test("test_parse_narrow", () => {

@@ -54,9 +54,6 @@ PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = (
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
-SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
-SETUP_MESSAGE_USER_PART = " by {user_name}"
-
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
 
 COMMITS_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action} on [{sha}]({url})"
@@ -225,14 +222,6 @@ def get_pull_request_event_message(
     return main_message.rstrip()
 
 
-def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
-    content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
-    if user_name:
-        content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
-    content = f"{content}."
-    return content
-
-
 def get_issue_event_message(
     user_name: str,
     action: str,
@@ -251,7 +240,7 @@ def get_issue_event_message(
         message=message,
         assignee=assignee,
         assignees=assignees,
-        type="Issue",
+        type="issue",
         title=title,
     )
 

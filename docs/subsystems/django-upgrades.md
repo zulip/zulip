@@ -21,7 +21,6 @@ new major versions of Django.  Here are the steps:
 * Look at the pieces of Django code that we've copied and then
   adapted, and confirm whether Django has any updates to the modified
   code we should apply.  Partial list:
-  * SessionMiddleware in `django.contrib.sessions.middleware` (we fork `get_response`).
   * `CursorDebugWrapper`, which we have a modified version of in
     `zerver/lib/db.py`.  See
     [the issue for contributing this upstream](https://github.com/zulip/zulip/issues/974)
@@ -31,3 +30,5 @@ new major versions of Django.  Here are the steps:
   * Our AsyncDjangoHandler class has some code copied from the core
     Django handlers code; look at whether that code was changed in
     Django upstream.
+  * Our `FilteredManagementUtility` in `manage.py`, which forks the
+    management command discovery code.

@@ -13,8 +13,7 @@
                             {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>
                         </button>
-                        <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-toggle="tooltip"
-                          title="{{t 'Email address changes are disabled in this organization.' }}"></i>
+                        <i class="tippy-zulip-tooltip fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-tippy-content="{{t 'Email address changes are disabled in this organization.' }}"></i>
                     </div>
 
                     <div id="change_email_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
@@ -40,7 +39,7 @@
                 {{#if page_params.two_fa_enabled }}
                 <p for="two_factor_auth" class="inline-block title">
                     {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
-                    <a target="_blank" rel="noopener noreferrer" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
+                    <a target="_blank" rel="noopener noreferrer" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Set up two factor authentication' }}">[{{t "Setup" }}]</a>
                 </p>
                 {{/if}}
 
@@ -53,9 +52,9 @@
                                 <span id="full_name_value">{{page_params.full_name}}</span>
                                 <i class="fa fa-pencil"></i>
                             </button>
-                            <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
+                            <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
                               {{#if user_can_change_name}}style="display:none"{{/if}}
-                              title="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}">
+                              data-tippy-content="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}">
                             </i>
                         </div>
                         <div id="change_full_name_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
@@ -97,18 +96,20 @@
                             <div class="alert-notification change_password_info"></div>
                         </div>
                         <div class="modal-body">
-                            <div class="field">
+                            <div class="field password-div">
                                 <label for="old_password" class="title">{{t "Old password" }}</label>
                                 <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
-                                <div class="info">
+                                <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
+                                <div class="settings-forgot-password">
                                     <a href="/accounts/password/reset/" class="sea-green" target="_blank" rel="noopener noreferrer">{{t "Forgotten it?" }}</a>
                                 </div>
 
                             </div>
-                            <div class="field">
+                            <div class="field password-div">
                                 <label for="new_password" class="title">{{t "New password" }}</label>
-                                <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value=""
+                                <input type="password" autocomplete="new-password" name="new_password" id="new_password" class="w-200 inline-block" value=""
                                   data-min-length="{{ page_params.password_min_length }}" data-min-guesses="{{ page_params.password_min_guesses }}" />
+                                <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
                                 <div class="progress inline-block" id="pw_strength">
                                     <div class="bar bar-danger fade" style="width: 10%;"></div>
                                 </div>
@@ -123,17 +124,7 @@
 
                 <div class="user-role input-group grid">
                     <label for="user_role" class="inline-block title">{{t "Role" }}</label>
-                    <span>
-                        {{#if page_params.is_owner}}
-                        {{t "Owner" }}
-                        {{else if page_params.is_admin}}
-                        {{t "Administrator" }}
-                        {{else if page_params.is_guest}}
-                        {{t "Guest" }}
-                        {{else}}
-                        {{t "Member" }}
-                        {{/if}}
-                    </span>
+                    <span>{{user_role_text}}</span>
                 </div>
 
                 <form class="deactivate_account grid">
@@ -167,36 +158,18 @@
             <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview profile' }}"></i>
         </button>
 
-        <div id="deactivate_self_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-                <h3 id="deactivation_self_modal_label">{{t "Deactivate your account" }} </h3>
-            </div>
-            <div class="modal-body">
-                <p>{{#tr this}}By deactivating your account, you will be logged out immediately.{{/tr}}</p>
-                <p>{{t "Note that any bots that you maintain will be disabled." }}</p>
-            </div>
-            <div class="modal-footer">
-                <button class="button" data-dismiss="modal">{{t "Cancel" }}</button>
-                <button class="button btn-danger rounded" id="do_deactivate_self_button">
-                    <object class="loader" type="image/svg+xml" data="/static/images/loader.svg"></object>
-                    <span>{{t "Deactivate now" }}</span>
-                </button>
-            </div>
-        </div>
-
-        <hr class="settings_separator">
+        <hr class="settings_separator" />
 
         <div class="form-horizontal" id="api_key_button_box">
             <h3>{{t "API key" }}</h3>
 
             <div class="input-group">
                 <p class="api-key-note">
-                    {{#tr this}}
+                    {{#tr}}
                     An API key can be used to programmatically access a Zulip account.
                     Anyone with access to your API key has the ability to read your messages, send
                     messages on your behalf, and otherwise impersonate you on Zulip, so you should
-                    guard your API key as carefully as you guard your password. <br>
+                    guard your API key as carefully as you guard your password. <br />
                     We recommend creating bots and using the bots' accounts and API keys to access
                     the Zulip API, unless the task requires access to your account.
                     {{/tr}}

@@ -1,8 +1,0 @@
-bionic:
-  base_image: buildpack-deps:bionic-scm
-
-focal:
-  base_image: buildpack-deps:focal-scm
-
-buster:
-  base_image: buildpack-deps:buster-scm

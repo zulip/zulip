@@ -2,8 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+
+set_global("page_params", {
+    is_spectator: false,
+});
 
 const params = {
     alert_words: ["alertone", "alerttwo", "alertthree", "al*rt.*s", ".+", "emoji"],
@@ -48,7 +52,7 @@ const alertwordboundary_message = {
 };
 const multialert_message = {
     sender_email: "another@zulip.com",
-    content: "<p>another alertthreemessage alertone and then alerttwo</p>",
+    content: "<p>another emoji alertone and then alerttwo</p>",
     alerted: true,
 };
 const unsafe_word_message = {
@@ -67,6 +71,12 @@ const question_word_message = {
     alerted: true,
 };
 
+const typo_word_message = {
+    sender_email: "another@zulip.com",
+    content: "<p>alertones alerttwo alerttwo alertthreez</p>",
+    alerted: true,
+};
+
 const alert_domain_message = {
     sender_email: "another@zulip.com",
     content:
@@ -82,15 +92,15 @@ const message_with_emoji = {
 };
 
 run_test("notifications", () => {
-    assert(!alert_words.notifies(regular_message));
-    assert(!alert_words.notifies(own_message));
-    assert(alert_words.notifies(other_message));
-    assert(alert_words.notifies(caps_message));
-    assert(!alert_words.notifies(alertwordboundary_message));
-    assert(alert_words.notifies(multialert_message));
-    assert(alert_words.notifies(unsafe_word_message));
-    assert(alert_words.notifies(alert_domain_message));
-    assert(alert_words.notifies(message_with_emoji));
+    assert.ok(!alert_words.notifies(regular_message));
+    assert.ok(!alert_words.notifies(own_message));
+    assert.ok(alert_words.notifies(other_message));
+    assert.ok(alert_words.notifies(caps_message));
+    assert.ok(!alert_words.notifies(alertwordboundary_message));
+    assert.ok(alert_words.notifies(multialert_message));
+    assert.ok(alert_words.notifies(unsafe_word_message));
+    assert.ok(alert_words.notifies(alert_domain_message));
+    assert.ok(alert_words.notifies(message_with_emoji));
 });
 
 run_test("munging", () => {
@@ -122,7 +132,7 @@ run_test("munging", () => {
 
     assert_transform(
         multialert_message,
-        "<p>another alertthreemessage <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
+        "<p>another <span class='alert-word'>emoji</span> <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
     );
 
     assert_transform(
@@ -138,6 +148,11 @@ run_test("munging", () => {
     );
 
     assert_transform(
+        typo_word_message,
+        "<p>alertones <span class='alert-word'>alerttwo</span> <span class='alert-word'>alerttwo</span> alertthreez</p>",
+    );
+
+    assert_transform(
         alert_domain_message,
         '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'alert-word\'>alerttwo</span>.us/foo/bar</a></p>',
     );
@@ -150,10 +165,10 @@ run_test("munging", () => {
 
 run_test("basic get/set operations", () => {
     alert_words.initialize({alert_words: []});
-    assert(!alert_words.has_alert_word("breakfast"));
-    assert(!alert_words.has_alert_word("lunch"));
+    assert.ok(!alert_words.has_alert_word("breakfast"));
+    assert.ok(!alert_words.has_alert_word("lunch"));
     alert_words.set_words(["breakfast", "lunch"]);
-    assert(alert_words.has_alert_word("breakfast"));
-    assert(alert_words.has_alert_word("lunch"));
-    assert(!alert_words.has_alert_word("dinner"));
+    assert.ok(alert_words.has_alert_word("breakfast"));
+    assert.ok(alert_words.has_alert_word("lunch"));
+    assert.ok(!alert_words.has_alert_word("dinner"));
 });

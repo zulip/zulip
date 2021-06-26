@@ -15,7 +15,7 @@ is useful when users' names are managed via LDAP or another data source.
 
 1. Under **User settings**, click on the button with your name in it.
 
-1. Change your name, and click **Save**.
+1. Change your name, and click **Change**.
 
 {end_tabs}
 
@@ -24,8 +24,3 @@ is useful when users' names are managed via LDAP or another data source.
     that your organization allows name changes. Follow the steps at
     [prevent users from changing their names](/help/restrict-name-and-email-changes)
     to view your organization's settings.
-
-## Reserved words
-
-The words "all", "everyone", and "stream" have special meanings, and if you choose them as your
-display name, nobody will be able to [mention](/help/mention-a-user-or-group) you.

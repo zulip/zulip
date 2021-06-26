@@ -58,6 +58,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
     upload_export_tarball,
     upload_message_file,
+    write_local_file,
 )
 from zerver.lib.users import get_api_key
 from zerver.models import (
@@ -636,7 +637,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 5)
+        self.assert_length(queries, 5)
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
@@ -646,7 +647,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 6)
+        self.assert_length(queries, 6)
 
         def assert_cannot_access_file(user: UserProfile) -> None:
             response = self.api_get(user, uri)
@@ -701,7 +702,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 5)
+        self.assert_length(queries, 5)
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
@@ -711,7 +712,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 6)
+        self.assert_length(queries, 6)
 
         # Subscribed user who did not receive the message should also be able to view file
         self.login_user(late_subscribed_user)
@@ -722,7 +723,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(b"zulip!", data)
         self.logout()
         # It takes a few extra queries to verify access because of shared history.
-        self.assertEqual(len(queries), 9)
+        self.assert_length(queries, 9)
 
         def assert_cannot_access_file(user: UserProfile) -> None:
             self.login_user(user)
@@ -730,7 +731,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             # It takes a few extra queries to verify lack of access with shared history.
-            self.assertEqual(len(queries), 8)
+            self.assert_length(queries, 8)
             self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
 
@@ -773,7 +774,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
-        self.assertEqual(len(queries), 8)
+        self.assert_length(queries, 8)
 
         self.subscribe(user, "test-subscribe 1")
         self.subscribe(user, "test-subscribe 2")
@@ -784,11 +785,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         # If we were accidentally one query per message, this would be 20+
-        self.assertEqual(len(queries), 9)
+        self.assert_length(queries, 9)
 
         with queries_captured() as queries:
             self.assertTrue(validate_attachment_request(user, fp_path_id))
-        self.assertEqual(len(queries), 6)
+        self.assert_length(queries, 6)
 
         self.logout()
 
@@ -911,6 +912,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_avatar_url(self) -> None:
         """Verifies URL schemes for avatars and realm icons."""
         backend: ZulipUploadBackend = LocalUploadBackend()
+        self.assertEqual(backend.get_public_upload_root_url(), "/user_avatars/")
         self.assertEqual(backend.get_avatar_url("hash", False), "/user_avatars/hash.png?x=x")
         self.assertEqual(backend.get_avatar_url("hash", True), "/user_avatars/hash-medium.png?x=x")
         self.assertEqual(
@@ -1129,14 +1131,14 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
             # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
             with mock.patch("zerver.lib.upload.write_local_file") as mock_write_local_file:
-                zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+                zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
                 self.assertFalse(mock_write_local_file.called)
 
             # Confirm that ensure_medium_avatar_url works to recreate
             # medium size avatars from the original if needed
             os.remove(medium_avatar_disk_path)
             self.assertFalse(os.path.exists(medium_avatar_disk_path))
-            zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+            zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
             # Verify whether the avatar_version gets incremented with every new upload
@@ -1237,7 +1239,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_avatar_upload_file_size_error(self) -> None:
         self.login("hamlet")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_AVATAR_FILE_SIZE=0):
+            with self.settings(MAX_AVATAR_FILE_SIZE_MIB=0):
                 result = self.client_post("/json/users/me/avatar", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
@@ -1331,7 +1333,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_icon(self) -> None:
         self.login("hamlet")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR)
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=None)
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/json/realm/icon", {"foo": "bar"})
             redirect_url = response["Location"]
@@ -1346,7 +1348,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
 
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
         response = self.client_get("/json/realm/icon", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
@@ -1392,7 +1394,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login("iago")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         result = self.client_delete("/json/realm/icon")
 
@@ -1415,7 +1417,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_realm_icon_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_ICON_FILE_SIZE=0):
+            with self.settings(MAX_ICON_FILE_SIZE_MIB=0):
                 result = self.client_post("/json/realm/icon", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
@@ -1468,7 +1470,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_limited_plan_type(self) -> None:
         user_profile = self.example_user("iago")
-        do_change_plan_type(user_profile.realm, Realm.LIMITED)
+        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
         self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post(
@@ -1512,7 +1514,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}",
         )
 
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=user_profile)
         if self.night:
             self.assertEqual(realm.night_logo_source, Realm.LOGO_UPLOADED)
         else:
@@ -1600,7 +1602,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_logo_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_LOGO_FILE_SIZE=0):
+            with self.settings(MAX_LOGO_FILE_SIZE_MIB=0):
                 result = self.client_post(
                     "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
                 )
@@ -1630,7 +1632,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(file_path))
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+        self.assert_length(b"zulip!", uploaded_file.size)
 
     def test_delete_message_image_local(self) -> None:
         self.login("hamlet")
@@ -1640,6 +1642,29 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         path_id = re.sub("/user_uploads/", "", result.json()["uri"])
         self.assertTrue(delete_message_image(path_id))
+
+    def test_ensure_avatar_image_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        file_path = user_avatar_path(user_profile)
+
+        with get_test_image_file("img.png") as image_file:
+            write_local_file("avatars", file_path + ".original", image_file.read())
+
+        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+
+        resized_avatar = resize_avatar(image_data)
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".png")
+        with open(output_path, "rb") as original_file:
+            self.assertEqual(resized_avatar, original_file.read())
+
+        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
+        with open(output_path, "rb") as original_file:
+            self.assertEqual(resized_avatar, original_file.read())
 
     def test_emoji_upload_local(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1729,7 +1754,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(b"zulip!", content)
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+        self.assert_length(b"zulip!", uploaded_file.size)
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -1745,7 +1770,7 @@ class S3Test(ZulipTestCase):
         path_id = re.sub("/user_uploads/", "", uri)
         self.assertEqual(b"zulip!", bucket.Object(path_id).get()["Body"].read())
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+        self.assert_length(b"zulip!", uploaded_file.size)
 
     @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
@@ -1842,7 +1867,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(medium_image_data, test_medium_image_data)
 
         bucket.Object(medium_image_key.key).delete()
-        zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
         medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
 
@@ -1992,6 +2017,35 @@ class S3Test(ZulipTestCase):
         self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
 
     @use_s3_backend
+    def test_ensure_avatar_image(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        base_file_path = user_avatar_path(user_profile)
+        # Bug: This should have + ".png", but the implementation is wrong.
+        file_path = base_file_path
+        original_file_path = base_file_path + ".original"
+        medium_file_path = base_file_path + "-medium.png"
+
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_avatar_image(
+                image_file, user_profile, user_profile
+            )
+
+        key = bucket.Object(original_file_path)
+        image_data = key.get()["Body"].read()
+
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        resized_avatar = resize_avatar(image_data)
+        key = bucket.Object(file_path)
+        self.assertEqual(resized_avatar, key.get()["Body"].read())
+
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        key = bucket.Object(medium_file_path)
+        self.assertEqual(resized_avatar, key.get()["Body"].read())
+
+    @use_s3_backend
     def test_get_emoji_url(self) -> None:
         emoji_name = "emoji.png"
         realm_id = 1
@@ -2074,8 +2128,8 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         upload_message_file("dummy.txt", len(data), "text/plain", data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
-        self.assertEqual(len(data), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
-        self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
+        self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 
         data2 = b"more-data!"
         upload_message_file("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
@@ -2094,7 +2148,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
         attachment.delete()
         self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
-        self.assertEqual(len(data2), self.realm.currently_used_upload_space_bytes())
+        self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
 
 
 class ExifRotateTests(ZulipTestCase):

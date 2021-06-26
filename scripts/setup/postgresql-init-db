@@ -10,11 +10,15 @@ set -x
 # What user should we use for connecting to the database
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 
+# What database name and username to use when connecting to the database
+DATABASE_NAME=$(crudini --get /etc/zulip/zulip.conf postgresql database_name 2>/dev/null || echo zulip)
+DATABASE_USER=$(crudini --get /etc/zulip/zulip.conf postgresql database_user 2>/dev/null || echo zulip)
+
 # This psql command may fail because the Zulip database doesn’t exist,
 # hence the &&.
 if records="$(
     cd / # Make sure the current working directory is readable by postgres
-    su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM zulip.zerver_message;' zulip"
+    su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM $DATABASE_NAME.zerver_message;' $DATABASE_USER"
 )" && [ "$records" -gt 200 ]; then
     set +x
     echo "WARNING: This will delete your Zulip database which currently contains $records messages."
@@ -38,8 +42,18 @@ su -s /usr/bin/env - -- "$POSTGRES_USER" \
 
 (
     cd / # Make sure the current working directory is readable by postgres
-    su "$POSTGRES_USER" -c 'psql -v ON_ERROR_STOP=1 -e'
+    su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1 -v dbname=$DATABASE_NAME -v dbuser=$DATABASE_USER -e"
 ) <"$(dirname "$0")/create-db.sql"
+
+# Set a postgres password if the postgres username is not "zulip".
+# When the username is zulip, we rely on running as the zulip system
+# user for authentication via postgres' peer authentication.
+if [ "$DATABASE_USER" != "zulip" ]; then
+    PASSWORD=$(crudini --get /etc/zulip/zulip-secrets.conf secrets postgres_password)
+    su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1  -e postgres" <<EOF
+ALTER ROLE $DATABASE_USER PASSWORD '$PASSWORD';
+EOF
+fi
 
 # Clear memcached to avoid contamination from previous database state
 "$(dirname "$0")/flush-memcached"

@@ -28,7 +28,11 @@ Options:
       install process; used when this command is run once in a highly-controlled
       environment to produce an image which is used elsewhere.  Uncommon.
 
-  --postgresql-version=12
+  --postgresql-database-name=zulip
+      Sets the PostgreSQL database name.
+  --postgresql-database-user=zulip
+      Sets the PostgreSQL database user.
+  --postgresql-version=13
       Sets the version of PostgreSQL that will be installed.
   --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
@@ -47,7 +51,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -80,7 +84,16 @@ while true; do
             SELF_SIGNED_CERT=1
             shift
             ;;
-
+        --postgresql-database-name)
+            POSTGRESQL_DATABASE_NAME="$2"
+            shift
+            shift
+            ;;
+        --postgresql-database-user)
+            POSTGRESQL_DATABASE_USER="$2"
+            shift
+            shift
+            ;;
         --postgresql-version)
             POSTGRESQL_VERSION="$2"
             shift
@@ -127,7 +140,7 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-12}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-13}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -168,10 +181,13 @@ set -x
 ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
-localedef -i en_US -f UTF-8 en_US.UTF-8
-export LC_ALL="en_US.UTF-8"
-export LANG="en_US.UTF-8"
-export LANGUAGE="en_US.UTF-8"
+export LC_ALL="C.UTF-8"
+export LANG="C.UTF-8"
+export LANGUAGE="C.UTF-8"
+
+# Force a known path; this fixes problems on Debian where `su` from
+# non-root may not adjust `$PATH` to root's.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
@@ -196,7 +212,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id$os_version_id" in
-    debian10 | ubuntu18.04 | ubuntu20.04) ;;
+    debian10 | debian11 | ubuntu18.04 | ubuntu20.04) ;;
     *)
         set +x
         cat <<EOF
@@ -205,6 +221,7 @@ Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
  - Debian 10 "buster"
+ - Debian 11 "bullseye" (beta)
  - Ubuntu 18.04 LTS "bionic"
  - Ubuntu 20.04 LTS "focal"
 
@@ -327,7 +344,7 @@ if [ "$package_system" = apt ]; then
     # `zulip::profile::base` such that the new dependency is seen by
     # upgrades, as well as new installs.
     if ! apt-get install -y \
-        python3 python3-yaml puppet git curl wget jq crudini \
+        python3 python3-yaml puppet git curl jq crudini \
         "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
@@ -338,7 +355,7 @@ if [ "$package_system" = apt ]; then
     fi
 elif [ "$package_system" = yum ]; then
     if ! yum install -y \
-        python3 python3-pyyaml puppet git curl wget jq crudini \
+        python3 python3-pyyaml puppet git curl jq crudini \
         "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
@@ -361,7 +378,6 @@ fi
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
-    "$ZULIP_PATH"/scripts/lib/create-thumbor-venv "$ZULIP_PATH"
 fi
 
 "$ZULIP_PATH"/scripts/lib/install-node
@@ -411,6 +427,14 @@ EOF
     # we don't know if this is a database host until we have the catalog summary.
     if ! has_class "zulip::postgresql_common" || [ "$package_system" != apt ]; then
         crudini --del /etc/zulip/zulip.conf postgresql
+    fi
+
+    if [ -n "$POSTGRESQL_DATABASE_NAME" ]; then
+        crudini --set /etc/zulip/zulip.conf postgresql database_name "$POSTGRESQL_DATABASE_NAME"
+    fi
+
+    if [ -n "$POSTGRESQL_DATABASE_USER" ]; then
+        crudini --set /etc/zulip/zulip.conf postgresql database_user "$POSTGRESQL_DATABASE_USER"
     fi
 
     # Note: there are four dpkg-query outputs to consider:
@@ -518,6 +542,15 @@ if has_class "zulip::app_frontend_base"; then
         # assets.
         su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
     fi
+fi
+
+# Set up a basic .gitconfig for the 'zulip' user
+if [ -n "$ZULIP_ADMINISTRATOR" ]; then
+    (
+        cd / # Make sure the current working directory is readable by zulip
+        su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
+        su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
+    )
 fi
 
 if [ -n "$NO_INIT_DB" ]; then

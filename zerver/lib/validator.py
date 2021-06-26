@@ -29,12 +29,25 @@ for any particular type of object.
 """
 import re
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union, cast, overload
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.request import JsonableError, ResultT
 from zerver.lib.types import ProfileFieldData, Validator
@@ -213,8 +226,8 @@ def check_tuple(sub_validators: List[Validator[ResultT]]) -> Validator[Tuple[Any
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_dict(
-    required_keys: Iterable[Tuple[str, Validator[object]]] = [],
-    optional_keys: Iterable[Tuple[str, Validator[object]]] = [],
+    required_keys: Collection[Tuple[str, Validator[object]]] = [],
+    optional_keys: Collection[Tuple[str, Validator[object]]] = [],
     *,
     _allow_only_listed_keys: bool = False,
 ) -> Validator[Dict[str, object]]:
@@ -223,8 +236,8 @@ def check_dict(
 
 @overload
 def check_dict(
-    required_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Validator[ResultT],
     _allow_only_listed_keys: bool = False,
@@ -233,8 +246,8 @@ def check_dict(
 
 
 def check_dict(
-    required_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Optional[Validator[ResultT]] = None,
     _allow_only_listed_keys: bool = False,
@@ -283,8 +296,8 @@ def check_dict(
 
 
 def check_dict_only(
-    required_keys: Iterable[Tuple[str, Validator[ResultT]]],
-    optional_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[Tuple[str, Validator[ResultT]]],
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
 ) -> Validator[Dict[str, ResultT]]:
     return cast(
         Validator[Dict[str, ResultT]],
@@ -292,7 +305,7 @@ def check_dict_only(
     )
 
 
-def check_union(allowed_type_funcs: Iterable[Validator[ResultT]]) -> Validator[ResultT]:
+def check_union(allowed_type_funcs: Collection[Validator[ResultT]]) -> Validator[ResultT]:
     """
     Use this validator if an argument is of a variable type (e.g. processing
     properties that might be strings or booleans).
@@ -443,6 +456,49 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
     raise ValidationError("unknown widget type: " + widget_type)
 
 
+def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
+    check_dict([("type", check_string)])("poll data", poll_data)
+
+    assert isinstance(poll_data, dict)
+
+    if poll_data["type"] == "vote":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+                ("vote", check_int_in([1, -1])),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    if poll_data["type"] == "question":
+        if not is_widget_author:
+            raise ValidationError("You can't edit a question unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("question", check_string),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    if poll_data["type"] == "new_option":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("option", check_string),
+                ("idx", check_int),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
+
+
 # Converter functions for use with has_request_variables
 def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
     x = int(s)
@@ -453,10 +509,10 @@ def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
     return x
 
 
-def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:
+def to_positive_or_allowed_int(allowed_integer: Optional[int] = None) -> Callable[[str], int]:
     def converter(s: str) -> int:
         x = int(s)
-        if x == allowed_integer:
+        if allowed_integer is not None and x == allowed_integer:
             return x
         if x == 0:
             raise ValueError("argument is 0")
@@ -482,3 +538,21 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
+
+
+TypeA = TypeVar("TypeA")
+TypeB = TypeVar("TypeB")
+
+
+def check_or(
+    sub_validator1: Validator[TypeA], sub_validator2: Validator[TypeB]
+) -> Validator[Union[TypeA, TypeB]]:
+    def f(var_name: str, val: object) -> Union[TypeA, TypeB]:
+        try:
+            return sub_validator1(var_name, val)
+        except ValidationError:
+            pass
+
+        return sub_validator2(var_name, val)
+
+    return f

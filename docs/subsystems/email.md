@@ -4,7 +4,7 @@ This page has developer documentation on the Zulip email system. If you're
 trying to configure your server to send email, you might be looking for our
 guide to [sending outgoing email](../production/email.md). If you're trying to
 configure an email integration to receive incoming email (e.g. so that users
-can reply to missed message emails via email), you might be interested in
+can reply to message notification emails via email), you might be interested in
 our instructions for
 [setting up an email integration](https://zulip.com/integrations/doc/email).
 
@@ -23,7 +23,7 @@ with only a few things you need to know to get started.
   are several other functions in `zerver.lib.send_email`, but all of them
   eventually call the `send_email` function. The most interesting one is
   `send_future_email`. The `ScheduledEmail` entries are eventually processed
-  by a supervisor job that runs `zerver/management/commands/deliver_email.py`.
+  by a supervisor job that runs `zerver/management/commands/deliver_scheduled_emails.py`.
 * Always use `user_profile.delivery_email`, not `user_profile.email`,
   when passing data into the `send_email` library.  The
   `user_profile.email` field may not always be valid.
@@ -69,7 +69,7 @@ actual email clients.  This is important because web email clients
 have limited CSS functionality, autolinkify things, and otherwise
 mutate the HTML email one can see previewed on `/emails`.
 
-To do this sort of testing, you need to setup an outgoing SMTP
+To do this sort of testing, you need to set up an outgoing SMTP
 provider. Our production advice for
 [Gmail](../production/email.html#using-gmail-for-outgoing-email) and
 [transactional email

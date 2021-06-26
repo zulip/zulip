@@ -5,7 +5,7 @@ import common from "../puppeteer_lib/common";
 async function trigger_edit_last_message(page: Page): Promise<void> {
     await page.evaluate(() => {
         const msg = $("#zhome .message_row").last();
-        msg.find(".info").trigger("click");
+        msg.find(".message_control_button.actions_hover").trigger("click");
         $(".popover_edit_message").trigger("click");
     });
     await page.waitForSelector(".message_edit_content", {visible: true});
@@ -68,7 +68,7 @@ async function test_edit_private_message(page: Page): Promise<void> {
     await common.wait_for_fully_processed_message(page, "test edited pm");
 
     await common.check_messages_sent(page, "zhome", [
-        ["You and Cordelia Lear", ["test edited pm"]],
+        ["You and Cordelia, Lear's daughter", ["test edited pm"]],
     ]);
 }
 

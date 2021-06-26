@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
@@ -9,19 +10,22 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
-import * as popovers from "./popovers";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as setup from "./setup";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
+import * as user_profile from "./user_profile";
+
+let password_quality; // Loaded asynchronously
 
 export function update_email(new_email) {
     const email_input = $("#email_value");
@@ -89,8 +93,8 @@ function display_avatar_upload_started() {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-function settings_change_error(message, xhr) {
-    ui_report.error(message, xhr, $("#account-settings-status").expectOne());
+function settings_change_error(message_html, xhr) {
+    ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
 }
 
 function update_custom_profile_field(field, method) {
@@ -253,13 +257,13 @@ export function initialize_custom_user_type_fields(
             if (is_editable) {
                 const input = pill_container.children(".input");
                 if (set_handler_on_update) {
-                    const opts = {update_func: update_custom_user_field};
+                    const opts = {update_func: update_custom_user_field, user: true};
                     pill_typeahead.set_up(input, pills, opts);
                     pills.onPillRemove(() => {
                         update_custom_user_field();
                     });
                 } else {
-                    pill_typeahead.set_up(input, pills, {});
+                    pill_typeahead.set_up(input, pills, {user: true});
                 }
             }
             user_pills.set(field.id, pills);
@@ -308,7 +312,11 @@ export function set_up() {
                     $("#show_api_key").show();
                 },
                 error(xhr) {
-                    ui_report.error(i18n.t("Error"), xhr, $("#api_key_status").expectOne());
+                    ui_report.error(
+                        $t_html({defaultMessage: "Error"}),
+                        xhr,
+                        $("#api_key_status").expectOne(),
+                    );
                     $("#show_api_key").hide();
                     $("#api_key_modal").show();
                 },
@@ -318,6 +326,11 @@ export function set_up() {
         $(".account-settings-form").append(render_settings_api_key_modal());
         $("#api_key_value").text("");
         $("#show_api_key").hide();
+        common.setup_password_visibility_toggle(
+            "#get_api_key_password",
+            "#get_api_key_password + .password_visibility_toggle",
+            {tippy_tooltips: true},
+        );
 
         if (page_params.realm_password_auth_enabled === false) {
             // Skip the password prompt step, since the user doesn't have one.
@@ -356,6 +369,13 @@ export function set_up() {
             const data = settings_bots.generate_zuliprc_content(bot_object);
             $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
         });
+
+        $("#api_key_modal [data-dismiss=modal]").on("click", () => {
+            common.reset_password_toggle_icons(
+                "#get_api_key_password",
+                "#get_api_key_password + .password_visibility_toggle",
+            );
+        });
     });
 
     $("#api_key_button").on("click", (e) => {
@@ -368,8 +388,16 @@ export function set_up() {
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
+        common.reset_password_toggle_icons(
+            "#old_password",
+            "#old_password + .password_visibility_toggle",
+        );
+        common.reset_password_toggle_icons(
+            "#new_password",
+            "#new_password + .password_visibility_toggle",
+        );
         $("#old_password, #new_password").val("");
-        common.password_quality("", $("#pw_strength .bar"), $("#new_password"));
+        password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
     }
 
     clear_password_change();
@@ -391,8 +419,7 @@ export function set_up() {
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            const {default: zxcvbn} = await import("zxcvbn");
-            window.zxcvbn = zxcvbn;
+            password_quality = (await import("./password_quality")).password_quality;
             $("#pw_strength .bar").removeClass("fade");
         }
     });
@@ -419,16 +446,15 @@ export function set_up() {
         const new_pw_field = $("#new_password");
         const new_pw = data.new_password;
         if (new_pw !== "") {
-            const password_ok = common.password_quality(new_pw, undefined, new_pw_field);
-            if (password_ok === undefined) {
-                // zxcvbn.js didn't load, for whatever reason.
+            if (password_quality === undefined) {
+                // password_quality didn't load, for whatever reason.
                 settings_change_error(
                     "An internal error occurred; try reloading the page. " +
                         "Sorry for the trouble!",
                 );
                 return;
-            } else if (!password_ok) {
-                settings_change_error(i18n.t("New password is too weak"));
+            } else if (!password_quality(new_pw, undefined, new_pw_field)) {
+                settings_change_error($t_html({defaultMessage: "New password is too weak"}));
                 return;
             }
         }
@@ -443,6 +469,7 @@ export function set_up() {
                 setup.set_password_change_in_progress(false);
             },
             error_msg_element: change_password_error,
+            failure_msg_html: null,
         };
         settings_ui.do_settings_change(
             channel.patch,
@@ -456,7 +483,7 @@ export function set_up() {
 
     $("#new_password").on("input", () => {
         const field = $("#new_password");
-        common.password_quality(field.val(), $("#pw_strength .bar"), field);
+        password_quality?.(field.val(), $("#pw_strength .bar"), field);
     });
 
     $("#change_full_name_button").on("click", (e) => {
@@ -504,9 +531,10 @@ export function set_up() {
                 overlays.close_modal("#change_email_modal");
             },
             error_msg_element: change_email_error,
-            success_msg: i18n
-                .t("Check your email (%s) to confirm the new address.")
-                .replace("%s", data.email),
+            success_msg_html: $t_html(
+                {defaultMessage: "Check your email ({email}) to confirm the new address."},
+                {email: data.email},
+            ),
         };
         settings_ui.do_settings_change(
             channel.patch,
@@ -525,14 +553,6 @@ export function set_up() {
             const email = $("#email_value").text().trim();
             $(".email_change_container").find("input[name='email']").val(email);
         }
-    });
-
-    $("#user_deactivate_account_button").on("click", (e) => {
-        // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
-        e.preventDefault();
-        e.stopPropagation();
-        $("#deactivate_self_modal").modal("show");
     });
 
     $("#account-settings").on("click", ".custom_user_field .remove_date", (e) => {
@@ -559,28 +579,33 @@ export function set_up() {
         }
     });
 
-    $("#do_deactivate_self_button").on("click", () => {
-        $("#do_deactivate_self_button .loader").css("display", "inline-block");
-        $("#do_deactivate_self_button span").hide();
-        $("#do_deactivate_self_button object").on("load", function () {
-            const doc = this.getSVGDocument();
-            const $svg = $(doc).find("svg");
-            $svg.find("rect").css("fill", "#000");
-        });
+    $("#user_deactivate_account_button").on("click", (e) => {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        e.preventDefault();
+        e.stopPropagation();
 
-        setTimeout(() => {
+        function handle_confirm() {
             channel.del({
                 url: "/json/users/me",
                 success() {
-                    $("#deactivate_self_modal").modal("hide");
+                    confirm_dialog.hide_confirm_dialog_spinner();
+                    overlays.close_modal("#confirm_dialog_modal");
                     window.location.href = "/login/";
                 },
                 error(xhr) {
-                    const error_last_owner = i18n.t(
-                        "Error: Cannot deactivate the only organization owner.",
-                    );
-                    const error_last_user = i18n.t(
-                        'Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target="_blank" href="/#organization/organization-profile">Organization profile settings</a>.',
+                    const error_last_owner = $t_html({
+                        defaultMessage: "Error: Cannot deactivate the only organization owner.",
+                    });
+                    const error_last_user = $t_html(
+                        {
+                            defaultMessage:
+                                "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                        },
                     );
                     let rendered_error_msg;
                     if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
@@ -590,21 +615,34 @@ export function set_up() {
                             rendered_error_msg = error_last_user;
                         }
                     }
-                    $("#deactivate_self_modal").modal("hide");
+                    confirm_dialog.hide_confirm_dialog_spinner();
+                    overlays.close_modal("#confirm_dialog_modal");
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)
                         .show();
                 },
             });
-        }, 5000);
+        }
+        const html_body = render_confirm_deactivate_own_user();
+        const modal_parent = $("#account-settings .account-settings-form");
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: handle_confirm,
+            help_link: "/help/deactivate-your-account",
+            fade: true,
+            loading_spinner: true,
+        });
     });
 
     $("#show_my_user_profile_modal").on("click", () => {
         overlays.close_overlay("settings");
         const user = people.get_by_user_id(people.my_current_user_id());
         setTimeout(() => {
-            popovers.show_user_profile(user);
+            user_profile.show_user_profile(user);
         }, 100);
 
         // If user opened the "preview profile" modal from user
@@ -613,7 +651,6 @@ export function set_up() {
         $("body").one("hidden.bs.modal", "#user-profile-modal", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            popovers.hide_user_profile();
 
             setTimeout(() => {
                 if (!overlays.settings_open()) {

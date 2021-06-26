@@ -19,7 +19,7 @@
 * [API keys](/api/api-keys)
 * [Configuring the Python bindings](/api/configuring-python-bindings)
 * [Error handling](/api/rest-error-handling)
-* [Client Libraries](/api/client-libraries)
-* [Changelog](/api/changelog)
+* [Client libraries](/api/client-libraries)
+* [API Changelog](/api/changelog)
 
 {!rest-endpoints.md!}

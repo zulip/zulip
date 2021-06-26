@@ -23,7 +23,7 @@ people.init();
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-run_test("report_late_add", (override) => {
+run_test("report_late_add", ({override}) => {
     blueslip.expect("error", "Added user late: user_id=55 email=foo@example.com");
     people.report_late_add(55, "foo@example.com");
 
@@ -40,7 +40,7 @@ run_test("is_my_user_id", () => {
     assert.equal(people.is_my_user_id(me.user_id.toString()), true);
 });
 
-run_test("blueslip", (override) => {
+run_test("blueslip", ({override}) => {
     const unknown_email = "alicebobfred@example.com";
 
     blueslip.expect("debug", "User email operand unknown: " + unknown_email);
@@ -102,7 +102,7 @@ run_test("blueslip", (override) => {
     };
     blueslip.expect("error", "Unknown user id in message: 42");
     const reply_to = people.pm_reply_to(message);
-    assert(reply_to.includes("?"));
+    assert.ok(reply_to.includes("?"));
 
     override(people, "pm_with_user_ids", () => [42]);
     override(people, "get_by_user_id", () => {});

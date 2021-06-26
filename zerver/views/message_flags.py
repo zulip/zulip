@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import (
@@ -31,7 +31,7 @@ def get_latest_update_message_flag_activity(user_profile: UserProfile) -> Option
 def update_message_flags(
     request: HttpRequest,
     user_profile: UserProfile,
-    messages: List[int] = REQ(validator=check_list(check_int)),
+    messages: List[int] = REQ(json_validator=check_list(check_int)),
     operation: str = REQ("op"),
     flag: str = REQ(),
 ) -> HttpResponse:
@@ -57,7 +57,7 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
 @has_request_variables
 def mark_stream_as_read(
-    request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(validator=check_int)
+    request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     stream, sub = access_stream_by_id(user_profile, stream_id)
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
@@ -72,7 +72,7 @@ def mark_stream_as_read(
 def mark_topic_as_read(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ(validator=check_int),
+    stream_id: int = REQ(json_validator=check_int),
     topic_name: str = REQ(),
 ) -> HttpResponse:
     stream, sub = access_stream_by_id(user_profile, stream_id)

@@ -18,7 +18,7 @@ from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
 from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
 from two_factor.utils import default_device
@@ -43,7 +43,6 @@ from zerver.lib.response import json_error, json_method_not_allowed, json_succes
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
-from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
@@ -165,27 +164,6 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
 
-def get_client_name(request: HttpRequest) -> str:
-    # If the API request specified a client in the request content,
-    # that has priority.  Otherwise, extract the client from the
-    # User-Agent.
-    if "client" in request.GET:  # nocoverage
-        return request.GET["client"]
-    if "client" in request.POST:
-        return request.POST["client"]
-    if "HTTP_USER_AGENT" in request.META:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
-    else:
-        user_agent = None
-    if user_agent is not None:
-        return user_agent["name"]
-
-    # In the future, we will require setting USER_AGENT, but for
-    # now we just want to tag these requests so we can review them
-    # in logs and figure out the extent of the problem
-    return "Unspecified"
-
-
 def process_client(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -196,7 +174,7 @@ def process_client(
     query: Optional[str] = None,
 ) -> None:
     if client_name is None:
-        client_name = get_client_name(request)
+        client_name = request.client_name
 
     # We could check for a browser's name being "Mozilla", but
     # e.g. Opera and MobileSafari don't set that, and it seems
@@ -448,7 +426,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     request._requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-        # Login with two factor authentication as well.
+        # Log in with two factor authentication as well.
         do_two_factor_login(request, user_profile)
 
 
@@ -806,8 +784,8 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
 
 def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFuncT]:
-    # The typing here could be improved by using the Extended Callable types:
-    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
+    # The typing here could be improved by using the extended Callable types:
+    # https://mypy.readthedocs.io/en/stable/additional_features.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
@@ -935,7 +913,7 @@ def zulip_otp_required(
         """
         :if_configured: If ``True``, an authenticated user with no confirmed
         OTP devices will be allowed. Also, non-authenticated users will be
-        allowed as web_public_visitor users. Default is ``False``. If ``False``,
+        allowed as spectator users. Default is ``False``. If ``False``,
         2FA will not do any authentication.
         """
         if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED

@@ -12,7 +12,7 @@ the article below describes each in more detail.
 * Share a **reusable invitation link**.
 
 The last two, invite-based, techniques also allow you to control the
-[role (owner, admin, member, or guest)](/help/roles-and-permissions) that the
+[role (owner, admin, moderator, member, or guest)](/help/roles-and-permissions) that the
 invited people will have.
 
 You can also manage access by
@@ -32,7 +32,7 @@ invitation, but require them to authenticate via LDAP.
 
 1. Find the section **Joining the organization**.
 
-1. Set **Are invitations required for joining the organization** to **No**.
+1. Toggle **Invitations are required for joining this organization**.
 
 1. Set **Restrict email domains of new users?** to
    **Restrict to a list of domains**.
@@ -50,7 +50,7 @@ invitation, but require them to authenticate via LDAP.
 
 1. Find the section **Joining the organization**.
 
-1. Set **Are invitations required for joining the organization** to **No**.
+1. Toggle **Invitations are required for joining this organization**.
 
 1. Set **Restrict email domains of new users?** to either
    **Don't allow disposable email addresses** (recommended) or **No**.
@@ -78,8 +78,8 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Enter a list of email addresses.
 
-1. Decide whether the users should join as [admins, members, or
-   guests](/help/roles-and-permissions).
+1. Decide whether the users should join as [owners, admins, moderators,
+   members, or guests](/help/roles-and-permissions).
 
 1. Select which streams they should join. If you send invitations often, you
    may want to configure a set of
@@ -100,7 +100,7 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Click **Generate invite link**.
 
-1. Decide whether users using the link should join as [admins,
+1. Decide whether users using the link should join as [owners, admins, moderators
    members, or guests](/help/roles-and-permissions).
 
 1. Select which streams they should join. If you send invitations often, you
@@ -112,23 +112,30 @@ and reusable invitation links expire 10 days after they are sent.
 1. Copy the link, and send it to anyone you'd like to invite.
 
 !!! warn ""
-    You will only see **Invite users** in the gear menu if you have
+    * You will only see **Invite users** in the gear menu if you have
     permission to invite users.
+    * Only organization administrators can create these reusable invitation links.
+
 
 {end_tabs}
 
 ## Change who can send invitations
 
-By default, organization admins and members can send invitations. You can
-restrict invites to admins only.
+By default, all members can invite new users to join your Zulip
+organization. However, you can restrict the permission to invite new
+users to other sets of roles:
+
+* Organization administrators
+* Organization administrators and moderators
+* Organization administrators and all members
+* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-1. Under Joining the organization, set
-   **Are invitations required for joining the organization?** to
-   **Yes. Only admins can send invitations**.
+1. Under **Joining the organization**, configure
+   **Who can invite users to this organization**.
 
 1. Click **Save changes**.
 

@@ -3,22 +3,18 @@
 
         <div class="pm_left_col">
             {{#if is_group}}
-                {{#if fraction_present}}
-                <span class="{{user_circle_class}} user_circle" style="background:hsla(106, 74%, 44%, {{fraction_present}});"></span>
-                {{else}}
-                <span class="{{user_circle_class}} user_circle" style="background:none; border-color:hsl(0, 0%, 50%);"></span>
-                {{/if}}
+            <span class="fa fa-group"></span>
             {{else}}
-                <span class="{{user_circle_class}} user_circle"></span>
+            <span class="{{user_circle_class}} user_circle"></span>
             {{/if}}
         </div>
 
         <a href='{{url}}' class="conversation-partners">
             {{recipients}}
         </a>
-        <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
-            <div class="value">{{unread}}</div>
-        </div>
+        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+            {{unread}}
+        </span>
     </span>
 </li>
 

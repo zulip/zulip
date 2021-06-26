@@ -1,6 +1,7 @@
 import $ from "jquery";
+import _ from "lodash";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -21,7 +22,7 @@ function show_search_query() {
     let query_contains_stop_words = false;
 
     // Also removes previous search_string if any
-    search_string_display.text(i18n.t("You searched for:"));
+    search_string_display.text($t({defaultMessage: "You searched for:"}));
 
     // Add in stream:foo and topic:bar if present
     if (current_filter.has_operator("stream") || current_filter.has_operator("topic")) {
@@ -54,8 +55,8 @@ function show_search_query() {
     }
 
     if (query_contains_stop_words) {
-        const preamble = i18n.t("Some common words were excluded from your search.");
-        search_string_display.html(preamble + "<br/>" + search_string_display.html());
+        const preamble = $t({defaultMessage: "Some common words were excluded from your search."});
+        search_string_display.html(_.escape(preamble) + "<br/>" + search_string_display.html());
     }
 }
 
@@ -80,21 +81,24 @@ function pick_empty_narrow_banner() {
         let invalid_narrow_message = "";
         // No message can have multiple streams
         if (streams.length > 1) {
-            invalid_narrow_message = i18n.t(
-                "You are searching for messages that belong to more than one stream, which is not possible.",
-            );
+            invalid_narrow_message = $t({
+                defaultMessage:
+                    "You are searching for messages that belong to more than one stream, which is not possible.",
+            });
         }
         // No message can have multiple topics
         if (current_filter.operands("topic").length > 1) {
-            invalid_narrow_message = i18n.t(
-                "You are searching for messages that belong to more than one topic, which is not possible.",
-            );
+            invalid_narrow_message = $t({
+                defaultMessage:
+                    "You are searching for messages that belong to more than one topic, which is not possible.",
+            });
         }
         // No message can have multiple senders
         if (current_filter.operands("sender").length > 1) {
-            invalid_narrow_message = i18n.t(
-                "You are searching for messages that are sent by more than one person, which is not possible.",
-            );
+            invalid_narrow_message = $t({
+                defaultMessage:
+                    "You are searching for messages that are sent by more than one person, which is not possible.",
+            });
         }
         if (invalid_narrow_message !== "") {
             set_invalid_narrow_message(invalid_narrow_message);
@@ -131,7 +135,7 @@ function pick_empty_narrow_banner() {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
 
-                function should_display_subscription_button() {
+                function can_toggle_narrowed_stream() {
                     const stream_name = narrow_state.stream();
 
                     if (!stream_name) {
@@ -139,10 +143,10 @@ function pick_empty_narrow_banner() {
                     }
 
                     const stream_sub = stream_data.get_sub(first_operand);
-                    return stream_sub && stream_sub.should_display_subscription_button;
+                    return stream_sub && stream_data.can_toggle_subscription(stream_sub);
                 }
 
-                if (should_display_subscription_button()) {
+                if (can_toggle_narrowed_stream()) {
                     return $("#nonsubbed_stream_narrow_message");
                 }
 
@@ -183,15 +187,8 @@ function pick_empty_narrow_banner() {
 export function show_empty_narrow_message() {
     $(".empty_feed_notice").hide();
     pick_empty_narrow_banner().show();
-    $("#left_bar_compose_reply_button_big").attr(
-        "title",
-        i18n.t("There are no messages to reply to."),
-    );
-    $("#left_bar_compose_reply_button_big").prop("disabled", true);
 }
 
 export function hide_empty_narrow_message() {
     $(".empty_feed_notice").hide();
-    $("#left_bar_compose_reply_button_big").attr("title", i18n.t("Reply (r)"));
-    $("#left_bar_compose_reply_button_big").prop("disabled", false);
 }

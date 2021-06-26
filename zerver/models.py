@@ -3,17 +3,15 @@ import datetime
 import re
 import secrets
 import time
-from collections import defaultdict
 from datetime import timedelta
 from typing import (
     AbstractSet,
     Any,
     Callable,
-    DefaultDict,
     Dict,
-    Iterable,
     List,
     Optional,
+    Pattern,
     Sequence,
     Set,
     Tuple,
@@ -34,8 +32,8 @@ from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save
 from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -50,6 +48,7 @@ from zerver.lib.cache import (
     cache_set,
     cache_with_key,
     flush_message,
+    flush_muting_users_cache,
     flush_realm,
     flush_stream,
     flush_submessage,
@@ -73,6 +72,7 @@ from zerver.lib.types import (
     ExtendedFieldElement,
     ExtendedValidator,
     FieldElement,
+    LinkifierDict,
     ProfileData,
     ProfileDataElementBase,
     RealmUserValidator,
@@ -91,7 +91,6 @@ from zerver.lib.validator import (
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
-MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
@@ -183,6 +182,7 @@ def clear_supported_auth_backends_cache() -> None:
 
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
 
@@ -199,6 +199,7 @@ class Realm(models.Model):
         "SAML",
         "GitLab",
         "Apple",
+        "OpenID Connect",
     ]
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
@@ -224,7 +225,7 @@ class Realm(models.Model):
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
 
     invite_required: bool = models.BooleanField(default=True)
-    invite_by_admins_only: bool = models.BooleanField(default=False)
+
     _max_invites: Optional[int] = models.IntegerField(null=True, db_column="max_invites")
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
@@ -254,6 +255,7 @@ class Realm(models.Model):
     POLICY_ADMINS_ONLY = 2
     POLICY_FULL_MEMBERS_ONLY = 3
     POLICY_MODERATORS_ONLY = 4
+    POLICY_EVERYONE = 5
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -262,11 +264,32 @@ class Realm(models.Model):
         POLICY_MODERATORS_ONLY,
     ]
 
+    COMMON_MESSAGE_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_EVERYONE,
+    ]
+
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
+
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
+    # Who in the organization is allowed to edit topics of any message.
+    edit_topic_policy: int = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
+
+    # Who in the organization is allowed to invite other users to organization.
+    invite_to_realm_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Who in the organization is allowed to move messages between streams.
+    move_messages_between_streams_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_ADMINS_ONLY
+    )
 
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
     USER_GROUP_EDIT_POLICY_ADMINS = 2
@@ -297,6 +320,7 @@ class Realm(models.Model):
     WILDCARD_MENTION_POLICY_STREAM_ADMINS = 4
     WILDCARD_MENTION_POLICY_ADMINS = 5
     WILDCARD_MENTION_POLICY_NOBODY = 6
+    WILDCARD_MENTION_POLICY_MODERATORS = 7
     wildcard_mention_policy: int = models.PositiveSmallIntegerField(
         default=WILDCARD_MENTION_POLICY_STREAM_ADMINS,
     )
@@ -307,6 +331,7 @@ class Realm(models.Model):
         WILDCARD_MENTION_POLICY_STREAM_ADMINS,
         WILDCARD_MENTION_POLICY_ADMINS,
         WILDCARD_MENTION_POLICY_NOBODY,
+        WILDCARD_MENTION_POLICY_MODERATORS,
     ]
 
     # Who in the organization has access to users' actual email
@@ -316,6 +341,7 @@ class Realm(models.Model):
     EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
     EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
     EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
+    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
     email_address_visibility: int = models.PositiveSmallIntegerField(
         default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
     )
@@ -325,6 +351,7 @@ class Realm(models.Model):
         ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
         EMAIL_ADDRESS_VISIBILITY_ADMINS,
         EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
     ]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -350,29 +377,26 @@ class Realm(models.Model):
     # Whether users have access to message edit history
     allow_edit_history: bool = models.BooleanField(default=True)
 
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
-    allow_community_topic_editing: bool = models.BooleanField(default=True)
-
     # Defaults for new users
     default_twenty_four_hour_time: bool = models.BooleanField(default=False)
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
-    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy("stream events")
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy("stream events")
     notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream",
         related_name="+",
         null=True,
         blank=True,
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
     signup_notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream",
         related_name="+",
         null=True,
         blank=True,
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
@@ -393,7 +417,7 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type: int = models.PositiveSmallIntegerField(default=CORPORATE)
 
-    UPGRADE_TEXT_STANDARD = ugettext_lazy("Available on Zulip Standard. Upgrade to access.")
+    UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -447,6 +471,37 @@ class Realm(models.Model):
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    GIPHY_RATING_OPTIONS = {
+        "disabled": {
+            "name": "GIPHY integration disabled",
+            "id": 0,
+        },
+        # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
+        "y": {
+            "name": "Allow GIFs rated Y (Very young audience)",
+            "id": 1,
+        },
+        "g": {
+            "name": "Allow GIFs rated G (General audience)",
+            "id": 2,
+        },
+        "pg": {
+            "name": "Allow GIFs rated PG (Parental guidance)",
+            "id": 3,
+        },
+        "pg-13": {
+            "name": "Allow GIFs rated PG13 (Parental guidance - under 13)",
+            "id": 4,
+        },
+        "r": {
+            "name": "Allow GIFs rated R (Restricted)",
+            "id": 5,
+        },
+    }
+
+    # maximum rating of the GIFs that will be retrieved from GIPHY
+    giphy_rating: int = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
+
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
     # Define the types of the various automatically managed properties
@@ -457,6 +512,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_stream_policy=int,
         invite_to_stream_policy=int,
+        move_messages_between_streams_policy=int,
         default_language=str,
         default_twenty_four_hour_time=bool,
         description=str,
@@ -464,8 +520,9 @@ class Realm(models.Model):
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
+        giphy_rating=int,
         invite_required=bool,
-        invite_by_admins_only=bool,
+        invite_to_realm_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         mandatory_topics=bool,
@@ -502,7 +559,7 @@ class Realm(models.Model):
     )
     icon_version: int = models.PositiveSmallIntegerField(default=1)
 
-    # Logo is the horizontal logo we show in top-left of webapp navbar UI.
+    # Logo is the horizontal logo we show in top-left of web app navbar UI.
     LOGO_DEFAULT = "D"
     LOGO_UPLOADED = "U"
     LOGO_SOURCES = (
@@ -547,11 +604,11 @@ class Realm(models.Model):
         return f"<Realm: {self.string_id} {self.id}>"
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+    def get_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_realm_emoji_uncached(self)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+    def get_active_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_active_realm_emoji_uncached(self)
 
     def get_admin_users_and_bots(
@@ -591,7 +648,7 @@ class Realm(models.Model):
             role__in=roles,
         )
 
-    def get_human_billing_admin_users(self) -> Sequence["UserProfile"]:
+    def get_human_billing_admin_users(self) -> QuerySet:
         return UserProfile.objects.filter(
             Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
             realm=self,
@@ -602,6 +659,17 @@ class Realm(models.Model):
     def get_active_users(self) -> Sequence["UserProfile"]:
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+
+    def get_first_human_user(self) -> Optional["UserProfile"]:
+        """A useful value for communications with newly created realms.
+        Has a few fundamental limitations:
+
+        * Its value will be effectively random for realms imported from Slack or
+          other third-party tools.
+        * The user may be deactivated, etc., so it's not something that's useful
+          for features, permissions, etc.
+        """
+        return UserProfile.objects.filter(realm=self, is_bot=False).order_by("id").first()
 
     def get_human_owner_users(self) -> QuerySet:
         return UserProfile.objects.filter(
@@ -708,6 +776,10 @@ def get_realm(string_id: str) -> Realm:
     return Realm.objects.get(string_id=string_id)
 
 
+def get_realm_by_id(realm_id: int) -> Realm:
+    return Realm.objects.get(id=realm_id)
+
+
 def name_changes_disabled(realm: Optional[Realm]) -> bool:
     if realm is None:
         return settings.NAME_CHANGES_DISABLED
@@ -779,7 +851,7 @@ class RealmEmoji(models.Model):
             # ending with one of the punctuation characters.
             RegexValidator(
                 regex=r"^[0-9a-z.\-_]+(?<![.\-_])$",
-                message=ugettext_lazy("Invalid characters in emoji name"),
+                message=gettext_lazy("Invalid characters in emoji name"),
             ),
         ]
     )
@@ -847,9 +919,9 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 
-def filter_pattern_validator(value: str) -> None:
+def filter_pattern_validator(value: str) -> Pattern[str]:
     regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
-    error_msg = _("Invalid filter pattern.  Valid characters are {}.").format(
+    error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
         "[ a-zA-Z_#=/:+!-]",
     )
 
@@ -857,10 +929,12 @@ def filter_pattern_validator(value: str) -> None:
         raise ValidationError(error_msg)
 
     try:
-        re.compile(value)
+        pattern = re.compile(value)
     except re.error:
         # Regex is invalid
         raise ValidationError(error_msg)
+
+    return pattern
 
 
 def filter_format_validator(value: str) -> None:
@@ -877,71 +951,169 @@ class RealmFilter(models.Model):
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    pattern: str = models.TextField(validators=[filter_pattern_validator])
+    pattern: str = models.TextField()
     url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
 
+    def clean(self) -> None:
+        """Validate whether the set of parameters in the URL Format string
+        match the set of parameters in the regular expression.
+
+        Django's `full_clean` calls `clean_fields` followed by `clean` method
+        and stores all ValidationErrors from all stages to return as JSON.
+        """
+
+        # Extract variables present in the pattern
+        pattern = filter_pattern_validator(self.pattern)
+        group_set = set(pattern.groupindex.keys())
+
+        # Extract variables used in the URL format string.  Note that
+        # this regex will incorrectly reject patterns that attempt to
+        # escape % using %%.
+        found_group_set: Set[str] = set()
+        group_match_regex = r"(?<!%)%\((?P<group_name>[^()]+)\)s"
+        for m in re.finditer(group_match_regex, self.url_format_string):
+            group_name = m.group("group_name")
+            found_group_set.add(group_name)
+
+        # Report patterns missing in linkifier pattern.
+        missing_in_pattern_set = found_group_set - group_set
+        if len(missing_in_pattern_set) > 0:
+            name = list(sorted(missing_in_pattern_set))[0]
+            raise ValidationError(
+                _("Group %(name)r in URL format string is not present in linkifier pattern."),
+                params={"name": name},
+            )
+
+        missing_in_url_set = group_set - found_group_set
+        # Report patterns missing in URL format string.
+        if len(missing_in_url_set) > 0:
+            # We just report the first missing pattern here. Users can
+            # incrementally resolve errors if there are multiple
+            # missing patterns.
+            name = list(sorted(missing_in_url_set))[0]
+            raise ValidationError(
+                _("Group %(name)r in linkifier pattern is not present in URL format string."),
+                params={"name": name},
+            )
+
     def __str__(self) -> str:
         return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
 
 
-def get_realm_filters_cache_key(realm_id: int) -> str:
-    return f"{cache.KEY_PREFIX}:all_realm_filters:{realm_id}"
+def get_linkifiers_cache_key(realm_id: int) -> str:
+    return f"{cache.KEY_PREFIX}:all_linkifiers_for_realm:{realm_id}"
 
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache: Dict[int, List[Tuple[str, str, int]]] = {}
+per_request_linkifiers_cache: Dict[int, List[LinkifierDict]] = {}
 
 
-def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
-    return realm_id in per_request_realm_filters_cache
+def realm_in_local_linkifiers_cache(realm_id: int) -> bool:
+    return realm_id in per_request_linkifiers_cache
+
+
+def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
+    if not realm_in_local_linkifiers_cache(realm_id):
+        per_request_linkifiers_cache[realm_id] = linkifiers_for_realm_remote_cache(realm_id)
+    return per_request_linkifiers_cache[realm_id]
 
 
 def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
-    if not realm_in_local_realm_filters_cache(realm_id):
-        per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
-    return per_request_realm_filters_cache[realm_id]
+    """
+    Processes data from `linkifiers_for_realm` to return to older clients,
+    which use the `realm_filters` events.
+    """
+    linkifiers = linkifiers_for_realm(realm_id)
+    realm_filters: List[Tuple[str, str, int]] = []
+    for linkifier in linkifiers:
+        realm_filters.append((linkifier["pattern"], linkifier["url_format"], linkifier["id"]))
+    return realm_filters
 
 
-@cache_with_key(get_realm_filters_cache_key, timeout=3600 * 24 * 7)
-def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
-    filters = []
-    for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
-
-    return filters
-
-
-def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
-    filters: DefaultDict[int, List[Tuple[str, str, int]]] = defaultdict(list)
-    for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm_id].append(
-            (realm_filter.pattern, realm_filter.url_format_string, realm_filter.id)
+@cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
+def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
+    linkifiers = []
+    for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
+        linkifiers.append(
+            LinkifierDict(
+                pattern=linkifier.pattern,
+                url_format=linkifier.url_format_string,
+                id=linkifier.id,
+            )
         )
 
-    return filters
+    return linkifiers
 
 
-def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
+def flush_linkifiers(sender: Any, **kwargs: Any) -> None:
     realm_id = kwargs["instance"].realm_id
-    cache_delete(get_realm_filters_cache_key(realm_id))
+    cache_delete(get_linkifiers_cache_key(realm_id))
     try:
-        per_request_realm_filters_cache.pop(realm_id)
+        per_request_linkifiers_cache.pop(realm_id)
     except KeyError:
         pass
 
 
-post_save.connect(flush_realm_filter, sender=RealmFilter)
-post_delete.connect(flush_realm_filter, sender=RealmFilter)
+post_save.connect(flush_linkifiers, sender=RealmFilter)
+post_delete.connect(flush_linkifiers, sender=RealmFilter)
 
 
 def flush_per_request_caches() -> None:
     global per_request_display_recipient_cache
     per_request_display_recipient_cache = {}
-    global per_request_realm_filters_cache
-    per_request_realm_filters_cache = {}
+    global per_request_linkifiers_cache
+    per_request_linkifiers_cache = {}
+
+
+class RealmPlayground(models.Model):
+    """Server side storage model to store playground information needed by our
+    'view code in playground' feature in code blocks.
+    """
+
+    MAX_PYGMENTS_LANGUAGE_LENGTH = 40
+
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    url_prefix: str = models.TextField(validators=[URLValidator()])
+
+    # User-visible display name used when configuring playgrounds in the settings page and
+    # when displaying them in the playground links popover.
+    name: str = models.TextField(db_index=True)
+
+    # This stores the pygments lexer subclass names and not the aliases themselves.
+    pygments_language: str = models.CharField(
+        db_index=True,
+        max_length=MAX_PYGMENTS_LANGUAGE_LENGTH,
+        # We validate to see if this conforms to the character set allowed for a
+        # language in the code block.
+        validators=[
+            RegexValidator(
+                regex=r"^[ a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
+            )
+        ],
+    )
+
+    class Meta:
+        unique_together = (("realm", "pygments_language", "name"),)
+
+    def __str__(self) -> str:
+        return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
+
+
+def get_realm_playgrounds(realm: Realm) -> List[Dict[str, Union[int, str]]]:
+    playgrounds: List[Dict[str, Union[int, str]]] = []
+    for playground in RealmPlayground.objects.filter(realm=realm).all():
+        playgrounds.append(
+            dict(
+                id=playground.id,
+                name=playground.name,
+                pygments_language=playground.pygments_language,
+                url_prefix=playground.url_prefix,
+            )
+        )
+    return playgrounds
 
 
 # The Recipient table is used to map Messages to the set of users who
@@ -1077,6 +1249,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     ROLE_TYPES = [
         ROLE_REALM_OWNER,
         ROLE_REALM_ADMINISTRATOR,
+        ROLE_MODERATOR,
         ROLE_MEMBER,
         ROLE_GUEST,
     ]
@@ -1129,6 +1302,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     enable_digest_emails: bool = models.BooleanField(default=True)
     enable_login_emails: bool = models.BooleanField(default=True)
+    enable_marketing_emails: bool = models.BooleanField(default=True)
     realm_name_in_notifications: bool = models.BooleanField(default=False)
     presence_enabled: bool = models.BooleanField(default=True)
 
@@ -1150,13 +1324,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         "zerver.Stream",
         null=True,
         related_name="+",
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
     default_events_register_stream: Optional["Stream"] = models.ForeignKey(
         "zerver.Stream",
         null=True,
         related_name="+",
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
@@ -1174,7 +1348,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     high_contrast_mode: bool = models.BooleanField(default=False)
     translate_emoticons: bool = models.BooleanField(default=False)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
-    starred_message_counts: bool = models.BooleanField(default=False)
+    starred_message_counts: bool = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
     COLOR_SCHEME_LIGHT = 3
@@ -1184,7 +1358,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
     # default behavior, automatic, enables this behavior once a user
-    # is subscribed to 30+ streams in the webapp.
+    # is subscribed to 30+ streams in the web app.
     DEMOTE_STREAMS_AUTOMATIC = 1
     DEMOTE_STREAMS_ALWAYS = 2
     DEMOTE_STREAMS_NEVER = 3
@@ -1277,6 +1451,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
+        enable_marketing_emails=bool,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
@@ -1295,10 +1470,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     ROLE_ID_TO_NAME_MAP = {
-        ROLE_REALM_OWNER: ugettext_lazy("Organization owner"),
-        ROLE_REALM_ADMINISTRATOR: ugettext_lazy("Organization administrator"),
-        ROLE_MEMBER: ugettext_lazy("Member"),
-        ROLE_GUEST: ugettext_lazy("Guest"),
+        ROLE_REALM_OWNER: gettext_lazy("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: gettext_lazy("Organization administrator"),
+        ROLE_MODERATOR: gettext_lazy("Moderator"),
+        ROLE_MEMBER: gettext_lazy("Member"),
+        ROLE_GUEST: gettext_lazy("Guest"),
     }
 
     def get_role_name(self) -> str:
@@ -1441,7 +1617,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return False
 
     def has_permission(self, policy_name: str) -> bool:
-        if policy_name not in ["create_stream_policy", "invite_to_stream_policy"]:
+        if policy_name not in [
+            "create_stream_policy",
+            "edit_topic_policy",
+            "invite_to_stream_policy",
+            "invite_to_realm_policy",
+            "move_messages_between_streams_policy",
+        ]:
             raise AssertionError("Invalid policy")
 
         if self.is_realm_admin:
@@ -1472,11 +1654,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
 
+    def can_invite_others_to_realm(self) -> bool:
+        return self.has_permission("invite_to_realm_policy")
+
+    def can_move_messages_between_streams(self) -> bool:
+        return self.has_permission("move_messages_between_streams_policy")
+
+    def can_edit_topic_of_any_message(self) -> bool:
+        if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
+            return True
+        return self.has_permission("edit_topic_policy")
+
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
-
-    def can_access_all_realm_members(self) -> bool:
-        return not (self.realm.is_zephyr_mirror_realm or self.is_guest)
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
@@ -1532,12 +1722,8 @@ def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_offline_email_notifications and not user_profile.is_bot
 
 
-def receives_online_notifications(user_profile: UserProfile) -> bool:
+def receives_online_push_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_online_push_notifications and not user_profile.is_bot
-
-
-def receives_stream_notifications(user_profile: UserProfile) -> bool:
-    return user_profile.enable_stream_push_notifications and not user_profile.is_bot
 
 
 def remote_user_to_email(remote_user: str) -> str:
@@ -1566,7 +1752,7 @@ class PreregistrationUser(models.Model):
     email: str = models.EmailField()
 
     # If the pre-registration process provides a suggested full name for this user,
-    # store it here to use it to prepopulate the Full Name field in the registration form:
+    # store it here to use it to prepopulate the full name field in the registration form:
     full_name: Optional[str] = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated: bool = models.BooleanField(default=False)
     referred_by: Optional[UserProfile] = models.ForeignKey(
@@ -1587,12 +1773,12 @@ class PreregistrationUser(models.Model):
     # objects created as part of realm creation.
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
-    # Changes to INVITED_AS should also be reflected in
-    # settings_invites.invited_as_values in
-    # static/js/settings_invites.js
+    # These values should be consistent with the values
+    # in settings_config.user_role_values.
     INVITE_AS = dict(
         REALM_OWNER=100,
         REALM_ADMIN=200,
+        MODERATOR=300,
         MEMBER=400,
         GUEST_USER=600,
     )
@@ -1820,6 +2006,22 @@ class MutedTopic(models.Model):
 
     def __str__(self) -> str:
         return f"<MutedTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
+
+
+class MutedUser(models.Model):
+    user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    muted_user = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
+
+    class Meta:
+        unique_together = ("user_profile", "muted_user")
+
+    def __str__(self) -> str:
+        return f"<MutedUser: {self.user_profile.email} -> {self.muted_user.email}>"
+
+
+post_save.connect(flush_muting_users_cache, sender=MutedUser)
+post_delete.connect(flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
@@ -2226,9 +2428,9 @@ class AbstractReaction(models.Model):
     REALM_EMOJI = "realm_emoji"
     ZULIP_EXTRA_EMOJI = "zulip_extra_emoji"
     REACTION_TYPES = (
-        (UNICODE_EMOJI, ugettext_lazy("Unicode emoji")),
-        (REALM_EMOJI, ugettext_lazy("Custom emoji")),
-        (ZULIP_EXTRA_EMOJI, ugettext_lazy("Zulip extra emoji")),
+        (UNICODE_EMOJI, gettext_lazy("Unicode emoji")),
+        (REALM_EMOJI, gettext_lazy("Custom emoji")),
+        (ZULIP_EXTRA_EMOJI, gettext_lazy("Zulip extra emoji")),
     )
     reaction_type: str = models.CharField(
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
@@ -2269,7 +2471,7 @@ class Reaction(AbstractReaction):
             "emoji_code",
             "reaction_type",
             "user_profile__email",
-            "user_profile__id",
+            "user_profile_id",
             "user_profile__full_name",
         ]
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
@@ -2284,16 +2486,28 @@ class ArchivedReaction(AbstractReaction):
 
 
 # Whenever a message is sent, for each user subscribed to the
-# corresponding Recipient object, we add a row to the UserMessage
-# table indicating that that user received that message.  This table
-# allows us to quickly query any user's last 1000 messages to generate
-# the home view.
+# corresponding Recipient object (that is not long-term idle), we add
+# a row to the UserMessage table indicating that that user received
+# that message.  This table allows us to quickly query any user's last
+# 1000 messages to generate the home view and search exactly the
+# user's message history.
 #
-# Additionally, the flags field stores metadata like whether the user
-# has read the message, starred or collapsed the message, was
-# mentioned in the message, etc.
+# The long-term idle optimization is extremely important for large,
+# open organizations, and is described in detail here:
+# https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 #
-# UserMessage is the largest table in a Zulip installation, even
+# In particular, new messages to public streams will only generate
+# UserMessage rows for Members who are long_term_idle if they would
+# have nonzero flags for the message (E.g. a mention, alert word, or
+# mobile push notification).
+#
+# The flags field stores metadata like whether the user has read the
+# message, starred or collapsed the message, was mentioned in the
+# message, etc. We use of postgres partial indexes on flags to make
+# queries for "User X's messages with flag Y" extremely fast without
+# consuming much storage space.
+#
+# UserMessage is the largest table in many Zulip installations, even
 # though each row is only 4 integers.
 class AbstractUserMessage(models.Model):
     id: int = models.BigAutoField(primary_key=True)
@@ -2404,7 +2618,7 @@ def get_usermessage_by_message_id(
 ) -> Optional[UserMessage]:
     try:
         return UserMessage.objects.select_related().get(
-            user_profile=user_profile, message__id=message_id
+            user_profile=user_profile, message_id=message_id
         )
     except UserMessage.DoesNotExist:
         return None
@@ -2796,9 +3010,9 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
     return list(query)
 
 
-def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
+def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
     try:
-        return get_user_by_delivery_email(email, get_realm(string_id))
+        return get_user_by_delivery_email(email, get_realm_by_id(realm_id))
     except (Realm.DoesNotExist, UserProfile.DoesNotExist):
         return None
 
@@ -2926,7 +3140,7 @@ class UserPresence(models.Model):
 
     # The user was actively using this Zulip client as of `timestamp` (i.e.,
     # they had interacted with the client recently).  When the timestamp is
-    # itself recent, this is the green "active" status in the webapp.
+    # itself recent, this is the green "active" status in the web app.
     ACTIVE = 1
 
     # There had been no user activity (keyboard/mouse/etc.) on this client
@@ -3187,11 +3401,21 @@ class AbstractRealmAuditLog(models.Model):
     REALM_EXPORTED = 206
     REALM_PROPERTY_CHANGED = 207
     REALM_ICON_SOURCE_CHANGED = 208
+    REALM_DISCOUNT_CHANGED = 209
+    REALM_SPONSORSHIP_APPROVED = 210
+    REALM_BILLING_METHOD_CHANGED = 211
+    REALM_REACTIVATION_EMAIL_SENT = 212
+    REALM_SPONSORSHIP_PENDING_STATUS_CHANGED = 213
+    REALM_SUBDOMAIN_CHANGED = 214
+    REALM_CREATED = 215
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
     SUBSCRIPTION_DEACTIVATED = 303
     SUBSCRIPTION_PROPERTY_CHANGED = 304
+
+    USER_MUTED = 350
+    USER_UNMUTED = 351
 
     STRIPE_CUSTOMER_CREATED = 401
     STRIPE_CARD_CHANGED = 402
@@ -3336,10 +3560,10 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (SELECT, ugettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, gettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -3350,14 +3574,14 @@ class CustomProfileField(models.Model):
     }
 
     FIELD_TYPE_DATA: List[FieldElement] = [
-        # Type, Display Name, Validator, Converter, Keyword
-        (SHORT_TEXT, ugettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, ugettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
-        (DATE, ugettext_lazy("Date picker"), check_date, str, "DATE"),
-        (URL, ugettext_lazy("Link"), check_url, str, "URL"),
+        # Type, display name, validator, converter, keyword
+        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, gettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
+        (DATE, gettext_lazy("Date picker"), check_date, str, "DATE"),
+        (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (
             EXTERNAL_ACCOUNT,
-            ugettext_lazy("External account"),
+            gettext_lazy("External account"),
             check_short_string,
             str,
             "EXTERNAL_ACCOUNT",
@@ -3482,11 +3706,11 @@ class Service(models.Model):
 
 
 def get_bot_services(user_profile_id: int) -> List[Service]:
-    return list(Service.objects.filter(user_profile__id=user_profile_id))
+    return list(Service.objects.filter(user_profile_id=user_profile_id))
 
 
 def get_service_profile(user_profile_id: int, service_name: str) -> Service:
-    return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+    return Service.objects.get(user_profile_id=user_profile_id, name=service_name)
 
 
 class BotStorageData(models.Model):

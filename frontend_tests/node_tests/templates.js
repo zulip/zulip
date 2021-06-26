@@ -2,13 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {JSDOM} = require("jsdom");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("DOMParser", new JSDOM().window.DOMParser);
-zrequire("templates");
+/*
+    Note that the test runner automatically registers
+    all of our handlers.
+*/
 
 run_test("and", () => {
     const args = {

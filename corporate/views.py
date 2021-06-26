@@ -10,19 +10,20 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-    MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
     STRIPE_PUBLISHABLE_KEY,
     BillingError,
+    cents_to_dollar_string,
     do_change_plan_status,
     do_replace_payment_source,
     downgrade_at_the_end_of_billing_cycle,
     downgrade_now_without_creating_additional_invoices,
     get_latest_seat_count,
+    is_sponsored_realm,
     make_end_of_cycle_updates_if_needed,
     process_initial_upgrade,
     renewal_amount,
@@ -30,7 +31,9 @@ from corporate.lib.stripe import (
     start_of_next_billing_cycle,
     stripe_get_customer,
     unsign_string,
+    update_license_ledger_for_manual_plan,
     update_sponsorship_status,
+    validate_licenses,
 )
 from corporate.models import (
     CustomerPlan,
@@ -43,13 +46,18 @@ from zerver.decorator import (
     require_organization_member,
     zulip_login_required,
 )
+from zerver.lib.actions import do_make_user_billing_admin
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.validator import check_int, check_string
+from zerver.lib.validator import check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
+
+VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
+VALID_BILLING_SCHEDULE_VALUES = ["annual", "monthly"]
+VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
 
 
 def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
@@ -67,34 +75,20 @@ def check_upgrade_parameters(
     has_stripe_token: bool,
     seat_count: int,
 ) -> None:
-    if billing_modality not in ["send_invoice", "charge_automatically"]:
+    if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
         raise BillingError("unknown billing_modality")
-    if schedule not in ["annual", "monthly"]:
+    if schedule not in VALID_BILLING_SCHEDULE_VALUES:  # nocoverage
         raise BillingError("unknown schedule")
-    if license_management not in ["automatic", "manual"]:
+    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
         raise BillingError("unknown license_management")
 
+    charge_automatically = False
     if billing_modality == "charge_automatically":
+        charge_automatically = True
         if not has_stripe_token:
             raise BillingError("autopay with no card")
 
-    min_licenses = seat_count
-    max_licenses = None
-    if billing_modality == "send_invoice":
-        min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
-        max_licenses = MAX_INVOICED_LICENSES
-
-    if licenses is None or licenses < min_licenses:
-        raise BillingError(
-            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
-        )
-
-    if max_licenses is not None and licenses > max_licenses:
-        message = _(
-            "Invoices with more than {} licenses can't be processed from this page. To complete "
-            "the upgrade, please contact {}."
-        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
-        raise BillingError("too many licenses", message)
+    validate_licenses(charge_automatically, licenses, seat_count)
 
 
 # Should only be called if the customer is being charged automatically
@@ -123,14 +117,17 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 def upgrade(
     request: HttpRequest,
     user: UserProfile,
-    billing_modality: str = REQ(validator=check_string),
-    schedule: str = REQ(validator=check_string),
-    license_management: Optional[str] = REQ(validator=check_string, default=None),
-    licenses: Optional[int] = REQ(validator=check_int, default=None),
-    stripe_token: Optional[str] = REQ(validator=check_string, default=None),
-    signed_seat_count: str = REQ(validator=check_string),
-    salt: str = REQ(validator=check_string),
+    billing_modality: str = REQ(str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)),
+    schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
+    signed_seat_count: str = REQ(),
+    salt: str = REQ(),
+    license_management: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
+    ),
+    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    stripe_token: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
+
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == "charge_automatically" and license_management == "automatic":
@@ -195,7 +192,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             billing_page_url = f"{billing_page_url}?onboarding=true"
         return HttpResponseRedirect(billing_page_url)
 
-    if user.realm.plan_type == user.realm.STANDARD_FREE:
+    if is_sponsored_realm(user.realm):
         return HttpResponseRedirect(billing_page_url)
 
     percent_off = Decimal(0)
@@ -232,9 +229,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 def sponsorship(
     request: HttpRequest,
     user: UserProfile,
-    organization_type: str = REQ("organization-type", validator=check_string),
-    website: str = REQ("website", validator=check_string),
-    description: str = REQ("description", validator=check_string),
+    organization_type: str = REQ("organization-type"),
+    website: str = REQ(),
+    description: str = REQ(),
 ) -> HttpResponse:
     realm = user.realm
 
@@ -265,9 +262,8 @@ def sponsorship(
         context=context,
     )
 
-    update_sponsorship_status(realm, True)
-    user.is_billing_admin = True
-    user.save(update_fields=["is_billing_admin"])
+    update_sponsorship_status(realm, True, acting_user=user)
+    do_make_user_billing_admin(user)
 
     return json_success()
 
@@ -306,13 +302,14 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             if new_plan is not None:  # nocoverage
                 plan = new_plan
             assert plan is not None  # for mypy
-            free_trial = plan.status == CustomerPlan.FREE_TRIAL
             downgrade_at_end_of_cycle = plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
             switch_to_annual_at_end_of_cycle = (
                 plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE
             )
             licenses = last_ledger_entry.licenses
-            licenses_used = get_latest_seat_count(user.realm)
+            licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+            seat_count = get_latest_seat_count(user.realm)
+
             # Should do this in javascript, using the user's timezone
             renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
                 dt=start_of_next_billing_cycle(plan, now)
@@ -328,14 +325,15 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             context.update(
                 plan_name=plan.name,
                 has_active_plan=True,
-                free_trial=free_trial,
+                free_trial=plan.is_free_trial(),
                 downgrade_at_end_of_cycle=downgrade_at_end_of_cycle,
                 automanage_licenses=plan.automanage_licenses,
                 switch_to_annual_at_end_of_cycle=switch_to_annual_at_end_of_cycle,
                 licenses=licenses,
-                licenses_used=licenses_used,
+                licenses_at_next_renewal=licenses_at_next_renewal,
+                seat_count=seat_count,
                 renewal_date=renewal_date,
-                renewal_amount=f"{renewal_cents / 100.:,.2f}",
+                renewal_amount=cents_to_dollar_string(renewal_cents),
                 payment_method=payment_method,
                 charge_automatically=charge_automatically,
                 publishable_key=STRIPE_PUBLISHABLE_KEY,
@@ -349,34 +347,110 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
 @require_billing_access
 @has_request_variables
-def change_plan_status(
-    request: HttpRequest, user: UserProfile, status: int = REQ("status", validator=check_int)
+def update_plan(
+    request: HttpRequest,
+    user: UserProfile,
+    status: Optional[int] = REQ(
+        "status",
+        json_validator=check_int_in(
+            [
+                CustomerPlan.ACTIVE,
+                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+                CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+                CustomerPlan.ENDED,
+            ]
+        ),
+        default=None,
+    ),
+    licenses: Optional[int] = REQ("licenses", json_validator=check_int, default=None),
+    licenses_at_next_renewal: Optional[int] = REQ(
+        "licenses_at_next_renewal", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
-    assert status in [
-        CustomerPlan.ACTIVE,
-        CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-        CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
-        CustomerPlan.ENDED,
-    ]
-
     plan = get_current_plan_by_realm(user.realm)
     assert plan is not None  # for mypy
 
-    if status == CustomerPlan.ACTIVE:
-        assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-        do_change_plan_status(plan, status)
-    elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
-        assert plan.status == CustomerPlan.ACTIVE
-        downgrade_at_the_end_of_billing_cycle(user.realm)
-    elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
-        assert plan.billing_schedule == CustomerPlan.MONTHLY
-        assert plan.status == CustomerPlan.ACTIVE
-        assert plan.fixed_price is None
-        do_change_plan_status(plan, status)
-    elif status == CustomerPlan.ENDED:
-        assert plan.status == CustomerPlan.FREE_TRIAL
-        downgrade_now_without_creating_additional_invoices(user.realm)
-    return json_success()
+    new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, timezone_now())
+    if new_plan is not None:
+        return json_error(
+            _("Unable to update the plan. The plan has been expired and replaced with a new plan.")
+        )
+
+    if last_ledger_entry is None:
+        return json_error(_("Unable to update the plan. The plan has ended."))
+
+    if status is not None:
+        if status == CustomerPlan.ACTIVE:
+            assert plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
+            do_change_plan_status(plan, status)
+        elif status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+            assert plan.status == CustomerPlan.ACTIVE
+            downgrade_at_the_end_of_billing_cycle(user.realm)
+        elif status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
+            assert plan.billing_schedule == CustomerPlan.MONTHLY
+            assert plan.status == CustomerPlan.ACTIVE
+            assert plan.fixed_price is None
+            do_change_plan_status(plan, status)
+        elif status == CustomerPlan.ENDED:
+            assert plan.is_free_trial()
+            downgrade_now_without_creating_additional_invoices(user.realm)
+        return json_success()
+
+    if licenses is not None:
+        if plan.automanage_licenses:
+            return json_error(
+                _(
+                    "Unable to update licenses manually. Your plan is on automatic license management."
+                )
+            )
+        if last_ledger_entry.licenses == licenses:
+            return json_error(
+                _(
+                    "Your plan is already on {licenses} licenses in the current billing period."
+                ).format(licenses=licenses)
+            )
+        if last_ledger_entry.licenses > licenses:
+            return json_error(
+                _("You cannot decrease the licenses in the current billing period.").format(
+                    licenses=licenses
+                )
+            )
+        try:
+            validate_licenses(
+                plan.charge_automatically, licenses, get_latest_seat_count(user.realm)
+            )
+        except BillingError as e:
+            return json_error(e.message, data={"error_description": e.description})
+        update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
+        return json_success()
+
+    if licenses_at_next_renewal is not None:
+        if plan.automanage_licenses:
+            return json_error(
+                _(
+                    "Unable to update licenses manually. Your plan is on automatic license management."
+                )
+            )
+        if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
+            return json_error(
+                _(
+                    "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
+                ).format(licenses_at_next_renewal=licenses_at_next_renewal)
+            )
+        try:
+            validate_licenses(
+                plan.charge_automatically,
+                licenses_at_next_renewal,
+                get_latest_seat_count(user.realm),
+            )
+        except BillingError as e:
+            return json_error(e.message, data={"error_description": e.description})
+        update_license_ledger_for_manual_plan(
+            plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
+        )
+        return json_success()
+
+    return json_error(_("Nothing to change."))
 
 
 @require_billing_access
@@ -384,7 +458,7 @@ def change_plan_status(
 def replace_payment_source(
     request: HttpRequest,
     user: UserProfile,
-    stripe_token: str = REQ("stripe_token", validator=check_string),
+    stripe_token: str = REQ(),
 ) -> HttpResponse:
     try:
         do_replace_payment_source(user, stripe_token, pay_invoices=True)

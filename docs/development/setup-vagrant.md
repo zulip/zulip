@@ -47,7 +47,7 @@ a proxy to access the internet.)
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 18.04
-  - or **Debian**: 10 "buster"
+  - or **Debian**: 10 "buster" or 11 "bullseye"
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
@@ -81,12 +81,23 @@ Jump to:
 1. Install <a href="https://www.vagrantup.com/downloads" target="_blank">Vagrant</a> (latest).
 2. Install <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">VirtualBox</a> (latest).
 
+##### Intel
+
+1. Install [Vagrant][vagrant-dl] (latest).
+2. Install [VirtualBox][vbox-dl] (latest).
+
 (For a non-free option, but better performance, you can also use <a href="https://www.vmware.com/products/fusion.html" target="_blank">VMware
 Fusion</a> with the <a href="https://www.vagrantup.com/vmware" target="_blank">VMware Fusion Vagrant
 plugin</a> or <a href="https://www.parallels.com/products/desktop/" target="_blank">Parallels Desktop</a> as
 a provider for Vagrant.)
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
+
+##### Apple Silicon
+
+The setup for Apple Silicon (e.g. M1) Macs is very similar to that [for Intel
+above](#intel), except that VirtualBox is not supported. Instead you can use [Docker for
+Mac](https://docs.docker.com/docker-for-mac/install/).
 
 #### Ubuntu
 
@@ -154,7 +165,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 ```eval_rst
 .. note::
-    We now recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-experimental>`_.
+    We recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2>`_.
 ```
 
 1. Install <a href="https://gitforwindows.org" target="_blank">Git for Windows</a>, which installs *Git BASH*.
@@ -275,12 +286,12 @@ Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`:
 
 ```
-# On Windows or macOS:
+# On Windows or macOS (Intel):
 cd zulip
 vagrant plugin install vagrant-vbguest
 vagrant up --provider=virtualbox
 
-# On Linux:
+# On Linux or macOS (Apple Silicon):
 cd zulip
 vagrant up --provider=docker
 ```
@@ -305,10 +316,12 @@ proxy to access the internet.) `vagrant up` can fail while
 provisioning if your Internet connection is unreliable.  To retry, you
 can use `vagrant provision` (`vagrant up` will just boot the guest
 without provisioning after the first time).  Other common issues are
-documented in the
-[Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
+documented in the [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a> in the [Zulip development community server](../contributing/chat-zulip-org.md) for
-real-time help.
+[Troubleshooting and common errors](#troubleshooting-and-common-errors)
+section.  If that doesn't help, please visit
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for real-time help.
 
 On Windows, you will see the message `The system cannot find the path
 specified.` several times.  This is normal and is not a problem.
@@ -428,7 +441,7 @@ running Git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
 directory where you cloned Zulip on your main machine.
 
 If you're new to working with Git/GitHub, check out our [Git & GitHub
-Guide][rtd-git-guide].
+guide][rtd-git-guide].
 
 #### Maintaining the development environment
 
@@ -526,7 +539,7 @@ $ ./tools/run-dev.py
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub Guide][rtd-git-guide]
+* [Git & GitHub guide][rtd-git-guide]
 * [Using the development environment][rtd-using-dev-env]
 * [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,

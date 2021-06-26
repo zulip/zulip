@@ -47,6 +47,7 @@ from zerver.models import (
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     Service,
     Stream,
@@ -140,6 +141,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmdomain",
     "zerver_realmemoji",
     "zerver_realmfilter",
+    "zerver_realmplayground",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
@@ -160,6 +162,7 @@ ALL_ZULIP_TABLES = {
     "zerver_userprofile_user_permissions",
     "zerver_userstatus",
     "zerver_mutedtopic",
+    "zerver_muteduser",
 }
 
 # This set contains those database tables that we expect to not be
@@ -191,7 +194,8 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
     # These tables are related to a user's 2FA authentication
-    # configuration, which will need to be re-setup on the new server.
+    # configuration, which will need to be set up again on the new
+    # server.
     "two_factor_phonedevice",
     "otp_static_staticdevice",
     "otp_static_statictoken",
@@ -223,6 +227,7 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
+    "zerver_muteduser",
     "zerver_submessage",
     # This is low priority, since users can easily just reset themselves to away.
     "zerver_userstatus",
@@ -633,6 +638,13 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmfilter",
         model=RealmFilter,
+        normal_parent=realm_config,
+        parent_key="realm_id__in",
+    )
+
+    Config(
+        table="zerver_realmplayground",
+        model=RealmPlayground,
         normal_parent=realm_config,
         parent_key="realm_id__in",
     )
@@ -1077,7 +1089,7 @@ def export_partial_message_files(
         ).values_list("id", flat=True)
 
         consented_recipient_ids = Subscription.objects.filter(
-            user_profile__id__in=consented_user_ids
+            user_profile_id__in=consented_user_ids
         ).values_list("recipient_id", flat=True)
 
         recipient_ids = set(public_stream_recipient_ids) | set(consented_recipient_ids)
@@ -1172,7 +1184,7 @@ def write_message_partial_for_query(
         # Figure out the name of our shard file.
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
         message_filename += ".partial"
-        logging.info("Fetched Messages for %s", message_filename)
+        logging.info("Fetched messages for %s", message_filename)
 
         # Clean up our messages.
         table_data: TableData = {}
@@ -1526,7 +1538,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copy2(local_path, output_path)
-        # Realm Emoji author is optional.
+        # Realm emoji author is optional.
         author = realm_emoji.author
         author_id = None
         if author:
@@ -1818,7 +1830,7 @@ def export_messages_single_user(
             message_chunk.append(item)
 
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
-        logging.info("Fetched Messages for %s", message_filename)
+        logging.info("Fetched messages for %s", message_filename)
 
         output = {"zerver_message": message_chunk}
         floatify_datetime_fields(output, "zerver_message")
@@ -1886,7 +1898,7 @@ def get_analytics_config() -> Config:
 def get_consented_user_ids(consent_message_id: int) -> Set[int]:
     return set(
         Reaction.objects.filter(
-            message__id=consent_message_id,
+            message_id=consent_message_id,
             reaction_type="unicode_emoji",
             # outbox = 1f4e4
             emoji_code="1f4e4",

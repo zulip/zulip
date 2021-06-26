@@ -5,12 +5,14 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const muting = zrequire("muting");
 const typing_data = zrequire("typing_data");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         typing_data.clear_for_testing();
-        f(override);
+        muting.set_muted_users([]);
+        f({override});
     });
 }
 
@@ -37,26 +39,40 @@ test("basics", () => {
     assert.deepEqual(typing_data.get_all_typists(), [7, 10, 15]);
 
     // test basic removal
-    assert(typing_data.remove_typist([15, 7], "7"));
+    assert.ok(typing_data.remove_typist([15, 7], "7"));
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
 
     // test removing an id that is not there
-    assert(!typing_data.remove_typist([15, 7], 7));
+    assert.ok(!typing_data.remove_typist([15, 7], 7));
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
     assert.deepEqual(typing_data.get_all_typists(), [10, 15]);
 
     // remove user from one group, but "15" will still be among
     // "all typists"
-    assert(typing_data.remove_typist(["15", 7], "15"));
+    assert.ok(typing_data.remove_typist(["15", 7], "15"));
     assert.deepEqual(typing_data.get_all_typists(), [10, 15]);
 
     // now remove from the other group
-    assert(typing_data.remove_typist([5, 15, 10], 15));
+    assert.ok(typing_data.remove_typist([5, 15, 10], 15));
     assert.deepEqual(typing_data.get_all_typists(), [10]);
 
     // test duplicate ids in a groups
     typing_data.add_typist([20, 40, 20], 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
+});
+
+test("muted_typists_excluded", () => {
+    typing_data.add_typist([5, 10, 15], 5);
+    typing_data.add_typist([5, 10, 15], 10);
+
+    // Nobody is muted.
+    assert.deepEqual(typing_data.get_group_typists([5, 10, 15]), [5, 10]);
+    assert.deepEqual(typing_data.get_all_typists(), [5, 10]);
+
+    // Mute a user, and test that the get_* functions exclude that user.
+    muting.add_muted_user(10);
+    assert.deepEqual(typing_data.get_group_typists([5, 10, 15]), [5]);
+    assert.deepEqual(typing_data.get_all_typists(), [5]);
 });
 
 test("timers", () => {

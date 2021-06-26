@@ -26,7 +26,7 @@ async function test_mention(page: Page): Promise<void> {
         zulip_test.set_wildcard_mention_large_stream_threshold(5);
         return zulip_test.wildcard_mention_large_stream_threshold;
     });
-    assert(stream_size > threshold);
+    assert.ok(stream_size > threshold);
     await page.click("#compose-send-button");
 
     await page.waitForXPath(

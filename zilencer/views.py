@@ -7,8 +7,8 @@ from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext as err_
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS
@@ -68,7 +68,7 @@ def register_remote_server(
         str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH)
     ),
     hostname: str = REQ(str_validator=check_capped_string(RemoteZulipServer.HOSTNAME_MAX_LENGTH)),
-    contact_email: str = REQ(str_validator=check_string),
+    contact_email: str = REQ(),
     new_org_key: Optional[str] = REQ(
         str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH), default=None
     ),
@@ -109,9 +109,9 @@ def register_remote_server(
 def register_remote_push_device(
     request: HttpRequest,
     entity: Union[UserProfile, RemoteZulipServer],
-    user_id: int = REQ(validator=check_int),
+    user_id: int = REQ(json_validator=check_int),
     token: str = REQ(),
-    token_kind: int = REQ(validator=check_int),
+    token_kind: int = REQ(json_validator=check_int),
     ios_app_id: Optional[str] = None,
 ) -> HttpResponse:
     server = validate_bouncer_token_request(entity, token, token_kind)
@@ -138,8 +138,8 @@ def unregister_remote_push_device(
     request: HttpRequest,
     entity: Union[UserProfile, RemoteZulipServer],
     token: str = REQ(),
-    token_kind: int = REQ(validator=check_int),
-    user_id: int = REQ(validator=check_int),
+    token_kind: int = REQ(json_validator=check_int),
+    user_id: int = REQ(json_validator=check_int),
     ios_app_id: Optional[str] = None,
 ) -> HttpResponse:
     server = validate_bouncer_token_request(entity, token, token_kind)
@@ -156,7 +156,7 @@ def unregister_remote_push_device(
 def unregister_all_remote_push_devices(
     request: HttpRequest,
     entity: Union[UserProfile, RemoteZulipServer],
-    user_id: int = REQ(validator=check_int),
+    user_id: int = REQ(json_validator=check_int),
 ) -> HttpResponse:
     server = validate_entity(entity)
     RemotePushDeviceToken.objects.filter(user_id=user_id, server=server).delete()
@@ -236,7 +236,7 @@ def remote_server_post_analytics(
     request: HttpRequest,
     entity: Union[UserProfile, RemoteZulipServer],
     realm_counts: List[Dict[str, Any]] = REQ(
-        validator=check_list(
+        json_validator=check_list(
             check_dict_only(
                 [
                     ("property", check_string),
@@ -250,7 +250,7 @@ def remote_server_post_analytics(
         )
     ),
     installation_counts: List[Dict[str, Any]] = REQ(
-        validator=check_list(
+        json_validator=check_list(
             check_dict_only(
                 [
                     ("property", check_string),
@@ -263,7 +263,7 @@ def remote_server_post_analytics(
         )
     ),
     realmauditlog_rows: Optional[List[Dict[str, Any]]] = REQ(
-        validator=check_list(
+        json_validator=check_list(
             check_dict_only(
                 [
                     ("id", check_int),

@@ -2,7 +2,7 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
 import * as narrow_banner from "./narrow_banner";
@@ -19,14 +19,12 @@ export function set_narrowed(value) {
 export class MessageList {
     constructor(opts) {
         if (opts.data) {
-            this.excludes_muted_topics = opts.data.excludes_muted_topics;
             this.data = opts.data;
         } else {
             const filter = opts.filter;
 
-            this.excludes_muted_topics = opts.excludes_muted_topics;
             this.data = new MessageListData({
-                excludes_muted_topics: this.excludes_muted_topics,
+                excludes_muted_topics: opts.excludes_muted_topics,
                 filter,
             });
         }
@@ -191,7 +189,8 @@ export class MessageList {
                 id,
                 items_length: this.data.num_items(),
             };
-            throw new Error("Cannot select id -1", error_data);
+            blueslip.error("Cannot select id -1", error_data);
+            throw new Error("Cannot select id -1");
         }
 
         id = closest_id;
@@ -232,19 +231,22 @@ export class MessageList {
     }
 
     subscribed_bookend_content(stream_name) {
-        return i18n.t("You subscribed to stream __stream__", {stream: stream_name});
+        return $t({defaultMessage: "You subscribed to stream {stream}"}, {stream: stream_name});
     }
 
     unsubscribed_bookend_content(stream_name) {
-        return i18n.t("You unsubscribed from stream __stream__", {stream: stream_name});
+        return $t({defaultMessage: "You unsubscribed from stream {stream}"}, {stream: stream_name});
     }
 
     not_subscribed_bookend_content(stream_name) {
-        return i18n.t("You are not subscribed to stream __stream__", {stream: stream_name});
+        return $t(
+            {defaultMessage: "You are not subscribed to stream {stream}"},
+            {stream: stream_name},
+        );
     }
 
     deactivated_bookend_content() {
-        return i18n.t("This stream has been deactivated");
+        return $t({defaultMessage: "This stream has been deactivated"});
     }
 
     // Maintains a trailing bookend element explaining any changes in
@@ -328,6 +330,7 @@ export class MessageList {
         recipient_row.find(".edit_content_button").hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
+        recipient_row.find(".always_visible_topic_edit").hide();
     }
 
     hide_edit_topic_on_recipient_row(recipient_row) {
@@ -336,6 +339,7 @@ export class MessageList {
         recipient_row.find(".edit_content_button").show();
         recipient_row.find(".topic_edit_form").empty();
         recipient_row.find(".topic_edit").hide();
+        recipient_row.find(".always_visible_topic_edit").show();
     }
 
     show_message_as_read(message, options) {
@@ -380,10 +384,20 @@ export class MessageList {
     }
 
     update_muting_and_rerender() {
-        if (!this.excludes_muted_topics) {
-            return;
-        }
         this.data.update_items_for_muting();
+        // We need to rerender whether or not the narrow hides muted
+        // topics, because we need to update recipient bars for topics
+        // we've muted when we are displaying those topics.
+        //
+        // We could avoid a rerender if we can provide that this
+        // narrow cannot have contained messages to muted topics
+        // either before or after the state change.  The right place
+        // to do this is in the message_events.js code path for
+        // processing topic edits, since that's the only place we'll
+        // call this frequently anyway.
+        //
+        // But in any case, we need to rerender the list for user muting,
+        // to make sure only the right messages are hidden.
         this.rerender();
     }
 

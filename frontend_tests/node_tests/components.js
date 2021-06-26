@@ -4,8 +4,8 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {i18n} = require("../zjsunit/i18n");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {$t} = require("../zjsunit/i18n");
+const {mock_jquery, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let env;
@@ -115,7 +115,7 @@ function make_switcher() {
     return self;
 }
 
-mock_cjs("jquery", (sel, attributes) => {
+mock_jquery((sel, attributes) => {
     if (sel.stub) {
         // The component often redundantly re-wraps objects.
         return sel;
@@ -162,8 +162,8 @@ const components = zrequire("components");
 
 const noop = () => {};
 
-const LEFT_KEY = {which: 37, preventDefault: noop, stopPropagation: noop};
-const RIGHT_KEY = {which: 39, preventDefault: noop, stopPropagation: noop};
+const LEFT_KEY = {key: "ArrowLeft", preventDefault: noop, stopPropagation: noop};
+const RIGHT_KEY = {key: "ArrowRight", preventDefault: noop, stopPropagation: noop};
 
 run_test("basics", () => {
     env = {
@@ -181,9 +181,9 @@ run_test("basics", () => {
     widget = components.toggle({
         selected: 0,
         values: [
-            {label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts"},
-            {label: i18n.t("Message formatting"), key: "message-formatting"},
-            {label: i18n.t("Search operators"), key: "search-operators"},
+            {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
+            {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
+            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
         callback(name, key) {

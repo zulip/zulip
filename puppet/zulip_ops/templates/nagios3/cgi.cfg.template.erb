@@ -117,7 +117,7 @@ use_ssl_authentication=0
 # define this variable, anyone who has not authenticated to the web
 # server will inherit all rights you assign to this user!
 
-#default_user_name=guest
+default_user_name=nagiosadmin
 
 
 
@@ -129,7 +129,7 @@ use_ssl_authentication=0
 # not use authorization.  You may use an asterisk (*) to
 # authorize any user who has authenticated to the web server.
 
-authorized_for_system_information=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_system_information=*
 
 
 
@@ -141,7 +141,7 @@ authorized_for_system_information=nagiosadmin,<%= @nagios_format_users %>
 # an asterisk (*) to authorize any user who has authenticated
 # to the web server.
 
-authorized_for_configuration_information=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_configuration_information=*
 
 
 
@@ -154,7 +154,7 @@ authorized_for_configuration_information=nagiosadmin,<%= @nagios_format_users %>
 # You may use an asterisk (*) to authorize any user who has
 # authenticated to the web server.
 
-authorized_for_system_commands=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_system_commands=*
 
 
 
@@ -167,8 +167,8 @@ authorized_for_system_commands=nagiosadmin,<%= @nagios_format_users %>
 # to authorize any user who has authenticated to the web server.
 
 
-authorized_for_all_services=nagiosadmin,<%= @nagios_format_users %>
-authorized_for_all_hosts=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_all_services=*
+authorized_for_all_hosts=*
 
 
 
@@ -181,8 +181,8 @@ authorized_for_all_hosts=nagiosadmin,<%= @nagios_format_users %>
 # authorization).  You may use an asterisk (*) to authorize any
 # user who has authenticated to the web server.
 
-authorized_for_all_service_commands=nagiosadmin,<%= @nagios_format_users %>
-authorized_for_all_host_commands=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_all_service_commands=*
+authorized_for_all_host_commands=*
 
 
 

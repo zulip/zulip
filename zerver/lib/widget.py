@@ -3,7 +3,7 @@ import re
 from typing import Any, Optional, Tuple
 
 from zerver.lib.message import SendMessageRequest
-from zerver.models import SubMessage
+from zerver.models import Message, SubMessage
 
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
@@ -46,7 +46,7 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
     """
-    This code works with the webapp; mobile and other
+    This code works with the web app; mobile and other
     clients should also start supporting this soon.
     """
     message_content = send_request.message.content
@@ -77,3 +77,32 @@ def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
         )
         submessage.save()
         send_request.submessages = SubMessage.get_raw_db_rows([message_id])
+
+
+def get_widget_type(*, message_id: int) -> Optional[str]:
+    submessage = (
+        SubMessage.objects.filter(
+            message_id=message_id,
+            msg_type="widget",
+        )
+        .only("content")
+        .first()
+    )
+
+    if submessage is None:
+        return None
+
+    try:
+        data = json.loads(submessage.content)
+    except Exception:
+        return None
+
+    try:
+        return data["widget_type"]
+    except Exception:
+        return None
+
+
+def is_widget_message(message: Message) -> bool:
+    # Right now all messages that are widgetized use submessage, and vice versa.
+    return message.submessage_set.exists()

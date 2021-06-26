@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.actions import (
     check_send_private_message,
@@ -32,8 +32,19 @@ but didn't correctly configure the webhook to send data in the JSON format
 that this integration expects!
 """
 
+SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
+SETUP_MESSAGE_USER_PART = " by {user_name}"
+
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
+
+
+def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
+    content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
+    if user_name:
+        content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
+    content = f"{content}."
+    return content
 
 
 def notify_bot_owner_about_invalid_json(
@@ -73,7 +84,7 @@ def check_send_webhook_message(
         assert user_profile.bot_owner is not None
         check_send_private_message(user_profile, request.client, user_profile.bot_owner, body)
     else:
-        # Some third-party websites (such as Atlassian's JIRA), tend to
+        # Some third-party websites (such as Atlassian's Jira), tend to
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
         # that the URL parameters are decoded on our end.

@@ -2,10 +2,11 @@ import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import * as ui_util from "./ui_util";
 
-const state = {
+export const state = {
     is_internal_change: false,
     hash_before_overlay: null,
     old_hash: window.location.hash,
+    changing_hash: false,
 };
 
 export function clear_for_testing() {
@@ -54,7 +55,7 @@ export function update(new_hash) {
 }
 
 export function exit_overlay() {
-    if (hash_util.is_overlay_hash(window.location.hash)) {
+    if (hash_util.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || "#";
         update(new_hash);
@@ -65,4 +66,10 @@ export function go_to_location(hash) {
     // Call this function when you WANT the hashchanged
     // function to run.
     window.location.hash = hash;
+}
+
+export function update_hash_internally_if_required(hash) {
+    if (window.location.hash !== hash) {
+        update(hash);
+    }
 }

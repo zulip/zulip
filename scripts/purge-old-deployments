@@ -7,7 +7,15 @@ from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments, may_be_perform_purging
+from scripts.lib import clean_unused_caches
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    get_recent_deployments,
+    may_be_perform_purging,
+    su_to_zulip,
+)
+
+LOCAL_GIT_CACHE_DIR = "/srv/zulip.git"
 
 
 def parse_args() -> argparse.Namespace:
@@ -34,6 +42,13 @@ def parse_args() -> argparse.Namespace:
         "--verbose",
         action="store_true",
         help="If specified then script will print a detailed report of what is going on.",
+    )
+    parser.add_argument(
+        "--no-print-headings",
+        dest="no_headings",
+        action="store_true",
+        help="If specified then script will not print headings for "
+        "what will be deleted/kept back.",
     )
 
     args = parser.parse_args()
@@ -70,13 +85,17 @@ def main() -> None:
     )
 
     if not args.dry_run:
-        print("Deployments cleaned successfully...")
-        print("Cleaning orphaned/unused caches...")
+        if os.path.exists(LOCAL_GIT_CACHE_DIR):
+            subprocess.check_call(
+                ["git", "worktree", "prune"], cwd=LOCAL_GIT_CACHE_DIR, preexec_fn=su_to_zulip
+            )
 
-    # Call 'clean-unused-caches' script to clean any orphaned/unused caches.
-    subprocess.check_call(
-        [os.path.join(ZULIP_PATH, "scripts/lib/clean-unused-caches"), *sys.argv[1:]]
-    )
+        if not args.no_headings:
+            print("Deployments cleaned successfully...")
+            print("Cleaning orphaned/unused caches...")
+
+    # Call 'clean_unused_caches.py' script to clean any orphaned/unused caches.
+    clean_unused_caches.main(args)
     print("Done!")
 
 

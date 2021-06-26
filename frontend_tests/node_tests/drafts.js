@@ -2,8 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {
+    mock_esm,
+    set_global,
+    zrequire,
+    with_overrides,
+    mock_template,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -25,7 +30,6 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-mock_cjs("jquery", $);
 const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,
@@ -36,6 +40,8 @@ mock_esm("../../static/js/stream_data", {
     },
 });
 page_params.twenty_four_hour_time = false;
+
+const render_draft_table_body = mock_template("draft_table_body.hbs");
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
@@ -59,13 +65,13 @@ const draft_1 = {
     stream: "stream",
     topic: "topic",
     type: "stream",
-    content: "Test Stream Message",
+    content: "Test stream message",
 };
 const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
     reply_to: "aaron@zulip.com",
     type: "private",
-    content: "Test Private Message",
+    content: "Test private message",
 };
 const short_msg = {
     stream: "stream",
@@ -75,9 +81,10 @@ const short_msg = {
 };
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
+        $("#draft_overlay").css = () => {};
         localStorage.clear();
-        f(override);
+        f({override});
     });
 }
 
@@ -85,7 +92,7 @@ test("legacy", () => {
     assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
-test("draft_model add", (override) => {
+test("draft_model add", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -120,7 +127,7 @@ test("draft_model edit", () => {
     });
 });
 
-test("draft_model delete", (override) => {
+test("draft_model delete", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -135,7 +142,7 @@ test("draft_model delete", (override) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", (override) => {
+test("snapshot_message", ({override}) => {
     let curr_draft;
 
     function map(field, f) {
@@ -162,7 +169,7 @@ test("snapshot_message", (override) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-test("initialize", (override) => {
+test("initialize", ({override}) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
@@ -170,14 +177,10 @@ test("initialize", (override) => {
             called = true;
         });
         f();
-        assert(called);
+        assert.ok(called);
     };
 
     drafts.initialize();
-
-    const message_content = $("#compose-textarea");
-    assert.equal(message_content.get_on_handler("focusout"), drafts.update_draft);
-    message_content.trigger("focusout");
 });
 
 test("remove_old_drafts", () => {
@@ -185,14 +188,14 @@ test("remove_old_drafts", () => {
         stream: "stream",
         subject: "topic",
         type: "stream",
-        content: "Test Stream Message",
+        content: "Test stream message",
         updatedAt: Date.now(),
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test Private Message",
+        content: "Test private message",
         updatedAt: new Date().setDate(-30),
     };
     const draft_model = drafts.draft_model;
@@ -205,7 +208,7 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-test("format_drafts", (override) => {
+test("format_drafts", ({override}) => {
     override(drafts, "remove_old_drafts", noop);
 
     function feb12() {
@@ -220,35 +223,35 @@ test("format_drafts", (override) => {
         stream: "stream",
         topic: "topic",
         type: "stream",
-        content: "Test Stream Message",
+        content: "Test stream message",
         updatedAt: feb12().getTime(),
     };
     const draft_2 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test Private Message",
+        content: "Test private message",
         updatedAt: date(-1),
     };
     const draft_3 = {
         stream: "stream 2",
         subject: "topic",
         type: "stream",
-        content: "Test Stream Message 2",
+        content: "Test stream message 2",
         updatedAt: date(-10),
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
-        content: "Test Private Message 2",
+        content: "Test private message 2",
         updatedAt: date(-5),
     };
     const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "zoe@zulip.com",
         type: "private",
-        content: "Test Private Message 3",
+        content: "Test private message 3",
         updatedAt: date(-2),
     };
 
@@ -260,28 +263,28 @@ test("format_drafts", (override) => {
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
-            raw_content: "Test Stream Message",
+            raw_content: "Test stream message",
             time_stamp: "7:55 AM",
         },
         {
             draft_id: "id2",
             is_stream: false,
             recipients: "aaron@zulip.com",
-            raw_content: "Test Private Message",
+            raw_content: "Test private message",
             time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
             recipients: "aaron@zulip.com",
-            raw_content: "Test Private Message 3",
+            raw_content: "Test private message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
             recipients: "aaron@zulip.com",
-            raw_content: "Test Private Message 2",
+            raw_content: "Test private message 2",
             time_stamp: "Jan 26",
         },
         {
@@ -291,7 +294,7 @@ test("format_drafts", (override) => {
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
-            raw_content: "Test Stream Message 2",
+            raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
         },
     ];
@@ -307,8 +310,7 @@ test("format_drafts", (override) => {
     const stub_render_now = timerender.render_now;
     override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "draft_table_body");
+    override(render_draft_table_body, "f", (data) => {
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
         return "<draft table stub>";

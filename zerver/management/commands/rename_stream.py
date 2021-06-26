@@ -14,7 +14,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "new_name", metavar="<new name>", help="new name to rename the stream to"
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)

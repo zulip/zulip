@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Union
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
@@ -26,10 +26,10 @@ from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import (
     check_bool,
+    check_capped_string,
     check_dict,
     check_int,
     check_int_in,
-    check_string,
     check_string_or_int,
     to_non_negative_int,
 )
@@ -41,68 +41,84 @@ from zerver.models import Realm, UserProfile
 def update_realm(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: Optional[str] = REQ(validator=check_string, default=None),
-    description: Optional[str] = REQ(validator=check_string, default=None),
-    emails_restricted_to_domains: Optional[bool] = REQ(validator=check_bool, default=None),
-    disallow_disposable_email_addresses: Optional[bool] = REQ(validator=check_bool, default=None),
-    invite_required: Optional[bool] = REQ(validator=check_bool, default=None),
-    invite_by_admins_only: Optional[bool] = REQ(validator=check_bool, default=None),
-    name_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
-    email_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
-    avatar_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
-    inline_image_preview: Optional[bool] = REQ(validator=check_bool, default=None),
-    inline_url_embed_preview: Optional[bool] = REQ(validator=check_bool, default=None),
-    add_emoji_by_admins_only: Optional[bool] = REQ(validator=check_bool, default=None),
-    allow_message_deleting: Optional[bool] = REQ(validator=check_bool, default=None),
+    name: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH), default=None
+    ),
+    description: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_DESCRIPTION_LENGTH), default=None
+    ),
+    emails_restricted_to_domains: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    disallow_disposable_email_addresses: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    invite_required: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    invite_to_realm_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    ),
+    name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    inline_image_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    inline_url_embed_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    add_emoji_by_admins_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    allow_message_deleting: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_delete_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
     ),
-    allow_message_editing: Optional[bool] = REQ(validator=check_bool, default=None),
-    allow_community_topic_editing: Optional[bool] = REQ(validator=check_bool, default=None),
-    mandatory_topics: Optional[bool] = REQ(validator=check_bool, default=None),
+    allow_message_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    edit_topic_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_MESSAGE_POLICY_TYPES), default=None
+    ),
+    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_edit_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
     ),
-    allow_edit_history: Optional[bool] = REQ(validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(validator=check_string, default=None),
+    allow_edit_history: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    default_language: Optional[str] = REQ(default=None),
     waiting_period_threshold: Optional[int] = REQ(converter=to_non_negative_int, default=None),
-    authentication_methods: Optional[Dict[str, Any]] = REQ(validator=check_dict([]), default=None),
-    notifications_stream_id: Optional[int] = REQ(validator=check_int, default=None),
-    signup_notifications_stream_id: Optional[int] = REQ(validator=check_int, default=None),
-    message_retention_days_raw: Optional[Union[int, str]] = REQ(
-        "message_retention_days", validator=check_string_or_int, default=None
+    authentication_methods: Optional[Dict[str, Any]] = REQ(
+        json_validator=check_dict([]), default=None
     ),
-    send_welcome_emails: Optional[bool] = REQ(validator=check_bool, default=None),
-    digest_emails_enabled: Optional[bool] = REQ(validator=check_bool, default=None),
+    notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    message_retention_days_raw: Optional[Union[int, str]] = REQ(
+        "message_retention_days", json_validator=check_string_or_int, default=None
+    ),
+    send_welcome_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    digest_emails_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_allowed_in_email_notifications: Optional[bool] = REQ(
-        validator=check_bool, default=None
+        json_validator=check_bool, default=None
     ),
     bot_creation_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.BOT_CREATION_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.BOT_CREATION_POLICY_TYPES), default=None
     ),
     create_stream_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     invite_to_stream_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    ),
+    move_messages_between_streams_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     user_group_edit_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
     ),
     private_message_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None
     ),
     wildcard_mention_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
     email_address_visibility: Optional[int] = REQ(
-        validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
+        json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
-    default_twenty_four_hour_time: Optional[bool] = REQ(validator=check_bool, default=None),
-    video_chat_provider: Optional[int] = REQ(validator=check_int, default=None),
-    default_code_block_language: Optional[str] = REQ(validator=check_string, default=None),
+    default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
+    default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
-        validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
+        json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
     ),
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -111,10 +127,6 @@ def update_realm(
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '{}'").format(default_language))
-    if description is not None and len(description) > 1000:
-        return json_error(_("Organization description is too long."))
-    if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:
-        return json_error(_("Organization name is too long."))
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
@@ -124,6 +136,10 @@ def update_realm(
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
+    if giphy_rating is not None and giphy_rating not in {
+        p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
+    }:
+        return json_error(_("Invalid giphy_rating {}").format(giphy_rating))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:
@@ -167,27 +183,24 @@ def update_realm(
             message_content_edit_limit_seconds is not None
             and realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds
         )
-        or (
-            allow_community_topic_editing is not None
-            and realm.allow_community_topic_editing != allow_community_topic_editing
-        )
+        or (edit_topic_policy is not None and realm.edit_topic_policy != edit_topic_policy)
     ):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:
             message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
-        if allow_community_topic_editing is None:
-            allow_community_topic_editing = realm.allow_community_topic_editing
+        if edit_topic_policy is None:
+            edit_topic_policy = realm.edit_topic_policy
         do_set_realm_message_editing(
             realm,
             allow_message_editing,
             message_content_edit_limit_seconds,
-            allow_community_topic_editing,
+            edit_topic_policy,
             acting_user=user_profile,
         )
         data["allow_message_editing"] = allow_message_editing
         data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
-        data["allow_community_topic_editing"] = allow_community_topic_editing
+        data["edit_topic_policy"] = edit_topic_policy
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
@@ -236,7 +249,7 @@ def update_realm(
 @has_request_variables
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm
-    do_deactivate_realm(realm, user)
+    do_deactivate_realm(realm, acting_user=user)
     return json_success()
 
 

@@ -298,7 +298,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self._verify_archive_data([msg_id], usermsg_ids)
 
     def test_cross_realm_personal_message_archiving(self) -> None:
-        """Check that cross-realm personal messages get correctly archived. """
+        """Check that cross-realm personal messages get correctly archived."""
         msg_ids = [self._send_cross_realm_personal_message() for i in range(1, 7)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
         # Make the message expired on the recipient's realm:
@@ -439,7 +439,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
         transactions = ArchiveTransaction.objects.all()
-        self.assertEqual(len(transactions), 2)  # With chunk_size 4, there should be 2 transactions
+        self.assert_length(transactions, 2)  # With chunk_size 4, there should be 2 transactions
 
         restore_all_data_from_archive()
         transactions[0].refresh_from_db()
@@ -451,7 +451,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         self._verify_archive_data(expired_msg_ids, expired_usermsg_ids)
 
         transactions = ArchiveTransaction.objects.order_by("id")
-        self.assertEqual(len(transactions), 3)
+        self.assert_length(transactions, 3)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=expired_msg_ids)
         # Check that the re-archived messages are correctly assigned to the new transaction:
@@ -492,7 +492,7 @@ class TestArchivingSubMessages(ArchiveMessagesTestingBase):
             SubMessage.objects.filter(message_id__in=expired_msg_ids).values_list("id", flat=True),
         )
 
-        self.assertEqual(len(submessage_ids), 3)
+        self.assert_length(submessage_ids, 3)
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 3)
         archive_messages()
         self.assertEqual(SubMessage.objects.filter(id__in=submessage_ids).count(), 0)
@@ -537,7 +537,7 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
             Reaction.objects.filter(message_id__in=expired_msg_ids).values_list("id", flat=True),
         )
 
-        self.assertEqual(len(reaction_ids), 3)
+        self.assert_length(reaction_ids, 3)
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 3)
         archive_messages()
         self.assertEqual(Reaction.objects.filter(id__in=reaction_ids).count(), 0)
@@ -878,7 +878,7 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
 
         clean_archived_data()
         remaining_transactions = list(ArchiveTransaction.objects.all())
-        self.assertEqual(len(remaining_transactions), 1)
+        self.assert_length(remaining_transactions, 1)
         # All transactions except the last one were deleted:
         self.assertEqual(remaining_transactions[0].id, transactions[-1].id)
         # And corresponding ArchivedMessages should have been deleted:
@@ -1060,7 +1060,7 @@ class TestDoDeleteMessages(ZulipTestCase):
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))
-        self.assertEqual(len({message.archive_transaction_id for message in archived_messages}), 1)
+        self.assert_length({message.archive_transaction_id for message in archived_messages}, 1)
 
     def test_old_event_format_processed_correctly(self) -> None:
         """

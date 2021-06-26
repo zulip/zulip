@@ -33,7 +33,6 @@ from analytics.models import (
     installation_epoch,
 )
 from zerver.lib.actions import (
-    InvitationError,
     do_activate_user,
     do_create_realm,
     do_create_user,
@@ -48,6 +47,7 @@ from zerver.lib.actions import (
     update_user_activity_interval,
 )
 from zerver.lib.create_user import create_user
+from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME

@@ -28,7 +28,7 @@ The Puppeteer tests use a real Chromium browser (powered by
 [puppeteer](https://github.com/puppeteer/puppeteer)), connected to a
 real Zulip development server.  These are black-box tests: Steps in a
 Puppeteer test are largely things one might do as a user of the Zulip
-webapp, like "Type this key", "Wait until this HTML element
+web app, like "Type this key", "Wait until this HTML element
 appears/disappears", or "Click on this HTML element".
 
 For example, this function might test the `x` keyboard shortcut to

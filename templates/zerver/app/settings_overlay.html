@@ -43,6 +43,10 @@
                     <i class="icon fa fa-bell-slash" aria-hidden="true"></i>
                     <div class="text">{{ _('Muted topics') }}</div>
                 </li>
+                <li tabindex="0" data-section="muted-users">
+                    <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
+                    <div class="text">{{ _('Muted users') }}</div>
+                </li>
             </ul>
 
             <ul class="org-settings-list">
@@ -130,6 +134,13 @@
                 <li tabindex="0" data-section="linkifier-settings">
                     <i class="icon fa fa-font" aria-hidden="true"></i>
                     <div class="text">{{ _('Linkifiers') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
+                </li>
+                <li tabindex="0" data-section="playground-settings">
+                    <i class="icon fa fa-external-link" aria-hidden="true"></i>
+                    <div class="text">{{ _('Code playgrounds') }}</div>
                     {% if not is_admin %}
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}

@@ -5,7 +5,7 @@ import {page_params} from "./page_params";
 function set_tutorial_status(status, callback) {
     return channel.post({
         url: "/json/users/me/tutorial_status",
-        data: {status: JSON.stringify(status)},
+        data: {status},
         success: callback,
     });
 }

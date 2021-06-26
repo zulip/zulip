@@ -198,7 +198,7 @@ def gogs_webhook_main(
         )
         topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
-            type="Issue",
+            type="issue",
             id=payload["issue"]["number"],
             title=payload["issue"]["title"],
         )
@@ -209,7 +209,7 @@ def gogs_webhook_main(
         )
         topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
-            type="Issue",
+            type="issue",
             id=payload["issue"]["number"],
             title=payload["issue"]["title"],
         )

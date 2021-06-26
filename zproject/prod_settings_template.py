@@ -1,5 +1,7 @@
 from typing import Any, Dict, Tuple
 
+from .config import get_secret
+
 ################################################################
 ## Zulip Server settings.
 ##
@@ -147,6 +149,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
+    # 'zproject.backends.GenericOpenIdConnectBackend',  # Generic OIDC integration, setup below
 )
 
 ## LDAP integration.
@@ -155,7 +158,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
 ## optionally using LDAP as an authentication mechanism.
 
 import ldap
-from django_auth_ldap.config import LDAPSearch
+from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch
 
 ## Connecting to the LDAP server.
 ##
@@ -247,6 +250,16 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## False.
 # LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
+## See: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#restricting-ldap-user-access-to-specific-organizations
+# AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = {
+#    "zulip":
+#    [ # OR
+#      { # AND
+#          "department": "main",
+#          "employeeType": "staff"
+#      }
+#    ]
+# }
 
 ########
 ## Google OAuth.
@@ -284,7 +297,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## based on your value for EXTERNAL_HOST.
 ## (3) For "scopes", select only "read_user", and create the application.
 ## (4) You'll end up on a page with the Application ID and Secret for
-## your new GitLab Application. Use the Application ID as
+## your new GitLab application. Use the Application ID as
 ## `SOCIAL_AUTH_GITLAB_KEY` here, and put the Secret in
 ## zulip-secrets.conf as `social_auth_gitlab_secret`.
 ## (5) If you are self-hosting GitLab, provide the URL of the
@@ -331,10 +344,44 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
 ########
-## SAML Authentication
+## Generic OpenID Connect (OIDC).  See also documentation here:
+##
+##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
+##
+
+SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+    ## This field (example: "idp_name") may appear in URLs during
+    ## authentication, but is otherwise not user-visible.
+    "idp_name": {
+        ## The base path to the provider's OIDC API. Zulip fetches the
+        ## IdP's configuration from the discovery endpoint, which will be
+        ## "{oidc_url}/.well-known/openid-configuration".
+        "oidc_url": "https://example.com/api/openid",
+        ## The display name, used for "Log in with <display name>" buttons.
+        "display_name": "Example",
+        ## Optional: URL of an icon to decorate "Log in with <display name>" buttons.
+        "display_icon": None,
+        ## The client_id and secret provided by your OIDC IdP. To keep
+        ## settings.py free of secrets, the get_secret call below
+        ## reads the secret with the specified name from zulip-secrets.conf.
+        "client_id": "<your client id>",
+        "secret": get_secret("social_auth_oidc_secret"),
+    }
+}
+
+## Controls how Zulip uses the Full Name provided by the IdP at the
+## userinfo endpoint. By default, Zulip prefills that value but lets
+## the user modify it in the registration form. When enabled, Zulip
+## assumes the name is correct, and new users will not be presented
+## with a registration form unless they need to accept Terms of
+## Service (i.e. TERMS_OF_SERVICE=True).
+# SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
+
+########
+## SAML authentication
 ##
 ## For SAML authentication, you will need to configure the settings
-## below using information from your SAML Identity Provider, as
+## below using information from your SAML identity provider, as
 ## explained in:
 ##
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#saml
@@ -347,7 +394,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
         "url": "{}{}".format("https://", EXTERNAL_HOST),
     },
 }
-SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
     ## The fields are explained in detail here:
     ##     https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     "idp_name": {
@@ -366,6 +413,10 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
         "attr_last_name": "last_name",
         "attr_username": "email",
         "attr_email": "email",
+        ## List of additional attributes to fetch from the SAMLResponse.
+        ## These attributes will be available for synchronizing custom profile fields.
+        ## in SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.
+        # "extra_attrs": ["title", "mobilePhone"],
         ##
         ## The "x509cert" attribute is automatically read from
         ## /etc/zulip/saml/idps/{idp_name}.crt; don't specify it here.
@@ -407,6 +458,16 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "givenName": "Support team",
     "emailAddress": ZULIP_ADMINISTRATOR,
 }
+
+# SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT = {
+#    "example_org": {
+#        "saml": {
+#            # Format: "<custom profile field name>": "<attribute name from extra_attrs above>"
+#            "title": "title",
+#            "phone_number": "mobilePhone",
+#        }
+#    }
+# }
 
 ########
 ## Apple authentication ("Sign in with Apple").
@@ -513,18 +574,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can also be disabled in a realm's organization settings.
 # INLINE_URL_EMBED_PREVIEW = True
 
-## By default, Zulip connects to the thumbor (the thumbnailing software
-## we use) service running locally on the machine.  If you're running
-## thumbor on a different server, you can configure that by setting
-## THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
-## thumbor is not running or configured.
-# THUMBOR_URL = 'http://127.0.0.1:9995'
-##
-## This setting controls whether images shown in Zulip's inline image
-## previews should be thumbnailed by thumbor, which saves bandwidth but
-## can modify the image's appearance.
-# THUMBNAIL_IMAGES = True
-
 ########
 ## Twitter previews.
 ##
@@ -563,6 +612,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## system-level monitoring tools.
 # LOGGING_SHOW_PID = False
 
+#################
+## Animated GIF integration powered by GIPHY.  See:
+## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+# GIPHY_API_KEY = "<Your API key from GIPHY>"
 
 ################
 ## Video call integrations.
@@ -570,7 +623,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Controls the Zoom video call integration.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 #
-# VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
+# VIDEO_ZOOM_CLIENT_ID = <your Zoom client ID>
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
@@ -585,6 +638,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 ################
 ## Miscellaneous settings.
+
+## How long outgoing webhook requests time out after
+# OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
 ## Support for mobile push notifications.  Setting controls whether
 ## push notifications will be forwarded through a Zulip push
@@ -605,6 +661,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## Defaults to True if and only if the Mobile Push Notifications Service is enabled.
 # SUBMIT_USAGE_STATISTICS = True
+
+## Whether to lightly advertise sponsoring Zulip in the gear menu.
+# PROMOTE_SPONSORING_ZULIP = True
 
 ## Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False

@@ -167,6 +167,20 @@ exports.fixtures = {
         ],
     },
 
+    muted_users: {
+        type: "muted_users",
+        muted_users: [
+            {
+                id: 5,
+                timestamp: fake_then,
+            },
+            {
+                id: 23,
+                timestamp: fake_now,
+            },
+        ],
+    },
+
     presence: {
         type: "presence",
         email: "alice@example.com",
@@ -272,6 +286,13 @@ exports.fixtures = {
         op: "update",
         property: "invite_required",
         value: false,
+    },
+
+    realm__update__invite_to_realm_policy: {
+        type: "realm",
+        op: "update",
+        property: "invite_to_realm_policy",
+        value: 2,
     },
 
     realm__update__invite_to_stream_policy: {
@@ -435,9 +456,27 @@ exports.fixtures = {
         ],
     },
 
-    realm_filters: {
-        type: "realm_filters",
-        realm_filters: [["#[123]", "ticket %(id)s", 55]],
+    realm_linkifiers: {
+        type: "realm_linkifiers",
+        realm_linkifiers: [
+            {
+                pattern: "#[123]",
+                url_format: "ticket %(id)s",
+                id: 55,
+            },
+        ],
+    },
+
+    realm_playgrounds: {
+        type: "realm_playgrounds",
+        realm_playgrounds: [
+            {
+                id: 1,
+                name: "Lean playground",
+                pygments_language: "Lean",
+                url_prefix: "https://leanprover.github.io/live/latest/#code=",
+            },
+        ],
     },
 
     realm_user__add: {
@@ -450,6 +489,8 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
+            is_billing_admin: false,
+            role: 400,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -478,6 +519,8 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
+        zulip_version: "4.0-dev+git",
+        zulip_feature_level: 55,
         server_generation: 2,
         immediate: true,
     },
@@ -571,6 +614,7 @@ exports.fixtures = {
     typing__start: {
         type: "typing",
         op: "start",
+        message_type: "private",
         sender: typing_person1,
         recipients: [typing_person2],
     },
@@ -578,6 +622,7 @@ exports.fixtures = {
     typing__stop: {
         type: "typing",
         op: "stop",
+        message_type: "private",
         sender: typing_person1,
         recipients: [typing_person2],
     },
@@ -614,7 +659,7 @@ exports.fixtures = {
     update_display_settings__default_view_all_messages: {
         type: "update_display_settings",
         setting_name: "default_view",
-        setting: 1,
+        setting: "all_messages",
         user: test_user.email,
     },
 

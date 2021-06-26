@@ -323,7 +323,7 @@ html {
         vertical-align: top;
         padding: 13px 22px 13px 22px;
 
-        font-family: "Source Sans 3";
+        font-family: "Source Sans 3", sans-serif;
 
         font-size: 1.2rem;
         font-weight: 400;
@@ -404,7 +404,7 @@ html {
             padding: 10px 32px 10px 12px;
             margin: 25px 0 5px;
 
-            font-family: "Source Sans 3";
+            font-family: "Source Sans 3", sans-serif;
             font-size: 1.2rem;
             line-height: normal;
             height: auto;
@@ -663,7 +663,9 @@ html {
 
 button.login-social-button {
     width: 328px;
+    height: auto;
     padding-left: 35px;
+    line-height: 1;
 
     background-size: auto 60%;
     background-repeat: no-repeat;
@@ -802,6 +804,15 @@ button#register_auth_button_gitlab {
         margin: 25px auto 30px;
         width: 330px;
         border-radius: 4px;
+    }
+
+    .register-button .loader {
+        display: none;
+        vertical-align: top;
+        position: relative;
+        height: 30px;
+        margin-top: -10px;
+        top: 5px;
     }
 
     #id_team_subdomain.subdomain {

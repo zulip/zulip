@@ -9,6 +9,12 @@ from zerver.models import Realm
 
 
 class Customer(models.Model):
+    """
+    This model primarily serves to connect a Realm with
+    the corresponding Stripe customer object for payment purposes
+    and the active plan, if any.
+    """
+
     realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
     stripe_customer_id: str = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending: bool = models.BooleanField(default=False)
@@ -16,6 +22,9 @@ class Customer(models.Model):
     default_discount: Optional[Decimal] = models.DecimalField(
         decimal_places=4, max_digits=7, null=True
     )
+    # Some non-profit organizations on manual license management pay only for their paid employees.
+    # We don't prevent these organizations from adding more users than the number of licenses they purchased.
+    exempt_from_from_license_number_check: bool = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"<Customer {self.realm} {self.stripe_customer_id}>"
@@ -26,7 +35,16 @@ def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
 
 
 class CustomerPlan(models.Model):
+    """
+    This is for storing most of the fiddly details
+    of the customer's plan.
+    """
+
+    # A customer can only have one ACTIVE plan, but old, inactive plans
+    # are preserved to allow auditing - so there can be multiple
+    # CustomerPlan objects pointing to one Customer.
     customer: Customer = models.ForeignKey(Customer, on_delete=CASCADE)
+
     automanage_licenses: bool = models.BooleanField(default=False)
     charge_automatically: bool = models.BooleanField(default=False)
 
@@ -88,6 +106,19 @@ class CustomerPlan(models.Model):
             self.NEVER_STARTED: "Never started",
         }[self.status]
 
+    def licenses(self) -> int:
+        return LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses
+
+    def licenses_at_next_renewal(self) -> Optional[int]:
+        if self.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+            return None
+        return (
+            LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses_at_next_renewal
+        )
+
+    def is_free_trial(self) -> bool:
+        return self.status == CustomerPlan.FREE_TRIAL
+
 
 def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(
@@ -103,6 +134,18 @@ def get_current_plan_by_realm(realm: Realm) -> Optional[CustomerPlan]:
 
 
 class LicenseLedger(models.Model):
+    """
+    This table's purpose is to store the current, and historical,
+    count of "seats" purchased by the organization.
+
+    Because we want to keep historical data, when the purchased
+    seat count changes, a new LicenseLedger object is created,
+    instead of updating the old one. This lets us preserve
+    the entire history of how the seat count changes, which is
+    important for analytics as well as auditing and debugging
+    in case of issues.
+    """
+
     plan: CustomerPlan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)
     # Also True for the initial upgrade.
     is_renewal: bool = models.BooleanField(default=False)

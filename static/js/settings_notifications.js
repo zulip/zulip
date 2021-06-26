@@ -3,14 +3,14 @@ import $ from "jquery";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
-import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
 
 function rerender_ui() {
@@ -20,7 +20,8 @@ function rerender_ui() {
         return;
     }
 
-    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams =
+        stream_settings_data.get_unmatched_streams_for_notification_settings();
 
     unmatched_streams_table.find(".stream-row").remove();
 
@@ -42,9 +43,9 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, setting_data, status_element) {
+function change_notification_setting(setting, value, status_element) {
     const data = {};
-    data[setting] = JSON.stringify(setting_data);
+    data[setting] = value;
     settings_ui.do_settings_change(
         channel.patch,
         "/json/settings/notifications",
@@ -63,6 +64,14 @@ export function set_enable_digest_emails_visibility() {
         $("#enable_digest_emails_label").parent().show();
     } else {
         $("#enable_digest_emails_label").parent().hide();
+    }
+}
+
+export function set_enable_marketing_emails_visibility() {
+    if (page_params.corporate_enabled) {
+        $("#enable_marketing_emails_label").parent().show();
+    } else {
+        $("#enable_marketing_emails_label").parent().hide();
     }
 }
 
@@ -87,12 +96,14 @@ export function set_up() {
 
     $("#send_test_notification").on("click", () => {
         notifications.send_test_notification(
-            i18n.t("This is what a Zulip notification looks like."),
+            $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
 
     $("#play_notification_sound").on("click", () => {
-        $("#notification-sound-audio")[0].play();
+        if (page_params.notification_sound !== "none") {
+            $("#notification-sound-audio")[0].play();
+        }
     });
 
     const notification_sound_dropdown = $("#notification_sound");
@@ -111,6 +122,7 @@ export function set_up() {
         }
     });
     set_enable_digest_emails_visibility();
+    set_enable_marketing_emails_visibility();
     rerender_ui();
 }
 

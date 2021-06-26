@@ -42,7 +42,7 @@ def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[Use
 
 
 def convert_jira_markup(content: str, realm: Realm) -> str:
-    # Attempt to do some simplistic conversion of JIRA
+    # Attempt to do some simplistic conversion of Jira
     # formatting to Markdown, for consumption in Zulip
 
     # Jira uses *word* for bold, we use **word**
@@ -75,8 +75,8 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     full_link_re = re.compile(r"\[(?:(?P<title>[^|~]+)\|)(?P<url>[^\]]*)\]")
     content = re.sub(full_link_re, r"[\g<title>](\g<url>)", content)
 
-    # Try to convert a JIRA user mention of format [~username] into a
-    # Zulip user mention. We don't know the email, just the JIRA username,
+    # Try to convert a Jira user mention of format [~username] into a
+    # Zulip user mention. We don't know the email, just the Jira username,
     # so we naively guess at their Zulip account using this
     if realm:
         mention_re = re.compile("\\[~(.*?)\\]")
@@ -337,7 +337,7 @@ JIRA_CONTENT_FUNCTION_MAPPER: Dict[
 }
 
 
-@webhook_view("JIRA")
+@webhook_view("Jira")
 @has_request_variables
 def api_jira_webhook(
     request: HttpRequest,

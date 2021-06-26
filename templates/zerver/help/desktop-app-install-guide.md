@@ -51,18 +51,18 @@ to future versions. <!-- TODO fact check -->
 
 {tab|linux}
 
-#### apt (Ubuntu or Debian 8+)
+#### APT (Ubuntu or Debian 8+)
 
 1. Enter the following commands into a terminal:
 
-        sudo wget -O /etc/apt/trusted.gpg.d/zulip-desktop.asc \
+        sudo curl -Lo /etc/apt/trusted.gpg.d/zulip-desktop.asc \
             https://download.zulip.com/desktop/apt/zulip-desktop.asc
         echo "deb https://download.zulip.com/desktop/apt stable main" | \
             sudo tee /etc/apt/sources.list.d/zulip-desktop.list
         sudo apt update
         sudo apt install zulip
 
-    These commands set up the Zulip Desktop apt repository and its signing
+    These commands set up the Zulip Desktop APT repository and its signing
     key, and then install the Zulip client.
 
 1. Run Zulip from your app launcher, or with `zulip` from a terminal.

@@ -81,7 +81,7 @@ no longer had time for them.
 
 One case where we apply added scrutiny to third-party dependencies is
 JS libraries.  They are a particularly important concern because we
-want to keep the Zulip webapp's JS bundle small, so that Zulip
+want to keep the Zulip web app's JS bundle small, so that Zulip
 continues to load quickly on systems with low network bandwidth.
 We'll look at large JS libraries with much greater scrutiny for
 whether their functionality justifies their size than Python
@@ -255,6 +255,22 @@ wrapper to access the desired version conveniently and efficiently
 * `install-yarn.sh` is configured to install `yarn` at
 `/srv/zulip-yarn`.  We don't do anything special to try to manage
 multiple versions of `yarn`.
+
+## ShellCheck and shfmt
+
+In the development environment, the `tools/setup/install-shellcheck`
+and `tools/setup/install-shfmt` scripts download binaries for
+ShellCheck and shfmt from GitHub, check them against a known hash, and
+install them to `/usr/local/bin`.  These tools are run as part of the
+[linting system](../testing/linters.md).
+
+## Puppet packages
+
+Third-party puppet modules are downloaded from the Puppet Forge into
+subdirectories under `/srv/zulip-puppet-cache`, hashed based on their
+versions; the latest is always symlinked as
+`/srv/zulip-puppet-cache/current`.  `zulip-puppet-apply` installs
+these dependencies immediately before they are needed.
 
 ## Other third-party and generated files
 

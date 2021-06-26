@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_jquery, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -17,7 +17,7 @@ set_global("Element", () => {});
 
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
-mock_cjs("jquery", (arg) => {
+mock_jquery((arg) => {
     if (arg.to_jquery) {
         return arg.to_jquery();
     }
@@ -182,6 +182,63 @@ run_test("scrolling", () => {
     assert.deepEqual(container.appended_data.html(), items.slice(80, 100).join(""));
 });
 
+run_test("not_scrolling", () => {
+    const container = make_container();
+    const scroll_container = make_scroll_container();
+
+    const items = [];
+
+    let get_scroll_element_called = false;
+    ui.get_scroll_element = (element) => {
+        get_scroll_element_called = true;
+        return element;
+    };
+
+    let post_scroll__pre_render_callback_called = false;
+    const post_scroll__pre_render_callback = () => {
+        post_scroll__pre_render_callback_called = true;
+    };
+
+    let get_min_load_count_called = false;
+    const get_min_load_count = (offset, load_count) => {
+        get_min_load_count_called = true;
+        return load_count;
+    };
+
+    for (let i = 0; i < 200; i += 1) {
+        items.push("item " + i);
+    }
+
+    const opts = {
+        modifier: (item) => item,
+        simplebar_container: scroll_container,
+        is_scroll_position_for_render: () => false,
+        post_scroll__pre_render_callback,
+        get_min_load_count,
+    };
+
+    container.html = (html) => {
+        assert.equal(html, "");
+    };
+    ListWidget.create(container, items, opts);
+
+    assert.deepEqual(container.appended_data.html(), items.slice(0, 80).join(""));
+    assert.equal(get_scroll_element_called, true);
+
+    // Set up our fake geometry.
+    scroll_container.scrollTop = 180;
+    scroll_container.clientHeight = 100;
+    scroll_container.scrollHeight = 260;
+
+    // Since `should_render` is always false, no elements will be
+    // added regardless of scrolling.
+    scroll_container.call_scroll();
+    // appended_data remains the same.
+    assert.deepEqual(container.appended_data.html(), items.slice(0, 80).join(""));
+    assert.equal(post_scroll__pre_render_callback_called, true);
+    assert.equal(get_min_load_count_called, true);
+});
+
 run_test("filtering", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();
@@ -219,6 +276,7 @@ run_test("filtering", () => {
     // is a glorified indexOf call.)
     search_input.val = () => "g";
     search_input.simulate_input_event();
+    assert.deepEqual(widget.get_current_list(), ["dog", "egg", "grape"]);
     expected_html = "<div>dog</div><div>egg</div><div>grape</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 
@@ -377,8 +435,8 @@ run_test("sorting", () => {
 
     sort_container.f.apply(button);
 
-    assert(cleared);
-    assert(button.siblings_deactivated);
+    assert.ok(cleared);
+    assert.ok(button.siblings_deactivated);
 
     expected_html = html_for([alice, bob, cal, dave, ellen]);
     assert.deepEqual(container.appended_data.html(), expected_html);
@@ -386,18 +444,18 @@ run_test("sorting", () => {
     // Hit same button again to reverse the data.
     cleared = false;
     sort_container.f.apply(button);
-    assert(cleared);
+    assert.ok(cleared);
     expected_html = html_for([ellen, dave, cal, bob, alice]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-    assert(button.hasClass("descend"));
+    assert.ok(button.hasClass("descend"));
 
     // And then hit a third time to go back to the forward sort.
     cleared = false;
     sort_container.f.apply(button);
-    assert(cleared);
+    assert.ok(cleared);
     expected_html = html_for([alice, bob, cal, dave, ellen]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-    assert(!button.hasClass("descend"));
+    assert.ok(!button.hasClass("descend"));
 
     // Now try a numeric sort.
     button_opts = {
@@ -414,8 +472,8 @@ run_test("sorting", () => {
 
     sort_container.f.apply(button);
 
-    assert(cleared);
-    assert(button.siblings_deactivated);
+    assert.ok(cleared);
+    assert.ok(button.siblings_deactivated);
 
     expected_html = html_for([dave, cal, bob, alice, ellen]);
     assert.deepEqual(container.appended_data.html(), expected_html);
@@ -423,10 +481,10 @@ run_test("sorting", () => {
     // Hit same button again to reverse the numeric sort.
     cleared = false;
     sort_container.f.apply(button);
-    assert(cleared);
+    assert.ok(cleared);
     expected_html = html_for([ellen, alice, bob, cal, dave]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-    assert(button.hasClass("descend"));
+    assert.ok(button.hasClass("descend"));
 });
 
 run_test("custom sort", () => {
@@ -677,7 +735,7 @@ run_test("render item", () => {
         const item = INITIAL_RENDER_COUNT - 1;
         const new_html = `<tr data-item=${item}>updated: ${item}</tr>\n`;
         const regex = new RegExp(`\\<tr data-item=${item}\\>.*?<\\/tr\\>`);
-        assert(expected_queries.includes(query));
+        assert.ok(expected_queries.includes(query));
         if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
             return undefined; // This item is not rendered, so we find nothing
         }
@@ -707,17 +765,19 @@ run_test("render item", () => {
     });
     const item = INITIAL_RENDER_COUNT - 1;
 
-    assert(container.appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
-    assert(container.appended_data.html().includes("<tr data-item=3>initial: 3</tr>"));
+    assert.ok(container.appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
+    assert.ok(container.appended_data.html().includes("<tr data-item=3>initial: 3</tr>"));
     text = "updated";
     called = false;
     widget.render_item(INITIAL_RENDER_COUNT - 1);
-    assert(called);
-    assert(container.appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
-    assert(container.appended_data.html().includes(`<tr data-item=${item}>updated: ${item}</tr>`));
+    assert.ok(called);
+    assert.ok(container.appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
+    assert.ok(
+        container.appended_data.html().includes(`<tr data-item=${item}>updated: ${item}</tr>`),
+    );
 
     // Item 80 should not be in the rendered list. (0 indexed)
-    assert(
+    assert.ok(
         !container.appended_data
             .html()
             .includes(
@@ -726,9 +786,9 @@ run_test("render item", () => {
     );
     called = false;
     widget.render_item(INITIAL_RENDER_COUNT);
-    assert(!called);
+    assert.ok(!called);
     widget.render_item(INITIAL_RENDER_COUNT - 1);
-    assert(called);
+    assert.ok(called);
 
     // Tests below this are for the corner cases, where we abort the rerender.
 
@@ -755,7 +815,7 @@ run_test("render item", () => {
     get_item_called = false;
     widget_2.render_item(item);
     // Test that we didn't try to render the item.
-    assert(!get_item_called);
+    assert.ok(!get_item_called);
 
     let rendering_item = false;
     const widget_3 = ListWidget.create(container, list, {

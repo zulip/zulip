@@ -45,6 +45,46 @@ extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
 
+## Advanced installer options
+
+The Zulip installer supports the following advanced installer options
+as well as those mentioned in the
+[install](../production/install.html#installer-options) documentation:
+
+* `--postgresql-version`: Sets the version of PostgreSQL that will be
+  installed.  We currently support PostgreSQL 10, 11, 12, and 13.
+
+* `--postgresql-database-name=exampledbname`: With this option, you
+  can customize the default database name. If you do not set this. The
+  default database name will be `zulip`. This setting can only be set
+  on the first install.
+
+* `--postgresql-database-user=exampledbuser`: With this option, you
+  can customize the default database user. If you do not set this. The
+  default database user will be `zulip`. This setting can only be set
+  on the first install.
+
+* `--postgresql-missing-dictionaries`: Set
+  `postgresql.missing_dictionaries` ([docs][doc-settings]) in the
+  Zulip settings, which omits some configuration needed for full-text
+  indexing. This should be used with [cloud managed databases like
+  RDS](#using-zulip-with-amazon-rds-as-the-database). This option
+  conflicts with `--no-overwrite-settings`.
+
+* `--no-init-db`: This option instructs the installer to not do any
+  database initialization. This should be used when you already have a
+  Zulip database.
+
+* `--no-overwrite-settings`: This option preserves existing
+  `/etc/zulip` configuration files.
+
+## Installing on an existing server
+
+Zulip's installation process assumes it is the only application
+running on the server; though installing alongside other applications
+is not recommended, we do have [some notes on the
+process](../production/install-existing-server.md).
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
@@ -186,19 +226,24 @@ behind reverse proxies.
 ## Using an outgoing HTTP proxy
 
 Zulip supports routing all of its outgoing HTTP and HTTPS traffic
-through an HTTP `CONNECT` proxy, such as [`smokescreen`][smokescreen];
+through an HTTP `CONNECT` proxy, such as [Smokescreen][smokescreen];
 this includes outgoing webhooks, image and website previews, and
 mobile push notifications.  You may wish to enable this feature to
 provide a consistent egress point, or enforce access control on URLs
 to prevent [SSRF][ssrf] against internal resources.
 
-To use `smokescreen`:
+To use Smokescreen:
 
 1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
    in `/etc/zulip/zulip.conf`.  A typical value after this change is:
     ```
     puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
     ```
+
+1. Optionally, configure the [smokescreen ACLs][smokescreen-acls]. By
+  default, Smokescreen denies access to all [non-public IP
+  addresses](https://en.wikipedia.org/wiki/Private_network), including
+  127.0.0.1.
 
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
@@ -211,7 +256,7 @@ To use `smokescreen`:
 
 1. As root, run
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
-   will compile and install `smokescreen`, reconfigure services to use
+   will compile and install Smokescreen, reconfigure services to use
    it, and restart Zulip.
 
 If you would like to use an already-installed HTTP proxy, omit the
@@ -219,6 +264,7 @@ first step, and adjust the IP address and port in the second step
 accordingly.
 
 [smokescreen]: https://github.com/stripe/smokescreen
+[smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
 ## Putting the Zulip application behind a reverse proxy
@@ -491,6 +537,20 @@ configure `settings.py` and set this to 'true' to configure
 non-empty value is currently equivalent to true).
 
 [s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
+
+#### `queue_workers_multiprocess`
+
+By default, Zulip automatically detects whether the system has enough
+memory to run Zulip queue processors in the higher-throughput but more
+multiprocess mode (or to save 1.5GiB of RAM with the multithreaded
+mode). The calculation is based on whether the system has enough
+memory (currently 3.5GiB) to run a single-server Zulip installation in
+the multiprocess mode.
+
+Set to `true` or `false` to override the automatic calculation.  This
+override is useful both Docker systems (where the above algorithm
+might see the host's memory, not the container's) and/or when using
+remote servers for postgres, memcached, redis, and RabbitMQ.
 
 #### `uwsgi_buffer_size`
 

@@ -11,10 +11,10 @@ the details of the email/mobile push notifications code path.
 Here we name a few corner cases worth understanding in designing this
 sort of notifications system:
 
-* The **Idle Desktop Problem**: We don't want the presence of a
+* The **idle desktop problem**: We don't want the presence of a
   desktop computer at the office to eat all notifications because the
   user has an "online" client that they may not have used in 3 days.
-* The **Hard Disconnect Problem**: A client can lose its connection to
+* The **hard disconnect problem**: A client can lose its connection to
   the Internet (or be suspended, or whatever) at any time, and this
   happens routinely. We want to ensure that races where a user closes
   their laptop shortly after a notifiable message is sent does not
@@ -32,11 +32,10 @@ as follows:
   table's `flags` structure, which is in turn passed into
   `send_event` for each user receiving the message.
   * Data about user configuration relevant to the message, such as
-  `push_notify_user_ids` and `stream_notify_user_ids`, are included
-  alongside `flags` in the per-user data structure.
+  `online_push_user_ids` and `stream_notify_user_ids`, are included
+  in the main event dictionary.
   * The `presence_idle_user_ids` set, containing the subset of
-  recipient users who are mentioned, are PM recipients, have alert
-  words, or otherwise would normally get a notification, but have not
+  recipient users who can potentially receive notifications, but have not
   interacted with a Zulip client in the last few minutes.  (Users who
   have generally will not receive a notification unless the
   `enable_online_push_notifications` flag is enabled).  This data
@@ -57,15 +56,17 @@ as follows:
     checks are implemented.
   * Users in `presence_idle_user_ids` are always considered idle:
     the variable name means "users who are idle because of
-    presence". This is how we solve the Idle Desktop Problem; users
+    presence". This is how we solve the idle desktop problem; users
     with an idle desktop are treated the same as users who aren't
     logged in for this check.
-  * However, that check does not handle the Hard Disconnect Problem:
+  * However, that check does not handle the hard disconnect problem:
     if a user was present 1 minute before a message was sent, and then
     closed their laptop, the user will not be in
-    `presence_idle_user_ids`, and so without an additional mechanism,
-    messages sent shortly after a user leaves would never trigger a
-    notification (!).
+    `presence_idle_user_ids` (because it takes a
+    [few minutes](../subsystems/presence.md) of being idle for Zulip
+    clients to declare to the server that the user is actually idle),
+    and so without an additional mechanism, messages sent shortly after
+    a user leaves would never trigger a notification (!).
   * We solve that problem by also notifying if
     `receiver_is_off_zulip` returns `True`, which checks whether the user has any
     current events system clients registered to receive `message`
@@ -74,15 +75,19 @@ as follows:
     `DELETE /events/{queue_id}` request).
   * The `receiver_is_off_zulip` check is effectively repeated when
     event queues are garbage-collected (in `missedmessage_hook`) by
-    looking for whether the queue being garbage-collectee was the only
-    one; this second check solves the Hard Disconnect Problem, resulting in
+    looking for whether the queue being garbage-collected was the only
+    one; this second check solves the hard disconnect problem, resulting in
     notifications for these hard-disconnect cases usually coming 10
     minutes late.
+  * We try to contain the "when to notify" business logic in the
+    `zerver/lib/notification_data.py` class methods. The module has
+    unit tests for all possible situations in
+    `test_notification_data.py`.
   * The message-edit code path has parallel logic in
     `maybe_enqueue_notifications_for_message_update` for triggering
     notifications in cases like a mention added during message
     editing.
-  * The business logic for all these notification decisions made
+  * The notification sending logic for message edits
     inside Tornado has extensive automated test suites; e.g.
     `test_message_edit_notifications.py` covers all the cases around
     editing a message to add/remove a mention.
@@ -124,8 +129,8 @@ as follows:
   `push_notifications.py` code that actually sends the
   notification. This logic is somewhat complicated by having to track
   the number of unread push notifications to display on the mobile
-  apps' badges, as well as using the [Mobile Push Notifications
-  Service](../production/mobile-push-notifications.md) for self-hosted
+  apps' badges, as well as using the [mobile push notifications
+  service](../production/mobile-push-notifications.md) for self-hosted
   systems.
 
 The following important constraints are worth understanding about the
@@ -149,7 +154,7 @@ structure of the system, when thinking about changes to it:
   following a topic (to get notifications for messages only within
   that topic in a stream). There are a lot of different workflows
   possible with Zulip's threading, and it's important to make it easy
-  for users to setup Zulip's notification to fit as many of those
+  for users to set up Zulip's notification to fit as many of those
   workflows as possible.
 * **Message editing**. Zulip supports editing messages, and that
   interacts with notifications in ways that require careful handling:

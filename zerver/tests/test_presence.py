@@ -9,64 +9,15 @@ from zerver.lib.actions import do_deactivate_user
 from zerver.lib.presence import get_status_dict_by_realm
 from zerver.lib.statistics import seconds_usage_between
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import make_client, queries_captured, reset_emails_in_zulip_realm
+from zerver.lib.test_helpers import make_client, reset_emails_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
-    Client,
     PushDeviceToken,
     UserActivity,
     UserActivityInterval,
     UserPresence,
     UserProfile,
-    flush_per_request_caches,
 )
-
-
-class ActivityTest(ZulipTestCase):
-    @mock.patch("stripe.Customer.list", return_value=[])
-    def test_activity(self, unused_mock: mock.Mock) -> None:
-        self.login("hamlet")
-        client, _ = Client.objects.get_or_create(name="website")
-        query = "/json/messages/flags"
-        last_visit = timezone_now()
-        count = 150
-        for activity_user_profile in UserProfile.objects.all():
-            UserActivity.objects.get_or_create(
-                user_profile=activity_user_profile,
-                client=client,
-                query=query,
-                count=count,
-                last_visit=last_visit,
-            )
-
-        # Fails when not staff
-        result = self.client_get("/activity")
-        self.assertEqual(result.status_code, 302)
-
-        user_profile = self.example_user("hamlet")
-        user_profile.is_staff = True
-        user_profile.save()
-
-        flush_per_request_caches()
-        with queries_captured() as queries:
-            result = self.client_get("/activity")
-            self.assertEqual(result.status_code, 200)
-
-        self.assert_length(queries, 18)
-
-        flush_per_request_caches()
-        with queries_captured() as queries:
-            result = self.client_get("/realm_activity/zulip/")
-            self.assertEqual(result.status_code, 200)
-
-        self.assert_length(queries, 8)
-
-        flush_per_request_caches()
-        with queries_captured() as queries:
-            result = self.client_get("/user_activity/iago@zulip.com/")
-            self.assertEqual(result.status_code, 200)
-
-        self.assert_length(queries, 4)
 
 
 class TestClientModel(ZulipTestCase):
@@ -85,7 +36,7 @@ class UserPresenceModelTests(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         email = user_profile.email
         presence_dct = get_status_dict_by_realm(user_profile.realm_id)
-        self.assertEqual(len(presence_dct), 0)
+        self.assert_length(presence_dct, 0)
 
         self.login_user(user_profile)
         result = self.client_post("/json/users/me/presence", {"status": "active"})
@@ -93,12 +44,12 @@ class UserPresenceModelTests(ZulipTestCase):
 
         slim_presence = False
         presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
-        self.assertEqual(len(presence_dct), 1)
+        self.assert_length(presence_dct, 1)
         self.assertEqual(presence_dct[email]["website"]["status"], "active")
 
         slim_presence = True
         presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
-        self.assertEqual(len(presence_dct), 1)
+        self.assert_length(presence_dct, 1)
         info = presence_dct[str(user_profile.id)]
         self.assertEqual(set(info.keys()), {"active_timestamp"})
 
@@ -110,12 +61,12 @@ class UserPresenceModelTests(ZulipTestCase):
         # Simulate the presence being a week old first.  Nothing should change.
         back_date(num_weeks=1)
         presence_dct = get_status_dict_by_realm(user_profile.realm_id)
-        self.assertEqual(len(presence_dct), 1)
+        self.assert_length(presence_dct, 1)
 
         # If the UserPresence row is three weeks old, we ignore it.
         back_date(num_weeks=3)
         presence_dct = get_status_dict_by_realm(user_profile.realm_id)
-        self.assertEqual(len(presence_dct), 0)
+        self.assert_length(presence_dct, 0)
 
     def test_push_tokens(self) -> None:
         UserPresence.objects.all().delete()
@@ -129,7 +80,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         def pushable() -> bool:
             presence_dct = get_status_dict_by_realm(user_profile.realm_id)
-            self.assertEqual(len(presence_dct), 1)
+            self.assert_length(presence_dct, 1)
             return presence_dct[email]["website"]["pushable"]
 
         self.assertFalse(pushable())
@@ -442,7 +393,7 @@ class SingleUserPresenceTests(ZulipTestCase):
     def test_single_user_get(self) -> None:
         reset_emails_in_zulip_realm()
 
-        # First, we setup the test with some data
+        # First, we set up the test with some data
         user = self.example_user("othello")
         self.login_user(user)
         result = self.client_post("/json/users/me/presence", {"status": "active"})
@@ -637,7 +588,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
 class GetRealmStatusesTest(ZulipTestCase):
     def test_get_statuses(self) -> None:
-        # Setup the test by simulating users reporting their presence data.
+        # Set up the test by simulating users reporting their presence data.
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
 

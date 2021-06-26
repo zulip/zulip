@@ -19,7 +19,7 @@ existing services if (when) your server goes down.
 These instructions are only for experts.  If you're not an experienced
 Linux sysadmin, you will have a much better experience if you get a
 dedicated VM to install Zulip on instead (or [use
-zulip.com](https://zulip.com).
+zulip.com](https://zulip.com)).
 
 ### Nginx
 
@@ -28,10 +28,17 @@ one created by Zulip into it:
 
 ```shell
 sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
-sudo wget -O /etc/nginx/nginx.conf.zulip \
-    https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/files/nginx/nginx.conf
+sudo curl -Lo /etc/nginx/nginx.conf.zulip \
+    https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/templates/nginx.conf.template.erb
 sudo meld /etc/nginx/nginx.conf /etc/nginx/nginx.conf.zulip  # be sure to merge to the right
 ```
+
+Since the file in Zulip is an [ERB Puppet
+template](https://puppet.com/docs/puppet/7/lang_template_erb.html),
+you will also need to replace any `<%= ... %>` sections with
+appropriate content.  For instance `<%= @ca_crt %>` should be replaced
+with `/etc/ssl/certs/ca-certificates.crt` on Debian and Ubuntu
+installs.
 
 After the Zulip installation completes, then you can overwrite (or
 merge) your new nginx.conf with the installed one:
@@ -55,7 +62,7 @@ install process:
 puppet-agent[29873]: Could not request certificate: Failed to open TCP connection to puppet:8140
 ```
 
-So you'll need to shutdown any Puppet servers.
+So you'll need to shut down any Puppet servers.
 
 ```shell
 $ sudo service puppet-agent stop

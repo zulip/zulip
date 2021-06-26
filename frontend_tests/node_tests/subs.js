@@ -2,32 +2,30 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const denmark_stream_id = 101;
 
-mock_cjs("jquery", $);
 const ui = mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
 
-set_global("location", {
-    hash: `#streams/${denmark_stream_id}/announce`,
-});
 mock_esm("../../static/js/hash_util", {
     by_stream_uri: () => {},
+    get_current_hash_section: () => denmark_stream_id,
 });
+
+const render_subscriptions = mock_template("subscriptions.hbs");
+
+set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
 
-run_test("redraw_left_panel", (override) => {
-    override(subs, "add_tooltip_to_left_panel_row", () => {});
-
+run_test("redraw_left_panel", ({override}) => {
     // set-up sub rows stubs
     const denmark = {
         elem: "denmark",
@@ -88,8 +86,7 @@ run_test("redraw_left_panel", (override) => {
 
     let populated_subs;
 
-    stub_templates((fn, data) => {
-        assert.equal(fn, "subscriptions");
+    override(render_subscriptions, "f", (data) => {
         populated_subs = data.subscriptions;
     });
 
@@ -117,7 +114,7 @@ run_test("redraw_left_panel", (override) => {
     // on our current stream, even if it doesn't match the filter.
     const denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
     // sanity check it's not set to active
-    assert(!denmark_row.hasClass("active"));
+    assert.ok(!denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
         const stream_ids = subs.redraw_left_panel(params);
@@ -129,10 +126,10 @@ run_test("redraw_left_panel", (override) => {
 
     // Search with single keyword
     test_filter({input: "Po", subscribed_only: false}, [poland, pomona]);
-    assert(ui_called);
+    assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
-    assert(denmark_row.hasClass("active"));
+    assert.ok(denmark_row.hasClass("active"));
 
     // Search with multiple keywords
     test_filter({input: "Denmark, Pol", subscribed_only: false}, [denmark, poland]);
@@ -200,7 +197,7 @@ run_test("redraw_left_panel", (override) => {
     };
 
     test_filter({input: "d", subscribed_only: true}, [poland]);
-    assert(!$(".stream-row-denmark").hasClass("active"));
-    assert(!$(".right .settings").visible());
-    assert($(".nothing-selected").visible());
+    assert.ok(!$(".stream-row-denmark").hasClass("active"));
+    assert.ok(!$(".right .settings").visible());
+    assert.ok($(".nothing-selected").visible());
 });

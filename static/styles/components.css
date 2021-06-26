@@ -1,5 +1,5 @@
 /* Reusable, object-oriented CSS base components for all Zulip pages
-   (both webapp and portico). */
+   (both web app and portico). */
 
 .new-style {
     label.checkbox {
@@ -106,8 +106,38 @@ a.no-underline:hover {
     }
 }
 
-i.zulip-icon.bot {
+i.zulip-icon.zulip-icon-bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
     padding: 0 2px;
+}
+
+.tippy-content {
+    /* This actually sets the
+     * default font size of only
+     * tooltips; popovers should define
+     * font-size of their own.
+     */
+    font-size: 12px;
+}
+
+/* Hide the somewhat buggy browser show password feature in IE, Edge,
+   since it duplicates our own "show password" widget. */
+input::-ms-reveal {
+    display: none;
+}
+
+.password-div {
+    position: relative;
+
+    .password_visibility_toggle {
+        position: absolute;
+        right: 10px;
+        top: 42px;
+        opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 }

@@ -62,6 +62,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             "top_navbar",
             "id_email",
             "id_terms",
+            "logout_form",
             "send_confirm",
             "register",
             "footer",

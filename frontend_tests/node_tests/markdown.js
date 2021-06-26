@@ -2,9 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
+const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases");
 const markdown_assert = require("../zjsunit/markdown_assert");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -13,14 +13,22 @@ set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
 
-page_params.realm_users = [];
-page_params.realm_filters = [
-    ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
-    ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
-    [
-        "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
-        "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
-    ],
+const example_realm_linkifiers = [
+    {
+        pattern: "#(?P<id>[0-9]{2,8})",
+        url_format: "https://trac.example.com/ticket/%(id)s",
+        id: 1,
+    },
+    {
+        pattern: "ZBUG_(?P<id>[0-9]{2,8})",
+        url_format: "https://trac2.zulip.net/ticket/%(id)s",
+        id: 2,
+    },
+    {
+        pattern: "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
+        url_format: "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
+        id: 3,
+    },
 ];
 page_params.translate_emoticons = false;
 
@@ -29,15 +37,14 @@ function Image() {
 }
 set_global("Image", Image);
 
-const doc = "";
-set_global("document", doc);
+set_global("document", {compatMode: "CSS1Compat"});
 
 const emoji = zrequire("../shared/js/emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const linkifiers = zrequire("linkifiers");
 const pygments_data = zrequire("../generated/pygments_data.json");
 const fenced_code = zrequire("../shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
-const marked = zrequire("../third/marked/lib/marked");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -59,7 +66,7 @@ emoji.initialize(emoji_params);
 fenced_code.initialize(pygments_data);
 
 const cordelia = {
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
     user_id: 101,
     email: "cordelia@zulip.com",
 };
@@ -120,7 +127,7 @@ const backend = {
 const edgecase_group = {
     name: "Bobby <h1>Tables</h1>",
     id: 3,
-    description: "HTML Syntax to check for Markdown edge cases.",
+    description: "HTML syntax to check for Markdown edge cases.",
     members: [],
 };
 
@@ -180,12 +187,14 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
+markdown.initialize(markdown_config.get_helpers());
+linkifiers.initialize(example_realm_linkifiers);
 
 function test(label, f) {
-    run_test(label, (override) => {
-        markdown.update_linkifier_rules(page_params.realm_filters);
-        f(override);
+    run_test(label, ({override}) => {
+        page_params.realm_users = [];
+        linkifiers.update_linkifier_rules(example_realm_linkifiers);
+        f({override});
     });
 }
 
@@ -263,18 +272,18 @@ test("marked_shared", () => {
 test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
     markdown.apply_markdown(message);
-    assert(!message.mentioned);
-    assert(!message.mentioned_me_directly);
+    assert.ok(!message.mentioned);
+    assert.ok(!message.mentioned_me_directly);
 
-    message = {raw_content: "@**Cordelia Lear**"};
+    message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
-    assert(message.mentioned);
-    assert(message.mentioned_me_directly);
+    assert.ok(message.mentioned);
+    assert.ok(message.mentioned_me_directly);
 
     message = {raw_content: "@**all**"};
     markdown.apply_markdown(message);
-    assert(message.mentioned);
-    assert(!message.mentioned_me_directly);
+    assert.ok(message.mentioned);
+    assert.ok(!message.mentioned_me_directly);
 });
 
 test("marked", () => {
@@ -293,8 +302,7 @@ test("marked", () => {
                 '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n<p>and then after</p>',
         },
         {
-            input:
-                "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
+            input: "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
             expected:
                 '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n<p>and then after</p>',
         },
@@ -326,9 +334,9 @@ test("marked", () => {
             expected: "<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>",
         },
         {
-            input: "This is a @**CordeLIA Lear** mention",
+            input: "This is a @**CordeLIA, Lear's daughter** mention",
             expected:
-                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>',
+                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span> mention</p>',
         },
         {
             input: "These @ @**** are not mentions",
@@ -387,15 +395,44 @@ test("marked", () => {
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
         {
-            input: "Silent mention: @_**Cordelia Lear**",
+            input: "Silent mention: @_**Cordelia, Lear's daughter**",
             expected:
-                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>',
+                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
-            input:
-                "> Mention in quote: @**Cordelia Lear**\n\nMention outside quote: @**Cordelia Lear**",
+            input: "> Mention in quote: @**Cordelia, Lear's daughter**\n\nMention outside quote: @**Cordelia, Lear's daughter**",
             expected:
-                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
+        },
+        {
+            input: "Wildcard mention: @**all**\nWildcard silent mention: @_**all**",
+            expected:
+                '<p>Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nWildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
+        },
+        {
+            input: "> Wildcard mention in quote: @**all**\n\n> Another wildcard mention in quote: @_**all**",
+            expected:
+                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+        },
+        {
+            input: "```quote\nWildcard mention in quote: @**all**\n```\n\n```quote\nAnother wildcard mention in quote: @_**all**\n```",
+            expected:
+                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+        },
+        {
+            input: "User group mention: @*backend*\nUser group silent mention: @_*hamletcharacters*",
+            expected:
+                '<p>User group mention: <span class="user-group-mention" data-user-group-id="2">@Backend</span><br>\nUser group silent mention: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>',
+        },
+        {
+            input: "> User group mention in quote: @*backend*\n\n> Another user group mention in quote: @*hamletcharacters*",
+            expected:
+                '<blockquote>\n<p>User group mention in quote: <span class="user-group-mention silent" data-user-group-id="2">Backend</span></p>\n</blockquote>\n<blockquote>\n<p>Another user group mention in quote: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>\n</blockquote>',
+        },
+        {
+            input: "```quote\nUser group mention in quote: @*backend*\n```\n\n```quote\nAnother user group mention in quote: @*hamletcharacters*\n```",
+            expected:
+                '<blockquote>\n<p>User group mention in quote: <span class="user-group-mention silent" data-user-group-id="2">Backend</span></p>\n</blockquote>\n<blockquote>\n<p>Another user group mention in quote: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>\n</blockquote>',
         },
         // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
@@ -422,9 +459,9 @@ test("marked", () => {
                 '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a></p>',
         },
         {
-            input: "T\n@**Cordelia Lear**",
+            input: "T\n@**Cordelia, Lear's daughter**",
             expected:
-                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input: "@**Mark Twin|104** and @**Mark Twin|105** are out to confuse you.",
@@ -433,8 +470,8 @@ test("marked", () => {
         },
         {input: "@**Invalid User|1234**", expected: "<p>@**Invalid User|1234**</p>"},
         {
-            input: "@**Cordelia LeAR|103** has a wrong user_id.",
-            expected: "<p>@**Cordelia LeAR|103** has a wrong user_id.</p>",
+            input: "@**Cordelia, Lear's daughter|103** has a wrong user_id.",
+            expected: "<p>@**Cordelia, Lear&#39;s daughter|103** has a wrong user_id.</p>",
         },
         {
             input: "@**Brother of Bobby|123** is really the full name.",
@@ -634,7 +671,7 @@ test("message_flags", () => {
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, true);
-    assert(!message.unread);
+    assert.ok(!message.unread);
 
     input = "/me is testing\nthis";
     message = {topic: "No links here", raw_content: input};
@@ -642,7 +679,7 @@ test("message_flags", () => {
 
     assert.equal(message.is_me_message, true);
 
-    input = "testing this @**all** @**Cordelia Lear**";
+    input = "testing this @**all** @**Cordelia, Lear's daughter**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
@@ -698,6 +735,26 @@ test("message_flags", () => {
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
+
+    input = "test @_**all**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "> test @**all**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "test @_*hamletcharacters*";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "> test @*hamletcharacters*";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
 });
 
 test("backend_only_linkifiers", () => {
@@ -708,31 +765,6 @@ test("backend_only_linkifiers", () => {
     for (const content of backend_only_linkifiers) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     }
-});
-
-test("python_to_js_linkifier", () => {
-    // The only way to reach python_to_js_linkifier is indirectly, hence the call
-    // to update_linkifier_rules.
-    markdown.update_linkifier_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
-    let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
-    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
-    assert.deepEqual(actual_value, expected_value);
-    // Test case with multiple replacements.
-    markdown.update_linkifier_rules([
-        ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
-    ]);
-    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
-    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
-    assert.deepEqual(actual_value, expected_value);
-    // Test incorrect syntax.
-    blueslip.expect(
-        "error",
-        "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
-    );
-    markdown.update_linkifier_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
-    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
-    expected_value = [];
-    assert.deepEqual(actual_value, expected_value);
 });
 
 test("translate_emoticons_to_names", () => {
@@ -784,7 +816,7 @@ test("translate_emoticons_to_names", () => {
     }
 });
 
-test("missing unicode emojis", (override) => {
+test("missing unicode emojis", ({override}) => {
     const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
@@ -800,4 +832,21 @@ test("missing unicode emojis", (override) => {
     });
     markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
+});
+
+test("katex_throws_unexpected_exceptions", () => {
+    blueslip.expect("error", "Error: some-exception");
+    const message = {raw_content: "$$a$$"};
+    with_field(
+        markdown,
+        "katex",
+        {
+            renderToString: () => {
+                throw new Error("some-exception");
+            },
+        },
+        () => {
+            markdown.apply_markdown(message);
+        },
+    );
 });

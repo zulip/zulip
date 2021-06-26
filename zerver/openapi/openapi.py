@@ -5,9 +5,10 @@
 # definitions and validate that Zulip's implementation matches what is
 # described in our documentation.
 
+import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
 from openapi_core import create_spec
@@ -208,9 +209,97 @@ def get_openapi_fixture(endpoint: str, method: str, status_code: str = "200") ->
     return get_schema(endpoint, method, status_code)["example"]
 
 
+def get_openapi_fixture_description(endpoint: str, method: str, status_code: str = "200") -> str:
+    """Fetch a fixture from the full spec object."""
+    return get_schema(endpoint, method, status_code)["description"]
+
+
+def get_curl_include_exclude(endpoint: str, method: str) -> List[Dict[str, Any]]:
+    """Fetch all the kinds of parameters required for curl examples."""
+    if (
+        "x-curl-examples-parameters"
+        not in openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    ):
+        return [{"type": "exclude", "parameters": {"enum": [""]}}]
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()]["x-curl-examples-parameters"][
+        "oneOf"
+    ]
+
+
+def check_requires_administrator(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint requires admin config."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-requires-administrator", False
+    )
+
+
+def get_responses_description(endpoint: str, method: str) -> str:
+    """Fetch responses description of an endpoint."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-response-description", ""
+    )
+
+
+def get_parameters_description(endpoint: str, method: str) -> str:
+    """Fetch parameters description of an endpoint."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-parameter-description", ""
+    )
+
+
+def generate_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> List[str]:
+    """Generate fixture to be rendered"""
+    fixture = []
+    if status_code not in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]:
+        subschema_count = 0
+    elif (
+        "oneOf"
+        in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+            "content"
+        ]["application/json"]["schema"]
+    ):
+        subschema_count = len(
+            openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+                "content"
+            ]["application/json"]["schema"]["oneOf"]
+        )
+    else:
+        subschema_count = 1
+    for subschema_index in range(subschema_count):
+        if subschema_count != 1:
+            subschema_status_code = status_code + "_" + str(subschema_index)
+        else:
+            subschema_status_code = status_code
+        fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
+        fixture_description = (
+            get_openapi_fixture_description(endpoint, method, subschema_status_code).strip() + ":"
+        )
+        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(",", ": "))
+
+        fixture.extend(fixture_description.splitlines())
+        fixture.append("``` json")
+        fixture.extend(fixture_json.splitlines())
+        fixture.append("```")
+    return fixture
+
+
 def get_openapi_description(endpoint: str, method: str) -> str:
     """Fetch a description from the full spec object."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()]["description"]
+
+
+def get_openapi_summary(endpoint: str, method: str) -> str:
+    """Fetch a summary from the full spec object."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()]["summary"]
+
+
+def get_endpoint_from_operationid(operationid: str) -> Tuple[str, str]:
+    for endpoint in openapi_spec.openapi()["paths"]:
+        for method in openapi_spec.openapi()["paths"][endpoint]:
+            operationId = openapi_spec.openapi()["paths"][endpoint][method].get("operationId")
+            if operationId == operationid:
+                return (endpoint, method)
+    raise AssertionError("No such page exists in OpenAPI data.")
 
 
 def get_openapi_paths() -> Set[str]:

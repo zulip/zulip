@@ -121,8 +121,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # queasy seemed like a natural addition
     "1f922": {"canonical_name": "nauseated", "aliases": ["queasy"]},
     "1f927": {"canonical_name": "sneezing", "aliases": []},
-    # cant_talk from https://beebom.com/emoji-meanings/
-    "1f637": {"canonical_name": "cant_talk", "aliases": ["mask"]},
+    "1f637": {"canonical_name": "mask", "aliases": []},
     # flu from https://mashable.com/2015/10/23/ios-9-1-emoji-guide/, sick from
     # https://emojipedia.org/face-with-thermometer/, face_with_thermometer so
     # it shows up in typeahead (thermometer taken by Objects/82)

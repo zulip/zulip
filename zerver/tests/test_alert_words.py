@@ -106,7 +106,7 @@ class AlertWordTests(ZulipTestCase):
         do_add_alert_words(user2, ["another"])
 
         realm_words = alert_words_in_realm(user2.realm)
-        self.assertEqual(len(realm_words), 2)
+        self.assert_length(realm_words, 2)
         self.assertEqual(set(realm_words.keys()), {user1.id, user2.id})
         self.assertEqual(set(realm_words[user1.id]), set(self.interesting_alert_word_list))
         self.assertEqual(set(realm_words[user2.id]), {"another"})
@@ -191,6 +191,11 @@ class AlertWordTests(ZulipTestCase):
         # We don't cause alerts for matches in URLs.
         self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one/ URLs"))
         self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one URLs"))
+
+        # We don't cause alerts for matches within a word.
+        self.assertFalse(
+            self.message_does_alert(user, "Don't alert on clone, twofold or seventytwofold")
+        )
 
     def test_update_alert_words(self) -> None:
         user = self.get_user()

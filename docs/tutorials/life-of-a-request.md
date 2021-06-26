@@ -198,7 +198,7 @@ return `json_error` in the case of an error, which gives a JSON string:
 `{'result': 'error', 'msg': <some error message>}`
 
 in a
-[HTTP Response](https://docs.djangoproject.com/en/1.8/ref/request-response/)
+[HTTP response](https://docs.djangoproject.com/en/1.8/ref/request-response/)
 with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of

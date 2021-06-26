@@ -45,3 +45,32 @@ class UserDisplayRecipient(TypedDict):
 
 
 DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
+
+
+class LinkifierDict(TypedDict):
+    pattern: str
+    url_format: str
+    id: int
+
+
+class SAMLIdPConfigDict(TypedDict, total=False):
+    entity_id: str
+    url: str
+    attr_user_permanent_id: str
+    attr_first_name: str
+    attr_last_name: str
+    attr_username: str
+    attr_email: str
+    attr_org_membership: str
+    display_name: str
+    display_icon: str
+    limit_to_subdomains: List[str]
+    extra_attrs: List[str]
+    x509cert: str
+    x509cert_path: str
+
+
+class FullNameInfo(TypedDict):
+    id: int
+    email: str
+    full_name: str

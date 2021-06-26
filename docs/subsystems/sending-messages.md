@@ -59,8 +59,8 @@ number of purposes:
      to just do the check for whether a notification should be
      generated, and then put an event into an appropriate
      [queue](../subsystems/queuing.md) to actually send the message.
-     See `maybe_enqueue_notifications` and related code for this part
-     of the logic.
+     See `maybe_enqueue_notifications` and `zerver/lib/notification_data.py` for
+     this part of the logic.
    * Splicing user-dependent data (E.g. `flags` such as when the user
    was `mentioned`) into the events.
    * Handling the [local echo details](#local-echo).
@@ -160,7 +160,7 @@ messages.
   relevant message feed, it updates the (locally echoed) message's
   properties (at the very least, message ID and timestamp) and
   rerenders it in any message lists where it appears.  This is
-  primarily done in `exports.process_from_server` in
+  primarily done in the `process_from_server` function in
   `static/js/echo.js`.
 
 ### Local echo in message editing

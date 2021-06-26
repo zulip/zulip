@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only
 from zerver.lib.actions import do_update_user_status, update_user_presence
@@ -25,7 +25,7 @@ from zerver.models import (
 def get_presence_backend(
     request: HttpRequest, user_profile: UserProfile, user_id_or_email: str
 ) -> HttpResponse:
-    # This isn't used by the webapp; it's available for API use by
+    # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
 
@@ -65,7 +65,7 @@ def get_presence_backend(
 def update_user_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    away: Optional[bool] = REQ(validator=check_bool, default=None),
+    away: Optional[bool] = REQ(json_validator=check_bool, default=None),
     status_text: Optional[str] = REQ(str_validator=check_capped_string(60), default=None),
 ) -> HttpResponse:
 
@@ -91,9 +91,9 @@ def update_active_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     status: str = REQ(),
-    ping_only: bool = REQ(validator=check_bool, default=False),
-    new_user_input: bool = REQ(validator=check_bool, default=False),
-    slim_presence: bool = REQ(validator=check_bool, default=False),
+    ping_only: bool = REQ(json_validator=check_bool, default=False),
+    new_user_input: bool = REQ(json_validator=check_bool, default=False),
+    slim_presence: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
@@ -127,7 +127,7 @@ def update_active_status_backend(
 
 
 def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    # This isn't used by the webapp; it's available for API use by
+    # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
     return json_success(get_presence_response(user_profile, slim_presence=False))

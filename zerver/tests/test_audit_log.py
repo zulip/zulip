@@ -41,6 +41,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
+    Realm,
     RealmAuditLog,
     Recipient,
     Subscription,
@@ -305,9 +306,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_realm_activation(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm)
+        user = self.example_user("desdemona")
+        do_deactivate_realm(realm, acting_user=user)
         log_entry = RealmAuditLog.objects.get(
-            realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED
+            realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
         extra_data = orjson.loads(log_entry.extra_data)
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
@@ -327,7 +329,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm,
             "test",
             invite_only=False,
-            stream_description="Test Description",
+            stream_description="Test description",
             acting_user=user,
         )[0]
         self.assertEqual(
@@ -373,6 +375,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "Dev": True,
             "SAML": True,
             "GitLab": False,
+            "OpenID Connect": False,
         }
 
         do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)
@@ -410,13 +413,13 @@ class TestRealmAuditLog(ZulipTestCase):
                 RealmAuditLog.NEW_VALUE: 1000,
             },
             {
-                "property": "allow_community_topic_editing",
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
+                "property": "edit_topic_policy",
+                RealmAuditLog.OLD_VALUE: Realm.POLICY_EVERYONE,
+                RealmAuditLog.NEW_VALUE: Realm.POLICY_ADMINS_ONLY,
             },
         ]
 
-        do_set_realm_message_editing(realm, True, 1000, False, acting_user=user)
+        do_set_realm_message_editing(realm, True, 1000, Realm.POLICY_ADMINS_ONLY, acting_user=user)
         realm_audit_logs = RealmAuditLog.objects.filter(
             realm=realm,
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
@@ -492,7 +495,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=user,
             event_time__gte=test_start,
         )
-        self.assertEqual(len(audit_entries), 1)
+        self.assert_length(audit_entries, 1)
         self.assertEqual(icon_source, realm.icon_source)
         self.assertEqual(
             audit_entries.first().extra_data, "{'icon_source': 'G', 'icon_version': 2}"

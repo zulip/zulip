@@ -120,9 +120,9 @@ def tokenize(text: str) -> List[Token]:
 
                 tag = tag_parts[0]
 
-                if is_special_html_tag(s, tag):
-                    kind = "html_special"
-                elif is_self_closing_html_tag(s, tag):
+                if tag == "!DOCTYPE":
+                    kind = "html_doctype"
+                elif s.endswith("/>"):
                     kind = "html_singleton"
                 else:
                     kind = "html_start"
@@ -133,6 +133,8 @@ def tokenize(text: str) -> List[Token]:
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2].split()[0]
+                if tag.startswith("*"):
+                    tag = tag[1:]
                 kind = "handlebars_start"
             elif looking_at_handlebars_end():
                 s = get_handlebars_tag(text, state.i)
@@ -162,7 +164,7 @@ def tokenize(text: str) -> List[Token]:
                 continue
         except TokenizationException as e:
             raise FormattedException(
-                f'''{e.message} at Line {state.line} Col {state.col}:"{e.line_content}"''',
+                f'''{e.message} at line {state.line} col {state.col}:"{e.line_content}"''',
             )
 
         line_span = len(s.split("\n"))
@@ -201,6 +203,26 @@ def tokenize(text: str) -> List[Token]:
     return tokens
 
 
+HTML_VOID_TAGS = {
+    "area",
+    "base",
+    "br",
+    "col",
+    "command",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "keygen",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
+}
+
+
 def validate(
     fn: Optional[str] = None, text: Optional[str] = None, check_indent: bool = True
 ) -> None:
@@ -225,6 +247,7 @@ def validate(
     class State:
         def __init__(self, func: Callable[[Token], None]) -> None:
             self.depth = 0
+            self.foreign = False
             self.matcher = func
 
     def no_start_tag(token: Token) -> None:
@@ -247,6 +270,10 @@ def validate(
         start_col = start_token.col
 
         old_matcher = state.matcher
+        old_foreign = state.foreign
+
+        if start_tag in ["math", "svg"]:
+            state.foreign = True
 
         def f(end_token: Token) -> None:
 
@@ -281,6 +308,7 @@ def validate(
                     """
                 )
             state.matcher = old_matcher
+            state.foreign = old_foreign
             state.depth -= 1
 
         state.matcher = f
@@ -290,7 +318,16 @@ def validate(
         tag = token.tag
 
         if kind == "html_start":
+            if not state.foreign and tag in HTML_VOID_TAGS:
+                raise TemplateParserException(
+                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                )
             start_tag_matcher(token)
+        elif kind == "html_singleton":
+            if not state.foreign and tag not in HTML_VOID_TAGS:
+                raise TemplateParserException(
+                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                )
         elif kind == "html_end":
             state.matcher(token)
 
@@ -311,44 +348,6 @@ def validate(
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
-
-
-def is_special_html_tag(s: str, tag: str) -> bool:
-    return tag in ["link", "meta", "!DOCTYPE"]
-
-
-OPTIONAL_CLOSING_TAGS = [
-    "circle",
-    "img",
-    "input",
-    "path",
-    "polygon",
-    "stop",
-]
-
-
-def is_self_closing_html_tag(s: str, tag: str) -> bool:
-    if s.endswith("/>"):
-        if tag in OPTIONAL_CLOSING_TAGS:
-            return True
-        raise TokenizationException("Singleton tag not allowed", tag)
-    self_closing_tag = tag in [
-        "area",
-        "base",
-        "br",
-        "col",
-        "embed",
-        "hr",
-        "img",
-        "input",
-        "param",
-        "source",
-        "track",
-        "wbr",
-    ]
-    if self_closing_tag:
-        return True
-    return False
 
 
 def is_django_block_tag(tag: str) -> bool:
@@ -402,9 +401,9 @@ def get_html_tag(text: str, i: int) -> str:
         end += 1
     if quote_count % 2 != 0:
         if unclosed_end:
-            raise TokenizationException("Unbalanced Quotes", text[i:unclosed_end])
+            raise TokenizationException("Unbalanced quotes", text[i:unclosed_end])
         else:
-            raise TokenizationException("Unbalanced Quotes", text[i : end + 1])
+            raise TokenizationException("Unbalanced quotes", text[i : end + 1])
     if end == len(text) or text[end] != ">":
         raise TokenizationException('Tag missing ">"', text[i : end + 1])
     s = text[i : end + 1]
