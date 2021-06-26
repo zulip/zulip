@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class DelightedHookTests(WebhookTestCase):
     STREAM_NAME = "delighted"
     URL_TEMPLATE = "/api/v1/external/delighted?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "delighted"
+    WEBHOOK_DIR_NAME = "delighted"
 
     def test_feedback_message_promoter(self) -> None:
         expected_topic = "Survey response"

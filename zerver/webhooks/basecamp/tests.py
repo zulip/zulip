@@ -6,7 +6,7 @@ TOPIC = "Zulip HQ"
 class BasecampHookTests(WebhookTestCase):
     STREAM_NAME = "basecamp"
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "basecamp"
+    WEBHOOK_DIR_NAME = "basecamp"
 
     def test_basecamp_makes_doc_active(self) -> None:
         expected_message = "Tomasz activated the document [New doc](https://3.basecamp.com/3688623/buckets/2957043/documents/432522214)."

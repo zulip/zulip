@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class RadarrHookTests(WebhookTestCase):
     STREAM_NAME = "radarr"
     URL_TEMPLATE = "/api/v1/external/radarr?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "radarr"
+    WEBHOOK_DIR_NAME = "radarr"
 
     def test_radarr_test(self) -> None:
         """

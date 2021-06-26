@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class AnsibletowerHookTests(WebhookTestCase):
     STREAM_NAME = "ansibletower"
     URL_TEMPLATE = "/api/v1/external/ansibletower?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "ansibletower"
+    WEBHOOK_DIR_NAME = "ansibletower"
 
     def test_ansibletower_project_update_successful_message(self) -> None:
         """

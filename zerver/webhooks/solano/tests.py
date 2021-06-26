@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class SolanoHookTests(WebhookTestCase):
     STREAM_NAME = "solano labs"
     URL_TEMPLATE = "/api/v1/external/solano?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "solano"
+    WEBHOOK_DIR_NAME = "solano"
 
     def test_solano_message_001(self) -> None:
         """

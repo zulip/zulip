@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class JsonHookTests(WebhookTestCase):
     STREAM_NAME = "json"
     URL_TEMPLATE = "/api/v1/external/json?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "json"
+    WEBHOOK_DIR_NAME = "json"
 
     def test_json_github_push__1_commit_message(self) -> None:
         """

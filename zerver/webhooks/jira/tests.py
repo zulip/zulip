@@ -8,7 +8,7 @@ from zerver.lib.users import get_api_key
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = "jira"
     URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "jira"
+    WEBHOOK_DIR_NAME = "jira"
 
     def test_custom_stream(self) -> None:
         api_key = get_api_key(self.test_user)

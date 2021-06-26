@@ -1374,7 +1374,7 @@ class WebhookTestCase(ZulipTestCase):
     STREAM_NAME: Optional[str] = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
-    FIXTURE_DIR_NAME: Optional[str] = None
+    WEBHOOK_DIR_NAME: Optional[str] = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -1420,8 +1420,8 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_payload(fixture_name)
         if content_type is not None:
             kwargs["content_type"] = content_type
-        if self.FIXTURE_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+        if self.WEBHOOK_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
 
@@ -1467,8 +1467,8 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_payload(fixture_name)
         kwargs["content_type"] = content_type
 
-        if self.FIXTURE_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+        if self.WEBHOOK_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
         # The sender profile shouldn't be passed any further in kwargs, so we pop it.
@@ -1512,8 +1512,8 @@ class WebhookTestCase(ZulipTestCase):
         return self.get_body(fixture_name)
 
     def get_body(self, fixture_name: str) -> str:
-        assert self.FIXTURE_DIR_NAME is not None
-        body = self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
+        assert self.WEBHOOK_DIR_NAME is not None
+        body = self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, fixture_name)
         # fail fast if we don't have valid json
         orjson.loads(body)
         return body
