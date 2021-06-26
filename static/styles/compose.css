@@ -191,12 +191,6 @@
     opacity: 0.7;
 }
 
-#compose_invite_users,
-#compose_private_stream_alert {
-    /* Don't overlap into the compose_close × */
-    margin-right: 10px;
-}
-
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
