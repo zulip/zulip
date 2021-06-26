@@ -818,6 +818,32 @@
         margin: 20px;
     }
 
+    .stream_settings_header {
+        white-space: nowrap;
+        display: flex;
+        margin-left: 15px;
+
+        .tab-container {
+            .ind-tab {
+                padding: 3px 4px;
+                width: 80px;
+            }
+        }
+
+        .button-group {
+            padding-top: 5px;
+            margin-left: auto;
+            margin-right: 15px;
+
+            .subscribe-button,
+            #preview-stream-button,
+            .deactivate {
+                margin-right: 3px;
+                text-decoration: none;
+            }
+        }
+    }
+
     .stream-header {
         white-space: nowrap;
 
@@ -844,9 +870,6 @@
             float: right;
             margin-top: -5px;
 
-            .subscribe-button,
-            #preview-stream-button,
-            #open_stream_info_modal,
             .deactivate {
                 margin-right: 3px;
                 text-decoration: none;
@@ -925,6 +948,10 @@
         height: calc(100% - 45px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+
+        .tab-container {
+            padding-top: 5px;
+        }
     }
 
     .subscription_settings {
@@ -1048,6 +1075,10 @@
     .search-container {
         text-align: center;
     }
+
+    #subscription_overlay .stream_settings_header {
+        flex-wrap: wrap;
+    }
 }
 
 /* Note that this block has settings_page CSS as well, and thus needs
@@ -1119,7 +1150,7 @@
 @media (width < $sm_min) {
     #subscription_overlay .subscription_settings .button-group {
         display: block;
-        float: unset;
+        float: right;
         margin-top: 10px;
     }
 
@@ -1136,6 +1167,19 @@
         display: block;
         max-width: max-content;
         white-space: nowrap;
+    }
+}
+
+@media (width <= 500px) {
+    #subscription_overlay .stream_settings_header {
+        display: block;
+        text-align: center;
+        margin-left: 0;
+        .tab-container {
+            .ind-tab {
+                width: 85px;
+            }
+        }
     }
 }
 

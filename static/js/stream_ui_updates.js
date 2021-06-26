@@ -50,6 +50,26 @@ export function initialize_cant_subscribe_popover(sub) {
     );
 }
 
+export function update_toggler_for_sub(sub) {
+    if (!stream_edit.is_sub_settings_active(sub)) {
+        return;
+    }
+    if (sub.subscribed) {
+        stream_edit.toggler.enable_tab("personal_settings");
+        stream_edit.toggler.goto(stream_edit.select_tab);
+    } else {
+        if (stream_edit.select_tab === "personal_settings") {
+            // Go to the general settings tab, if the user is not
+            // subscribed. Also preserve the previous selected tab,
+            // to render next time a stream row is selected.
+            stream_edit.toggler.goto("general_settings");
+        } else {
+            stream_edit.toggler.goto(stream_edit.select_tab);
+        }
+        stream_edit.toggler.disable_tab("personal_settings");
+    }
+}
+
 export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const settings_button = subs.settings_button_for_sub(sub);

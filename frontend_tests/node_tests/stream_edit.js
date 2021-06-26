@@ -26,6 +26,11 @@ mock_esm("../../static/js/list_widget", {
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
 });
+mock_esm("../../static/js/components", {
+    toggle: () => ({
+        get: () => [],
+    }),
+});
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -35,6 +40,7 @@ const stream_pill = zrequire("stream_pill");
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const user_pill = zrequire("user_pill");
+const stream_ui_updates = zrequire("stream_ui_updates");
 
 const jill = {
     email: "jill@zulip.com",
@@ -282,6 +288,9 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     let fake_this = $subscription_settings;
     let event = {target: fake_this};
+
+    override(stream_ui_updates, "update_toggler_for_sub", noop);
+    override(stream_ui_updates, "update_add_subscriptions_elements", noop);
     stream_row_handler.call(fake_this, event);
     assert.ok(template_rendered);
     assert.ok(input_typeahead_called);

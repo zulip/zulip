@@ -11,6 +11,7 @@ import render_subscription_stream_privacy_modal from "../templates/subscription_
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as components from "./components";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
@@ -39,6 +40,8 @@ import * as user_pill from "./user_pill";
 import * as util from "./util";
 
 export let pill_widget;
+export let toggler;
+export let select_tab = "personal_settings";
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
@@ -154,7 +157,9 @@ function set_stream_message_retention_setting_dropdown(stream) {
 }
 
 function get_stream_id(target) {
-    const row = $(target).closest(".stream-row, .subscription_settings, .save-button");
+    const row = $(target).closest(
+        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+    );
     return Number.parseInt(row.attr("data-stream-id"), 10);
 }
 
@@ -180,7 +185,7 @@ export function open_edit_panel_for_row(stream_row) {
     subs.show_subs_pane.settings();
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
-    show_settings_for(stream_row);
+    setup_stream_settings(stream_row);
 }
 
 export function open_edit_panel_empty() {
@@ -525,7 +530,10 @@ export function show_settings_for(node) {
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: get_retention_policy_text_for_subscription_type(sub),
     });
-    ui.get_content_element($(".subscriptions .right .settings")).html(html);
+    ui.get_content_element($("#stream_settings")).html(html);
+
+    $("#stream_settings .tab-container").prepend(toggler.get());
+    stream_ui_updates.update_toggler_for_sub(sub);
 
     const sub_settings = settings_for_sub(sub);
 
@@ -535,6 +543,24 @@ export function show_settings_for(node) {
     sub_settings.addClass("show");
 
     show_subscription_settings(sub);
+}
+
+export function setup_stream_settings(node) {
+    toggler = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "General"}), key: "general_settings"},
+            {label: $t({defaultMessage: "Personal"}), key: "personal_settings"},
+            {label: $t({defaultMessage: "Subscribers"}), key: "subscriber_settings"},
+        ],
+        callback(name, key) {
+            $(".stream_section").hide();
+            $("." + key).show();
+            select_tab = key;
+        },
+    });
+
+    show_settings_for(node);
 }
 
 function stream_is_muted_changed(e) {
