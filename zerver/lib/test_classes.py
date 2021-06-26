@@ -39,6 +39,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
@@ -72,7 +73,11 @@ from zerver.lib.test_console_output import (
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
-from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
+from zerver.lib.webhooks.common import (
+    check_send_webhook_message,
+    get_fixture_http_headers,
+    standardize_headers,
+)
 from zerver.models import (
     Client,
     Message,
@@ -1364,18 +1369,29 @@ Output:
 
 
 class WebhookTestCase(ZulipTestCase):
-    """
-    Common for all webhooks tests
+    """Shared test class for all incoming webhooks tests.
 
-    Override below class attributes and run send_and_test_message
-    If you create your URL in uncommon way you can override build_webhook_url method
-    In case that you need modify body or create it without using fixture you can also override get_body method
+    Used by configuring the below class attributes, and calling
+    send_and_test_message in individual tests.
+
+    * Tests can override build_webhook_url if the webhook requires a
+      different URL format.
+
+    * Tests can override get_body for cases where there is no
+      available fixture file.
+
+    * Tests should specify WEBHOOK_DIR_NAME to enforce that all event
+      types are declared in the @webhook_view decorator. This is
+      important for ensuring we document all fully supported event types.
     """
 
     STREAM_NAME: Optional[str] = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
     WEBHOOK_DIR_NAME: Optional[str] = None
+    # This last parameter is a workaround to handle webhooks that do not
+    # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
+    VIEW_FUNCTION_NAME: Optional[str] = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -1384,6 +1400,52 @@ class WebhookTestCase(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.url = self.build_webhook_url()
+
+        if self.WEBHOOK_DIR_NAME is not None and self.VIEW_FUNCTION_NAME is not None:
+            # If VIEW_FUNCTION_NAME is explicitly specified and
+            # WEBHOOK_DIR_NAME is not None, an exception will be
+            # raised when a test triggers events that are not
+            # explicitly specified via the event_types parameter to
+            # the @webhook_view decorator.
+            function = import_string(
+                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.{self.VIEW_FUNCTION_NAME}"
+            )
+            all_event_types = None
+
+            if hasattr(function, "_all_event_types"):
+                all_event_types = function._all_event_types
+
+            if all_event_types is None:
+                return  # nocoverage
+
+            def side_effect(*args: Any, **kwargs: Any) -> None:
+                complete_event_type = (
+                    kwargs.get("complete_event_type")
+                    if len(args) < 5
+                    else args[4]  # complete_event_type is the argument at index 4
+                )
+                if (
+                    complete_event_type is not None
+                    and all_event_types is not None
+                    and complete_event_type not in all_event_types
+                ):
+                    raise Exception(
+                        f"""
+Error: This test triggered a message using the event "{complete_event_type}", which was not properly
+registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
+self-documenting the supported event types for this integration.
+
+You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
+""".strip()
+                    )
+                check_send_webhook_message(*args, **kwargs)
+
+            self.patch = mock.patch(
+                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",
+                side_effect=side_effect,
+            )
+            self.patch.start()
+            self.addCleanup(self.patch.stop)
 
     def api_stream_message(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_user(user)

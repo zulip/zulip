@@ -13,6 +13,7 @@ Author: josh_mandel
 Build status: Passed :thumbs_up:
 Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
 """.strip()
+    VIEW_FUNCTION_NAME = "api_travis_webhook"
 
     def test_travis_message(self) -> None:
         """
@@ -136,6 +137,25 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         msg = self.get_last_message()
         self.assertNotEqual(msg.topic_name(), self.TOPIC)
+
+    def test_travis_invalid_event(self) -> None:
+        payload = self.get_body("build")
+        payload = payload.replace("push", "invalid_event")
+        expected_error_messsage = """
+Error: This test triggered a message using the event "invalid_event", which was not properly
+registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
+self-documenting the supported event types for this integration.
+
+You can fix this by adding "invalid_event" to ALL_EVENT_TYPES for this webhook.
+""".strip()
+        with self.assertLogs("django.request"):
+            with self.assertLogs("zerver.middleware.json_error_handler", level="ERROR") as m:
+                self.client_post(
+                    self.url,
+                    payload,
+                    content_type="application/x-www-form-urlencoded",
+                )
+            self.assertIn(expected_error_messsage, m.output[0])
 
     def get_body(self, fixture_name: str) -> str:
         return urllib.parse.urlencode(

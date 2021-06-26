@@ -4,7 +4,7 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Callable, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import Callable, Dict, Optional, Sequence, Tuple, TypeVar, Union, cast
 
 import django_otp
 from django.conf import settings
@@ -310,6 +310,7 @@ def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[
 def webhook_view(
     webhook_client_name: str,
     notify_bot_owner_on_invalid_json: bool = True,
+    all_event_types: Optional[Sequence[str]] = None,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     # Unfortunately, callback protocols are insufficient for this:
     # https://mypy.readthedocs.io/en/stable/protocols.html#callback-protocols
@@ -354,6 +355,7 @@ def webhook_view(
                     )
                 raise err
 
+        _wrapped_func_arguments._all_event_types = all_event_types
         return _wrapped_func_arguments
 
     return _wrapped_view_func
