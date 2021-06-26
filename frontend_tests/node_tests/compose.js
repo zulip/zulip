@@ -7,7 +7,7 @@ const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
 const {$t, $t_html} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, mock_template, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -47,10 +47,12 @@ const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
 const subs = mock_esm("../../static/js/subs");
 const transmit = mock_esm("../../static/js/transmit");
+const render_compose_mention_one_on_one_alert = mock_template("compose_mention_one_on_one_alert.hbs");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
 const compose_state = zrequire("compose_state");
+const compose_pm_pill = zrequire("compose_pm_pill");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
 const peer_data = zrequire("peer_data");
@@ -1018,6 +1020,108 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert(looked_for_existing);
+});
+
+test_ui("warn_if_mention_one_on_one_alert", (override) => {
+    let dan = {
+        user_id : 1,
+        full_name : "dan",
+        token : "dan",
+    };
+    let jess = {
+        user_id : 2,
+        full_name : "jess",
+        token : "jess",
+    };
+
+    let test_group = {
+        members : [dan,jess],
+        name: "test_group",
+        token: "test_group",
+    }
+
+    $("#compose_mention_one_on_one_alerts .compose_mention_one_on_one_alert").length = 0;
+
+    // noop - stream, user group, multiple recipients, recipient not the one mentioned
+
+    function test_noop_case(message_type, mentioned, recipient_ids) {
+        override(compose_pm_pill, "get_user_ids", () => {
+            return recipient_ids;
+        });
+        compose_state.set_message_type(message_type);
+        compose.warn_if_mention_one_on_one(mentioned);
+        assert.equal($("#compose_mention_one_on_one_alerts").visible(), false);
+    }
+
+    test_noop_case("stream", dan, [dan.user_id]);
+    test_noop_case("private", test_group, [dan.user_id]);
+    test_noop_case("private", dan, [dan.user_id, jess.user_id]);
+    test_noop_case("private", dan, [jess.user_id]);
+
+    // Test mentioning a user that should get a warning.
+
+    const checks = [
+        (function () {
+            let called;
+            override(render_compose_mention_one_on_one_alert, "f", (context) => {
+                called = true;
+                assert.equal(context.user_id, dan.user_id);
+                assert.equal(context.name, dan.full_name);
+                return "fake-compose-mention-one-on-one-alert-template";
+            });
+            return function () {
+                assert.ok(called);
+            };
+        })(),
+        (function () {
+            let called;
+            $("#compose_mention_one_on_one_alerts").append = (html) => {
+                called = true;
+                assert.equal(html, "fake-compose-mention-one-on-one-alert-template");
+            };
+            return function () {
+                assert.ok(called);
+            };
+        })(),
+    ];
+
+    $("#compose_mention_one_on_one_alerts").hide();
+    override(compose_pm_pill, "get_user_ids", () => {
+        return [dan.user_id];
+    });
+    compose_state.set_message_type("private");
+    compose.warn_if_mention_one_on_one(dan);
+    assert.equal($("#compose_mention_one_on_one_alerts").visible(), true);
+
+    for (const f of checks) {
+        f();
+    }
+
+    // Simulate that a row was added to the DOM.
+
+    const warning_row = $("<warning row>");
+
+    warning_row.data = (field) => {
+        if (field === "user-id") {
+            return dan.user_id;
+        }
+        throw new Error(`Unknown field ${field}`);
+    };
+
+    const previous_mentions = $("#compose_mention_one_on_one_alerts .compose_mention_one_on_one_alert");
+    previous_mentions.length = 1;
+    previous_mentions[0] = warning_row;
+
+    // Now try to mention the same person again. The template should not render a new row.
+
+    function unexpected_render() {
+        throw new Error("unexpected render of 1:1 PM mention alert");
+    }
+
+    with_field(compose, "render_compose_mention_one_on_one_alert", unexpected_render, () => {
+        compose.warn_if_mention_one_on_one(dan);
+    });
+    assert.equal($("#compose_mention_one_on_one_alerts").visible(), true);
 });
 
 test_ui("on_events", (override) => {
