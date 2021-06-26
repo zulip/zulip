@@ -34,6 +34,7 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
+export const RESOLVED_TOPIC_PREFIX = "✔ ";
 
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
