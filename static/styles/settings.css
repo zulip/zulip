@@ -916,6 +916,24 @@ input[type="checkbox"] {
     }
 }
 
+.new-bot-form {
+    .bot_input_label {
+        font-size: 1.3em;
+        margin-bottom: 0.3em;
+    }
+
+    .grey-box {
+        li {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+            &:last-of-type {
+                border-bottom: none;
+            }
+        }
+    }
+}
+
 .admin-profile-field-form #custom_external_account_url_pattern input {
     width: 70%;
 }

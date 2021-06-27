@@ -99,7 +99,7 @@ function test_create_bot_type_input_box_toggle(f) {
     const OUTGOING_WEBHOOK_BOT_TYPE = "3";
     const GENERIC_BOT_TYPE = "1";
 
-    $("#create_bot_type :selected").val(EMBEDDED_BOT_TYPE);
+    $('input[name="bot_type"]:checked').val(EMBEDDED_BOT_TYPE);
     f();
     assert(!create_payload_url.hasClass("required"));
     assert(!payload_url_inputbox.visible());
@@ -107,7 +107,7 @@ function test_create_bot_type_input_box_toggle(f) {
     assert($("#service_name_list").visible());
     assert(config_inputbox.visible());
 
-    $("#create_bot_type :selected").val(OUTGOING_WEBHOOK_BOT_TYPE);
+    $('input[name="bot_type"]:checked').val(OUTGOING_WEBHOOK_BOT_TYPE);
     f();
     assert(create_payload_url.hasClass("required"));
     assert(payload_url_inputbox.visible());
@@ -136,7 +136,7 @@ test("test tab clicks", (override) => {
 
     settings_bots.set_up();
 
-    test_create_bot_type_input_box_toggle(() => $("#create_bot_type").trigger("change"));
+    test_create_bot_type_input_box_toggle(() => $(".create_bot_type").trigger("click"));
 
     function click_on_tab(tab_elem) {
         tab_elem.trigger("click");

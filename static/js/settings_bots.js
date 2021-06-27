@@ -293,7 +293,7 @@ export function set_up() {
             hide_errors();
         },
         submitHandler() {
-            const bot_type = Number.parseInt($("#create_bot_type :selected").val(), 10);
+            const bot_type = Number.parseInt($('input[name="bot_type"]:checked').val(), 10);
             const full_name = $("#create_bot_name").val();
             const short_name =
                 $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
@@ -342,7 +342,6 @@ export function set_up() {
                     $(`[name*='${CSS.escape(service_name)}'] input`).each(function () {
                         $(this).val("");
                     });
-                    $("#create_bot_type").val(BOT_TYPES.GENERIC_BOT);
                     $("#select_service_name").val("converter"); // TODO: Later we can change this to hello bot or similar
                     $("#service_name_list").hide();
                     $("#create_bot_button").show();
@@ -356,13 +355,25 @@ export function set_up() {
                 },
                 complete() {
                     loading.destroy_indicator(spinner);
+                    // Maintains the visibility state of the fields
+                    // so that when user adds more bots of the same type
+                    // the fields dont reset.
+                    if (bot_type === BOT_TYPES.OUTGOING_WEBHOOK) {
+                        $("#payload_url_inputbox").show();
+                        $("#create_payload_url").addClass("required");
+                    } else if (bot_type === BOT_TYPES.EMBEDDED_BOT) {
+                        $("#service_name_list").show();
+                        $("#select_service_name").addClass("required");
+                        $("#select_service_name").trigger("change");
+                        $("#config_inputbox").show();
+                    }
                 },
             });
         },
     });
 
-    $("#create_bot_type").on("change", () => {
-        const bot_type = Number.parseInt($("#create_bot_type :selected").val(), 10);
+    $(".create_bot_type").on("click", () => {
+        const bot_type = Number.parseInt($('input[name="bot_type"]:checked').val(), 10);
         // For "generic bot" or "incoming webhook" both these fields need not be displayed.
         $("#service_name_list").hide();
         $("#select_service_name").removeClass("required");

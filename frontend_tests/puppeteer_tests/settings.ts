@@ -5,9 +5,12 @@ import type {Page} from "puppeteer";
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 import common from "../puppeteer_lib/common";
 
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const GENERIC_BOT_TYPE = "1";
-
+const BOT_TYPES = Object.freeze({
+    GENERIC_BOT: 1,
+    INCOMING_WEBHOOK: 2,
+    OUTGOING_WEBHOOK: 3,
+    EMBEDDED_BOT: 4,
+});
 const zuliprc_regex =
     /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
@@ -101,13 +104,15 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
+    await page.click(`input[name="bot_type"][value="${BOT_TYPES.OUTGOING_WEBHOOK}"]`);
+    await page.waitForSelector("#create_payload_url", {visible: true});
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 1",
         bot_short_name: "1",
-        bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
         payload_url: "http://hostname.example.com/bots/followup",
     });
 
+    await page.click(`input[name="bot_type"][value="${BOT_TYPES.GENERIC_BOT}"]`);
     await page.click("#create_bot_button");
 
     const bot_email = "1-bot@zulip.testserver";

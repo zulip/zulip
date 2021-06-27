@@ -47,6 +47,12 @@ def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[floa
 
 
 def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
+    bot_type_descriptions = {
+        1: "Automating tasks, bots that listen to all messages on a stream.",
+        2: "Incoming webhook bots are limited to only sending messages via webhooks.",
+        3: "Send messages into Zulip, read messages where the bot is addressed.",
+        4: "Embedded bots run within the Zulip server itself, events are added to the embedded_bots queue and then handled by a QueueProcessingWorker.",
+    }
     bot_types: List[Dict[str, object]] = []
     if user_profile is None:
         return bot_types
@@ -57,6 +63,7 @@ def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]
                 type_id=type_id,
                 name=name,
                 allowed=type_id in user_profile.allowed_bot_types,
+                description=bot_type_descriptions.get(type_id, None),
             )
         )
     return bot_types
