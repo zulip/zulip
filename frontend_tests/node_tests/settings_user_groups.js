@@ -19,7 +19,6 @@ const pills = {
 
 let create_item_handler;
 
-const render_admin_user_group_list = mock_template("/settings/admin_user_group_list.hbs");
 const channel = mock_esm("../../static/js/channel");
 const confirm_dialog = mock_esm("../../static/js/confirm_dialog");
 const input_pill = mock_esm("../../static/js/input_pill");
@@ -30,6 +29,9 @@ const user_groups = mock_esm("../../static/js/user_groups", {
     add: noop,
 });
 const ui_report = mock_esm("../../static/js/ui_report");
+
+const render_admin_user_group_list = mock_template("settings/admin_user_group_list.hbs");
+const render_confirm_delete_user = mock_template("confirm_dialog/confirm_delete_user.hbs");
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -518,6 +520,13 @@ test_ui("reset", () => {
 });
 
 test_ui("on_events", ({override}) => {
+    override(render_confirm_delete_user, "f", (data) => {
+        assert.deepEqual(data, {
+            group_name: "Mobile",
+        });
+        return "stub";
+    });
+
     override(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
