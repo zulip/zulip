@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, mock_template, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -33,8 +33,6 @@ set_global("setTimeout", (f, time) => {
     set_timeout_called = true;
 });
 set_global("document", "document-stub");
-
-const render_typeahead_list_item = mock_template("typeahead_list_item.hbs", true);
 
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
@@ -285,7 +283,7 @@ const make_emoji = (emoji_dict) => ({
 });
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         people.init();
         user_groups.init();
 
@@ -309,7 +307,7 @@ function test(label, f) {
 
         muting.set_muted_users([]);
 
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -576,10 +574,10 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-test("initialize", ({override}) => {
+test("initialize", ({override, mock_template}) => {
     let expected_value;
 
-    override(render_typeahead_list_item, "f", (data, html) => {
+    mock_template("typeahead_list_item.hbs", true, (data, html) => {
         assert.equal(typeof data.primary, "string");
         if (data.has_secondary) {
             assert.equal(typeof data.secondary, "string");

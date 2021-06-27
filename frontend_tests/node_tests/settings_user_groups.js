@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -29,9 +29,6 @@ const user_groups = mock_esm("../../static/js/user_groups", {
     add: noop,
 });
 const ui_report = mock_esm("../../static/js/ui_report");
-
-const render_admin_user_group_list = mock_template("settings/admin_user_group_list.hbs");
-const render_confirm_delete_user = mock_template("confirm_dialog/confirm_delete_user.hbs");
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -100,7 +97,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", ({override}) => {
+test_ui("populate_user_groups", ({override, mock_template}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -135,7 +132,7 @@ test_ui("populate_user_groups", ({override}) => {
 
     let templates_render_called = false;
     const fake_rendered_temp = $.create("fake_admin_user_group_list_template_rendered");
-    override(render_admin_user_group_list, "f", (args) => {
+    mock_template("settings/admin_user_group_list.hbs", false, (args) => {
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, "Mobile");
         assert.equal(args.user_group.description, "All mobile people");
@@ -368,7 +365,7 @@ test_ui("populate_user_groups", ({override}) => {
         "function",
     );
 });
-test_ui("with_external_user", ({override}) => {
+test_ui("with_external_user", ({override, mock_template}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -381,7 +378,11 @@ test_ui("with_external_user", ({override}) => {
     // We return noop because these are already tested, so we skip them
     people.get_realm_users = () => noop;
 
-    override(render_admin_user_group_list, "f", () => "settings/admin_user_group_list.hbs");
+    mock_template(
+        "settings/admin_user_group_list.hbs",
+        false,
+        () => "settings/admin_user_group_list.hbs",
+    );
 
     people.get_by_user_id = () => noop;
 
@@ -519,8 +520,8 @@ test_ui("reset", () => {
     assert.equal(result, undefined);
 });
 
-test_ui("on_events", ({override}) => {
-    override(render_confirm_delete_user, "f", (data) => {
+test_ui("on_events", ({override, mock_template}) => {
+    mock_template("confirm_dialog/confirm_delete_user.hbs", false, (data) => {
         assert.deepEqual(data, {
             group_name: "Mobile",
         });

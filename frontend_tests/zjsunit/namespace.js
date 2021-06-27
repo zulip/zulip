@@ -12,7 +12,9 @@ let old_globals = {};
 
 let actual_load;
 const module_mocks = new Map();
+const template_mocks = new Map();
 const used_module_mocks = new Set();
+const used_templates = new Set();
 
 const jquery_path = require.resolve("jquery");
 const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
@@ -25,43 +27,21 @@ function load(request, parent, isMain) {
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
         const obj = module_mocks.get(filename);
+        return obj;
+    }
 
-        // Normal mocks are just objects.
-        if (!obj.__template_fn) {
-            return obj;
-        }
-
+    if (filename.endsWith(".hbs") && !filename.includes("frontend_tests/node_tests")) {
         const actual_render = actual_load(request, parent, isMain);
 
-        // For template mocks, we have an underlying object that
-        // we wrap with a render function.
-        const render = (...args) => {
-            if (in_mid_render) {
-                return actual_render(...args);
-            }
+        return template_stub({filename, actual_render});
+    }
 
-            if (obj.f.__default) {
-                throw new Error(`
-                    You did render_foo = mock_template("${obj.__template_fn}")
-                    but you also need to do override(render_foo, "f", () => {...}
-                `);
-            }
-
-            const data = args[0];
-
-            if (obj.exercise_template) {
-                in_mid_render = true;
-                const html = actual_render(...args);
-                in_mid_render = false;
-
-                // User will override "f" for now, which is a bit hacky.
-                return obj.f(data, html);
-            }
-
-            return obj.f(data);
-        };
-
-        return render;
+    if (
+        filename.endsWith(".hbs") &&
+        !filename.includes("frontend_tests/node_tests") &&
+        !in_mid_render
+    ) {
+        throw new Error(`Please use mock_template if your test needs to render ${filename}`);
     }
 
     if (filename === jquery_path && parent.filename !== real_jquery_path) {
@@ -69,6 +49,41 @@ function load(request, parent, isMain) {
     }
 
     return actual_load(request, parent, isMain);
+}
+
+function template_stub({filename, actual_render}) {
+    return function render(...args) {
+        // If our template is being rendered as a partial, always
+        // use the actual implementation.
+        if (in_mid_render) {
+            return actual_render(...args);
+        }
+
+        // Force devs to call mock_template on every top-level template
+        // render so they can introspect the data.
+        if (!template_mocks.has(filename)) {
+            throw new Error(`You need to call mock_template with ${filename}`);
+        }
+
+        used_templates.add(filename);
+
+        const {exercise_template, f} = template_mocks.get(filename);
+
+        const data = args[0];
+
+        if (exercise_template) {
+            // If our dev wants to exercise the actual template, then do so.
+            // We set the in_mid_render bool so that included (i.e partial)
+            // templates get rendered.
+            in_mid_render = true;
+            const html = actual_render(...args);
+            in_mid_render = false;
+
+            return f(data, html);
+        }
+
+        return f(data);
+    };
 }
 
 exports.start = () => {
@@ -138,18 +153,33 @@ exports.mock_jquery = ($) => {
     return $;
 };
 
-exports.mock_template = (fn, exercise_template) => {
-    // We create an object with an f() function that the test author
-    // can override.
-    const obj = {
-        f: () => {},
-        __template_fn: fn,
-        exercise_template: Boolean(exercise_template),
-    };
+exports._start_template_mocking = () => {
+    template_mocks.clear();
+    used_templates.clear();
+};
 
-    obj.f.__default = true;
+exports._finish_template_mocking = () => {
+    for (const filename of template_mocks.keys()) {
+        if (!used_templates.has(filename)) {
+            throw new Error(
+                `You called mock_template with ${filename} but we never saw it get used.`,
+            );
+        }
+    }
+    template_mocks.clear();
+    used_templates.clear();
+};
 
-    return exports.mock_cjs("../../static/templates/" + fn, obj);
+exports._mock_template = (fn, exercise_template, f) => {
+    const path = "../../static/templates/" + fn;
+
+    const resolved_path = Module._resolveFilename(
+        path,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
+
+    template_mocks.set(resolved_path, {exercise_template, f});
 };
 
 exports.mock_esm = (module_path, obj = {}) => {
@@ -349,13 +379,9 @@ exports.with_overrides = function (test_function) {
         }
     }
 
-    for (const [obj, module_unused_funcs] of unused_funcs.entries()) {
+    for (const module_unused_funcs of unused_funcs.values()) {
         for (const unused_name of module_unused_funcs.keys()) {
-            if (obj.__template_fn) {
-                throw new Error(`The ${obj.__template_fn} template was never rendered.`);
-            } else {
-                throw new Error(unused_name + " never got invoked!");
-            }
+            throw new Error(unused_name + " never got invoked!");
         }
     }
 };

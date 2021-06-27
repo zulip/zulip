@@ -2,12 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const render_admin_profile_field_list = mock_template("settings/admin_profile_field_list.hbs");
 const loading = mock_esm("../../static/js/loading");
 
 const SHORT_TEXT_ID = 1;
@@ -68,12 +67,12 @@ function test_populate(opts, template_data) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", ({override}) => {
+run_test("populate_profile_fields", ({mock_template}) => {
     page_params.custom_profile_fields = {};
     page_params.realm_default_external_accounts = JSON.stringify({});
 
     const template_data = [];
-    override(render_admin_profile_field_list, "f", (data) => {
+    mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
         template_data.push(data);
         return "whatever";
     });

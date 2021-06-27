@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, with_field, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -35,11 +35,6 @@ mock_esm("../../static/js/stream_popover", {
     hide_starred_messages_popover: noop,
     hide_streamlist_sidebar: noop,
 });
-
-const render_actions_popover_content = mock_template("actions_popover_content.hbs");
-const render_user_info_popover_content = mock_template("user_info_popover_content.hbs");
-const render_user_info_popover_title = mock_template("user_info_popover_title.hbs");
-const render_no_arrow_popover = mock_template("no_arrow_popover.hbs");
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");
@@ -101,18 +96,18 @@ function make_image_stubber() {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
         override(popovers, "clipboard_enable", noop);
         popovers.clear_for_testing();
         popovers.register_click_handlers();
-        f({override});
+        f({override, mock_template});
     });
 }
 
-test_ui("sender_hover", ({override}) => {
+test_ui("sender_hover", ({override, mock_template}) => {
     override($.fn, "popover", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
@@ -146,14 +141,14 @@ test_ui("sender_hover", ({override}) => {
         return {};
     };
 
-    override(render_no_arrow_popover, "f", (opts) => {
+    mock_template("no_arrow_popover.hbs", false, (opts) => {
         assert.deepEqual(opts, {
             class: "message-info-popover",
         });
         return "popover-html";
     });
 
-    override(render_user_info_popover_title, "f", (opts) => {
+    mock_template("user_info_popover_title.hbs", false, (opts) => {
         assert.deepEqual(opts, {
             user_avatar: "avatar/alice@example.com",
             user_is_guest: false,
@@ -161,7 +156,7 @@ test_ui("sender_hover", ({override}) => {
         return "title-html";
     });
 
-    override(render_user_info_popover_content, "f", (opts) => {
+    mock_template("user_info_popover_content.hbs", false, (opts) => {
         assert.deepEqual(opts, {
             can_set_away: false,
             can_revoke_away: false,
@@ -206,7 +201,7 @@ test_ui("sender_hover", ({override}) => {
     // todo: load image
 });
 
-test_ui("actions_popover", ({override}) => {
+test_ui("actions_popover", ({override, mock_template}) => {
     override($.fn, "popover", noop);
 
     const target = $.create("click target");
@@ -252,7 +247,7 @@ test_ui("actions_popover", ({override}) => {
         };
     };
 
-    override(render_actions_popover_content, "f", (opts) => {
+    mock_template("actions_popover_content.hbs", false, (opts) => {
         // TODO: Test all the properties of the popover
         assert.equal(
             opts.conversation_time_uri,

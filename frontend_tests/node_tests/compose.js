@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const MockDate = require("mockdate");
 
 const {$t, $t_html} = require("../zjsunit/i18n");
-const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -41,10 +41,6 @@ const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
 const subs = mock_esm("../../static/js/subs");
 const transmit = mock_esm("../../static/js/transmit");
-
-const render_compose = mock_template("compose.hbs");
-const render_compose_invite_users = mock_template("compose_invite_users.hbs");
-const render_compose_private_stream_alert = mock_template("compose_private_stream_alert.hbs");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
@@ -635,7 +631,7 @@ test_ui("finish", ({override}) => {
     })();
 });
 
-test_ui("warn_if_private_stream_is_linked", ({override}) => {
+test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     const test_sub = {
         name: compose_state.stream_name(),
         stream_id: 99,
@@ -670,7 +666,7 @@ test_ui("warn_if_private_stream_is_linked", ({override}) => {
     const checks = [
         (function () {
             let called;
-            override(render_compose_private_stream_alert, "f", (context) => {
+            mock_template("compose_private_stream_alert.hbs", false, (context) => {
                 called = true;
                 assert.equal(context.stream_name, "Denmark");
                 return "fake-compose_private_stream_alert-template";
@@ -707,7 +703,7 @@ test_ui("warn_if_private_stream_is_linked", ({override}) => {
     }
 });
 
-test_ui("initialize", ({override}) => {
+test_ui("initialize", ({override, mock_template}) => {
     override(giphy, "is_giphy_enabled", () => true);
 
     let compose_actions_expected_opts;
@@ -752,7 +748,7 @@ test_ui("initialize", ({override}) => {
         };
     });
 
-    override(render_compose, "f", (context) => {
+    mock_template("compose.hbs", false, (context) => {
         assert.equal(context.embedded, false);
         assert.equal(context.file_upload_enabled, true);
         assert.equal(context.giphy_enabled, true);
@@ -892,7 +888,7 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", ({override}) => {
+test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned = {
@@ -951,7 +947,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override}) => {
 
         (function () {
             let called;
-            override(render_compose_invite_users, "f", (context) => {
+            mock_template("compose_invite_users.hbs", false, (context) => {
                 called = true;
                 assert.equal(context.user_id, 34);
                 assert.equal(context.stream_id, 111);

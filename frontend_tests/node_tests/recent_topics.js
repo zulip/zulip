@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -147,10 +147,6 @@ mock_esm("../../static/js/unread", {
         return 1;
     },
 });
-
-const render_recent_topics_table = mock_template("recent_topics_table.hbs");
-const render_recent_topics_filters = mock_template("recent_topics_filters.hbs");
-const render_recent_topic_row = mock_template("recent_topic_row.hbs", true);
 
 const ls_container = new Map();
 set_global("localStorage", {
@@ -337,15 +333,15 @@ function stub_out_filter_buttons() {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         $(".header").css = () => {};
 
         messages = sample_messages.map((message) => ({...message}));
-        f({override});
+        f({override, mock_template});
     });
 }
 
-test("test_recent_topics_show", ({override}) => {
+test("test_recent_topics_show", ({mock_template}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -356,12 +352,12 @@ test("test_recent_topics_show", ({override}) => {
         search_val: "",
     };
 
-    override(render_recent_topics_table, "f", (data) => {
+    mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
         return "<recent_topics table stub>";
     });
 
-    override(render_recent_topic_row, "f", () => {});
+    mock_template("recent_topic_row.hbs", false, () => {});
 
     stub_out_filter_buttons();
 
@@ -374,7 +370,7 @@ test("test_recent_topics_show", ({override}) => {
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
 });
 
-test("test_filter_all", ({override}) => {
+test("test_filter_all", ({override, mock_template}) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     const expected = {
@@ -386,11 +382,11 @@ test("test_filter_all", ({override}) => {
     let row_data;
     let i;
 
-    override(render_recent_topics_table, "f", (data) => {
+    mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
     });
 
-    override(render_recent_topic_row, "f", (data) => {
+    mock_template("recent_topic_row.hbs", false, (data) => {
         i -= 1;
         assert.deepEqual(data, row_data[i]);
         return "<recent_topics row stub>";
@@ -424,10 +420,10 @@ test("test_filter_all", ({override}) => {
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
-test("test_filter_unread", ({override}) => {
+test("test_filter_unread", ({override, mock_template}) => {
     let expected_filter_unread = false;
 
-    override(render_recent_topics_table, "f", (data) => {
+    mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
             filter_participated: false,
             filter_unread: expected_filter_unread,
@@ -436,7 +432,7 @@ test("test_filter_unread", ({override}) => {
         });
     });
 
-    override(render_recent_topics_filters, "f", (data) => {
+    mock_template("recent_topics_filters.hbs", false, (data) => {
         assert.equal(data.filter_unread, expected_filter_unread);
         assert.equal(data.filter_participated, false);
         return "<recent_topics table stub>";
@@ -456,7 +452,7 @@ test("test_filter_unread", ({override}) => {
         [1, "topic-1", 0, false, true],
     ]);
 
-    override(render_recent_topic_row, "f", (data) => {
+    mock_template("recent_topic_row.hbs", false, (data) => {
         // All the row will be processed.
         if (row_data[i]) {
             assert.deepEqual(data, row_data[i]);
@@ -531,10 +527,10 @@ test("test_filter_unread", ({override}) => {
     rt.set_filter("all");
 });
 
-test("test_filter_participated", ({override}) => {
+test("test_filter_participated", ({override, mock_template}) => {
     let expected_filter_participated;
 
-    override(render_recent_topics_table, "f", (data) => {
+    mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
             filter_participated: expected_filter_participated,
             filter_unread: false,
@@ -543,7 +539,7 @@ test("test_filter_participated", ({override}) => {
         });
     });
 
-    override(render_recent_topics_filters, "f", (data) => {
+    mock_template("recent_topics_filters.hbs", false, (data) => {
         assert.equal(data.filter_unread, false);
         assert.equal(data.filter_participated, expected_filter_participated);
         return "<recent_topics table stub>";
@@ -562,7 +558,7 @@ test("test_filter_participated", ({override}) => {
     ]);
     let i = 0;
 
-    override(render_recent_topic_row, "f", (data) => {
+    mock_template("recent_topic_row.hbs", false, (data) => {
         // All the row will be processed.
         if (row_data[i]) {
             assert.deepEqual(data, row_data[i]);
@@ -648,11 +644,11 @@ test("test_update_unread_count", () => {
     rt.update_topic_unread_count(messages[9]);
 });
 
-test("basic assertions", ({override}) => {
+test("basic assertions", ({override, mock_template}) => {
     rt.clear_for_tests();
 
-    override(render_recent_topics_table, "f", () => {});
-    override(render_recent_topic_row, "f", (data, html) => {
+    mock_template("recent_topics_table.hbs", false, () => {});
+    mock_template("recent_topic_row.hbs", true, (data, html) => {
         assert.ok(html.startsWith('<tr id="recent_topic'));
     });
 
@@ -770,9 +766,9 @@ test("basic assertions", ({override}) => {
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
 });
 
-test("test_reify_local_echo_message", ({override}) => {
-    override(render_recent_topics_table, "f", () => {});
-    override(render_recent_topic_row, "f", () => {});
+test("test_reify_local_echo_message", ({override, mock_template}) => {
+    mock_template("recent_topics_table.hbs", false, () => {});
+    mock_template("recent_topic_row.hbs", false, () => {});
 
     rt.clear_for_tests();
     stub_out_filter_buttons();

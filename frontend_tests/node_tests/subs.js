@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -18,14 +18,12 @@ mock_esm("../../static/js/hash_util", {
     get_current_hash_section: () => denmark_stream_id,
 });
 
-const render_subscriptions = mock_template("subscriptions.hbs");
-
 set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
 
-run_test("redraw_left_panel", ({override}) => {
+run_test("redraw_left_panel", ({mock_template}) => {
     // set-up sub rows stubs
     const denmark = {
         elem: "denmark",
@@ -86,7 +84,7 @@ run_test("redraw_left_panel", ({override}) => {
 
     let populated_subs;
 
-    override(render_subscriptions, "f", (data) => {
+    mock_template("subscriptions.hbs", false, (data) => {
         populated_subs = data.subscriptions;
     });
 
