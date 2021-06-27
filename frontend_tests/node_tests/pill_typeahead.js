@@ -2,10 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire, mock_esm} = require("../zjsunit/namespace");
+const {zrequire, mock_esm, mock_template} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+
+const render_input_pill = mock_template("input_pill.hbs", true);
 
 const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
@@ -105,7 +107,13 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-run_test("set_up", () => {
+run_test("set_up", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.id, "string");
+        assert.equal(typeof data.display_value, "string");
+        assert.equal(typeof data.has_image, "boolean");
+        return html;
+    });
     let input_pill_typeahead_called = false;
     const fake_input = $.create(".input");
     fake_input.before = noop;
