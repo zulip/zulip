@@ -953,6 +953,27 @@
         "name": "telephone_sms_link",
         "input": "[call me](tel:+14155551234) [or maybe not](sms:+14155551234)",
         "expected_output": "<p><a href=\"tel:+14155551234\">call me</a> <a href=\"sms:+14155551234\">or maybe not</a></p>"
+    },
+    {
+      "name": "emoticon_and_emoji_inside_blockquotes_1",
+      "input": "```quote\nHi there! :) :|\nOh! ;) :D :surprise:\n:smile:\n```\n:/ <3 :astonished:",
+      "expected_output": "<blockquote>\n<p>Hi there! :) :|<br>\nOh! ;) :D <span aria-label=\"surprise\" class=\"emoji emoji-1f62e\" role=\"img\" title=\"surprise\">:surprise:</span><br>\n<span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>\n</blockquote>\n<p><span aria-label=\"confused\" class=\"emoji emoji-1f615\" role=\"img\" title=\"confused\">:confused:</span> <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> <span aria-label=\"astonished\" class=\"emoji emoji-1f632\" role=\"img\" title=\"astonished\">:astonished:</span></p>",
+      "marked_expected_output": "<blockquote>\n<p>Hi there! (: :|<br>\nOh! ;) :D <span aria-label=\"surprise\" class=\"emoji emoji-1f62e\" role=\"img\" title=\"surprise\">:surprise:</span><br>\n(:</p>\n</blockquote>\n<p><span aria-label=\"confused\" class=\"emoji emoji-1f615\" role=\"img\" title=\"confused\">:confused:</span> <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> <span aria-label=\"astonished\" class=\"emoji emoji-1f632\" role=\"img\" title=\"astonished\">:astonished:</span></p>",
+      "translate_emoticons": true
+    },
+    {
+      "name": "emoticon_and_emoji_inside_blockquotes_2",
+      "input": "> Hi there! :) :|\nOh! <3 :D :surprise:\n:smile:\n\n:/ <3 :astonished:",
+      "expected_output": "<blockquote>\n<p>Hi there! :) :|<br>\nOh! <3 :D <span aria-label=\"surprise\" class=\"emoji emoji-1f62e\" role=\"img\" title=\"surprise\">:surprise:</span><br>\n<span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>\n</blockquote>\n<p><span aria-label=\"confused\" class=\"emoji emoji-1f615\" role=\"img\" title=\"confused\">:confused:</span> <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> <span aria-label=\"astonished\" class=\"emoji emoji-1f632\" role=\"img\" title=\"astonished\">:astonished:</span></p>",
+      "marked_expected_output": "<blockquote>\n<p>Hi there! (: :|<br>\nOh! &lt;3 :D <span aria-label=\"surprise\" class=\"emoji emoji-1f62e\" role=\"img\" title=\"surprise\">:surprise:</span><br>\n(:</p>\n</blockquote>\n<p><span aria-label=\"confused\" class=\"emoji emoji-1f615\" role=\"img\" title=\"confused\">:confused:</span> <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> <span aria-label=\"astonished\" class=\"emoji emoji-1f632\" role=\"img\" title=\"astonished\">:astonished:</span></p>",
+      "translate_emoticons": true
+    },
+    {
+      "name": "emoticon_and_emoji_inside_blockquotes_3",
+      "input": "```quote\nHi there! :) :|\nOh! ;) :D :surprise:\n:smile:\n```\n:/ <3 :astonished:",
+      "expected_output": "<blockquote>\n<p>Hi there! :) :|<br>\nOh! ;) :D <span aria-label=\"surprise\" class=\"emoji emoji-1f62e\" role=\"img\" title=\"surprise\">:surprise:</span><br>\n<span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>\n</blockquote>\n<p>:/ &lt;3 <span aria-label=\"astonished\" class=\"emoji emoji-1f632\" role=\"img\" title=\"astonished\">:astonished:</span></p>",
+      "marked_expected_output": "<blockquote>\n<p>Hi there! :) :|<br>\nOh! ;) :D <span aria-label=\"surprise\" class=\"emoji emoji-1f62e\" role=\"img\" title=\"surprise\">:surprise:</span><br>\n(:</p>\n</blockquote>\n<p>:/ &lt;3 <span aria-label=\"astonished\" class=\"emoji emoji-1f632\" role=\"img\" title=\"astonished\">:astonished:</span></p>",
+      "translate_emoticons": false
     }
   ],
   "linkify_tests": [

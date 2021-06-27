@@ -11,6 +11,8 @@ export const emojis_by_name = new Map();
 export const all_realm_emojis = new Map();
 export const active_realm_emojis = new Map();
 
+export const emoji_to_emoticon_conversions = new Map();
+
 const default_emoji_aliases = new Map();
 
 // For legacy reasons we track server_realm_emoji_data,
@@ -60,6 +62,8 @@ function build_emoticon_translations() {
             regex,
             replacement_text,
         });
+
+        emoji_to_emoticon_conversions.set(replacement_text, emoticon);
     }
 
     emoticon_translations = translations;
