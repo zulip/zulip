@@ -11,14 +11,8 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_change_logo_source,
-    do_change_plan_type,
-    do_create_user,
-)
+from zerver.lib.actions import change_user_is_active, do_change_plan_type, do_create_user
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
-from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.home import (
     get_billing_info,
     get_furthest_read_time,
@@ -39,7 +33,6 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.home import compute_navbar_logo_url
 from zerver.worker.queue_processors import UserActivityWorker
 
 logger_string = "zulip.soft_deactivation"
@@ -858,73 +851,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         path = urllib.parse.urlparse(result["Location"]).path
         self.assertEqual(path, "/")
-
-    def test_compute_navbar_logo_url(self) -> None:
-        user_profile = self.example_user("hamlet")
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
-        )
-
-        do_change_logo_source(
-            user_profile.realm, Realm.LOGO_UPLOADED, night=False, acting_user=user_profile
-        )
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
-        )
-
-        do_change_logo_source(
-            user_profile.realm, Realm.LOGO_UPLOADED, night=True, acting_user=user_profile
-        )
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2",
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
-        )
-
-        # This configuration isn't super supported in the UI and is a
-        # weird choice, but we have a test for it anyway.
-        do_change_logo_source(
-            user_profile.realm, Realm.LOGO_DEFAULT, night=False, acting_user=user_profile
-        )
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2",
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
-        )
 
     @override_settings(SERVER_UPGRADE_NAG_DEADLINE_DAYS=365)
     def test_is_outdated_server(self) -> None:
