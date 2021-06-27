@@ -160,6 +160,7 @@ function populate_group_from_message_container(group, message_container) {
         } else {
             group.stream_id = sub.stream_id;
         }
+        group.topic_is_resolved = group.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX);
         group.topic_muted = muted_topics.is_topic_muted(group.stream_id, group.topic);
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;

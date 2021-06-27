@@ -50,6 +50,12 @@
                     <span class="topic_edit_form" id="{{id}}"></span>
                 </span>
 
+                {{#if topic_is_resolved}}
+                    <i class="fa fa-check on_hover_topic_unresolve recipient_bar_icon" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as unresolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as unresolved' }}"></i>
+                {{else}}
+                    <i class="fa fa-check on_hover_topic_resolve recipient_bar_icon" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as resolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as resolved' }}"></i>
+                {{/if}}
+
                 {{#if topic_muted}}
                     <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
                 {{else}}
