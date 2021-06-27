@@ -307,21 +307,29 @@ export const absolute_time = (function () {
 })();
 
 export function get_full_datetime(time) {
-    const date_string_options = {weekday: "long", month: "long", day: "numeric"};
-    const time_string_options = {timeStyle: "full"};
+    // Convert to number of hours ahead/behind UTC.
+    // The sign of getTimezoneOffset() is reversed wrt
+    // the conventional meaning of UTC+n / UTC-n
+    const tz_offset = -time.getTimezoneOffset() / 60;
+
+    const time_options = {timeStyle: "long"};
 
     if (page_params.twenty_four_hour_time) {
-        time_string_options.hourCycle = "h24";
+        time_options.hourCycle = "h24";
     }
 
-    const current_date = new Date();
-    if (time.getFullYear() !== current_date.getFullYear()) {
-        // Show year only if not current year.
-        date_string_options.year = "numeric";
-    }
+    const date_string = time.toLocaleDateString();
+    let time_string = time.toLocaleTimeString(undefined, time_options);
 
-    return {
-        date: time.toLocaleDateString(page_params.request_language, date_string_options),
-        time: time.toLocaleTimeString(page_params.request_language, time_string_options),
-    };
+    // In some rare cases where user's locale and timeZone doesn't suit,
+    // for eg. en-US with Indian timeZone gives GMT+5:30. We want to
+    // avoid showing something like: 27/6/21 at 12:00 GMT+x:y (UTC+N).
+    time_string = time_string.replace(/ GMT[+-][\d:]*/, "");
+
+    const tz_offset_sign = tz_offset > 0 ? "+" : "-";
+    const tz_offset_str = time_string.includes("UTC") ? "" : ` (UTC${tz_offset_sign}${tz_offset})`;
+
+    time_string = time_string + tz_offset_str;
+
+    return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
 }

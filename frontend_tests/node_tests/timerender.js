@@ -221,33 +221,21 @@ run_test("absolute_time_24_hour", () => {
 
 run_test("get_full_datetime", () => {
     const time = new Date(1495141973000); // 2017/5/18 9:12:53 PM (UTC+0)
-    let expected_date = "Thursday, May 18, 2017";
-    let expected_time = "9:12:53 PM Coordinated Universal Time";
-    assert.deepEqual(timerender.get_full_datetime(time), {
-        date: expected_date,
-        time: expected_time,
-    });
+    let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
+    assert.equal(timerender.get_full_datetime(time), expected);
 
     // test 24 hour time setting.
     page_params.twenty_four_hour_time = true;
-    expected_time = "21:12:53 Coordinated Universal Time";
-    assert.deepEqual(timerender.get_full_datetime(time), {
-        date: expected_date,
-        time: expected_time,
-    });
+    expected = "translated: 5/18/2017 at 21:12:53 UTC";
+    assert.equal(timerender.get_full_datetime(time), expected);
 
-    // Test year not shown if current.
-    const current_year = new Date().getFullYear();
-    time.setFullYear(current_year);
-    expected_date = time.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-    });
-    assert.deepEqual(timerender.get_full_datetime(time), {
-        date: expected_date,
-        time: expected_time,
-    });
+    page_params.twenty_four_hour_time = false;
+
+    // Test the GMT[+-]x:y logic.
+    process.env.TZ = "Asia/Kolkata";
+    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+5.5)";
+    assert.equal(timerender.get_full_datetime(time), expected);
+    delete process.env.TZ;
 });
 
 run_test("last_seen_status_from_date", () => {
