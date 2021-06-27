@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -19,6 +19,8 @@ mock_esm("../../static/js/ui_util", {
 set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
+
+const render_input_pill = mock_template("input_pill", true);
 
 const input_pill = zrequire("input_pill");
 
@@ -52,6 +54,11 @@ run_test("random_id", () => {
 });
 
 run_test("basics", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(data.display_value, "JavaScript");
+        return html;
+    });
+
     override_random_id({override});
     const config = {};
 
@@ -143,6 +150,11 @@ function set_up() {
 }
 
 run_test("copy from pill", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.ok(["BLUE", "RED"].includes(data.display_value));
+        return html;
+    });
+
     override_random_id({override});
     const info = set_up();
     const config = info.config;
@@ -181,7 +193,12 @@ run_test("copy from pill", ({override}) => {
     assert.equal(copied_text, "RED");
 });
 
-run_test("paste to input", () => {
+run_test("paste to input", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.has_image, "boolean");
+        return html;
+    });
+
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -223,7 +240,12 @@ run_test("paste to input", () => {
     assert.ok(entered);
 });
 
-run_test("arrows on pills", () => {
+run_test("arrows on pills", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.has_image, "boolean");
+        return html;
+    });
+
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -271,7 +293,12 @@ run_test("arrows on pills", () => {
     assert.ok(next_focused);
 });
 
-run_test("left arrow on input", () => {
+run_test("left arrow on input", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -300,7 +327,12 @@ run_test("left arrow on input", () => {
     assert.ok(last_pill_focused);
 });
 
-run_test("comma", () => {
+run_test("comma", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
     const info = set_up();
     const config = info.config;
     const items = info.items;
@@ -333,7 +365,12 @@ run_test("comma", () => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("Enter key with text", () => {
+run_test("Enter key with text", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
     const info = set_up();
     const config = info.config;
     const items = info.items;
@@ -359,6 +396,12 @@ run_test("Enter key with text", () => {
 });
 
 run_test("insert_remove", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        assert.ok(html.startsWith, "<div class='pill'");
+        return html;
+    });
+
     override_random_id({override});
     const info = set_up();
 
@@ -463,6 +506,12 @@ run_test("insert_remove", ({override}) => {
 });
 
 run_test("exit button on pill", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        assert.ok(html.startsWith, "<div class='pill'");
+        return html;
+    });
+
     override_random_id({override});
     const info = set_up();
 
@@ -572,7 +621,13 @@ run_test("misc things", () => {
     container_click_handler.call(this_, {target: this_});
 });
 
-run_test("appendValue/clear", () => {
+run_test("appendValue/clear", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        assert.ok(html.startsWith, "<div class='pill'");
+        return html;
+    });
+
     const pill_input = $.create("pill_input");
     const container = $.create("container");
     container.set_find_results(".input", pill_input);
