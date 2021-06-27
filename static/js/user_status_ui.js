@@ -83,6 +83,10 @@ export function clear_message() {
     $("#clear_status_message_button").prop("disabled", true);
 }
 
+export function user_status_picker_open() {
+    return $("#set_user_status_modal").length !== 0;
+}
+
 export function initialize() {
     $("body").on("click", ".user-status-value", (event) => {
         event.stopPropagation();

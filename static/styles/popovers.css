@@ -528,7 +528,9 @@ ul {
 
         background-color: hsla(0, 0%, 0%, 0.7);
 
-        z-index: 103;
+        /* Needs to be higher than the 105 for div.overlay so that the
+           emoji picker can render on top of the user status picker. */
+        z-index: 106;
 
         opacity: 0;
         pointer-events: none;

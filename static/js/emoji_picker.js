@@ -16,6 +16,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as ui from "./ui";
+import * as user_status_ui from "./user_status_ui";
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.
@@ -169,6 +170,7 @@ const generate_emoji_picker_content = function (id) {
     return render_emoji_popover_content({
         message_id: id,
         emoji_categories: complete_emoji_catalog,
+        is_status_emoji_popover: user_status_ui.user_status_picker_open(),
     });
 };
 
@@ -238,6 +240,7 @@ function filter_emojis() {
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
+            is_status_emoji_popover: user_status_ui.user_status_picker_open(),
             message_id,
         });
         $(".emoji-search-results").html(rendered_search_results);
@@ -269,6 +272,10 @@ function toggle_reaction(emoji_name, event) {
 
 function is_composition(emoji) {
     return $(emoji).hasClass("composition");
+}
+
+function is_status_emoji(emoji) {
+    return $(emoji).hasClass("status_emoji");
 }
 
 function process_enter_while_filtering(e) {
@@ -424,7 +431,7 @@ export function navigate(event_name, e) {
     }
 
     if (event_name === "enter") {
-        if (is_composition(e.target)) {
+        if (is_composition(e.target) || is_status_emoji(e.target)) {
             e.target.click();
         } else {
             toggle_selected_emoji(e);
@@ -646,7 +653,9 @@ export function toggle_emoji_popover(element, id) {
         message_lists.current.select_id(id);
     }
 
-    if (elt.data("popover") === undefined) {
+    if (user_status_ui.user_status_picker_open()) {
+        build_emoji_popover(elt, id, true);
+    } else if (elt.data("popover") === undefined) {
         // Keep the element over which the popover is based off visible.
         elt.addClass("reaction_button_visible");
         build_emoji_popover(elt, id);
