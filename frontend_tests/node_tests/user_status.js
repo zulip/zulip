@@ -8,6 +8,23 @@ const blueslip = require("../zjsunit/zblueslip");
 
 const channel = mock_esm("../../static/js/channel");
 const user_status = zrequire("user_status");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
+const {page_params} = require("../zjsunit/zpage_params");
+
+const emoji_params = {
+    realm_emoji: {
+        991: {
+            id: "991",
+            name: "realm_emoji",
+            source_url: "/url/for/991",
+            deactivated: false,
+        },
+    },
+    emoji_codes,
+};
+
+emoji.initialize(emoji_params);
 
 function initialize() {
     const params = {
@@ -15,10 +32,114 @@ function initialize() {
             1: {away: true, status_text: "in a meeting"},
             2: {away: true},
             3: {away: true},
+            4: {emoji_name: "smiley", emoji_code: "1f603", reaction_type: "unicode_emoji"},
         },
     };
     user_status.initialize(params);
 }
+
+run_test("get_extra_emoji_info", () => {
+    page_params.emojiset = "text";
+
+    let emoji_info = {};
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {});
+
+    emoji_info = {emoji_name: "smile"};
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "smile",
+        emoji_alt_code: true,
+    });
+
+    page_params.emojiset = "google";
+
+    // Test adding an unicode_emoji.
+    emoji_info = {emoji_name: "smile", emoji_code: "1f642", reaction_type: "unicode_emoji"};
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "smile",
+        emoji_alt_code: false,
+        reaction_type: "unicode_emoji",
+        emoji_code: "1f642",
+    });
+
+    // Test adding an unicode_emoji's name only.
+    // It should fill in other details automatically.
+    emoji_info = {emoji_name: "smile"};
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "smile",
+        emoji_alt_code: false,
+        reaction_type: "unicode_emoji",
+        emoji_code: "1f642",
+    });
+
+    // Test adding zulip emoji.
+    emoji_info = {emoji_name: "zulip", emoji_code: "zulip", reaction_type: "zulip_extra_emoji"};
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "zulip",
+        emoji_alt_code: false,
+        reaction_type: "zulip_extra_emoji",
+        emoji_code: "zulip",
+        url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
+    });
+
+    // Test adding zulip emoji's name only.
+    emoji_info = {emoji_name: "zulip"};
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "zulip",
+        emoji_alt_code: false,
+        reaction_type: "zulip_extra_emoji",
+        emoji_code: "zulip",
+        url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
+    });
+
+    // Test adding realm_emoji emoji.
+    emoji_info = {
+        emoji_name: "realm_emoji",
+        emoji_code: "991",
+        reaction_type: "realm_emoji",
+    };
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "realm_emoji",
+        emoji_alt_code: false,
+        reaction_type: "realm_emoji",
+        emoji_code: "991",
+        url: "/url/for/991",
+    });
+
+    // Test adding only realm_emoji's name only.
+    // It should fill in other details automatically.
+    emoji_info = {
+        emoji_name: "realm_emoji",
+    };
+
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {
+        emoji_name: "realm_emoji",
+        emoji_alt_code: false,
+        reaction_type: "realm_emoji",
+        emoji_code: "991",
+        url: "/url/for/991",
+    });
+
+    // Test sending an unknown emoji.
+    emoji_info = {emoji_name: "unknown-emoji"};
+    blueslip.expect("warn", "Bad emoji name: " + emoji_info.emoji_name);
+    emoji_info = user_status.get_emoji_info(emoji_info);
+    assert.deepEqual(emoji_info, {});
+});
 
 run_test("basics", () => {
     initialize();
