@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, mock_template, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -28,6 +28,9 @@ const scroll_util = mock_esm("../../static/js/scroll_util");
 const watchdog = mock_esm("../../static/js/watchdog");
 
 set_global("document", _document);
+
+const render_user_presence_row = mock_template("user_presence_row.hbs", true);
+const render_user_presence_rows = mock_template("user_presence_rows.hbs");
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
@@ -207,6 +210,11 @@ test("huddle_data.process_loaded_messages", () => {
 test("presence_list_full_update", ({override}) => {
     override(padded_widget, "update_padding", () => {});
 
+    override(render_user_presence_rows, "f", (data) => {
+        assert.equal(data.users.length, 7);
+        assert.equal(data.users[0].user_id, me.user_id);
+    });
+
     $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
@@ -263,6 +271,8 @@ test("PM_update_dom_counts", () => {
 
 test("handlers", ({override}) => {
     let filter_key_handlers;
+
+    override(render_user_presence_rows, "f", () => {});
 
     override(keydown_util, "handle", (opts) => {
         filter_key_handlers = opts.handlers;
@@ -364,6 +374,41 @@ test("handlers", ({override}) => {
 });
 
 test("first/prev/next", ({override}) => {
+    let rendered_alice;
+    let rendered_fred;
+
+    override(render_user_presence_row, "f", (data) => {
+        if (data.user_id === alice.user_id) {
+            rendered_alice = true;
+            assert.deepEqual(data, {
+                faded: true,
+                href: "#narrow/pm-with/1-alice",
+                is_current_user: false,
+                my_user_status: undefined,
+                name: "Alice Smith",
+                num_unread: 0,
+                user_circle_class: "user_circle_green",
+                user_circle_status: "translated: Active",
+                user_id: alice.user_id,
+            });
+        } else if (data.user_id === fred.user_id) {
+            rendered_fred = true;
+            assert.deepEqual(data, {
+                href: "#narrow/pm-with/2-fred",
+                name: "Fred Flintstone",
+                user_id: fred.user_id,
+                my_user_status: undefined,
+                is_current_user: false,
+                num_unread: 0,
+                user_circle_class: "user_circle_green",
+                user_circle_status: "translated: Active",
+                faded: false,
+            });
+        } else {
+            throw new Error(`we did not expect to have to render a row for  ${data.name}`);
+        }
+    });
+
     override(padded_widget, "update_padding", () => {});
 
     assert.equal(buddy_list.first_key(), undefined);
@@ -381,9 +426,28 @@ test("first/prev/next", ({override}) => {
 
     assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
+
+    assert.ok(rendered_alice);
+    assert.ok(rendered_fred);
 });
 
 test("insert_one_user_into_empty_list", ({override}) => {
+    override(render_user_presence_row, "f", (data, html) => {
+        assert.deepEqual(data, {
+            href: "#narrow/pm-with/1-alice",
+            name: "Alice Smith",
+            user_id: 1,
+            my_user_status: undefined,
+            is_current_user: false,
+            num_unread: 0,
+            user_circle_class: "user_circle_green",
+            user_circle_status: "translated: Active",
+            faded: true,
+        });
+        assert.ok(html.startsWith("<li data-user-id="));
+        return html;
+    });
+
     override(padded_widget, "update_padding", () => {});
 
     let appended_html;
@@ -397,6 +461,8 @@ test("insert_one_user_into_empty_list", ({override}) => {
 });
 
 test("insert_alice_then_fred", ({override}) => {
+    override(render_user_presence_row, "f", (data, html) => html);
+
     let appended_html;
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
@@ -413,6 +479,8 @@ test("insert_alice_then_fred", ({override}) => {
 });
 
 test("insert_fred_then_alice_then_rename", ({override}) => {
+    override(render_user_presence_row, "f", (data, html) => html);
+
     let appended_html;
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
@@ -527,6 +595,7 @@ test("update_presence_info", ({override}) => {
 });
 
 test("initialize", ({override}) => {
+    override(render_user_presence_rows, "f", () => {});
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
