@@ -1,6 +1,6 @@
 import logging
 import secrets
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -97,17 +97,6 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
         # eliminated that as a useful concept for non-bot users.
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
-
-
-def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
-    if (
-        page_params["color_scheme"] == 2
-        and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT
-    ):
-        navbar_logo_url = page_params["realm_night_logo_url"]
-    else:
-        navbar_logo_url = page_params["realm_logo_url"]
-    return navbar_logo_url
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -209,8 +198,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     user_permission_info = get_user_permission_info(user_profile)
 
-    navbar_logo_url = compute_navbar_logo_url(page_params)
-
     response = render(
         request,
         "zerver/app/index.html",
@@ -225,7 +212,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "is_admin": user_permission_info.is_realm_admin,
             "is_guest": user_permission_info.is_guest,
             "color_scheme": user_permission_info.color_scheme,
-            "navbar_logo_url": navbar_logo_url,
             "embedded": narrow_stream is not None,
             "max_file_upload_size_mib": settings.MAX_FILE_UPLOAD_SIZE,
         },

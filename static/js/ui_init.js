@@ -50,6 +50,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
+import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
@@ -462,6 +463,7 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
 
+    realm_logo.rerender();
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
