@@ -170,7 +170,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".recipient_row_date > span",
-        allowHTML: true,
         placement: "top",
         appendTo: () => document.body,
         onHidden(instance) {
