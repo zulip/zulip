@@ -49,16 +49,12 @@ function load(request, parent, isMain) {
 
             const data = args[0];
 
-            if (obj.exercise_template) {
-                in_mid_render = true;
-                const html = actual_render(...args);
-                in_mid_render = false;
+            in_mid_render = true;
+            const html = actual_render(...args);
+            in_mid_render = false;
 
-                // User will override "f" for now, which is a bit hacky.
-                return obj.f(data, html);
-            }
-
-            return obj.f(data);
+            // User will override "f" for now, which is a bit hacky.
+            return obj.f(data, html);
         };
 
         return render;
