@@ -18,6 +18,7 @@ class Clipboard {
 mock_cjs("clipboard", Clipboard);
 
 const render_copy_code_button = mock_template("copy_code_button.hbs");
+const render_markdown_timestamp = mock_template("markdown_timestamp.hbs", true);
 const render_view_code_in_playground = mock_template("view_code_in_playground.hbs");
 
 const realm_playground = mock_esm("../../static/js/realm_playground");
@@ -251,7 +252,12 @@ run_test("timestamp without time", () => {
     assert.equal($timestamp.text(), "never-been-set");
 });
 
-run_test("timestamp", () => {
+run_test("timestamp", ({override}) => {
+    override(render_markdown_timestamp, "f", (data, html) => {
+        assert.deepEqual(data, {text: "Thu, Jan 1 1970, 12:00 AM"});
+        return html;
+    });
+
     // Setup
     const $content = get_content_element();
     const $timestamp = $.create("timestamp(valid)");
@@ -276,7 +282,13 @@ run_test("timestamp", () => {
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
-run_test("timestamp-twenty-four-hour-time", () => {
+run_test("timestamp-twenty-four-hour-time", ({override}) => {
+    override(render_markdown_timestamp, "f", (data, html) => {
+        // sanity check incoming data
+        assert.ok(data.text.startsWith("Wed, Jul 15 2020, "));
+        return html;
+    });
+
     const $content = get_content_element();
     const $timestamp = $.create("timestamp");
     $timestamp.attr("datetime", "2020-07-15T20:40:00Z");
