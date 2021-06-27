@@ -10,6 +10,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as muted_users from "./muted_users";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as people from "./people";
@@ -177,6 +178,6 @@ export function rerender_for_muted_user() {
 
 export function handle_user_updates(muted_user_ids) {
     popovers.hide_all();
-    muting.set_muted_users(muted_user_ids);
+    muted_users.set_muted_users(muted_user_ids);
     rerender_for_muted_user();
 }

@@ -28,6 +28,7 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as muted_users from "./muted_users";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
@@ -184,7 +185,7 @@ function render_user_info_popover(
     }
 
     const muting_allowed = !is_me && !user.is_bot;
-    const is_muted = muting.is_user_muted(user.user_id);
+    const is_muted = muted_users.is_user_muted(user.user_id);
 
     const args = {
         can_revoke_away,
@@ -405,7 +406,7 @@ export function toggle_actions_popover(element, id) {
         const message = message_lists.current.get(id);
         const message_container = message_lists.current.view.message_containers.get(message.id);
         const should_display_hide_option =
-            muting.is_user_muted(message.sender_id) && !message_container.is_hidden;
+            muted_users.is_user_muted(message.sender_id) && !message_container.is_hidden;
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;

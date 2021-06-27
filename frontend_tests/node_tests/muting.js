@@ -8,6 +8,7 @@ const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const stream_data = zrequire("stream_data");
 
 const design = {
@@ -43,7 +44,7 @@ stream_data.add_sub(social);
 function test(label, f) {
     run_test(label, ({override}) => {
         muting.set_muted_topics([]);
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         f({override});
     });
 }
@@ -53,7 +54,7 @@ test("edge_cases", () => {
     assert.ok(!muting.is_topic_muted(undefined, undefined));
 
     // invalid user
-    assert.ok(!muting.is_user_muted(undefined));
+    assert.ok(!muted_users.is_user_muted(undefined));
 });
 
 test("add_and_remove_mutes", () => {
@@ -76,20 +77,20 @@ test("add_and_remove_mutes", () => {
     muting.remove_muted_topic(unknown.stream_id, "java");
     assert.ok(!muting.is_topic_muted(unknown.stream_id, "java"));
 
-    assert.ok(!muting.is_user_muted(1));
-    muting.add_muted_user(1);
-    assert.ok(muting.is_user_muted(1));
+    assert.ok(!muted_users.is_user_muted(1));
+    muted_users.add_muted_user(1);
+    assert.ok(muted_users.is_user_muted(1));
 
     // test idempotentcy
-    muting.add_muted_user(1);
-    assert.ok(muting.is_user_muted(1));
+    muted_users.add_muted_user(1);
+    assert.ok(muted_users.is_user_muted(1));
 
-    muting.remove_muted_user(1);
-    assert.ok(!muting.is_user_muted(1));
+    muted_users.remove_muted_user(1);
+    assert.ok(!muted_users.is_user_muted(1));
 
     // test idempotentcy
-    muting.remove_muted_user(1);
-    assert.ok(!muting.is_user_muted(1));
+    muted_users.remove_muted_user(1);
+    assert.ok(!muted_users.is_user_muted(1));
 });
 
 test("get_unmuted_users", () => {
@@ -106,14 +107,14 @@ test("get_unmuted_users", () => {
         full_name: "Othello, Moor of Venice",
     };
 
-    muting.add_muted_user(hamlet.user_id);
-    muting.add_muted_user(cordelia.user_id);
+    muted_users.add_muted_user(hamlet.user_id);
+    muted_users.add_muted_user(cordelia.user_id);
 
     assert.deepEqual(
-        muting.filter_muted_user_ids([hamlet.user_id, cordelia.user_id, othello.user_id]),
+        muted_users.filter_muted_user_ids([hamlet.user_id, cordelia.user_id, othello.user_id]),
         [othello.user_id],
     );
-    assert.deepEqual(muting.filter_muted_users([hamlet, cordelia, othello]), [othello]);
+    assert.deepEqual(muted_users.filter_muted_users([hamlet, cordelia, othello]), [othello]);
 });
 
 test("get_mutes", () => {
@@ -139,11 +140,11 @@ test("get_mutes", () => {
         },
     ]);
 
-    assert.deepEqual(muting.get_muted_users(), []);
-    muting.add_muted_user(6, 1577836800);
-    muting.add_muted_user(4, 1577836800);
-    const muted_users = muting.get_muted_users().sort((a, b) => a.date_muted - b.date_muted);
-    assert.deepEqual(muted_users, [
+    assert.deepEqual(muted_users.get_muted_users(), []);
+    muted_users.add_muted_user(6, 1577836800);
+    muted_users.add_muted_user(4, 1577836800);
+    const all_muted_users = muted_users.get_muted_users().sort((a, b) => a.date_muted - b.date_muted);
+    assert.deepEqual(all_muted_users, [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan\u00A001,\u00A02020",
@@ -170,6 +171,7 @@ test("unknown streams", () => {
         {id: 2, timestamp: 1577836800},
     ];
     muting.initialize();
+    muted_users.initialize();
 
     assert.deepEqual(muting.get_muted_topics().sort(), [
         {
@@ -188,7 +190,7 @@ test("unknown streams", () => {
         },
     ]);
 
-    assert.deepEqual(muting.get_muted_users().sort(), [
+    assert.deepEqual(muted_users.get_muted_users().sort(), [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan\u00A001,\u00A02020",

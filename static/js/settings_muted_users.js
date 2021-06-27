@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_muted_user_ui_row from "../templates/muted_user_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import * as muting_ui from "./muting_ui";
 import * as people from "./people";
 import * as ui from "./ui";
@@ -11,7 +11,7 @@ import * as ui from "./ui";
 export let loaded = false;
 
 export function populate_list() {
-    const all_muted_users = muting.get_muted_users().map((user) => ({
+    const all_muted_users = muted_users.get_muted_users().map((user) => ({
         user_id: user.id,
         user_name: people.get_full_name(user.id),
         date_muted_str: user.date_muted_str,

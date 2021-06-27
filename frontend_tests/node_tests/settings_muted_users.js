@@ -9,15 +9,15 @@ const $ = require("../zjsunit/zjquery");
 const muting_ui = mock_esm("../../static/js/muting_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 
 const noop = () => {};
 
 run_test("settings", ({override}) => {
-    muting.add_muted_user(5, 1577836800);
+    muted_users.add_muted_user(5, 1577836800);
     let populate_list_called = false;
     override(settings_muted_users, "populate_list", () => {
-        const opts = muting.get_muted_users();
+        const opts = muted_users.get_muted_users();
         assert.deepEqual(opts, [
             {
                 date_muted: 1577836800000,

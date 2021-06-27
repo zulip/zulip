@@ -19,6 +19,7 @@ import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
+import * as muted_users from "./muted_users";
 import * as muting from "./muting";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -253,7 +254,8 @@ export class MessageListView {
             the sender.
         */
 
-        const is_hidden = muting.is_user_muted(message_container.msg.sender_id) && !is_revealed;
+        const is_hidden =
+            muted_users.is_user_muted(message_container.msg.sender_id) && !is_revealed;
 
         message_container.is_hidden = is_hidden;
         // Make sure the right thing happens if the message was edited to mention us.

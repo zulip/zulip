@@ -2,7 +2,7 @@ import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -326,7 +326,7 @@ function filter_user_ids(user_filter_text, user_ids) {
             return false;
         }
 
-        if (muting.is_user_muted(user_id)) {
+        if (muted_users.is_user_muted(user_id)) {
             // Muted users are hidden from the right sidebar entirely.
             return false;
         }
