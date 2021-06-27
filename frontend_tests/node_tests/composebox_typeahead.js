@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, mock_template, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -33,6 +33,8 @@ set_global("setTimeout", (f, time) => {
     set_timeout_called = true;
 });
 set_global("document", "document-stub");
+
+const render_typeahead_list_item = mock_template("typeahead_list_item.hbs", true);
 
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
@@ -577,6 +579,16 @@ function sorted_names_from(subs) {
 test("initialize", ({override}) => {
     let expected_value;
 
+    override(render_typeahead_list_item, "f", (data, html) => {
+        assert.equal(typeof data.primary, "string");
+        if (data.has_secondary) {
+            assert.equal(typeof data.secondary, "string");
+        } else {
+            assert.equal(data.has_secondary, false);
+        }
+        assert.equal(typeof data.has_image, "boolean");
+        return html;
+    });
     override(stream_topic_history_util, "get_server_history", () => {});
 
     let stream_typeahead_called = false;
