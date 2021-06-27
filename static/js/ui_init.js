@@ -40,6 +40,7 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
+import * as muted_users from "./muted_users";
 import * as muting from "./muting";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
@@ -486,6 +487,7 @@ export function initialize_everything() {
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
     muting.initialize();
+    muted_users.initialize();
     subs.initialize();
     stream_list.initialize();
     condense.initialize();

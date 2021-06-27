@@ -3,6 +3,7 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
+import * as muted_users from "./muted_users";
 import * as muting from "./muting";
 import {page_params} from "./page_params";
 import * as unread from "./unread";
@@ -194,7 +195,10 @@ export class MessageListData {
             }
 
             const recipient_id = Number.parseInt(recipients[0], 10);
-            return !muting.is_user_muted(recipient_id) && !muting.is_user_muted(message.sender_id);
+            return (
+                !muted_users.is_user_muted(recipient_id) &&
+                !muted_users.is_user_muted(message.sender_id)
+            );
         });
     }
 

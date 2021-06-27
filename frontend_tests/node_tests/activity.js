@@ -32,7 +32,7 @@ set_global("document", _document);
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
 const keydown_util = zrequire("keydown_util");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
@@ -120,7 +120,7 @@ function test(label, f) {
         presence_info.set(me.user_id, {status: "active"});
 
         clear_buddy_list();
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
 
         activity.clear_for_testing();
         activity.set_cursor_and_filter();
@@ -545,7 +545,7 @@ test("realm_presence_disabled", () => {
 });
 
 test("redraw_muted_user", () => {
-    muting.add_muted_user(mark.user_id);
+    muted_users.add_muted_user(mark.user_id);
     let appended_html;
     $("#user_presences").append = function (html) {
         appended_html = html;

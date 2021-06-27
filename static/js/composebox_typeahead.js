@@ -14,7 +14,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
@@ -447,7 +447,7 @@ export function get_person_suggestions(query, opts) {
             persons = all_persons;
         }
         // Exclude muted users from typeaheads.
-        persons = muting.filter_muted_users(persons);
+        persons = muted_users.filter_muted_users(persons);
 
         if (opts.want_broadcast) {
             persons = persons.concat(broadcast_mentions());

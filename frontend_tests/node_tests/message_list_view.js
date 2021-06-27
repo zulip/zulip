@@ -47,13 +47,13 @@ mock_esm("../../static/js/rows", {
 const {Filter} = zrequire("../js/filter");
 const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 
 let next_timestamp = 1500000000;
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         f({override});
     });
 }
@@ -187,7 +187,7 @@ test("muted_message_vars", () => {
         assert.equal(result[1].contains_mention, true);
 
         // Now, mute the sender.
-        muting.add_muted_user(10);
+        muted_users.add_muted_user(10);
         result = calculate_variables(list, messages);
 
         // Check that `is_hidden` is true and `include_sender` is false on all messages.

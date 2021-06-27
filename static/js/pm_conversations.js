@@ -1,5 +1,5 @@
 import {FoldDict} from "./fold_dict";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import * as people from "./people";
 
 const partners = new Set();
@@ -17,7 +17,7 @@ function filter_muted_pms(conversation) {
     // in which all participants are muted.
     const recipients = conversation.user_ids_string.split(",").map((id) => Number.parseInt(id, 10));
 
-    if (recipients.every((id) => muting.is_user_muted(id))) {
+    if (recipients.every((id) => muted_users.is_user_muted(id))) {
         return false;
     }
 

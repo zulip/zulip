@@ -12,7 +12,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 const timerender = mock_esm("../../static/js/timerender");
 
 const compose_fade_helper = zrequire("compose_fade_helper");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -105,7 +105,7 @@ function test(label, f) {
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         f({override});
     });
 }
@@ -388,7 +388,7 @@ test("simple search", () => {
 
 test("muted users excluded from search", () => {
     people.add_active_user(selma);
-    muting.add_muted_user(selma.user_id);
+    muted_users.add_muted_user(selma.user_id);
 
     let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(user_ids.includes(selma.user_id), false);
@@ -396,7 +396,7 @@ test("muted users excluded from search", () => {
     assert.deepEqual(user_ids, []);
     assert.ok(!buddy_data.matches_filter("sel", selma.user_id));
 
-    muting.remove_muted_user(selma.user_id);
+    muted_users.remove_muted_user(selma.user_id);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
     assert.deepEqual(user_ids, [selma.user_id]);
     assert.ok(buddy_data.matches_filter("sel", selma.user_id));

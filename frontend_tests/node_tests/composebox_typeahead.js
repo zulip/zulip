@@ -38,7 +38,7 @@ const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
 const typeahead_helper = zrequire("typeahead_helper");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
@@ -305,7 +305,7 @@ function test(label, f) {
         user_groups.add(backend);
         user_groups.add(call_center);
 
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
 
         f({override, mock_template});
     });
@@ -1589,7 +1589,7 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [cordelia]);
 
     // Mute Cordelia, and test that she's excluded from results.
-    muting.add_muted_user(cordelia.user_id);
+    muted_users.add_muted_user(cordelia.user_id);
     results = ct.get_person_suggestions("corde", opts);
     assert.deepEqual(results, []);
 
