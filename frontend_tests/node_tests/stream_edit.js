@@ -9,8 +9,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const render_subscription_settings = mock_template("subscription_settings.hbs");
-
 const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
 const ui = mock_esm("../../static/js/ui", {
     get_scroll_element: noop,
@@ -28,6 +26,9 @@ mock_esm("../../static/js/list_widget", {
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
 });
+
+const render_input_pill = mock_template("input_pill.hbs", true);
+const render_subscription_settings = mock_template("subscription_settings.hbs");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -111,6 +112,11 @@ function test_ui(label, f) {
 }
 
 test_ui("subscriber_pills", ({override}) => {
+    override(render_input_pill, "f", (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
     override(stream_edit, "sort_but_pin_current_user_on_top", noop);
     override(render_subscription_settings, "f", () => "subscription_settings");
 
