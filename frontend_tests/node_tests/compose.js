@@ -7,7 +7,14 @@ const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
 const {$t, $t_html} = require("../zjsunit/i18n");
-const {mock_cjs, mock_esm, mock_template, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_cjs,
+    mock_esm,
+    mock_template,
+    set_global,
+    with_field,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -47,7 +54,9 @@ const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
 const subs = mock_esm("../../static/js/subs");
 const transmit = mock_esm("../../static/js/transmit");
-const render_compose_mention_one_on_one_alert = mock_template("compose_mention_one_on_one_alert.hbs");
+const render_compose_mention_one_on_one_alert = mock_template(
+    "compose_mention_one_on_one_alert.hbs",
+);
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
@@ -1023,31 +1032,29 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
 });
 
 test_ui("warn_if_mention_one_on_one_alert", (override) => {
-    let dan = {
-        user_id : 1,
-        full_name : "dan",
-        token : "dan",
+    const dan = {
+        user_id: 1,
+        full_name: "dan",
+        token: "dan",
     };
-    let jess = {
-        user_id : 2,
-        full_name : "jess",
-        token : "jess",
+    const jess = {
+        user_id: 2,
+        full_name: "jess",
+        token: "jess",
     };
 
-    let test_group = {
-        members : [dan,jess],
+    const test_group = {
+        members: [dan, jess],
         name: "test_group",
         token: "test_group",
-    }
+    };
 
     $("#compose_mention_one_on_one_alerts .compose_mention_one_on_one_alert").length = 0;
 
     // noop - stream, user group, multiple recipients, recipient not the one mentioned
 
     function test_noop_case(message_type, mentioned, recipient_ids) {
-        override(compose_pm_pill, "get_user_ids", () => {
-            return recipient_ids;
-        });
+        override(compose_pm_pill, "get_user_ids", () => recipient_ids);
         compose_state.set_message_type(message_type);
         compose.warn_if_mention_one_on_one(mentioned);
         assert.equal($("#compose_mention_one_on_one_alerts").visible(), false);
@@ -1086,9 +1093,7 @@ test_ui("warn_if_mention_one_on_one_alert", (override) => {
     ];
 
     $("#compose_mention_one_on_one_alerts").hide();
-    override(compose_pm_pill, "get_user_ids", () => {
-        return [dan.user_id];
-    });
+    override(compose_pm_pill, "get_user_ids", () => [dan.user_id]);
     compose_state.set_message_type("private");
     compose.warn_if_mention_one_on_one(dan);
     assert.equal($("#compose_mention_one_on_one_alerts").visible(), true);
@@ -1108,7 +1113,9 @@ test_ui("warn_if_mention_one_on_one_alert", (override) => {
         throw new Error(`Unknown field ${field}`);
     };
 
-    const previous_mentions = $("#compose_mention_one_on_one_alerts .compose_mention_one_on_one_alert");
+    const previous_mentions = $(
+        "#compose_mention_one_on_one_alerts .compose_mention_one_on_one_alert",
+    );
     previous_mentions.length = 1;
     previous_mentions[0] = warning_row;
 
