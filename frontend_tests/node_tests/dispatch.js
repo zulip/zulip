@@ -759,6 +759,7 @@ run_test("update_display_settings", ({override}) => {
         event = event_fixtures.update_display_settings__emojiset;
         called = false;
         override(settings_display, "report_emojiset_change", stub.f);
+        override(activity, "build_user_sidebar", noop);
         page_params.emojiset = "text";
         dispatch(event);
         assert.equal(stub.num_calls, 1);
@@ -909,6 +910,24 @@ run_test("user_status", ({override}) => {
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
         assert_same(args.user_id, 63);
+    }
+
+    event = event_fixtures.user_status__set_status_emoji;
+    {
+        const stub = make_stub();
+        override(activity, "redraw_user", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("user_id");
+        assert_same(args.user_id, test_user.user_id);
+        const emoji_info = user_status.get_status_emoji(test_user.user_id);
+        assert.deepEqual(emoji_info, {
+            emoji_name: "smiley",
+            emoji_code: "1f603",
+            reaction_type: "unicode_emoji",
+            // Extra parameters that were added by `emoji.get_emoji_details_by_name`
+            emoji_alt_code: false,
+        });
     }
 
     event = event_fixtures.user_status__set_status_text;

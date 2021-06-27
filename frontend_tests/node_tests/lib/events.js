@@ -827,6 +827,14 @@ exports.fixtures = {
         away: true,
     },
 
+    user_status__set_status_emoji: {
+        type: "user_status",
+        user_id: test_user.user_id,
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
+    },
+
     user_status__set_status_text: {
         type: "user_status",
         user_id: test_user.user_id,

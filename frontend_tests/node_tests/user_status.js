@@ -62,6 +62,28 @@ run_test("basics", () => {
         status_text: "",
     });
     assert.equal(user_status.get_status_text(2), undefined);
+
+    user_status.set_status_emoji({
+        user_id: 2,
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
+    });
+    assert.deepEqual(user_status.get_status_emoji(2), {
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
+        // Extra parameters that were added by `emoji.get_emoji_details_by_name`
+        emoji_alt_code: false,
+    });
+
+    user_status.set_status_emoji({
+        user_id: 2,
+        emoji_name: "",
+        emoji_code: "",
+        reaction_type: "",
+    });
+    assert.deepEqual(user_status.get_status_emoji(2), undefined);
 });
 
 run_test("server", () => {
@@ -79,10 +101,22 @@ run_test("server", () => {
     assert.equal(sent_data, undefined);
 
     user_status.server_set_away();
-    assert.deepEqual(sent_data, {away: true, status_text: undefined});
+    assert.deepEqual(sent_data, {
+        away: true,
+        status_text: undefined,
+        emoji_code: undefined,
+        emoji_name: undefined,
+        reaction_type: undefined,
+    });
 
     user_status.server_revoke_away();
-    assert.deepEqual(sent_data, {away: false, status_text: undefined});
+    assert.deepEqual(sent_data, {
+        away: false,
+        status_text: undefined,
+        emoji_code: undefined,
+        emoji_name: undefined,
+        reaction_type: undefined,
+    });
 
     let called;
 

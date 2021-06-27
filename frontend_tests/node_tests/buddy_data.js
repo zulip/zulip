@@ -547,10 +547,17 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", () => {
+test("get_items_for_users", ({override}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
+    page_params.emojiset = "google";
+    const status_emoji_info = {
+        emoji_name: "car",
+        emoji_code: "1f697",
+        reaction_type: "unicode_emoji",
+    };
+    override(user_status, "get_status_emoji", () => status_emoji_info);
 
     const user_ids = [me.user_id, alice.user_id, fred.user_id];
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
@@ -561,6 +568,7 @@ test("get_items_for_users", () => {
             my_user_status: "translated: (you)",
             name: "Human Myself",
             num_unread: 0,
+            status_emoji_info,
             user_circle_class: "user_circle_green",
             user_circle_status: "translated: Active",
             user_id: 1001,
@@ -572,6 +580,7 @@ test("get_items_for_users", () => {
             my_user_status: undefined,
             name: "Alice Smith",
             num_unread: 0,
+            status_emoji_info,
             user_circle_class: "user_circle_empty_line",
             user_circle_status: "translated: Unavailable",
             user_id: 1002,
@@ -583,6 +592,7 @@ test("get_items_for_users", () => {
             my_user_status: undefined,
             name: "Fred Flintstone",
             num_unread: 0,
+            status_emoji_info,
             user_circle_class: "user_circle_empty",
             user_circle_status: "translated: Offline",
             user_id: 1003,

@@ -387,6 +387,7 @@ test("first/prev/next", ({override, mock_template}) => {
                 user_circle_class: "user_circle_green",
                 user_circle_status: "translated: Active",
                 user_id: alice.user_id,
+                status_emoji_info: undefined,
             });
         } else if (data.user_id === fred.user_id) {
             rendered_fred = true;
@@ -400,6 +401,7 @@ test("first/prev/next", ({override, mock_template}) => {
                 user_circle_class: "user_circle_green",
                 user_circle_status: "translated: Active",
                 faded: false,
+                status_emoji_info: undefined,
             });
         } else {
             throw new Error(`we did not expect to have to render a row for  ${data.name}`);
@@ -440,6 +442,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             user_circle_class: "user_circle_green",
             user_circle_status: "translated: Active",
             faded: true,
+            status_emoji_info: undefined,
         });
         assert.ok(html.startsWith("<li data-user-id="));
         return html;
