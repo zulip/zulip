@@ -150,7 +150,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".message_time",
-        allowHTML: true,
         placement: "top",
         appendTo: () => document.body,
         onShow(instance) {
@@ -158,8 +157,7 @@ export function initialize() {
             const row = time_elem.closest(".message_row");
             const message = message_lists.current.get(rows.id(row));
             const time = new Date(message.timestamp * 1000);
-            const full_datetime = timerender.get_full_datetime(time);
-            instance.setContent(full_datetime.date + "<br/>" + full_datetime.time);
+            instance.setContent(timerender.get_full_datetime(time));
         },
         onHidden(instance) {
             instance.destroy();
