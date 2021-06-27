@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -16,10 +16,6 @@ let form_data;
 const _FormData = function () {
     return form_data;
 };
-
-const render_settings_admin_realm_domains_list = mock_template(
-    "settings/admin_realm_domains_list.hbs",
-);
 
 const realm_icon = mock_esm("../../static/js/realm_icon");
 
@@ -55,7 +51,7 @@ const sub_store = zrequire("sub_store");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = () => {};
         page_params.is_admin = false;
         page_params.realm_domains = [
@@ -64,7 +60,7 @@ function test(label, f) {
         ];
         page_params.realm_authentication_methods = {};
         settings_org.reset();
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -645,8 +641,9 @@ function test_discard_changes_button(discard_changes) {
     settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
 
-test("set_up", ({override}) => {
-    override(render_settings_admin_realm_domains_list, "f", () => "stub-domains-list");
+test("set_up", ({override, mock_template}) => {
+    mock_template("settings/admin_realm_domains_list.hbs", false, () => "stub-domains-list");
+
     const verify_realm_domains = simulate_realm_domains_table();
     page_params.realm_available_video_chat_providers = {
         jitsi_meet: {

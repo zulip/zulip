@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -26,9 +26,6 @@ mock_esm("../../static/js/list_widget", {
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
 });
-
-const render_input_pill = mock_template("input_pill.hbs", true);
-const render_subscription_settings = mock_template("subscription_settings.hbs");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -104,21 +101,21 @@ for (const sub of subs) {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         page_params.user_id = me.user_id;
         stream_edit.initialize();
-        f({override});
+        f({override, mock_template});
     });
 }
 
-test_ui("subscriber_pills", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+test_ui("subscriber_pills", ({override, mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
     });
+    mock_template("subscription_settings.hbs", false, () => "subscription_settings");
 
     override(stream_edit, "sort_but_pin_current_user_on_top", noop);
-    override(render_subscription_settings, "f", () => "subscription_settings");
 
     const subscriptions_table_selector = "#subscriptions_table";
     const input_field_stub = $.create(".input");

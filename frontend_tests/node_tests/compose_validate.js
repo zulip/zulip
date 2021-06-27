@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t_html} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire, mock_template} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -15,10 +15,6 @@ const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_state = zrequire("compose_state");
 const reminder = mock_esm("../../static/js/reminder");
 const ui_util = mock_esm("../../static/js/ui_util");
-
-const render_compose_not_subscribed = mock_template("compose_not_subscribed.hbs");
-const render_compose_all_everyone = mock_template("compose_all_everyone.hbs");
-const render_input_pill = mock_template("input_pill.hbs");
 
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -53,13 +49,13 @@ people.add_active_user(bob);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         $("#compose-textarea").val("some message");
-        f({override});
+        f({override, mock_template});
     });
 }
 
-test_ui("validate_stream_message_address_info", ({override}) => {
+test_ui("validate_stream_message_address_info", ({mock_template}) => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -70,7 +66,7 @@ test_ui("validate_stream_message_address_info", ({override}) => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    override(render_compose_not_subscribed, "f", () => "compose_not_subscribed_stub");
+    mock_template("compose_not_subscribed.hbs", false, () => "compose_not_subscribed_stub");
     assert.ok(!compose.validate_stream_message_address_info("social"));
     assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
 
@@ -114,7 +110,7 @@ test_ui("validate_stream_message_address_info", ({override}) => {
     );
 });
 
-test_ui("validate", ({override}) => {
+test_ui("validate", ({override, mock_template}) => {
     override(compose_actions, "update_placeholder_text", () => {});
     override(reminder, "is_deferred_delivery", () => false);
 
@@ -137,7 +133,7 @@ test_ui("validate", ({override}) => {
 
         $("#zephyr-mirror-error").is = () => {};
 
-        override(render_input_pill, "f", () => "<div>pill-html</div>");
+        mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
     }
 
     function add_content_to_compose_box() {
@@ -262,7 +258,7 @@ test_ui("get_invalid_recipient_emails", ({override}) => {
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
-test_ui("validate_stream_message", ({override}) => {
+test_ui("validate_stream_message", ({override, mock_template}) => {
     override(reminder, "is_deferred_delivery", () => false);
 
     // This test is in kind of continuation to test_validate but since it is
@@ -286,7 +282,7 @@ test_ui("validate_stream_message", ({override}) => {
         assert.equal(stream_id, 101);
         return 16;
     };
-    override(render_compose_all_everyone, "f", (data) => {
+    mock_template("compose_all_everyone.hbs", false, (data) => {
         assert.equal(data.count, 16);
         return "compose_all_everyone_stub";
     });

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, mock_template, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -16,10 +16,6 @@ class Clipboard {
 }
 
 mock_cjs("clipboard", Clipboard);
-
-const render_copy_code_button = mock_template("copy_code_button.hbs");
-const render_markdown_timestamp = mock_template("markdown_timestamp.hbs", true);
-const render_view_code_in_playground = mock_template("view_code_in_playground.hbs");
 
 const realm_playground = mock_esm("../../static/js/realm_playground");
 page_params.emojiset = "apple";
@@ -252,8 +248,8 @@ run_test("timestamp without time", () => {
     assert.equal($timestamp.text(), "never-been-set");
 });
 
-run_test("timestamp", ({override}) => {
-    override(render_markdown_timestamp, "f", (data, html) => {
+run_test("timestamp", ({mock_template}) => {
+    mock_template("markdown_timestamp.hbs", true, (data, html) => {
         assert.deepEqual(data, {text: "Thu, Jan 1 1970, 12:00 AM"});
         return html;
     });
@@ -282,8 +278,8 @@ run_test("timestamp", ({override}) => {
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
-run_test("timestamp-twenty-four-hour-time", ({override}) => {
-    override(render_markdown_timestamp, "f", (data, html) => {
+run_test("timestamp-twenty-four-hour-time", ({mock_template}) => {
+    mock_template("markdown_timestamp.hbs", true, (data, html) => {
         // sanity check incoming data
         assert.ok(data.text.startsWith("Wed, Jul 15 2020, "));
         return html;
@@ -391,7 +387,7 @@ function assert_clipboard_setup() {
     assert.equal(text, "text");
 }
 
-function test_code_playground(override, viewing_code) {
+function test_code_playground(mock_template, viewing_code) {
     const $content = get_content_element();
     const $hilite = $.create("div.codehilite");
     const $pre = $.create("hilite-pre");
@@ -415,13 +411,13 @@ function test_code_playground(override, viewing_code) {
         prepends.push(arg);
     };
 
-    override(render_copy_code_button, "f", (data) => {
+    mock_template("copy_code_button.hbs", false, (data) => {
         assert.equal(data, undefined);
         return {to_$: () => $copy_code_button};
     });
 
     if (viewing_code) {
-        override(render_view_code_in_playground, "f", (data) => {
+        mock_template("view_code_in_playground.hbs", false, (data) => {
             assert.equal(data, undefined);
             return {to_$: () => $view_code_in_playground};
         });
@@ -436,13 +432,13 @@ function test_code_playground(override, viewing_code) {
     };
 }
 
-run_test("code playground none", ({override}) => {
+run_test("code playground none", ({override, mock_template}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return undefined;
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground(override, false);
+    const {prepends, copy_code, view_code} = test_code_playground(mock_template, false);
     assert.deepEqual(prepends, [copy_code]);
     assert_clipboard_setup();
 
@@ -450,13 +446,13 @@ run_test("code playground none", ({override}) => {
     assert.equal(view_code.attr("aria-label"), undefined);
 });
 
-run_test("code playground single", ({override}) => {
+run_test("code playground single", ({override, mock_template}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return [{name: "Some Javascript Playground"}];
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground(override, true);
+    const {prepends, copy_code, view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [view_code, copy_code]);
     assert_clipboard_setup();
 
@@ -468,13 +464,13 @@ run_test("code playground single", ({override}) => {
     assert.equal(view_code.attr("aria-haspopup"), undefined);
 });
 
-run_test("code playground multiple", ({override}) => {
+run_test("code playground multiple", ({override, mock_template}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return ["whatever", "whatever"];
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground(override, true);
+    const {prepends, copy_code, view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [view_code, copy_code]);
     assert_clipboard_setup();
 

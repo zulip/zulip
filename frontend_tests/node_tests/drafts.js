@@ -2,13 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {
-    mock_esm,
-    set_global,
-    zrequire,
-    with_overrides,
-    mock_template,
-} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -40,8 +34,6 @@ mock_esm("../../static/js/stream_data", {
     },
 });
 page_params.twenty_four_hour_time = false;
-
-const render_draft_table_body = mock_template("draft_table_body.hbs");
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
@@ -81,10 +73,10 @@ const short_msg = {
 };
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         $("#draft_overlay").css = () => {};
         localStorage.clear();
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -208,7 +200,7 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-test("format_drafts", ({override}) => {
+test("format_drafts", ({override, mock_template}) => {
     override(drafts, "remove_old_drafts", noop);
 
     function feb12() {
@@ -310,7 +302,7 @@ test("format_drafts", ({override}) => {
     const stub_render_now = timerender.render_now;
     override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
-    override(render_draft_table_body, "f", (data) => {
+    mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
         return "<draft table stub>";

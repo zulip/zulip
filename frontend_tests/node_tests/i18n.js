@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_template, unmock_module, zrequire} = require("../zjsunit/namespace");
+const {unmock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -19,9 +19,6 @@ page_params.translation_data = {
     "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>":
         "<p>Le canal <b>{stream_name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
 };
-
-const render_actions_popover_content = mock_template("actions_popover_content.hbs", true);
-const render_settings_tab = mock_template("settings_tab.hbs", true);
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
@@ -66,7 +63,7 @@ run_test("$tr", () => {
     );
 });
 
-run_test("t_tag", ({override}) => {
+run_test("t_tag", ({mock_template}) => {
     const args = {
         message: {
             is_stream: true,
@@ -82,7 +79,7 @@ run_test("t_tag", ({override}) => {
         topic: "testing",
     };
 
-    override(render_actions_popover_content, "f", (data, html) => {
+    mock_template("actions_popover_content.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.indexOf("Citer et répondre ou transférer") > 0);
     });
@@ -90,7 +87,7 @@ run_test("t_tag", ({override}) => {
     require("../../static/templates/actions_popover_content.hbs")(args);
 });
 
-run_test("tr_tag", ({override}) => {
+run_test("tr_tag", ({mock_template}) => {
     const args = {
         page_params: {
             full_name: "John Doe",
@@ -110,7 +107,7 @@ run_test("tr_tag", ({override}) => {
         },
     };
 
-    override(render_settings_tab, "f", (data, html) => {
+    mock_template("settings_tab.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.indexOf("Déclencheurs de notification") > 0);
     });

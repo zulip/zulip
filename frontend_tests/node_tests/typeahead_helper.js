@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire, mock_template} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -19,8 +19,6 @@ const pygments_data = zrequire("../generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
-
-const render_typeahead_list_item = mock_template("typeahead_list_item.hbs");
 
 let next_id = 0;
 
@@ -99,7 +97,7 @@ stream_data.create_streams([
 ]);
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
@@ -109,7 +107,7 @@ function test(label, f) {
         page_params.realm_email_address_visibility =
             settings_config.email_address_visibility_values.admins_only.code;
 
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -602,10 +600,10 @@ test("highlight_with_escaping", () => {
     assert.equal(result, expected);
 });
 
-test("render_person when emails hidden", ({override}) => {
+test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
     let rendered = false;
-    override(render_typeahead_list_item, "f", (args) => {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
         assert.equal(args.secondary, undefined);
         rendered = true;
@@ -615,11 +613,11 @@ test("render_person when emails hidden", ({override}) => {
     assert.ok(rendered);
 });
 
-test("render_person", ({override}) => {
+test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     page_params.is_admin = true;
     let rendered = false;
-    override(render_typeahead_list_item, "f", (args) => {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
         assert.equal(args.secondary, a_user.email);
         rendered = true;
@@ -629,7 +627,7 @@ test("render_person", ({override}) => {
     assert.ok(rendered);
 });
 
-test("render_person special_item_text", ({override}) => {
+test("render_person special_item_text", ({mock_template}) => {
     let rendered = false;
 
     // Test render_person with special_item_text person
@@ -643,7 +641,7 @@ test("render_person special_item_text", ({override}) => {
     };
 
     rendered = false;
-    override(render_typeahead_list_item, "f", (args) => {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, special_person.special_item_text);
         rendered = true;
         return "typeahead-item-stub";
@@ -652,7 +650,7 @@ test("render_person special_item_text", ({override}) => {
     assert.ok(rendered);
 });
 
-test("render_stream", ({override}) => {
+test("render_stream", ({mock_template}) => {
     // Test render_stream with short description
     let rendered = false;
     const stream = {
@@ -661,7 +659,7 @@ test("render_stream", ({override}) => {
         name: "Short description",
     };
 
-    override(render_typeahead_list_item, "f", (args) => {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, stream.name);
         assert.equal(args.secondary, stream.description);
         rendered = true;
@@ -671,7 +669,7 @@ test("render_stream", ({override}) => {
     assert.ok(rendered);
 });
 
-test("render_stream w/long description", ({override}) => {
+test("render_stream w/long description", ({mock_template}) => {
     // Test render_stream with long description
     let rendered = false;
     const stream = {
@@ -680,7 +678,7 @@ test("render_stream w/long description", ({override}) => {
         name: "Long description",
     };
 
-    override(render_typeahead_list_item, "f", (args) => {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, stream.name);
         const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
@@ -691,7 +689,7 @@ test("render_stream w/long description", ({override}) => {
     assert.ok(rendered);
 });
 
-test("render_emoji", ({override}) => {
+test("render_emoji", ({mock_template}) => {
     // Test render_emoji with normal emoji.
     let expected_template_data = {
         primary: "thumbs up",
@@ -711,7 +709,7 @@ test("render_emoji", ({override}) => {
         }),
     );
 
-    override(render_typeahead_list_item, "f", (args) => {
+    mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.deepEqual(args, expected_template_data);
         rendered = true;
         return "typeahead-item-stub";

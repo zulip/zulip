@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -37,8 +37,6 @@ const sample_message = {
         },
     ],
 };
-
-const render_message_reaction = mock_template("message_reaction.hbs");
 
 const channel = mock_esm("../../static/js/channel");
 const emoji_picker = mock_esm("../../static/js/emoji_picker", {
@@ -117,9 +115,9 @@ people.add_active_user(cali);
 people.add_active_user(alexus);
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         page_params.user_id = alice_user_id;
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -571,7 +569,7 @@ test("add_reaction/remove_reaction", ({override}) => {
     });
 });
 
-test("view.insert_new_reaction (me w/unicode emoji)", ({override}) => {
+test("view.insert_new_reaction (me w/unicode emoji)", ({override, mock_template}) => {
     const opts = {
         message_id: 501,
         reaction_type: "unicode_emoji",
@@ -592,7 +590,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override}) => {
         return "reaction-button-stub";
     };
 
-    override(render_message_reaction, "f", (data) => {
+    mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
             count: 1,
             emoji_alt_code: false,
@@ -616,7 +614,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override}) => {
     assert.ok(insert_called);
 });
 
-test("view.insert_new_reaction (them w/zulip emoji)", ({override}) => {
+test("view.insert_new_reaction (them w/zulip emoji)", ({override, mock_template}) => {
     const zulip_emoji = emoji_params.realm_emoji.zulip;
     const opts = {
         message_id: 502,
@@ -639,7 +637,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override}) => {
         return "reaction-button-stub";
     };
 
-    override(render_message_reaction, "f", (data) => {
+    mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
             count: 1,
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",

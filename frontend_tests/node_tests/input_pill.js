@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, mock_template, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -19,8 +19,6 @@ mock_esm("../../static/js/ui_util", {
 set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
-
-const render_input_pill = mock_template("input_pill", true);
 
 const input_pill = zrequire("input_pill");
 
@@ -53,8 +51,8 @@ run_test("random_id", () => {
     input_pill.random_id();
 });
 
-run_test("basics", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("basics", ({override, mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(data.display_value, "JavaScript");
         return html;
     });
@@ -149,8 +147,8 @@ function set_up() {
     };
 }
 
-run_test("copy from pill", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("copy from pill", ({override, mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
         return html;
     });
@@ -193,8 +191,8 @@ run_test("copy from pill", ({override}) => {
     assert.equal(copied_text, "RED");
 });
 
-run_test("paste to input", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("paste to input", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.has_image, "boolean");
         return html;
     });
@@ -240,8 +238,8 @@ run_test("paste to input", ({override}) => {
     assert.ok(entered);
 });
 
-run_test("arrows on pills", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("arrows on pills", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.has_image, "boolean");
         return html;
     });
@@ -293,8 +291,8 @@ run_test("arrows on pills", ({override}) => {
     assert.ok(next_focused);
 });
 
-run_test("left arrow on input", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("left arrow on input", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
     });
@@ -327,8 +325,8 @@ run_test("left arrow on input", ({override}) => {
     assert.ok(last_pill_focused);
 });
 
-run_test("comma", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("comma", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
     });
@@ -365,8 +363,8 @@ run_test("comma", ({override}) => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("Enter key with text", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("Enter key with text", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
     });
@@ -395,8 +393,8 @@ run_test("Enter key with text", ({override}) => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("insert_remove", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("insert_remove", ({override, mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
         return html;
@@ -505,8 +503,8 @@ run_test("insert_remove", ({override}) => {
     assert.ok(next_pill_focused);
 });
 
-run_test("exit button on pill", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("exit button on pill", ({override, mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
         return html;
@@ -621,8 +619,8 @@ run_test("misc things", () => {
     container_click_handler.call(this_, {target: this_});
 });
 
-run_test("appendValue/clear", ({override}) => {
-    override(render_input_pill, "f", (data, html) => {
+run_test("appendValue/clear", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
         return html;
