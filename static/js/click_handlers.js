@@ -19,7 +19,6 @@ import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
-import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -282,18 +281,6 @@ export function initialize() {
         message_edit.end_message_row_edit(row);
         e.stopPropagation();
         popovers.hide_all();
-    });
-    $("body").on("click", ".copy_message", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
-        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        row.find(".alert-msg").css("display", "block");
-        row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
-        e.preventDefault();
-        e.stopPropagation();
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {

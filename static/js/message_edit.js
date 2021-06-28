@@ -321,10 +321,20 @@ function timer_text(seconds_left) {
     return $t({defaultMessage: "{seconds} sec to edit"}, {seconds: seconds.toString()});
 }
 
-function create_copy_to_clipboard_handler(source, message_id) {
-    new ClipboardJS(source, {
+function create_copy_to_clipboard_handler(row, source, message_id) {
+    const clipboard = new ClipboardJS(source, {
         target: () =>
             document.querySelector(`#edit_form_${CSS.escape(message_id)} .message_edit_content`),
+    });
+
+    clipboard.on("success", () => {
+        end_message_row_edit(row);
+        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
+        row.find(".alert-msg").css("display", "block");
+        row.find(".alert-msg").delay(1000).fadeOut(300);
+        if ($(".tooltip").is(":visible")) {
+            $(".tooltip").hide();
+        }
     });
 }
 
@@ -417,7 +427,7 @@ function edit_message(row, raw_content) {
         case editability_types.NO:
             message_edit_content.attr("readonly", "readonly");
             message_edit_topic.attr("readonly", "readonly");
-            create_copy_to_clipboard_handler(copy_message[0], message.id);
+            create_copy_to_clipboard_handler(row, copy_message[0], message.id);
             break;
         case editability_types.NO_LONGER:
             // You can currently only reach this state in non-streams. If that
@@ -426,13 +436,13 @@ function edit_message(row, raw_content) {
             // row.find('input.message_edit_topic') as well.
             message_edit_content.attr("readonly", "readonly");
             message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
-            create_copy_to_clipboard_handler(copy_message[0], message.id);
+            create_copy_to_clipboard_handler(row, copy_message[0], message.id);
             break;
         case editability_types.TOPIC_ONLY:
             message_edit_content.attr("readonly", "readonly");
             // Hint why you can edit the topic but not the message content
             message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
-            create_copy_to_clipboard_handler(copy_message[0], message.id);
+            create_copy_to_clipboard_handler(row, copy_message[0], message.id);
             break;
         case editability_types.FULL: {
             copy_message.remove();
