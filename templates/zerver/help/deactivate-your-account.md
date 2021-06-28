@@ -4,7 +4,7 @@
 
 {settings_tab|your-account}
 
-1. Under **Deactivate account**, click **Deactivate account**.
+1. Under **User Settings**, click **Deactivate account**.
 
 1. Approve by clicking **Confirm**.
 
