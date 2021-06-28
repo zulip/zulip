@@ -40,4 +40,6 @@ for the details on when topic editing is allowed.
 
 ## Related articles
 
+* [Move content to another topic](/help/move-content-to-another-topic)
+* [Move content to another stream](/help/move-content-to-another-stream)
 * [Resolve a topic](/help/resolve-a-topic)
