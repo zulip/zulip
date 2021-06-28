@@ -354,3 +354,10 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
 
     return filtered_items;
 }
+
+export function get_time_from_date_muted(date_muted) {
+    if (date_muted === undefined) {
+        return Date.now();
+    }
+    return date_muted * 1000;
+}
