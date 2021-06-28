@@ -77,4 +77,9 @@ option.
 
 {end_tabs}
 
+## Related articles
+
+* [Rename a topic](/help/rename-a-topic)
+* [Move content to another topic](/help/move-content-to-another-topic)
+
 [move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
