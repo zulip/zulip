@@ -297,6 +297,8 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_error('{"type": "new_option"}', "key is missing")
         assert_error('{"type": "new_option", "idx": 7, "option": 999}', "not a string")
+        assert_error('{"type": "new_option", "idx": -1, "option": "pizza"}', "too small")
+        assert_error('{"type": "new_option", "idx": 1001, "option": "pizza"}', "too large")
         assert_error('{"type": "new_option", "idx": "bogus", "option": "maybe"}', "not an int")
 
         def assert_success(data: Dict[str, object]) -> None:
@@ -347,6 +349,14 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error(
             '{"type": "new_task", "key": 7, "task": 7, "desc": "", "completed": false}',
             'data["task"] is not a string',
+        )
+        assert_error(
+            '{"type": "new_task", "key": -1, "task": "eat", "desc": "", "completed": false}',
+            'data["key"] is too small',
+        )
+        assert_error(
+            '{"type": "new_task", "key": 1001, "task": "eat", "desc": "", "completed": false}',
+            'data["key"] is too large',
         )
 
         assert_error('{"type": "strike"}', "key is missing")
