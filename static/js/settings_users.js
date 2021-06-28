@@ -392,7 +392,7 @@ function get_human_profile_data(fields_user_pills) {
         the settings_account.js logic.
     */
     const new_profile_data = [];
-    $("#user-name-form .custom_user_field_value").each(function () {
+    $("#edit-user-form .custom_user_field_value").each(function () {
         // Remove duplicate datepicker input element generated flatpicker library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
@@ -546,7 +546,7 @@ function handle_human_form(tbody, status_field) {
                     .hide();
             }
 
-            const element = "#user-name-form .custom-profile-field-form";
+            const element = "#edit-user-form .custom-profile-field-form";
             $(element).html("");
             settings_account.append_custom_profile_fields(element, user_id);
             settings_account.initialize_custom_date_type_fields(element);
@@ -560,7 +560,7 @@ function handle_human_form(tbody, status_field) {
 
         function submit_user_details() {
             const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-            const full_name = $("#user-name-form").find("input[name='full_name']");
+            const full_name = $("#edit-user-form").find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
             const url = "/json/users/" + encodeURIComponent(user_id);

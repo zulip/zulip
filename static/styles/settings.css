@@ -1520,7 +1520,7 @@ input[type="checkbox"] {
 }
 
 #account-settings,
-#user-name-form {
+#edit-user-form {
     .user-role button {
         cursor: default;
     }
