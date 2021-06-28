@@ -128,6 +128,7 @@ function do_hashchange_normal(from_reload) {
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     const hash = window.location.hash.split("/");
+
     switch (hash[0]) {
         case "#narrow": {
             maybe_hide_recent_topics();
@@ -311,6 +312,13 @@ function hashchanged(from_reload, e) {
     const was_internal_change = browser_history.save_old_hash();
 
     if (was_internal_change) {
+        return undefined;
+    }
+
+    // TODO: Migrate the `#reload` syntax to use slashes as separators
+    // so that this can be part of the main switch statement.
+    if (window.location.hash.startsWith("#reload")) {
+        // We don't want to change narrow if app is undergoing reload.
         return undefined;
     }
 

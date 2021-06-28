@@ -188,7 +188,6 @@ run_test("hash_interactions", ({override}) => {
         [message_viewport, "stop_auto_scrolling"],
     ]);
 
-    override(recent_topics_ui, "show", () => {});
     window.location.hash = "#all_messages";
 
     helper.clear_events();
@@ -247,6 +246,15 @@ run_test("hash_interactions", ({override}) => {
         [overlays, "close_for_hash_change"],
         [subs, "launch"],
     ]);
+
+    recent_topics_ui_shown = false;
+    window.location.hash = "#reload:send_after_reload=0...";
+
+    helper.clear_events();
+    window_stub.trigger("hashchange");
+    helper.assert_events([]);
+    // If it's reload hash it shouldn't show the default view.
+    assert.equal(recent_topics_ui_shown, false);
 
     window.location.hash = "#keyboard-shortcuts/whatever";
 
