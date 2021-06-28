@@ -3,16 +3,10 @@ import {FoldDict} from "./fold_dict";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+import {get_time_from_date_muted} from "./util";
 
 const muted_topics = new Map();
 const muted_users = new Map();
-
-function get_time_from_date_muted(date_muted) {
-    if (date_muted === undefined) {
-        return Date.now();
-    }
-    return date_muted * 1000;
-}
 
 export function add_muted_topic(stream_id, topic, date_muted) {
     let sub_dict = muted_topics.get(stream_id);
