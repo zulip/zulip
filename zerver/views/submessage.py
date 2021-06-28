@@ -9,7 +9,7 @@ from zerver.lib.actions import do_add_submessage, verify_submessage_sender
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_int, validate_poll_data
+from zerver.lib.validator import check_int, validate_poll_data, validate_todo_data
 from zerver.lib.widget import get_widget_type
 from zerver.models import UserProfile
 
@@ -44,6 +44,12 @@ def process_submessage(
     if widget_type == "poll":
         try:
             validate_poll_data(poll_data=widget_data, is_widget_author=is_widget_author)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+
+    if widget_type == "todo":
+        try:
+            validate_todo_data(todo_data=widget_data)
         except ValidationError as error:
             raise JsonableError(error.message)
 
