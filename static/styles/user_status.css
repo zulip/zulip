@@ -9,16 +9,51 @@
     left: 50%;
     transform: translate(-50%, -50%);
     margin-left: 0;
+    /* We are setting a z-index so emoji popover can be visible on top of it. */
+    z-index: 105;
+    .user_status_content_wrapper {
+        display: flex;
+        border: 1px solid;
+        border-color: hsla(0, 0%, 0%, 0.6);
+        border-radius: 5px;
 
-    input.user_status {
-        width: 94%;
-        @media (width < $ml_min) {
-            width: 93%;
+        input.user_status {
+            width: 95%;
+            border: none;
+            background-color: transparent;
+            padding-right: 25px;
+            @media (width < $ml_min) {
+                width: 92%;
+            }
+        }
+        .status_emoji_wrapper {
+            height: 20px;
+            width: 22px;
+            padding: 4px 8px 4px 8px;
+            border-right: 1px solid;
+            border-color: inherit;
+            cursor: pointer;
+            .selected_emoji {
+                width: 18px;
+                height: 18px;
+                top: 4px;
+                cursor: pointer;
+            }
+            .smiley_icon {
+                display: block;
+                font-size: 18px;
+                position: relative;
+                top: 1px;
+                left: 2px;
+                &:hover {
+                    text-decoration: none;
+                }
+            }
         }
     }
 
     .user-status-options {
-        padding-top: 10px;
+        padding-top: 15px;
         padding-left: 2px;
 
         button.user-status-value:hover {

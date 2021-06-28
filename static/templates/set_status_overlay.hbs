@@ -1,14 +1,19 @@
-<div id="set_user_status_modal" class="modal modal-bg hide fade new-style" tabindex="-1" role="dialog" aria-labelledby="set_user_status_modal_label" aria-hidden="true">
+<div id="set_user_status_modal" class="modal modal-bg hide fade new-style" role="dialog" aria-labelledby="set_user_status_modal_label" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close close-modal-btn" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
         <h3 id="set_user_status_modal_label">{{t "Set status" }} </h3>
     </div>
     <div class="modal-body">
         <label for="user_status">{{t "Status message" }}</label>
-        <input type="text" class="user_status" maxlength="60" />
-        <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
-            <i class="fa fa-remove" aria-hidden="true"></i>
-        </button>
+        <div class="user_status_content_wrapper">
+            <div class="status_emoji_wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Click to change' }}" data-tippy-placement="top" aria-label="{{t 'Click to change' }}"  tabindex="0" id="selected_emoji">
+                {{> status_emoji_selector}}
+            </div>
+            <input type="text" class="user_status" maxlength="60"/>
+            <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
+                <i class="fa fa-remove" aria-hidden="true"></i>
+            </button>
+        </div>
         <div class="user-status-options">
             <button type="button" class="button no-style user-status-value">{{t "In a meeting" }}</button>
             <button type="button" class="button no-style user-status-value">{{t "Commuting" }}</button>

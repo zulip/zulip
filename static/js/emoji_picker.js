@@ -12,6 +12,7 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
@@ -190,6 +191,12 @@ export function reactions_popped() {
 
 export function hide_emoji_popover() {
     $(".has_popover").removeClass("has_popover has_emoji_popover");
+    if (user_status_ui.user_status_picker_open()) {
+        // Re-enable clicking events for other elements after closing
+        // the popover.  This is the inverse of the hack of in the
+        // handler that opens the "user status modal" emoji picker.
+        $(".app, .header, .modal-backdrop, #set_user_status_modal").css("pointer-events", "all");
+    }
     if (reactions_popped()) {
         current_message_emoji_popover_elem.popover("destroy");
         current_message_emoji_popover_elem.removeClass("reaction_button_visible");
@@ -760,6 +767,31 @@ export function register_click_handlers() {
             emoji_coordinates.index,
             true,
         );
+    });
+
+    $("body").on("click", "#set_user_status_modal #selected_emoji", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle_emoji_popover(e.target);
+        // Because the emoji picker gets drawn on top of the user
+        // status modal, we need this hack to make clicking outside
+        // the emoji picker only close the emoji picker, and not the
+        // whole user status modal.
+        $(".app, .header, .modal-backdrop, #set_user_status_modal").css("pointer-events", "none");
+    });
+
+    $(document).on("click", ".emoji-popover-emoji.status_emoji", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        hide_emoji_popover();
+        const emoji_name = $(this).attr("data-emoji-name");
+        let emoji_info = {emoji_name, emoji_alt_code: page_params.emojiset === "text"};
+        if (!emoji_info.emoji_alt_code) {
+            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
+        }
+        user_status_ui.set_selected_emoji_info(emoji_info);
+        user_status_ui.update_button();
+        user_status_ui.toggle_clear_message_button();
     });
 }
 

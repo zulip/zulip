@@ -217,7 +217,8 @@ on a dark background, and don't change the dark labels dark either. */
     textarea,
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
-    .pill-container {
+    .pill-container,
+    .user_status_content_wrapper {
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: hsla(0, 0%, 0%, 0.6);
         color: inherit;

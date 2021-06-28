@@ -97,8 +97,13 @@
 
 .user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
+    display: flex;
     overflow: hidden;
-    text-overflow: ellipsis;
+
+    .user-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
@@ -109,6 +114,17 @@
 
 .user-presence-link {
     width: calc(100% - 24px);
+
+    .status_emoji {
+        height: 16px;
+        width: 16px;
+        /* We are setting minimum width here because when the user's name is very long,
+        emoji's width decreases and causes it to break. */
+        min-width: 16px;
+        margin-left: 4px;
+        margin-right: 4px;
+        top: 8px;
+    }
 }
 
 .my_user_status {
