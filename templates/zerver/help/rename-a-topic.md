@@ -29,10 +29,8 @@ for the details on when topic editing is allowed.
 
 1. Edit the topic.
 
-1. A dropdown with three options will appear to the right:
-**Change only this message topic**, **Change later messages to this topic**, and
-**Change previous and following messages to this topic**. Pick the appropriate
-option.
+1. Pick **Change previous and following messages to this topic** from the
+   dropdown to the right.
 
 1. Click **Save**.
 
