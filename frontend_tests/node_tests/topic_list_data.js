@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const muting = mock_esm("../../static/js/muting", {
+const muted_topics = mock_esm("../../static/js/muted_topics", {
     is_topic_muted() {
         return false;
     },
@@ -153,7 +153,7 @@ test("get_list_info unreads", ({override}) => {
     unread_cnt.set("topic 5", 5);
     unread_cnt.set("topic 13", 13);
 
-    override(muting, "is_topic_muted", (stream_id, topic_name) => {
+    override(muted_topics, "is_topic_muted", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
         return topic_name === "topic 4";
     });

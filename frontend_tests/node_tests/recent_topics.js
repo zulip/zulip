@@ -89,7 +89,7 @@ mock_esm("../../static/js/message_store", {
 mock_esm("../../static/js/message_view_header", {
     render_title_area: noop,
 });
-mock_esm("../../static/js/muting", {
+mock_esm("../../static/js/muted_topics", {
     is_topic_muted: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
             return true;
