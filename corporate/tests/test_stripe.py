@@ -75,7 +75,6 @@ from zerver.lib.actions import (
     do_reactivate_user,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
 
@@ -336,7 +335,6 @@ class Kandra:  # nocoverage: TODO
 class StripeTestCase(ZulipTestCase):
     def setUp(self, *mocks: Mock) -> None:
         super().setUp()
-        reset_emails_in_zulip_realm()
         realm = get_realm("zulip")
 
         # Explicitly limit our active users to 6 regular users,
@@ -356,7 +354,7 @@ class StripeTestCase(ZulipTestCase):
 
         # Deactivate all users in our realm that aren't in our whitelist.
         for user_profile in UserProfile.objects.filter(realm_id=realm.id).exclude(
-            email__in=active_emails
+            delivery_email__in=active_emails
         ):
             do_deactivate_user(user_profile, acting_user=None)
 
@@ -514,7 +512,7 @@ class StripeTest(StripeTestCase):
         self.assertTrue(stripe_customer_has_credit_card_as_default_source(stripe_customer))
         self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
         self.assertEqual(stripe_customer.discount, None)
-        self.assertEqual(stripe_customer.email, user.email)
+        self.assertEqual(stripe_customer.email, user.delivery_email)
         metadata_dict = dict(stripe_customer.metadata)
         self.assertEqual(metadata_dict["realm_str"], "zulip")
         try:
@@ -529,7 +527,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(
             charge.description, f"Upgrade to Zulip Standard, $80.0 x {self.seat_count}"
         )
-        self.assertEqual(charge.receipt_email, user.email)
+        self.assertEqual(charge.receipt_email, user.delivery_email)
         self.assertEqual(charge.statement_descriptor, "Zulip Standard")
         # Check Invoices in Stripe
         [invoice] = stripe.Invoice.list(customer=stripe_customer.id)
@@ -646,7 +644,7 @@ class StripeTest(StripeTestCase):
             "Your plan will renew on",
             "January 2, 2013",
             f"${80 * self.seat_count}.00",
-            f"Billing email: <strong>{user.email}</strong>",
+            f"Billing email: <strong>{user.delivery_email}</strong>",
             "Visa ending in 4242",
             "Update card",
         ]:
@@ -785,7 +783,7 @@ class StripeTest(StripeTestCase):
             "Your plan will renew on",
             "January 2, 2013",
             "$9,840.00",  # 9840 = 80 * 123
-            f"Billing email: <strong>{user.email}</strong>",
+            f"Billing email: <strong>{user.delivery_email}</strong>",
             "Billed by invoice",
             "You can only increase the number of licenses.",
             "Number of licenses",
@@ -815,7 +813,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.default_source.id[:5], "card_")
             self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
             self.assertEqual(stripe_customer.discount, None)
-            self.assertEqual(stripe_customer.email, user.email)
+            self.assertEqual(stripe_customer.email, user.delivery_email)
             metadata_dict = dict(stripe_customer.metadata)
             self.assertEqual(metadata_dict["realm_str"], "zulip")
             try:
@@ -893,7 +891,7 @@ class StripeTest(StripeTestCase):
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
-                f"Billing email: <strong>{user.email}</strong>",
+                f"Billing email: <strong>{user.delivery_email}</strong>",
                 "Visa ending in 4242",
                 "Update card",
             ]:
@@ -1021,7 +1019,7 @@ class StripeTest(StripeTestCase):
                 Customer.objects.get(realm=user.realm).stripe_customer_id
             )
             self.assertEqual(stripe_customer.discount, None)
-            self.assertEqual(stripe_customer.email, user.email)
+            self.assertEqual(stripe_customer.email, user.delivery_email)
             metadata_dict = dict(stripe_customer.metadata)
             self.assertEqual(metadata_dict["realm_str"], "zulip")
             try:
@@ -1094,7 +1092,7 @@ class StripeTest(StripeTestCase):
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"{80 * 123:,.2f}",
-                f"Billing email: <strong>{user.email}</strong>",
+                f"Billing email: <strong>{user.delivery_email}</strong>",
                 "Billed by invoice",
             ]:
                 self.assert_in_response(substring, response)
