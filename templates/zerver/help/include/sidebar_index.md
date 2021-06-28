@@ -71,6 +71,7 @@
 * [Start a new topic](/help/start-a-new-topic)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
+* [Move content to another topic](/help/move-content-to-another-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
 
 ## Notifications
