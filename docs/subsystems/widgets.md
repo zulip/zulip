@@ -10,11 +10,8 @@ these features:
 
 - **/ping**
 - **/day** (and /night, /light, /dark)
-- **/poll** (and /todo) (BETA)
-- **zform-enabled messages** for the trivia_quiz bot (BETA)
-
-The beta features are only turned on for chat.zulip.org as
-of this writing.
+- **/poll** (and /todo)
+- **zform-enabled messages** for the trivia_quiz bot
 
 There's a strong overlap between **widgets** and **slash
 commands**, and many widgets are launched by slash commands.
