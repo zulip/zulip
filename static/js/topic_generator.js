@@ -1,4 +1,4 @@
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
 import * as pm_conversations from "./pm_conversations";
 import * as stream_data from "./stream_data";
 import * as stream_sort from "./stream_sort";
@@ -67,7 +67,7 @@ export function get_next_topic(curr_stream, curr_topic) {
     function get_unmuted_topics(stream_name) {
         const stream_id = stream_data.get_stream_id(stream_name);
         let topics = stream_topic_history.get_recent_topic_names(stream_id);
-        topics = topics.filter((topic) => !muting.is_topic_muted(stream_id, topic));
+        topics = topics.filter((topic) => !muted_topics.is_topic_muted(stream_id, topic));
         return topics;
     }
 

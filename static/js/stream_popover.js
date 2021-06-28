@@ -17,7 +17,7 @@ import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
 import * as muting_ui from "./muting_ui";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -261,7 +261,7 @@ function build_topic_popover(opts) {
     popovers.hide_all();
     show_streamlist_sidebar();
 
-    const topic_muted = muting.is_topic_muted(sub.stream_id, topic_name);
+    const topic_muted = muted_topics.is_topic_muted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     // Arguably, we could offer the "Move topic" option even if users
     // can only edit the name within a stream.

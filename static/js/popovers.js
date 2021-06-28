@@ -28,8 +28,8 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as muted_topics from "./muted_topics";
 import * as muted_users from "./muted_users";
-import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -422,9 +422,9 @@ export function toggle_actions_popover(element, id) {
         }
         const topic = message.topic;
         const can_mute_topic =
-            message.stream && topic && !muting.is_topic_muted(message.stream_id, topic);
+            message.stream && topic && !muted_topics.is_topic_muted(message.stream_id, topic);
         const can_unmute_topic =
-            message.stream && topic && muting.is_topic_muted(message.stream_id, topic);
+            message.stream && topic && muted_topics.is_topic_muted(message.stream_id, topic);
 
         const should_display_edit_history_option =
             message.edit_history &&
