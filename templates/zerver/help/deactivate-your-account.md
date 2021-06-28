@@ -30,9 +30,9 @@
   your account at any time.
 
 !!! warn ""
-    If you are the only administrator in the organization, you cannot
+    If you are the only owner in the organization, you cannot
     deactivate your account. You'll need to
-    [add another administrator](/help/change-a-users-role) first.
+    [add another owner](/help/change-a-users-role) first.
 
 ## Related articles
 
