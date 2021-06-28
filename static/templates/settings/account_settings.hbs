@@ -6,7 +6,7 @@
                 <h3 class="inline-block">{{t "User settings" }}</h3>
                 <form class="email-change-form grid">
                     <div class="alert-notification" id="account-settings-status"></div>
-                    <div class="input-group user-name-section">
+                    <div class="input-group">
                         <label class="inline-block title">{{t "Email" }}</label>
                         <button id='change_email' type="button" class="button btn-link small rounded inline-block" id='email_value'
                           {{#if (and page_params.realm_email_changes_disabled (not page_params.is_admin))}}disabled="disabled"{{/if}}>
