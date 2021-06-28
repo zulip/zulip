@@ -363,6 +363,12 @@ function get_filtered_user_id_list(user_filter_text) {
         // users who have been idle more than three weeks.  When the
         // filter text is blank, we show only those recently active users.
         base_user_id_list = presence.get_user_ids();
+
+        // Always include ourselves, even if we're "unavailable".
+        const my_user_id = people.my_current_user_id();
+        if (!base_user_id_list.includes(my_user_id)) {
+            base_user_id_list = [my_user_id, ...base_user_id_list];
+        }
     }
 
     const user_ids = filter_user_ids(user_filter_text, base_user_id_list);

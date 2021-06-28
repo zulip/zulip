@@ -461,6 +461,19 @@ test("bulk_data_hacks", () => {
     assert.equal(user_ids.length, 700);
 });
 
+test("always show me", ({override}) => {
+    const present_user_ids = [];
+    override(presence, "get_user_ids", () => present_user_ids);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+
+    // Make sure we didn't mutate the list passed to us.
+    assert.deepEqual(present_user_ids, []);
+
+    // try to make us show twice
+    present_user_ids.push(me.user_id);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+});
+
 test("user_status", () => {
     user_status.initialize({user_status: []});
     set_presence(me.user_id, "active");
