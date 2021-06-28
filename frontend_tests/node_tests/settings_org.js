@@ -866,23 +866,19 @@ test("misc", ({override}) => {
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok(!$("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").is(":visible"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;
