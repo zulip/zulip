@@ -143,7 +143,7 @@ Here's how we fill in the fields that a Slack-format webhook expects:
         </tr>
         <tr>
             <td><code>user_name</code></td>
-            <td>Full name of sender</td>
+            <td>Name of sender</td>
         </tr>
         <tr>
             <td><code>text</code></td>
