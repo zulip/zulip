@@ -151,10 +151,6 @@ h3 .fa-question-circle-o {
     tbody {
         border-bottom: 1px solid hsl(0, 0%, 87%);
     }
-
-    &.table-condensed.table-striped {
-        margin: 0;
-    }
 }
 
 .wrapped-table {
@@ -264,10 +260,6 @@ td .button {
     .table-striped {
         table-layout: auto;
         border-collapse: separate;
-
-        tbody {
-            border-bottom: none;
-        }
 
         thead th {
             color: inherit;
