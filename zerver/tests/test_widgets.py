@@ -312,6 +312,54 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_success(dict(type="new_option", idx=7, option="maybe"))
         assert_success(dict(type="question", question="what's for dinner?"))
 
+    def test_todo_type_validation(self) -> None:
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/todo"
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            client="test suite",
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+
+        def post_submessage(content: str) -> HttpResponse:
+            payload = dict(
+                message_id=message.id,
+                msg_type="widget",
+                content=content,
+            )
+            return self.api_post(sender, "/api/v1/submessage", payload)
+
+        def assert_error(content: str, error: str) -> None:
+            result = post_submessage(content)
+            self.assert_json_error_contains(result, error)
+
+        assert_error('{"type": "bogus"}', "Unknown type for todo data: bogus")
+
+        assert_error('{"type": "new_task"}', "key is missing")
+        assert_error(
+            '{"type": "new_task", "key": 7, "task": 7, "desc": "", "completed": false}',
+            'data["task"] is not a string',
+        )
+
+        assert_error('{"type": "strike"}', "key is missing")
+        assert_error('{"type": "strike", "key": 999}', 'data["key"] is not a string')
+
+        def assert_success(data: Dict[str, object]) -> None:
+            content = orjson.dumps(data).decode()
+            result = post_submessage(content)
+            self.assert_json_success(result)
+
+        assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
+        assert_success(dict(type="strike", key="5,9"))
+
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")
         stream_name = "Verona"

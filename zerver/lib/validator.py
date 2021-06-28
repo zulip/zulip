@@ -498,6 +498,37 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
     raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
 
 
+def validate_todo_data(todo_data: object) -> None:
+    check_dict([("type", check_string)])("todo data", todo_data)
+
+    assert isinstance(todo_data, dict)
+
+    if todo_data["type"] == "new_task":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_int),
+                ("task", check_string),
+                ("desc", check_string),
+                ("completed", check_bool),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    if todo_data["type"] == "strike":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
+
+
 # Converter functions for use with has_request_variables
 def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
     x = int(s)
