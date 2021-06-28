@@ -98,7 +98,7 @@ class OpenGraphTest(ZulipTestCase):
         )
 
     def test_settings_tab(self) -> None:
-        # deactivate-your-account starts with {settings_tab|your-account}
+        # deactivate-your-account starts with {settings_tab|account-and-privacy}
         self.check_title_and_description(
             "/help/deactivate-your-account",
             "Deactivate your account (Zulip Help Center)",

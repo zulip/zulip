@@ -16,7 +16,8 @@ link_mapping = {
     # breadcrumb to that setting to the name of its setting type, the setting
     # name as it appears in the user interface, and a relative link that can
     # be used to get to that setting
-    "your-account": ["Settings", "Your account", "/#settings/your-account"],
+    "profile": ["Settings", "Profile", "/#settings/profile"],
+    "account-and-privacy": ["Settings", "Account & privacy", "/#settings/account-and-privacy"],
     "display-settings": ["Settings", "Display settings", "/#settings/display-settings"],
     "notifications": ["Settings", "Notifications", "/#settings/notifications"],
     "your-bots": ["Settings", "Your bots", "/#settings/your-bots"],

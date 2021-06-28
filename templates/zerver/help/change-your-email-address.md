@@ -10,7 +10,7 @@ Organization administrators can
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|account-and-privacy}
 
 2. Under **User settings**, click on the button with your email address.
 
