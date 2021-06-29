@@ -556,6 +556,13 @@ input.text-error {
             vertical-align: -5px;
         }
 
+        a,
+        a:focus,
+        a:hover {
+            text-decoration: none;
+            color: hsl(0, 0%, 20%);
+        }
+
         .light {
             font-size: 1.2rem;
             font-weight: 400;

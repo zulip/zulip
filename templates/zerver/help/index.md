@@ -1,4 +1,4 @@
-# Zulip user documentation
+# Zulip help center
 
 Zulip is a group chat app. Its most distinctive characteristic is that
 conversation within an organization is divided into “**streams**”

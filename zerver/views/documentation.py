@@ -131,12 +131,14 @@ class MarkdownDirectoryView(ApiURLView):
         if self.path_template == "/zerver/help/%s.md":
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
+            context["doc_root_title"] = "Help center"
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
+            context["doc_root_title"] = "API documentation"
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
