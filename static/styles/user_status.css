@@ -1,16 +1,25 @@
 #set_user_status_modal {
     /* A narrower width is more attractive for this modal. */
     width: 384px;
+    @media (width < $ml_min) {
+        width: 100%;
+    }
+
+    /* Center `position-fixed` modal */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin-left: 0;
 
     input.user_status {
-        width: 95%;
+        width: 94%;
         @media (width < $ml_min) {
-            width: 92%;
+            width: 93%;
         }
     }
 
     .user-status-options {
-        padding: 0 5px 3px;
+        padding-top: 10px;
+        padding-left: 2px;
 
         button.user-status-value:hover {
             /* Important is required for generic night them styling to not
