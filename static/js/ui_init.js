@@ -7,6 +7,7 @@ import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
@@ -63,6 +64,7 @@ import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
@@ -137,6 +139,14 @@ function initialize_left_sidebar() {
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
+}
+
+function initialize_right_sidebar() {
+    const rendered_sidebar = render_right_sidebar({
+        can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+    });
+
+    $("#right-sidebar-container").html(rendered_sidebar);
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -483,6 +493,7 @@ export function initialize_everything() {
     // expect DOM elements to always exist (As that did before these
     // modules were migrated from Django templates to handlebars).
     initialize_left_sidebar();
+    initialize_right_sidebar();
     compose.initialize();
 
     message_lists.initialize();

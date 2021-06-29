@@ -246,7 +246,6 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "start the conversation",
-            "Keyboard shortcuts",
             "Loading...",
             # Verify that the app styles get included
             "app-stubentry.js",
@@ -395,12 +394,6 @@ class HomeTest(ZulipTestCase):
         ):
             result = self.client_get("/", dict(**kwargs))
         return result
-
-    def assertInHomePage(self, string: str) -> bool:
-        return self.assertIn(string, self._get_home_page().content.decode("utf-8"))
-
-    def assertNotInHomePage(self, string: str) -> bool:
-        return self.assertNotIn(string, self._get_home_page().content.decode("utf-8"))
 
     def _sanity_check(self, result: HttpResponse) -> None:
         """
@@ -686,33 +679,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["max_message_id"], -1)
-
-    def test_invites_by_admins_only(self) -> None:
-        user_profile = self.example_user("hamlet")
-
-        realm = user_profile.realm
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        realm.save()
-
-        self.login_user(user_profile)
-        self.assertFalse(user_profile.is_realm_admin)
-        self.assertNotInHomePage("Invite more users")
-
-        user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
-        user_profile.save()
-        self.assertInHomePage("Invite more users")
-
-    def test_show_invites_for_guest_users(self) -> None:
-        user_profile = self.example_user("polonius")
-
-        realm = user_profile.realm
-        realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
-        realm.save()
-
-        self.login_user(user_profile)
-        self.assertFalse(user_profile.is_realm_admin)
-        self.assertEqual(get_realm("zulip").invite_to_realm_policy, Realm.POLICY_MEMBERS_ONLY)
-        self.assertNotInHomePage("Invite more users")
 
     def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")

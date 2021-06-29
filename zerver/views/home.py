@@ -16,7 +16,6 @@ from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_bro
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.users import compute_show_invites
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.portico import hello_view
@@ -190,8 +189,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         needs_tutorial=needs_tutorial,
     )
 
-    show_invites = compute_show_invites(user_profile)
-
     request._log_data["extra"] = "[{}]".format(queue_id)
 
     csp_nonce = secrets.token_hex(24)
@@ -206,7 +203,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "page_params": page_params,
             "csp_nonce": csp_nonce,
             "search_pills_enabled": settings.SEARCH_PILLS_ENABLED,
-            "show_invites": show_invites,
             "is_owner": user_permission_info.is_realm_owner,
             "is_admin": user_permission_info.is_realm_admin,
             "is_guest": user_permission_info.is_guest,
