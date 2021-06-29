@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Any
 
 import requests
 
@@ -10,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class GithubSession(OutgoingSession):
-    def __init__(self) -> None:
-        super().__init__(role="github", timeout=5)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(role="github", timeout=5, **kwargs)
 
 
 def get_latest_github_release_version_for_repo(repo: str) -> str:
