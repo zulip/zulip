@@ -63,22 +63,30 @@
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
                 <div class="compose_table">
-                    <div id="stream-message">
-                        <div class="stream-selection-header-colorblock message_header_stream left_part"></div>
-                        <div class="right_part">
-                            <span id="compose-lock-icon">
-                                <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
-                            </span>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
-                            <i class="fa fa-angle-right" aria-hidden="true"></i>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                    <ul id="stream-message" class="nav nav-tabs" role="tablist">
+                        <div class="receiving_streams">
+                                <div class="stream-selection-header-colorblock message_header_stream"></div>
+                            <div class="stream-info">
+                                <span id="compose-lock-icon">
+                                    <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
+                                </span>
+                                <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
+                                <i class="fa fa-angle-right" aria-hidden="true"></i>
+                                <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                            </div>
                         </div>
-                    </div>
+                        <li role="presentation" class="preview-toggle">
+                            <a href="#preview" class="markdown_preview" aria-controls="preview" role="tab" data-toggle="tab">Preview</a>
+                        </li>
+                        <li role="presentation" class="preview-toggle active">
+                            <a href="#write" class="undo_markdown_preview" aria-controls="write" role="tab" data-toggle="tab">Write</a>
+                        </li>
+                    </ul>
                     <div id="private-message">
                         <div class="to_text">
                             <span>{{t 'To' }}:</span>
                         </div>
-                        <div class="right_part">
+                        <div class="receiving_streams">
                             <div class="pm_recipient">
                                 <div class="pill-container" data-before="{{t 'You and' }}">
                                     <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
@@ -88,10 +96,16 @@
                     </div>
                     <div class="messagebox-wrapper">
                         <div class="messagebox">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
-                            <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
-                                <div class="markdown_preview_spinner"></div>
-                                <div class="preview_content rendered_markdown"></div>
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="write">
+                                    <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="preview">
+                                    <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area">
+                                        <div class="markdown_preview_spinner"></div>
+                                        <div class="preview_content rendered_markdown"></div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="drag"></div>
                             <div id="below-compose-content">

@@ -92,6 +92,14 @@
     display: flex;
     flex-flow: column;
 
+    .nav {
+        margin-bottom: 0;
+
+        > li:last-child {
+            margin-right: 20px;
+        }
+    }
+
     .stream-selection-header-colorblock {
         &.message_header_private_message {
             border-radius: 3px 0 0 3px;
@@ -100,17 +108,23 @@
         }
     }
 
-    .right_part {
+    .receiving_streams {
         padding: 0;
         display: flex;
-        align-items: center;
-        width: 100%;
+        align-items: stretch;
+        flex: 1 1 auto;
 
         .fa-angle-right {
             font-size: 0.9em;
             -webkit-text-stroke: 0.05em;
             position: relative;
             margin: 0 5px;
+        }
+
+        .stream-info {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
         }
     }
 
@@ -443,6 +457,7 @@ input.recipient_box {
 #stream-message,
 #private-message {
     display: flex;
+    align-items: center;
 }
 
 #private-message {

@@ -223,6 +223,21 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
     }
 
+    .nav-tabs {
+        border-bottom-color: hsla(0, 0%, 0%, 0.2);
+
+        > li > a:hover {
+            color: hsl(200, 79%, 66%);
+        }
+
+        > li.active > a {
+            background-color: hsl(212, 28%, 18%);
+            color: inherit;
+            border-color: hsla(0, 0%, 0%, 0.2);
+            border-bottom-color: hsl(212, 28%, 18%);
+        }
+    }
+
     select option {
         background-color: hsl(212, 28%, 18%);
         color: hsl(236, 33%, 90%);
