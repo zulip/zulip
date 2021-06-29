@@ -256,10 +256,14 @@ test("test_unread_logic", () => {
     assert.deepEqual(history, ["toPic1", "topic2"]);
 
     const msgs = [
-        {id: 150, topic: "TOPIC2"}, // will be ignored
+        // This will be ignored as a case variant of `topic2` above.
+        {id: 150, topic: "TOPIC2"},
         {id: 61, topic: "unread1"},
         {id: 60, topic: "unread1"},
         {id: 20, topic: "UNREAD2"},
+        // We're going to mark this as read; this will verify the logic
+        // in unreads.js for only including topics with nonzero unreads.
+        {id: 79, topic: "to_mark_as_read"},
     ];
 
     for (const msg of msgs) {
@@ -269,6 +273,7 @@ test("test_unread_logic", () => {
     }
 
     unread.process_loaded_messages(msgs);
+    unread.mark_as_read(79);
 
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["toPic1", "unread1", "topic2", "UNREAD2"]);

@@ -201,6 +201,8 @@ export class PerStreamHistory {
     get_recent_topic_names() {
         const my_recents = Array.from(this.topics.values());
 
+        /* Add any older topics with unreads that may not be present
+         * in our local cache. */
         const missing_topics = unread.get_missing_topics({
             stream_id: this.stream_id,
             topic_dict: this.topics,

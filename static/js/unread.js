@@ -265,6 +265,15 @@ class UnreadTopicCounter {
     }
 
     get_missing_topics(opts) {
+        /* Clients have essentially complete unread data, but
+         * stream_topic_history.is_complete_for_stream_id() can be
+         * false. In that situation, this function helps ensure that
+         * we include all topics with unread messages in data that.
+         *
+         * It will return all topics in the provided stream with a
+         * nonzero unread count that are not already present in the
+         * topic_dict parameter.
+         */
         const stream_id = opts.stream_id;
         const topic_dict = opts.topic_dict;
 
@@ -275,6 +284,13 @@ class UnreadTopicCounter {
 
         let topic_names = Array.from(per_stream_bucketer.keys());
 
+        /* Include topics that have at least one unread. It would likely
+         * be better design for buckets to be deleted when emptied. */
+        topic_names = topic_names.filter((topic_name) => {
+            const messages = Array.from(per_stream_bucketer.get_bucket(topic_name));
+            return messages.length > 0;
+        });
+        /* And aren't already present in topic_dict. */
         topic_names = topic_names.filter((topic_name) => !topic_dict.has(topic_name));
 
         const result = topic_names.map((topic_name) => {
