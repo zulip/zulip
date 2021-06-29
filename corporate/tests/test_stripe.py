@@ -76,7 +76,15 @@ from zerver.lib.actions import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
+from zerver.models import (
+    Message,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    UserProfile,
+    get_realm,
+    get_system_bot,
+)
 
 CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
@@ -1699,8 +1707,8 @@ class StripeTest(StripeTestCase):
         self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
 
         expected_message = "Your organization's request for sponsored hosting has been approved! :tada:.\nYou have been upgraded to Zulip Cloud Standard, free of charge."
-        sender = UserProfile.objects.filter(email=settings.NOTIFICATION_BOT).first()
-        recipient_id = UserProfile.objects.filter(email="desdemona@zulip.com").first().recipient_id
+        sender = get_system_bot(settings.NOTIFICATION_BOT)
+        recipient_id = self.example_user("desdemona").recipient_id
         message = Message.objects.filter(sender=sender.id).first()
         self.assertEqual(message.content, expected_message)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
