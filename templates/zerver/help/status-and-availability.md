@@ -19,7 +19,7 @@ teammates know when you were last active.
 
 1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
 
-1. Click **Set a status message**.
+1. Click **Set a status**.
 
 1. Set a status messages and click **Save**.
 
