@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import orjson
 from django.contrib.auth.models import UserManager
@@ -7,25 +7,44 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.hotspots import copy_hotspots
 from zerver.lib.upload import copy_avatar
 from zerver.lib.utils import generate_api_key
-from zerver.models import Realm, Recipient, Stream, Subscription, UserProfile, get_fake_email_domain
+from zerver.models import (
+    Realm,
+    RealmUserDefault,
+    Recipient,
+    Stream,
+    Subscription,
+    UserBaseSettings,
+    UserProfile,
+    get_fake_email_domain,
+)
 
 
-def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
+def copy_default_settings(
+    settings_source: Union[UserProfile, RealmUserDefault], target_profile: UserProfile
+) -> None:
     # Important note: Code run from here to configure the user's
     # settings should not call send_event, as that would cause clients
     # to throw an exception (we haven't sent the realm_user/add event
     # yet, so that event will include the updated details of target_profile).
     #
     # Note that this function will do at least one save() on target_profile.
-    for settings_name in UserProfile.property_types:
-        value = getattr(source_profile, settings_name)
+    for settings_name in UserBaseSettings.property_types:
+        if settings_name in ["default_language", "twenty_four_hour_time"] and isinstance(
+            settings_source, RealmUserDefault
+        ):
+            continue
+        value = getattr(settings_source, settings_name)
         setattr(target_profile, settings_name, value)
 
-    setattr(target_profile, "full_name", source_profile.full_name)
-    setattr(target_profile, "timezone", source_profile.timezone)
+    if isinstance(settings_source, RealmUserDefault):
+        target_profile.save()
+        return
+
+    setattr(target_profile, "full_name", settings_source.full_name)
+    setattr(target_profile, "timezone", settings_source.timezone)
     target_profile.save()
 
-    if source_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
+    if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:
         from zerver.lib.actions import do_change_avatar_fields
 
         do_change_avatar_fields(
@@ -34,9 +53,9 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
             skip_notify=True,
             acting_user=target_profile,
         )
-        copy_avatar(source_profile, target_profile)
+        copy_avatar(settings_source, target_profile)
 
-    copy_hotspots(source_profile, target_profile)
+    copy_hotspots(settings_source, target_profile)
 
 
 def get_display_email_address(user_profile: UserProfile) -> str:
@@ -154,10 +173,14 @@ def create_user(
     # than the guess. As we decide on details like avatars and full
     # names for this feature, we may want to move it.
     if source_profile is not None:
-        # copy_user_settings saves the attribute values so a secondary
+        # copy_default_settings saves the attribute values so a secondary
         # save is not required.
-        copy_user_settings(source_profile, user_profile)
+        copy_default_settings(source_profile, user_profile)
+    elif bot_type is None:
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        copy_default_settings(realm_user_default, user_profile)
     else:
+        # This will be executed only for bots.
         user_profile.save()
 
     if bot_type is None and enable_marketing_emails is not None:
