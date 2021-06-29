@@ -205,6 +205,8 @@ function render_user_info_popover(
 
     const muting_allowed = !is_me && !user.is_bot;
     const is_muted = muted_users.is_user_muted(user.user_id);
+    const status_text = user_status.get_status_text(user.user_id);
+    const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
     const args = {
         can_revoke_away,
@@ -228,7 +230,9 @@ function render_user_info_popover(
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
-        status_text: user_status.get_status_text(user.user_id),
+        status_content_available: Boolean(status_text || status_emoji_info),
+        status_text,
+        status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
     };
 
@@ -932,6 +936,8 @@ export function register_click_handlers() {
         user_status.server_update({
             user_id: me,
             status_text: "",
+            emoji_name: "",
+            emoji_code: "",
             success() {
                 $(".info_popover_actions #status_message").html("");
             },

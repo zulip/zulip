@@ -645,6 +645,11 @@ ul {
 .user_info_status_text {
     opacity: 0.8;
     padding: 2px 0 3px 0;
+    .status_emoji {
+        height: 18px;
+        width: 18px;
+        top: 2px;
+    }
 }
 
 #move_topic_modal {
