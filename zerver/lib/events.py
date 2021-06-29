@@ -503,7 +503,7 @@ def fetch_initial_state_data(
     if want("update_display_settings"):
         for prop in UserProfile.property_types:
             state[prop] = getattr(settings_user, prop)
-            state["emojiset_choices"] = UserProfile.emojiset_choices()
+        state["emojiset_choices"] = UserProfile.emojiset_choices()
 
     if want("update_global_notifications"):
         for notification in UserProfile.notification_setting_types:
