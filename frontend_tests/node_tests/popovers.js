@@ -100,7 +100,9 @@ function test_ui(label, f) {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
-        override(popovers, "clipboard_enable", noop);
+        override(popovers, "clipboard_enable", () => ({
+            on: noop,
+        }));
         popovers.clear_for_testing();
         popovers.register_click_handlers();
         f({override, mock_template});

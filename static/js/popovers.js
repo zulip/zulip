@@ -1174,11 +1174,10 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    clipboard_enable(".copy_link");
-
-    $("body").on("click", ".copy_link", function (e) {
+    clipboard_enable(".copy_link").on("success", (e) => {
         hide_actions_popover();
-        const message_id = $(this).attr("data-message-id");
+        // e.trigger returns the DOM element triggering the copy action
+        const message_id = e.trigger.getAttribute("data-message-id");
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text($t({defaultMessage: "Copied!"}))
@@ -1191,9 +1190,6 @@ export function register_click_handlers() {
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").trigger("blur");
         }, 0);
-
-        e.stopPropagation();
-        e.preventDefault();
     });
 
     clipboard_enable(".copy_mention_syntax");
