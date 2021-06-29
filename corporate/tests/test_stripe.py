@@ -7,7 +7,19 @@ import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
 from unittest.mock import Mock, patch
 
 import orjson
@@ -1754,7 +1766,7 @@ class StripeTest(StripeTestCase):
         ) as m:
             response = self.client_post(
                 "/json/billing/sources/change",
-                {"stripe_token": orjson.dumps(stripe_token).decode()},
+                {"stripe_token": stripe_token},
             )
             self.assertEqual(
                 m.output, ["INFO:corporate.stripe:Stripe card error: 402 card_error card_declined "]
@@ -1774,7 +1786,7 @@ class StripeTest(StripeTestCase):
         with self.assertLogs("corporate.stripe", "INFO") as m:
             response = self.client_post(
                 "/json/billing/sources/change",
-                {"stripe_token": orjson.dumps(stripe_token).decode()},
+                {"stripe_token": stripe_token},
             )
             self.assertEqual(
                 m.output,
@@ -1794,9 +1806,7 @@ class StripeTest(StripeTestCase):
 
         # Replace with a valid card
         stripe_token = stripe_create_token(card_number="5555555555554444").id
-        response = self.client_post(
-            "/json/billing/sources/change", {"stripe_token": orjson.dumps(stripe_token).decode()}
-        )
+        response = self.client_post("/json/billing/sources/change", {"stripe_token": stripe_token})
         self.assert_json_success(response)
         number_of_sources = 0
         for stripe_source in stripe_get_customer(stripe_customer_id).sources:
@@ -2900,18 +2910,14 @@ class RequiresBillingAccessTest(ZulipTestCase):
         # Billing admins have access
         self.login_user(self.example_user("hamlet"))
         with patch("corporate.views.do_replace_payment_source") as mocked1:
-            response = self.client_post(
-                "/json/billing/sources/change", {"stripe_token": orjson.dumps("token").decode()}
-            )
+            response = self.client_post("/json/billing/sources/change", {"stripe_token": "token"})
         self.assert_json_success(response)
         mocked1.assert_called_once()
 
         # Realm owners have access, even if they are not billing admins
         self.login_user(self.example_user("desdemona"))
         with patch("corporate.views.do_replace_payment_source") as mocked2:
-            response = self.client_post(
-                "/json/billing/sources/change", {"stripe_token": orjson.dumps("token").decode()}
-            )
+            response = self.client_post("/json/billing/sources/change", {"stripe_token": "token"})
         self.assert_json_success(response)
         mocked2.assert_called_once()
 
@@ -2920,7 +2926,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
             username: str,
             endpoint: str,
             method: str,
-            request_data: Dict[str, str],
+            request_data: Dict[str, Union[str, int]],
             error_message: str,
         ) -> None:
 
@@ -2938,10 +2944,10 @@ class RequiresBillingAccessTest(ZulipTestCase):
             "/json/billing/upgrade",
             "POST",
             {
-                "billing_modality": orjson.dumps("charge_automatically").decode(),
-                "schedule": orjson.dumps("annual").decode(),
-                "signed_seat_count": orjson.dumps("signed count").decode(),
-                "salt": orjson.dumps("salt").decode(),
+                "billing_modality": "charge_automatically",
+                "schedule": "annual",
+                "signed_seat_count": "signed count",
+                "salt": "salt",
             },
             "Must be an organization member",
         )
@@ -2951,9 +2957,9 @@ class RequiresBillingAccessTest(ZulipTestCase):
             "/json/billing/sponsorship",
             "POST",
             {
-                "organization-type": orjson.dumps("event").decode(),
-                "description": orjson.dumps("event description").decode(),
-                "website": orjson.dumps("example.com").decode(),
+                "organization-type": "event",
+                "description": "event description",
+                "website": "example.com",
             },
             "Must be an organization member",
         )
@@ -2964,7 +2970,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
                 username,
                 "/json/billing/sources/change",
                 "POST",
-                {"stripe_token": orjson.dumps("token").decode()},
+                {"stripe_token": "token"},
                 "Must be a billing administrator or an organization owner",
             )
 
@@ -2972,7 +2978,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
                 username,
                 "/json/billing/plan",
                 "PATCH",
-                {"status": orjson.dumps(1).decode()},
+                {"status": 1},
                 "Must be a billing administrator or an organization owner",
             )
 
