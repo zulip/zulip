@@ -21,7 +21,7 @@ from zerver.lib.home import (
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
-from zerver.lib.users import compute_show_invites_and_add_streams
+from zerver.lib.users import compute_show_invites
 from zerver.models import (
     DefaultStream,
     Realm,
@@ -248,7 +248,6 @@ class HomeTest(ZulipTestCase):
             "start the conversation",
             "Keyboard shortcuts",
             "Loading...",
-            "Filter streams",
             # Verify that the app styles get included
             "app-stubentry.js",
             "data-params",
@@ -1083,9 +1082,8 @@ class HomeTest(ZulipTestCase):
         realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
+        show_invites = compute_show_invites(user)
         self.assertEqual(show_invites, True)
-        self.assertEqual(show_add_streams, True)
 
     def test_compute_show_invites_and_add_streams_require_admin(self) -> None:
         user = self.example_user("hamlet")
@@ -1094,18 +1092,15 @@ class HomeTest(ZulipTestCase):
         realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
+        show_invites = compute_show_invites(user)
         self.assertEqual(show_invites, False)
-        self.assertEqual(show_add_streams, True)
 
     def test_compute_show_invites_and_add_streams_guest(self) -> None:
         user = self.example_user("polonius")
 
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
+        show_invites = compute_show_invites(user)
         self.assertEqual(show_invites, False)
-        self.assertEqual(show_add_streams, False)
 
     def test_compute_show_invites_and_add_streams_unauthenticated(self) -> None:
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(None)
+        show_invites = compute_show_invites(None)
         self.assertEqual(show_invites, False)
-        self.assertEqual(show_add_streams, False)

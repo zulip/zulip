@@ -6,6 +6,7 @@ import generated_pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
+import render_left_sidebar from "../templates/left_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
@@ -128,6 +129,14 @@ function message_hover(message_row) {
         msg_id: id,
     };
     message_row.find(".edit_content").html(render_edit_content_button(args));
+}
+
+function initialize_left_sidebar() {
+    const rendered_sidebar = render_left_sidebar({
+        is_guest: page_params.is_guest,
+    });
+
+    $("#left-sidebar-container").html(rendered_sidebar);
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -468,11 +477,14 @@ export function initialize_everything() {
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
-    // We need to initialize compose early, because other modules'
-    // initialization expects `#compose` to be already present in the
-    // DOM, dating from when the compose area was part of the backend
-    // template.
+
+    // These components must be initialized early, because other
+    // modules' initialization has not been audited for whether they
+    // expect DOM elements to always exist (As that did before these
+    // modules were migrated from Django templates to handlebars).
+    initialize_left_sidebar();
     compose.initialize();
+
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();

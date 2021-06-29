@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -349,14 +349,14 @@ def validate_user_custom_profile_data(
             raise JsonableError(error.message)
 
 
-def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) -> Tuple[bool, bool]:
+def compute_show_invites(user_profile: Optional[UserProfile]) -> bool:
     if user_profile is None:
-        return False, False
+        return False
 
     if user_profile.is_guest:
-        return False, False
+        return False
 
-    return user_profile.can_invite_others_to_realm(), True
+    return user_profile.can_invite_others_to_realm()
 
 
 def can_access_delivery_email(user_profile: UserProfile) -> bool:
