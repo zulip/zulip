@@ -31,7 +31,10 @@ function compare_by_name(a, b) {
 }
 
 function format_user_stream_list_item(stream, user) {
-    const show_unsubscribe_button = people.is_my_user_id(user.user_id) || settings_data.user_can_unsubscribe_other_users();
+    const show_unsubscribe_button =
+        people.is_my_user_id(user.user_id) || settings_data.user_can_unsubscribe_other_users();
+    const show_private_stream_unsub_tooltip =
+        people.is_my_user_id(user.user_id) && stream.invite_only;
     return render_user_stream_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
@@ -39,6 +42,7 @@ function format_user_stream_list_item(stream, user) {
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
+        show_private_stream_unsub_tooltip,
         stream_edit_url: hash_util.stream_edit_uri(stream),
     });
 }

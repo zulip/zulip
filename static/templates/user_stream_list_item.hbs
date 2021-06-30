@@ -8,7 +8,7 @@
     {{#if show_unsubscribe_button}}
     <td class="remove_subscription">
         <div class="subscription_list_remove">
-            <button type="button" name="unsubscribe" class="remove-subscription-button button small rounded btn-danger">
+            <button type="button" name="unsubscribe" class="remove-subscription-button button small rounded btn-danger {{#if show_private_stream_unsub_tooltip}}tippy-zulip-tooltip{{/if}}" data-tippy-content='{{t "Use stream settings to unsubscribe from private streams."}}'>
                 {{t 'Unsubscribe' }}
             </button>
         </div>
