@@ -675,8 +675,6 @@ html_rules: List["Rule"] = [
             # Social backend logos are dynamically loaded
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
-            # Probably just needs to be changed to display: none so the exclude works
-            "templates/zerver/app/navbar.html",
             # Needs the width cleaned up; display: none is fine
             "static/templates/settings/account_settings.hbs",
             # background image property is dynamically generated

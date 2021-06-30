@@ -2019,6 +2019,11 @@ div.focused_table {
     /* border-right: 2px solid hsl(204, 20%, 74%); */
 }
 
+.hide-streamlist-toggle-visibility,
+.hide-navbar-buttons-visibility {
+    visibility: hidden;
+}
+
 #streamlist-toggle-button {
     text-decoration: none;
     color: hsl(0, 0%, 52%);

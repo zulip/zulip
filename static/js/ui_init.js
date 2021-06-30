@@ -7,6 +7,7 @@ import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_navbar from "../templates/navbar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
@@ -147,6 +148,15 @@ function initialize_right_sidebar() {
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
+}
+
+function initialize_navbar() {
+    const rendered_navbar = render_navbar({
+        embedded: page_params.narrow_stream !== undefined,
+        search_pills_enabled: page_params.search_pills_enabled,
+    });
+
+    $("#navbar-container").html(rendered_navbar);
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -495,6 +505,7 @@ export function initialize_everything() {
     initialize_left_sidebar();
     initialize_right_sidebar();
     compose.initialize();
+    initialize_navbar();
 
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
