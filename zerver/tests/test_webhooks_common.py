@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from django.http import HttpRequest
 
 from zerver.decorator import webhook_view
+from zerver.lib.actions import do_rename_stream
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
@@ -132,6 +133,43 @@ class WebhooksCommonTestCase(ZulipTestCase):
         djangoified_headers = standardize_headers(raw_headers)
         expected_djangoified_headers = {"CONTENT_TYPE": "text/plain", "HTTP_X_EVENT_TYPE": "ping"}
         self.assertEqual(djangoified_headers, expected_djangoified_headers)
+
+
+class WebhookURLConfigurationTestCase(WebhookTestCase):
+    STREAM_NAME = "helloworld"
+    WEBHOOK_DIR_NAME = "helloworld"
+    URL_TEMPLATE = "/api/v1/external/helloworld?stream={stream}&api_key={api_key}"
+
+    def setUp(self) -> None:
+        super().setUp()
+        stream = self.subscribe(self.test_user, self.STREAM_NAME)
+
+        # In actual webhook tests, we will not need to use stream id.
+        # We assign stream id to STREAM_NAME for testing URL configuration only.
+        self.STREAM_NAME = str(stream.id)
+        do_rename_stream(stream, "helloworld_renamed", self.test_user)
+
+        self.url = self.build_webhook_url()
+
+    def test_trigger_stream_message_by_id(self) -> None:
+        # check_webhook cannot be used here as it
+        # subscribes the test user to self.STREAM_NAME
+        payload = self.get_body("hello")
+
+        self.send_webhook_payload(
+            self.test_user, self.url, payload, content_type="application/json"
+        )
+
+        expected_topic = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
+
+        msg = self.get_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name="helloworld_renamed",
+            topic_name=expected_topic,
+            content=expected_message,
+        )
 
 
 class MissingEventHeaderTestCase(WebhookTestCase):

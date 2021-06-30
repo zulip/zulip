@@ -2680,6 +2680,20 @@ def check_send_stream_message(
     return do_send_messages([message])[0]
 
 
+def check_send_stream_message_by_id(
+    sender: UserProfile,
+    client: Client,
+    stream_id: int,
+    topic: str,
+    body: str,
+    realm: Optional[Realm] = None,
+) -> int:
+    addressee = Addressee.for_stream_id(stream_id, topic)
+    message = check_message(sender, client, addressee, body, realm)
+
+    return do_send_messages([message])[0]
+
+
 def check_send_private_message(
     sender: UserProfile, client: Client, receiving_user: UserProfile, body: str
 ) -> int:
