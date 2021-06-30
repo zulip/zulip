@@ -31,15 +31,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_ignore_travis_pull_request_by_default(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(
-            self.url,
-            self.get_body("pull_request"),
-            content_type="application/x-www-form-urlencoded",
+        self.check_webhook(
+            "pull_request", content_type="application/x-www-form-urlencoded", expect_noop=True
         )
-        self.assert_json_success(result)
-        msg = self.get_last_message()
-        self.assertNotEqual(msg.topic_name(), self.TOPIC)
 
     def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
         self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
@@ -52,7 +46,6 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_travis_only_push_event(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
         self.url = f'{self.build_webhook_url()}&only_events=["push"]'
 
         self.check_webhook(
@@ -63,33 +56,24 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_travis_only_push_event_not_sent(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
         self.url = f'{self.build_webhook_url()}&only_events=["push"]&ignore_pull_requests=false'
 
-        result = self.client_post(
-            self.url,
-            self.get_body("pull_request"),
+        self.check_webhook(
+            "pull_request",
             content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
         )
-        self.assert_json_success(result)
-        msg = self.get_last_message()
-        self.assertNotEqual(msg.topic_name(), self.TOPIC)
 
     def test_travis_exclude_push_event(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
         self.url = f'{self.build_webhook_url()}&exclude_events=["push"]'
 
-        result = self.client_post(
-            self.url,
-            self.get_body("build"),
+        self.check_webhook(
+            "build",
             content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
         )
-        self.assert_json_success(result)
-        msg = self.get_last_message()
-        self.assertNotEqual(msg.topic_name(), self.TOPIC)
 
     def test_travis_exlude_push_event_sent(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
         self.url = f'{self.build_webhook_url()}&exclude_events=["push"]&ignore_pull_requests=false'
 
         self.check_webhook(
@@ -100,7 +84,6 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_travis_include_glob_events(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
         self.url = f'{self.build_webhook_url()}&include_events=["*"]&ignore_pull_requests=false'
 
         self.check_webhook(
@@ -118,25 +101,19 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
     def test_travis_exclude_glob_events(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
         self.url = f'{self.build_webhook_url()}&exclude_events=["*"]&ignore_pull_requests=false'
 
-        result = self.client_post(
-            self.url,
-            self.get_body("pull_request"),
+        self.check_webhook(
+            "pull_request",
             content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
         )
-        self.assert_json_success(result)
 
-        result = self.client_post(
-            self.url,
-            self.get_body("build"),
+        self.check_webhook(
+            "build",
             content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
         )
-        self.assert_json_success(result)
-
-        msg = self.get_last_message()
-        self.assertNotEqual(msg.topic_name(), self.TOPIC)
 
     def test_travis_invalid_event(self) -> None:
         payload = self.get_body("build")
@@ -156,6 +133,19 @@ You can fix this by adding "invalid_event" to ALL_EVENT_TYPES for this webhook.
                     content_type="application/x-www-form-urlencoded",
                 )
             self.assertIn(expected_error_messsage, m.output[0])
+
+    def test_travis_noop(self) -> None:
+        expected_error_message = """
+While no message is expected given expect_noop=True,
+your test code triggered an endpoint that did write
+one or more new messages.
+        """.strip()
+
+        with self.assertRaises(Exception) as exc:
+            self.check_webhook(
+                "build", content_type="application/x-www-form-urlencoded", expect_noop=True
+            )
+        self.assertEqual(str(exc.exception), expected_error_message)
 
     def get_body(self, fixture_name: str) -> str:
         return urllib.parse.urlencode(

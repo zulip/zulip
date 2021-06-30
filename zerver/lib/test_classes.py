@@ -105,6 +105,10 @@ if settings.ZILENCER_ENABLED:
     from zilencer.models import get_remote_server_by_uuid
 
 
+class EmptyResponseError(Exception):
+    pass
+
+
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
@@ -1068,7 +1072,7 @@ Output:
         msg = self.get_last_message()
 
         if msg.id == prior_msg.id:
-            raise Exception(
+            raise EmptyResponseError(
                 """
                 Your test code called an endpoint that did
                 not write any new messages.  It is probably
@@ -1454,9 +1458,10 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
     def check_webhook(
         self,
         fixture_name: str,
-        expected_topic: str,
-        expected_message: str,
+        expected_topic: Optional[str] = None,
+        expected_message: Optional[str] = None,
         content_type: Optional[str] = "application/json",
+        expect_noop: Optional[bool] = False,
         **kwargs: Any,
     ) -> None:
         """
@@ -1476,6 +1481,8 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
 
         For the rare cases of webhooks actually sending private messages,
         see send_and_test_private_message.
+
+        When no message is expected to be sent, set `expect_noop` to True.
         """
         assert self.STREAM_NAME is not None
         self.subscribe(self.test_user, self.STREAM_NAME)
@@ -1487,13 +1494,30 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
             headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
+        try:
+            msg = self.send_webhook_payload(
+                self.test_user,
+                self.url,
+                payload,
+                **kwargs,
+            )
+        except EmptyResponseError:
+            if expect_noop:
+                return
+            else:
+                raise AssertionError(
+                    "No message was sent. Pass expect_noop=True if this is intentional."
+                )
 
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            payload,
-            **kwargs,
-        )
+        if expect_noop:
+            raise Exception(
+                """
+While no message is expected given expect_noop=True,
+your test code triggered an endpoint that did write
+one or more new messages.
+""".strip()
+            )
+        assert expected_message is not None and expected_topic is not None
 
         self.assert_stream_message(
             message=msg,
