@@ -18,6 +18,23 @@
                         </div>
                     </div>
                 </form>
+                <form class="form-horizontal timezone-setting-form">
+                    <div class="input-group grid">
+                        <label for="timezone" class="dropdown-title inline-block">{{t "Time zone" }}</label>
+                        <div class="alert-notification timezone-setting-status"></div>
+                        <div class="timezone-input">
+                            <select name="timezone" id="user_timezone" class>
+                                {{#unless page_params.timezone}}
+                                <option></option>
+                                {{/unless}}
+
+                                {{#each timezones}}
+                                <option value="{{ this }}">{{ this }}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                    </div>
+                </form>
 
                 <form class="form-horizontal custom-profile-fields-form grid"></form>
                 <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">

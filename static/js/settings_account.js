@@ -665,4 +665,20 @@ export function set_up() {
     }
 
     avatar.build_user_avatar_widget(upload_avatar);
+
+    $("#user_timezone").val(page_params.timezone);
+
+    $("#user_timezone").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {timezone: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings/display",
+            data,
+            $(".timezone-setting-status").expectOne(),
+        );
+    });
 }

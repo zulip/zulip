@@ -68,19 +68,6 @@
                     {{/each}}
                 </select>
             </div>
-
-            <div class="input-group">
-                <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>
-                <select name="timezone" id="user_timezone">
-                    {{#unless page_params.timezone}}
-                    <option></option>
-                    {{/unless}}
-
-                    {{#each timezones}}
-                    <option value="{{ this }}">{{ this }}</option>
-                    {{/each}}
-                </select>
-            </div>
         </div>
 
         <div id="user-emoji-settings">
