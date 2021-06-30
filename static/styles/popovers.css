@@ -363,6 +363,12 @@ ul {
         margin-bottom: 20px;
     }
 
+    #streams-tab {
+        .stream_list_info {
+            margin-bottom: 8px;
+        }
+    }
+
     .subscription-group-list,
     .subscription-stream-list {
         position: relative;
@@ -391,6 +397,14 @@ ul {
 
                     &:first-of-type {
                         padding-left: 10px;
+                    }
+
+                    &:last-of-type {
+                        padding-right: 10px;
+                    }
+
+                    &.remove_subscription {
+                        text-align: right;
                     }
                 }
             }
