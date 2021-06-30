@@ -22,6 +22,53 @@ const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
 let in_mid_render = false;
 let jquery_function;
 
+const template_path = "/static/templates/";
+
+function need_to_mock_template_error(filename) {
+    const i = filename.indexOf(template_path);
+
+    if (i < 0) {
+        throw new Error("programming error");
+    }
+
+    const fn = filename.slice(i + template_path.length);
+
+    return `
+        Please use mock_template if your test needs to render ${fn}
+
+        We use mock_template in our unit tests to verify that the
+        JS code is calling the template with the proper data. And
+        then we use the results of mock_template to supply the JS
+        code with either the actual HTML from the template or some
+        kind of zjquery stub.
+
+        The basic pattern is this (grep for mock_template to see real
+        world examples):
+
+        run_test("test something calling template", ({mock_template}) => {
+            // We encourage you to set the second argument to false
+            // if you are not actually inspecting or using the results
+            // of actually rendering the template.
+            mock_template("${fn}", false, (data) => {
+                assert.deepEqual(data, {...};
+                // or assert more specific things about the data
+                return "stub-for-zjquery";
+            });
+
+            // If you need the actual HTML from the template, do
+            // something like below instead. (We set the second argument
+            // to true which tells mock_template that is should call
+            // the actual template rendering function and pass in the
+            // resulting html to us.
+            mock_template("${fn}", true, (data, html) => {
+                assert.deepEqual(data, {...};
+                assert.ok(html.startWith(...));
+                return html;
+            });
+        });
+    `;
+}
+
 function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
@@ -30,18 +77,10 @@ function load(request, parent, isMain) {
         return obj;
     }
 
-    if (filename.endsWith(".hbs") && !filename.includes("frontend_tests/node_tests")) {
+    if (filename.endsWith(".hbs") && filename.includes(template_path)) {
         const actual_render = actual_load(request, parent, isMain);
 
         return template_stub({filename, actual_render});
-    }
-
-    if (
-        filename.endsWith(".hbs") &&
-        !filename.includes("frontend_tests/node_tests") &&
-        !in_mid_render
-    ) {
-        throw new Error(`Please use mock_template if your test needs to render ${filename}`);
     }
 
     if (filename === jquery_path && parent.filename !== real_jquery_path) {
@@ -62,7 +101,7 @@ function template_stub({filename, actual_render}) {
         // Force devs to call mock_template on every top-level template
         // render so they can introspect the data.
         if (!template_mocks.has(filename)) {
-            throw new Error(`You need to call mock_template with ${filename}`);
+            throw new Error(need_to_mock_template_error(filename));
         }
 
         used_templates.add(filename);
@@ -171,7 +210,7 @@ exports._finish_template_mocking = () => {
 };
 
 exports._mock_template = (fn, exercise_template, f) => {
-    const path = "../../static/templates/" + fn;
+    const path = "../.." + template_path + fn;
 
     const resolved_path = Module._resolveFilename(
         path,
