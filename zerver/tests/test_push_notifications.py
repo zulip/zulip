@@ -1661,7 +1661,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             "alert": {
                 "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
                 "subtitle": "King Hamlet:",
-                "body": "***REDACTED***",
+                "body": "*This organization has disabled including message content in mobile push notifications*",
             },
             "sound": "default",
             "badge": 0,
@@ -1807,7 +1807,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "alert": "New stream message from King Hamlet in Denmark",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
-                "content": "***REDACTED***",
+                "content": "*This organization has disabled including message content in mobile push notifications*",
                 "content_truncated": False,
                 "server": settings.EXTERNAL_HOST,
                 "realm_id": hamlet.realm.id,
