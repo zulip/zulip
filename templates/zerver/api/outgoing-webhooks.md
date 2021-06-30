@@ -46,9 +46,6 @@ settings][settings].
 
 ## Outgoing webhook format
 
-This is an example of the JSON payload that the Zulip server will `POST`
-to your server:
-
 {generate_code_example|/zulip-outgoing-webhook:post|fixture(200)}
 
 ### Fields documentation
