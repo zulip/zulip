@@ -63,6 +63,12 @@ function render_user_stream_list(streams, user) {
         modifier(item) {
             return format_user_stream_list_item(item, user);
         },
+        filter: {
+            element: $("#streams-tab .stream-search"),
+            predicate(item, value) {
+                return item && item.name.toLocaleLowerCase().includes(value);
+            },
+        },
         simplebar_container: $("#user-profile-modal .modal-body"),
     });
 }

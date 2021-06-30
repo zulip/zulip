@@ -368,11 +368,19 @@ ul {
             margin-bottom: 8px;
         }
     }
+    .stream-list-top-section {
+        display: flex;
 
-    .stream-list-header {
-        margin: 0;
-        display: inline-block;
-        font-weight: inherit;
+        .stream-list-header {
+            margin: 0;
+            display: inline-block;
+            font-weight: inherit;
+        }
+
+        .stream-search {
+            margin-left: auto;
+            align-self: center;
+        }
     }
 
     .subscription-group-list,
@@ -525,6 +533,19 @@ ul {
     .emoji-info-popover {
         position: static;
         margin-right: 0;
+    }
+    #user-profile-modal {
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+
+            .stream-search {
+                margin-bottom: 8px;
+            }
+        }
     }
 }
 

@@ -65,7 +65,12 @@
             </div>
 
             <div class="tabcontent" id="streams-tab">
-                <h3 class="stream-list-header">{{t 'Subscribed streams' }}</h3>
+                <div class="stream-list-top-section">
+                    <div class="header-section">
+                        <h3 class="stream-list-header">{{t 'Subscribed streams' }}</h3>
+                    </div>
+                    <input type="text" class="stream-search" placeholder="{{t 'Filter streams' }}" />
+                </div>
                 <div class="alert stream_list_info"></div>
                 <div class="subscription-stream-list">
                     <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}"></table>
