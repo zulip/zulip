@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
-import render_stream_subscription_info from "../templates/stream_subscription_info.hbs";
+import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
 
@@ -234,7 +234,7 @@ export function invite_user_to_stream(user_ids, sub, success, failure) {
     });
 }
 
-function show_stream_subcription_info({
+function show_stream_subscription_request_result({
     message,
     add_class,
     remove_class,
@@ -242,19 +242,21 @@ function show_stream_subcription_info({
     already_subscribed_users,
     ignored_deactivated_users,
 }) {
-    const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
-    const html = render_stream_subscription_info({
+    const stream_subscription_req_result_elem = $(
+        ".stream_subscription_request_result",
+    ).expectOne();
+    const html = render_stream_subscription_request_result({
         message,
         subscribed_users,
         already_subscribed_users,
         ignored_deactivated_users,
     });
-    ui.get_content_element(stream_subscription_info_elem).html(html);
+    ui.get_content_element(stream_subscription_req_result_elem).html(html);
     if (add_class) {
-        stream_subscription_info_elem.addClass(add_class);
+        stream_subscription_req_result_elem.addClass(add_class);
     }
     if (remove_class) {
-        stream_subscription_info_elem.removeClass(remove_class);
+        stream_subscription_req_result_elem.removeClass(remove_class);
     }
 }
 
@@ -293,7 +295,7 @@ function submit_add_subscriber_form(e) {
         );
     }
     if (user_ids.size === 0) {
-        show_stream_subcription_info({
+        show_stream_subscription_request_result({
             message: $t({defaultMessage: "No user to subscribe."}),
             add_class: "text-error",
             remove_class: "text-success",
@@ -312,7 +314,7 @@ function submit_add_subscriber_form(e) {
             people.get_by_email(email),
         );
 
-        show_stream_subcription_info({
+        show_stream_subscription_request_result({
             add_class: "text-success",
             remove_class: "text-error",
             subscribed_users,
@@ -323,7 +325,7 @@ function submit_add_subscriber_form(e) {
 
     function invite_failure(xhr) {
         const error = JSON.parse(xhr.responseText);
-        show_stream_subcription_info({
+        show_stream_subscription_request_result({
             message: error.msg,
             add_class: "text-error",
             remove_class: "text-success",
@@ -885,7 +887,7 @@ export function initialize() {
             } else {
                 message = $t({defaultMessage: "User is already not subscribed."});
             }
-            show_stream_subcription_info({
+            show_stream_subscription_request_result({
                 message,
                 add_class: "text-success",
                 remove_class: "text-remove",
@@ -893,7 +895,7 @@ export function initialize() {
         }
 
         function removal_failure() {
-            show_stream_subcription_info({
+            show_stream_subscription_request_result({
                 message: $t({defaultMessage: "Error removing user from this stream."}),
                 add_class: "text-error",
                 remove_class: "text-success",

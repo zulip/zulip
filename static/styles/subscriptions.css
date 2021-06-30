@@ -302,7 +302,7 @@
     width: 100%;
     margin: 10px auto;
 
-    .stream_subscription_info {
+    .stream_subscription_request_result {
         a {
             color: inherit;
         }
