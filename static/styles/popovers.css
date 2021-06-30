@@ -381,6 +381,13 @@ ul {
             margin-left: auto;
             align-self: center;
         }
+
+        #clear_stream_search {
+            display: none;
+            padding: 5px 8px 5px 4px;
+            position: relative;
+            right: 0;
+        }
     }
 
     .subscription-group-list,
@@ -544,6 +551,10 @@ ul {
 
             .stream-search {
                 margin-bottom: 8px;
+            }
+
+            #clear_stream_search {
+                padding-top: 1px;
             }
         }
     }

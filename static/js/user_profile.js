@@ -284,6 +284,17 @@ export function register_click_handlers() {
         handle_remove_stream_subscription(target_user_id, sub, removal_success, removal_failure);
     });
 
+    $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {
+        const input = $("#streams-tab .stream-search");
+        input.val("");
+
+        // This is a hack to rerender complete
+        // stream list once the text is cleared.
+        input.trigger("input");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
@@ -293,5 +304,16 @@ export function register_click_handlers() {
 
     $("body").on("click", "#user-profile-modal .stream_list_item", () => {
         hide_user_profile();
+    });
+
+    $("body").on("input", "#streams-tab .stream-search", () => {
+        const input = $("#streams-tab .stream-search");
+        if (input.val().trim().length > 0) {
+            $("#streams-tab #clear_stream_search").show();
+            input.css("margin-right", "-20px");
+        } else {
+            $("#streams-tab #clear_stream_search").hide();
+            input.css("margin-right", "0");
+        }
     });
 }
