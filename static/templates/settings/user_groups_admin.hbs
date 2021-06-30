@@ -1,11 +1,9 @@
 <div id="user-groups-admin" class="settings-section" data-name="user-groups-admin">
-    {{#unless is_admin}}
-        {{#if (eq realm_user_group_edit_policy USER_GROUP_EDIT_POLICY_MEMBERS) }}
-        <div class="tip">{{t 'Only group members and organization administrators can modify a group.' }}</div>
-        {{else}}
-        <div class="tip">{{t 'Only organization administrators can modify user groups in this organization.' }}</div>
-        {{/if}}
-    {{/unless}}
+    {{#if (eq realm_user_group_edit_policy USER_GROUP_EDIT_POLICY_MEMBERS) }}
+    <div class="tip">{{t 'Only group members and organization administrators can modify a group.' }}</div>
+    {{else}}
+    <div class="tip">{{t 'Only organization administrators can modify user groups in this organization.' }}</div>
+    {{/if}}
 
     {{#unless is_guest}}
         <p>
