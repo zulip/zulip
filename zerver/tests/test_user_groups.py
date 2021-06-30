@@ -178,9 +178,7 @@ class UserGroupAPITestCase(ZulipTestCase):
             "description": "Troubleshooting",
         }
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
-        self.assert_json_error(
-            result, "Only group members and organization administrators can administer this group."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         self.logout()
         # Test when organization admin tries to modify group
@@ -264,9 +262,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.login_user(cordelia)
 
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
-        self.assert_json_error(
-            result, "Only group members and organization administrators can administer this group."
-        )
+        self.assert_json_error(result, "Insufficient permission")
         self.assertEqual(UserGroup.objects.count(), 2)
 
         self.logout()
@@ -333,9 +329,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         add = [cordelia.id]
         params = {"add": orjson.dumps(add).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
-        self.assert_json_error(
-            result, "Only group members and organization administrators can administer this group."
-        )
+        self.assert_json_error(result, "Insufficient permission")
         self.assertEqual(UserGroupMembership.objects.count(), 4)
 
         self.logout()
@@ -380,9 +374,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.login_user(cordelia)
         params = {"delete": orjson.dumps([hamlet.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
-        self.assert_json_error(
-            result, "Only group members and organization administrators can administer this group."
-        )
+        self.assert_json_error(result, "Insufficient permission")
         self.assertEqual(UserGroupMembership.objects.count(), 4)
 
         self.logout()
