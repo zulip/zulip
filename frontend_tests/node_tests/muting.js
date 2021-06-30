@@ -120,9 +120,9 @@ test("get_mutes", () => {
     assert.deepEqual(muting.get_muted_topics(), []);
     muting.add_muted_topic(office.stream_id, "gossip", 1577836800);
     muting.add_muted_topic(devel.stream_id, "java", 1577836700);
-    const muted_topics = muting.get_muted_topics().sort((a, b) => a.date_muted - b.date_muted);
+    const all_muted_topics = muting.get_muted_topics().sort((a, b) => a.date_muted - b.date_muted);
 
-    assert.deepEqual(muted_topics, [
+    assert.deepEqual(all_muted_topics, [
         {
             date_muted: 1577836700000,
             date_muted_str: "Dec\u00A031,\u00A02019",
