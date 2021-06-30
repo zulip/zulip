@@ -10,11 +10,11 @@ import * as ui from "./ui";
 export let loaded = false;
 
 export function populate_list() {
-    const muted_topics = muting.get_muted_topics();
+    const all_muted_topics = muting.get_muted_topics();
     const muted_topics_table = $("#muted_topics_table");
     const $search_input = $("#muted_topics_search");
 
-    ListWidget.create(muted_topics_table, muted_topics, {
+    ListWidget.create(muted_topics_table, all_muted_topics, {
         name: "muted-topics-list",
         modifier(muted_topics) {
             return render_muted_topic_ui_row({muted_topics});
