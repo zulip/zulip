@@ -17,24 +17,9 @@ translated into French if the user has a French locale).
 Each endpoint documents its own unique errors; below, we document
 errors common to many endpoints:
 
-## Invalid API key
+{generate_code_example|/rest-error-handling:post|fixture(400)}
 
-A typical failed JSON response for when the API key is invalid:
-
-{generate_code_example|/rest-error-handling:post|fixture(400_0)}
-
-## Missing request parameter(s)
-
-A typical failed JSON response for when a required request parameter
-is not supplied:
-
-{generate_code_example|/rest-error-handling:post|fixture(400_1)}
-
-## Rate limit exceeded
-
-A typical failed JSON response for when a rate limit is exceeded:
-
-{generate_code_example|/rest-error-handling:post|fixture(429_0)}
+{generate_code_example|/rest-error-handling:post|fixture(429)}
 
 The `retry-after` paremeter in the response indicates how many seconds
 the client must wait before making additional requests.
@@ -62,21 +47,4 @@ When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
 
-## User not authorized for query
-
-A typical failed JSON response for when the user is not authorized for
-a query:
-
-{generate_code_example|/rest-error-handling:post|fixture(400_2)}
-
-## User account deactivated
-
-A typical failed json response for when user's account is deactivated:
-
-{generate_code_example|/rest-error-handling:post|fixture(403_0)}
-
-## Realm deactivated
-
-A typical failed json response for when user's organization is deactivated:
-
-{generate_code_example|/rest-error-handling:post|fixture(403_1)}
+{generate_code_example|/rest-error-handling:post|fixture(403)}
