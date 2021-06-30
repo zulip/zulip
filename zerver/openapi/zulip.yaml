@@ -12780,10 +12780,19 @@ components:
       allOf:
         - $ref: "#/components/schemas/JsonError"
         - example: {"msg": "Invalid API key", "result": "error"}
+          description: |
+            ## Invalid API key
+
+            A typical failed JSON response for when the API key is invalid
     MissingArgumentError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          description: |
+            ## Missing request parameter(s)
+
+            A typical failed JSON response for when a required request parameter
+            is not supplied
           properties:
             result: {}
             msg: {}
@@ -12808,6 +12817,11 @@ components:
               "msg": "User not authorized for this query",
               "result": "error",
             }
+          description: |
+            ## User not authorized for query
+
+            A typical failed JSON response for when the user is not authorized for
+            a query
     UserDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12817,6 +12831,10 @@ components:
               "msg": "Account is deactivated",
               "result": "error",
             }
+          description: |
+            ## User account deactivated
+
+            A typical failed json response for when user's account is deactivated
     RateLimitedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12827,6 +12845,10 @@ components:
               "result": "error",
               "retry-after": 28.706807374954224,
             }
+          description: |
+            ## Rate limit exceeded
+
+            A typical failed JSON response for when a rate limit is exceeded:
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12836,6 +12858,10 @@ components:
               "msg": "This organization is deactivated",
               "result": "error",
             }
+          description: |
+            ## Realm deactivated
+
+            A typical failed json response for when user's organization is deactivated
 
   ###################
   # Shared responses
