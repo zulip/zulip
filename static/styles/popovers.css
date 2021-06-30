@@ -369,6 +369,12 @@ ul {
         }
     }
 
+    .stream-list-header {
+        margin: 0;
+        display: inline-block;
+        font-weight: inherit;
+    }
+
     .subscription-group-list,
     .subscription-stream-list {
         position: relative;
