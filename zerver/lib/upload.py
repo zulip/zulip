@@ -387,9 +387,9 @@ class S3UploadBackend(ZulipUploadBackend):
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
         self._boto_client = None
-        self.public_upload_url_pattern = self.construct_public_upload_url_pattern()
+        self.public_upload_url_base = self.construct_public_upload_url_base()
 
-    def construct_public_upload_url_pattern(self) -> str:
+    def construct_public_upload_url_base(self) -> str:
         # Return the pattern for public URL for a key in the S3 Avatar bucket.
         # For Amazon S3 itself, this will return the following:
         #     f"https://{self.avatar_bucket.name}.{network_location}/{key}"
@@ -415,19 +415,19 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
-        parsed = urllib.parse.urlparse(foo_url)
-        base_path = os.path.dirname(parsed.path)
+        split_url = urllib.parse.urlsplit(foo_url)
+        assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
-        url_pattern = urllib.parse.urlunparse(
-            parsed._replace(path=os.path.join(base_path, "{key}"))
+        return urllib.parse.urlunsplit(
+            (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
         )
-        return url_pattern
 
     def get_public_upload_url(
         self,
         key: str,
     ) -> str:
-        return self.public_upload_url_pattern.format(key=key)
+        assert not key.startswith("/")
+        return urllib.parse.urljoin(self.public_upload_url_base, key)
 
     def get_boto_client(self) -> botocore.client.BaseClient:
         """
@@ -458,12 +458,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return True
 
     def get_public_upload_root_url(self) -> str:
-        # boto requires a key name, so we can't just pass "" here;
-        # trim the offending character back off from the URL we get
-        # back.
-        u = urllib.parse.urlsplit(self.get_public_upload_url("a"))
-        assert u.path.endswith("/a")
-        return urllib.parse.urlunsplit((u.scheme, u.netloc, u.path[:-1], "", ""))
+        return self.public_upload_url_base
 
     def upload_message_file(
         self,
