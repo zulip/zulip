@@ -9,3 +9,7 @@
 .wy-table-responsive {
     overflow: visible !important;
 }
+
+.wy-side-nav-search > a.home-link {
+    font-weight: 100;
+}
