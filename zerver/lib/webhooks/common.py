@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from zerver.lib.actions import (
     check_send_private_message,
     check_send_stream_message,
+    check_send_stream_message_by_id,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
@@ -114,7 +115,7 @@ def check_send_webhook_message(
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
         # that the URL parameters are decoded on our end.
-        if unquote_url_parameters:
+        if stream is not None and unquote_url_parameters:
             stream = unquote(stream)
 
         if user_specified_topic is not None:
@@ -123,7 +124,12 @@ def check_send_webhook_message(
                 topic = unquote(topic)
 
         try:
-            check_send_stream_message(user_profile, request.client, stream, topic, body)
+            if stream.isdecimal():
+                check_send_stream_message_by_id(
+                    user_profile, request.client, int(stream), topic, body
+                )
+            else:
+                check_send_stream_message(user_profile, request.client, stream, topic, body)
         except StreamDoesNotExistError:
             # A PM will be sent to the bot_owner by check_message, notifying
             # that the webhook bot just tried to send a message to a non-existent
