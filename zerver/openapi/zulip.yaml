@@ -11134,13 +11134,21 @@ paths:
                   - $ref: "#/components/schemas/UserNotAuthorizedError"
         "403":
           description: |
-            Forbidden
+            Forbidden.
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/UserDeactivatedError"
                   - $ref: "#/components/schemas/RealmDeactivatedError"
+        "429":
+          description: |
+            Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/RateLimitedError"
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
@@ -12808,6 +12816,16 @@ components:
               "code": "USER_DEACTIVATED",
               "msg": "Account is deactivated",
               "result": "error",
+            }
+    RateLimitedError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "RATE_LIMIT_HIT",
+              "msg": "API usage exceeded rate limit",
+              "result": "error",
+              "retry-after": 28.706807374954224,
             }
     RealmDeactivatedError:
       allOf:

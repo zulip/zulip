@@ -30,10 +30,42 @@ is not supplied:
 
 {generate_code_example|/rest-error-handling:post|fixture(400_1)}
 
+## Rate limit exceeded
+
+A typical failed JSON response for when a rate limit is exceeded:
+
+{generate_code_example|/rest-error-handling:post|fixture(429_0)}
+
+The `retry-after` paremeter in the response indicates how many seconds
+the client must wait before making additional requests.
+
+To help clients avoid exceeding rate limits, Zulip sets the following
+HTTP headers in all API responses:
+
+* `X-RateLimit-Remaining`: The number of additional requests of this
+  type that the client can send before exceeding its limit.
+* `X-RateLimit-Limit`: The limit that would be applicable to a client
+  that had not made any recent requests of this type. This is useful
+  for designing a client's burst behavior so as to avoid ever reaching
+  a rate limit.
+* `X-RateLimit-Reset`: The time at which the client will no longer
+  have any rate limits applied to it (and thus could do a burst of
+  `X-RateLimit-Limit` requests).
+
+Zulip's rate limiting rules are configurable, and can vary by server
+and over time. The default configuration currently limits:
+
+* Every user is limited to 200 total API requests per minute.
+* Separate, much lower limits for authentication/login attempts.
+
+When the Zulip server has configured multiple rate limits that apply
+to a given request, the values returned will be for the strictest
+limit.
+
 ## User not authorized for query
 
-A typical failed JSON response for when the user is not authorized
-for a query:
+A typical failed JSON response for when the user is not authorized for
+a query:
 
 {generate_code_example|/rest-error-handling:post|fixture(400_2)}
 
