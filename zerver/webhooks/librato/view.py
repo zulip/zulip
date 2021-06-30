@@ -6,8 +6,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -169,7 +170,7 @@ def api_librato_webhook(
         attachments = []
 
     if not attachments and not payload:
-        return json_error(_("Malformed JSON input"))
+        raise JsonableError(_("Malformed JSON input"))
 
     message_handler = LibratoWebhookHandler(payload, attachments)
     topic = message_handler.generate_topic()
@@ -177,7 +178,7 @@ def api_librato_webhook(
     try:
         content = message_handler.handle()
     except Exception as e:
-        return json_error(str(e))
+        raise JsonableError(str(e))
 
     check_send_webhook_message(request, user_profile, topic, content)
     return json_success()

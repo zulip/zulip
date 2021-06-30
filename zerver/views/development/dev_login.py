@@ -103,7 +103,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
     validate_login_email(username)
     realm = get_realm_from_request(request)
     if realm is None:
-        return json_error(_("Invalid subdomain"))
+        raise JsonableError(_("Invalid subdomain"))
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
     if return_data.get("inactive_realm"):

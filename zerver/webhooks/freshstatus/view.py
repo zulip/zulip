@@ -6,7 +6,8 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import REQ, has_request_variables, webhook_view
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -84,7 +85,7 @@ def api_freshstatus_webhook(
         ).strip()
         send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
-        return json_error(_("Invalid payload"))
+        raise JsonableError(_("Invalid payload"))
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()

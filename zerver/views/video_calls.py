@@ -25,7 +25,7 @@ from zerver.decorator import REQ, has_request_variables, zulip_login_required
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url, add_query_to_redirect_url
 from zerver.lib.validator import check_dict, check_string
@@ -212,7 +212,7 @@ def join_bigbluebutton(
     checksum: str = REQ(),
 ) -> HttpResponse:
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
-        return json_error(_("Big Blue Button is not configured."))
+        raise JsonableError(_("Big Blue Button is not configured."))
     else:
         try:
             response = requests.get(
@@ -230,14 +230,14 @@ def join_bigbluebutton(
             )
             response.raise_for_status()
         except requests.RequestException:
-            return json_error(_("Error connecting to the Big Blue Button server."))
+            raise JsonableError(_("Error connecting to the Big Blue Button server."))
 
         payload = ElementTree.fromstring(response.text)
         if payload.find("messageKey").text == "checksumError":
-            return json_error(_("Error authenticating to the Big Blue Button server."))
+            raise JsonableError(_("Error authenticating to the Big Blue Button server."))
 
         if payload.find("returncode").text != "SUCCESS":
-            return json_error(_("Big Blue Button server returned an unexpected error."))
+            raise JsonableError(_("Big Blue Button server returned an unexpected error."))
 
         join_params = urlencode(  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
             {

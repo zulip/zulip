@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.test import Client
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -104,7 +105,7 @@ def check_send_webhook_fixture_message(
     try:
         custom_headers_dict = orjson.loads(custom_headers)
     except orjson.JSONDecodeError as ve:
-        return json_error(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
+        raise JsonableError(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 
     response = send_webhook_fixture_message(url, body, is_json, custom_headers_dict)
     if response.status_code == 200:

@@ -25,8 +25,8 @@ from zerver.lib.actions import (
     do_scrub_realm,
     do_send_realm_reactivation_email,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.response import json_error
 from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserProfile, get_realm
 from zerver.views.invite import get_invitee_emails_set
@@ -110,7 +110,7 @@ def support(request: HttpRequest) -> HttpResponse:
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
         if len(keys) != 2:
-            return json_error(_("Invalid parameters"))
+            raise JsonableError(_("Invalid parameters"))
 
         realm_id = request.POST.get("realm_id")
         realm = Realm.objects.get(id=realm_id)

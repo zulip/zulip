@@ -220,6 +220,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "user_register.txt",
                 "status_code": 400,
@@ -228,6 +229,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_post_no_data_provided.txt",
                 "status_code": 400,
@@ -236,6 +238,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "unknown_action_no_data.txt",
                 "status_code": 400,
@@ -244,6 +247,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_page.txt",
                 "status_code": 400,
@@ -252,6 +256,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "unknown_action_no_hook_provided.txt",
                 "status_code": 400,
@@ -260,6 +265,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_post_type_not_provided.txt",
                 "status_code": 400,
@@ -268,6 +274,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "wp_login.txt",
                 "status_code": 400,
@@ -276,6 +283,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_post.txt",
                 "status_code": 400,

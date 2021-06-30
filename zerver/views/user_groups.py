@@ -14,7 +14,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
     get_memberships_of_users,
@@ -58,7 +58,7 @@ def edit_user_group(
     description: str = REQ(default=""),
 ) -> HttpResponse:
     if not (name or description):
-        return json_error(_("No new data supplied"))
+        raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
@@ -93,7 +93,7 @@ def update_user_group_backend(
     add: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     if not add and not delete:
-        return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
+        raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
     thunks = [
         lambda: add_members_to_group_backend(

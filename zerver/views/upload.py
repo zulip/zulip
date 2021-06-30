@@ -7,7 +7,8 @@ from django.utils.cache import patch_cache_control
 from django.utils.translation import gettext as _
 from django_sendfile import sendfile
 
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
 from zerver.lib.upload import (
     INLINE_MIME_TYPES,
     check_upload_within_quota,
@@ -104,23 +105,23 @@ def serve_file(
 def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponse:
     path_id = get_local_file_path_id_from_token(token)
     if path_id is None:
-        return json_error(_("Invalid token"))
+        raise JsonableError(_("Invalid token"))
     if path_id.split("/")[-1] != filename:
-        return json_error(_("Invalid filename"))
+        raise JsonableError(_("Invalid filename"))
 
     return serve_local(request, path_id, url_only=False)
 
 
 def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
-        return json_error(_("You must specify a file to upload"))
+        raise JsonableError(_("You must specify a file to upload"))
     if len(request.FILES) != 1:
-        return json_error(_("You may only upload one file at a time"))
+        raise JsonableError(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
     file_size = user_file.size
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
-        return json_error(
+        raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
                 settings.MAX_FILE_UPLOAD_SIZE,
             )

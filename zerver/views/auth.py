@@ -822,7 +822,7 @@ def api_fetch_api_key(
 
     realm = get_realm_from_request(request)
     if realm is None:
-        return json_error(_("Invalid subdomain"))
+        raise JsonableError(_("Invalid subdomain"))
 
     if not ldap_auth_enabled(realm=realm):
         # In case we don't authenticate against LDAP, check for a valid
@@ -945,12 +945,12 @@ def json_fetch_api_key(
 ) -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm is None:
-        return json_error(_("Invalid subdomain"))
+        raise JsonableError(_("Invalid subdomain"))
     if password_auth_enabled(user_profile.realm):
         if not authenticate(
             request=request, username=user_profile.delivery_email, password=password, realm=realm
         ):
-            return json_error(_("Your username or password is incorrect."))
+            raise JsonableError(_("Your username or password is incorrect."))
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

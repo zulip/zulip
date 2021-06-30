@@ -452,7 +452,7 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         if request.user.is_bot:
-            return json_error(_("This endpoint does not accept bot requests."))
+            raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
@@ -549,7 +549,7 @@ def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
         if user_profile.is_bot:
-            return json_error(_("This endpoint does not accept bot requests."))
+            raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
@@ -624,7 +624,7 @@ def authenticated_rest_api_view(
                 auth_type, credentials = request.META["HTTP_AUTHORIZATION"].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
-                    return json_error(_("This endpoint requires HTTP basic authentication."))
+                    raise JsonableError(_("This endpoint requires HTTP basic authentication."))
                 role, api_key = base64.b64decode(credentials).decode("utf-8").split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))

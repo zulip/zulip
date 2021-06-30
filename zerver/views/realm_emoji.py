@@ -6,7 +6,7 @@ from zerver.decorator import require_member_or_admin
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name
 from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.models import RealmEmoji, UserProfile
 
 
@@ -28,12 +28,12 @@ def upload_emoji(
     if RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).exists():
-        return json_error(_("A custom emoji with this name already exists."))
+        raise JsonableError(_("A custom emoji with this name already exists."))
     if len(request.FILES) != 1:
-        return json_error(_("You must upload exactly one file."))
+        raise JsonableError(_("You must upload exactly one file."))
     emoji_file = list(request.FILES.values())[0]
     if (settings.MAX_EMOJI_FILE_SIZE_MIB * 1024 * 1024) < emoji_file.size:
-        return json_error(
+        raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
                 settings.MAX_EMOJI_FILE_SIZE_MIB,
             )
@@ -41,7 +41,7 @@ def upload_emoji(
 
     realm_emoji = check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
     if realm_emoji is None:
-        return json_error(_("Image file upload failed."))
+        raise JsonableError(_("Image file upload failed."))
     return json_success()
 
 

@@ -9,9 +9,10 @@ from django.utils.translation import gettext as _
 from analytics.models import RealmCount
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_delete_realm_export, notify_realm_export
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.models import RealmAuditLog, UserProfile
 
 
@@ -36,7 +37,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         realm=realm, event_type=event_type, event_time__gte=event_time_delta
     )
     if len(limit_check) >= EXPORT_LIMIT:
-        return json_error(_("Exceeded rate limit."))
+        raise JsonableError(_("Exceeded rate limit."))
 
     total_messages = sum(
         realm_count.value
@@ -48,7 +49,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         total_messages > MAX_MESSAGE_HISTORY
         or user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA
     ):
-        return json_error(
+        raise JsonableError(
             _("Please request a manual export from {email}.").format(
                 email=settings.ZULIP_ADMINISTRATOR,
             )
@@ -87,10 +88,10 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
             id=export_id, realm=user.realm, event_type=RealmAuditLog.REALM_EXPORTED
         )
     except RealmAuditLog.DoesNotExist:
-        return json_error(_("Invalid data export ID"))
+        raise JsonableError(_("Invalid data export ID"))
 
     export_data = orjson.loads(audit_log_entry.extra_data)
     if "deleted_timestamp" in export_data:
-        return json_error(_("Export already deleted"))
+        raise JsonableError(_("Export already deleted"))
     do_delete_realm_export(user, audit_log_entry)
     return json_success()

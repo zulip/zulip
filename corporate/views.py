@@ -47,6 +47,7 @@ from zerver.decorator import (
     zulip_login_required,
 )
 from zerver.lib.actions import do_make_user_billing_admin
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -372,12 +373,12 @@ def update_plan(
 
     new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(plan, timezone_now())
     if new_plan is not None:
-        return json_error(
+        raise JsonableError(
             _("Unable to update the plan. The plan has been expired and replaced with a new plan.")
         )
 
     if last_ledger_entry is None:
-        return json_error(_("Unable to update the plan. The plan has ended."))
+        raise JsonableError(_("Unable to update the plan. The plan has ended."))
 
     if status is not None:
         if status == CustomerPlan.ACTIVE:
@@ -398,19 +399,19 @@ def update_plan(
 
     if licenses is not None:
         if plan.automanage_licenses:
-            return json_error(
+            raise JsonableError(
                 _(
                     "Unable to update licenses manually. Your plan is on automatic license management."
                 )
             )
         if last_ledger_entry.licenses == licenses:
-            return json_error(
+            raise JsonableError(
                 _(
                     "Your plan is already on {licenses} licenses in the current billing period."
                 ).format(licenses=licenses)
             )
         if last_ledger_entry.licenses > licenses:
-            return json_error(
+            raise JsonableError(
                 _("You cannot decrease the licenses in the current billing period.").format(
                     licenses=licenses
                 )
@@ -426,13 +427,13 @@ def update_plan(
 
     if licenses_at_next_renewal is not None:
         if plan.automanage_licenses:
-            return json_error(
+            raise JsonableError(
                 _(
                     "Unable to update licenses manually. Your plan is on automatic license management."
                 )
             )
         if last_ledger_entry.licenses_at_next_renewal == licenses_at_next_renewal:
-            return json_error(
+            raise JsonableError(
                 _(
                     "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
                 ).format(licenses_at_next_renewal=licenses_at_next_renewal)
@@ -450,7 +451,7 @@ def update_plan(
         )
         return json_success()
 
-    return json_error(_("Nothing to change."))
+    raise JsonableError(_("Nothing to change."))
 
 
 @require_billing_access

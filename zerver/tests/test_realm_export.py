@@ -184,8 +184,9 @@ class RealmExportTest(ZulipTestCase):
             )
         RealmAuditLog.objects.bulk_create(exports)
 
-        result = export_realm(self.client_post, admin)
-        self.assert_json_error(result, "Exceeded rate limit.")
+        with self.assertRaises(JsonableError) as error:
+            export_realm(self.client_post, admin)
+        self.assertEqual(str(error.exception), "Exceeded rate limit.")
 
     def test_upload_and_message_limit(self) -> None:
         admin = self.example_user("iago")

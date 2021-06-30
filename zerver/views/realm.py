@@ -21,7 +21,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import (
@@ -131,15 +131,15 @@ def update_realm(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         if True not in list(authentication_methods.values()):
-            return json_error(_("At least one authentication method must be enabled."))
+            raise JsonableError(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
-        return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
+        raise JsonableError(_("Invalid video_chat_provider {}").format(video_chat_provider))
     if giphy_rating is not None and giphy_rating not in {
         p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
     }:
-        return json_error(_("Invalid giphy_rating {}").format(giphy_rating))
+        raise JsonableError(_("Invalid giphy_rating {}").format(giphy_rating))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:
