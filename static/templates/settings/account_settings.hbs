@@ -138,7 +138,13 @@
         </div>
 
         <div class="inline-block user-avatar-section">
-            <h3>{{t "Profile picture" }}</h3>
+            <h3>
+                {{t "Profile picture" }}
+                <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
+                  {{#if user_can_change_avatar}}style="display:none"{{/if}}
+                  data-tippy-content="{{t 'Avatar changes are disabled in this organization.' }}">
+                </i>
+            </h3>
             {{> image_upload_widget
               widget = "user-avatar"
               upload_text = (t "Upload new profile picture")
