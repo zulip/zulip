@@ -114,7 +114,11 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         return html;
     });
     mock_template("subscription_settings.hbs", false, () => "subscription_settings");
-    mock_template("stream_subscription_info.hbs", false, () => "stream_subscription_info");
+    mock_template(
+        "stream_subscription_request_result.hbs",
+        false,
+        () => "stream_subscription_request_result",
+    );
 
     override(stream_edit, "sort_but_pin_current_user_on_top", noop);
 
