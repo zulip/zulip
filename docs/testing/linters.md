@@ -1,5 +1,11 @@
 # Linters
 
+A linter is a program that runs on the source code of software and
+reports potentially problematic code to the user. Linters help enforce
+coding guidelines, from minor details like whitespace formatting or
+capitalization patterns for strings to preventing problematic coding
+patterns that can lead to security bugs.
+
 ## Overview
 
 Zulip does extensive linting of much of its source code, including
