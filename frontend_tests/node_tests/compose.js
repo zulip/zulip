@@ -1,24 +1,13 @@
 "use strict";
 
 const {strict: assert} = require("assert");
-
 const MockDate = require("mockdate");
-
 const {$t, $t_html} = require("../zjsunit/i18n");
-
-const {
-    mock_cjs,
-    mock_esm,
-    mock_template,
-    set_global,
-    with_field,
-    zrequire,
-} = require("../zjsunit/namespace");
+const {mock_esm, mock_template, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
-
 const noop = () => {};
 
 set_global("document", {});
@@ -32,7 +21,6 @@ document.location = {
 };
 
 const fake_now = 555;
-
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const drafts = mock_esm("../../static/js/drafts");
@@ -1023,7 +1011,6 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     assert.ok(looked_for_existing);
 });
 
-
 test_ui("warn_if_mention_one_on_one_alert", (override) => {
     const dan = {
         user_id: 1,
@@ -1126,7 +1113,7 @@ test_ui("warn_if_mention_one_on_one_alert", (override) => {
 
 test_ui("on_events", (override) => {
     initialize_handlers(override);
-  
+
     override(rendered_markdown, "update_elements", () => {});
 
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
