@@ -757,6 +757,7 @@ def missedmessage_hook(
         )
 
         private_message = event["message"]["type"] == "private"
+        mentioned_user_group_id = internal_data.get("mentioned_user_group_id")
 
         stream_name = None
         if not private_message:
@@ -777,6 +778,7 @@ def missedmessage_hook(
             message_id=message_id,
             private_message=private_message,
             stream_name=stream_name,
+            mentioned_user_group_id=mentioned_user_group_id,
             idle=idle,
             already_notified=already_notified,
         )
@@ -800,6 +802,7 @@ def maybe_enqueue_notifications(
     message_id: int,
     private_message: bool,
     stream_name: Optional[str],
+    mentioned_user_group_id: Optional[int],
     idle: bool,
     already_notified: Dict[str, bool],
 ) -> Dict[str, bool]:
@@ -818,6 +821,7 @@ def maybe_enqueue_notifications(
             private_message, acting_user_id, idle
         )
         notice["stream_name"] = stream_name
+        notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("push_notified"):
             queue_json_publish("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
@@ -832,6 +836,7 @@ def maybe_enqueue_notifications(
             private_message, acting_user_id, idle
         )
         notice["stream_name"] = stream_name
+        notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
             notified["email_notified"] = True
@@ -933,6 +938,7 @@ def process_message_event(
     for user_data in users:
         user_profile_id: int = user_data["id"]
         flags: Collection[str] = user_data.get("flags", [])
+        mentioned_user_group_id: Optional[int] = user_data.get("mentioned_user_group_id")
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
@@ -951,6 +957,7 @@ def process_message_event(
         # Remove fields sent through other pipes to save some space.
         internal_data.pop("flags")
         internal_data.pop("user_id")
+        internal_data["mentioned_user_group_id"] = mentioned_user_group_id
         extra_user_data[user_profile_id] = dict(internal_data=internal_data)
 
         # If the message isn't notifiable had the user been idle, then the user
@@ -973,6 +980,7 @@ def process_message_event(
                 message_id=message_id,
                 private_message=private_message,
                 stream_name=stream_name,
+                mentioned_user_group_id=mentioned_user_group_id,
                 idle=idle,
                 already_notified={},
             )
@@ -1196,12 +1204,18 @@ def maybe_enqueue_notifications_for_message_update(
 
     idle = presence_idle or receiver_is_off_zulip(user_notifications_data.user_id)
 
+    # We don't yet support custom user group mentions for message edit notifications.
+    # Users will still receive notifications (because of the mentioned flag), but those
+    # will be as if they were mentioned personally.
+    mentioned_user_group_id = None
+
     maybe_enqueue_notifications(
         user_notifications_data=user_notifications_data,
         message_id=message_id,
         acting_user_id=acting_user_id,
         private_message=private_message,
         stream_name=stream_name,
+        mentioned_user_group_id=mentioned_user_group_id,
         idle=idle,
         already_notified={},
     )

@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.lib.actions import do_change_subscription_property, do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, mock_queue_publish
+from zerver.lib.user_groups import create_user_group, remove_user_from_user_group
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
@@ -53,6 +54,30 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
             self.assertTrue(notified["email_notified"])
             self.assertTrue(notified["push_notified"])
+
+        with mock_queue_publish(
+            "zerver.tornado.event_queue.queue_json_publish"
+        ) as mock_queue_json_publish:
+            params = self.get_maybe_enqueue_notifications_parameters(
+                message_id=1,
+                acting_user_id=2,
+                user_id=3,
+                private_message=False,
+                stream_name="Denmark",
+                flags=["mentioned"],
+                mentioned=True,
+                mentioned_user_group_id=33,
+            )
+            notified = maybe_enqueue_notifications(**params)
+            self.assertTrue(mock_queue_json_publish.call_count, 2)
+
+            push_notice = mock_queue_json_publish.call_args_list[0][0][1]
+            self.assertEqual(push_notice["stream_name"], "Denmark")
+            self.assertEqual(push_notice["mentioned_user_group_id"], 33)
+
+            email_notice = mock_queue_json_publish.call_args_list[1][0][1]
+            self.assertEqual(email_notice["stream_name"], "Denmark")
+            self.assertEqual(email_notice["mentioned_user_group_id"], 33)
 
     def tornado_call(
         self,
@@ -106,6 +131,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         """Tests what arguments missedmessage_hook passes into maybe_enqueue_notifications.
         Combined with the previous test, this ensures that the missedmessage_hook is correct"""
         user_profile = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
 
         user_profile.enable_online_push_notifications = False
         user_profile.save()
@@ -317,6 +343,33 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         sub.wildcard_mentions_notify = None
         user_profile.save()
         sub.save()
+
+        # Test with a user group mention
+        hamlet_and_cordelia = create_user_group(
+            "hamlet_and_cordelia", [user_profile, cordelia], cordelia.realm
+        )
+        client_descriptor = allocate_event_queue()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(
+            iago, "Denmark", content="@*hamlet_and_cordelia* what's up?"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                flags=["mentioned"],
+                mentioned=True,
+                stream_name="Denmark",
+                mentioned_user_group_id=hamlet_and_cordelia.id,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+        destroy_event_queue(client_descriptor.event_queue.id)
+        remove_user_from_user_group(user_profile, hamlet_and_cordelia)
+        remove_user_from_user_group(cordelia, hamlet_and_cordelia)
 
         # Test the hook with a stream message with stream_push_notify
         change_subscription_properties(user_profile, stream, sub, {"push_notifications": True})

@@ -110,7 +110,7 @@ from zerver.lib.message import (
     update_first_visible_message_id,
     wildcard_mention_allowed,
 )
-from zerver.lib.notification_data import UserMessageNotificationsData
+from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.realm_icon import realm_icon_url
@@ -1792,7 +1792,14 @@ def build_message_send_dict(
     message.rendered_content_version = markdown_version
     links_for_embed = rendering_result.links_for_preview
 
-    # Add members of the mentioned user groups into `mentions_user_ids`.
+    mentioned_user_groups_map = get_user_group_mentions_data(
+        mentioned_user_ids=rendering_result.mentions_user_ids,
+        mentioned_user_group_ids=list(rendering_result.mentions_user_group_ids),
+        mention_data=mention_data,
+    )
+
+    # For single user as well as user group mentions, we set the `mentioned`
+    # flag on `UserMessage`
     for group_id in rendering_result.mentions_user_group_ids:
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
@@ -1823,6 +1830,7 @@ def build_message_send_dict(
         sender_queue_id=sender_queue_id,
         realm=realm,
         mention_data=mention_data,
+        mentioned_user_groups_map=mentioned_user_groups_map,
         message=message,
         rendering_result=rendering_result,
         active_user_ids=info["active_user_ids"],
@@ -1960,7 +1968,14 @@ def do_send_messages(
         users: List[Dict[str, Union[int, List[str]]]] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
-            users.append(dict(id=user_id, flags=flags))
+            user_data = dict(id=user_id, flags=flags)
+
+            if user_id in send_request.mentioned_user_groups_map:
+                user_data["mentioned_user_group_id"] = send_request.mentioned_user_groups_map[
+                    user_id
+                ]
+
+            users.append(user_data)
 
         sender = send_request.message.sender
         message_type = wide_message_dict["type"]

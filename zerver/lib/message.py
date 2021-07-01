@@ -96,6 +96,7 @@ class SendMessageRequest:
     sender_queue_id: Optional[str]
     realm: Realm
     mention_data: MentionData
+    mentioned_user_groups_map: Dict[int, int]
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
     stream_push_user_ids: Set[int]

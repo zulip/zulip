@@ -1355,6 +1355,7 @@ Output:
             acting_user_id=acting_user_id,
             private_message=kwargs.get("private_message", False),
             stream_name=kwargs.get("stream_name", None),
+            mentioned_user_group_id=kwargs.get("mentioned_user_group_id", None),
             idle=kwargs.get("idle", True),
             already_notified=kwargs.get(
                 "already_notified", {"email_notified": False, "push_notified": False}
