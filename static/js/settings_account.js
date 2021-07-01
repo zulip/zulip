@@ -681,4 +681,19 @@ export function set_up() {
             $(".timezone-setting-status").expectOne(),
         );
     });
+
+    $("#presence_enabled").val(page_params.presence_enabled);
+
+    $("#presence_enabled").on("change", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {presence_enabled: $("#presence_enabled").prop("checked")};
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings/notifications",
+            data,
+            $(".privacy-setting-status").expectOne(),
+        );
+    });
 }

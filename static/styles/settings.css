@@ -597,7 +597,8 @@ input[type="checkbox"] {
 
     .alert-notification.custom-field-status,
     .alert-notification.full-name-status,
-    .alert-notification.timezone-setting-status {
+    .alert-notification.timezone-setting-status,
+    .alert-notification.presence-setting-status {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
