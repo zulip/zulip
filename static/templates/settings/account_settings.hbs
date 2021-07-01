@@ -95,6 +95,17 @@
             </div>
         </div>
 
+        <div class="form-horizontal" id="privacy_settings_box">
+            <h3 class="inline-block">{{t "Privacy" }}</h3>
+            <div class="alert-notification privacy-setting-status"></div>
+            <div class="input-group">
+                {{> settings_checkbox
+                  setting_name="presence_enabled"
+                  is_checked=page_params.presence_enabled
+                  label=settings_label.presence_enabled}}
+            </div>
+        </div>
+
         <hr class="settings_separator" />
 
         <div class="form-horizontal" id="api_key_button_box">

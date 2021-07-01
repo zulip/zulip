@@ -106,15 +106,6 @@
               label=(lookup ../settings_label this)}}
             {{/each}}
 
-            <h5>{{t "Presence" }}</h5>
-
-            {{#each notification_settings.presence_notification_settings}}
-            {{> settings_checkbox
-              setting_name=this
-              is_checked=(lookup ../page_params this)
-              label=(lookup ../settings_label this)}}
-            {{/each}}
-
         </div>
     </form>
 </div>
