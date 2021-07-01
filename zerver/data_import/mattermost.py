@@ -38,6 +38,7 @@ from zerver.data_import.import_util import (
 from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
@@ -335,11 +336,9 @@ def process_message_attachments(
         attachment_full_path = os.path.join(mattermost_data_dir, "data", attachment_path)
 
         file_name = attachment_path.split("/")[-1]
-        file_ext = file_name.split(".")[-1]
+        file_ext = f'.{file_name.split(".")[-1]}'
 
-        if file_ext.lower() in ["bmp", "gif", "jpg", "jpeg", "png", "webp"]:
-            # The file extensions above are taken from `markdown.js`
-            # variable `backend_only_markdown_re`.
+        if file_ext.lower() in IMAGE_EXTENSIONS:
             has_image = True
 
         s3_path = "/".join(

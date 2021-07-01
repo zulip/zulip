@@ -606,6 +606,10 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
         return ret
 
 
+# List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", "jpeg", ".jpg", ".png", ".webp"]
+
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
@@ -759,8 +763,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == "pasteboard.co":
             return False
 
-        # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
-        for ext in [".bmp", ".gif", ".jpe", "jpeg", ".jpg", ".png", ".webp"]:
+        for ext in IMAGE_EXTENSIONS:
             if parsed_url.path.lower().endswith(ext):
                 return True
         return False
