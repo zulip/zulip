@@ -166,7 +166,7 @@ class FencedCodeExtension(Extension):
 
 
 class BaseHandler:
-    def handle_line(self, line: str) -> None:
+    def handle_line(self, line: str) -> bool:
         raise NotImplementedError()
 
     def done(self) -> None:
@@ -228,55 +228,17 @@ class OuterHandler(BaseHandler):
         self.run_content_validators = run_content_validators
         self.default_language = default_language
 
-    def handle_line(self, line: str) -> None:
+    def handle_line(self, line: str) -> bool:
         check_for_new_fence(
             self.processor, self.output, line, self.run_content_validators, self.default_language
         )
+        return False
 
     def done(self) -> None:
         self.processor.pop()
 
 
-class CodeHandler(BaseHandler):
-    def __init__(
-        self,
-        processor: Any,
-        output: MutableSequence[str],
-        fence: str,
-        lang: str,
-        run_content_validators: bool = False,
-    ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
-        self.lang = lang
-        self.lines: List[str] = []
-        self.run_content_validators = run_content_validators
-
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            self.lines.append(line.rstrip())
-
-    def done(self) -> None:
-        text = "\n".join(self.lines)
-
-        # run content validators (if any)
-        if self.run_content_validators:
-            validator = CODE_VALIDATORS.get(self.lang, lambda text: None)
-            validator(self.lines)
-
-        text = self.processor.format_code(self.lang, text)
-        text = self.processor.placeholder(text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
-
-
-class QuoteHandler(BaseHandler):
+class InnerHandler(BaseHandler):
     def __init__(
         self,
         processor: Any,
@@ -289,42 +251,93 @@ class QuoteHandler(BaseHandler):
         self.fence = fence
         self.lines: List[str] = []
         self.default_language = default_language
+        self.need_to_handle_unclosed_fence = False
 
-    def handle_line(self, line: str) -> None:
+    def handle_line(self, line: str) -> bool:
+        rstrip_line = line.rstrip()
+        line_length = len(rstrip_line)
+        line_has_only_fence = line_length >= 3 and (
+            rstrip_line.count("`") == line_length or rstrip_line.count("~") == line_length
+        )
         if line.rstrip() == self.fence:
             self.done()
+        elif not self.need_to_handle_unclosed_fence and line_has_only_fence:
+            self.need_to_handle_unclosed_fence = True
+            return self.need_to_handle_unclosed_fence
         else:
-            check_for_new_fence(
-                self.processor, self.lines, line, default_language=self.default_language
-            )
+            if isinstance(self, CodeHandler):
+                self.lines.append(line.rstrip())
+            elif isinstance(self, TexHandler):
+                self.lines.append(line)
+            else:
+                check_for_new_fence(
+                    self.processor, self.lines, line, default_language=self.default_language
+                )
+        self.need_to_handle_unclosed_fence = False
+        return self.need_to_handle_unclosed_fence
 
-    def done(self) -> None:
-        text = "\n".join(self.lines)
-        text = self.processor.format_quote(text)
+    def process_lines(self, text: str) -> None:
         processed_lines = text.split("\n")
         self.output.append("")
         self.output.extend(processed_lines)
         self.output.append("")
         self.processor.pop()
 
+    def done(self) -> None:
+        raise NotImplementedError()
 
-class SpoilerHandler(BaseHandler):
+
+class CodeHandler(InnerHandler):
+    def __init__(
+        self,
+        processor: Any,
+        output: MutableSequence[str],
+        fence: str,
+        lang: str,
+        run_content_validators: bool = False,
+    ) -> None:
+        super().__init__(processor, output, fence)
+        self.lang = lang
+        self.run_content_validators = run_content_validators
+
+    def done(self) -> None:
+        self.processor.pop_next_handler(self)
+        text = "\n".join(self.lines)
+        # run content validators (if any)
+        if self.run_content_validators:
+            validator = CODE_VALIDATORS.get(self.lang, lambda text: None)
+            validator(self.lines)
+        text = self.processor.format_code(self.lang, text)
+        text = self.processor.placeholder(text)
+        super().process_lines(text)
+
+
+class QuoteHandler(InnerHandler):
+    def __init__(
+        self,
+        processor: Any,
+        output: MutableSequence[str],
+        fence: str,
+        default_language: Optional[str] = None,
+    ) -> None:
+        super().__init__(processor, output, fence, default_language)
+
+    def done(self) -> None:
+        self.processor.pop_next_handler(self)
+        text = "\n".join(self.lines)
+        text = self.processor.format_quote(text)
+        super().process_lines(text)
+
+
+class SpoilerHandler(InnerHandler):
     def __init__(
         self, processor: Any, output: MutableSequence[str], fence: str, spoiler_header: str
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
+        super().__init__(processor, output, fence)
         self.spoiler_header = spoiler_header
-        self.lines: List[str] = []
-
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            check_for_new_fence(self.processor, self.lines, line)
 
     def done(self) -> None:
+        self.processor.pop_next_handler(self)
         if len(self.lines) == 0:
             # No content, do nothing
             return
@@ -333,35 +346,19 @@ class SpoilerHandler(BaseHandler):
             text = "\n".join(self.lines)
 
         text = self.processor.format_spoiler(header, text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+        super().process_lines(text)
 
 
-class TexHandler(BaseHandler):
+class TexHandler(InnerHandler):
     def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
-        self.lines: List[str] = []
-
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            self.lines.append(line)
+        super().__init__(processor, output, fence)
 
     def done(self) -> None:
+        self.processor.pop_next_handler(self)
         text = "\n".join(self.lines)
         text = self.processor.format_tex(text)
         text = self.processor.placeholder(text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+        super().process_lines(text)
 
 
 class FencedBlockPreprocessor(Preprocessor):
@@ -377,6 +374,20 @@ class FencedBlockPreprocessor(Preprocessor):
 
     def pop(self) -> None:
         self.handlers.pop()
+
+    def handle_line(self, line: str, current_handler: int) -> None:
+        # This check for the case when the fence doesn't match with any open fence.
+        if current_handler < -1 and abs(current_handler) == len(self.handlers):
+            self.handle_line(line, -1)
+        # if there need_to_handle_unclosed_fence then we pass the line to next handler.
+        elif self.handlers[current_handler].handle_line(line):
+            self.handle_line(line, current_handler - 1)
+
+    # if the handler is not the last handler then we first pop handler next to it.
+    def pop_next_handler(self, handler: BaseHandler) -> None:
+        handler_index = self.handlers.index(handler) + 1
+        if handler_index != len(self.handlers):
+            self.handlers[handler_index].done()
 
     def run(self, lines: Iterable[str]) -> List[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
@@ -395,7 +406,8 @@ class FencedBlockPreprocessor(Preprocessor):
         self.push(handler)
 
         for line in lines:
-            self.handlers[-1].handle_line(line)
+            current_handler = -1
+            self.handle_line(line, current_handler)
 
         while self.handlers:
             self.handlers[-1].done()
