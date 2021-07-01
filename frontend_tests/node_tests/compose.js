@@ -57,7 +57,6 @@ const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
-const compose_pm_pill = zrequire("compose_pm_pill");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
 const peer_data = zrequire("peer_data");
