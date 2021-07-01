@@ -4,11 +4,13 @@ import * as emoji from "../shared/js/emoji";
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
+import {$t} from "./i18n";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
 let selected_emoji_info = {};
+let default_status_messages_and_emoji_info;
 
 export function set_selected_emoji_info(emoji_info) {
     selected_emoji_info = {...emoji_info};
@@ -126,10 +128,37 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info) {
 }
 
 export function initialize() {
+    default_status_messages_and_emoji_info = [
+        {
+            status_text: $t({defaultMessage: "In a meeting"}),
+            emoji: emoji.get_emoji_details_by_name("calendar"),
+        },
+        {
+            status_text: $t({defaultMessage: "Commuting"}),
+            emoji: emoji.get_emoji_details_by_name("bus"),
+        },
+        {
+            status_text: $t({defaultMessage: "Out sick"}),
+            emoji: emoji.get_emoji_details_by_name("hurt"),
+        },
+        {
+            status_text: $t({defaultMessage: "Vacationing"}),
+            emoji: emoji.get_emoji_details_by_name("palm_tree"),
+        },
+        {
+            status_text: $t({defaultMessage: "Working remotely"}),
+            emoji: emoji.get_emoji_details_by_name("house"),
+        },
+    ];
     $("body").on("click", ".user-status-value", (event) => {
         event.stopPropagation();
-        const user_status_value = $(event.currentTarget).text();
+        const user_status_value = $(event.currentTarget).text().trim();
         $("input.user_status").val(user_status_value);
+
+        const emoji_info = default_status_messages_and_emoji_info.find(
+            (status) => status.status_text === user_status_value,
+        ).emoji;
+        set_selected_emoji_info(emoji_info);
         toggle_clear_message_button();
         update_button();
     });

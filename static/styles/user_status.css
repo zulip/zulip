@@ -67,6 +67,14 @@
             text-align: left;
             margin-bottom: 10px;
             line-height: 1.1em;
+
+            .status_emoji {
+                height: 18px;
+                width: 18px;
+                margin-left: 3px;
+                margin-right: 3px;
+                top: 2px;
+            }
         }
     }
 }
