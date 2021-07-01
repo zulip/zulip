@@ -242,12 +242,12 @@ function do_hashchange_overlay(old_hash) {
     const is_hashchange_internal =
         settings_hashes.has(base) && settings_hashes.has(old_base) && overlays.settings_open();
     if (is_hashchange_internal) {
-        settings_toggle.highlight_toggle(base);
         if (base === "settings") {
             settings_panel_menu.normal_settings.activate_section_or_default(section);
         } else {
             settings_panel_menu.org_settings.activate_section_or_default(section);
         }
+        settings_toggle.highlight_toggle(base);
         return;
     }
 
