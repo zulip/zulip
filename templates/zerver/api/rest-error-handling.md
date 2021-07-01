@@ -47,4 +47,7 @@ When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
 
+**Changes**: The `code` field in the response is new in Zulip 4.0
+(feature level 36).
+
 {generate_code_example|/rest-error-handling:post|fixture(403)}
