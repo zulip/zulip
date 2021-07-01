@@ -148,6 +148,13 @@ export function launch(section) {
 }
 
 export function set_settings_header(key) {
+    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
+    let header_prefix = $t_html({defaultMessage: "Personal settings"});
+    if (selected_tab_key === "organization") {
+        header_prefix = $t_html({defaultMessage: "Organization settings"});
+    }
+    $(".settings-header h1 .header-prefix").text(header_prefix);
+
     const header_text = $(
         `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
     ).text();
