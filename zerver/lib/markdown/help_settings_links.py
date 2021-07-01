@@ -24,7 +24,7 @@ link_mapping = {
     ],
     "display-settings": ["Personal settings", "Display settings", "/#settings/display-settings"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
-    "your-bots": ["Personal settings", "Your bots", "/#settings/your-bots"],
+    "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
     "muted-topics": ["Personal settings", "Muted topics", "/#settings/muted-topics"],

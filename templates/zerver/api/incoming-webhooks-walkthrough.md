@@ -232,11 +232,13 @@ Common validators are available in `zerver/lib/validators.py`.
 
 ## Step 4: Manually testing the webhook
 
-For either one of the command line tools, first, you'll need to get an API key
-from the **Your bots** section of your Zulip user's Settings page. To test the webhook,
-you'll need to [create a bot](https://zulip.com/help/add-a-bot-or-integration) with
-the **Incoming webhook** type. Replace `<api_key>` with your bot's API key in the examples
-presented below! This is how Zulip knows that the request was made by an authorized user.
+For either one of the command line tools, first, you'll need to get an
+API key from the **Bots** section of your Zulip user's **Personal
+settings**. To test the webhook, you'll need to [create a
+bot](https://zulip.com/help/add-a-bot-or-integration) with the
+**Incoming webhook** type. Replace `<api_key>` with your bot's API key
+in the examples presented below! This is how Zulip knows that the
+request was made by an authorized user.
 
 ### Curl
 
