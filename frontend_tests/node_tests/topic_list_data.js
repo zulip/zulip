@@ -62,7 +62,14 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         });
     }
     for (const i of _.range(7)) {
-        add_topic_message("topic " + i, 1000 + i);
+        let topic_name;
+        // All odd topics are resolved.
+        if (i % 2) {
+            topic_name = "✔ topic ";
+        } else {
+            topic_name = "topic ";
+        }
+        add_topic_message(topic_name + i, 1000 + i);
     }
 
     override(narrow_state, "topic", () => "topic 6");
@@ -76,11 +83,25 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_active_topic: true,
         is_muted: false,
         is_zero: true,
+        resolved: false,
+        resolved_topic_prefix: "✔ ",
+        topic_display_name: "topic 6",
         topic_name: "topic 6",
         unread: 0,
         url: "#narrow/stream/556-general/topic/topic.206",
     });
 
+    assert.deepEqual(list_info.items[1], {
+        is_active_topic: false,
+        is_muted: false,
+        is_zero: true,
+        resolved: true,
+        resolved_topic_prefix: "✔ ",
+        topic_display_name: "topic 5",
+        topic_name: "✔ topic 5",
+        unread: 0,
+        url: "#narrow/stream/556-general/topic/.E2.9C.94.20topic.205",
+    });
     // If we zoom in, our results based on topic filter.
     // If topic search input is empty, we show all 7 topics.
 
