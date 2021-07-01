@@ -1,4 +1,7 @@
+from zerver.lib.mention import MentionData
+from zerver.lib.notification_data import get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.user_groups import create_user_group
 
 
 class TestNotificationData(ZulipTestCase):
@@ -307,4 +310,78 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(user_id=user_id)
         self.assertTrue(
             user_data.is_notifiable(private_message=True, acting_user_id=acting_user_id, idle=True)
+        )
+
+    def test_user_group_mentions_map(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+
+        hamlet_only = create_user_group("hamlet_only", [hamlet], realm)
+        hamlet_and_cordelia = create_user_group("hamlet_and_cordelia", [hamlet, cordelia], realm)
+
+        # Base case. No user/user group mentions
+        result = get_user_group_mentions_data(
+            mentioned_user_ids=set(),
+            mentioned_user_group_ids=[],
+            mention_data=MentionData(realm.id, "no group mentioned"),
+        )
+        self.assertDictEqual(result, {})
+
+        # Only user group mentions, no personal mentions
+        result = get_user_group_mentions_data(
+            mentioned_user_ids=set(),
+            mentioned_user_group_ids=[hamlet_and_cordelia.id],
+            mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia*!"),
+        )
+        self.assertDictEqual(
+            result,
+            {
+                hamlet.id: hamlet_and_cordelia.id,
+                cordelia.id: hamlet_and_cordelia.id,
+            },
+        )
+
+        # Hamlet is mentioned in two user groups
+        # Test that we consider the smaller user group
+        result = get_user_group_mentions_data(
+            mentioned_user_ids=set(),
+            mentioned_user_group_ids=[hamlet_and_cordelia.id, hamlet_only.id],
+            mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia* and @*hamlet_only*"),
+        )
+        self.assertDictEqual(
+            result,
+            {
+                hamlet.id: hamlet_only.id,
+                cordelia.id: hamlet_and_cordelia.id,
+            },
+        )
+
+        # To make sure we aren't getting the expected data from over-writing in a loop,
+        # test the same setup as above, but with reversed group ids.
+        result = get_user_group_mentions_data(
+            mentioned_user_ids=set(),
+            mentioned_user_group_ids=[hamlet_only.id, hamlet_and_cordelia.id],
+            mention_data=MentionData(realm.id, "hey @*hamlet_only* and @*hamlet_and_cordelia*"),
+        )
+        self.assertDictEqual(
+            result,
+            {
+                hamlet.id: hamlet_only.id,
+                cordelia.id: hamlet_and_cordelia.id,
+            },
+        )
+
+        # Personal and user group mentioned. Test that we don't consider the user
+        # group mention for Hamlet in this case.
+        result = get_user_group_mentions_data(
+            mentioned_user_ids=set([hamlet.id]),
+            mentioned_user_group_ids=[hamlet_and_cordelia.id],
+            mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia*!"),
+        )
+        self.assertDictEqual(
+            result,
+            {
+                cordelia.id: hamlet_and_cordelia.id,
+            },
         )

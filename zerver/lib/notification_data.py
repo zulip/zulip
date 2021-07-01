@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Collection, Optional, Set
+from typing import Collection, Dict, List, Optional, Set
+
+from zerver.lib.mention import MentionData
 
 
 @dataclass
@@ -109,3 +111,33 @@ class UserMessageNotificationsData:
             return "stream_email_notify"
         else:
             return None
+
+
+def get_user_group_mentions_data(
+    mentioned_user_ids: Set[int], mentioned_user_group_ids: List[int], mention_data: MentionData
+) -> Dict[int, int]:
+    # Maps user_id -> mentioned user_group_id
+    mentioned_user_groups_map: Dict[int, int] = dict()
+
+    # Add members of the mentioned user groups into `mentions_user_ids`.
+    for group_id in mentioned_user_group_ids:
+        member_ids = mention_data.get_group_members(group_id)
+        for member_id in member_ids:
+            if member_id in mentioned_user_ids:
+                # If a user is also mentioned personally, we use that as a trigger
+                # for notifications.
+                continue
+
+            if member_id in mentioned_user_groups_map:
+                # If multiple user groups are mentioned, we prefer the
+                # user group with the least members for email/mobile
+                # notifications.
+                previous_group_id = mentioned_user_groups_map[member_id]
+                previous_group_member_ids = mention_data.get_group_members(previous_group_id)
+
+                if len(previous_group_member_ids) > len(member_ids):
+                    mentioned_user_groups_map[member_id] = group_id
+            else:
+                mentioned_user_groups_map[member_id] = group_id
+
+    return mentioned_user_groups_map
