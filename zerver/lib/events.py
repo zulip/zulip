@@ -27,6 +27,7 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
+    add_message_to_unread_msgs,
     aggregate_unread_data,
     apply_unread_message_event,
     extract_unread_data_from_um_rows,
@@ -1012,6 +1013,13 @@ def apply_event(
         if "raw_unread_msgs" in state and event["flag"] == "read" and event["op"] == "add":
             for remove_id in event["messages"]:
                 remove_message_id_from_unread_mgs(state["raw_unread_msgs"], remove_id)
+        if event["flag"] == "read" and event["op"] == "remove":
+            for message in event["messages_by_conversation"]:
+                add_message_to_unread_msgs(
+                    state["raw_unread_msgs"],
+                    int(message),
+                    event["messages_by_conversation"][message],
+                )
         if event["flag"] == "starred" and "starred_messages" in state:
             if event["op"] == "add":
                 state["starred_messages"] += event["messages"]

@@ -1250,6 +1250,32 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id
     state["mentions"].discard(message_id)
 
 
+def add_message_to_unread_msgs(
+    state: RawUnreadMessagesResult, message_id: int, message: Dict[Any, Any]
+) -> None:
+    if message["type"] == "private":
+        state["pm_dict"][message_id] = {
+            "sender_id": message["sender_id"],
+        }
+        if message["mentioned"]:
+            state["mentions"].add(message_id)
+    elif message["type"] == "stream":
+        state["stream_dict"][message_id] = {
+            "stream_id": message["stream_id"],
+            "topic": message["topic"],
+            "sender_id": message["sender_id"],
+        }
+        if message["mentioned"]:
+            state["mentions"].add(message_id)
+        state["unmuted_stream_msgs"].add(message_id)
+    elif message["type"] == "huddle":
+        state["huddle_dict"][message_id] = {
+            "user_ids_string": message["sender_id_str"],
+        }
+        if message["mentioned"]:
+            state["mentions"].add(message_id)
+
+
 def estimate_recent_messages(realm: Realm, hours: int) -> int:
     stat = COUNT_STATS["messages_sent:is_bot:hour"]
     d = timezone_now() - datetime.timedelta(hours=hours)
