@@ -977,7 +977,9 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     )
 
 
-def get_raw_unread_data(user_profile: UserProfile, message_ids=None) -> RawUnreadMessagesResult:
+def get_raw_unread_data(
+    user_profile: UserProfile, message_ids: Optional[List[int]] = None
+) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = (
