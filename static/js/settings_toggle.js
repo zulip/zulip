@@ -16,7 +16,7 @@ export function initialize() {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
-            {label: $t({defaultMessage: "Settings"}), key: "settings"},
+            {label: $t({defaultMessage: "Personal"}), key: "settings"},
             {label: $t({defaultMessage: "Organization"}), key: "organization"},
         ],
         callback(name, key) {
