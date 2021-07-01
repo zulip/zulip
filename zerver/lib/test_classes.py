@@ -43,6 +43,7 @@ from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
+from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
     bulk_add_subscriptions,
@@ -54,6 +55,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
@@ -506,22 +508,22 @@ Output:
 
     def check_rendered_logged_in_app(self, result: HttpResponse) -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
-        and not for a logged-out web-public visitor."""
+        and not for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_visitor` to verify
+        # It is important to check `is_spectator` to verify
         # that we treated this request as a normal logged-in session,
-        # not as a web-public visitor.
-        self.assertEqual(page_params["is_web_public_visitor"], False)
+        # not as a spectator.
+        self.assertEqual(page_params["is_spectator"], False)
 
-    def check_rendered_web_public_visitor(self, result: HttpResponse) -> None:
+    def check_rendered_spectator(self, result: HttpResponse) -> None:
         """Verifies that a visit of / was a 200 that rendered page_params
-        for a logged-out web-public visitor."""
+        for a (logged-out) spectator."""
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
-        # It is important to check `is_web_public_visitor` to verify
-        # that we treated this request to render for a `web_public_visitor`
-        self.assertEqual(page_params["is_web_public_visitor"], True)
+        # It is important to check `is_spectator` to verify
+        # that we treated this request to render for a `spectator`
+        self.assertEqual(page_params["is_spectator"], True)
 
     def login_with_return(
         self, email: str, password: Optional[str] = None, **kwargs: Any
@@ -606,7 +608,7 @@ Output:
     def submit_reg_form_for_user(
         self,
         email: str,
-        password: str,
+        password: Optional[str],
         realm_name: str = "Zulip Test",
         realm_subdomain: str = "zuliptest",
         from_confirmation: str = "",
@@ -630,7 +632,6 @@ Output:
             full_name = email.replace("@", "_")
         payload = {
             "full_name": full_name,
-            "password": password,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
             "key": key if key is not None else find_key_by_email(email),
@@ -640,6 +641,8 @@ Output:
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
         }
+        if password is not None:
+            payload["password"] = password
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post("/accounts/register/", payload, **kwargs)
@@ -1266,6 +1269,35 @@ Output:
         self.assertTrue(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
 
+    def subscribe_realm_to_manual_license_management_plan(
+        self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
+    ) -> Tuple[CustomerPlan, LicenseLedger]:
+        customer, _ = Customer.objects.get_or_create(realm=realm)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            automanage_licenses=False,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=billing_schedule,
+            tier=CustomerPlan.STANDARD,
+        )
+        ledger = LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=timezone_now(),
+            licenses=licenses,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+        realm.plan_type = Realm.STANDARD
+        realm.save(update_fields=["plan_type"])
+        return plan, ledger
+
+    def subscribe_realm_to_monthly_plan_on_manual_license_management(
+        self, realm: Realm, licenses: int, licenses_at_next_renewal: int
+    ) -> Tuple[CustomerPlan, LicenseLedger]:
+        return self.subscribe_realm_to_manual_license_management_plan(
+            realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
+        )
+
     @contextmanager
     def tornado_redirected_to_list(
         self, lst: List[Mapping[str, Any]], expected_num_events: int
@@ -1292,26 +1324,42 @@ Output:
 
         self.assert_length(lst, expected_num_events)
 
-    def get_maybe_enqueue_notifications_parameters(self, **kwargs: Any) -> Dict[str, Any]:
+    def create_user_notifications_data_object(
+        self, *, user_id: int, **kwargs: Any
+    ) -> UserMessageNotificationsData:
+        return UserMessageNotificationsData(
+            user_id=user_id,
+            flags=kwargs.get("flags", []),
+            mentioned=kwargs.get("mentioned", False),
+            online_push_enabled=kwargs.get("online_push_enabled", False),
+            stream_email_notify=kwargs.get("stream_email_notify", False),
+            stream_push_notify=kwargs.get("stream_push_notify", False),
+            wildcard_mention_notify=kwargs.get("wildcard_mention_notify", False),
+            sender_is_muted=kwargs.get("sender_is_muted", False),
+        )
+
+    def get_maybe_enqueue_notifications_parameters(
+        self, *, message_id: int, user_id: int, acting_user_id: int, **kwargs: Any
+    ) -> Dict[str, Any]:
         """
         Returns a dictionary with the passed parameters, after filling up the
         missing data with default values, for testing what was passed to the
         `maybe_enqueue_notifications` method.
         """
-        parameters: Dict[str, Any] = dict(
-            private_message=False,
-            mentioned=False,
-            wildcard_mention_notify=False,
-            stream_push_notify=False,
-            stream_email_notify=False,
-            stream_name=None,
-            online_push_enabled=False,
-            idle=True,
-            already_notified={"email_notified": False, "push_notified": False},
+        user_notifications_data = self.create_user_notifications_data_object(
+            user_id=user_id, **kwargs
         )
-
-        # Values from `kwargs` will replace those from `parameters`
-        return {**parameters, **kwargs}
+        return dict(
+            user_notifications_data=user_notifications_data,
+            message_id=message_id,
+            acting_user_id=acting_user_id,
+            private_message=kwargs.get("private_message", False),
+            stream_name=kwargs.get("stream_name", None),
+            idle=kwargs.get("idle", True),
+            already_notified=kwargs.get(
+                "already_notified", {"email_notified": False, "push_notified": False}
+            ),
+        )
 
 
 class WebhookTestCase(ZulipTestCase):
@@ -1326,7 +1374,7 @@ class WebhookTestCase(ZulipTestCase):
     STREAM_NAME: Optional[str] = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
-    FIXTURE_DIR_NAME: Optional[str] = None
+    WEBHOOK_DIR_NAME: Optional[str] = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -1372,8 +1420,8 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_payload(fixture_name)
         if content_type is not None:
             kwargs["content_type"] = content_type
-        if self.FIXTURE_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+        if self.WEBHOOK_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
 
@@ -1419,8 +1467,8 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_payload(fixture_name)
         kwargs["content_type"] = content_type
 
-        if self.FIXTURE_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+        if self.WEBHOOK_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
         # The sender profile shouldn't be passed any further in kwargs, so we pop it.
@@ -1464,8 +1512,8 @@ class WebhookTestCase(ZulipTestCase):
         return self.get_body(fixture_name)
 
     def get_body(self, fixture_name: str) -> str:
-        assert self.FIXTURE_DIR_NAME is not None
-        body = self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
+        assert self.WEBHOOK_DIR_NAME is not None
+        body = self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, fixture_name)
         # fail fast if we don't have valid json
         orjson.loads(body)
         return body

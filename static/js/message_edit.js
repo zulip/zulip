@@ -1,6 +1,8 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import _ from "lodash";
 
+import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
@@ -10,6 +12,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
+import * as confirm_dialog from "./confirm_dialog";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
@@ -18,6 +21,7 @@ import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -31,6 +35,7 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
+export const RESOLVED_TOPIC_PREFIX = "✔ ";
 
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
@@ -65,9 +70,14 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
 
-    if (!page_params.realm_allow_community_topic_editing) {
-        // If you're another non-admin user, you need community topic editing enabled.
+    if (!settings_data.user_can_edit_topic_of_any_message()) {
         return false;
+    }
+
+    // moderators can edit the topic if edit_topic_policy allows them to do so,
+    // irrespective of the topic editing deadline.
+    if (page_params.is_moderator) {
+        return true;
     }
 
     // If you're using community topic editing, there's a deadline.
@@ -164,10 +174,9 @@ export function get_deletability(message) {
     }
 
     if (
-        page_params.realm_allow_message_deleting &&
         page_params.realm_message_content_delete_limit_seconds +
             (message.timestamp - Date.now() / 1000) >
-            0
+        0
     ) {
         return true;
     }
@@ -585,6 +594,27 @@ export function start(row, edit_box_open_callback) {
     });
 }
 
+export function toggle_resolve_topic(message_id, old_topic_name) {
+    let new_topic_name;
+    if (old_topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        new_topic_name = _.trimStart(old_topic_name, RESOLVED_TOPIC_PREFIX);
+    } else {
+        new_topic_name = RESOLVED_TOPIC_PREFIX + old_topic_name;
+    }
+
+    const request = {
+        propagate_mode: "change_all",
+        topic: new_topic_name,
+        send_notification_to_old_thread: false,
+        send_notification_to_new_thread: true,
+    };
+
+    channel.patch({
+        url: "/json/messages/" + message_id,
+        data: request,
+    });
+}
+
 export function start_inline_topic_edit(recipient_row) {
     const form = $(render_topic_edit_form());
     message_lists.current.show_edit_topic_on_recipient_row(recipient_row, form);
@@ -903,56 +933,45 @@ export function edit_last_sent_message() {
     });
 }
 
-function hide_delete_btn_show_spinner(deleting) {
-    if (deleting) {
-        $("do_delete_message_button").prop("disabled", true);
-        $("#delete_message_modal > div.modal-footer > button").hide();
-        const delete_spinner = $("#do_delete_message_spinner");
-        loading.make_indicator(delete_spinner, {abs_positioned: true});
-    } else {
-        loading.destroy_indicator($("#do_delete_message_spinner"));
-        $("#do_delete_message_button").prop("disabled", false);
-        $("#delete_message_modal > div.modal-footer > button").show();
-    }
-}
-
 export function delete_message(msg_id) {
-    $("#delete-message-error").html("");
-    $("#delete_message_modal").modal("show");
-    if (currently_deleting_messages.includes(msg_id)) {
-        hide_delete_btn_show_spinner(true);
-    } else {
-        hide_delete_btn_show_spinner(false);
-    }
-    $("#do_delete_message_button")
-        .off()
-        .on("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            currently_deleting_messages.push(msg_id);
-            hide_delete_btn_show_spinner(true);
-            channel.del({
-                url: "/json/messages/" + msg_id,
-                success() {
-                    $("#delete_message_modal").modal("hide");
-                    currently_deleting_messages = currently_deleting_messages.filter(
-                        (id) => id !== msg_id,
-                    );
-                    hide_delete_btn_show_spinner(false);
-                },
-                error(xhr) {
-                    currently_deleting_messages = currently_deleting_messages.filter(
-                        (id) => id !== msg_id,
-                    );
-                    hide_delete_btn_show_spinner(false);
-                    ui_report.error(
-                        $t_html({defaultMessage: "Error deleting message"}),
-                        xhr,
-                        $("#delete-message-error"),
-                    );
-                },
-            });
+    const html_body = render_delete_message_modal();
+    const modal_parent = $("#main_div");
+
+    function do_delete_message() {
+        currently_deleting_messages.push(msg_id);
+        channel.del({
+            url: "/json/messages/" + msg_id,
+            success() {
+                currently_deleting_messages = currently_deleting_messages.filter(
+                    (id) => id !== msg_id,
+                );
+                confirm_dialog.hide_confirm_dialog_spinner();
+                overlays.close_modal("#confirm_dialog_modal");
+            },
+            error(xhr) {
+                currently_deleting_messages = currently_deleting_messages.filter(
+                    (id) => id !== msg_id,
+                );
+
+                confirm_dialog.hide_confirm_dialog_spinner();
+                ui_report.error(
+                    $t_html({defaultMessage: "Error deleting message"}),
+                    xhr,
+                    $("#confirm_dialog_error"),
+                );
+            },
         });
+    }
+
+    confirm_dialog.launch({
+        parent: modal_parent,
+        html_heading: $t_html({defaultMessage: "Delete message"}),
+        html_body,
+        html_yes_button: $t_html({defaultMessage: "Confirm"}),
+        help_link: "/help/edit-or-delete-a-message#delete-a-message",
+        on_click: do_delete_message,
+        loading_spinner: true,
+    });
 }
 
 export function delete_topic(stream_id, topic_name) {
@@ -962,7 +981,7 @@ export function delete_topic(stream_id, topic_name) {
             topic_name,
         },
         success() {
-            $("#delete_topic_modal").modal("hide");
+            overlays.close_modal("#delete_topic_modal");
         },
     });
 }
@@ -988,7 +1007,7 @@ export function move_topic_containing_message_to_stream(
             (id) => id !== message_id,
         );
         hide_topic_move_spinner();
-        $("#move_topic_modal").modal("hide");
+        overlays.close_modal("#move_topic_modal");
     }
     if (currently_topic_editing_messages.includes(message_id)) {
         hide_topic_move_spinner();

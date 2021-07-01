@@ -29,15 +29,21 @@ from corporate.lib.stripe import (
     attach_discount_to_realm,
     catch_stripe_errors,
     compute_plan_parameters,
+    customer_has_credit_card_as_default_source,
+    do_create_stripe_customer,
     get_discount_for_realm,
     get_latest_seat_count,
     get_price_per_license,
+    get_realms_to_default_discount_dict,
     invoice_plan,
     invoice_plans_as_needed,
+    is_realm_on_free_trial,
+    is_sponsored_realm,
     make_end_of_cycle_updates_if_needed,
     next_month,
     process_initial_upgrade,
     sign_string,
+    stripe_customer_has_credit_card_as_default_source,
     stripe_get_customer,
     unsign_string,
     update_billing_method_of_current_plan,
@@ -500,6 +506,7 @@ class StripeTest(StripeTestCase):
             Customer.objects.get(realm=user.realm).stripe_customer_id
         )
         self.assertEqual(stripe_customer.default_source.id[:5], "card_")
+        self.assertTrue(stripe_customer_has_credit_card_as_default_source(stripe_customer))
         self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.email)
@@ -660,6 +667,7 @@ class StripeTest(StripeTestCase):
         stripe_customer = stripe_get_customer(
             Customer.objects.get(realm=user.realm).stripe_customer_id
         )
+        self.assertFalse(stripe_customer_has_credit_card_as_default_source(stripe_customer))
         # It can take a second for Stripe to attach the source to the customer, and in
         # particular it may not be attached at the time stripe_get_customer is called above,
         # causing test flakes.
@@ -2682,6 +2690,18 @@ class StripeTest(StripeTestCase):
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
 
+    @mock_stripe()
+    def test_customer_has_credit_card_as_default_source(self, *mocks: Mock) -> None:
+        iago = self.example_user("iago")
+        customer = Customer.objects.create(realm=iago.realm)
+        self.assertFalse(customer_has_credit_card_as_default_source(customer))
+
+        customer = do_create_stripe_customer(iago)
+        self.assertFalse(customer_has_credit_card_as_default_source(customer))
+
+        customer = do_create_stripe_customer(iago, stripe_token=stripe_create_token().id)
+        self.assertTrue(customer_has_credit_card_as_default_source(customer))
+
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -2949,6 +2969,50 @@ class BillingHelpersTest(ZulipTestCase):
             tier=CustomerPlan.STANDARD,
         )
         self.assertEqual(get_current_plan_by_realm(realm), plan)
+
+    def test_get_realms_to_default_discount_dict(self) -> None:
+        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_1")
+        lear_customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_2")
+        lear_customer.default_discount = 30
+        lear_customer.save(update_fields=["default_discount"])
+        zephyr_customer = Customer.objects.create(
+            realm=get_realm("zephyr"), stripe_customer_id="cus_3"
+        )
+        zephyr_customer.default_discount = 0
+        zephyr_customer.save(update_fields=["default_discount"])
+
+        self.assertEqual(
+            get_realms_to_default_discount_dict(),
+            {
+                "lear": Decimal("30.0000"),
+            },
+        )
+
+    def test_is_realm_on_free_trial(self) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(is_realm_on_free_trial(realm))
+
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.ANNUAL,
+            tier=CustomerPlan.STANDARD,
+        )
+        self.assertFalse(is_realm_on_free_trial(realm))
+
+        plan.status = CustomerPlan.FREE_TRIAL
+        plan.save(update_fields=["status"])
+        self.assertTrue(is_realm_on_free_trial(realm))
+
+    def test_is_sponsored_realm(self) -> None:
+        realm = get_realm("zulip")
+        self.assertFalse(is_sponsored_realm(realm))
+
+        realm.plan_type = Realm.STANDARD_FREE
+        realm.save()
+        self.assertTrue(is_sponsored_realm(realm))
 
 
 class LicenseLedgerTest(StripeTestCase):
@@ -3258,3 +3322,47 @@ class InvoiceTest(StripeTestCase):
         invoice_plans_as_needed(self.next_month)
         plan = CustomerPlan.objects.first()
         self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
+
+
+class TestTestClasses(ZulipTestCase):
+    def test_subscribe_realm_to_manual_license_management_plan(self) -> None:
+        realm = get_realm("zulip")
+        plan, ledger = self.subscribe_realm_to_manual_license_management_plan(
+            realm, 50, 60, CustomerPlan.ANNUAL
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.automanage_licenses, False)
+        self.assertEqual(plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(plan.tier, CustomerPlan.STANDARD)
+        self.assertEqual(plan.licenses(), 50)
+        self.assertEqual(plan.licenses_at_next_renewal(), 60)
+
+        ledger.refresh_from_db()
+        self.assertEqual(ledger.plan, plan)
+        self.assertEqual(ledger.licenses, 50)
+        self.assertEqual(ledger.licenses_at_next_renewal, 60)
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.STANDARD)
+
+    def test_subscribe_realm_to_monthly_plan_on_manual_license_management(self) -> None:
+        realm = get_realm("zulip")
+        plan, ledger = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
+            realm, 20, 30
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.automanage_licenses, False)
+        self.assertEqual(plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(plan.tier, CustomerPlan.STANDARD)
+        self.assertEqual(plan.licenses(), 20)
+        self.assertEqual(plan.licenses_at_next_renewal(), 30)
+
+        ledger.refresh_from_db()
+        self.assertEqual(ledger.plan, plan)
+        self.assertEqual(ledger.licenses, 20)
+        self.assertEqual(ledger.licenses_at_next_renewal, 30)
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.STANDARD)

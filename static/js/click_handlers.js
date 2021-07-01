@@ -21,7 +21,6 @@ import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -29,10 +28,9 @@ import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -43,7 +41,7 @@ import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
-import * as user_status_ui from "./user_status_ui";
+import * as user_profile from "./user_profile";
 import * as util from "./util";
 
 export function initialize() {
@@ -183,8 +181,7 @@ export function initialize() {
         // on the other hand, on mobile it should be done with a long tap.
     } else {
         $("#main_div").on("longtap", ".messagebox", function (e) {
-            // find the correct selection API for the browser.
-            const sel = window.getSelection ? window.getSelection() : document.selection;
+            const sel = window.getSelection();
             // if one matches, remove the current selections.
             // after a longtap that is valid, there should be no text selected.
             if (sel) {
@@ -217,33 +214,6 @@ export function initialize() {
         $(".tooltip").remove();
     });
 
-    $("body").on("mouseenter", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
-        }
-    });
-
-    $("body").on("mouseleave", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
-        }
-    });
-
-    $("body").on("click", ".message_edit_notice", (e) => {
-        popovers.hide_all();
-        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        const row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id(row));
-        const message_history_cancel_btn = $("#message-history-cancel");
-
-        if (page_params.realm_allow_edit_history) {
-            message_edit_history.show_history(message);
-            message_history_cancel_btn.trigger("focus");
-        }
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", ".reveal_hidden_message", (e) => {
         // Hide actions popover to keep its options
         // in sync with revealed/hidden state of
@@ -266,16 +236,6 @@ export function initialize() {
             return;
         }
         window.location.href = $(this).attr("href");
-    });
-
-    // USER STATUS MODAL
-
-    $(".user-status-value").on("click", (e) => {
-        e.stopPropagation();
-        const user_status_value = $(e.currentTarget).text();
-        $("input.user_status").val(user_status_value);
-        user_status_ui.toggle_clear_message_button();
-        user_status_ui.update_button();
     });
 
     // MESSAGE EDITING
@@ -407,7 +367,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, false);
     });
 
@@ -416,18 +376,18 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, true);
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element($(e.target), "click");
+        recent_topics_ui.change_focused_element($(e.target), "click");
     });
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.read);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -437,20 +397,20 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element($(e.target), "click");
-        recent_topics.set_filter(e.currentTarget.dataset.filter);
-        recent_topics.update_filters_view();
+        recent_topics_ui.change_focused_element($(e.target), "click");
+        recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
+        recent_topics_ui.update_filters_view();
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.stream);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.topic);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -459,7 +419,7 @@ export function initialize() {
         "keyup",
         "#recent_topics_search",
         _.debounce(() => {
-            recent_topics.update_filters_view();
+            recent_topics_ui.update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
     );
@@ -467,7 +427,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_search_clear", (e) => {
         e.stopPropagation();
         $("#recent_topics_search").val("");
-        recent_topics.update_filters_view();
+        recent_topics_ui.update_filters_view();
     });
 
     // RECIPIENT BARS
@@ -622,6 +582,7 @@ export function initialize() {
     }
 
     popovers.register_click_handlers();
+    user_profile.register_click_handlers();
     emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
     notifications.register_click_handlers();
@@ -686,8 +647,7 @@ export function initialize() {
         popovers.hide_all();
     }
 
-    $("body").on("click", "#compose_buttons", handle_compose_click);
-    $("body").on("click", ".compose-content", handle_compose_click);
+    $("body").on("click", "#compose-content", handle_compose_click);
 
     $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
@@ -932,7 +892,13 @@ export function initialize() {
                 '.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded',
             ).has(e.target).length === 0
         ) {
-            popovers.hide_all();
+            // Since tippy instance can handle outside clicks on their own,
+            // we don't need to trigger them from here.
+            // This fixes the bug of `hideAll` being called
+            // after a tippy popover has been triggered which hides
+            // the popover without being displayed.
+            const not_hide_tippy_instances = true;
+            popovers.hide_all(not_hide_tippy_instances);
         }
 
         if (compose_state.composing()) {

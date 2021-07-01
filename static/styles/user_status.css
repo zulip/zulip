@@ -1,59 +1,25 @@
-.user_status_overlay {
-    .overlay-content {
-        width: 384px;
-        margin: 0 auto;
-        position: relative;
-        top: calc((30vh - 50px) / 2);
-        border-radius: 4px;
-        overflow: hidden;
-        background-color: hsl(0, 0%, 100%);
-
-        @media (width < $ml_min) {
-            width: 100%;
-        }
+#set_user_status_modal {
+    /* A narrower width is more attractive for this modal. */
+    width: 384px;
+    @media (width < $ml_min) {
+        width: 100%;
     }
+
+    /* Center `position-fixed` modal */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin-left: 0;
 
     input.user_status {
-        width: 336px;
+        width: 94%;
         @media (width < $ml_min) {
-            width: 94%;
+            width: 93%;
         }
-    }
-
-    .user-status-header {
-        padding-top: 4px;
-        padding-bottom: 4px;
-        height: 5%;
-        width: 100%;
-        text-align: center;
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-    }
-
-    .user-status-header h1 {
-        margin: 0;
-        font-size: 1.5em;
-    }
-
-    .user-status-header .exit {
-        font-weight: 400;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        color: hsl(0, 0%, 67%);
-        cursor: pointer;
-    }
-
-    .user-status-header .exit-sign {
-        position: relative;
-        top: 3px;
-        margin-left: 3px;
-        font-size: 1.5rem;
-        font-weight: 600;
-        cursor: pointer;
     }
 
     .user-status-options {
-        padding: 0 20px 3px;
+        padding-top: 10px;
+        padding-left: 2px;
 
         button.user-status-value:hover {
             /* Important is required for generic night them styling to not

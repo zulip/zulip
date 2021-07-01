@@ -69,8 +69,9 @@
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Start a new topic](/help/start-a-new-topic)
-* [Change the topic of a message](/help/change-the-topic-of-a-message)
 * [Rename a topic](/help/rename-a-topic)
+* [Resolve a topic](/help/resolve-a-topic)
+* [Move content to another topic](/help/move-content-to-another-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
 
 ## Notifications
@@ -133,7 +134,7 @@
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
-* [Community topic edits](/help/community-topic-edits)
+* [Restrict topic editing](/help/configure-who-can-edit-topics)
 * [Weekly digest emails](/help/digest-emails)
 * [Disable welcome emails](/help/disable-welcome-emails)
 * [Configure notification bot](/help/configure-notification-bot)
@@ -161,6 +162,7 @@
 
 ## Stream management
 * [Stream permissions](/help/stream-permissions)
+* [Move content to another stream](/help/move-content-to-another-stream)
 * [Delete or archive a stream](/help/archive-a-stream)
 * [Delete a topic](/help/delete-a-topic)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)

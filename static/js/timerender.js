@@ -31,7 +31,7 @@ export function clear_for_testing() {
 export function render_now(time, today = new Date()) {
     let time_str = "";
     let needs_update = false;
-    // render formal time to be used as title attr tooltip
+    // render formal time to be used for tippy tooltip
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
     const formal_time_str = format(time, "EEEE,\u00A0MMMM\u00A0d,\u00A0yyyy");
@@ -81,7 +81,7 @@ export function last_seen_status_from_date(last_active_date, current_date = new 
     const days_old = differenceInCalendarDays(current_date, last_active_date);
     const hours = Math.floor(minutes / 60);
 
-    if (days_old === 0) {
+    if (hours < 24) {
         if (hours === 1) {
             return $t({defaultMessage: "An hour ago"});
         }
@@ -146,7 +146,7 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
         return elem;
     }
     elem.append(_.escape(rendered_time.time_str));
-    return elem.attr("title", rendered_time.formal_time_str);
+    return elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 
 // Given an Date object 'time', return a DOM node that initially
@@ -311,25 +311,25 @@ export function get_full_datetime(time) {
     // The sign of getTimezoneOffset() is reversed wrt
     // the conventional meaning of UTC+n / UTC-n
     const tz_offset = -time.getTimezoneOffset() / 60;
-    return {
-        date: time.toLocaleDateString(),
-        time: time.toLocaleTimeString() + " (UTC" + (tz_offset < 0 ? "" : "+") + tz_offset + ")",
-    };
-}
 
-// Date.toLocaleDateString and Date.toLocaleTimeString are
-// expensive, so we delay running the following code until we need
-// the full date and time strings.
-export const set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
-    if (message.full_date_str !== undefined) {
-        return;
+    const time_options = {timeStyle: "long"};
+
+    if (page_params.twenty_four_hour_time) {
+        time_options.hourCycle = "h24";
     }
 
-    const time = new Date(message.timestamp * 1000);
-    const full_datetime = get_full_datetime(time);
+    const date_string = time.toLocaleDateString();
+    let time_string = time.toLocaleTimeString(undefined, time_options);
 
-    message.full_date_str = full_datetime.date;
-    message.full_time_str = full_datetime.time;
+    // In some rare cases where user's locale and timeZone doesn't suit,
+    // for eg. en-US with Indian timeZone gives GMT+5:30. We want to
+    // avoid showing something like: 27/6/21 at 12:00 GMT+x:y (UTC+N).
+    time_string = time_string.replace(/ GMT[+-][\d:]*/, "");
 
-    time_elem.attr("title", message.full_date_str + " " + message.full_time_str);
-};
+    const tz_offset_sign = tz_offset > 0 ? "+" : "-";
+    const tz_offset_str = time_string.includes("UTC") ? "" : ` (UTC${tz_offset_sign}${tz_offset})`;
+
+    time_string = time_string + tz_offset_str;
+
+    return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
+}

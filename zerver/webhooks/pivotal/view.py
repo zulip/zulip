@@ -8,9 +8,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventType
 from zerver.lib.request import has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -176,7 +176,7 @@ def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> Http
         subject, content = api_pivotal_webhook_v5(request, user_profile)
 
     if not content:
-        return json_error(_("Unable to handle Pivotal payload"))
+        raise JsonableError(_("Unable to handle Pivotal payload"))
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

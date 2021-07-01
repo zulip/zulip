@@ -1,11 +1,11 @@
 import $ from "jquery";
 
-import render_settings_deactivation_stream_modal from "../templates/settings/deactivation_stream_modal.hbs";
+import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
+import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
-import render_stream_subscription_info from "../templates/stream_subscription_info.hbs";
+import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
-import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -46,13 +46,13 @@ function setup_subscriptions_stream_hash(sub) {
 
 function compare_by_email(a, b) {
     if (a.delivery_email && b.delivery_email) {
-        return a.delivery_email.localeCompare(b.delivery_email);
+        return util.strcmp(a.delivery_email, b.delivery_email);
     }
-    return a.email.localeCompare(b.email);
+    return util.strcmp(a.email, b.email);
 }
 
 function compare_by_name(a, b) {
-    return a.full_name.localeCompare(b.full_name);
+    return util.strcmp(a.full_name, b.full_name);
 }
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
@@ -234,6 +234,32 @@ export function invite_user_to_stream(user_ids, sub, success, failure) {
     });
 }
 
+function show_stream_subscription_request_result({
+    message,
+    add_class,
+    remove_class,
+    subscribed_users,
+    already_subscribed_users,
+    ignored_deactivated_users,
+}) {
+    const stream_subscription_req_result_elem = $(
+        ".stream_subscription_request_result",
+    ).expectOne();
+    const html = render_stream_subscription_request_result({
+        message,
+        subscribed_users,
+        already_subscribed_users,
+        ignored_deactivated_users,
+    });
+    ui.get_content_element(stream_subscription_req_result_elem).html(html);
+    if (add_class) {
+        stream_subscription_req_result_elem.addClass(add_class);
+    }
+    if (remove_class) {
+        stream_subscription_req_result_elem.removeClass(remove_class);
+    }
+}
+
 function submit_add_subscriber_form(e) {
     const sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -241,10 +267,17 @@ function submit_add_subscriber_form(e) {
         return;
     }
 
-    const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
     let user_ids = user_pill.get_user_ids(pill_widget);
     user_ids = user_ids.concat(stream_pill.get_user_ids(pill_widget));
     user_ids = user_ids.concat(user_group_pill.get_user_ids(pill_widget));
+    const deactivated_users = new Set();
+    user_ids = user_ids.filter((user_id) => {
+        if (!people.is_person_active(user_id)) {
+            deactivated_users.add(user_id);
+            return false;
+        }
+        return true;
+    });
 
     user_ids = new Set(user_ids);
 
@@ -254,11 +287,20 @@ function submit_add_subscriber_form(e) {
         // case occurs when creating user pills from a stream.
         user_ids.delete(page_params.user_id);
     }
+    let ignored_deactivated_users;
+    if (deactivated_users.size > 0) {
+        ignored_deactivated_users = Array.from(deactivated_users);
+        ignored_deactivated_users = ignored_deactivated_users.map((user_id) =>
+            people.get_by_user_id(user_id),
+        );
+    }
     if (user_ids.size === 0) {
-        stream_subscription_info_elem
-            .text($t({defaultMessage: "No user to subscribe."}))
-            .addClass("text-error")
-            .removeClass("text-success");
+        show_stream_subscription_request_result({
+            message: $t({defaultMessage: "No user to subscribe."}),
+            add_class: "text-error",
+            remove_class: "text-success",
+            ignored_deactivated_users,
+        });
         return;
     }
     user_ids = Array.from(user_ids);
@@ -272,17 +314,22 @@ function submit_add_subscriber_form(e) {
             people.get_by_email(email),
         );
 
-        const html = render_stream_subscription_info({subscribed_users, already_subscribed_users});
-        ui.get_content_element(stream_subscription_info_elem).html(html);
-        stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
+        show_stream_subscription_request_result({
+            add_class: "text-success",
+            remove_class: "text-error",
+            subscribed_users,
+            already_subscribed_users,
+            ignored_deactivated_users,
+        });
     }
 
     function invite_failure(xhr) {
         const error = JSON.parse(xhr.responseText);
-        stream_subscription_info_elem
-            .text(error.msg)
-            .addClass("text-error")
-            .removeClass("text-success");
+        show_stream_subscription_request_result({
+            message: error.msg,
+            add_class: "text-error",
+            remove_class: "text-success",
+        });
     }
 
     invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
@@ -655,7 +702,6 @@ export function change_stream_name(e) {
     }
 
     channel.patch({
-        // Stream names might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
         data: {new_name},
         success() {
@@ -707,7 +753,6 @@ export function change_stream_description(e) {
     }
 
     channel.patch({
-        // Description might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
         data: {
             description,
@@ -773,7 +818,8 @@ export function initialize() {
             disable_message_retention_setting:
                 !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
             stream_message_retention_days: stream.message_retention_days,
-            realm_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
+            org_level_message_retention_setting:
+                get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
             is_stream_edit: true,
@@ -830,29 +876,30 @@ export function initialize() {
             blueslip.error(".subscriber_list_remove form submit fails");
             return;
         }
-        const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
+        let message;
 
         function removal_success(data) {
             if (data.removed.length > 0) {
                 // Remove the user from the subscriber list.
                 list_entry.remove();
-                stream_subscription_info_elem.text(
-                    $t({defaultMessage: "Unsubscribed successfully!"}),
-                );
+                message = $t({defaultMessage: "Unsubscribed successfully!"});
                 // The rest of the work is done via the subscription -> remove event we will get
             } else {
-                stream_subscription_info_elem.text(
-                    $t({defaultMessage: "User is already not subscribed."}),
-                );
+                message = $t({defaultMessage: "User is already not subscribed."});
             }
-            stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
+            show_stream_subscription_request_result({
+                message,
+                add_class: "text-success",
+                remove_class: "text-remove",
+            });
         }
 
         function removal_failure() {
-            stream_subscription_info_elem
-                .text($t({defaultMessage: "Error removing user from this stream."}))
-                .addClass("text-error")
-                .removeClass("text-success");
+            show_stream_subscription_request_result({
+                message: $t({defaultMessage: "Error removing user from this stream."}),
+                add_class: "text-error",
+                remove_class: "text-success",
+            });
         }
 
         function remove_user_from_private_stream() {
@@ -872,6 +919,7 @@ export function initialize() {
                 html_body,
                 html_yes_button: $t_html({defaultMessage: "Confirm"}),
                 on_click: remove_user_from_private_stream,
+                fade: true,
             });
             return;
         }
@@ -940,6 +988,7 @@ export function initialize() {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_archive_stream,
+            fade: true,
         });
 
         $(".confirm_dialog_yes_button").attr("data-stream-id", stream_id);

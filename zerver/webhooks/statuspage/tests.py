@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class StatuspageHookTests(WebhookTestCase):
     STREAM_NAME = "statuspage-test"
     URL_TEMPLATE = "/api/v1/external/statuspage?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "statuspage"
+    WEBHOOK_DIR_NAME = "statuspage"
 
     def test_statuspage_incident(self) -> None:
         expected_topic = "Database query delays: All Systems Operational"

@@ -931,7 +931,7 @@ message_edit_data = DictType(
     required_keys=[
         ("allow_message_editing", bool),
         ("message_content_edit_limit_seconds", int),
-        ("allow_community_topic_editing", bool),
+        ("edit_topic_policy", int),
     ]
 )
 

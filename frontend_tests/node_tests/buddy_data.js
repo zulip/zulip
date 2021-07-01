@@ -12,7 +12,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 const timerender = mock_esm("../../static/js/timerender");
 
 const compose_fade_helper = zrequire("compose_fade_helper");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -96,7 +96,7 @@ function add_canned_users() {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         compose_fade_helper.clear_focused_recipient();
         stream_data.clear_subscriptions();
         peer_data.clear_for_testing();
@@ -105,8 +105,8 @@ function test(label, f) {
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
-        muting.set_muted_users([]);
-        f(override);
+        muted_users.set_muted_users([]);
+        f({override});
     });
 }
 
@@ -388,18 +388,18 @@ test("simple search", () => {
 
 test("muted users excluded from search", () => {
     people.add_active_user(selma);
-    muting.add_muted_user(selma.user_id);
+    muted_users.add_muted_user(selma.user_id);
 
     let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(user_ids.includes(selma.user_id), false);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
     assert.deepEqual(user_ids, []);
-    assert(!buddy_data.matches_filter("sel", selma.user_id));
+    assert.ok(!buddy_data.matches_filter("sel", selma.user_id));
 
-    muting.remove_muted_user(selma.user_id);
+    muted_users.remove_muted_user(selma.user_id);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
     assert.deepEqual(user_ids, [selma.user_id]);
-    assert(buddy_data.matches_filter("sel", selma.user_id));
+    assert.ok(buddy_data.matches_filter("sel", selma.user_id));
 });
 
 test("bulk_data_hacks", () => {
@@ -461,6 +461,19 @@ test("bulk_data_hacks", () => {
     assert.equal(user_ids.length, 700);
 });
 
+test("always show me", ({override}) => {
+    const present_user_ids = [];
+    override(presence, "get_user_ids", () => present_user_ids);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+
+    // Make sure we didn't mutate the list passed to us.
+    assert.deepEqual(present_user_ids, []);
+
+    // try to make us show twice
+    present_user_ids.push(me.user_id);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+});
+
 test("user_status", () => {
     user_status.initialize({user_status: []});
     set_presence(me.user_id, "active");
@@ -498,7 +511,7 @@ test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-test("user_last_seen_time_status", (override) => {
+test("user_last_seen_time_status", ({override}) => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -577,7 +590,7 @@ test("get_items_for_users", () => {
     ]);
 });
 
-test("error handling", (override) => {
+test("error handling", ({override}) => {
     override(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");

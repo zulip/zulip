@@ -62,7 +62,8 @@ h3 .fa-question-circle-o {
             text-align: left;
         }
     }
-    #account-settings {
+    #account-settings,
+    #profile-field-settings {
         .grid {
             label {
                 min-width: 120px;
@@ -108,8 +109,7 @@ h3 .fa-question-circle-o {
 }
 
 #change_password_modal,
-#change_email_modal,
-#change_full_name_modal {
+#change_email_modal {
     max-width: 480px;
 }
 
@@ -150,10 +150,6 @@ h3 .fa-question-circle-o {
 .table {
     tbody {
         border-bottom: 1px solid hsl(0, 0%, 87%);
-    }
-
-    &.table-condensed.table-striped {
-        margin: 0;
     }
 }
 
@@ -259,15 +255,12 @@ td .button {
     .table-sticky-headers th {
         position: sticky;
         top: 0;
+        z-index: 1;
     }
 
     .table-striped {
         table-layout: auto;
         border-collapse: separate;
-
-        tbody {
-            border-bottom: none;
-        }
 
         thead th {
             color: inherit;
@@ -531,7 +524,6 @@ input[type="checkbox"] {
     margin-left: 10px;
     color: hsl(156, 30%, 50%);
     padding: 3px 10px;
-    font-size: 15px;
 
     &:not(:empty) {
         border: 1px solid hsl(156, 30%, 50%);
@@ -596,16 +588,19 @@ input[type="checkbox"] {
     }
 }
 
-#account-settings {
-    .custom-profile-fields-form .custom_user_field label {
+#profile-settings {
+    .custom-profile-fields-form .custom_user_field label,
+    .full-name-change-form label,
+    .timezone-setting-form label {
         min-width: fit-content;
     }
 
-    .alert-notification.custom-field-status {
+    .alert-notification.custom-field-status,
+    .alert-notification.full-name-status,
+    .alert-notification.timezone-setting-status {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
-        font-size: 14px;
         padding-left: 0;
         margin-left: 5px;
         border: none;
@@ -1161,12 +1156,11 @@ input[type="checkbox"] {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0, 0%, 80%);
-        font-size: 14px;
         padding: 3px 14px 4px 11px;
         text-decoration: none;
         color: hsl(0, 0%, 47%);
         min-width: 80px;
-        line-height: 16px;
+        line-height: 1.2;
 
         &:hover,
         &:focus {
@@ -1202,9 +1196,8 @@ input[type="checkbox"] {
         }
 
         .save-discard-widget-button-icon {
-            vertical-align: bottom;
+            vertical-align: middle;
             margin-right: 3px;
-            margin-bottom: 1px;
             font-size: 15px;
             font-weight: 500;
         }
@@ -1461,9 +1454,10 @@ input[type="checkbox"] {
         .exit-sign {
             float: right;
             position: relative;
-            top: 3px;
+            top: 1px;
             margin-left: 3px;
             font-size: 1.5rem;
+            line-height: 1;
             font-weight: 600;
             cursor: pointer;
         }
@@ -1540,7 +1534,6 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_full_name_modal .change_full_name_info,
     #change_email_modal .change_email_info,
     #change_password_modal .change_password_info,
     #api_key_modal #api_key_status {
@@ -1548,27 +1541,8 @@ input[type="checkbox"] {
     }
 }
 
-.modal {
-    box-shadow: 0 0 75px hsla(0, 0%, 0%, 0.5);
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
-    border: none;
-    border-radius: 0;
-
-    &.fade {
-        /* Ensure the modal is entirely off-screen while we fade the background */
-        top: -50%;
-        transition: opacity 0.3s linear;
-        transform: translateY(-50%);
-
-        &.in {
-            top: 50%;
-            pointer-events: all;
-        }
-    }
-}
-
-#account-settings,
-#admin-human-form {
+#profile-settings,
+#edit-user-form {
     .user-role button {
         cursor: default;
     }
@@ -1621,29 +1595,38 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     margin-top: 10px;
 }
 
-#do_deactivate_self_button .loader {
+.confirm_dialog_yes_button .loader {
     display: none;
     vertical-align: top;
     position: relative;
     height: 30px;
     margin-top: -10px;
     top: 5px;
+    width: 30px;
 }
 
 .dropdown-list-widget {
     button {
         margin: 0 5px;
-
-        &.dropdown_list_reset_button {
-            /* Prevent night mode from overriding background. */
-            background: unset !important;
-            border: none;
-
-            &:disabled {
-                display: none;
-            }
+        &.dropdown-toggle {
+            /* Matches bootstrap hardcoded 30px height for select elements,
+               which we want to match the size of. */
+            height: 30px;
+            padding: 0;
         }
+
         &:disabled i {
+            display: none;
+        }
+    }
+
+    a.dropdown_list_reset_button {
+        /* Prevent night mode from overriding background. */
+        background: unset !important;
+        border: none;
+        margin-left: 10px;
+
+        &:disabled {
             display: none;
         }
     }
@@ -1961,15 +1944,15 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-#linkifier-edit-form-modal {
+#edit-fields-modal-status {
+    margin-top: 6px;
+    margin-bottom: 8px;
+}
+
+#edit-linkifier-form {
     #edit-linkifier-pattern,
     #edit-linkifier-url-format-string {
         width: 400px;
-    }
-
-    #edit-linkifier-status {
-        margin-top: 6px;
-        margin-bottom: 8px;
     }
 
     label {

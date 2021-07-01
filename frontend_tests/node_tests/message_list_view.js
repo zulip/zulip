@@ -47,14 +47,14 @@ mock_esm("../../static/js/rows", {
 const {Filter} = zrequire("../js/filter");
 const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 
 let next_timestamp = 1500000000;
 
 function test(label, f) {
-    run_test(label, (override) => {
-        muting.set_muted_users([]);
-        f(override);
+    run_test(label, ({override}) => {
+        muted_users.set_muted_users([]);
+        f({override});
     });
 }
 
@@ -187,7 +187,7 @@ test("muted_message_vars", () => {
         assert.equal(result[1].contains_mention, true);
 
         // Now, mute the sender.
-        muting.add_muted_user(10);
+        muted_users.add_muted_user(10);
         result = calculate_variables(list, messages);
 
         // Check that `is_hidden` is true and `include_sender` is false on all messages.
@@ -282,7 +282,7 @@ test("merge_message_groups", () => {
     function assert_message_list_equal(list1, list2) {
         const ids1 = extract_message_ids(list1);
         const ids2 = extract_message_ids(list2);
-        assert(ids1.length);
+        assert.ok(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
 
@@ -293,7 +293,7 @@ test("merge_message_groups", () => {
     function assert_message_groups_list_equal(list1, list2) {
         const ids1 = list1.map((group) => extract_group(group));
         const ids2 = list2.map((group) => extract_group(group));
-        assert(ids1.length);
+        assert.ok(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
 
@@ -341,7 +341,7 @@ test("merge_message_groups", () => {
         const list = build_list([message_group1]);
         const result = list.merge_message_groups([message_group2], "bottom");
 
-        assert(!message_group2.group_date_divider_html);
+        assert.ok(!message_group2.group_date_divider_html);
         assert_message_groups_list_equal(list._message_groups, [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert.deepEqual(result.prepend_groups, []);
@@ -385,7 +385,7 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, [message2]);
         assert.deepEqual(result.rerender_messages_next_same_sender, [message1]);
-        assert(list._message_groups[0].message_containers[1].want_date_divider);
+        assert.ok(list._message_groups[0].message_containers[1].want_date_divider);
     })();
 
     (function test_append_message_historical() {
@@ -398,7 +398,7 @@ test("merge_message_groups", () => {
         const list = build_list([message_group1]);
         const result = list.merge_message_groups([message_group2], "bottom");
 
-        assert(message_group2.bookend_top);
+        assert.ok(message_group2.bookend_top);
         assert_message_groups_list_equal(list._message_groups, [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert.deepEqual(result.prepend_groups, []);
@@ -417,7 +417,7 @@ test("merge_message_groups", () => {
         const list = build_list([message_group1]);
         const result = list.merge_message_groups([message_group2], "bottom");
 
-        assert(message2.include_sender);
+        assert.ok(message2.include_sender);
         assert_message_groups_list_equal(list._message_groups, [
             build_message_group([message1, message2]),
         ]);
@@ -518,7 +518,7 @@ test("merge_message_groups", () => {
         const list = build_list([message_group1]);
         const result = list.merge_message_groups([message_group2], "top");
 
-        assert(message_group1.bookend_top);
+        assert.ok(message_group1.bookend_top);
         assert_message_groups_list_equal(list._message_groups, [message_group2, message_group1]);
         assert.deepEqual(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);

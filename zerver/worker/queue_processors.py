@@ -424,7 +424,11 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         logger.info(
             "Sending invitation for realm %s to %s", referrer.realm.string_id, invitee.email
         )
-        activate_url = do_send_confirmation_email(invitee, referrer)
+        if "email_language" in data:
+            email_language = data["email_language"]
+        else:
+            email_language = referrer.realm.default_language
+        activate_url = do_send_confirmation_email(invitee, referrer, email_language)
 
         # queue invitation reminder
         if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
@@ -440,7 +444,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 referrer.realm,
                 to_emails=[invitee.email],
                 from_address=FromAddress.tokenized_no_reply_placeholder,
-                language=referrer.realm.default_language,
+                language=email_language,
                 context=context,
                 delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2),
             )
@@ -753,10 +757,10 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             realm = Realm.objects.get(id=event["message_realm_id"])
 
             # If rendering fails, the called code will raise a JsonableError.
-            rendered_content = render_incoming_message(
+            rendering_result = render_incoming_message(
                 message, message.content, message_user_ids, realm
             )
-            do_update_embedded_data(message.sender, message, message.content, rendered_content)
+            do_update_embedded_data(message.sender, message, message.content, rendering_result)
 
 
 @assign_queue("outgoing_webhooks")

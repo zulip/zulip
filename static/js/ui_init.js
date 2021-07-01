@@ -7,6 +7,7 @@ import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
+import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -26,18 +27,21 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
+import * as i18n from "./i18n";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
+import * as muted_users from "./muted_users";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
@@ -45,9 +49,11 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
+import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -56,6 +62,7 @@ import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
@@ -146,7 +153,7 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_active() && !recent_topics.is_visible()) {
+        if (!overlays.is_active() && !recent_topics_util.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
@@ -186,6 +193,10 @@ export function initialize_kitchen_sink_stuff() {
     // exact right width for the floating_recipient_bar and compose
     // box, but, close enough for now.
     resize.handler();
+
+    if (page_params.is_spectator) {
+        $("body").addClass("spectator-view");
+    }
 
     if (!page_params.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
@@ -316,13 +327,6 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
         }
-    });
-
-    $("#main_div").on("mouseenter", ".message_time", (e) => {
-        const time_elem = $(e.target);
-        const row = time_elem.closest(".message_row");
-        const message = message_lists.current.get(rows.id(row));
-        timerender.set_full_datetime(message, time_elem);
     });
 
     $("body").on("mouseover", ".message_edit_content", function () {
@@ -458,8 +462,12 @@ export function initialize_everything() {
     const user_groups_params = pop_fields("realm_user_groups");
 
     const user_status_params = pop_fields("user_status");
+    const i18n_params = pop_fields("language_list");
 
+    realm_logo.rerender();
+    i18n.initialize(i18n_params);
     tippyjs.initialize();
+    popover_menus.initialize();
     // We need to initialize compose early, because other modules'
     // initialization expects `#compose` to be already present in the
     // DOM, dating from when the compose area was part of the backend
@@ -478,7 +486,8 @@ export function initialize_everything() {
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
-    muting.initialize();
+    muted_topics.initialize();
+    muted_users.initialize();
     subs.initialize();
     stream_list.initialize();
     condense.initialize();
@@ -514,9 +523,13 @@ export function initialize_everything() {
     gear_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
+    settings_display.initialize();
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
+    about_zulip.initialize();
+
+    // All overlays must be initialized before hashchange.js
     hashchange.initialize();
     unread_ui.initialize();
     activity.initialize();
@@ -531,6 +544,7 @@ export function initialize_everything() {
     starred_messages.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
+    message_edit_history.initialize();
 }
 
 $(() => {

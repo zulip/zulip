@@ -19,7 +19,6 @@ const bot_data_params = {
     ],
 };
 
-mock_cjs("jquery", $);
 const avatar = mock_esm("../../static/js/avatar");
 
 function ClipboardJS(sel) {
@@ -33,7 +32,7 @@ const settings_bots = zrequire("settings_bots");
 bot_data.initialize(bot_data_params);
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.realm_uri = "https://chat.example.com";
         page_params.realm_embedded_bots = [
             {name: "converter", config: {}},
@@ -41,7 +40,7 @@ function test(label, f) {
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
         ];
 
-        f(override);
+        f({override});
     });
 }
 
@@ -101,26 +100,26 @@ function test_create_bot_type_input_box_toggle(f) {
 
     $('input[name="bot_type"]:checked').val(EMBEDDED_BOT_TYPE);
     f();
-    assert(!create_payload_url.hasClass("required"));
-    assert(!payload_url_inputbox.visible());
-    assert($("#select_service_name").hasClass("required"));
-    assert($("#service_name_list").visible());
-    assert(config_inputbox.visible());
+    assert.ok(!create_payload_url.hasClass("required"));
+    assert.ok(!payload_url_inputbox.visible());
+    assert.ok($("#select_service_name").hasClass("required"));
+    assert.ok($("#service_name_list").visible());
+    assert.ok(config_inputbox.visible());
 
     $('input[name="bot_type"]:checked').val(OUTGOING_WEBHOOK_BOT_TYPE);
     f();
-    assert(create_payload_url.hasClass("required"));
-    assert(payload_url_inputbox.visible());
-    assert(!config_inputbox.visible());
+    assert.ok(create_payload_url.hasClass("required"));
+    assert.ok(payload_url_inputbox.visible());
+    assert.ok(!config_inputbox.visible());
 
     $("#create_bot_type :selected").val(GENERIC_BOT_TYPE);
     f();
-    assert(!create_payload_url.hasClass("required"));
-    assert(!payload_url_inputbox.visible());
-    assert(!config_inputbox.visible());
+    assert.ok(!create_payload_url.hasClass("required"));
+    assert.ok(!payload_url_inputbox.visible());
+    assert.ok(!config_inputbox.visible());
 }
 
-test("test tab clicks", (override) => {
+test("test tab clicks", ({override}) => {
     override($.validator, "addMethod", () => {});
 
     $("#create_bot_form").validate = () => {};
@@ -162,41 +161,41 @@ test("test tab clicks", (override) => {
     };
 
     click_on_tab(tabs.add);
-    assert(tabs.add.hasClass("active"));
-    assert(!tabs.active.hasClass("active"));
-    assert(!tabs.inactive.hasClass("active"));
+    assert.ok(tabs.add.hasClass("active"));
+    assert.ok(!tabs.active.hasClass("active"));
+    assert.ok(!tabs.inactive.hasClass("active"));
 
-    assert(forms.add.visible());
-    assert(!forms.active.visible());
-    assert(!forms.inactive.visible());
+    assert.ok(forms.add.visible());
+    assert.ok(!forms.active.visible());
+    assert.ok(!forms.inactive.visible());
 
     click_on_tab(tabs.active);
-    assert(!tabs.add.hasClass("active"));
-    assert(tabs.active.hasClass("active"));
-    assert(!tabs.inactive.hasClass("active"));
+    assert.ok(!tabs.add.hasClass("active"));
+    assert.ok(tabs.active.hasClass("active"));
+    assert.ok(!tabs.inactive.hasClass("active"));
 
-    assert(!forms.add.visible());
-    assert(forms.active.visible());
-    assert(!forms.inactive.visible());
+    assert.ok(!forms.add.visible());
+    assert.ok(forms.active.visible());
+    assert.ok(!forms.inactive.visible());
 
     click_on_tab(tabs.inactive);
-    assert(!tabs.add.hasClass("active"));
-    assert(!tabs.active.hasClass("active"));
-    assert(tabs.inactive.hasClass("active"));
+    assert.ok(!tabs.add.hasClass("active"));
+    assert.ok(!tabs.active.hasClass("active"));
+    assert.ok(tabs.inactive.hasClass("active"));
 
-    assert(!forms.add.visible());
-    assert(!forms.active.visible());
-    assert(forms.inactive.visible());
+    assert.ok(!forms.add.visible());
+    assert.ok(!forms.active.visible());
+    assert.ok(forms.inactive.visible());
 });
 
 test("can_create_new_bots", () => {
     page_params.is_admin = true;
-    assert(settings_bots.can_create_new_bots());
+    assert.ok(settings_bots.can_create_new_bots());
 
     page_params.is_admin = false;
     page_params.realm_bot_creation_policy = 1;
-    assert(settings_bots.can_create_new_bots());
+    assert.ok(settings_bots.can_create_new_bots());
 
     page_params.realm_bot_creation_policy = 3;
-    assert(!settings_bots.can_create_new_bots());
+    assert.ok(!settings_bots.can_create_new_bots());
 });

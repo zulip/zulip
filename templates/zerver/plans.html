@@ -38,14 +38,14 @@
                             </div>
                             <div class="bottom">
                                 <div class="text-content">
-                                    {% if realm_plan_type <= 1 %}
+                                    {% if not realm or realm.plan_type == realm.SELF_HOSTED %}
                                     <div class="pricing-details">
                                         Free
                                     </div>
                                     <a href="/new/" class="button green">
                                         Sign up now
                                     </a>
-                                    {% elif realm_plan_type == 2 or sponsorship_pending %}
+                                    {% elif realm.plan_type == realm.LIMITED or sponsorship_pending %}
                                     <div class="pricing-details"></div>
                                     <a href='/upgrade' class="button black-current-value" type="button">
                                         Current plan
@@ -81,16 +81,20 @@
                                             $8/month billed monthly
                                         </div>
                                     </div>
-                                    {% if realm_plan_type in [3, 4] %}
-                                    <a href='/upgrade' class="button black-current-value" type="button">
-                                        Current plan
-                                    </a>
-                                    {% elif realm_plan_type == 0 %}
+                                    {% if not realm %}
                                     <a href="/new" class="button green">
                                         {% if free_trial_days %}
                                         Start {{ free_trial_days }} day free trial
                                         {% else %}
                                         Buy Standard
+                                        {% endif %}
+                                    </a>
+                                    {% elif realm.plan_type in [realm.STANDARD, realm.STANDARD_FREE] %}
+                                    <a href='/billing' class="button black-current-value" type="button">
+                                        {% if realm_on_free_trial %}
+                                        Current plan (free trial)
+                                        {% else %}
+                                        Current plan
                                         {% endif %}
                                     </a>
                                     {% elif sponsorship_pending %}

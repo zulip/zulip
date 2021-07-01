@@ -33,7 +33,7 @@ VENV_DEPENDENCIES = [
     # because we don't have another place that we install apt packages
     # on upgrade of a production server, and it's not worth adding
     # another call to `apt install` for.
-    "jq",  # Used by scripts/lib/install-node to check yarn version
+    "jq",  # Used by scripts/lib/install-yarn to check yarn version
     "libsasl2-dev",  # For building python-ldap from source
 ]
 

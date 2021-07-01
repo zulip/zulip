@@ -3,7 +3,8 @@
 const path = require("path");
 
 require("css.escape");
-const Handlebars = require("handlebars/runtime");
+require("handlebars/runtime");
+const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const handlebars = require("./handlebars");
@@ -13,6 +14,8 @@ const test = require("./test");
 const blueslip = require("./zblueslip");
 const zjquery = require("./zjquery");
 const zpage_params = require("./zpage_params");
+
+global.DOMParser = new JSDOM().window.DOMParser;
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -64,6 +67,8 @@ function short_tb(tb) {
     return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
 }
 
+require("../../static/js/templates"); // register Zulip extensions
+
 function run_one_module(file) {
     zjquery.clear_initialize_function();
     zjquery.clear_all_elements();
@@ -103,7 +108,6 @@ try {
         }
 
         namespace.finish();
-        Handlebars.HandlebarsEnvironment.call(Handlebars);
     }
 } catch (error) {
     if (error.stack) {

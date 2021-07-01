@@ -1,13 +1,15 @@
 import os
 import shutil
 from io import BytesIO
-from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterator, List, Set, Tuple
 from unittest import mock
 from unittest.mock import ANY, call
 
 import orjson
+import responses
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from requests.models import PreparedRequest
 
 from zerver.data_import.import_util import (
     build_defaultstream,
@@ -50,31 +52,22 @@ def remove_folder(path: str) -> None:
         shutil.rmtree(path)
 
 
-class MockResponse:
-    def __init__(self, json_data: Optional[Dict[str, Any]], status_code: int) -> None:
-        self.json_data = json_data
-        self.status_code = status_code
+def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+    if request.url != "https://slack.com/api/users.list":
+        return (404, {}, b"")
 
-    def json(self) -> Optional[Dict[str, Any]]:
-        return self.json_data
+    if request.headers.get("Authorization") != "Bearer xoxp-valid-token":
+        return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
-
-# This method will be used by the mock to replace requests.get
-def mocked_requests_get(*args: str, headers: Dict[str, str]) -> MockResponse:
-    if args != ("https://slack.com/api/users.list",):
-        return MockResponse(None, 404)
-
-    if headers.get("Authorization") != "Bearer xoxp-valid-token":
-        return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
-
-    return MockResponse({"ok": True, "members": "user_data"}, 200)
+    return (200, {}, orjson.dumps({"ok": True, "members": "user_data"}))
 
 
 class SlackImporter(ZulipTestCase):
-    @mock.patch("requests.get", side_effect=mocked_requests_get)
-    def test_get_slack_api_data(self, mock_get: mock.Mock) -> None:
+    @responses.activate
+    def test_get_slack_api_data(self) -> None:
         token = "xoxp-valid-token"
         slack_user_list_url = "https://slack.com/api/users.list"
+        responses.add_callback(responses.GET, slack_user_list_url, callback=request_callback)
         self.assertEqual(
             get_slack_api_data(slack_user_list_url, "members", token=token), "user_data"
         )
@@ -89,6 +82,7 @@ class SlackImporter(ZulipTestCase):
 
         token = "xoxp-status404"
         wrong_url = "https://slack.com/api/wrong"
+        responses.add_callback(responses.GET, wrong_url, callback=request_callback)
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(wrong_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("HTTP error accessing the Slack API.",))

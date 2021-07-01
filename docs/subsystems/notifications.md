@@ -33,10 +33,9 @@ as follows:
   `send_event` for each user receiving the message.
   * Data about user configuration relevant to the message, such as
   `online_push_user_ids` and `stream_notify_user_ids`, are included
-  alongside `flags` in the per-user data structure.
+  in the main event dictionary.
   * The `presence_idle_user_ids` set, containing the subset of
-  recipient users who are mentioned, are PM recipients, have alert
-  words, or otherwise would normally get a notification, but have not
+  recipient users who can potentially receive notifications, but have not
   interacted with a Zulip client in the last few minutes.  (Users who
   have generally will not receive a notification unless the
   `enable_online_push_notifications` flag is enabled).  This data
@@ -63,9 +62,11 @@ as follows:
   * However, that check does not handle the hard disconnect problem:
     if a user was present 1 minute before a message was sent, and then
     closed their laptop, the user will not be in
-    `presence_idle_user_ids`, and so without an additional mechanism,
-    messages sent shortly after a user leaves would never trigger a
-    notification (!).
+    `presence_idle_user_ids` (because it takes a
+    [few minutes](../subsystems/presence.md) of being idle for Zulip
+    clients to declare to the server that the user is actually idle),
+    and so without an additional mechanism, messages sent shortly after
+    a user leaves would never trigger a notification (!).
   * We solve that problem by also notifying if
     `receiver_is_off_zulip` returns `True`, which checks whether the user has any
     current events system clients registered to receive `message`
@@ -78,11 +79,15 @@ as follows:
     one; this second check solves the hard disconnect problem, resulting in
     notifications for these hard-disconnect cases usually coming 10
     minutes late.
+  * We try to contain the "when to notify" business logic in the
+    `zerver/lib/notification_data.py` class methods. The module has
+    unit tests for all possible situations in
+    `test_notification_data.py`.
   * The message-edit code path has parallel logic in
     `maybe_enqueue_notifications_for_message_update` for triggering
     notifications in cases like a mention added during message
     editing.
-  * The business logic for all these notification decisions made
+  * The notification sending logic for message edits
     inside Tornado has extensive automated test suites; e.g.
     `test_message_edit_notifications.py` covers all the cases around
     editing a message to add/remove a mention.

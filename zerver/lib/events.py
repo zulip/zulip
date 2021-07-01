@@ -218,8 +218,8 @@ def fetch_initial_state_data(
         state["realm_allow_message_editing"] = (
             False if user_profile is None else realm.allow_message_editing
         )
-        state["realm_allow_community_topic_editing"] = (
-            False if user_profile is None else realm.allow_community_topic_editing
+        state["realm_edit_topic_policy"] = (
+            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
         state["realm_allow_message_deleting"] = (
             False if user_profile is None else realm.allow_message_deleting
@@ -503,7 +503,7 @@ def fetch_initial_state_data(
     if want("update_display_settings"):
         for prop in UserProfile.property_types:
             state[prop] = getattr(settings_user, prop)
-            state["emojiset_choices"] = UserProfile.emojiset_choices()
+        state["emojiset_choices"] = UserProfile.emojiset_choices()
 
     if want("update_global_notifications"):
         for notification in UserProfile.notification_setting_types:
@@ -677,6 +677,13 @@ def apply_event(
                     if "streams" in state:
                         state["streams"] = do_get_streams(
                             user_profile, include_all_active=user_profile.is_realm_admin
+                        )
+
+                    if state["is_guest"]:
+                        state["realm_default_streams"] = []
+                    else:
+                        state["realm_default_streams"] = streams_to_dicts_sorted(
+                            get_default_streams_for_realm(user_profile.realm_id)
                         )
 
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:

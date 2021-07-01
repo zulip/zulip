@@ -1,6 +1,8 @@
 import $ from "jquery";
 
+import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
+import render_search_operator from "../templates/search_operators.hbs";
 
 import * as browser_history from "./browser_history";
 import * as common from "./common";
@@ -163,6 +165,12 @@ export function set_up_toggler() {
         rendered_markdown.update_elements($(this));
     });
     $(".informational-overlays .overlay-body").append($markdown_help);
+
+    const $search_operators = $(render_search_operator());
+    $(".informational-overlays .overlay-body").append($search_operators);
+
+    const $keyboard_shortcuts = $(render_keyboard_shortcut());
+    $(".informational-overlays .overlay-body").append($keyboard_shortcuts);
 
     const opts = {
         selected: 0,

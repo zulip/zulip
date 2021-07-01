@@ -285,6 +285,11 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    /* Disable blue link styling for the message timestamp link. */
+    .message_time {
+        color: hsl(236, 33%, 90%);
+    }
+
     .emoji-popover .reaction:focus {
         box-shadow: 0 0 1px hsl(0, 0%, 98%);
     }
@@ -305,7 +310,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark mode */
-    .compose-content,
+    #compose-content,
     .message_list .recipient_row,
     .message_row,
     .draft-row .draft-info-box,
@@ -581,7 +586,8 @@ on a dark background, and don't change the dark labels dark either. */
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
     #subscription_overlay ul.grey-box li,
-    #stream_privacy_modal ul.grey-box li,
+    #subscription_overlay .grey-box .radio-input-parent,
+    #stream_privacy_modal .grey-box .radio-input-parent,
     #settings_page .sidebar,
     #settings_page .sidebar *,
     table,
@@ -924,6 +930,13 @@ on a dark background, and don't change the dark labels dark either. */
                     color: hsl(236, 33%, 90%);
                 }
             }
+        }
+
+        .subscription-group-list,
+        .subscription-stream-list,
+        .subscription-stream-list .user-stream-list tr,
+        .subscription-group-list .user-group-list tr {
+            border-color: hsla(0, 0%, 0%, 0.4);
         }
     }
 

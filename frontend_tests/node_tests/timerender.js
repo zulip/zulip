@@ -6,14 +6,12 @@ const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.twenty_four_hour_time = true;
-
-mock_cjs("jquery", $);
 
 const timerender = zrequire("timerender");
 
@@ -108,7 +106,7 @@ run_test("render_date_renders_time_html", () => {
 
     const actual = timerender.render_date(message_time, undefined, today);
     assert.equal(actual.html(), expected_html);
-    assert.equal(attrs.title, "Friday, April 12, 2019");
+    assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
 });
 
@@ -221,24 +219,23 @@ run_test("absolute_time_24_hour", () => {
     assert.equal(actual, expected);
 });
 
-run_test("set_full_datetime", () => {
-    const message = {
-        timestamp: 1495091573, // 2017/5/18 7:12:53 AM (UTC+0)
-    };
-    const time_element = $("<span/>");
-    const attrs = {};
+run_test("get_full_datetime", () => {
+    const time = new Date(1495141973000); // 2017/5/18 9:12:53 PM (UTC+0)
+    let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
+    assert.equal(timerender.get_full_datetime(time), expected);
 
-    time_element.attr = (name, val) => {
-        attrs[name] = val;
-        return time_element;
-    };
+    // test 24 hour time setting.
+    page_params.twenty_four_hour_time = true;
+    expected = "translated: 5/18/2017 at 21:12:53 UTC";
+    assert.equal(timerender.get_full_datetime(time), expected);
 
-    // The formatting of the string time.toLocale(Date|Time)String() on Node
-    // might differ from the browser.
-    const time = new Date(message.timestamp * 1000);
-    const expected = `${time.toLocaleDateString()} 7:12:53 AM (UTC+0)`;
-    timerender.set_full_datetime(message, time_element);
-    assert.equal(attrs.title, expected);
+    page_params.twenty_four_hour_time = false;
+
+    // Test the GMT[+-]x:y logic.
+    process.env.TZ = "Asia/Kolkata";
+    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+5.5)";
+    assert.equal(timerender.get_full_datetime(time), expected);
+    delete process.env.TZ;
 });
 
 run_test("last_seen_status_from_date", () => {
@@ -259,13 +256,15 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({minutes: -30}, $t({defaultMessage: "30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -20}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
 
-    assert_same({days: -1}, $t({defaultMessage: "Yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
+
+    assert_same({hours: -48}, $t({defaultMessage: "2 days ago"}));
 
     assert_same({days: -2}, $t({defaultMessage: "2 days ago"}));
 

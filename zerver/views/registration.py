@@ -86,6 +86,10 @@ from zproject.backends import (
     password_auth_enabled,
 )
 
+if settings.BILLING_ENABLED:
+    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
+    from corporate.lib.stripe import LicenseLimitError
+
 
 def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
@@ -180,6 +184,12 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             validate_email_not_already_in_realm(realm, email)
         except ValidationError:
             return redirect_to_email_login_url(email)
+
+        if settings.BILLING_ENABLED:
+            try:
+                check_spare_licenses_available_for_registering_new_user(realm, email)
+            except LicenseLimitError:
+                return render(request, "zerver/no_spare_licenses.html")
 
     name_validated = False
     full_name = None

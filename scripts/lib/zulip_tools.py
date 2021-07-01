@@ -198,9 +198,9 @@ def get_deployment_lock(error_rerun_script: str) -> None:
                 WARNING
                 + "Another deployment in progress; waiting for lock... "
                 + "(If no deployment is running, rmdir {})".format(LOCK_DIR)
-                + ENDC
+                + ENDC,
+                flush=True,
             )
-            sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
@@ -222,7 +222,7 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ {}".format(" ".join(map(shlex.quote, args))))
+    print("+ {}".format(" ".join(map(shlex.quote, args))), flush=True)
 
     try:
         subprocess.check_call(args, **kwargs)
@@ -412,8 +412,9 @@ def parse_os_release() -> Dict[str, str]:
      'PRETTY_NAME': 'Ubuntu 18.04.3 LTS',
     }
 
-    VERSION_CODENAME (e.g. 'bionic') is nice and human-readable, but
-    we avoid using it, as it is not available on RHEL-based platforms.
+    VERSION_CODENAME (e.g. 'bionic') is nice and readable to Ubuntu
+    developers, but we avoid using it, as it is not available on
+    RHEL-based platforms.
     """
     distro_info = {}  # type: Dict[str, str]
     with open("/etc/os-release") as fp:
@@ -425,11 +426,6 @@ def parse_os_release() -> Dict[str, str]:
                 continue
             k, v = line.split("=", 1)
             [distro_info[k]] = shlex.split(v)
-    if distro_info["PRETTY_NAME"] == "Debian GNU/Linux bullseye/sid":
-        # This hack can be removed once bullseye releases and reports
-        # its VERSION_ID in /etc/os-release.
-        distro_info["VERSION_CODENAME"] = "bullseye"
-        distro_info["VERSION_ID"] = "11"
     return distro_info
 
 
@@ -621,7 +617,9 @@ def is_vagrant_env_host(path: str) -> bool:
     return ".vagrant" in os.listdir(path)
 
 
-def has_application_server() -> bool:
+def has_application_server(once: bool = False) -> bool:
+    if once:
+        return os.path.exists("/etc/supervisor/conf.d/zulip/zulip-once.conf")
     return (
         # Current path
         os.path.exists("/etc/supervisor/conf.d/zulip/zulip.conf")

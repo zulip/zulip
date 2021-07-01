@@ -1,13 +1,16 @@
 import orjson
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
-from zerver.lib.actions import do_add_submessage
+from zerver.lib.actions import do_add_submessage, verify_submessage_sender
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
-from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_int
+from zerver.lib.response import json_success
+from zerver.lib.validator import check_int, validate_poll_data, validate_todo_data
+from zerver.lib.widget import get_widget_type
 from zerver.models import UserProfile
 
 
@@ -23,10 +26,32 @@ def process_submessage(
 ) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id, lock_message=True)
 
+    verify_submessage_sender(
+        message_id=message.id,
+        message_sender_id=message.sender_id,
+        submessage_sender_id=user_profile.id,
+    )
+
     try:
-        orjson.loads(content)
+        widget_data = orjson.loads(content)
     except orjson.JSONDecodeError:
-        return json_error(_("Invalid json for submessage"))
+        raise JsonableError(_("Invalid json for submessage"))
+
+    widget_type = get_widget_type(message_id=message.id)
+
+    is_widget_author = message.sender_id == user_profile.id
+
+    if widget_type == "poll":
+        try:
+            validate_poll_data(poll_data=widget_data, is_widget_author=is_widget_author)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+
+    if widget_type == "todo":
+        try:
+            validate_todo_data(todo_data=widget_data)
+        except ValidationError as error:
+            raise JsonableError(error.message)
 
     do_add_submessage(
         realm=user_profile.realm,

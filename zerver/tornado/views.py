@@ -6,7 +6,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables, internal_notify_view, process_client
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
     check_int,
@@ -34,7 +35,7 @@ def cleanup_event_queue(
     if client is None:
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
-        return json_error(_("You are not authorized to access this queue"))
+        raise JsonableError(_("You are not authorized to access this queue"))
     request._log_data["extra"] = f"[{queue_id}]"
     client.cleanup()
     return json_success()
@@ -102,7 +103,7 @@ def get_events_backend(
     ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
-        return json_error(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized for this query"))
 
     # Extract the Tornado handler from the request
     handler: AsyncDjangoHandler = request._tornado_handler

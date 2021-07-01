@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import * as emojisets from "./emojisets";
-import {$t_html} from "./i18n";
+import {$t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -13,6 +13,12 @@ import * as ui_report from "./ui_report";
 const meta = {
     loaded: false,
 };
+
+export let default_language_name;
+
+export function set_default_language_name(name) {
+    default_language_name = name;
+}
 
 function change_display_setting(data, status_element, success_msg_html, sticky) {
     const $status_el = $(status_element);
@@ -41,8 +47,6 @@ function change_display_setting(data, status_element, success_msg_html, sticky) 
 export function set_up() {
     meta.loaded = true;
     $("#display-settings-status").hide();
-
-    $("#user_timezone").val(page_params.timezone);
 
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
 
@@ -139,10 +143,6 @@ export function set_up() {
         change_display_setting(data, "#time-settings-status");
     });
 
-    $("#user_timezone").on("change", function () {
-        const data = {timezone: this.value};
-        change_display_setting(data, "#time-settings-status");
-    });
     $(".emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
         const current_emojiset = page_params.emojiset;
@@ -196,7 +196,7 @@ export async function report_emojiset_change() {
 
 export function update_page() {
     $("#left_side_userlist").prop("checked", page_params.left_side_userlist);
-    $("#default_language_name").text(page_params.default_language_name);
+    $("#default_language_name").text(default_language_name);
     $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
     $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
@@ -204,4 +204,9 @@ export function update_page() {
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
+}
+
+export function initialize() {
+    const language_name = get_language_name(page_params.default_language);
+    set_default_language_name(language_name);
 }

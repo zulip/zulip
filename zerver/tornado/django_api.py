@@ -147,9 +147,8 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
 def send_event(
     realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
 ) -> None:
-    """`users` is a list of user IDs, or in the case of `message` type
-    events, a list of dicts describing the users and metadata about
-    the user/message pair."""
+    """`users` is a list of user IDs, or in some special cases like message
+    send/update or embeds, dictionaries containing extra data."""
     port = get_tornado_port(realm)
     queue_json_publish(
         notify_tornado_queue_name(port),

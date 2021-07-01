@@ -31,7 +31,7 @@ function basic_conf({first_key, prev_key, next_key}) {
     return conf;
 }
 
-run_test("misc errors", (override) => {
+run_test("misc errors", ({override}) => {
     const conf = basic_conf({
         first_key: () => undefined,
         prev_key: () => undefined,
@@ -60,7 +60,7 @@ run_test("misc errors", (override) => {
     cursor.next();
 });
 
-run_test("single item list", (override) => {
+run_test("single item list", ({override}) => {
     const valid_key = "42";
 
     const conf = basic_conf({
@@ -89,7 +89,7 @@ run_test("single item list", (override) => {
     cursor.go_to(valid_key);
 });
 
-run_test("multiple item list", (override) => {
+run_test("multiple item list", ({override}) => {
     const conf = basic_conf({
         first_key: () => 1,
         next_key: (key) => (key < 3 ? key + 1 : undefined),
@@ -112,30 +112,30 @@ run_test("multiple item list", (override) => {
 
     cursor.go_to(2);
     assert.equal(cursor.get_key(), 2);
-    assert(!list_items[1].hasClass("highlight"));
-    assert(list_items[2].hasClass("highlight"));
-    assert(!list_items[3].hasClass("highlight"));
+    assert.ok(!list_items[1].hasClass("highlight"));
+    assert.ok(list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
 
     cursor.next();
     cursor.next();
     cursor.next();
 
     assert.equal(cursor.get_key(), 3);
-    assert(!list_items[1].hasClass("highlight"));
-    assert(!list_items[2].hasClass("highlight"));
-    assert(list_items[3].hasClass("highlight"));
+    assert.ok(!list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[2].hasClass("highlight"));
+    assert.ok(list_items[3].hasClass("highlight"));
 
     cursor.prev();
     cursor.prev();
     cursor.prev();
 
     assert.equal(cursor.get_key(), 1);
-    assert(list_items[1].hasClass("highlight"));
-    assert(!list_items[2].hasClass("highlight"));
-    assert(!list_items[3].hasClass("highlight"));
+    assert.ok(list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[2].hasClass("highlight"));
+    assert.ok(!list_items[3].hasClass("highlight"));
 
     cursor.clear();
     assert.equal(cursor.get_key(), undefined);
     cursor.redraw();
-    assert(!list_items[1].hasClass("highlight"));
+    assert.ok(!list_items[1].hasClass("highlight"));
 });

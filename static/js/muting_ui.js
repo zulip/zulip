@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_confirm_mute_user from "../templates/confirm_mute_user.hbs";
+import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as activity from "./activity";
@@ -10,12 +10,13 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
+import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_muted_topics from "./settings_muted_topics";
 import * as settings_muted_users from "./settings_muted_users";
 import * as stream_data from "./stream_data";
@@ -36,17 +37,17 @@ export function rerender_for_muted_topic(old_muted_topics) {
     // We only update those topics which could have been affected, because
     // we want to avoid doing a complete rerender of the recent topics view,
     // because that can be expensive.
-    const current_muted_topics = muting.get_muted_topics();
+    const current_muted_topics = muted_topics.get_muted_topics();
     const maybe_affected_topics = _.unionWith(old_muted_topics, current_muted_topics, _.isEqual);
 
     for (const topic_data of maybe_affected_topics) {
-        recent_topics.update_topic_is_muted(topic_data.stream_id, topic_data.topic);
+        recent_topics_ui.update_topic_is_muted(topic_data.stream_id, topic_data.topic);
     }
 }
 
-export function handle_topic_updates(muted_topics) {
-    const old_muted_topics = muting.get_muted_topics();
-    muting.set_muted_topics(muted_topics);
+export function handle_topic_updates(muted_topics_list) {
+    const old_muted_topics = muted_topics.get_muted_topics();
+    muted_topics.set_muted_topics(muted_topics_list);
     stream_popover.hide_topic_popover();
     unread_ui.update_unread_counts();
     rerender_for_muted_topic(old_muted_topics);
@@ -116,7 +117,7 @@ export function toggle_topic_mute(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;
 
-    if (muting.is_topic_muted(stream_id, topic)) {
+    if (muted_topics.is_topic_muted(stream_id, topic)) {
         unmute_topic(stream_id, topic);
     } else if (message.type === "stream") {
         mute_topic(stream_id, topic, true);
@@ -172,11 +173,11 @@ export function rerender_for_muted_user() {
 
     // If a user is (un)muted, we want to update their avatars on the recent topics
     // participants column.
-    recent_topics.complete_rerender();
+    recent_topics_ui.complete_rerender();
 }
 
 export function handle_user_updates(muted_user_ids) {
     popovers.hide_all();
-    muting.set_muted_users(muted_user_ids);
+    muted_users.set_muted_users(muted_user_ids);
     rerender_for_muted_user();
 }

@@ -34,6 +34,11 @@ Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """
 
 for pclass in re.split(r"\s*,\s*", config.get("machine", "puppet_classes")):
+    if " " in pclass:
+        print(
+            f"The `machine.puppet_classes` setting in {args.config} must be comma-separated, not space-separated!"
+        )
+        sys.exit(1)
     puppet_config += f"include {pclass}\n"
 
 # We use the Puppet configuration from the same Zulip checkout as this script

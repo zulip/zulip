@@ -5,7 +5,8 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const muting = zrequire("muting");
+const muted_topics = zrequire("muted_topics");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
 
@@ -20,12 +21,12 @@ const params = {
 };
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         pmc.clear_for_testing();
-        muting.set_muted_topics([]);
-        muting.set_muted_users([]);
+        muted_topics.set_muted_topics([]);
+        muted_users.set_muted_users([]);
         people.initialize_current_user(15);
-        f(override);
+        f({override});
     });
 }
 
@@ -86,8 +87,8 @@ test("muted_users", () => {
     assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
 
     // Mute some users.
-    muting.add_muted_user(1);
-    muting.add_muted_user(2);
+    muted_users.add_muted_user(1);
+    muted_users.add_muted_user(2);
 
     // We should now get back only those messages which are either-
     // 1:1 PMs in which the other user hasn't been muted.

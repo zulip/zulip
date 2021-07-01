@@ -5,7 +5,6 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
-import sys
 import time
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -168,7 +167,7 @@ from zerver.lib.events import (
     fetch_initial_state_data,
     post_process_state,
 )
-from zerver.lib.markdown import MentionData
+from zerver.lib.mention import MentionData
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -389,10 +388,10 @@ class BaseAction(ZulipTestCase):
                     we apply events after fetching data.  If you
                     do not know how to debug it, you can ask for
                     help on chat.
-                """
+                """,
+                flush=True,
             )
 
-            sys.stdout.flush()
             raise AssertionError("Mismatching states")
 
 
@@ -452,9 +451,8 @@ class NormalActionsTest(BaseAction):
         topic = "new_topic"
         propagate_mode = "change_all"
         content = "new content"
-        rendered_content = render_markdown(message, content)
+        rendering_result = render_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
-        mentioned_user_ids: Set[int] = set()
         mention_data = MentionData(
             realm_id=self.user_profile.realm_id,
             content=content,
@@ -470,9 +468,8 @@ class NormalActionsTest(BaseAction):
                 False,
                 False,
                 content,
-                rendered_content,
+                rendering_result,
                 prior_mention_user_ids,
-                mentioned_user_ids,
                 mention_data,
             ),
             state_change_expected=True,
@@ -485,10 +482,10 @@ class NormalActionsTest(BaseAction):
             has_new_stream_id=False,
         )
 
+        content = "embed_content"
+        rendering_result = render_markdown(message, content)
         events = self.verify_action(
-            lambda: do_update_embedded_data(
-                self.user_profile, message, "embed_content", "<p>embed_content</p>"
-            ),
+            lambda: do_update_embedded_data(self.user_profile, message, content, rendering_result),
             state_change_expected=False,
         )
         check_update_message_embedded("events[0]", events[0])
@@ -515,7 +512,6 @@ class NormalActionsTest(BaseAction):
                 True,
                 None,
                 None,
-                set(),
                 set(),
                 None,
             ),
@@ -1242,7 +1238,7 @@ class NormalActionsTest(BaseAction):
                     self.user_profile.realm,
                     allow_message_editing,
                     message_content_edit_limit_seconds,
-                    False,
+                    Realm.POLICY_ADMINS_ONLY,
                     acting_user=None,
                 )
             )
@@ -1341,6 +1337,9 @@ class NormalActionsTest(BaseAction):
             self.assertEqual(events[0]["person"]["role"], role)
 
     def test_change_is_guest(self) -> None:
+        stream = Stream.objects.get(name="Denmark")
+        do_add_default_stream(stream)
+
         reset_emails_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that

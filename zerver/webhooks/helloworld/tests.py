@@ -8,7 +8,7 @@ class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     PM_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    FIXTURE_DIR_NAME = "helloworld"
+    WEBHOOK_DIR_NAME = "helloworld"
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:

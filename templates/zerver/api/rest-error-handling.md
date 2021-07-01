@@ -17,34 +17,37 @@ translated into French if the user has a French locale).
 Each endpoint documents its own unique errors; below, we document
 errors common to many endpoints:
 
-## Invalid API key
+{generate_code_example|/rest-error-handling:post|fixture(400)}
 
-A typical failed JSON response for when the API key is invalid:
+{generate_code_example|/rest-error-handling:post|fixture(429)}
 
-{generate_code_example|/rest-error-handling:post|fixture(400_0)}
+The `retry-after` paremeter in the response indicates how many seconds
+the client must wait before making additional requests.
 
-## Missing request parameter(s)
+To help clients avoid exceeding rate limits, Zulip sets the following
+HTTP headers in all API responses:
 
-A typical failed JSON response for when a required request parameter
-is not supplied:
+* `X-RateLimit-Remaining`: The number of additional requests of this
+  type that the client can send before exceeding its limit.
+* `X-RateLimit-Limit`: The limit that would be applicable to a client
+  that had not made any recent requests of this type. This is useful
+  for designing a client's burst behavior so as to avoid ever reaching
+  a rate limit.
+* `X-RateLimit-Reset`: The time at which the client will no longer
+  have any rate limits applied to it (and thus could do a burst of
+  `X-RateLimit-Limit` requests).
 
-{generate_code_example|/rest-error-handling:post|fixture(400_1)}
+Zulip's rate limiting rules are configurable, and can vary by server
+and over time. The default configuration currently limits:
 
-## User not authorized for query
+* Every user is limited to 200 total API requests per minute.
+* Separate, much lower limits for authentication/login attempts.
 
-A typical failed JSON response for when the user is not authorized
-for a query:
+When the Zulip server has configured multiple rate limits that apply
+to a given request, the values returned will be for the strictest
+limit.
 
-{generate_code_example|/rest-error-handling:post|fixture(400_2)}
+**Changes**: The `code` field in the response is new in Zulip 4.0
+(feature level 36).
 
-## User account deactivated
-
-A typical failed json response for when user's account is deactivated:
-
-{generate_code_example|/rest-error-handling:post|fixture(403_0)}
-
-## Realm deactivated
-
-A typical failed json response for when user's organization is deactivated:
-
-{generate_code_example|/rest-error-handling:post|fixture(403_1)}
+{generate_code_example|/rest-error-handling:post|fixture(403)}

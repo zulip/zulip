@@ -5,8 +5,7 @@
     padding: 2px;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
     border-radius: 4px;
-
-    font-size: 0.9em;
+    align-items: center;
 
     cursor: text;
 

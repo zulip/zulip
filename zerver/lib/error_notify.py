@@ -9,7 +9,8 @@ from django.utils.translation import gettext as _
 
 from zerver.filters import clean_data_from_query_parameters
 from zerver.lib.actions import internal_send_stream_message
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
 from zerver.models import get_stream, get_system_bot
 
 
@@ -199,5 +200,5 @@ def do_report_error(type: str, report: Dict[str, Any]) -> HttpResponse:
     elif type == "server":
         notify_server_error(report)
     else:
-        return json_error(_("Invalid type parameter"))
+        raise JsonableError(_("Invalid type parameter"))
     return json_success()

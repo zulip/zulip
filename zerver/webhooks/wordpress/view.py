@@ -3,8 +3,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -46,7 +47,7 @@ def api_wordpress_webhook(
         data = WP_LOGIN_TEMPLATE.format(name=user_login)
 
     else:
-        return json_error(_("Unknown WordPress webhook action: {}").format(hook))
+        raise JsonableError(_("Unknown WordPress webhook action: {}").format(hook))
 
     topic = "WordPress notification"
 

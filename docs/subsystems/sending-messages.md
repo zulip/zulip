@@ -59,8 +59,8 @@ number of purposes:
      to just do the check for whether a notification should be
      generated, and then put an event into an appropriate
      [queue](../subsystems/queuing.md) to actually send the message.
-     See `maybe_enqueue_notifications` and related code for this part
-     of the logic.
+     See `maybe_enqueue_notifications` and `zerver/lib/notification_data.py` for
+     this part of the logic.
    * Splicing user-dependent data (E.g. `flags` such as when the user
    was `mentioned`) into the events.
    * Handling the [local echo details](#local-echo).

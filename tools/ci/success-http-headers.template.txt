@@ -1,28 +1,23 @@
-  Self-signed certificate encountered.
-    WARNING: certificate common name ‘127.0.0.1’ doesn't match requested host name ‘localhost’.
-  HTTP/1.1 302 Found
-  Server: {nginx_version_string}
-  Content-Type: text/html; charset=utf-8
-  Content-Length: 0
-  Connection: keep-alive
-  Location: /login/
-  Strict-Transport-Security: max-age=15768000
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  X-XSS-Protection: 1; mode=block
-Location: /login/ [following]
-Reusing existing connection to localhost:443.
-  HTTP/1.1 200 OK
-  Server: {nginx_version_string}
-  Content-Type: text/html; charset=utf-8
-  Content-Length: 6361
-  Connection: keep-alive
-  Strict-Transport-Security: max-age=15768000
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  X-XSS-Protection: 1; mode=block
-Length: 6361 (6.2K) [text/html]
-Saving to: ‘/tmp/index.html’
+HTTP/2 302 
+server: {nginx_version_string}
+content-type: text/html; charset=utf-8
+location: /login/
+vary: Accept-Language, Cookie
+content-language: en
+strict-transport-security: max-age=15768000
+x-frame-options: DENY
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
 
-
+HTTP/2 200 
+server: {nginx_version_string}
+content-type: text/html; charset=utf-8
+vary: Accept-Encoding
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+vary: Cookie, Accept-Language
+content-language: en
+strict-transport-security: max-age=15768000
+x-frame-options: DENY
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
 

@@ -1,8 +1,8 @@
 import $ from "jquery";
 
+import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
+import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
-import render_settings_resend_invite_modal from "../templates/settings/resend_invite_modal.hbs";
-import render_settings_revoke_invite_modal from "../templates/settings/revoke_invite_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -208,6 +208,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_revoke_invite,
+            fade: true,
         });
 
         $(".confirm_dialog_yes_button").attr("data-invite-id", meta.invite_id);
@@ -233,6 +234,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_resend_invite,
+            fade: true,
         });
 
         $(".confirm_dialog_yes_button").attr("data-invite-id", meta.invite_id);

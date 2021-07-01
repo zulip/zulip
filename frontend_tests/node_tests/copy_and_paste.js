@@ -11,11 +11,10 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 
-const {DOMParser, document} = window;
+const {document} = window;
 const $ = jquery(window);
 
 const compose_ui = mock_esm("../../static/js/compose_ui");
-set_global("DOMParser", DOMParser);
 set_global("document", document);
 
 const copy_and_paste = zrequire("copy_and_paste");
@@ -100,7 +99,7 @@ run_test("paste_handler", () => {
         insert_syntax_and_focus_called = true;
     };
     copy_and_paste.paste_handler(event);
-    assert(insert_syntax_and_focus_called);
+    assert.ok(insert_syntax_and_focus_called);
 
     data =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><img src="http://localhost:9991/thumbnail?url=user_uploads%2F1%2Fe2%2FHPMCcGWOG9rS2M4ybHN8sEzh%2Fpasted_image.png&amp;size=full"/>';
@@ -108,5 +107,5 @@ run_test("paste_handler", () => {
     event.originalEvent.clipboardData.setData("text/html", data);
     insert_syntax_and_focus_called = false;
     copy_and_paste.paste_handler(event);
-    assert(!insert_syntax_and_focus_called);
+    assert.ok(!insert_syntax_and_focus_called);
 });

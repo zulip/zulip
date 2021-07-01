@@ -319,25 +319,6 @@ class HostRequestMock:
         return self.host
 
 
-class MockPythonResponse:
-    def __init__(
-        self, text: str, status_code: int, headers: Optional[Dict[str, str]] = None
-    ) -> None:
-        self.content = text.encode()
-        self.text = text
-        self.status_code = status_code
-        if headers is None:
-            headers = {"content-type": "text/html"}
-        self.headers = headers
-
-    @property
-    def ok(self) -> bool:
-        return self.status_code == 200
-
-    def iter_content(self, n: int) -> Generator[str, Any, None]:
-        yield self.text[:n]
-
-
 INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
 INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
@@ -462,7 +443,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
+            "help/change-the-topic-of-a-message",
             "help/configure-missed-message-emails",
+            "help/community-topic-edits",
             "help/delete-a-stream",
             "api/delete-stream",
             "casper/(?P<path>.+)",

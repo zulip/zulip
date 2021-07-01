@@ -21,7 +21,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import (
@@ -66,7 +66,9 @@ def update_realm(
         converter=to_non_negative_int, default=None
     ),
     allow_message_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    allow_community_topic_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    edit_topic_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_MESSAGE_POLICY_TYPES), default=None
+    ),
     mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_edit_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
@@ -129,15 +131,15 @@ def update_realm(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         if True not in list(authentication_methods.values()):
-            return json_error(_("At least one authentication method must be enabled."))
+            raise JsonableError(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
-        return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
+        raise JsonableError(_("Invalid video_chat_provider {}").format(video_chat_provider))
     if giphy_rating is not None and giphy_rating not in {
         p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
     }:
-        return json_error(_("Invalid giphy_rating {}").format(giphy_rating))
+        raise JsonableError(_("Invalid giphy_rating {}").format(giphy_rating))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:
@@ -181,27 +183,24 @@ def update_realm(
             message_content_edit_limit_seconds is not None
             and realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds
         )
-        or (
-            allow_community_topic_editing is not None
-            and realm.allow_community_topic_editing != allow_community_topic_editing
-        )
+        or (edit_topic_policy is not None and realm.edit_topic_policy != edit_topic_policy)
     ):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:
             message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
-        if allow_community_topic_editing is None:
-            allow_community_topic_editing = realm.allow_community_topic_editing
+        if edit_topic_policy is None:
+            edit_topic_policy = realm.edit_topic_policy
         do_set_realm_message_editing(
             realm,
             allow_message_editing,
             message_content_edit_limit_seconds,
-            allow_community_topic_editing,
+            edit_topic_policy,
             acting_user=user_profile,
         )
         data["allow_message_editing"] = allow_message_editing
         data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
-        data["allow_community_topic_editing"] = allow_community_topic_editing
+        data["edit_topic_policy"] = edit_topic_policy
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.

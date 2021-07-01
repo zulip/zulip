@@ -2,15 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const {PollData} = zrequire("../../static/shared/js/poll_data");
-
-mock_cjs("jquery", $);
 
 const poll_widget = zrequire("poll_widget");
 
@@ -36,6 +33,7 @@ run_test("PollData my question", () => {
 
     const data_holder = new PollData({
         current_user_id: me.user_id,
+        message_sender_id: me.user_id,
         is_my_poll,
         question,
         options: [],
@@ -179,16 +177,38 @@ run_test("PollData my question", () => {
     });
 });
 
-run_test("activate another person poll", () => {
-    stub_templates((template_name) => {
-        if (template_name === "widgets/poll_widget") {
-            return "widgets/poll_widget";
-        }
-        if (template_name === "widgets/poll_widget_results") {
-            return "widgets/poll_widget_results";
-        }
-        throw new Error(`Unknown template ${template_name}`);
+run_test("wrong person editing question", () => {
+    const is_my_poll = true;
+    const question = "Favorite color?";
+
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: me.user_id,
+        is_my_poll,
+        question,
+        options: [],
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
     });
+
+    const question_event = {
+        type: "question",
+        question: "best plan?",
+    };
+
+    blueslip.expect("warn", "user 100 is not allowed to edit the question");
+
+    data_holder.handle_event(alice.user_id, question_event);
+
+    assert.deepEqual(data_holder.get_widget_data(), {
+        options: [],
+        question: "Favorite color?",
+    });
+});
+
+run_test("activate another person poll", ({mock_template}) => {
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
     const widget_elem = $("<div>").addClass("widget-content");
 
@@ -233,14 +253,14 @@ run_test("activate another person poll", () => {
 
     poll_widget.activate(opts);
 
-    assert(poll_option_container.visible());
-    assert(poll_question_header.visible());
+    assert.ok(poll_option_container.visible());
+    assert.ok(poll_question_header.visible());
 
-    assert(!poll_question_container.visible());
-    assert(!poll_question_submit.visible());
-    assert(!poll_edit_question.visible());
-    assert(!poll_please_wait.visible());
-    assert(!poll_author_help.visible());
+    assert.ok(!poll_question_container.visible());
+    assert.ok(!poll_question_submit.visible());
+    assert.ok(!poll_edit_question.visible());
+    assert.ok(!poll_please_wait.visible());
+    assert.ok(!poll_author_help.visible());
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
@@ -301,16 +321,9 @@ run_test("activate another person poll", () => {
     widget_elem.handle_events(add_question_event);
 });
 
-run_test("activate own poll", () => {
-    stub_templates((template_name) => {
-        if (template_name === "widgets/poll_widget") {
-            return "widgets/poll_widget";
-        }
-        if (template_name === "widgets/poll_widget_results") {
-            return "widgets/poll_widget_results";
-        }
-        throw new Error(`Unknown template ${template_name}`);
-    });
+run_test("activate own poll", ({mock_template}) => {
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
     const widget_elem = $("<div>").addClass("widget-content");
     let out_data;
@@ -352,18 +365,18 @@ run_test("activate own poll", () => {
     set_widget_find_result("button.poll-question-remove");
 
     function assert_visibility() {
-        assert(poll_option_container.visible());
-        assert(poll_question_header.visible());
-        assert(!poll_question_container.visible());
-        assert(poll_edit_question.visible());
-        assert(!poll_please_wait.visible());
-        assert(!poll_author_help.visible());
+        assert.ok(poll_option_container.visible());
+        assert.ok(poll_question_header.visible());
+        assert.ok(!poll_question_container.visible());
+        assert.ok(poll_edit_question.visible());
+        assert.ok(!poll_please_wait.visible());
+        assert.ok(!poll_author_help.visible());
     }
 
     poll_widget.activate(opts);
 
     assert_visibility();
-    assert(!poll_question_submit.visible());
+    assert.ok(!poll_question_submit.visible());
 
     assert.equal(widget_elem.html(), "widgets/poll_widget");
     assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
@@ -377,7 +390,7 @@ run_test("activate own poll", () => {
         assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
 
         assert_visibility();
-        assert(poll_question_submit.visible());
+        assert.ok(poll_question_submit.visible());
 
         poll_option_input.val("");
         out_data = undefined;

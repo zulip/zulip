@@ -42,9 +42,11 @@
     </script>
 </div>
 
-{% include "zerver/app/lightbox_overlay.html" %}
-{% include "zerver/app/subscriptions.html" %}
-{% include "zerver/app/drafts.html" %}
+<div class="subscriptions">
+    <div id="subscriptions_table">
+    </div>
+</div>
+<div id="drafts_table"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
     {% include "zerver/app/settings_overlay.html" %}
 </div>
@@ -123,7 +125,9 @@
                     </div>
                     {% include "zerver/app/home.html" %}
                 </div>
-                <div id="compose" {% if embedded %}data-embedded{% endif %}></div>
+                <div id="compose" {% if embedded %}data-embedded{% endif %}>
+                    <div id="compose-container"></div>
+                </div>
             </div><!--/tab-content-->
         </div>
         <div class="column-right">
@@ -136,45 +140,13 @@
                 <button class="button no-style exit">&times;</button>
             </div>
             <div class="overlay-body">
-                {% include "zerver/app/keyboard_shortcuts.html" %}
-                {% include "zerver/app/search_operators.html" %}
             </div>
         </div>
     </div>
-    <div class="user_status_overlay overlay new-style" data-overlay="user_status_overlay" aria-hidden="true">
-        <div class="overlay-content modal-bg">
-            <div class="user-status-header">
-                <h1>{{ _("Set a status") }}</h1>
-                <div class="exit">
-                    <span class="exit-sign">&times;</span>
-                </div>
-            </div>
-            <div class="modal-body">
-                <label for="user_status">{{ _("Status message") }}</label>
-                <input type="text" class="user_status" maxlength="60" />
-                <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
-                    <i class="fa fa-remove" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="user-status-options">
-                <button type="button" class="button no-style user-status-value">{{ _("In a meeting") }}</button>
-                <button type="button" class="button no-style user-status-value">{{ _("Commuting") }}</button>
-                <button type="button" class="button no-style user-status-value">{{ _("Out sick") }}</button>
-                <button type="button" class="button no-style user-status-value">{{ _("Vacationing") }}</button>
-                <button type="button" class="button no-style user-status-value">{{ _("Working remotely") }}</button>
-            </div>
-            <div class="modal-footer">
-                <button class="button exit small rounded">{{ _("Cancel") }}</button>
-                <button class="sea-green small rounded button set_user_status">
-                    {{ _("Save") }}
-                </button>
-            </div>
-        </div>
+    <div class="hidden">
+        <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+        </form>
     </div>
-    {% include "zerver/app/invite_user.html" %}
-    {% include "zerver/app/logout.html" %}
-    {% include "zerver/app/deprecation_notice.html" %}
-    {% include "zerver/app/about-zulip.html" %}
     <div id="user-profile-modal-holder"></div>
     <div id="delete-topic-modal-holder"></div>
     <div class="left-sidebar-modal-holder"></div>

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {mock_jquery, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let env;
@@ -115,7 +115,7 @@ function make_switcher() {
     return self;
 }
 
-mock_cjs("jquery", (sel, attributes) => {
+mock_jquery((sel, attributes) => {
     if (sel.stub) {
         // The component often redundantly re-wraps objects.
         return sel;

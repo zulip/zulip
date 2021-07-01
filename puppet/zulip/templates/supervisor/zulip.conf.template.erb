@@ -101,9 +101,9 @@ killasgroup=true              ; Without this, we leak processes every restart
 [group:zulip-workers]
 <% if @queues_multiprocess %>
 ; each refers to 'x' in [program:x] definitions
-programs=zulip_deliver_scheduled_emails, zulip_deliver_scheduled_messages, <% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
+programs=<% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
 <% else %>
-programs=zulip_deliver_scheduled_emails, zulip_events, zulip_deliver_scheduled_messages
+programs=zulip_events
 <% end %>
 
 ; The [include] section can just contain the "files" setting.  This

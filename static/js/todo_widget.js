@@ -5,23 +5,19 @@ import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_t
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import * as util from "./util";
+
+// Any single user should send add a finite number of tasks
+// to a todo list. We arbitrarily pick this value.
+const MAX_IDX = 1000;
 
 export class TaskData {
     task_map = new Map();
-
-    get_new_index() {
-        let idx = 0;
-
-        for (const item of this.task_map.values()) {
-            idx = Math.max(idx, item.idx);
-        }
-
-        return idx + 1;
-    }
+    my_idx = 1;
 
     get_widget_data() {
         const all_tasks = Array.from(this.task_map.values());
-        all_tasks.sort((a, b) => a.task.localeCompare(b.task));
+        all_tasks.sort((a, b) => util.strcmp(a.task, b.task));
 
         const pending_tasks = [];
         const completed_tasks = [];
@@ -55,9 +51,10 @@ export class TaskData {
     handle = {
         new_task: {
             outbound: (task, desc) => {
+                this.my_idx += 1;
                 const event = {
                     type: "new_task",
-                    key: this.get_new_index(),
+                    key: this.my_idx,
                     task,
                     desc,
                     completed: false,
@@ -70,12 +67,29 @@ export class TaskData {
             },
 
             inbound: (sender_id, data) => {
+                // All messages readers may add tasks.
                 // for legacy reasons, the inbound idx is
                 // called key in the event
                 const idx = data.key;
-                const key = idx + "," + sender_id;
                 const task = data.task;
                 const desc = data.desc;
+
+                if (!Number.isInteger(idx) || idx < 0 || idx > MAX_IDX) {
+                    blueslip.warn("todo widget: bad type for inbound task idx");
+                    return;
+                }
+
+                if (typeof task !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task title");
+                    return;
+                }
+
+                if (typeof desc !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task desc");
+                    return;
+                }
+
+                const key = idx + "," + sender_id;
                 const completed = data.completed;
 
                 const task_data = {
@@ -88,6 +102,11 @@ export class TaskData {
 
                 if (!this.name_in_use(task)) {
                     this.task_map.set(key, task_data);
+                }
+
+                // I may have added a task from another device.
+                if (sender_id === this.me && this.my_idx <= idx) {
+                    this.my_idx = idx + 1;
                 }
             },
         },
@@ -103,7 +122,13 @@ export class TaskData {
             },
 
             inbound: (sender_id, data) => {
+                // All message readers may strike/unstrike todo tasks.
                 const key = data.key;
+                if (typeof key !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound strike key");
+                    return;
+                }
+
                 const item = this.task_map.get(key);
 
                 if (item === undefined) {
@@ -118,8 +143,10 @@ export class TaskData {
 
     handle_event(sender_id, data) {
         const type = data.type;
-        if (this.handle[type]) {
+        if (this.handle[type] && this.handle[type].inbound) {
             this.handle[type].inbound(sender_id, data);
+        } else {
+            blueslip.warn(`todo widget: unknown inbound type: ${type}`);
         }
     }
 }

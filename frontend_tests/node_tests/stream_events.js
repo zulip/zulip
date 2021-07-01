@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -10,7 +10,6 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-mock_cjs("jquery", $);
 const color_data = mock_esm("../../static/js/color_data");
 const message_util = mock_esm("../../static/js/message_util");
 const stream_color = mock_esm("../../static/js/stream_color");
@@ -30,7 +29,7 @@ mock_esm("../../static/js/all_messages_data", {
 const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
 });
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_ui", {
     complete_rerender: () => {},
 });
 mock_esm("../../static/js/settings_notifications", {
@@ -85,13 +84,13 @@ function narrow_to_frontend() {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
-test("update_property", (override) => {
+test("update_property", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
 
@@ -262,7 +261,7 @@ test("marked_subscribed (error)", () => {
     blueslip.reset();
 });
 
-test("marked_subscribed (normal)", (override) => {
+test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_data, "subscribe_myself", noop);
@@ -299,7 +298,7 @@ test("marked_subscribed (normal)", (override) => {
     narrow_state.reset_current_filter();
 });
 
-test("marked_subscribed (color)", (override) => {
+test("marked_subscribed (color)", ({override}) => {
     override(stream_data, "subscribe_myself", noop);
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
@@ -328,7 +327,7 @@ test("marked_subscribed (color)", (override) => {
     }
 });
 
-test("marked_subscribed (emails)", (override) => {
+test("marked_subscribed (emails)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color, "update_stream_color", noop);
@@ -341,21 +340,21 @@ test("marked_subscribed (emails)", (override) => {
     const subs_stub = make_stub();
     override(subs, "update_settings_for_subscribed", subs_stub.f);
 
-    assert(!stream_data.is_subscribed(sub.name));
+    assert.ok(!stream_data.is_subscribed(sub.name));
 
     const user_ids = [15, 20, 25, me.user_id];
     stream_events.mark_subscribed(sub, user_ids, "");
     assert.deepEqual(new Set(peer_data.get_subscribers(sub.stream_id)), new Set(user_ids));
-    assert(stream_data.is_subscribed(sub.name));
+    assert.ok(stream_data.is_subscribed(sub.name));
 
     const args = subs_stub.get_args("sub");
     assert.deepEqual(sub, args.sub);
 });
 
-test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {
+test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     // Test unsubscribe
     const sub = {...dev_help};
-    assert(sub.subscribed);
+    assert.ok(sub.subscribed);
 
     const stub = make_stub();
 
@@ -368,7 +367,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {
     assert.deepEqual(args.sub, sub);
 });
 
-test("mark_unsubscribed (render_title_area)", (override) => {
+test("mark_unsubscribed (render_title_area)", ({override}) => {
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub(sub);
 
@@ -394,11 +393,11 @@ test("remove_deactivated_user_from_all_streams", () => {
     subs.update_subscribers_ui = subs_stub.f;
 
     // assert starting state
-    assert(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
+    assert.ok(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
     // verify that deactivating user should unsubscribe user from all streams
     peer_data.add_subscriber(dev_help.stream_id, george.user_id);
-    assert(stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
+    assert.ok(stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
     stream_events.remove_deactivated_user_from_all_streams(george.user_id);
 

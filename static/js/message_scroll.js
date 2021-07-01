@@ -9,7 +9,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_util from "./recent_topics_util";
 import * as unread_ops from "./unread_ops";
 
 let actively_scrolling = false;
@@ -100,7 +100,7 @@ export function update_top_of_narrow_notices(msg_list) {
         message_lists.current !== message_lists.home
     ) {
         const filter = narrow_state.filter();
-        if (filter === undefined && recent_topics.is_visible()) {
+        if (filter === undefined && recent_topics_util.is_visible()) {
             // user moved away from the narrow / filter to recent topics.
             return;
         }

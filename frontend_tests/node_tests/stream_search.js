@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,7 +11,6 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-mock_cjs("jquery", $);
 mock_esm("../../static/js/resize", {
     resize_page_components: noop,
 
@@ -63,7 +62,7 @@ function clear_search_input() {
     stream_list.clear_search({stopPropagation: noop});
 }
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     let cursor_helper;
     const input = $(".stream-list-filter");
     const section = $(".stream_search_section");
@@ -74,24 +73,24 @@ run_test("basics", (override) => {
     cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
-        assert(!section.hasClass("notdisplayed"));
+        assert.ok(!section.hasClass("notdisplayed"));
         simulate_search_expanded();
     }
 
     function verify_focused() {
-        assert(stream_list.searching());
-        assert(input.is_focused());
+        assert.ok(stream_list.searching());
+        assert.ok(input.is_focused());
     }
 
     function verify_blurred() {
-        assert(stream_list.searching());
-        assert(input.is_focused());
+        assert.ok(stream_list.searching());
+        assert.ok(input.is_focused());
     }
 
     function verify_collapsed() {
-        assert(section.hasClass("notdisplayed"));
-        assert(!input.is_focused());
-        assert(!stream_list.searching());
+        assert.ok(section.hasClass("notdisplayed"));
+        assert.ok(!input.is_focused());
+        assert.ok(!stream_list.searching());
         simulate_search_collapsed();
     }
 
@@ -102,7 +101,7 @@ run_test("basics", (override) => {
         });
 
         f();
-        assert(updated);
+        assert.ok(updated);
     }
 
     // Initiate search (so expand widget).

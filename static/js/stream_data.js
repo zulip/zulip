@@ -379,6 +379,26 @@ export function subscribed_stream_ids() {
     return subscribed_subs().map((sub) => sub.stream_id);
 }
 
+export function get_subscribed_streams_for_user(user_id) {
+    // Note that we only have access to subscribers of some streams
+    // depending on our role.
+    const all_subs = get_unsorted_subs();
+    const subscribed_subs = [];
+    for (const sub of all_subs) {
+        if (!can_view_subscribers(sub)) {
+            // Private streams that we have been removed from appear
+            // in get_unsorted_subs; we don't attempt to check their
+            // subscribers (which would trigger a warning).
+            continue;
+        }
+        if (is_user_subscribed(sub.stream_id, user_id)) {
+            subscribed_subs.push(sub);
+        }
+    }
+
+    return subscribed_subs;
+}
+
 export function get_invite_stream_data() {
     function get_data(sub) {
         return {

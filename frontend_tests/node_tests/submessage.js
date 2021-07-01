@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 const channel = mock_esm("../../static/js/channel");
 const message_store = mock_esm("../../static/js/message_store");
@@ -63,7 +64,28 @@ run_test("make_server_callback", () => {
         data: {foo: 32},
     });
 
-    assert(was_posted);
+    assert.ok(was_posted);
+});
+
+run_test("check sender", ({override}) => {
+    const message_id = 101;
+
+    const message = {
+        id: message_id,
+        sender_id: 1,
+        submessages: [{sender_id: 2, content: "{}"}],
+    };
+
+    override(message_store, "get", (arg) => {
+        assert.equal(arg, message_id);
+        return message;
+    });
+
+    blueslip.expect("warn", "User 2 tried to hijack message 101");
+
+    submessage.process_submessages({
+        message_id,
+    });
 });
 
 run_test("handle_event", () => {

@@ -342,9 +342,7 @@ export function user_initiated_animate_scroll(scroll_amount) {
     });
 }
 
-export function recenter_view(message, opts) {
-    opts = opts || {};
-
+export function recenter_view(message, {from_scroll = false, force_center = false} = {}) {
     // BarnOwl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
@@ -361,7 +359,7 @@ export function recenter_view(message, opts) {
     const is_above = message_top < top_threshold;
     const is_below = message_bottom > bottom_threshold;
 
-    if (opts.from_scroll) {
+    if (from_scroll) {
         // If the message you're trying to center on is already in view AND
         // you're already trying to move in the direction of that message,
         // don't try to recenter. This avoids disorienting jumps when the
@@ -375,7 +373,7 @@ export function recenter_view(message, opts) {
         }
     }
 
-    if (is_above || opts.force_center) {
+    if (is_above || force_center) {
         set_message_position(message_top, message_height, viewport_info, 1 / 2);
     } else if (is_below) {
         set_message_position(message_top, message_height, viewport_info, 1 / 7);

@@ -20,7 +20,7 @@ from zerver.lib.actions import (
     do_update_message,
 )
 from zerver.lib.avatar import avatar_url
-from zerver.lib.markdown import MentionData
+from zerver.lib.mention import MentionData
 from zerver.lib.message import (
     MessageDict,
     get_first_visible_message_id,
@@ -3711,7 +3711,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
     def update_message(self, msg: Message, content: str) -> None:
         hamlet = self.example_user("hamlet")
         realm_id = hamlet.realm.id
-        rendered_content = render_markdown(msg, content)
+        rendering_result = render_markdown(msg, content)
         mention_data = MentionData(realm_id, content)
         do_update_message(
             hamlet,
@@ -3722,8 +3722,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             False,
             False,
             content,
-            rendered_content,
-            set(),
+            rendering_result,
             set(),
             mention_data=mention_data,
         )

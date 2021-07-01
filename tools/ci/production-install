@@ -47,36 +47,22 @@ tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
 APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
 apt-get update
 
-if [ -f /etc/os-release ]; then
-    # This is a temporary hack to test Debian Bullseye systems as
-    # though Bullseye was already released, so we don't need to
-    # change all of our scripts to parse bullseye/sid.
-    check_pretty_name="$(
-        . /etc/os-release
-        printf '%s\n' "$PRETTY_NAME"
-    )"
-    { read -r pretty_name; } <<<"$check_pretty_name"
-
-    if [ "$pretty_name" = "Debian GNU/Linux bullseye/sid" ]; then
-        echo "VERSION_CODENAME=bullseye" | tee -a >>/etc/os-release
-        echo "VERSION_ID=\"11\"" | tee -a >>/etc/os-release
-    fi
-    # End hack
-
-    os_info="$(
-        . /etc/os-release
-        printf '%s\n' "$VERSION_CODENAME"
-    )"
-    { read -r os_version_codename || true; } <<<"$os_info"
-fi
-
 if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
     echo "\`apt-get dist-upgrade\`: Failure occurred while trying to perform distribution upgrade, Retrying..."
     apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
 fi
 
+os_info="$(
+    . /etc/os-release
+    printf '%s\n' "$ID" "$VERSION_ID"
+)"
+{
+    read -r os_id
+    read -r os_version_id
+} <<<"$os_info"
+
 # Pin to PostgreSQL 10 on Bionic, so we can test upgrading it
-if [ "$os_version_codename" = "bionic" ]; then
+if [ "$os_id $os_version_id" = 'ubuntu 18.04' ]; then
     export POSTGRESQL_VERSION=10
 fi
 
@@ -89,7 +75,7 @@ else
     "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email circleci@example.com --postgresql-database-user zulipcustomuser --postgresql-database-name zulipcustomdb
 fi
 
-if [ "$os_version_codename" = "bionic" ]; then
+if [ "$os_id $os_version_id" = 'ubuntu 18.04' ]; then
     if [ "$(crudini --get /etc/zulip/zulip.conf postgresql version)" != "10" ]; then
         echo "Installer did not install the PostgreSQL 10 that we asked for!"
         exit 1

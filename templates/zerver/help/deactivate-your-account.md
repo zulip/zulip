@@ -2,9 +2,9 @@
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|account-and-privacy}
 
-1. Under **Deactivate account**, click **Deactivate account**.
+1. Under **Account**, click **Deactivate account**.
 
 1. Approve by clicking **Confirm**.
 
@@ -30,9 +30,9 @@
   your account at any time.
 
 !!! warn ""
-    If you are the only administrator in the organization, you cannot
+    If you are the only owner in the organization, you cannot
     deactivate your account. You'll need to
-    [add another administrator](/help/change-a-users-role) first.
+    [add another owner](/help/change-a-users-role) first.
 
 ## Related articles
 

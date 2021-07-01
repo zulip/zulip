@@ -2,12 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 const condense = mock_esm("../../static/js/condense");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_list = mock_esm("../../static/js/message_list");
@@ -79,7 +77,7 @@ run_test("update_messages", () => {
     assert.deepEqual(stream_topic_history.get_recent_topic_names(denmark.stream_id), ["lunch"]);
 
     unread.update_message_for_mention(original_message);
-    assert(unread.unread_mentions_counter.has(original_message.id));
+    assert.ok(unread.unread_mentions_counter.has(original_message.id));
 
     const events = [
         {
@@ -121,7 +119,7 @@ run_test("update_messages", () => {
     // TEST THIS:
     message_events.update_messages(events);
 
-    assert(!unread.unread_mentions_counter.has(original_message.id));
+    assert.ok(!unread.unread_mentions_counter.has(original_message.id));
 
     helper.verify();
 

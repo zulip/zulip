@@ -2,14 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const denmark_stream_id = 101;
 
-mock_cjs("jquery", $);
 const ui = mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
@@ -25,7 +23,7 @@ set_global("page_params", {});
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
 
-run_test("redraw_left_panel", () => {
+run_test("redraw_left_panel", ({mock_template}) => {
     // set-up sub rows stubs
     const denmark = {
         elem: "denmark",
@@ -86,8 +84,7 @@ run_test("redraw_left_panel", () => {
 
     let populated_subs;
 
-    stub_templates((fn, data) => {
-        assert.equal(fn, "subscriptions");
+    mock_template("subscriptions.hbs", false, (data) => {
         populated_subs = data.subscriptions;
     });
 
@@ -115,7 +112,7 @@ run_test("redraw_left_panel", () => {
     // on our current stream, even if it doesn't match the filter.
     const denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
     // sanity check it's not set to active
-    assert(!denmark_row.hasClass("active"));
+    assert.ok(!denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
         const stream_ids = subs.redraw_left_panel(params);
@@ -127,10 +124,10 @@ run_test("redraw_left_panel", () => {
 
     // Search with single keyword
     test_filter({input: "Po", subscribed_only: false}, [poland, pomona]);
-    assert(ui_called);
+    assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
-    assert(denmark_row.hasClass("active"));
+    assert.ok(denmark_row.hasClass("active"));
 
     // Search with multiple keywords
     test_filter({input: "Denmark, Pol", subscribed_only: false}, [denmark, poland]);
@@ -198,7 +195,7 @@ run_test("redraw_left_panel", () => {
     };
 
     test_filter({input: "d", subscribed_only: true}, [poland]);
-    assert(!$(".stream-row-denmark").hasClass("active"));
-    assert(!$(".right .settings").visible());
-    assert($(".nothing-selected").visible());
+    assert.ok(!$(".stream-row-denmark").hasClass("active"));
+    assert.ok(!$(".right .settings").visible());
+    assert.ok($(".nothing-selected").visible());
 });

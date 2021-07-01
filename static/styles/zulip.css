@@ -37,6 +37,8 @@ html {
 }
 
 body {
+    font-size: 14px;
+    line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
 }
 
@@ -52,7 +54,10 @@ button,
 select,
 textarea {
     font-family: "Source Sans 3", sans-serif;
+    /* Disable bootstrap size CSS; we want to use our default font size on
+       body for input elements. */
     line-height: normal;
+    font-size: inherit;
 }
 
 blockquote p {
@@ -138,10 +143,6 @@ p.n-margin {
 
 .border-radius {
     border-radius: 4px;
-}
-
-.modal-backdrop {
-    z-index: 102;
 }
 
 .history-limited-box {
@@ -404,7 +405,7 @@ p.n-margin {
 }
 
 .column-middle,
-.compose-content {
+#compose-content {
     margin-right: $right_sidebar_width;
     margin-left: $left_sidebar_width;
     position: relative;
@@ -546,8 +547,8 @@ strong {
 }
 
 .sidebar-title {
-    font-size: 14px;
     color: hsl(0, 0%, 43%);
+    font-size: inherit;
     font-weight: normal;
     display: inline;
 }
@@ -595,8 +596,7 @@ strong {
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
-    font-size: 13px;
-    margin-top: 3px;
+    margin-top: 2px;
     margin-left: 6px;
     opacity: 0.5;
     cursor: pointer;
@@ -803,8 +803,7 @@ td.pointer {
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
-    line-height: 18px;
-    font-size: 14px;
+
     position: relative;
     max-width: calc(100% - 50px);
 
@@ -835,6 +834,8 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
+    /* Disable blue link styling for the message timestamp link. */
+    color: hsl(0, 0%, 20%);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
@@ -844,7 +845,6 @@ td.pointer {
 .alert-msg {
     position: absolute;
     right: -110px;
-    font-size: 14px;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
@@ -878,6 +878,9 @@ td.pointer {
         transition: all 0.2s ease;
         width: 16px;
         text-align: center;
+        display: inline-block;
+        position: relative;
+        color: hsl(0, 0%, 73%);
 
         > i {
             vertical-align: middle;
@@ -891,10 +894,16 @@ td.pointer {
     }
 
     > .reaction_button {
-        display: inline-block;
-        position: relative;
-        color: hsl(0, 0%, 73%);
         &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    .edit_content {
+        width: 12px;
+
+        &:hover {
+            cursor: pointer;
             color: hsl(200, 100%, 40%);
         }
     }
@@ -923,8 +932,6 @@ td.pointer {
     }
 
     .star_container {
-        display: inline-block;
-
         &:not(.empty-star) {
             color: hsl(106, 77%, 29%);
 
@@ -936,8 +943,6 @@ td.pointer {
 }
 
 .star {
-    font-size: 14px;
-
     &:hover {
         cursor: pointer;
         color: hsl(153, 80%, 25%);
@@ -953,13 +958,8 @@ td.pointer {
 
     &:hover .message_controls,
     &:focus-within .message_controls {
-        .empty-star {
-            opacity: 0.4;
-        }
-
         .empty-star:hover {
             cursor: pointer;
-            opacity: 1;
         }
 
         > div {
@@ -1053,23 +1053,6 @@ td.pointer {
         border-width: 11px 0 11px 5px;
         border-color: inherit;
         z-index: 2;
-        transform: scale(0.9999);
-    }
-
-    &::before {
-        left: 100%;
-        top: 50%;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-        margin-top: -14px;
-        border-style: solid;
-        border-width: 14px 0 14px 6px;
-        border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
-            transparent;
-        z-index: 1;
         transform: scale(0.9999);
     }
 }
@@ -1188,7 +1171,6 @@ td.pointer {
         display: inline-block;
         padding: 3px 6px 2px 6px;
         font-weight: normal;
-        font-size: 14px;
         height: 17px;
         line-height: 17px;
         border-left-color: hsl(0, 0%, 27%);
@@ -1298,8 +1280,6 @@ td.pointer {
     font-weight: 700;
     vertical-align: top;
     line-height: 12px;
-    font-size: 14px;
-    margin-left: -3px;
 }
 
 .sender_name-in-status {
@@ -1357,18 +1337,6 @@ td.pointer {
     }
 }
 
-.edit_content {
-    width: 12px;
-    display: inline-block;
-    position: relative;
-    color: hsl(0, 0%, 73%);
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(200, 100%, 40%);
-    }
-}
-
 .has_actions_popover .info {
     opacity: 1;
     visibility: visible;
@@ -1410,10 +1378,9 @@ a.dark_background:hover,
     }
 }
 
-.info {
+.settings-forgot-password {
     display: inline-block;
     position: relative;
-    font-size: 14px;
     color: hsl(0, 0%, 73%);
 }
 
@@ -1446,7 +1413,6 @@ div.focused_table {
 .message_content {
     line-height: 1.214;
     min-height: 17px;
-    font-size: 14px;
     margin-left: 46px;
     display: block;
     position: relative;
@@ -1510,7 +1476,6 @@ div.focused_table {
         margin: 0;
         padding: 0 10px;
         line-height: 17px;
-        font-size: 14px;
     }
 }
 
@@ -1522,10 +1487,7 @@ div.focused_table {
         display: inline-block;
         padding: 0 3px;
         vertical-align: baseline;
-
         line-height: 0px;
-        font-size: 14px;
-
         box-shadow: none;
     }
 }
@@ -1663,6 +1625,10 @@ div.focused_table {
     &:hover {
         color: hsl(0, 0%, 0%);
     }
+}
+
+.deactivated-pill {
+    background-color: hsl(0, 86%, 86%) !important;
 }
 
 #message_view_header {
@@ -2174,10 +2140,6 @@ nav {
     }
 }
 
-.modal-bg {
-    background-color: hsl(0, 0%, 98%);
-}
-
 div.floating_recipient {
     border-collapse: separate;
     width: 100%;
@@ -2342,25 +2304,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .topic_move_spinner,
-#do_delete_message_spinner {
+#confirm_dialog_spinner {
     margin: 0 auto;
-}
-
-.modal {
-    overflow: hidden;
-    margin-top: 0;
-    top: 5%;
-    /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
-       so avoid the outline it causes */
-    outline: 0;
-
-    form {
-        margin-bottom: 0;
-    }
-}
-
-.modal-body {
-    max-height: 60vh;
 }
 
 #invitee_emails {

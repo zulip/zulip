@@ -45,8 +45,28 @@ def run() -> None:
 
     by_lang = linter_config.list_files(
         groups={
-            "backend": ["py", "sh", "pp", "json", "md", "txt", "text", "yaml", "rst", "yml"],
-            "frontend": ["js", "ts", "flow", "css", "hbs", "html", "lock"],
+            "backend": [
+                "bash",
+                "json",
+                "md",
+                "pp",
+                "py",
+                "rst",
+                "sh",
+                "text",
+                "txt",
+                "yaml",
+                "yml",
+            ],
+            "frontend": [
+                "css",
+                "flow",
+                "hbs",
+                "html",
+                "js",
+                "lock",
+                "ts",
+            ],
         },
         exclude=EXCLUDED_FILES,
     )
@@ -95,13 +115,13 @@ def run() -> None:
     linter_config.external_linter(
         "shellcheck",
         ["shellcheck", "-x", "-P", "SCRIPTDIR"],
-        ["sh"],
+        ["bash", "sh"],
         description="Standard shell script linter",
     )
     linter_config.external_linter(
         "shfmt",
         ["shfmt"],
-        ["sh"],
+        ["bash", "sh"],
         check_arg="-d",
         fix_arg="-w",
         description="Formats shell scripts",

@@ -2,11 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
 mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
@@ -38,8 +36,7 @@ const top_left_corner = mock_esm("../../static/js/top_left_corner");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui_util = mock_esm("../../static/js/ui_util");
 const unread_ops = mock_esm("../../static/js/unread_ops");
-mock_esm("../../static/js/recent_topics", {
-    hide: () => {},
+mock_esm("../../static/js/recent_topics_util", {
     is_visible: () => {},
 });
 
@@ -51,7 +48,7 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-mock_esm("../../static/js/muting", {
+mock_esm("../../static/js/muted_topics", {
     is_topic_muted: () => false,
 });
 

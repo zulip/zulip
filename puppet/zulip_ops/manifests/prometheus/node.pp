@@ -19,7 +19,7 @@ class zulip_ops::prometheus::node {
   }
 
   zulip_ops::firewall_allow { 'node_exporter': port => '9100' }
-  file { '/etc/supervisor/conf.d/prometheus_node_exporter.conf':
+  file { "${zulip::common::supervisor_conf_dir}/prometheus_node_exporter.conf":
     ensure  => file,
     require => [
       User[prometheus],

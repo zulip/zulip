@@ -79,13 +79,13 @@ run_test("add users with event", () => {
         person: bob,
     };
 
-    assert(!people.is_known_user_id(bob.user_id));
+    assert.ok(!people.is_known_user_id(bob.user_id));
 
     // Let's simulate dispatching our event!
     server_events_dispatch.dispatch_normal_event(event);
 
     // And it works!
-    assert(people.is_known_user_id(bob.user_id));
+    assert.ok(people.is_known_user_id(bob.user_id));
 });
 
 /*
@@ -106,7 +106,7 @@ run_test("add users with event", () => {
 
 */
 
-run_test("update user with event", (override) => {
+run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
 

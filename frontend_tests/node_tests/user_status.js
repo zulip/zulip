@@ -22,14 +22,14 @@ function initialize() {
 
 run_test("basics", () => {
     initialize();
-    assert(user_status.is_away(2));
-    assert(!user_status.is_away(99));
+    assert.ok(user_status.is_away(2));
+    assert.ok(!user_status.is_away(99));
 
-    assert(!user_status.is_away(4));
+    assert.ok(!user_status.is_away(4));
     user_status.set_away(4);
-    assert(user_status.is_away(4));
+    assert.ok(user_status.is_away(4));
     user_status.revoke_away(4);
-    assert(!user_status.is_away(4));
+    assert.ok(!user_status.is_away(4));
 
     assert.equal(user_status.get_status_text(1), "in a meeting");
 
@@ -76,7 +76,7 @@ run_test("server", () => {
     });
 
     success();
-    assert(called);
+    assert.ok(called);
 });
 
 run_test("defensive checks", () => {

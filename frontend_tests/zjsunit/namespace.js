@@ -5,29 +5,85 @@ const path = require("path");
 
 const callsites = require("callsites");
 
+const $ = require("../zjsunit/zjquery");
+
 const new_globals = new Set();
 let old_globals = {};
 
 let actual_load;
 const module_mocks = new Map();
+const template_mocks = new Map();
 const used_module_mocks = new Set();
+const used_templates = new Set();
 
 const jquery_path = require.resolve("jquery");
 const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
+
+let in_mid_render = false;
+let jquery_function;
 
 function load(request, parent, isMain) {
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
-        return module_mocks.get(filename);
+        const obj = module_mocks.get(filename);
+        return obj;
     }
+
+    if (filename.endsWith(".hbs") && !filename.includes("frontend_tests/node_tests")) {
+        const actual_render = actual_load(request, parent, isMain);
+
+        return template_stub({filename, actual_render});
+    }
+
+    if (
+        filename.endsWith(".hbs") &&
+        !filename.includes("frontend_tests/node_tests") &&
+        !in_mid_render
+    ) {
+        throw new Error(`Please use mock_template if your test needs to render ${filename}`);
+    }
+
     if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        // jQuery exposes an incompatible API to Node vs. browser, so
-        // this wouldn't work.
-        throw new Error("This test will need jquery mocked using zjquery or real_jquery");
+        return jquery_function || $;
     }
 
     return actual_load(request, parent, isMain);
+}
+
+function template_stub({filename, actual_render}) {
+    return function render(...args) {
+        // If our template is being rendered as a partial, always
+        // use the actual implementation.
+        if (in_mid_render) {
+            return actual_render(...args);
+        }
+
+        // Force devs to call mock_template on every top-level template
+        // render so they can introspect the data.
+        if (!template_mocks.has(filename)) {
+            throw new Error(`You need to call mock_template with ${filename}`);
+        }
+
+        used_templates.add(filename);
+
+        const {exercise_template, f} = template_mocks.get(filename);
+
+        const data = args[0];
+
+        if (exercise_template) {
+            // If our dev wants to exercise the actual template, then do so.
+            // We set the in_mid_render bool so that included (i.e partial)
+            // templates get rendered.
+            in_mid_render = true;
+            const html = actual_render(...args);
+            in_mid_render = false;
+
+            return f(data, html);
+        }
+
+        return f(data);
+    };
 }
 
 exports.start = () => {
@@ -67,9 +123,15 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-exports.mock_cjs = (request, obj) => {
+exports.mock_cjs = (module_path, obj) => {
+    if (module_path === "jquery") {
+        throw new Error(
+            "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
+        );
+    }
+
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -86,16 +148,50 @@ exports.mock_cjs = (request, obj) => {
     return obj;
 };
 
-exports.mock_esm = (request, obj = {}) => {
+exports.mock_jquery = ($) => {
+    jquery_function = $;
+    return $;
+};
+
+exports._start_template_mocking = () => {
+    template_mocks.clear();
+    used_templates.clear();
+};
+
+exports._finish_template_mocking = () => {
+    for (const filename of template_mocks.keys()) {
+        if (!used_templates.has(filename)) {
+            throw new Error(
+                `You called mock_template with ${filename} but we never saw it get used.`,
+            );
+        }
+    }
+    template_mocks.clear();
+    used_templates.clear();
+};
+
+exports._mock_template = (fn, exercise_template, f) => {
+    const path = "../../static/templates/" + fn;
+
+    const resolved_path = Module._resolveFilename(
+        path,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
+
+    template_mocks.set(resolved_path, {exercise_template, f});
+};
+
+exports.mock_esm = (module_path, obj = {}) => {
     if (typeof obj !== "object") {
         throw new TypeError("An ES module must be mocked with an object");
     }
-    return exports.mock_cjs(request, {...obj, __esModule: true});
+    return exports.mock_cjs(module_path, {...obj, __esModule: true});
 };
 
-exports.unmock_module = (request) => {
+exports.unmock_module = (module_path) => {
     const filename = Module._resolveFilename(
-        request,
+        module_path,
         require.cache[callsites()[1].getFileName()],
         false,
     );
@@ -130,11 +226,19 @@ exports.set_global = function (name, val) {
 };
 
 exports.zrequire = function (short_fn) {
+    if (short_fn === "templates") {
+        throw new Error(`
+            There is no need to zrequire templates.js.
+
+            The test runner automatically registers the
+            Handlebar extensions.
+        `);
+    }
+
     return require(`../../static/js/${short_fn}`);
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
-const templatesPath = staticPath + "templates" + path.sep;
 
 exports.complain_about_unused_mocks = function () {
     for (const filename of module_mocks.keys()) {
@@ -153,6 +257,8 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
+    jquery_function = undefined;
+
     if (actual_load === undefined) {
         throw new Error("namespace.finish was called without namespace.start.");
     }
@@ -163,7 +269,7 @@ exports.finish = function () {
     used_module_mocks.clear();
 
     for (const path of Object.keys(require.cache)) {
-        if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
+        if (path.startsWith(staticPath)) {
             delete require.cache[path];
         }
     }

@@ -1727,150 +1727,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["removed"], 2)
         self.assert_length(json["not_removed"], 0)
 
-    def test_create_stream_policy_setting(self) -> None:
-        """
-        When realm.create_stream_policy setting is Realm.POLICY_MEMBERS_ONLY then
-        test that any user can create a stream.
-
-        When realm.create_stream_policy setting is Realm.POLICY_ADMINS_ONLY then
-        test that only admins can create a stream.
-
-        When realm.create_stream_policy setting is Realm.POLICY_FULL_MEMBERS_ONLY then
-        test that admins and users with accounts older than the waiting period can create a stream.
-        """
-        user_profile = self.example_user("hamlet")
-        user_profile.date_joined = timezone_now()
-        user_profile.save()
-        self.login_user(user_profile)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-
-        # Allow all members to create streams.
-        do_set_realm_property(
-            user_profile.realm,
-            "create_stream_policy",
-            Realm.POLICY_MEMBERS_ONLY,
-            acting_user=None,
-        )
-        # Set waiting period to 10 days.
-        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
-
-        # Can successfully create stream despite being less than waiting period and not an admin,
-        # due to create stream policy.
-        stream_name = ["all_members"]
-        result = self.common_subscribe_to_streams(user_profile, stream_name)
-        self.assert_json_success(result)
-
-        # Allow only administrators to create streams.
-        do_set_realm_property(
-            user_profile.realm,
-            "create_stream_policy",
-            Realm.POLICY_ADMINS_ONLY,
-            acting_user=None,
-        )
-
-        # Cannot create stream because not an admin.
-        stream_name = ["admins_only"]
-        result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "Insufficient permission")
-
-        # Make current user an admin.
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        # Can successfully create stream as user is now an admin.
-        stream_name = ["admins_only"]
-        self.common_subscribe_to_streams(user_profile, stream_name)
-
-        # Allow users older than the waiting period to create streams.
-        do_set_realm_property(
-            user_profile.realm,
-            "create_stream_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
-            acting_user=None,
-        )
-
-        # Can successfully create stream despite being under waiting period because user is admin.
-        stream_name = ["waiting_period_as_admin"]
-        self.common_subscribe_to_streams(user_profile, stream_name)
-
-        # Make current user no longer an admin.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-
-        # Cannot create stream because user is not an admin and is not older than the waiting
-        # period.
-        stream_name = ["waiting_period"]
-        result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "Insufficient permission")
-
-        # Make user account 11 days old..
-        user_profile.date_joined = timezone_now() - timedelta(days=11)
-        user_profile.save()
-
-        # Can successfully create stream now that account is old enough.
-        stream_name = ["waiting_period"]
-        self.common_subscribe_to_streams(user_profile, stream_name)
-
-    def test_invite_to_stream_by_invite_period_threshold(self) -> None:
-        """
-        Non admin users with account age greater or equal to the invite
-        to stream threshold should be able to invite others to a stream.
-        """
-        hamlet_user = self.example_user("hamlet")
-        hamlet_user.date_joined = timezone_now()
-        hamlet_user.save()
-
-        cordelia_user = self.example_user("cordelia")
-        cordelia_user.date_joined = timezone_now()
-        cordelia_user.save()
-
-        do_set_realm_property(
-            hamlet_user.realm,
-            "invite_to_stream_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
-            acting_user=None,
-        )
-        cordelia_user_id = cordelia_user.id
-
-        self.login_user(hamlet_user)
-        do_change_user_role(hamlet_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        # Hamlet creates a stream as an admin..
-        stream_name = ["waitingperiodtest"]
-        self.common_subscribe_to_streams(hamlet_user, stream_name)
-
-        # Can only invite users to stream if their account is ten days old..
-        do_change_user_role(hamlet_user, UserProfile.ROLE_MEMBER, acting_user=None)
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 10, acting_user=None)
-
-        # Attempt and fail to invite Cordelia to the stream..
-        result = self.common_subscribe_to_streams(
-            hamlet_user,
-            stream_name,
-            {"principals": orjson.dumps([cordelia_user_id]).decode()},
-            allow_fail=True,
-        )
-        self.assert_json_error(result, "Insufficient permission")
-
-        # Anyone can invite users..
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 0, acting_user=None)
-
-        # Attempt and succeed to invite Cordelia to the stream..
-        self.common_subscribe_to_streams(
-            hamlet_user, stream_name, {"principals": orjson.dumps([cordelia_user_id]).decode()}
-        )
-
-        # Set threshold to 20 days..
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 20, acting_user=None)
-        # Make Hamlet's account 21 days old..
-        hamlet_user.date_joined = timezone_now() - timedelta(days=21)
-        hamlet_user.save()
-        # Unsubscribe Cordelia..
-        self.unsubscribe(cordelia_user, stream_name[0])
-
-        # Attempt and succeed to invite Aaron to the stream..
-        self.common_subscribe_to_streams(
-            hamlet_user, stream_name, {"principals": orjson.dumps([cordelia_user_id]).decode()}
-        )
-
     def test_remove_already_not_subbed(self) -> None:
         """
         Trying to unsubscribe someone who already isn't subscribed to a stream
@@ -3235,42 +3091,47 @@ class SubscriptionAPITest(ZulipTestCase):
             result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
         )
 
-    def test_user_settings_for_adding_streams(self) -> None:
+    def _test_user_settings_for_adding_streams(self, stream_policy: str, invite_only: bool) -> None:
         do_set_realm_property(
-            self.test_user.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            self.test_user.realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
+
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
-            result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
+            result = self.common_subscribe_to_streams(
+                self.test_user, ["stream1"], invite_only=invite_only, allow_fail=True
+            )
             self.assert_json_error(result, "Insufficient permission")
 
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"])
+            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
 
         # User should still be able to subscribe to an existing stream
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"])
+            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
 
-    def test_user_settings_for_creating_streams(self) -> None:
+    def test_user_settings_for_adding_streams(self) -> None:
+        self._test_user_settings_for_adding_streams("create_stream_policy", invite_only=False)
+
+    def _test_user_settings_for_creating_streams(
+        self, stream_policy: str, invite_only: bool
+    ) -> None:
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
 
-        do_set_realm_property(
-            realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
-        )
+        do_set_realm_property(realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
             ["new_stream1"],
+            invite_only=invite_only,
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        self.common_subscribe_to_streams(user_profile, ["new_stream1"])
+        self.common_subscribe_to_streams(user_profile, ["new_stream1"], invite_only=invite_only)
 
-        do_set_realm_property(
-            realm, "create_stream_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
-        )
+        do_set_realm_property(realm, stream_policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
@@ -3285,13 +3146,12 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream2"])
 
-        do_set_realm_property(
-            realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
-        )
+        do_set_realm_property(realm, stream_policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
-            ["new_stream2"],
+            ["new_stream3"],
+            invite_only=invite_only,
             allow_fail=True,
         )
         self.assert_json_error(result, "Not allowed for guest users")
@@ -3299,22 +3159,27 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         self.common_subscribe_to_streams(
             self.test_user,
-            ["new_stream3"],
+            ["new_stream4"],
+            invite_only=invite_only,
         )
 
         do_set_realm_property(
-            realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+            realm, stream_policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
-            ["new_stream4"],
+            ["new_stream5"],
+            invite_only=invite_only,
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
-        self.common_subscribe_to_streams(user_profile, ["new_stream3"])
+        self.common_subscribe_to_streams(user_profile, ["new_stream3"], invite_only=invite_only)
+
+    def test_user_settings_for_creating_streams(self) -> None:
+        self._test_user_settings_for_creating_streams("create_stream_policy", invite_only=False)
 
     def test_can_create_streams(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
@@ -3691,19 +3556,6 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify the internal checks also block guest users.
         stream = get_stream("Denmark", guest_user.realm)
         self.assertEqual(filter_stream_authorization(guest_user, [stream]), ([], [stream]))
-
-        # Test UserProfile.can_create_streams for guest users.
-        streams_raw: List[StreamDict] = [
-            {
-                "invite_only": False,
-                "history_public_to_subscribers": None,
-                "name": "new_stream",
-                "stream_post_policy": Stream.STREAM_POST_POLICY_EVERYONE,
-            }
-        ]
-
-        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
-            list_to_streams(streams_raw, guest_user)
 
         stream = self.make_stream("private_stream", invite_only=True)
         result = self.common_subscribe_to_streams(guest_user, ["private_stream"], allow_fail=True)

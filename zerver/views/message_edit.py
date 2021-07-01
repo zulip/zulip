@@ -12,7 +12,7 @@ from zerver.lib.actions import check_update_message, do_delete_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.message import access_message
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
@@ -74,7 +74,7 @@ def get_message_edit_history(
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
-        return json_error(_("Message edit history is disabled in this organization"))
+        raise JsonableError(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
 
     # Extract the message edit history from the message

@@ -1,14 +1,13 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import datetime
-import functools
 import html
 import logging
 import re
 import time
 import urllib
 import urllib.parse
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -39,7 +38,6 @@ import markdown.treeprocessors
 import markdown.util
 import requests
 from django.conf import settings
-from django.db.models import Q
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
@@ -52,7 +50,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import possible_mentions, possible_user_group_mentions
+from zerver.lib.mention import MentionData, get_stream_name_info
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
@@ -61,15 +59,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import (
-    Message,
-    Realm,
-    UserGroup,
-    UserGroupMembership,
-    UserProfile,
-    get_active_streams,
-    linkifiers_for_realm,
-)
+from zerver.models import Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
 
@@ -92,17 +82,23 @@ def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
     return cache_wrapper
 
 
-class FullNameInfo(TypedDict):
-    id: int
-    email: str
-    full_name: str
-
-
 class LinkInfo(TypedDict):
     parent: Element
     title: Optional[str]
     index: Optional[int]
     remove: Optional[Element]
+
+
+@dataclass
+class MessageRenderingResult:
+    rendered_content: str
+    mentions_wildcard: bool
+    mentions_user_ids: Set[int]
+    mentions_user_group_ids: Set[int]
+    alert_words: Set[str]
+    links_for_preview: Set[str]
+    user_ids_with_alert_words: Set[int]
+    potential_attachment_path_ids: List[str]
 
 
 DbData = Dict[str, Any]
@@ -1236,7 +1232,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if self.md.zulip_message:
             self.md.zulip_message.has_link = len(found_urls) > 0
             self.md.zulip_message.has_image = False  # This is updated in self.add_a
-            self.md.zulip_message.potential_attachment_path_ids = []
 
             for url in unique_urls:
                 # Due to rewrite_local_links_to_relative, we need to
@@ -1254,7 +1249,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     continue
 
                 path_id = parsed_url.path[len("/user_uploads/") :]
-                self.md.zulip_message.potential_attachment_path_ids.append(path_id)
+                self.md.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
         if len(found_urls) == 0:
             return
@@ -1337,7 +1332,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
             except NotFoundInCache:
-                self.md.zulip_message.links_for_preview.add(url)
+                self.md.zulip_rendering_result.links_for_preview.add(url)
                 continue
 
             if extracted_data:
@@ -1844,11 +1839,11 @@ class UserMentionPattern(CompiledInlineProcessor):
 
             if wildcard:
                 if not silent:
-                    self.md.zulip_message.mentions_wildcard = True
+                    self.md.zulip_rendering_result.mentions_wildcard = True
                 user_id = "*"
             elif user:
                 if not silent:
-                    self.md.zulip_message.mentions_user_ids.add(user["id"])
+                    self.md.zulip_rendering_result.mentions_user_ids.add(user["id"])
                 name = user["full_name"]
                 user_id = str(user["id"])
             else:
@@ -1880,7 +1875,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
                 if not silent:
-                    self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
+                    self.md.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -2010,7 +2005,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             #
             # Our caller passes in the list of possible_words.  We
             # don't do any special rendering; we just append the alert words
-            # we find to the set self.md.zulip_message.alert_words.
+            # we find to the set self.md.zulip_rendering_result.user_ids_with_alert_words.
 
             realm_alert_words_automaton = db_data["realm_alert_words_automaton"]
 
@@ -2022,7 +2017,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
                     if self.check_valid_start_position(
                         content, end_index - len(original_value)
                     ) and self.check_valid_end_position(content, end_index + 1):
-                        self.md.zulip_message.user_ids_with_alert_words.update(user_ids)
+                        self.md.zulip_rendering_result.user_ids_with_alert_words.update(user_ids)
         return lines
 
 
@@ -2086,6 +2081,7 @@ class Markdown(markdown.Markdown):
     zulip_message: Optional[Message]
     zulip_realm: Optional[Realm]
     zulip_db_data: Optional[DbData]
+    zulip_rendering_result: Optional[MessageRenderingResult]
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
 
@@ -2191,15 +2187,17 @@ class Markdown(markdown.Markdown):
         # emphasis2 -       we disable _ for bold and emphasis
 
         # Declare regexes for clean single line calls to .register().
-        NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
+        #
         # Custom strikethrough syntax: ~~foo~~
         DEL_RE = r"(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)"
         # Custom bold syntax: **foo** but not __foo__
         # str inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
         EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*"
-        ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
+        STRONG_RE = r"(\*\*)([^\n]+?)\2"
         STRONG_EM_RE = r"(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*"
+        TEX_RE = r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"
+        TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"
 
         # Add inline patterns.  We use a custom numbering of the
         # rules, that preserves the order from upstream but leaves
@@ -2210,12 +2208,10 @@ class Markdown(markdown.Markdown):
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
         reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
-        reg.register(
-            Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B", self), "tex", 90
-        )
+        reg.register(Tex(TEX_RE, self), "tex", 90)
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
-        reg.register(Timestamp(r"<time:(?P<time>[^>]*?)>"), "timestamp", 75)
+        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
         reg.register(
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
@@ -2223,14 +2219,20 @@ class Markdown(markdown.Markdown):
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
-        reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), "entity", 40)
         reg.register(
-            markdown.inlinepatterns.SimpleTagPattern(r"(\*\*)([^\n]+?)\2", "strong"), "strong", 35
+            markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
+            "entity",
+            40,
         )
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, "strong"), "strong", 35)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, "em"), "emphasis", 30)
         reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, "del"), "del", 25)
         reg.register(
-            markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), "not_strong", 20
+            markdown.inlinepatterns.SimpleTextInlineProcessor(
+                markdown.inlinepatterns.NOT_STRONG_RE
+            ),
+            "not_strong",
+            20,
         )
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
         reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
@@ -2327,7 +2329,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
         pattern = prepare_linkifier_pattern(raw_pattern)
         for m in re.finditer(pattern, topic_name):
             match_details = m.groupdict()
-            match_text = match_details["linkifier_actual_match"]
+            match_text = match_details[OUTER_CAPTURE_GROUP]
             # We format the linkifier's url string using the matched text.
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
@@ -2393,132 +2395,6 @@ def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub("x", content))
 
 
-def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
-    if not mention_texts:
-        return []
-
-    q_list = set()
-
-    name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
-    for mention_text in mention_texts:
-        name_syntax_match = re.match(name_re, mention_text)
-        if name_syntax_match:
-            full_name = name_syntax_match.group("full_name")
-            mention_id = name_syntax_match.group("mention_id")
-            if full_name:
-                # For **name|id** mentions as mention_id
-                # cannot be null inside this block.
-                q_list.add(Q(full_name__iexact=full_name, id=mention_id))
-            else:
-                # For **|id** syntax.
-                q_list.add(Q(id=mention_id))
-        else:
-            # For **name** syntax.
-            q_list.add(Q(full_name__iexact=mention_text))
-
-    rows = (
-        UserProfile.objects.filter(
-            realm_id=realm_id,
-            is_active=True,
-        )
-        .filter(
-            functools.reduce(lambda a, b: a | b, q_list),
-        )
-        .values(
-            "id",
-            "full_name",
-            "email",
-        )
-    )
-    return list(rows)
-
-
-class MentionData:
-    def __init__(self, realm_id: int, content: str) -> None:
-        mention_texts, has_wildcards = possible_mentions(content)
-        possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
-        self.full_name_info = {row["full_name"].lower(): row for row in possible_mentions_info}
-        self.user_id_info = {row["id"]: row for row in possible_mentions_info}
-        self.init_user_group_data(realm_id=realm_id, content=content)
-        self.has_wildcards = has_wildcards
-
-    def message_has_wildcards(self) -> bool:
-        return self.has_wildcards
-
-    def init_user_group_data(self, realm_id: int, content: str) -> None:
-        user_group_names = possible_user_group_mentions(content)
-        self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
-        self.user_group_members: Dict[int, List[int]] = defaultdict(list)
-        group_ids = [group.id for group in self.user_group_name_info.values()]
-
-        if not group_ids:
-            # Early-return to avoid the cost of hitting the ORM,
-            # which shows up in profiles.
-            return
-
-        membership = UserGroupMembership.objects.filter(user_group_id__in=group_ids)
-        for info in membership.values("user_group_id", "user_profile_id"):
-            group_id = info["user_group_id"]
-            user_profile_id = info["user_profile_id"]
-            self.user_group_members[group_id].append(user_profile_id)
-
-    def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
-        # warning: get_user_by_name is not dependable if two
-        # users of the same full name are mentioned. Use
-        # get_user_by_id where possible.
-        return self.full_name_info.get(name.lower(), None)
-
-    def get_user_by_id(self, id: int) -> Optional[FullNameInfo]:
-        return self.user_id_info.get(id, None)
-
-    def get_user_ids(self) -> Set[int]:
-        """
-        Returns the user IDs that might have been mentioned by this
-        content.  Note that because this data structure has not parsed
-        the message and does not know about escaping/code blocks, this
-        will overestimate the list of user ids.
-        """
-        return set(self.user_id_info.keys())
-
-    def get_user_group(self, name: str) -> Optional[UserGroup]:
-        return self.user_group_name_info.get(name.lower(), None)
-
-    def get_group_members(self, user_group_id: int) -> List[int]:
-        return self.user_group_members.get(user_group_id, [])
-
-
-def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
-    if not user_group_names:
-        return {}
-
-    rows = UserGroup.objects.filter(realm_id=realm_id, name__in=user_group_names)
-    dct = {row.name.lower(): row for row in rows}
-    return dct
-
-
-def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, FullNameInfo]:
-    if not stream_names:
-        return {}
-
-    q_list = {Q(name=name) for name in stream_names}
-
-    rows = (
-        get_active_streams(
-            realm=realm,
-        )
-        .filter(
-            functools.reduce(lambda a, b: a | b, q_list),
-        )
-        .values(
-            "id",
-            "name",
-        )
-    )
-
-    dct = {row["name"]: row for row in rows}
-    return dct
-
-
 def do_convert(
     content: str,
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
@@ -2529,7 +2405,7 @@ def do_convert(
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
-) -> str:
+) -> MessageRenderingResult:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -2562,7 +2438,19 @@ def do_convert(
     _md_engine.reset()
 
     # Filters such as UserMentionPattern need a message.
+    rendering_result: MessageRenderingResult = MessageRenderingResult(
+        rendered_content="",
+        mentions_wildcard=False,
+        mentions_user_ids=set(),
+        mentions_user_group_ids=set(),
+        alert_words=set(),
+        links_for_preview=set(),
+        user_ids_with_alert_words=set(),
+        potential_attachment_path_ids=[],
+    )
+
     _md_engine.zulip_message = message
+    _md_engine.zulip_rendering_result = rendering_result
     _md_engine.zulip_realm = message_realm
     _md_engine.zulip_db_data = None  # for now
     _md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
@@ -2606,17 +2494,17 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendered_content = timeout(5, lambda: _md_engine.convert(content))
+        rendering_result.rendered_content = timeout(5, lambda: _md_engine.convert(content))
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
         MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
-        if len(rendered_content) > MAX_MESSAGE_LENGTH * 100:
+        if len(rendering_result.rendered_content) > MAX_MESSAGE_LENGTH * 100:
             raise MarkdownRenderingException(
                 f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
             )
-        return rendered_content
+        return rendering_result
     except Exception:
         cleaned = privacy_clean_markdown(content)
         # NOTE: Don't change this message without also changing the
@@ -2674,7 +2562,7 @@ def markdown_convert(
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
-) -> str:
+) -> MessageRenderingResult:
     markdown_stats_start()
     ret = do_convert(
         content,

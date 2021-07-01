@@ -1,27 +1,14 @@
-<div id="linkifier-edit-form-modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="linkifier-edit-form-modal-label" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-        <h3 id="linkifier-edit-form-modal-label">{{t "Edit linkifiers" }}</h3>
-        <div class="alert" id="edit-linkifier-status"></div>
-    </div>
-    <div class="modal-body">
-        <div id="edit-linkifier-form">
-            <form class="form-horizontal linkifier-edit-form">
-                <div class="input-group name_change_container">
-                    <label for="edit-linkifier-pattern" >{{t "Pattern" }}</label>
-                    <input type="text" autocomplete="off" id="edit-linkifier-pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" value="{{ pattern }}" />
-                    <div class="alert" id="edit-linkifier-pattern-status"></div>
-                </div>
-                <div class="input-group name_change_container">
-                    <label for="edit-linkifier-url-format-string" >{{t "URL format string" }}</label>
-                    <input type="text" autocomplete="off" id="edit-linkifier-url-format-string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" value="{{ url_format_string }}" />
-                    <div class="alert" id="edit-linkifier-format-status"></div>
-                </div>
-            </form>
+<div id="edit-linkifier-form">
+    <form class="form-horizontal linkifier-edit-form">
+        <div class="input-group name_change_container">
+            <label for="edit-linkifier-pattern" >{{t "Pattern" }}</label>
+            <input type="text" autocomplete="off" id="edit-linkifier-pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" value="{{ pattern }}" />
+            <div class="alert" id="edit-linkifier-pattern-status"></div>
         </div>
-    </div>
-    <div class="modal-footer">
-        <button type="submit" class="button rounded sea-green submit-linkifier-info-change">{{t "Save changes" }}</button>
-        <button type="button" class="button rounded cancel-linkifier-info-change" data-dismiss="modal">{{t "Cancel" }}</button>
-    </div>
+        <div class="input-group name_change_container">
+            <label for="edit-linkifier-url-format-string" >{{t "URL format string" }}</label>
+            <input type="text" autocomplete="off" id="edit-linkifier-url-format-string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" value="{{ url_format_string }}" />
+            <div class="alert" id="edit-linkifier-format-status"></div>
+        </div>
+    </form>
 </div>

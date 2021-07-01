@@ -136,7 +136,7 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
 
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
-    if plan.status == CustomerPlan.FREE_TRIAL:
+    if plan.is_free_trial():
         assert plan.next_invoice_date is not None  # for mypy
         return plan.next_invoice_date
 
@@ -190,6 +190,10 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
     return f"ledger_entry:{ledger_entry.id}"  # nocoverage
 
 
+def cents_to_dollar_string(cents: int) -> str:
+    return f"{cents / 100.:,.2f}"
+
+
 class BillingError(Exception):
     # error messages
     CONTACT_SUPPORT = gettext_lazy("Something went wrong. Please contact {email}.")
@@ -201,6 +205,10 @@ class BillingError(Exception):
         if message is None:
             message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         self.message = message
+
+
+class LicenseLimitError(Exception):
+    pass
 
 
 class StripeCardError(BillingError):
@@ -334,6 +342,19 @@ def do_replace_payment_source(
     return updated_stripe_customer
 
 
+def stripe_customer_has_credit_card_as_default_source(stripe_customer: stripe.Customer) -> bool:
+    if not stripe_customer.default_source:
+        return False
+    return stripe_customer.default_source.object == "card"
+
+
+def customer_has_credit_card_as_default_source(customer: Customer) -> bool:
+    if not customer.stripe_customer_id:
+        return False
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+    return stripe_customer_has_credit_card_as_default_source(stripe_customer)
+
+
 # event_time should roughly be timezone_now(). Not designed to handle
 # event_times in the past or future
 @transaction.atomic
@@ -354,7 +375,7 @@ def make_end_of_cycle_updates_if_needed(
                 licenses=last_ledger_entry.licenses_at_next_renewal,
                 licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal,
             )
-        if plan.status == CustomerPlan.FREE_TRIAL:
+        if plan.is_free_trial():
             plan.invoiced_through = last_ledger_entry
             assert plan.next_invoice_date is not None
             plan.billing_cycle_anchor = plan.next_invoice_date.replace(microsecond=0)
@@ -497,6 +518,10 @@ def decimal_to_float(obj: object) -> object:
     raise TypeError  # nocoverage
 
 
+def is_free_trial_offer_enabled() -> bool:
+    return settings.FREE_TRIAL_DAYS not in (None, 0)
+
+
 # Only used for cloud signups
 @catch_stripe_errors
 def process_initial_upgrade(
@@ -509,7 +534,7 @@ def process_initial_upgrade(
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
     charge_automatically = stripe_token is not None
-    free_trial = settings.FREE_TRIAL_DAYS not in (None, 0)
+    free_trial = is_free_trial_offer_enabled()
 
     if get_current_plan_by_customer(customer) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
@@ -781,6 +806,11 @@ def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
         invoice_plan(plan, event_time)
 
 
+def is_realm_on_free_trial(realm: Realm) -> bool:
+    plan = get_current_plan_by_realm(realm)
+    return plan is not None and plan.is_free_trial()
+
+
 def attach_discount_to_realm(
     realm: Realm, discount: Decimal, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -850,6 +880,10 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             internal_send_private_message(notification_bot, billing_admin, message)
 
 
+def is_sponsored_realm(realm: Realm) -> bool:
+    return realm.plan_type == Realm.STANDARD_FREE
+
+
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
     customer = get_customer_by_realm(realm)
     if customer is not None:
@@ -889,6 +923,14 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         # TODO: Decimal stuff
         annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
     return annual_revenue
+
+
+def get_realms_to_default_discount_dict() -> Dict[str, Decimal]:
+    realms_to_default_discount = {}
+    customers = Customer.objects.exclude(default_discount=None).exclude(default_discount=0)
+    for customer in customers:
+        realms_to_default_discount[customer.realm.string_id] = customer.default_discount
+    return realms_to_default_discount
 
 
 # During realm deactivation we instantly downgrade the plan to Limited.

@@ -14,15 +14,15 @@ const location = set_global("location", {
 });
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         location.hash = "bogus";
         browser_history.clear_for_testing();
-        f(override);
+        f({override});
     });
 }
 
 test("basics", () => {
-    const hash1 = "#settings/your-account";
+    const hash1 = "#settings/profile";
     const hash2 = "#narrow/is/private";
     browser_history.go_to_location(hash1);
     assert.equal(location.hash, hash1);
@@ -32,7 +32,7 @@ test("basics", () => {
     assert.equal(browser_history.old_hash(), hash1);
 
     const was_internal_change = browser_history.save_old_hash();
-    assert(was_internal_change);
+    assert.ok(was_internal_change);
     assert.equal(browser_history.old_hash(), hash2);
 });
 
@@ -51,7 +51,7 @@ test("error for bad hashes", () => {
     browser_history.update(hash);
 });
 
-test("update internal hash if required", (override) => {
+test("update internal hash if required", ({override}) => {
     const hash = "#test/hash";
     const stub = make_stub();
     override(browser_history, "update", stub.f);

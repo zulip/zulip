@@ -159,8 +159,42 @@ export function watch_manual_resize(element) {
     return [box_handler, body_handler];
 }
 
+export function reset_compose_textarea_max_height(bottom_whitespace_height) {
+    // If the compose-box is open, we set the `max-height` property of
+    // `compose-textarea` so that the compose-box's maximum extent
+    // does not overlap the last message in the current stream.is the
+    // right size to leave a tiny bit of space after the last message
+    // of the current stream.
+
+    // Compute bottom_whitespace_height if not provided by caller.
+    if (bottom_whitespace_height === undefined) {
+        const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+        bottom_whitespace_height = h.bottom_whitespace_height;
+    }
+
+    const compose_height = Number.parseInt($("#compose").outerHeight(), 10);
+    const compose_textarea_height = Number.parseInt($("#compose-textarea").outerHeight(), 10);
+    const compose_non_textarea_height = compose_height - compose_textarea_height;
+
+    $("#compose-textarea").css(
+        "max-height",
+        // The 10 here leaves space for the selected message border.
+        bottom_whitespace_height - compose_non_textarea_height - 10,
+    );
+}
+
 export function resize_bottom_whitespace(h) {
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
+
+    // The height of the compose box is tied to that of
+    // bottom_whitespace, so update it if necessary.
+    //
+    // reset_compose_textarea_max_height cannot compute the right
+    // height correctly while compose is hidden. This is OK, because
+    // we also resize compose every time it is opened.
+    if ($(".message_comp").is(":visible")) {
+        reset_compose_textarea_max_height(h.bottom_whitespace_height);
+    }
 }
 
 export function resize_stream_filters_container(h) {

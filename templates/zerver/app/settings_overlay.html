@@ -11,9 +11,13 @@
         <div class="sidebar-list dark-grey small-text">
             <div class="center tab-container"></div>
             <ul class="normal-settings-list">
-                <li tabindex="0" data-section="your-account">
+                <li tabindex="0" data-section="profile">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{ _('Your account') }}</div>
+                    <div class="text">{{ _('Profile') }}</div>
+                </li>
+                <li tabindex="0" data-section="account-and-privacy">
+                    <i class="icon fa fa-lock" aria-hidden="true"></i>
+                    <div class="text">{{ _('Account & privacy') }}</div>
                 </li>
                 <li tabindex="0" data-section="display-settings">
                     <i class="icon fa fa-clock-o" aria-hidden="true"></i>
@@ -26,7 +30,7 @@
                 {% if not is_guest %}
                 <li tabindex="0" data-section="your-bots">
                     <i class="icon fa fa-github" aria-hidden="true"></i>
-                    <div class="text">{{ _('Your bots') }}</div>
+                    <div class="text">{{ _('Bots') }}</div>
                 </li>
                 {% endif %}
                 <li tabindex="0" data-section="alert-words">
@@ -174,7 +178,7 @@
     </div>
     <div class="content-wrapper right">
         <div class="settings-header">
-            <h1>{{ _('Settings') }}<span class="section"></span></h1>
+            <h1><span class="header-prefix"></span><span class="section"></span></h1>
             <div class="exit">
                 <span class="exit-sign">&times;</span>
             </div>

@@ -8,7 +8,11 @@ from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_parameters
+from zerver.openapi.openapi import (
+    check_deprecated_consistency,
+    get_openapi_parameters,
+    get_parameters_description,
+)
 
 REGEXP = re.compile(r"\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}")
 
@@ -74,8 +78,12 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
                 if arguments:
                     text = self.render_table(arguments)
-                else:
+                # We want to show this message only if the parameters
+                # description doesn't say anything else.
+                elif is_openapi_format and get_parameters_description(endpoint, method) == "":
                     text = ["This endpoint does not accept any parameters."]
+                else:
+                    text = []
                 # The line that contains the directive to include the macro
                 # may be preceded or followed by text or tags, in that case
                 # we need to make sure that any preceding or following text

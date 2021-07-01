@@ -27,7 +27,7 @@ rules:
           - pattern: from zerver import $X
           - pattern: from analytics import $X
           - pattern: from confirmation import $X
-    message: "Don't import models or other code in migrations; see docs/subsystems/schema-migrations.md"
+    message: "Don't import models or other code in migrations; see https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html"
     languages: [python]
     severity: ERROR
     paths:

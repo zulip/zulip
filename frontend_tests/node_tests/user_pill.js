@@ -32,18 +32,19 @@ const isaac_item = {
     display_value: "Isaac Newton",
     type: "user",
     user_id: isaac.user_id,
+    deactivated: false,
     img_src: `/avatar/${isaac.user_id}&s=50`,
 };
 
 let pill_widget = {};
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         people.init();
         people.add_active_user(alice);
         people.add_active_user(isaac);
         pill_widget = {};
-        f(override);
+        f({override});
     });
 }
 
@@ -96,8 +97,8 @@ test("append", () => {
         pill_widget,
     });
 
-    assert(appended);
-    assert(cleared);
+    assert.ok(appended);
+    assert.ok(cleared);
 });
 
 test("get_items", () => {

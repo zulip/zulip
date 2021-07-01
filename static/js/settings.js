@@ -1,3 +1,4 @@
+import {parseISO} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 
@@ -7,13 +8,14 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as common from "./common";
-import {$t, $t_html} from "./i18n";
+import {$t, $t_html, get_language_list_columns} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
@@ -85,11 +87,18 @@ function setup_settings_label() {
     };
 }
 
+function get_parsed_date_of_joining() {
+    const user_date_joined = people.get_by_user_id(page_params.user_id, false).date_joined;
+    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+    return dateFormat.format(parseISO(user_date_joined));
+}
+
 export function build_page() {
     setup_settings_label();
 
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
+        date_joined_text: get_parsed_date_of_joining(),
         page_params,
         enable_sound_select:
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
@@ -111,6 +120,8 @@ export function build_page() {
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
+        default_language_name: settings_display.default_language_name,
+        language_list_dbl_col: get_language_list_columns(page_params.default_language),
     });
 
     $(".settings-box").html(rendered_settings_tab);
@@ -137,6 +148,13 @@ export function launch(section) {
 }
 
 export function set_settings_header(key) {
+    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
+    let header_prefix = $t_html({defaultMessage: "Personal settings"});
+    if (selected_tab_key === "organization") {
+        header_prefix = $t_html({defaultMessage: "Organization settings"});
+    }
+    $(".settings-header h1 .header-prefix").text(header_prefix);
+
     const header_text = $(
         `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
     ).text();

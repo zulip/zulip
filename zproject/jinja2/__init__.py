@@ -10,7 +10,7 @@ from jinja2 import Environment
 from two_factor.templatetags.two_factor import device_action
 
 from zerver.context_processors import DEFAULT_PAGE_PARAMS
-from zerver.templatetags.app_filters import display_list, render_markdown_path, webpack_entry
+from zerver.lib.templates import display_list, render_markdown_path, webpack_entry
 
 
 def json_dumps(obj: object) -> str:

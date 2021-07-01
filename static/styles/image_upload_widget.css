@@ -32,6 +32,7 @@
         top: 10px;
         right: 10px;
         z-index: 99;
+        line-height: 20px;
     }
 
     .image-delete-button:hover {

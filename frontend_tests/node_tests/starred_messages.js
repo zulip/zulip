@@ -12,7 +12,7 @@ const starred_messages = zrequire("starred_messages");
 const stream_popover = zrequire("stream_popover");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("add starred", (override) => {
+run_test("add starred", ({override}) => {
     starred_messages.starred_ids.clear();
     assert.deepEqual(starred_messages.get_starred_msg_ids(), []);
     assert.equal(starred_messages.get_count(), 0);
@@ -23,7 +23,7 @@ run_test("add starred", (override) => {
     assert.equal(starred_messages.get_count(), 2);
 });
 
-run_test("remove starred", (override) => {
+run_test("remove starred", ({override}) => {
     starred_messages.starred_ids.clear();
     assert.deepEqual(starred_messages.get_starred_msg_ids(), []);
 
@@ -77,7 +77,7 @@ run_test("get starred ids in topic", () => {
     assert.deepEqual(starred_messages.get_count_in_topic(20, "topic"), 1);
 });
 
-run_test("initialize", (override) => {
+run_test("initialize", ({override}) => {
     starred_messages.starred_ids.clear();
     for (const id of [1, 2, 3]) {
         starred_messages.starred_ids.add(id);

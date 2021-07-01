@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_confirm_delete_user_avatar from "../templates/confirm_delete_user_avatar.hbs";
+import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
@@ -95,7 +95,7 @@ export function build_user_avatar_widget(upload_function) {
                 },
             });
         }
-        const modal_parent = $("#account-settings");
+        const modal_parent = $("#profile-settings");
 
         const html_body = render_confirm_delete_user_avatar();
 
@@ -105,6 +105,7 @@ export function build_user_avatar_widget(upload_function) {
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: delete_user_avatar,
+            fade: true,
         });
     });
 

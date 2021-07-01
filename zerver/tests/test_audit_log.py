@@ -41,6 +41,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
+    Realm,
     RealmAuditLog,
     Recipient,
     Subscription,
@@ -412,13 +413,13 @@ class TestRealmAuditLog(ZulipTestCase):
                 RealmAuditLog.NEW_VALUE: 1000,
             },
             {
-                "property": "allow_community_topic_editing",
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
+                "property": "edit_topic_policy",
+                RealmAuditLog.OLD_VALUE: Realm.POLICY_EVERYONE,
+                RealmAuditLog.NEW_VALUE: Realm.POLICY_ADMINS_ONLY,
             },
         ]
 
-        do_set_realm_message_editing(realm, True, 1000, False, acting_user=user)
+        do_set_realm_message_editing(realm, True, 1000, Realm.POLICY_ADMINS_ONLY, acting_user=user)
         realm_audit_logs = RealmAuditLog.objects.filter(
             realm=realm,
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,

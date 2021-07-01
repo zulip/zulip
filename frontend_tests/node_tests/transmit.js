@@ -36,7 +36,7 @@ run_test("transmit_message_ajax", () => {
 
     transmit.send_message(request, success);
 
-    assert(success_func_called);
+    assert.ok(success_func_called);
 
     channel.xhr_error_message = (msg) => {
         assert.equal(msg, "Error sending message");
@@ -56,7 +56,7 @@ run_test("transmit_message_ajax", () => {
         error_func_called = true;
     };
     transmit.send_message(request, success, error);
-    assert(error_func_called);
+    assert.ok(error_func_called);
 });
 
 run_test("transmit_message_ajax_reload_pending", () => {
@@ -94,11 +94,11 @@ run_test("transmit_message_ajax_reload_pending", () => {
         opts.error(xhr, "bad request");
     };
     transmit.send_message(request, success, error);
-    assert(!error_func_called);
-    assert(reload_initiated);
+    assert.ok(!error_func_called);
+    assert.ok(reload_initiated);
 });
 
-run_test("reply_message_stream", (override) => {
+run_test("reply_message_stream", ({override}) => {
     const stream_message = {
         type: "stream",
         stream: "social",
@@ -135,7 +135,7 @@ run_test("reply_message_stream", (override) => {
     });
 });
 
-run_test("reply_message_private", (override) => {
+run_test("reply_message_private", ({override}) => {
     const fred = {
         user_id: 3,
         email: "fred@example.com",

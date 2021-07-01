@@ -2,11 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
 const ui_report = mock_esm("../../static/js/ui_report", {
     displayed_error: false,
 
@@ -88,26 +86,26 @@ run_test("test_get_hash_category", () => {
     assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
     assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
 
-    location.hash = "#settings/your-account";
+    location.hash = "#settings/profile";
     assert.deepEqual(hash_util.get_current_hash_category(), "settings");
 });
 
 run_test("test_get_hash_section", () => {
     assert.equal(hash_util.get_hash_section("streams/subscribed"), "subscribed");
-    assert.equal(hash_util.get_hash_section("#settings/your-account"), "your-account");
+    assert.equal(hash_util.get_hash_section("#settings/profile"), "profile");
 
     assert.equal(hash_util.get_hash_section("settings/10/general/"), "10");
 
     assert.equal(hash_util.get_hash_section("#drafts"), "");
     assert.equal(hash_util.get_hash_section(""), "");
 
-    location.hash = "#settings/your-account";
-    assert.deepEqual(hash_util.get_current_hash_section(), "your-account");
+    location.hash = "#settings/profile";
+    assert.deepEqual(hash_util.get_current_hash_section(), "profile");
 });
 
 run_test("build_reload_url", () => {
-    location.hash = "#settings/your-account";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fyour-account");
+    location.hash = "#settings/profile";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fprofile");
 
     location.hash = "#test";
     assert.equal(hash_util.build_reload_url(), "+oldhash=test");

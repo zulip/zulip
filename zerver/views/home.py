@@ -1,6 +1,6 @@
 import logging
 import secrets
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -8,18 +8,12 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
-from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
-from zerver.lib.home import (
-    build_page_params_for_home_page_load,
-    get_billing_info,
-    get_user_permission_info,
-    promote_sponsoring_zulip_in_realm,
-)
+from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import compute_show_invites_and_add_streams
@@ -103,17 +97,6 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
         # eliminated that as a useful concept for non-bot users.
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
-
-
-def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
-    if (
-        page_params["color_scheme"] == 2
-        and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT
-    ):
-        navbar_logo_url = page_params["realm_night_logo_url"]
-    else:
-        navbar_logo_url = page_params["realm_logo_url"]
-    return navbar_logo_url
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -209,15 +192,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     show_invites, show_add_streams = compute_show_invites_and_add_streams(user_profile)
 
-    billing_info = get_billing_info(user_profile)
-
     request._log_data["extra"] = "[{}]".format(queue_id)
 
     csp_nonce = secrets.token_hex(24)
 
     user_permission_info = get_user_permission_info(user_profile)
-
-    navbar_logo_url = compute_navbar_logo_url(page_params)
 
     response = render(
         request,
@@ -229,20 +208,11 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "search_pills_enabled": settings.SEARCH_PILLS_ENABLED,
             "show_invites": show_invites,
             "show_add_streams": show_add_streams,
-            "promote_sponsoring_zulip": promote_sponsoring_zulip_in_realm(realm),
-            "show_billing": billing_info.show_billing,
-            "corporate_enabled": settings.CORPORATE_ENABLED,
-            "show_plans": billing_info.show_plans,
             "is_owner": user_permission_info.is_realm_owner,
             "is_admin": user_permission_info.is_realm_admin,
             "is_guest": user_permission_info.is_guest,
             "color_scheme": user_permission_info.color_scheme,
-            "zulip_version": ZULIP_VERSION,
-            "zulip_merge_base": ZULIP_MERGE_BASE,
-            "navbar_logo_url": navbar_logo_url,
-            "show_webathena": user_permission_info.show_webathena,
             "embedded": narrow_stream is not None,
-            "invite_as": PreregistrationUser.INVITE_AS,
             "max_file_upload_size_mib": settings.MAX_FILE_UPLOAD_SIZE,
         },
     )

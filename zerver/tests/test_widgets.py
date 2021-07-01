@@ -3,11 +3,12 @@ from typing import Any, Dict
 
 import orjson
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.validator import check_widget_content
-from zerver.lib.widget import get_widget_data
-from zerver.models import SubMessage
+from zerver.lib.widget import get_widget_data, get_widget_type
+from zerver.models import SubMessage, UserProfile
 
 
 class WidgetContentTestCase(ZulipTestCase):
@@ -223,3 +224,183 @@ class WidgetContentTestCase(ZulipTestCase):
         submessage = SubMessage.objects.get(message_id=message.id)
         self.assertEqual(submessage.msg_type, "widget")
         self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+
+    def test_poll_permissions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream_name = "Verona"
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            client="test suite",
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(cordelia, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+
+        def post(sender: UserProfile, data: Dict[str, object]) -> HttpResponse:
+            payload = dict(
+                message_id=message.id, msg_type="widget", content=orjson.dumps(data).decode()
+            )
+            return self.api_post(sender, "/api/v1/submessage", payload)
+
+        result = post(cordelia, dict(type="question", question="Tabs or spaces?"))
+        self.assert_json_success(result)
+
+        result = post(hamlet, dict(type="question", question="Tabs or spaces?"))
+        self.assert_json_error(result, "You can't edit a question unless you are the author.")
+
+    def test_poll_type_validation(self) -> None:
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            client="test suite",
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+
+        def post_submessage(content: str) -> HttpResponse:
+            payload = dict(
+                message_id=message.id,
+                msg_type="widget",
+                content=content,
+            )
+            return self.api_post(sender, "/api/v1/submessage", payload)
+
+        def assert_error(content: str, error: str) -> None:
+            result = post_submessage(content)
+            self.assert_json_error_contains(result, error)
+
+        assert_error("bogus", "Invalid json for submessage")
+        assert_error('""', "not a dict")
+        assert_error("[]", "not a dict")
+
+        assert_error('{"type": "bogus"}', "Unknown type for poll data: bogus")
+        assert_error('{"type": "vote"}', "key is missing")
+        assert_error('{"type": "vote", "key": "1,1,", "vote": 99}', "Invalid poll data")
+
+        assert_error('{"type": "question"}', "key is missing")
+        assert_error('{"type": "question", "question": 7}', "not a string")
+
+        assert_error('{"type": "new_option"}', "key is missing")
+        assert_error('{"type": "new_option", "idx": 7, "option": 999}', "not a string")
+        assert_error('{"type": "new_option", "idx": -1, "option": "pizza"}', "too small")
+        assert_error('{"type": "new_option", "idx": 1001, "option": "pizza"}', "too large")
+        assert_error('{"type": "new_option", "idx": "bogus", "option": "maybe"}', "not an int")
+
+        def assert_success(data: Dict[str, object]) -> None:
+            content = orjson.dumps(data).decode()
+            result = post_submessage(content)
+            self.assert_json_success(result)
+
+        # Note that we only validate for types. The server code may, for,
+        # example, allow a vote for a non-existing option, and we rely
+        # on the clients to ignore those.
+
+        assert_success(dict(type="vote", key="1,1", vote=1))
+        assert_success(dict(type="new_option", idx=7, option="maybe"))
+        assert_success(dict(type="question", question="what's for dinner?"))
+
+    def test_todo_type_validation(self) -> None:
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/todo"
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            client="test suite",
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+
+        def post_submessage(content: str) -> HttpResponse:
+            payload = dict(
+                message_id=message.id,
+                msg_type="widget",
+                content=content,
+            )
+            return self.api_post(sender, "/api/v1/submessage", payload)
+
+        def assert_error(content: str, error: str) -> None:
+            result = post_submessage(content)
+            self.assert_json_error_contains(result, error)
+
+        assert_error('{"type": "bogus"}', "Unknown type for todo data: bogus")
+
+        assert_error('{"type": "new_task"}', "key is missing")
+        assert_error(
+            '{"type": "new_task", "key": 7, "task": 7, "desc": "", "completed": false}',
+            'data["task"] is not a string',
+        )
+        assert_error(
+            '{"type": "new_task", "key": -1, "task": "eat", "desc": "", "completed": false}',
+            'data["key"] is too small',
+        )
+        assert_error(
+            '{"type": "new_task", "key": 1001, "task": "eat", "desc": "", "completed": false}',
+            'data["key"] is too large',
+        )
+
+        assert_error('{"type": "strike"}', "key is missing")
+        assert_error('{"type": "strike", "key": 999}', 'data["key"] is not a string')
+
+        def assert_success(data: Dict[str, object]) -> None:
+            content = orjson.dumps(data).decode()
+            result = post_submessage(content)
+            self.assert_json_success(result)
+
+        assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
+        assert_success(dict(type="strike", key="5,9"))
+
+    def test_get_widget_type(self) -> None:
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        # We test for both trailing and leading spaces, along with blank lines
+        # for the poll options.
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            client="test suite",
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+
+        [submessage] = SubMessage.objects.filter(message_id=message.id)
+
+        self.assertEqual(get_widget_type(message_id=message.id), "poll")
+
+        submessage.content = "bogus non json"
+        submessage.save()
+        self.assertEqual(get_widget_type(message_id=message.id), None)
+
+        submessage.content = '{"bogus": 1}'
+        submessage.save()
+        self.assertEqual(get_widget_type(message_id=message.id), None)
+
+        submessage.content = '{"widget_type": "todo"}'
+        submessage.save()
+        self.assertEqual(get_widget_type(message_id=message.id), "todo")

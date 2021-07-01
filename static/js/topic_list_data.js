@@ -1,5 +1,5 @@
 import * as hash_util from "./hash_util";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
 import * as topic_list from "./topic_list";
@@ -30,7 +30,7 @@ export function get_list_info(stream_id, zoomed) {
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
-        const is_topic_muted = muting.is_topic_muted(stream_id, topic_name);
+        const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
 
         if (!zoomed) {
             function should_show_topic(topics_selected) {

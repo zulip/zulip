@@ -8,7 +8,8 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -310,7 +311,7 @@ export function get_display_full_names(user_ids) {
             return "?";
         }
 
-        if (muting.is_user_muted(user_id)) {
+        if (muted_users.is_user_muted(user_id)) {
             return $t({defaultMessage: "Muted user"});
         }
 
@@ -662,7 +663,7 @@ export function sender_info_for_recent_topics_row(sender_ids) {
     for (const id of sender_ids) {
         const sender = {...get_by_user_id(id)};
         sender.avatar_url_small = small_avatar_url_for_person(sender);
-        sender.is_muted = muting.is_user_muted(id);
+        sender.is_muted = muted_users.is_user_muted(id);
         senders_info.push(sender);
     }
     return senders_info;
@@ -729,7 +730,10 @@ export function is_valid_email_for_compose(email) {
     if (!person) {
         return false;
     }
-    return active_user_dict.has(person.user_id);
+
+    // we allow deactivated users in compose so that
+    // one can attempt to reply to threads that contained them.
+    return true;
 }
 
 export function is_valid_bulk_emails_for_compose(emails) {
@@ -1305,7 +1309,7 @@ export function set_custom_profile_field_data(user_id, field) {
 }
 
 export function is_current_user(email) {
-    if (email === null || email === undefined) {
+    if (email === null || email === undefined || page_params.is_spectator) {
         return false;
     }
 

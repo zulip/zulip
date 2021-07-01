@@ -20,8 +20,10 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
+import * as resize from "./resize";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
@@ -264,6 +266,11 @@ export function start(msg_type, opts) {
     // Show either stream/topic fields or "You and" field.
     show_box(msg_type, opts);
 
+    // Reset the `max-height` property of `compose-textarea` so that the
+    // compose-box do not cover the last messages of the current stream
+    // while writing a long message.
+    resize.reset_compose_textarea_max_height();
+
     complete_starting_tasks(msg_type, opts);
 }
 
@@ -299,8 +306,8 @@ export function respond_to_message(opts) {
 
     let message;
     let msg_type;
-    if (recent_topics.is_visible()) {
-        message = recent_topics.get_focused_row_message();
+    if (recent_topics_util.is_visible()) {
+        message = recent_topics_ui.get_focused_row_message();
         if (message === undefined) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.

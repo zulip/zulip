@@ -96,7 +96,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiKeyResponse"
+                allOf:
+                  - $ref: "#/components/schemas/ApiKeyResponse"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /dev_fetch_api_key:
     post:
       operationId: dev_fetch_api_key
@@ -130,7 +132,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiKeyResponse"
+                allOf:
+                  - $ref: "#/components/schemas/ApiKeyResponse"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /events:
     get:
       operationId: get_events
@@ -148,6 +152,19 @@ paths:
         calls to this endpoint.  It is guaranteed to be higher than
         heartbeat frequency and should be respected by clients to
         avoid breaking when heartbeat frequency increases.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - queue_id
+                - last_event_id
+      x-parameter-description: |
+        **Note**: The parameters documented above are optional in the sense that
+        even if you haven't registered a queue by explicitly requesting the
+        `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
+        [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
+        endpoint and a queue would be registered in the absence of a `queue_id`.
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
@@ -182,6 +199,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -1116,7 +1134,7 @@ paths:
                                   description: |
                                     Note: Only present if the changed property was `invite_only`.
 
-                                    Whether the stream's history is now readable by web-public visitors.
+                                    Whether the stream's history is now readable by web-public spectators.
 
                                     **Changes**: New in Zulip 5.0 (feature level 71).
                               additionalProperties: false
@@ -3254,10 +3272,6 @@ paths:
                                       description: |
                                         Whether this organization is configured to allow users to access
                                         [message edit history](/help/view-a-messages-edit-history).
-                                    allow_message_deleting:
-                                      type: boolean
-                                      description: |
-                                        Whether messages can be deleted in this Zulip organization.
                                     bot_creation_policy:
                                       type: integer
                                       description: |
@@ -3300,15 +3314,6 @@ paths:
 
                                         **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
                                         Zulip 4.0 (feature level 62).
-                                    default_language:
-                                      type: string
-                                      description: |
-                                        The default UI language for new users joining this organization.
-                                    default_twenty_four_hour_time:
-                                      type: boolean
-                                      description: |
-                                        Whether new members of this organization will see times displayed in
-                                        24-hour time (true) or 12-hour time (false).
                                     description:
                                       type: string
                                       description: |
@@ -3478,11 +3483,19 @@ paths:
                                       description: |
                                         Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
                                         allows editing the content of messages.
-                                    allow_community_topic_editing:
-                                      type: boolean
+                                    edit_topic_policy:
+                                      type: integer
                                       description: |
-                                        Whether [community topic editing](/help/community-topic-edits) is enabled
-                                        in this organization.
+                                        The policy for which users can edit topics of any message.
+
+                                        * 1 = members only
+                                        * 2 = admins only
+                                        * 3 = full members only
+                                        * 4 = moderators only
+                                        * 5 = everyone
+
+                                        **Changes**: New in Zulip 5.0 (feature level 75), replacing the
+                                        previous `allow_community_topic_editing` boolean.
                                     message_content_edit_limit_seconds:
                                       type: integer
                                       description: |
@@ -3775,7 +3788,7 @@ paths:
                                     {
                                       "allow_message_editing": false,
                                       "message_content_edit_limit_seconds": 0,
-                                      "allow_community_topic_editing": false,
+                                      "edit_topic_policy": 2,
                                     },
                                   "id": 0,
                                 }
@@ -3847,7 +3860,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BadEventQueueIdError"
+                allOf:
+                  - $ref: "#/components/schemas/BadEventQueueIdError"
+                  - description: |
+                      #### BAD_EVENT_QUEUE_ID errors
+
+                      This error occurs if the target event queue has been garbage collected.
+                      A compliant client will handle this error by re-initializing itself
+                      (e.g. a Zulip web app browser window will reload in this case).
+
+                      See [the /register endpoint docs](/api/register-queue) for details on how to
+                      handle these correctly.
+
+                      The following is the error response in such case
     delete:
       operationId: delete_queue
       summary: Delete an event queue
@@ -3864,13 +3889,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BadEventQueueIdError"
+                allOf:
+                  - $ref: "#/components/schemas/BadEventQueueIdError"
+                  - description: |
+                      A typical JSON response for when the `queue_id` is non-existent or the
+                      associated queue has already been deleted
   /get_stream_id:
     get:
       operationId: get_stream_id
@@ -3897,6 +3928,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -3919,6 +3951,7 @@ paths:
                         "msg": "Invalid stream name 'nonexistent'",
                         "result": "error",
                       }
+                    description: An example JSON response for when the supplied stream does not exist
   /mark_all_as_read:
     post:
       operationId: mark_all_as_read
@@ -3934,7 +3967,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /mark_stream_as_read:
     post:
       operationId: mark_stream_as_read
@@ -3957,7 +3992,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /mark_topic_as_read:
     post:
       operationId: mark_topic_as_read
@@ -3988,7 +4025,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /attachments:
     get:
       operationId: get_attachments
@@ -4006,6 +4045,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4077,6 +4117,14 @@ paths:
         avoid generating very large HTTP responses. A maximum of 5000 messages
         can be obtained per request; attempting to exceed this will result in an
         error.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - client_gravatar
+                - apply_markdown
+                - use_first_unread_anchor
       parameters:
         - name: anchor
           in: query
@@ -4172,6 +4220,11 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    description: |
+                      When a request is successful, this endpoint returns a dictionary
+                      containing the following (in addition to the `msg` and `result` keys
+                      present in all Zulip API responses).
+                      A typical successful JSON response may look like
                     properties:
                       result: {}
                       msg: {}
@@ -4371,6 +4424,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4393,7 +4447,11 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/NonExistingStreamError"
+                  - allOf:
+                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - description: |
+                          A typical failed JSON response for when a stream message is sent to a stream
+                          that does not exist
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -4402,6 +4460,9 @@ paths:
                             "msg": "Invalid email 'eeshan@zulip.com'",
                             "result": "error",
                           }
+                        description: |
+                          A typical failed JSON response for when a private message is sent to a user
+                          that does not exist
   /messages/{message_id}/history:
     get:
       operationId: get_message_history
@@ -4418,6 +4479,16 @@ paths:
         [edit-settings]: /help/view-a-messages-edit-history
       parameters:
         - $ref: "#/components/parameters/MessageId"
+      x-response-description: |
+        Please note that the original message's snapshot only contains the fields
+        `topic`, `content`, `rendered_content`, `timestamp` and `user_id`. This
+        snapshot will be the only one present if the message has never been edited.
+
+        Also note that if a message's content was edited (but not the topic)
+        or the topic was edited (but not the content), the snapshot object
+        will only contain data for the modified fields (e.g. if only the topic
+        was edited, `prev_content`, `prev_rendered_content`, and
+        `content_html_diff` will not appear).
       responses:
         "200":
           description: Success.
@@ -4426,6 +4497,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4509,7 +4581,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InvalidMessageError"
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: An example JSON response for when the specified message does not exist
   /messages/flags:
     post:
       operationId: update_message_flags
@@ -4524,6 +4598,79 @@ paths:
         For updating the `read` flag on common collections of messages, see also
         the
         [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
+      x-parameter-description: |
+        ## Available flags
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:30%">Flag</th>
+                        <th style="width:70%">Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>read</code></td>
+                        <td>
+                            Whether the user has read the message.  Messages
+                            start out unread (except for messages the user
+                            themself sent using a non-API client) and can
+                            later be marked as read.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>starred</code></td>
+                        <td>Whether the user has <a href="/help/star-a-message">starred this message</a>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>collapsed</code></td>
+                        <td>Whether the user has <a href="/help/collapse-a-message">collapsed this message</a>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>mentioned</code></td>
+                        <td>
+                            Whether the current user
+                            <a href="/help/mention-a-user-or-group">was mentioned</a>
+                            by this message, either directly or via a user
+                            group. Cannot be changed by the user directly, but
+                            can change if the message is edited to add/remove
+                            a mention of the current user.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>wildcard_mentioned</code></td>
+                        <td>
+                            Whether this message contained
+                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">wildcard mention</a>
+                            like @**all**. Cannot be changed by the user directly, but
+                            can change if the message is edited to add/remove
+                            a wildcard mention.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>has_alert_word</code></td>
+                        <td>
+                            Whether the message contains any of the current user's
+                            <a href="/help/add-an-alert-word">configured alert words</a>.
+                            Cannot be changed by the user directly, but
+                            can change if the message is edited to add/remove
+                            one of the current user's alert words.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>historical</code></td>
+                        <td>
+                            True for messages that the user did not receive
+                            at the time they were sent but later was added to
+                            the user's history (E.g. because they starred or
+                            reacted to a message sent to a public stream
+                            before they subscribed to that stream). Cannot be
+                            changed by the user directly.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
       parameters:
         - name: messages
           in: query
@@ -4564,6 +4711,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4595,6 +4743,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4618,6 +4767,13 @@ paths:
         Add an [emoji reaction](/help/emoji-reactions) to a message.
 
         `POST {{ api_url }}/v1/messages/{message_id}/reactions`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - emoji_code
+                - reaction_type
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - name: emoji_name
@@ -4652,6 +4808,7 @@ paths:
                         "msg": "Invalid emoji code",
                         "code": "BAD_REQUEST",
                       }
+                    description: An example JSON error response for when the emoji code is invalid
 
     delete:
       operationId: remove_reaction
@@ -4661,6 +4818,13 @@ paths:
         Remove an [emoji reaction](/help/emoji-reactions) from a message.
 
         `DELETE {{ api_url }}/v1/messages/{message_id}/reactions`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - emoji_code
+                - reaction_type
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - name: emoji_name
@@ -4694,6 +4858,7 @@ paths:
                         "msg": "Invalid message(s)",
                         "code": "BAD_REQUEST",
                       }
+                    description: An example JSON error response for when the emoji code is invalid
   /messages/matches_narrow:
     get:
       operationId: check_messages_match_narrow
@@ -4749,6 +4914,7 @@ paths:
             application/json:
               schema:
                 allOf:
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
                     properties:
@@ -4815,6 +4981,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4834,7 +5001,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InvalidMessageError"
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example JSON response for when the specified message does not exist or it
+                      is not visible to the user making the query (e.g. it was a PM between other
+                      two users)
     patch:
       operationId: update_message
       summary: Edit a message
@@ -4846,6 +5018,21 @@ paths:
 
         `{msg_id}` in the above URL should be replaced with the ID of the
         message you wish you update.
+
+        You can [resolve topics](/help/resolve-a-topic) by editing the
+        topic to `✔ {original_topic}`.
+
+        **Note**: See [configuring message
+        editing][config-message-editing] for detailed documentation on
+        when users are allowed to edit topics.
+
+        [config-message-editing]: /help/configure-message-editing-and-deletion
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - stream_id
       parameters:
         - $ref: "#/components/parameters/MessageId"
         - name: topic
@@ -4868,6 +5055,9 @@ paths:
             Which message(s) should be edited: just the one indicated in
             `message_id`, messages in the same topic that had been sent after this
             one, or all of them.
+
+            Only the default value of `change_one` is valid when
+            editing only the content of a message.
 
             This parameter determines both which messages get moved and also whether
             clients that are currently narrowed to the topic containing the message
@@ -4921,7 +5111,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
@@ -4943,6 +5135,9 @@ paths:
                         "msg": "You don't have permission to edit this message",
                         "result": "error",
                       }
+                    description: |
+                      A typical JSON response for when one doesn't have the permission to
+                      edit a particular message
     delete:
       operationId: delete_message
       summary: Delete a message
@@ -4955,6 +5150,9 @@ paths:
         This API corresponds to the
         [delete a message completely][delete-completely] feature documented in
         the Zulip Help Center.
+
+        [delete-completely]: /help/edit-or-delete-a-message#delete-a-message-completely
+      x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/MessageId"
       responses:
@@ -4963,17 +5161,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - allOf:
+                      - $ref: "#/components/schemas/InvalidMessageError"
+                      - description: An example JSON response for when the specified message does not exist
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
-                      - example:
+                      - description: |
+                          An example JSON response for when the user making the query does not
+                          have permission to delete the message
+                        example:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "You don't have permission to delete this message",
@@ -4997,6 +5202,18 @@ paths:
 
         [uploaded-files]: /help/manage-your-uploaded-files
         [send-message]: /api/send-message
+      x-parameter-description: |
+        As described above, the file to upload must be provided in the
+        request's body.
+
+        ## Maximum file size
+
+        The maximum file size for uploads can be configured by the
+        administrator of the Zulip server by setting `MAX_FILE_UPLOAD_SIZE`
+        in the [server's settings][1]. `MAX_FILE_UPLOAD_SIZE` defaults
+        to 25MB.
+
+        [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
       requestBody:
         content:
           multipart/form-data:
@@ -5015,6 +5232,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5061,6 +5279,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5089,6 +5308,18 @@ paths:
         `GET {{ api_url }}/v1/users`
 
         You can also [fetch details on a single user](/api/get-user).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may pass the `client_gravatar` query parameter as follows:
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
@@ -5100,6 +5331,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5202,6 +5434,7 @@ paths:
         Create a new user account via the API.
 
         `POST {{ api_url }}/v1/users`
+      x-requires-administrator: true
       parameters:
         - name: email
           in: query
@@ -5235,6 +5468,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5258,15 +5492,16 @@ paths:
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error",
                       }
-
+                    description: |
+                      A typical JSON response for when another user with the same
+                      email address already exists in the realm
   /users/{user_id}/reactivate:
     post:
       operationId: reactivate_user
       summary: Reactivate a user
       tags: ["users"]
+      x-requires-administrator: true
       description: |
-        {!api-admin-only.md!}
-
         [Reactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
@@ -5281,6 +5516,7 @@ paths:
             application/json:
               schema:
                 allOf:
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
 
@@ -5323,6 +5559,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5389,6 +5626,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5585,6 +5823,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -5598,6 +5837,9 @@ paths:
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON error response when attempting to deactivate the only
+                      organization owner in an organization
   /users/me/{stream_id}/topics:
     get:
       operationId: get_stream_topics
@@ -5617,6 +5859,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5661,6 +5904,9 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON response for when the user is attempting to fetch the topics
+                      of a non-existing stream (or also a private stream they don't have access to)
   /users/me/subscriptions:
     get:
       operationId: get_subscriptions
@@ -5673,6 +5919,18 @@ paths:
       # operationId can be used to record which view function
       # corresponds to an endpoint.  TODO: Add these for more
       # endpoints, and perhaps use this to provide links to implementations.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            description: |
+              You may pass the `include_subscribers` query parameter as follows:
+            parameters:
+              enum:
+                - ""
       parameters:
         - $ref: "#/components/parameters/IncludeSubscribers"
       responses:
@@ -5683,6 +5941,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   # TODO: Is this the best way to declare required elements in 200 responses?
                   - required:
                       - subscriptions
@@ -5747,6 +6006,20 @@ paths:
         If any of the specified streams do not exist, they are automatically
         created.  The initial [stream settings](/api/update-stream) will be determined
         by the optional parameters like `invite_only` detailed below.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - subscriptions
+          - type: include
+            description: |
+              To subscribe another user to a stream, you may pass in
+              the `principals` parameter, like so:
+            parameters:
+              enum:
+                - subscriptions
+                - principals
       parameters:
         - name: subscriptions
           in: query
@@ -5814,6 +6087,7 @@ paths:
                 oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
+                      - $ref: "#/components/schemas/SuccessDescription"
                       - example:
                           {
                             "already_subscribed": {},
@@ -5831,6 +6105,9 @@ paths:
                             "result": "success",
                             "subscribed": {},
                           }
+                        description: |
+                          A typical successful JSON response when the user is already subscribed to
+                          the streams specified
         "400":
           description: Success.
           content:
@@ -5844,6 +6121,9 @@ paths:
                             "msg": "Unable to access stream (private_stream).",
                             "result": "error",
                           }
+                        description: |
+                          A typical response for when the requesting user does not have access to
+                          a private stream and `authorization_errors_fatal` is `True`
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
                       - example:
@@ -5854,6 +6134,9 @@ paths:
                             "subscribed": {},
                             "unauthorized": ["private_stream"],
                           }
+                        description: |
+                          A typical response for when the requesting user does not have access to
+                          a private stream and `authorization_errors_fatal` is `False`
     patch:
       operationId: update_subscriptions
       summary: Update subscriptions
@@ -5911,6 +6194,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - required:
                       - subscribed
                       - already_subscribed
@@ -5979,6 +6263,21 @@ paths:
         Unsubscribe yourself or other users from one or more streams.
 
         `DELETE {{ api_url }}/v1/users/me/subscriptions`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            description: |
+              **Note**: Unsubscribing another user from a stream requires
+              administrative privileges.
+            parameters:
+              enum:
+                - subscriptions
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may specify the `principals` parameter like so:
       parameters:
         - name: subscriptions
           in: query
@@ -6002,6 +6301,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6032,7 +6332,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NonExistingStreamError"
+                allOf:
+                  - $ref: "#/components/schemas/NonExistingStreamError"
+                  - description: A typical failed JSON response for when the target stream does not exist
   /users/me/subscriptions/muted_topics:
     patch:
       operationId: mute_topic
@@ -6045,6 +6347,12 @@ paths:
 
         `PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics`
 
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - stream_id
       parameters:
         - name: stream
           in: query
@@ -6088,7 +6396,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
@@ -6099,10 +6409,16 @@ paths:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic already muted", "result": "error"}
+                        description: |
+                          An example JSON response for when an `add` operation is requested for a topic
+                          that has already been muted
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic is not muted", "result": "error"}
+                        description: |
+                          An example JSON response for when a `remove` operation is requested for a
+                          topic that had not been previously muted
   /users/me/muted_users/{muted_user_id}:
     post:
       operationId: mute_user
@@ -6149,6 +6465,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -6159,13 +6476,16 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "Cannot mute self", "result": "error"}
+                        description: An example JSON response for when the user is yourself
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "No such user", "result": "error"}
+                        description: An example JSON response for when the user is nonexistent or inaccessible
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "User already muted", "result": "error"}
+                        description: An example JSON response for when the user is already muted
     delete:
       operationId: unmute_user
       summary: Unmute a user
@@ -6186,6 +6506,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -6196,9 +6517,11 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "No such user", "result": "error"}
+                        description: An example JSON response for when the user is nonexistent or inaccessible
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "User is not muted", "result": "error"}
+                        description: An example JSON response for when the user is not previously muted
 
   /users/{user_id}/subscriptions/{stream_id}:
     get:
@@ -6222,7 +6545,9 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
+                    description: MANUALLY
                     properties:
                       result: {}
                       msg: {}
@@ -6243,14 +6568,31 @@ paths:
         [organization's configuration](https://zulip.com/help/only-allow-admins-to-add-emoji).
 
         `POST {{ api_url }}/v1/realm/emoji/{emoji_name}`
+      x-parameter-description: |
+        As described above, the image file to upload must be provided in the
+        request's body.
+
+        ## Maximum file size
+
+        The maximum file size for uploads can be configured by the
+        administrator of the Zulip server by setting `MAX_EMOJI_FILE_SIZE_MIB`
+        in the [server's settings][1]. `MAX_EMOJI_FILE_SIZE_MIB` defaults
+        to 5MB.
+
+        [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
       parameters:
         - name: emoji_name
           required: true
           in: path
           description: |
             The name that should be associated with the uploaded emoji image/gif.
+            The emoji name can only contain letters, numbers, dashes, and spaces.
+            Upper and lower case letters are treated the same, and underscores (_)
+            are treated the same as spaces (consistent with how the Zulip UI
+            handles emoji).
           schema:
             type: string
+          example: smile
       requestBody:
         content:
           multipart/form-data:
@@ -6267,7 +6609,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
 
   /realm/emoji:
     get:
@@ -6286,6 +6630,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6331,6 +6676,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6419,8 +6765,6 @@ paths:
       summary: Reorder custom profile fields
       tags: ["server_and_organizations"]
       description: |
-        {!api-admin-only.md!}
-
         Reorder the custom profile fields in the user's organization.
 
         `PATCH {{ api_url }}/v1/realm/profile_fields`
@@ -6430,6 +6774,7 @@ paths:
 
         This endpoint is used to implement the dragging feature described in the
         [custom profile fields documentation](/help/add-custom-profile-fields).
+      x-requires-administrator: true
       parameters:
         - name: order
           in: query
@@ -6450,17 +6795,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
     post:
       operationId: create_custom_profile_field
       summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
-        {!api-admin-only.md!}
-
         [Create a custom profile field](/help/add-custom-profile-fields) in the user's organization.
 
         `POST {{ api_url }}/v1/realm/profile_fields`
+      x-requires-administrator: true
       parameters:
         - name: name
           in: query
@@ -6525,6 +6871,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6591,6 +6938,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6691,6 +7039,18 @@ paths:
         [change their email address](/help/change-your-email-address).
 
         *This endpoint is new in Zulip Server 4.0 (feature level 39).*
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
       parameters:
         - name: email
           in: path
@@ -6710,6 +7070,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6775,6 +7136,18 @@ paths:
         or [by email](/api/get-user-by-email).
 
         *This endpoint is new in Zulip Server 3.0 (feature level 1).*
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: exclude
+            parameters:
+              enum:
+                - ""
+            description: |
+              You may pass the `client_gravatar` or `include_custom_profile_fields` query parameter as follows:
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/ClientGravatar"
@@ -6787,6 +7160,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6842,9 +7216,8 @@ paths:
       operationId: update_user
       summary: Update a user
       tags: ["users"]
+      x-requires-administrator: true
       description: |
-        {!api-admin-only.md!}
-
         Administrative endpoint to update the details of another user in the organization.
 
         `PATCH {{ api_url }}/v1/users/{user_id}`
@@ -6918,14 +7291,14 @@ paths:
                         "msg": "Guests cannot be organization administrators",
                         "code": "BAD_REQUEST",
                       }
+                    description: A typical unsuccessful JSON response
 
     delete:
       operationId: deactivate_user
       summary: Deactivate a user
       tags: ["users"]
+      x-requires-administrator: true
       description: |
-        {!api-admin-only.md!}
-
         [Deactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
@@ -6941,6 +7314,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request
@@ -6954,6 +7328,9 @@ paths:
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON error response when attempting to deactivate the only
+                      organization owner in an organization
   /realm/linkifiers:
     get:
       operationId: get_linkifiers
@@ -6978,6 +7355,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7038,6 +7416,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7073,7 +7452,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
     patch:
       operationId: update_linkifier
       summary: Update a linkifier
@@ -7103,7 +7484,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /realm/playgrounds:
     post:
       operationId: add_code_playground
@@ -7152,6 +7535,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7188,17 +7572,65 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /register:
     post:
       operationId: register_queue
       summary: Register an event queue
       tags: ["real_time_events"]
       description: |
+        `POST {{ api_url }}/v1/register`
+
         This powerful endpoint can be used to register a Zulip "event queue"
-        (subscribed to certain types of "events", or updates to the messages and
-        other Zulip data the current user has access to), as well as to fetch
-        the current state of that data.
+        (subscribed to certain types of "events", or updates to the messages
+        and other Zulip data the current user has access to), as well as to
+        fetch the current state of that data.
+
+        (`register` also powers the `call_on_each_event` Python API, and is
+        intended primarily for complex applications for which the more convenient
+        `call_on_each_event` API is insufficient).
+
+        This endpoint returns a `queue_id` and a `last_event_id`; these can be
+        used in subsequent calls to the
+        ["events" endpoint](/api/get-events) to request events from
+        the Zulip server using long-polling.
+
+        The server will queue events for up to 10 minutes of inactivity.
+        After 10 minutes, your event queue will be garbage-collected.  The
+        server will send `heartbeat` events every minute, which makes it easy
+        to implement a robust client that does not miss events unless the
+        client loses network connectivity with the Zulip server for 10 minutes
+        or longer.
+
+        Once the server garbage-collects your event queue, the server will
+        [return an error](/api/get-events#bad_event_queue_id-errors)
+        with a code of `BAD_EVENT_QUEUE_ID` if you try to fetch events from
+        the event queue.  Your software will need to handle that error
+        condition by re-initializing itself (e.g. this is what triggers your
+        browser reloading the Zulip web app when your laptop comes back online
+        after being offline for more than 10 minutes).
+
+        When prototyping with this API, we recommend first calling `register`
+        with no `event_types` parameter to see all the available data from all
+        supported event types.  Before using your client in production, you
+        should set appropriate `event_types` and `fetch_event_types` filters
+        so that your client only requests the data it needs.  A few minutes
+        doing this often saves 90% of the total bandwidth and other resources
+        consumed by a client using this API.
+
+        See the
+        [events system developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/events-system.html)
+        if you need deeper details about how the Zulip event queue system
+        works, avoids clients needing to worry about large classes of
+        potentially messy races, etc.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - event_types
       parameters:
         - name: apply_markdown
           in: query
@@ -7294,6 +7726,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -8603,13 +9036,21 @@ paths:
 
                           Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
                           allows editing the content of messages.
-                      realm_allow_community_topic_editing:
-                        type: boolean
+                      realm_edit_topic_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether [community topic editing](/help/community-topic-edits) is enabled
-                          in this organization.
+                          The policy for which users can edit topics of any message.
+
+                          * 1 = members only
+                          * 2 = admins only
+                          * 3 = full members only
+                          * 4 = moderators only
+                          * 5 = everyone
+
+                          **Changes**: New in Zulip 5.0 (feature level 75), replacing the
+                          previous `allow_community_topic_editing` boolean.
                       realm_message_content_edit_limit_seconds:
                         type: integer
                         description: |
@@ -9228,6 +9669,16 @@ paths:
       operationId: get_server_settings
       summary: Get server settings
       tags: ["server_and_organizations"]
+      x-response-description: |
+        Please note that not all of these attributes are guaranteed to appear in a
+        response, for two reasons:
+
+        * This endpoint has evolved over time, so responses from older Zulip servers
+          might be missing some keys (in which case a client should assume the
+          appropriate default).
+        * If a `/server_settings` request is made to the root domain of a
+          multi-subdomain server, like the root domain of zulip.com, the settings
+          that are realm-specific are not known and thus not provided.
       description: |
         Fetch global settings for a Zulip server.
 
@@ -9249,6 +9700,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    description: A typical successful JSON response for a single-organization server may look like
                     properties:
                       result: {}
                       msg: {}
@@ -9395,6 +9847,8 @@ paths:
                           This value will be false if the server has [LDAP
                           authentication][ldap-auth] enabled with a username and
                           password combination.
+
+                          [ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
                       realm_uri:
                         type: string
                         description: |
@@ -9475,6 +9929,13 @@ paths:
         per-stream notification settings.
 
         `PATCH {{ api_url }}/v1/settings/notifications`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - enable_offline_push_notifications
+                - enable_online_push_notifications
       parameters:
         - name: enable_stream_desktop_notifications
           in: query
@@ -9626,6 +10087,11 @@ paths:
           schema:
             type: boolean
           example: true
+      x-response-description: |
+        The server will return the settings that have been changed after the request,
+        with their new value. Please note that this doesn't necessarily mean that it
+        will return all the settings passed as parameters in the request, but only
+        those ones that were different than the already existing setting.
       responses:
         "200":
           description: Success.
@@ -9634,6 +10100,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9708,6 +10175,20 @@ paths:
         This endpoint is used to edit the current user's user interface settings.
 
         `PATCH {{ api_url }}/v1/settings/display`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - left_side_userlist
+                - emojiset
+      x-response-description: |
+        #### Return values
+
+        The server will return the settings that have been changed after the request,
+        with their new value. Please note that this doesn't necessarily mean that it
+        will return all the settings passed as parameters in the request, but only
+        those ones that were different from the already existing setting.
       parameters:
         - name: twenty_four_hour_time
           in: query
@@ -9864,6 +10345,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9943,6 +10425,19 @@ paths:
         Get all streams that the user has access to.
 
         `GET {{ api_url }}/v1/streams`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - ""
+          - type: include
+            parameters:
+              enum:
+                - include_public
+            description: |
+              You may pass in one or more of the parameters mentioned above
+              as URL query parameters, like so:
       parameters:
         - name: include_public
           in: query
@@ -10002,6 +10497,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10090,6 +10586,10 @@ paths:
                         "msg": "User not authorized for this query",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON response for when the user is not authorized to use the
+                      `include_all_active` parameter (i.e. because they are not an organization
+                      administrator)
   /streams/{stream_id}:
     delete:
       operationId: archive_stream
@@ -10109,6 +10609,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -10123,6 +10624,7 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
+                    description: An example JSON response for when the supplied stream does not exist
     patch:
       operationId: update_stream
       summary: Update a stream
@@ -10138,6 +10640,14 @@ paths:
         send](/help/stream-sending-policy).
 
         `PATCH {{ api_url }}/v1/streams/{stream_id}`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - new_name
+                - description
+                - is_private
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: description
@@ -10194,6 +10704,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -10208,6 +10719,7 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
+                    description: An example JSON response for when the supplied stream does not exist
   /typing:
     post:
       operationId: set_typing_status
@@ -10244,6 +10756,12 @@ paths:
         See
         [the typing notification docs](https://zulip.readthedocs.io/en/latest/subsystems/typing-indicators.html)
         for additional design details on Zulip's typing notifications protocol.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - topic
       parameters:
         - name: type
           in: query
@@ -10302,7 +10820,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
@@ -10316,6 +10836,7 @@ paths:
                         "msg": "Cannot send to multiple streams",
                         "result": "error",
                       }
+                    description: An example JSON error response for when user sends to multiple streams
 
   /user_groups/create:
     post:
@@ -10364,6 +10885,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -10378,6 +10900,7 @@ paths:
                         "code": "BAD_REQUEST",
                         "msg": "Invalid user ID: 500",
                       }
+                    description: An example JSON error response for when the one of the users does not exist
   /user_groups/{user_group_id}/members:
     post:
       operationId: update_user_group_members
@@ -10387,6 +10910,12 @@ paths:
         Update the members of a [user group](/help/user-groups).
 
         `POST {{ api_url }}/v1/user_groups/{user_group_id}/members`
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - delete
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - name: delete
@@ -10460,6 +10989,7 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error",
                       }
+                    description: An example JSON response when the user group ID is invalid
     delete:
       operationId: remove_user_group
       summary: Delete a user group
@@ -10478,6 +11008,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"result": "success", "msg": ""}
 
         "400":
@@ -10493,6 +11024,7 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error",
                       }
+                    description: An example JSON error response for an invalid user group id
 
   /user_groups:
     get:
@@ -10500,6 +11032,8 @@ paths:
       summary: Get user groups
       tags: ["users"]
       description: |
+        {!api-members-only.md!}
+
         Fetches all of the user groups in the organization.
 
         `GET {{ api_url }}/v1/user_groups`
@@ -10511,6 +11045,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10599,13 +11134,21 @@ paths:
                   - $ref: "#/components/schemas/UserNotAuthorizedError"
         "403":
           description: |
-            Forbidden
+            Forbidden.
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/UserDeactivatedError"
                   - $ref: "#/components/schemas/RealmDeactivatedError"
+        "429":
+          description: |
+            Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/RateLimitedError"
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
@@ -10623,6 +11166,9 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
+                description: |
+                  This is an example of the JSON payload that the Zulip server will `POST`
+                  to your server
                 properties:
                   bot_email:
                     type: string
@@ -10725,6 +11271,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -12052,6 +12599,8 @@ components:
       properties:
         result:
           type: string
+    SuccessDescription:
+      description: A typical successful JSON response may look like
     JsonSuccess:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -12233,10 +12782,19 @@ components:
       allOf:
         - $ref: "#/components/schemas/JsonError"
         - example: {"msg": "Invalid API key", "result": "error"}
+          description: |
+            ## Invalid API key
+
+            A typical failed JSON response for when the API key is invalid
     MissingArgumentError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          description: |
+            ## Missing request parameter(s)
+
+            A typical failed JSON response for when a required request parameter
+            is not supplied
           properties:
             result: {}
             msg: {}
@@ -12261,6 +12819,11 @@ components:
               "msg": "User not authorized for this query",
               "result": "error",
             }
+          description: |
+            ## User not authorized for query
+
+            A typical failed JSON response for when the user is not authorized for
+            a query
     UserDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12270,6 +12833,24 @@ components:
               "msg": "Account is deactivated",
               "result": "error",
             }
+          description: |
+            ## User account deactivated
+
+            A typical failed json response for when user's account is deactivated
+    RateLimitedError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "RATE_LIMIT_HIT",
+              "msg": "API usage exceeded rate limit",
+              "result": "error",
+              "retry-after": 28.706807374954224,
+            }
+          description: |
+            ## Rate limit exceeded
+
+            A typical failed JSON response for when a rate limit is exceeded:
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12279,6 +12860,10 @@ components:
               "msg": "This organization is deactivated",
               "result": "error",
             }
+          description: |
+            ## Realm deactivated
+
+            A typical failed json response for when user's organization is deactivated
 
   ###################
   # Shared responses
@@ -12289,7 +12874,9 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/JsonSuccess"
+            allOf:
+              - $ref: "#/components/schemas/JsonSuccess"
+              - $ref: "#/components/schemas/SuccessDescription"
 
   ####################
   # Shared parameters

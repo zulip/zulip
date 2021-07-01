@@ -7,7 +7,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class ClubhouseWebhookTest(WebhookTestCase):
     STREAM_NAME = "clubhouse"
     URL_TEMPLATE = "/api/v1/external/clubhouse?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "clubhouse"
+    WEBHOOK_DIR_NAME = "clubhouse"
 
     def test_story_create(self) -> None:
         expected_message = "New story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) of type **feature** was created."

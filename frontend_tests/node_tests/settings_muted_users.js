@@ -2,23 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-mock_cjs("jquery", $);
 const muting_ui = mock_esm("../../static/js/muting_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 
 const noop = () => {};
 
-run_test("settings", (override) => {
-    muting.add_muted_user(5, 1577836800);
+run_test("settings", ({override}) => {
+    muted_users.add_muted_user(5, 1577836800);
     let populate_list_called = false;
     override(settings_muted_users, "populate_list", () => {
-        const opts = muting.get_muted_users();
+        const opts = muted_users.get_muted_users();
         assert.deepEqual(opts, [
             {
                 date_muted: 1577836800000,
@@ -34,7 +33,7 @@ run_test("settings", (override) => {
 
     settings_muted_users.set_up();
     assert.equal(settings_muted_users.loaded, true);
-    assert(populate_list_called);
+    assert.ok(populate_list_called);
 
     const unmute_click_handler = $("body").get_on_handler("click", ".settings-unmute-user");
     assert.equal(typeof unmute_click_handler, "function");
@@ -66,6 +65,6 @@ run_test("settings", (override) => {
     };
 
     unmute_click_handler.call(unmute_button, event);
-    assert(unmute_user_called);
-    assert(row_attribute_fetched);
+    assert.ok(unmute_user_called);
+    assert.ok(row_attribute_fetched);
 });

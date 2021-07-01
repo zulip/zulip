@@ -101,6 +101,11 @@ Some useful tips for your translating journey:
 - Take advantage of the hotkeys the Transifex Web Editor provides, such as
   `Tab` for saving and going to the next string.
 
+- While one should definitely prioritize translating
+  `translations.json`, since the most prominent user-facing strings
+  are there, API error messages in `django.po` are presented to users,
+  so a full translation should include them.
+
 ### Testing translations
 
 This section assumes you have a

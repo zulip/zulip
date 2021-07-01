@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -19,12 +19,10 @@ const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
 
-mock_cjs("jquery", $);
-
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
-run_test("initialize", (override) => {
+run_test("initialize", ({override}) => {
     page_params.annual_price = 8000;
     page_params.monthly_price = 800;
     page_params.seat_count = 8;
@@ -227,15 +225,15 @@ run_test("autopay_form_fields", () => {
     assert.equal(schedule_options[0].value, "monthly");
     assert.equal(schedule_options[1].value, "annual");
 
-    assert(document.querySelector("#autopay-error"));
-    assert(document.querySelector("#autopay-loading"));
-    assert(document.querySelector("#autopay"));
-    assert(document.querySelector("#autopay-success"));
-    assert(document.querySelector("#autopay_loading_indicator"));
+    assert.ok(document.querySelector("#autopay-error"));
+    assert.ok(document.querySelector("#autopay-loading"));
+    assert.ok(document.querySelector("#autopay"));
+    assert.ok(document.querySelector("#autopay-success"));
+    assert.ok(document.querySelector("#autopay_loading_indicator"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
-    assert(document.querySelector("#free-trial-alert-message"));
+    assert.ok(document.querySelector("#free-trial-alert-message"));
 });
 
 run_test("invoice_form_fields", () => {
@@ -259,13 +257,13 @@ run_test("invoice_form_fields", () => {
     assert.equal(schedule_options.length, 1);
     assert.equal(schedule_options[0].value, "annual");
 
-    assert(document.querySelector("#invoice-error"));
-    assert(document.querySelector("#invoice-loading"));
-    assert(document.querySelector("#invoice"));
-    assert(document.querySelector("#invoice-success"));
-    assert(document.querySelector("#invoice_loading_indicator"));
+    assert.ok(document.querySelector("#invoice-error"));
+    assert.ok(document.querySelector("#invoice-loading"));
+    assert.ok(document.querySelector("#invoice"));
+    assert.ok(document.querySelector("#invoice-success"));
+    assert.ok(document.querySelector("#invoice_loading_indicator"));
 
-    assert(document.querySelector("input[name=csrfmiddlewaretoken]"));
+    assert.ok(document.querySelector("input[name=csrfmiddlewaretoken]"));
 
-    assert(document.querySelector("#free-trial-alert-message"));
+    assert.ok(document.querySelector("#free-trial-alert-message"));
 });

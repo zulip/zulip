@@ -367,7 +367,7 @@ div.overlay {
         box-shadow: none;
         z-index: 5;
 
-        .user_status_overlay & {
+        #set_user_status_modal & {
             margin-left: -26px;
             right: 0;
             padding-top: 6px;
@@ -550,4 +550,16 @@ div.overlay {
     display: inline-block;
     background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
     background-size: cover;
+}
+
+.spectator-view {
+    /* Add this class to elements which a
+     * spectator cannot use. */
+    .hidden-for-spectators {
+        display: none !important;
+    }
+
+    .only-visible-for-spectators {
+        display: unset;
+    }
 }

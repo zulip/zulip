@@ -19,7 +19,7 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
 )
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -147,7 +147,7 @@ def unregister_remote_push_device(
         token=token, kind=token_kind, user_id=user_id, server=server
     ).delete()
     if deleted[0] == 0:
-        return json_error(err_("Token does not exist"))
+        raise JsonableError(err_("Token does not exist"))
 
     return json_success()
 

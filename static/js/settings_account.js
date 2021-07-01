@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
@@ -9,19 +10,20 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
-import * as popovers from "./popovers";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as setup from "./setup";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
+import * as user_profile from "./user_profile";
 
 let password_quality; // Loaded asynchronously
 
@@ -34,15 +36,10 @@ export function update_email(new_email) {
 }
 
 export function update_full_name(new_full_name) {
-    const full_name_field = $("#full_name_value");
-    if (full_name_field) {
-        full_name_field.text(new_full_name);
-    }
-
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
-    const full_name_input = $(".full_name_change_container input[name='full_name']");
+    const full_name_input = $(".full-name-change-form input[name='full_name']");
     if (full_name_input) {
         full_name_input.val(new_full_name);
     }
@@ -60,21 +57,22 @@ export function update_name_change_display() {
 
 export function update_email_change_display() {
     if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
-        $("#change_email .button").prop("disabled", true);
+        $("#change_email").prop("disabled", true);
         $(".change_email_tooltip").show();
     } else {
-        $("#change_email .button").prop("disabled", false);
+        $("#change_email").prop("disabled", false);
         $(".change_email_tooltip").hide();
     }
 }
 
 export function update_avatar_change_display() {
     if (!settings_data.user_can_change_avatar()) {
-        $("#user-avatar-upload-widget .image_upload_button").prop("disabled", true);
-        $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", true);
+        // We disable this widget by simply hiding its edit UI.
+        $("#user-avatar-upload-widget .image_upload_button").hide();
+        $(".user-avatar-section .settings-info-icon").show();
     } else {
-        $("#user-avatar-upload-widget .image_upload_button").prop("disabled", false);
-        $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", false);
+        $("#user-avatar-upload-widget .image_upload_button").show();
+        $(".user-avatar-section .settings-info-icon").hide();
     }
 }
 
@@ -276,13 +274,8 @@ export function add_custom_profile_fields_to_settings() {
         return;
     }
 
-    const element_id = "#account-settings .custom-profile-fields-form";
+    const element_id = "#profile-settings .custom-profile-fields-form";
     $(element_id).html("");
-    if (page_params.custom_profile_fields.length > 0) {
-        $("#account-settings #custom-field-header").show();
-    } else {
-        $("#account-settings #custom-field-header").hide();
-    }
 
     append_custom_profile_fields(element_id, people.my_current_user_id());
     initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
@@ -400,15 +393,6 @@ export function set_up() {
 
     clear_password_change();
 
-    $("#change_full_name").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (settings_data.user_can_change_name()) {
-            $("#change_full_name_modal").find("input[name='full_name']").val(page_params.full_name);
-            overlays.open_modal("#change_full_name_modal");
-        }
-    });
-
     $("#change_password").on("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -484,28 +468,18 @@ export function set_up() {
         password_quality?.(field.val(), $("#pw_strength .bar"), field);
     });
 
-    $("#change_full_name_button").on("click", (e) => {
+    $("#full_name").on("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const change_full_name_error = $("#change_full_name_modal")
-            .find(".change_full_name_info")
-            .expectOne();
         const data = {};
 
-        data.full_name = $(".full_name_change_container").find("input[name='full_name']").val();
+        data.full_name = $("#full_name").val();
 
-        const opts = {
-            success_continuation() {
-                overlays.close_modal("#change_full_name_modal");
-            },
-            error_msg_element: change_full_name_error,
-        };
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",
             data,
-            $("#account-settings-status").expectOne(),
-            opts,
+            $(".full-name-status").expectOne(),
         );
     });
 
@@ -553,15 +527,7 @@ export function set_up() {
         }
     });
 
-    $("#user_deactivate_account_button").on("click", (e) => {
-        // This click event must not get propagated to parent container otherwise the modal
-        // will not show up because of a call to `close_active_modal` in `settings.js`.
-        e.preventDefault();
-        e.stopPropagation();
-        $("#deactivate_self_modal").modal("show");
-    });
-
-    $("#account-settings").on("click", ".custom_user_field .remove_date", (e) => {
+    $("#profile-settings").on("click", ".custom_user_field .remove_date", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const field = $(e.target).closest(".custom_user_field").expectOne();
@@ -569,7 +535,7 @@ export function set_up() {
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
-    $("#account-settings").on("change", ".custom_user_field_value", function (e) {
+    $("#profile-settings").on("change", ".custom_user_field_value", function (e) {
         const fields = [];
         const value = $(this).val();
         const field_id = Number.parseInt(
@@ -585,20 +551,18 @@ export function set_up() {
         }
     });
 
-    $("#do_deactivate_self_button").on("click", () => {
-        $("#do_deactivate_self_button .loader").css("display", "inline-block");
-        $("#do_deactivate_self_button span").hide();
-        $("#do_deactivate_self_button object").on("load", function () {
-            const doc = this.getSVGDocument();
-            const $svg = $(doc).find("svg");
-            $svg.find("rect").css("fill", "#000");
-        });
+    $("#user_deactivate_account_button").on("click", (e) => {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        e.preventDefault();
+        e.stopPropagation();
 
-        setTimeout(() => {
+        function handle_confirm() {
             channel.del({
                 url: "/json/users/me",
                 success() {
-                    $("#deactivate_self_modal").modal("hide");
+                    confirm_dialog.hide_confirm_dialog_spinner();
+                    overlays.close_modal("#confirm_dialog_modal");
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -623,21 +587,34 @@ export function set_up() {
                             rendered_error_msg = error_last_user;
                         }
                     }
-                    $("#deactivate_self_modal").modal("hide");
+                    confirm_dialog.hide_confirm_dialog_spinner();
+                    overlays.close_modal("#confirm_dialog_modal");
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)
                         .show();
                 },
             });
-        }, 5000);
+        }
+        const html_body = render_confirm_deactivate_own_user();
+        const modal_parent = $("#account-settings .account-settings-form");
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: handle_confirm,
+            help_link: "/help/deactivate-your-account",
+            fade: true,
+            loading_spinner: true,
+        });
     });
 
     $("#show_my_user_profile_modal").on("click", () => {
         overlays.close_overlay("settings");
         const user = people.get_by_user_id(people.my_current_user_id());
         setTimeout(() => {
-            popovers.show_user_profile(user);
+            user_profile.show_user_profile(user);
         }, 100);
 
         // If user opened the "preview profile" modal from user
@@ -689,7 +666,19 @@ export function set_up() {
 
     avatar.build_user_avatar_widget(upload_avatar);
 
-    if (page_params.realm_name_changes_disabled) {
-        $(".name_change_container").hide();
-    }
+    $("#user_timezone").val(page_params.timezone);
+
+    $("#user_timezone").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {timezone: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings/display",
+            data,
+            $(".timezone-setting-status").expectOne(),
+        );
+    });
 }

@@ -4,15 +4,13 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
 
 const noop = () => {};
-
-mock_cjs("jquery", $);
 
 function MessageListView() {
     return {};
@@ -21,7 +19,7 @@ mock_esm("../../static/js/message_list_view", {
     MessageListView,
 });
 
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_ui", {
     process_messages: noop,
 });
 mock_esm("../../static/js/ui_report", {
@@ -293,9 +291,9 @@ run_test("initialize", () => {
     step2.prep();
     step1.finish();
 
-    assert(!home_loaded);
+    assert.ok(!home_loaded);
     const idle_config = step2.finish();
-    assert(home_loaded);
+    assert.ok(home_loaded);
 
     test_backfill_idle(idle_config);
 });

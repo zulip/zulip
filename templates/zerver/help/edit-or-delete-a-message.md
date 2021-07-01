@@ -2,7 +2,7 @@
 
 !!! warn ""
     **Note:** Editing message topic is discussed in a
-    [separate guide](/help/change-the-topic-of-a-message).
+    [separate guide](/help/rename-a-topic).
 
 By default, Zulip allows you to edit the content of your messages within 10
 minutes of when you send them. Organization administrators can
@@ -34,7 +34,7 @@ If you don't see the pencil (<i class="fa fa-pencil"></i>) icon, the message con
 can no longer be edited. You should see a file (<i class="fa fa-file-code-o"></i>)
 icon instead. Clicking the file icon will allow you to view the
 [Markdown source](/help/view-the-markdown-source-of-a-message) of the message, or
-[edit the topic](/help/change-the-topic-of-a-message).
+[edit the topic](/help/rename-a-topic).
 
 ## Delete a message
 

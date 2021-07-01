@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class GrafanaHookTests(WebhookTestCase):
     STREAM_NAME = "grafana"
     URL_TEMPLATE = "/api/v1/external/grafana?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "grafana"
+    WEBHOOK_DIR_NAME = "grafana"
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_alert(self) -> None:

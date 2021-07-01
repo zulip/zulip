@@ -23,11 +23,11 @@
                     {% if free_trial_days %}
                     You can request sponsorship during
                     <a href="/new">organization creation</a>, in an organization's
-                    <a href="/accounts/go/?next=/upgrade%23sponsorship">billing page</a>, or contact us at
+                    <a href="{{ sponsorship_url }}">billing page</a>, or contact us at
                     <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
                     {% else %}
                     You can request sponsorship from an organization's
-                    <a href="/accounts/go/?next=/upgrade%23sponsorship">billing page</a>, or contact us at
+                    <a href="{{ sponsorship_url }}">billing page</a>, or contact us at
                     <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
                     {% endif %}
                 </p>

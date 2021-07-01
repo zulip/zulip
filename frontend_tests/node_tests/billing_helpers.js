@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const jQueryFactory = require("../zjsunit/real_jquery");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -14,8 +14,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = jQueryFactory(dom.window);
-
-mock_cjs("jquery", $);
 
 const history = set_global("history", {});
 const loading = mock_esm("../../static/js/loading");
@@ -30,7 +28,7 @@ const location = set_global("location", {
 
 const helpers = zrequire("billing/helpers");
 
-run_test("create_ajax_request", (override) => {
+run_test("create_ajax_request", ({override}) => {
     const form_loading_indicator = "#autopay_loading_indicator";
     const form_input_section = "#autopay-input-section";
     const form_success = "#autopay-success";
@@ -136,7 +134,7 @@ run_test("create_ajax_request", (override) => {
         assert.equal(data.schedule, "monthly");
         assert.equal(data.licenses, "");
 
-        assert(!("license_management" in data));
+        assert.ok(!("license_management" in data));
 
         history.pushState = (state_object, title, path) => {
             state.pushState += 1;

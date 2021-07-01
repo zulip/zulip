@@ -105,7 +105,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia_calls = [
             call_args
             for call_args in m.call_args_list
-            if call_args[1]["user_profile_id"] == cordelia.id
+            if call_args[1]["user_notifications_data"].user_id == cordelia.id
         ]
 
         if expect_short_circuit:
@@ -184,10 +184,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
-            user_profile_id=cordelia.id,
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
+            flags=["mentioned"],
             stream_name="Scotland",
             already_notified={},
         )
@@ -295,6 +298,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_online_push_enabled_for_fully_present_mentioned_user(self) -> None:
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
@@ -312,10 +316,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
-            user_profile_id=cordelia.id,
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
             stream_name="Scotland",
+            flags=["mentioned"],
             online_push_enabled=True,
             idle=False,
             already_notified={},
@@ -329,6 +335,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_online_push_enabled_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
@@ -346,7 +353,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
-            user_profile_id=cordelia.id,
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             stream_name="Scotland",
             online_push_enabled=True,
@@ -381,9 +389,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
-            user_profile_id=cordelia.id,
+            user_id=cordelia.id,
             message_id=message_id,
+            acting_user_id=self.example_user("hamlet").id,
             mentioned=True,
+            flags=["mentioned"],
             stream_name="Scotland",
             already_notified={},
         )
@@ -395,6 +405,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_updates_with_wildcard_mention(self) -> None:
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         # We will simulate that the user still has a an active client,
         # but they don't have UserPresence rows, so we will still
@@ -411,9 +422,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
-            user_profile_id=cordelia.id,
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             wildcard_mention_notify=True,
+            flags=["wildcard_mentioned"],
             stream_name="Scotland",
             already_notified={},
         )
@@ -450,6 +463,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_updates_with_stream_mention_of_fully_present_user(self) -> None:
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
 
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
@@ -466,9 +480,11 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         info = notification_message_data["info"]
 
         expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
-            user_profile_id=cordelia.id,
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
+            flags=["mentioned"],
             stream_name="Scotland",
             idle=False,
             already_notified={},

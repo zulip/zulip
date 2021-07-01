@@ -99,5 +99,5 @@ def replace_formatting(text: str) -> str:
     text = re.sub(r"([^\w])\*(?!\s+)([^\*^\n]+)(?<!\s)\*([^\w])", r"\1**\2**\3", text)
 
     # Slack uses _text_ for emphasis, whereas Zulip interprets that as nothing
-    text = re.sub(r"([^\w])[_](?!\s+)([^\_\^\n]+)(?<!\s)[_]([^\w])", r"\1**\2**\3", text)
+    text = re.sub(r"([^\w])[_](?!\s+)([^\_\^\n]+)(?<!\s)[_]([^\w])", r"\1*\2*\3", text)
     return text

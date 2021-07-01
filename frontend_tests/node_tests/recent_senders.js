@@ -31,11 +31,11 @@ const rs = zrequire("recent_senders");
 zrequire("message_util.js");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         messages.clear();
         next_id = 0;
         rs.clear_for_testing();
-        f(override);
+        f({override});
     });
 }
 

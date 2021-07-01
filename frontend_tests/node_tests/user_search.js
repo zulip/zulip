@@ -2,12 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
-
-mock_cjs("jquery", $);
 
 const _document = {
     hasFocus() {
@@ -36,7 +34,7 @@ set_global("document", _document);
 
 const activity = zrequire("activity");
 const buddy_data = zrequire("buddy_data");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 
 const me = {
@@ -65,20 +63,20 @@ const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         people.init();
         people.add_active_user(alice);
         people.add_active_user(fred);
         people.add_active_user(jill);
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         activity.set_cursor_and_filter();
-        f(override);
+        f({override});
     });
 }
 
-test("clear_search", (override) => {
+test("clear_search", ({override}) => {
     override(fake_buddy_list, "populate", (user_ids) => {
         assert.deepEqual(user_ids, {keys: ordered_user_ids});
     });
@@ -87,14 +85,14 @@ test("clear_search", (override) => {
     override(resize, "resize_sidebars", () => {});
 
     $(".user-list-filter").val("somevalue");
-    assert(!$("#user_search_section").hasClass("notdisplayed"));
+    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
     $("#clear_search_people_button").trigger("click");
     assert.equal($(".user-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
-    assert($("#user_search_section").hasClass("notdisplayed"));
+    assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test("escape_search", (override) => {
+test("escape_search", ({override}) => {
     page_params.realm_presence_disabled = true;
 
     override(resize, "resize_sidebars", () => {});
@@ -104,10 +102,10 @@ test("escape_search", (override) => {
     activity.escape_search();
     assert.equal($(".user-list-filter").val(), "");
     activity.escape_search();
-    assert($("#user_search_section").hasClass("notdisplayed"));
+    assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test("blur search right", (override) => {
+test("blur search right", ({override}) => {
     override(popovers, "show_userlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
@@ -124,7 +122,7 @@ test("blur search right", (override) => {
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
-test("blur search left", (override) => {
+test("blur search left", ({override}) => {
     override(stream_popover, "show_streamlist_sidebar", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
@@ -141,7 +139,7 @@ test("blur search left", (override) => {
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
-test("filter_user_ids", (override) => {
+test("filter_user_ids", ({override}) => {
     const user_presence = {};
     user_presence[alice.user_id] = "active";
     user_presence[fred.user_id] = "active";
@@ -177,10 +175,10 @@ test("filter_user_ids", (override) => {
 
     // Test no match for muted users even with filter text.
     test_filter("ji", [jill]);
-    muting.add_muted_user(jill.user_id);
+    muted_users.add_muted_user(jill.user_id);
     test_filter("ji", []);
 
-    muting.remove_muted_user(jill.user_id);
+    muted_users.remove_muted_user(jill.user_id);
 
     test_filter("abc", []); // no match
     test_filter("fred", [fred]);
@@ -195,7 +193,7 @@ test("filter_user_ids", (override) => {
     test_filter("fr,al", [alice, fred]);
 });
 
-test("click on user header to toggle display", (override) => {
+test("click on user header to toggle display", ({override}) => {
     const user_filter = $(".user-list-filter");
 
     override(popovers, "hide_all", () => {});
@@ -205,12 +203,12 @@ test("click on user header to toggle display", (override) => {
 
     page_params.realm_presence_disabled = true;
 
-    assert(!$("#user_search_section").hasClass("notdisplayed"));
+    assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
     user_filter.val("bla");
 
     $("#userlist-header").trigger("click");
-    assert($("#user_search_section").hasClass("notdisplayed"));
+    assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal(user_filter.val(), "");
 
     $(".user-list-filter").closest = (selector) => {

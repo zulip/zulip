@@ -45,7 +45,6 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 #stream_filters,
 #global_filters {
-    font-size: 14px;
     margin-right: 12px;
 }
 
@@ -59,8 +58,8 @@ li.show-more-topics {
 .streams_filter_icon {
     float: right;
     opacity: 0.5;
-    margin-top: 3px;
-    margin-left: 10px;
+    padding: 3px;
+    margin-left: 7px;
 
     &:hover {
         opacity: 1;
@@ -70,6 +69,10 @@ li.show-more-topics {
 
 .streams_inline_cog_wrapper {
     float: right;
+}
+
+.streams_filter_icon.web_public {
+    margin-right: 10px;
 }
 
 #streams_inline_cog {
@@ -173,7 +176,7 @@ li.show-more-topics {
 }
 
 #private-container {
-    max-height: 200px;
+    max-height: 210px;
 
     /* Match the opacity for global-filters icons. */
     span.fa-group {
@@ -431,11 +434,12 @@ ul.topic-list {
 
 ul.expanded_private_messages {
     list-style-type: none;
-    font-size: 13px;
+    span.fa-group {
+        font-size: 90%;
+    }
     font-weight: 400;
     margin-left: 0;
     padding-bottom: 2px;
-    margin-top: 3px;
 }
 
 li.topic-list-item {

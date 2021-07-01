@@ -16,7 +16,7 @@ mock_esm("../../static/js/starred_messages", {
 
 const message_flags = zrequire("message_flags");
 
-run_test("starred", (override) => {
+run_test("starred", ({override}) => {
     const message = {
         id: 50,
     };
@@ -35,7 +35,7 @@ run_test("starred", (override) => {
 
     message_flags.toggle_starred_and_update_server(message);
 
-    assert(ui_updated);
+    assert.ok(ui_updated);
 
     assert.deepEqual(posted_data, {
         messages: "[50]",
@@ -52,7 +52,7 @@ run_test("starred", (override) => {
 
     message_flags.toggle_starred_and_update_server(message);
 
-    assert(ui_updated);
+    assert.ok(ui_updated);
 
     assert.deepEqual(posted_data, {
         messages: "[50]",
@@ -88,7 +88,7 @@ run_test("starring local echo", () => {
     });
 });
 
-run_test("unstar_all", (override) => {
+run_test("unstar_all", ({override}) => {
     // Way to capture posted info in every request
     let posted_data;
     override(channel, "post", (opts) => {
@@ -104,7 +104,7 @@ run_test("unstar_all", (override) => {
     assert.deepEqual(posted_data, expected_data);
 });
 
-run_test("unstar_all_in_topic", (override) => {
+run_test("unstar_all_in_topic", ({override}) => {
     // Way to capture posted info in every request
     let channel_post_opts;
     let channel_get_opts;
@@ -142,7 +142,7 @@ run_test("unstar_all_in_topic", (override) => {
     });
 });
 
-run_test("read", (override) => {
+run_test("read", ({override}) => {
     // Way to capture posted info in every request
     let channel_post_opts;
     override(channel, "post", (opts) => {
@@ -236,7 +236,7 @@ run_test("read", (override) => {
         messages: [3, 4, 5, 6, 7],
     };
     channel_post_opts.success(success_response_data);
-    assert(events.timer_set);
+    assert.ok(events.timer_set);
 
     // Mark them non local
     local_msg_1.locally_echoed = false;
@@ -261,7 +261,7 @@ run_test("read", (override) => {
     });
 });
 
-run_test("read_empty_data", (override) => {
+run_test("read_empty_data", ({override}) => {
     // Way to capture posted info in every request
     let channel_post_opts;
     override(channel, "post", (opts) => {
@@ -289,7 +289,7 @@ run_test("read_empty_data", (override) => {
     assert.deepEqual(channel_post_opts, {});
 });
 
-run_test("collapse_and_uncollapse", (override) => {
+run_test("collapse_and_uncollapse", ({override}) => {
     // Way to capture posted info in every request
     let channel_post_opts;
     override(channel, "post", (opts) => {

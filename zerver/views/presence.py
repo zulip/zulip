@@ -10,7 +10,7 @@ from zerver.decorator import human_users_only
 from zerver.lib.actions import do_update_user_status, update_user_presence
 from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import (
@@ -37,14 +37,14 @@ def get_presence_backend(
             email = user_id_or_email
             target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
-        return json_error(_("No such user"))
+        raise JsonableError(_("No such user"))
 
     if target.is_bot:
-        return json_error(_("Presence is not supported for bot users."))
+        raise JsonableError(_("Presence is not supported for bot users."))
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(
+        raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
         )
 
@@ -73,7 +73,7 @@ def update_user_status_backend(
         status_text = status_text.strip()
 
     if (away is None) and (status_text is None):
-        return json_error(_("Client did not pass any new values."))
+        raise JsonableError(_("Client did not pass any new values."))
 
     do_update_user_status(
         user_profile=user_profile,

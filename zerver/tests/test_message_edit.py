@@ -6,8 +6,10 @@ from unittest import mock
 import orjson
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    RESOLVED_TOPIC_PREFIX,
     do_change_stream_post_policy,
     do_change_user_role,
     do_delete_messages,
@@ -722,16 +724,14 @@ class EditMessageTest(EditMessageTestCase):
         def set_message_editing_params(
             allow_message_editing: bool,
             message_content_edit_limit_seconds: int,
-            allow_community_topic_editing: bool,
+            edit_topic_policy: int,
         ) -> None:
             result = self.client_patch(
                 "/json/realm",
                 {
                     "allow_message_editing": orjson.dumps(allow_message_editing).decode(),
                     "message_content_edit_limit_seconds": message_content_edit_limit_seconds,
-                    "allow_community_topic_editing": orjson.dumps(
-                        allow_community_topic_editing
-                    ).decode(),
+                    "edit_topic_policy": edit_topic_policy,
                 },
             )
             self.assert_json_success(result)
@@ -781,58 +781,61 @@ class EditMessageTest(EditMessageTestCase):
 
         # test the various possible message editing settings
         # high enough time limit, all edits allowed
-        set_message_editing_params(True, 240, False)
+        set_message_editing_params(True, 240, Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "A")
 
         # out of time, only topic editing allowed
-        set_message_editing_params(True, 120, False)
+        set_message_editing_params(True, 120, Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "B", True)
         do_edit_message_assert_error(id_, "C", "The time limit for editing this message has passed")
 
         # infinite time, all edits allowed
-        set_message_editing_params(True, 0, False)
+        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "D")
 
         # without allow_message_editing, nothing is allowed
-        set_message_editing_params(False, 240, False)
+        set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "E", "Your organization has turned off message editing", True
         )
-        set_message_editing_params(False, 120, False)
+        set_message_editing_params(False, 120, Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "F", "Your organization has turned off message editing", True
         )
-        set_message_editing_params(False, 0, False)
+        set_message_editing_params(False, 0, Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "G", "Your organization has turned off message editing", True
         )
 
-    def test_allow_community_topic_editing(self) -> None:
+    def test_edit_topic_policy(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
             message_content_edit_limit_seconds: int,
-            allow_community_topic_editing: bool,
+            edit_topic_policy: int,
         ) -> None:
+            self.login("iago")
             result = self.client_patch(
                 "/json/realm",
                 {
                     "allow_message_editing": orjson.dumps(allow_message_editing).decode(),
                     "message_content_edit_limit_seconds": message_content_edit_limit_seconds,
-                    "allow_community_topic_editing": orjson.dumps(
-                        allow_community_topic_editing
-                    ).decode(),
+                    "edit_topic_policy": edit_topic_policy,
                 },
             )
             self.assert_json_success(result)
 
-        def do_edit_message_assert_success(id_: int, unique_str: str) -> None:
+        def do_edit_message_assert_success(id_: int, unique_str: str, acting_user: str) -> None:
+            self.login(acting_user)
             new_topic = "topic" + unique_str
             params_dict = {"message_id": id_, "topic": new_topic}
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
             self.assert_json_success(result)
             self.check_topic(id_, topic_name=new_topic)
 
-        def do_edit_message_assert_error(id_: int, unique_str: str, error: str) -> None:
+        def do_edit_message_assert_error(
+            id_: int, unique_str: str, error: str, acting_user: str
+        ) -> None:
+            self.login(acting_user)
             message = Message.objects.get(id=id_)
             old_topic = message.topic_name()
             old_content = message.content
@@ -845,7 +848,6 @@ class EditMessageTest(EditMessageTestCase):
             self.assertEqual(msg.topic_name(), old_topic)
             self.assertEqual(msg.content, old_content)
 
-        self.login("iago")
         # send a message in the past
         id_ = self.send_stream_message(
             self.example_user("hamlet"), "Scotland", content="content", topic_name="topic"
@@ -854,41 +856,71 @@ class EditMessageTest(EditMessageTestCase):
         message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
         message.save()
 
+        # Guest user must be subscribed to the stream to access the message.
+        polonius = self.example_user("polonius")
+        self.subscribe(polonius, "Scotland")
+
         # any user can edit the topic of a message
-        set_message_editing_params(True, 0, True)
-        # log in as a new user
-        self.login("cordelia")
-        do_edit_message_assert_success(id_, "A")
+        set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
+        do_edit_message_assert_success(id_, "A", "polonius")
+
+        # only members can edit topic of a message
+        set_message_editing_params(True, 0, Realm.POLICY_MEMBERS_ONLY)
+        do_edit_message_assert_error(
+            id_, "B", "You don't have permission to edit this message", "polonius"
+        )
+        do_edit_message_assert_success(id_, "B", "cordelia")
+
+        # only full members can edit topic of a message
+        set_message_editing_params(True, 0, Realm.POLICY_FULL_MEMBERS_ONLY)
+
+        cordelia = self.example_user("cordelia")
+        do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
+
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.save()
+        do_edit_message_assert_error(
+            id_, "C", "You don't have permission to edit this message", "cordelia"
+        )
+
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.save()
+        do_edit_message_assert_success(id_, "C", "cordelia")
+
+        # only moderators can edit topic of a message
+        set_message_editing_params(True, 0, Realm.POLICY_MODERATORS_ONLY)
+        do_edit_message_assert_error(
+            id_, "D", "You don't have permission to edit this message", "cordelia"
+        )
+        do_edit_message_assert_success(id_, "D", "shiva")
 
         # only admins can edit the topics of messages
-        self.login("iago")
-        set_message_editing_params(True, 0, False)
-        do_edit_message_assert_success(id_, "B")
-        self.login("cordelia")
-        do_edit_message_assert_error(id_, "C", "You don't have permission to edit this message")
+        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
+        do_edit_message_assert_error(
+            id_, "E", "You don't have permission to edit this message", "shiva"
+        )
+        do_edit_message_assert_success(id_, "E", "iago")
 
         # users cannot edit topics if allow_message_editing is False
-        self.login("iago")
-        set_message_editing_params(False, 0, True)
-        self.login("cordelia")
-        do_edit_message_assert_error(id_, "D", "Your organization has turned off message editing")
+        set_message_editing_params(False, 0, Realm.POLICY_EVERYONE)
+        do_edit_message_assert_error(
+            id_, "D", "Your organization has turned off message editing", "cordelia"
+        )
 
         # non-admin users cannot edit topics sent > 72 hrs ago
         message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
         message.save()
-        self.login("iago")
-        set_message_editing_params(True, 0, True)
-        do_edit_message_assert_success(id_, "E")
-        self.login("cordelia")
+        set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
+        do_edit_message_assert_success(id_, "E", "iago")
+        do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
-            id_, "F", "The time limit for editing this message's topic has passed"
+            id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
         )
 
         # anyone should be able to edit "no topic" indefinitely
         message.set_topic_name("(no topic)")
         message.save()
-        self.login("cordelia")
-        do_edit_message_assert_success(id_, "D")
+        do_edit_message_assert_success(id_, "D", "cordelia")
 
     @mock.patch("zerver.lib.actions.send_event")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
@@ -919,9 +951,8 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_old_thread=False,
                 send_notification_to_new_thread=False,
                 content=None,
-                rendered_content=None,
+                rendering_result=None,
                 prior_mention_user_ids=set(),
-                mention_user_ids=set(),
                 mention_data=None,
             )
 
@@ -1537,7 +1568,7 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         realm = user_profile.realm
-        realm.allow_community_topic_editing = False
+        realm.edit_topic_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
         self.login("cordelia")
 
@@ -1924,6 +1955,105 @@ class EditMessageTest(EditMessageTestCase):
             return user_profile.can_move_messages_between_streams()
 
         self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
+
+    def test_mark_topic_as_resolved(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        original_topic = "topic 1"
+        id1 = self.send_stream_message(
+            self.example_user("hamlet"), "new", topic_name=original_topic
+        )
+        id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
+
+        # Check that we don't incorrectly send "unresolve topic"
+        # notifications when asking the preserve the current topic.
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": original_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "Nothing to change")
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        # Now move to a weird state and confirm no new messages
+        weird_topic = "✔ ✔✔" + original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": weird_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                weird_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, weird_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        unresolved_topic = original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": unresolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                unresolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, unresolved_topic)
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[3].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
+        )
 
 
 class DeleteMessageTest(ZulipTestCase):

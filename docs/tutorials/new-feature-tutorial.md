@@ -437,7 +437,7 @@ can be handled at the beginning of `update_realm`.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
     if description is not None and len(description) > 100:
-        return json_error(_("Realm description cannot exceed 100 characters."))
+        raise JsonableError(_("Realm description cannot exceed 100 characters."))
     # ...
 
 The code in `update_realm` loops through the `property_types` dictionary

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -15,7 +15,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
 
-mock_cjs("jquery", $);
 set_global("document", {
     to_$() {
         return {
@@ -30,7 +29,7 @@ const stream_data = mock_esm("../../static/js/stream_data");
 const {MessageList} = zrequire("message_list");
 const {Filter} = zrequire("filter");
 
-run_test("basics", (override) => {
+run_test("basics", ({override}) => {
     const filter = new Filter();
 
     const list = new MessageList({
@@ -300,7 +299,7 @@ run_test("local_echo", () => {
     assert.equal(list.closest_id(50.01), 50.01);
 });
 
-run_test("bookend", (override) => {
+run_test("bookend", ({override}) => {
     const list = new MessageList({});
 
     let expected = "translated: You subscribed to stream IceCream";

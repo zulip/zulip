@@ -14,7 +14,7 @@ from zerver.lib.user_groups import (
     user_groups_in_realm,
     user_groups_in_realm_serialized,
 )
-from zerver.models import Realm, UserGroup, UserGroupMembership, get_realm
+from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile, get_realm
 
 
 class UserGroupTestCase(ZulipTestCase):
@@ -121,6 +121,13 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_length(
             result.json()["user_groups"], UserGroup.objects.filter(realm=user_profile.realm).count()
         )
+
+    def test_can_edit_user_groups(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_edit_user_groups()
+
+        self.check_has_permission_policies("user_group_edit_policy", validation_func)
 
     def test_user_group_create_by_guest_user(self) -> None:
         guest_user = self.example_user("polonius")

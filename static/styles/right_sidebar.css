@@ -1,6 +1,4 @@
 .right-sidebar {
-    font-size: 14px;
-
     a:hover {
         text-decoration: none;
     }
@@ -177,7 +175,6 @@
     }
 
     #user_filter_icon {
-        font-size: 13px;
         opacity: 0.5;
         margin-right: 5px;
 

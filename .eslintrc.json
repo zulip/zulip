@@ -15,6 +15,10 @@
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
+    "plugins": ["formatjs"],
+    "settings": {
+        "additionalFunctionNames": ["$t", "$t_html"]
+    },
     "reportUnusedDisableDirectives": true,
     "rules": {
         "array-callback-return": "error",
@@ -24,6 +28,12 @@
         "curly": "error",
         "dot-notation": "error",
         "eqeqeq": "error",
+        "formatjs/enforce-default-message": ["error", "literal"],
+        "formatjs/enforce-placeholders": [
+            "error",
+            {"ignoreList": ["b", "code", "em", "i", "kbd", "p", "strong"]}
+        ],
+        "formatjs/no-id": "error",
         "guard-for-in": "error",
         "import/extensions": "error",
         "import/first": "error",
@@ -135,6 +145,7 @@
                 "no-duplicate-imports": "off",
                 "no-unused-vars": "off",
                 "no-useless-constructor": "off",
+                "no-use-before-define": "off",
 
                 "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/await-thenable": "error",
@@ -178,6 +189,7 @@
                 "window": false
             },
             "rules": {
+                "formatjs/no-id": "off",
                 "new-cap": "off",
                 "no-sync": "off",
                 "unicorn/prefer-prototype-methods": "off"

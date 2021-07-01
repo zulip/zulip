@@ -97,8 +97,8 @@ run_test("attribute updates", () => {
 
     vdom.update(replace_content, find, new_ul, ul);
 
-    assert(updated);
-    assert(removed);
+    assert.ok(updated);
+    assert.ok(removed);
 });
 
 function make_child(i, name) {

@@ -18,9 +18,9 @@ configure a different view as the default.
 
 3. Select a view.
 
-4. Open a new Zulip tab or press `Esc` twice (first to exit
-   "Settings", and again to return to the default view) to see your
-   changes in action.
+4. Open a new Zulip tab or press `Esc` twice (first to exit the
+   settings overlay, and again to return to the default view) to see
+   your changes in action.
 
 {end_tabs}
 

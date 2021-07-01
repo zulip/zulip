@@ -62,8 +62,12 @@ always use `test-backend --include-webhooks` and run all of the tests.
 ## Writing tests
 
 Before you write your first tests of Zulip, it is worthwhile to read
-the rest of this document, and you can also read some of the existing tests
-in `zerver/tests` to get a feel for the patterns we use.
+the rest of this document.
+
+To get a hang of commonly used testing techniques, read
+[zerver/tests/test_example.py](https://github.com/zulip/zulip/blob/master/zerver/tests/test_example.py).
+You can also read some of the existing tests in `zerver/tests`
+to get a feel for other patterns we use.
 
 A good practice is to get a "failing test" before you start to implement
 your feature.  First, it is a useful exercise to understand what needs to happen
@@ -301,9 +305,15 @@ from Django as well as our own custom helpers.  Here is an example:
 Follow [this link](../subsystems/settings.html#testing-non-default-settings) for more
 information on the "settings" context manager.
 
-A common use is to prevent a call to a third-party service from using
-the Internet; `git grep mock.patch | grep requests` is a good way to
-find several examples of doing this.
+Zulip has several features, like outgoing webhooks or social
+authentication, that made outgoing HTTP requests to external
+servers. We test those features using the excellent
+[responses](https://pypi.org/project/responses/) library, which has a
+nice interface for mocking `requests` calls to return whatever HTTP
+response from the exteranl server we need for the test. you can find
+examples with `git grep responses.add`. Zulip's own `HostRequestMock`
+class should be used only for low-level tests for code that expects to
+receive Django HttpRequest object.
 
 ## Zulip testing philosophy
 

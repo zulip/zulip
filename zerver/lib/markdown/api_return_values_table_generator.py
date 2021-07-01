@@ -43,15 +43,17 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 return_values: Dict[str, Any] = {}
                 return_values = get_openapi_return_values(endpoint, method)
                 text: List[str] = []
-                if endpoint != "/events":
-                    text = self.render_table(return_values, 0)
-                else:
+                if doc_name == "/events:get":
                     return_values = copy.deepcopy(return_values)
                     events = return_values["events"].pop("items", None)
                     text = self.render_table(return_values, 0)
                     # Another heading for the events documentation
                     text.append("\n\n## Events\n\n")
                     text += self.render_events(events)
+                else:
+                    text = self.render_table(return_values, 0)
+                if len(text) > 0:
+                    text = ["#### Return values"] + text
                 line_split = REGEXP.split(line, maxsplit=0)
                 preceding = line_split[0]
                 following = line_split[-1]

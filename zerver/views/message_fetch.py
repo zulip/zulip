@@ -38,7 +38,7 @@ from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import is_web_public_compatible, is_web_public_narrow
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
     can_access_stream_history_by_id,
@@ -946,7 +946,7 @@ def get_messages_backend(
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
-        return json_error(
+        raise JsonableError(
             _("Too many messages requested (maximum {}).").format(
                 MAX_MESSAGES_PER_FETCH,
             )
@@ -1095,7 +1095,7 @@ def get_messages_backend(
     message_ids: List[int] = []
     user_message_flags: Dict[int, List[str]] = {}
     if is_web_public_query:
-        # For web-public users, we treat all historical messages as read.
+        # For spectators, we treat all historical messages as read.
         for row in rows:
             message_id = row[0]
             message_ids.append(message_id)

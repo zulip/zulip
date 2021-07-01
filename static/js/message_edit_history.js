@@ -2,10 +2,16 @@ import {format, isSameDay} from "date-fns";
 import $ from "jquery";
 
 import render_message_edit_history from "../templates/message_edit_history.hbs";
+import render_message_history_modal from "../templates/message_history_modal.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
+import * as message_lists from "./message_lists";
+import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
+import * as rows from "./rows";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
@@ -73,7 +79,37 @@ export function fetch_and_render_message_history(message) {
 }
 
 export function show_history(message) {
-    $("#message-history").html("");
-    $("#message-edit-history").modal("show");
+    const rendered_message_history = render_message_history_modal();
+    $("#message_feed_container").append(rendered_message_history);
+
     fetch_and_render_message_history(message);
+    overlays.open_modal("#message-edit-history", {autoremove: true});
+}
+
+export function initialize() {
+    $("body").on("mouseenter", ".message_edit_notice", (e) => {
+        if (page_params.realm_allow_edit_history) {
+            $(e.currentTarget).addClass("message_edit_notice_hover");
+        }
+    });
+
+    $("body").on("mouseleave", ".message_edit_notice", (e) => {
+        if (page_params.realm_allow_edit_history) {
+            $(e.currentTarget).removeClass("message_edit_notice_hover");
+        }
+    });
+
+    $("body").on("click", ".message_edit_notice", (e) => {
+        popovers.hide_all();
+        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
+
+        if (page_params.realm_allow_edit_history) {
+            show_history(message);
+            $("#message-history-cancel").trigger("focus");
+        }
+        e.stopPropagation();
+        e.preventDefault();
+    });
 }

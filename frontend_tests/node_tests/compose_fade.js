@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, zrequire} = require("../zjsunit/namespace");
+const {mock_jquery, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_cjs("jquery", (selector) => {
+mock_jquery((selector) => {
     switch (selector) {
         case "#stream_message_recipient_stream":
             return {
@@ -87,6 +87,6 @@ run_test("set_focused_recipient", () => {
         stream_id: 999,
         topic: "lunch",
     };
-    assert(!compose_fade_helper.should_fade_message(good_msg));
-    assert(compose_fade_helper.should_fade_message(bad_msg));
+    assert.ok(!compose_fade_helper.should_fade_message(good_msg));
+    assert.ok(compose_fade_helper.should_fade_message(bad_msg));
 });

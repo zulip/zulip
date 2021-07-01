@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 75**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `allow_community_topic_editing`
+  field with an integer field `edit_topic_policy`.
+
 **Feature level 74**
 
 * [`POST /register`](/api/register-queue): Added `server_needs_upgrade`
@@ -263,6 +268,8 @@ field with an integer field `invite_to_realm_policy`.
 
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
+* [Error handling](/api/rest-error-handling): The `code` property will
+  not be present in errors due to rate limits.
 
 **Feature level 35**
 

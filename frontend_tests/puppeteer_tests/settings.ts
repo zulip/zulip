@@ -30,29 +30,27 @@ async function open_settings(page: Page): Promise<void> {
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
-    await page.waitForSelector("#settings_content .account-settings-form", {visible: true});
+    await page.waitForSelector("#settings_content .profile-settings-form", {visible: true});
     const page_url = await common.page_url_with_fragment(page);
-    assert(page_url.includes("/#settings/"), `Page url: ${page_url} does not contain /#settings/`);
+    assert.ok(
+        page_url.includes("/#settings/"),
+        `Page url: ${page_url} does not contain /#settings/`,
+    );
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
-    await page.click("#change_full_name");
-
-    const change_full_name_button_selector = "#change_full_name_button";
-    await page.waitForSelector(change_full_name_button_selector, {visible: true});
+    await page.click("#full_name");
 
     const full_name_input_selector = 'input[name="full_name"]';
-    await page.$eval(full_name_input_selector, (el) => {
-        (el as HTMLInputElement).value = "";
-    });
-    await page.waitForFunction(() => $(":focus").attr("id") === "change_full_name_modal");
-    await page.type(full_name_input_selector, "New name");
-    await page.click(change_full_name_button_selector);
-    await page.waitForFunction(() => $("#change_full_name").text().trim() === "New name");
-    await common.wait_for_modal_to_close(page);
+    await common.clear_and_type(page, full_name_input_selector, "New name");
+
+    await page.click("#settings_content .profile-settings-form");
+    await page.waitForSelector(".full-name-change-form .alert-success", {visible: true});
+    await page.waitForFunction(() => $("#full_name").val() === "New name");
 }
 
 async function test_change_password(page: Page): Promise<void> {
+    await page.click('[data-section="account-and-privacy"]');
     await page.click("#change_password");
 
     const change_password_button_selector = "#change_password_button";
@@ -175,7 +173,10 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
     const name_field_selector = edit_form_selector + " [name=bot_name]";
-    assert(common.get_text_from_selector(page, name_field_selector), "Bot 1");
+    assert.equal(
+        await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
+        "Bot 1",
+    );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot one"});
     const save_btn_selector = edit_form_selector + " .edit_bot_button";
@@ -199,7 +200,10 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
     const name_field_selector = edit_form_selector + " [name=bot_name]";
-    assert(common.get_text_from_selector(page, name_field_selector), "Bot one");
+    assert.equal(
+        await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
+        "Bot one",
+    );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
     const save_btn_selector = edit_form_selector + " .edit_bot_button";

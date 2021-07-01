@@ -59,7 +59,7 @@
 }
 
 /* Main geometry for this element is in zulip.css */
-.compose-content {
+#compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px 4px;
@@ -189,12 +189,6 @@
     position: absolute;
     right: 0;
     opacity: 0.7;
-}
-
-#compose_invite_users,
-#compose_private_stream_alert {
-    /* Don't overlap into the compose_close × */
-    margin-right: 10px;
 }
 
 .compose_invite_user,
@@ -458,27 +452,17 @@ a.compose_control_button.hide {
     /* minus 5px padding. */
     width: calc(100% - 12px);
     padding: 5px;
+    margin-top: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
-    min-height: 36px;
+    min-height: 42px;
     overflow: auto;
 
     border: 1px solid hsl(0, 0%, 67%);
     border-radius: 4px;
     background-color: hsla(0, 0%, 0%, 0.02);
     cursor: not-allowed;
-}
-
-#preview_message_area {
-    margin-top: 5px;
-    min-height: 42px;
-}
-
-a.undo_markdown_preview {
-    text-decoration: none;
-    position: relative;
-    font-size: 15px;
 }
 
 .markdown_preview_spinner {
@@ -518,13 +502,13 @@ a.undo_markdown_preview {
 
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
-    .compose-content {
+    #compose-content {
         margin-right: 7px;
     }
 }
 
 @media (width < $md_min) {
-    .compose-content {
+    #compose-content {
         margin-right: 7px;
         margin-left: 7px;
     }
@@ -536,7 +520,7 @@ a.undo_markdown_preview {
         min-width: 95px;
     }
 
-    .compose-content {
+    #compose-content {
         margin-right: 5px;
         margin-left: 5px;
     }

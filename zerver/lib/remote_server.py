@@ -42,7 +42,7 @@ def send_to_push_bouncer(
 
     * 400 errors from the push bouncer.  Here there are 2 categories:
       Our server failed to connect to the push bouncer (should throw)
-      vs. client-side errors like and invalid token.
+      vs. client-side errors like an invalid token.
 
     """
     url = urllib.parse.urljoin(

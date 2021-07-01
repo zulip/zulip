@@ -2,13 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 let window_stub;
 set_global("location", {
     protocol: "http:",
@@ -43,7 +42,8 @@ const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
 
-const recent_topics = zrequire("recent_topics");
+const recent_topics_util = zrequire("recent_topics_util");
+const recent_topics_ui = zrequire("recent_topics_ui");
 
 run_test("operators_round_trip", () => {
     let operators;
@@ -166,18 +166,32 @@ function test_helper({override, change_tab}) {
     };
 }
 
-run_test("hash_interactions", (override) => {
+run_test("hash_interactions", ({override}) => {
     window_stub = $.create("window-stub");
     page_params.default_view = "recent_topics";
 
-    override(recent_topics, "show", () => {});
-    override(recent_topics, "is_visible", () => false);
+    override(recent_topics_util, "is_visible", () => false);
     const helper = test_helper({override, change_tab: true});
 
-    window.location.hash = "#all_messages";
+    let recent_topics_ui_shown = false;
+    override(recent_topics_ui, "show", () => {
+        recent_topics_ui_shown = true;
+    });
+    window.location.hash = "#unknown_hash";
 
     browser_history.clear_for_testing();
     hashchange.initialize();
+    // If it's an unknown hash it should show the default view.
+    assert.equal(recent_topics_ui_shown, true);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+    ]);
+
+    window.location.hash = "#all_messages";
+
+    helper.clear_events();
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -233,6 +247,15 @@ run_test("hash_interactions", (override) => {
         [subs, "launch"],
     ]);
 
+    recent_topics_ui_shown = false;
+    window.location.hash = "#reload:send_after_reload=0...";
+
+    helper.clear_events();
+    window_stub.trigger("hashchange");
+    helper.assert_events([]);
+    // If it's reload hash it shouldn't show the default view.
+    assert.equal(recent_topics_ui_shown, false);
+
     window.location.hash = "#keyboard-shortcuts/whatever";
 
     helper.clear_events();
@@ -284,7 +307,9 @@ run_test("hash_interactions", (override) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", (override) => {
+run_test("save_narrow", ({override}) => {
+    override(recent_topics_util, "is_visible", () => false);
+
     const helper = test_helper({override});
 
     let operators = [{operator: "is", operand: "private"}];

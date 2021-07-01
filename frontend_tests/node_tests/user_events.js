@@ -2,13 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 const message_live_update = mock_esm("../../static/js/message_live_update");
 const settings_account = mock_esm("../../static/js/settings_account", {
     update_email() {},
@@ -83,14 +81,14 @@ run_test("updates", () => {
         role: settings_config.user_role_values.guest.code,
     });
     person = people.get_by_email(isaac.email);
-    assert(person.is_guest);
+    assert.ok(person.is_guest);
     assert.equal(person.role, settings_config.user_role_values.guest.code);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.member.code,
     });
     person = people.get_by_email(isaac.email);
-    assert(!person.is_guest);
+    assert.ok(!person.is_guest);
     assert.equal(person.role, settings_config.user_role_values.member.code);
 
     user_events.update_person({
@@ -121,23 +119,23 @@ run_test("updates", () => {
 
     user_events.update_person({user_id: me.user_id, is_billing_admin: true});
     person = people.get_by_email(me.email);
-    assert(person.is_billing_admin);
+    assert.ok(person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.member.code);
-    assert(page_params.is_billing_admin);
+    assert.ok(page_params.is_billing_admin);
 
     user_events.update_person({user_id: me.user_id, is_billing_admin: false});
     person = people.get_by_email(me.email);
     assert.equal(person.user_id, me.user_id);
-    assert(!person.is_billing_admin);
+    assert.ok(!person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.member.code);
-    assert(!page_params.is_billing_admin);
+    assert.ok(!page_params.is_billing_admin);
 
     user_events.update_person({user_id: isaac.user_id, is_billing_admin: false});
     person = people.get_by_email(isaac.email);
     assert.equal(person.user_id, isaac.user_id);
-    assert(!person.is_billing_admin);
+    assert.ok(!person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.owner.code);
-    assert(!page_params.is_billing_admin);
+    assert.ok(!page_params.is_billing_admin);
 
     let user_id;
     let full_name;
@@ -157,7 +155,7 @@ run_test("updates", () => {
         user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
-    assert(!page_params.is_admin);
+    assert.ok(!page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");
@@ -201,11 +199,11 @@ run_test("updates", () => {
 
     user_events.update_person({user_id: me.user_id, timezone: "UTC"});
     person = people.get_by_email(me.email);
-    assert(person.timezone);
+    assert.ok(person.timezone);
 
     blueslip.expect("error", "Got update_person event for unexpected user 29");
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 29");
-    assert(!user_events.update_person({user_id: 29, full_name: "Sir Isaac Newton"}));
+    assert.ok(!user_events.update_person({user_id: 29, full_name: "Sir Isaac Newton"}));
 
     me.profile_data = {};
     user_events.update_person({
@@ -223,7 +221,7 @@ run_test("updates", () => {
     };
 
     user_events.update_person({user_id: me.user_id, delivery_email: "you@example.org"});
-    assert(updated);
+    assert.ok(updated);
 
     const test_bot = {
         email: "test-bot@example.com",

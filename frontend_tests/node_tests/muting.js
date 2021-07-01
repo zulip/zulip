@@ -7,7 +7,8 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const muting = zrequire("muting");
+const muted_topics = zrequire("muted_topics");
+const muted_users = zrequire("muted_users");
 const stream_data = zrequire("stream_data");
 
 const design = {
@@ -41,55 +42,55 @@ stream_data.add_sub(office);
 stream_data.add_sub(social);
 
 function test(label, f) {
-    run_test(label, (override) => {
-        muting.set_muted_topics([]);
-        muting.set_muted_users([]);
-        f(override);
+    run_test(label, ({override}) => {
+        muted_topics.set_muted_topics([]);
+        muted_users.set_muted_users([]);
+        f({override});
     });
 }
 
 test("edge_cases", () => {
     // private messages
-    assert(!muting.is_topic_muted(undefined, undefined));
+    assert.ok(!muted_topics.is_topic_muted(undefined, undefined));
 
     // invalid user
-    assert(!muting.is_user_muted(undefined));
+    assert.ok(!muted_users.is_user_muted(undefined));
 });
 
 test("add_and_remove_mutes", () => {
-    assert(!muting.is_topic_muted(devel.stream_id, "java"));
-    muting.add_muted_topic(devel.stream_id, "java");
-    assert(muting.is_topic_muted(devel.stream_id, "java"));
+    assert.ok(!muted_topics.is_topic_muted(devel.stream_id, "java"));
+    muted_topics.add_muted_topic(devel.stream_id, "java");
+    assert.ok(muted_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotentcy
-    muting.add_muted_topic(devel.stream_id, "java");
-    assert(muting.is_topic_muted(devel.stream_id, "java"));
+    muted_topics.add_muted_topic(devel.stream_id, "java");
+    assert.ok(muted_topics.is_topic_muted(devel.stream_id, "java"));
 
-    muting.remove_muted_topic(devel.stream_id, "java");
-    assert(!muting.is_topic_muted(devel.stream_id, "java"));
+    muted_topics.remove_muted_topic(devel.stream_id, "java");
+    assert.ok(!muted_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotentcy
-    muting.remove_muted_topic(devel.stream_id, "java");
-    assert(!muting.is_topic_muted(devel.stream_id, "java"));
+    muted_topics.remove_muted_topic(devel.stream_id, "java");
+    assert.ok(!muted_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test unknown stream is harmless too
-    muting.remove_muted_topic(unknown.stream_id, "java");
-    assert(!muting.is_topic_muted(unknown.stream_id, "java"));
+    muted_topics.remove_muted_topic(unknown.stream_id, "java");
+    assert.ok(!muted_topics.is_topic_muted(unknown.stream_id, "java"));
 
-    assert(!muting.is_user_muted(1));
-    muting.add_muted_user(1);
-    assert(muting.is_user_muted(1));
-
-    // test idempotentcy
-    muting.add_muted_user(1);
-    assert(muting.is_user_muted(1));
-
-    muting.remove_muted_user(1);
-    assert(!muting.is_user_muted(1));
+    assert.ok(!muted_users.is_user_muted(1));
+    muted_users.add_muted_user(1);
+    assert.ok(muted_users.is_user_muted(1));
 
     // test idempotentcy
-    muting.remove_muted_user(1);
-    assert(!muting.is_user_muted(1));
+    muted_users.add_muted_user(1);
+    assert.ok(muted_users.is_user_muted(1));
+
+    muted_users.remove_muted_user(1);
+    assert.ok(!muted_users.is_user_muted(1));
+
+    // test idempotentcy
+    muted_users.remove_muted_user(1);
+    assert.ok(!muted_users.is_user_muted(1));
 });
 
 test("get_unmuted_users", () => {
@@ -106,23 +107,25 @@ test("get_unmuted_users", () => {
         full_name: "Othello, Moor of Venice",
     };
 
-    muting.add_muted_user(hamlet.user_id);
-    muting.add_muted_user(cordelia.user_id);
+    muted_users.add_muted_user(hamlet.user_id);
+    muted_users.add_muted_user(cordelia.user_id);
 
     assert.deepEqual(
-        muting.filter_muted_user_ids([hamlet.user_id, cordelia.user_id, othello.user_id]),
+        muted_users.filter_muted_user_ids([hamlet.user_id, cordelia.user_id, othello.user_id]),
         [othello.user_id],
     );
-    assert.deepEqual(muting.filter_muted_users([hamlet, cordelia, othello]), [othello]);
+    assert.deepEqual(muted_users.filter_muted_users([hamlet, cordelia, othello]), [othello]);
 });
 
 test("get_mutes", () => {
-    assert.deepEqual(muting.get_muted_topics(), []);
-    muting.add_muted_topic(office.stream_id, "gossip", 1577836800);
-    muting.add_muted_topic(devel.stream_id, "java", 1577836700);
-    const muted_topics = muting.get_muted_topics().sort((a, b) => a.date_muted - b.date_muted);
+    assert.deepEqual(muted_topics.get_muted_topics(), []);
+    muted_topics.add_muted_topic(office.stream_id, "gossip", 1577836800);
+    muted_topics.add_muted_topic(devel.stream_id, "java", 1577836700);
+    const all_muted_topics = muted_topics
+        .get_muted_topics()
+        .sort((a, b) => a.date_muted - b.date_muted);
 
-    assert.deepEqual(muted_topics, [
+    assert.deepEqual(all_muted_topics, [
         {
             date_muted: 1577836700000,
             date_muted_str: "Dec\u00A031,\u00A02019",
@@ -139,11 +142,14 @@ test("get_mutes", () => {
         },
     ]);
 
-    assert.deepEqual(muting.get_muted_users(), []);
-    muting.add_muted_user(6, 1577836800);
-    muting.add_muted_user(4, 1577836800);
-    const muted_users = muting.get_muted_users().sort((a, b) => a.date_muted - b.date_muted);
-    assert.deepEqual(muted_users, [
+    assert.deepEqual(muted_users.get_muted_users(), []);
+    muted_users.add_muted_user(6, 1577836800);
+    muted_users.add_muted_user(4, 1577836800);
+    const all_muted_users = muted_users
+        .get_muted_users()
+        .sort((a, b) => a.date_muted - b.date_muted);
+
+    assert.deepEqual(all_muted_users, [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan\u00A001,\u00A02020",
@@ -169,9 +175,10 @@ test("unknown streams", () => {
         {id: 3, timestamp: 1577836800},
         {id: 2, timestamp: 1577836800},
     ];
-    muting.initialize();
+    muted_topics.initialize();
+    muted_users.initialize();
 
-    assert.deepEqual(muting.get_muted_topics().sort(), [
+    assert.deepEqual(muted_topics.get_muted_topics().sort(), [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan\u00A001,\u00A02020",
@@ -188,7 +195,7 @@ test("unknown streams", () => {
         },
     ]);
 
-    assert.deepEqual(muting.get_muted_users().sort(), [
+    assert.deepEqual(muted_users.get_muted_users().sort(), [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan\u00A001,\u00A02020",
@@ -203,9 +210,9 @@ test("unknown streams", () => {
 });
 
 test("case_insensitivity", () => {
-    muting.set_muted_topics([]);
-    assert(!muting.is_topic_muted(social.stream_id, "breakfast"));
-    muting.set_muted_topics([["SOCial", "breakfast"]]);
-    assert(muting.is_topic_muted(social.stream_id, "breakfast"));
-    assert(muting.is_topic_muted(social.stream_id, "breakFAST"));
+    muted_topics.set_muted_topics([]);
+    assert.ok(!muted_topics.is_topic_muted(social.stream_id, "breakfast"));
+    muted_topics.set_muted_topics([["SOCial", "breakfast"]]);
+    assert.ok(muted_topics.is_topic_muted(social.stream_id, "breakfast"));
+    assert.ok(muted_topics.is_topic_muted(social.stream_id, "breakFAST"));
 });

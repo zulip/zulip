@@ -5,7 +5,7 @@ from zerver.webhooks.appfollow.view import convert_markdown
 class AppFollowHookTests(WebhookTestCase):
     STREAM_NAME = "appfollow"
     URL_TEMPLATE = "/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "appfollow"
+    WEBHOOK_DIR_NAME = "appfollow"
 
     def test_sample(self) -> None:
         expected_topic = "Webhook integration was successful."

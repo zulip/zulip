@@ -46,11 +46,6 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
-# Send a statsd event on restarting the server
-subprocess.check_call(
-    ["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))]
-)
-
 if args.fill_cache:
     logging.info("Filling memcached caches")
     subprocess.check_call(["./manage.py", "fill_memcached_caches"])
@@ -90,6 +85,14 @@ if has_application_server():
         if worker_status.returncode not in (0, 3):
             worker_status.check_returncode()
         workers.extend(status_line.split()[0] for status_line in worker_status.stdout.splitlines())
+
+    if has_application_server(once=True):
+        workers.extend(
+            [
+                "zulip_deliver_scheduled_emails",
+                "zulip_deliver_scheduled_messages",
+            ]
+        )
 
 if has_process_fts_updates():
     workers.append("process-fts-updates")

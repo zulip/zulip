@@ -75,7 +75,7 @@ def get_default_value_for_history_public_to_subscribers(
 
 
 def render_stream_description(text: str) -> str:
-    return markdown_convert(text, no_previews=True)
+    return markdown_convert(text, no_previews=True).rendered_content
 
 
 def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:

@@ -2,13 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
 const loading = mock_esm("../../static/js/loading");
 
 const SHORT_TEXT_ID = 1;
@@ -41,7 +39,7 @@ mock_esm("sortablejs", {Sortable: {create: () => {}}});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
 
-function test_populate(opts) {
+function test_populate(opts, template_data) {
     const fields_data = opts.fields_data;
 
     page_params.is_admin = opts.is_admin;
@@ -63,22 +61,21 @@ function test_populate(opts) {
 
     loading.destroy_indicator = () => {};
 
-    const template_data = [];
-    stub_templates((fn, data) => {
-        assert.equal(fn, "settings/admin_profile_field_list");
-        template_data.push(data);
-        return "whatever";
-    });
-
     settings_profile_fields.do_populate_profile_fields(fields_data);
 
     assert.deepEqual(template_data, opts.expected_template_data);
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", () => {
+run_test("populate_profile_fields", ({mock_template}) => {
     page_params.custom_profile_fields = {};
     page_params.realm_default_external_accounts = JSON.stringify({});
+
+    const template_data = [];
+    mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
+        template_data.push(data);
+        return "whatever";
+    });
 
     const fields_data = [
         {
@@ -182,9 +179,12 @@ run_test("populate_profile_fields", () => {
         },
     ];
 
-    test_populate({
-        fields_data,
-        expected_template_data,
-        is_admin: true,
-    });
+    test_populate(
+        {
+            fields_data,
+            expected_template_data,
+            is_admin: true,
+        },
+        template_data,
+    );
 });

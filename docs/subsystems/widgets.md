@@ -1,103 +1,31 @@
-# Widgets (experimental)
+# Widgets
 
-[Note: this document is currently intended to be a roadmap/design
-document.  It may be converted over time to permanent documentation.]
+## What is a widget?
 
-## Overview
+Widgets are special kinds of messages. These include:
+- polls
+- TODO lists
+- `/me` messages
+- Trivia bot
 
-During 2018 we built out a "widget system" in Zulip.  It includes
-these features:
+Some widgets are used with a leading `/` (like `/poll Tea or coffee?`), similar
+to [slash commands](/subsystems/slash-commands.md), but these two concepts
+are very different. Slash commands have nothing to do with message sending.
 
-- **/ping**
-- **/day** (and /night, /light, /dark)
-- **/poll** (and /todo) (BETA)
-- **zform-enabled messages** for the trivia_quiz bot (BETA)
-
-The beta features are only turned on for chat.zulip.org as
-of this writing.
-
-There's a strong overlap between **widgets** and **slash
-commands**, and many widgets are launched by slash commands.
-A few exceptions are worth noting.  If you type "/me shrugs"
-in the compose box, it's just a message that gets
-slightly customized rendering.  And
-if you type "/settings", it's just a shortcut to open
-the settings popup.  Neither of these are really "widgets,"
-per se.
-
-Another exception, in the opposite direction, is our
-trivia_quiz bot.  It does not involve slash commands.
-Instead it sends "extra_data" in messages to invoke
-**zforms** (which enable button-based UIs in the
+The trivia_quiz_bot does not use `/`'s. Instead, it sends "extra_data"
+in messages to invoke **zforms** (which enable button-based UIs in the
 messages).
 
-Here are some code entities used in the above
-features:
 
-- `SubMessage` database table
-- `/json/zcommand` API endpoint
-- `/json/submessage` API endpoint
-- `static/js/zcommand.js`
-- `static/js/submessage.js`
-- `static/js/poll_widget.js`
-- `static/js/widgetize.js`
-- `static/js/zform.js`
-- `static/templates/widgets/`
-- `zerver/lib/widget.py`
-- `zerver/lib/zcommand.py`
-- `zerver/views/submessage.py`
+## `/me` messages
 
-## Simple slash commands
+These are the least complex. We use our markdown processors to
+detect if a message is a `/me` message, plumb the flag through
+the message object (as `is_me_message`) and have the clients
+format it correctly. Related code (for the web app) lies in
+`message_list_view.js` in `_maybe_format_me_message`.
 
-We support a few very simple slash commands that
-are intended for single users to do simple tasks:
-
-- Ping the server
-- Toggle day/night mode
-
-### Data flow
-
-These commands have client-side support in `zcommands.js`.
-They send commands to the server using the `/json/command`
-endpoint.
-
-In the case of "/ping", the server code in `zcommand.py`
-basically just acks the client.  The client then computes
-the round trip time and shows a little message above
-the compose box that the user can see and then dismiss.
-
-For commands like "/day" and "/night", the server does
-a little bit of logic to toggle the user's night mode
-setting, and this is largely done inside `zcommand.py`.
-The server sends a very basic response, and then
-the client actually changes the display colors.  The
-client also shows the user a little message above
-the compose box instructing them how to reverse the
-change.
-
-It's a bit of a stretch to label "/ping" and "/day"
-as **widgets**.  In some ways they're just compose-box
-shortcuts for doing UI tasks.  The commands share
-the new "zcommand" namespace in the code, and both
-have some common UI for talking to users.
-
-(It's possible that we don't really need a general
-`/json/zcommand` endpoint for these, and we
-may decide later to just use custom
-API endpoints for each command.  There's some logic
-in having a central API for these, though, since they
-are typically things that only UI-based clients will
-invoke, and they may share validation code.)
-
-### Availability
-
-The above commands are available for all Zulip servers
-that use 1.9 or above.  You must use the web app client to
-get the features; other clients will send the messages
-without any translation (e.g. "/day" will just be a message
-that says "/day" if you use the mobile app).
-
-## Poll, todo lists, and games
+## Polls, todo lists, and games
 
 The most interactive widgets that we built during
 2018 are for polls, todo lists, and games. You
@@ -119,14 +47,26 @@ interactive experience.
 
 ### Data flow
 
-The **poll** widget uses the "submessage" architecture.
-We'll use the poll widget as a concrete example.
+Some important code entities for the widget implementation are:
+
+- `SubMessage` database table
+- `/json/submessage` API endpoint
+- `static/js/submessage.js`
+- `static/js/poll_widget.js`
+- `static/js/widgetize.js`
+- `static/js/zform.js`
+- `static/templates/widgets/`
+- `zerver/lib/widget.py`
+- `zerver/views/submessage.py`
+
+Both **poll** and **todo** widgets use the "submessage" architecture.
+We'll use the poll widget as an example.
 
 The `SubMessage` table, as the name indicates, allows
 you to associate multiple submessages to any given
 `Message` row.  When a message gets sent, there's a
-hook inside of `widget.py` that will detect slash
-commands like "/poll".  If a message needs to be
+hook inside of `widget.py` that will detect widgets
+like "/poll".  If a message needs to be
 widgetized, an initial `SubMessage` row will be
 created with an appropriate `msg_type` (and persisted
 to the database).  This data will also be included
@@ -139,7 +79,7 @@ appropriate widgets.
 The web app client will next collect poll options and votes
 from users.  The web app client has
 code in `submessage.js` that dispatches events
-to `widgetize.js`, which in turns sends events to
+to `widgetize.js`, which in turn sends events to
 individual widgets.  The widgets know how to render
 themselves and set up click/input handlers to collect
 data.  They can then post back to `/json/submessage`
@@ -150,9 +90,6 @@ database.  These rows are encoded as JSON, and the
 schema of the messages is driven by the individual widgets.
 Most of the logic is in the client; things are fairly opaque
 to the server at this point.
-
-The "submessage" architecture is generic.
-Our todo list widget uses the same architecture as "poll".
 
 If a client joins Zulip after a message has accumulated
 several submessage events, it will see all of those
@@ -174,7 +111,7 @@ A good way to learn the system is to read the code
 in `static/js/poll_widget.js`.  It is worth noting that
 writing a new widget requires only minor backend
 changes in the current architecture.  This could change
-in the future, but for now a frontend developer mostly
+in the future, but for now, a frontend developer mostly
 needs to know JS, CSS, and HTML.
 
 It may be useful to think of widgets in terms of a
@@ -202,7 +139,7 @@ most widgets are somewhat ephemeral in nature, so it's not
 the end of the world if upgrades cause some older messages
 to be obsolete, as long as the code degrades gracefully.
 
-Mission critical widgets should have a deprecation strategy.
+Mission-critical widgets should have a deprecation strategy.
 For example, you could add optional features for one version
 bump and then only make them mandatory for the next version,
 as long as you don't radically change the data model.  And
@@ -232,7 +169,7 @@ architecture comes to the rescue.
 
 This section will describe our "zform" architecture.
 
-For context, imagine a naive triva bot.  The trivia bot
+For context, imagine a naive trivia bot.  The trivia bot
 sends a question with the answers labeled as A, B, C,
 and D.  Folks who want to answer the bot send back an
 answer have to send an actual Zulip message with something
@@ -394,12 +331,3 @@ shown here) and then sets up a click handler like below:
 ~~~
 
 And then we are basically done!
-
-## Slash commands
-
-This document is more about "widget" behavior than "slash command"
-interfaces, but there is indeed a lot of overlap between the two
-concepts.
-
-Typeahead for slash commands is implemented via the `slash_commands`
-object in `static/js/composebox_typeahead.js`.

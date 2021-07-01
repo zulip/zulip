@@ -11,6 +11,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Pattern,
     Sequence,
     Set,
     Tuple,
@@ -254,6 +255,7 @@ class Realm(models.Model):
     POLICY_ADMINS_ONLY = 2
     POLICY_FULL_MEMBERS_ONLY = 3
     POLICY_MODERATORS_ONLY = 4
+    POLICY_EVERYONE = 5
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -262,8 +264,21 @@ class Realm(models.Model):
         POLICY_MODERATORS_ONLY,
     ]
 
+    COMMON_MESSAGE_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_EVERYONE,
+    ]
+
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
+
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Who in the organization is allowed to edit topics of any message.
+    edit_topic_policy: int = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
 
     # Who in the organization is allowed to invite other users to organization.
     invite_to_realm_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
@@ -361,9 +376,6 @@ class Realm(models.Model):
 
     # Whether users have access to message edit history
     allow_edit_history: bool = models.BooleanField(default=True)
-
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
-    allow_community_topic_editing: bool = models.BooleanField(default=True)
 
     # Defaults for new users
     default_twenty_four_hour_time: bool = models.BooleanField(default=False)
@@ -636,7 +648,7 @@ class Realm(models.Model):
             role__in=roles,
         )
 
-    def get_human_billing_admin_users(self) -> Sequence["UserProfile"]:
+    def get_human_billing_admin_users(self) -> QuerySet:
         return UserProfile.objects.filter(
             Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
             realm=self,
@@ -907,7 +919,7 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 
-def filter_pattern_validator(value: str) -> None:
+def filter_pattern_validator(value: str) -> Pattern[str]:
     regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
     error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
         "[ a-zA-Z_#=/:+!-]",
@@ -917,10 +929,12 @@ def filter_pattern_validator(value: str) -> None:
         raise ValidationError(error_msg)
 
     try:
-        re.compile(value)
+        pattern = re.compile(value)
     except re.error:
         # Regex is invalid
         raise ValidationError(error_msg)
+
+    return pattern
 
 
 def filter_format_validator(value: str) -> None:
@@ -937,11 +951,53 @@ class RealmFilter(models.Model):
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    pattern: str = models.TextField(validators=[filter_pattern_validator])
+    pattern: str = models.TextField()
     url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
+
+    def clean(self) -> None:
+        """Validate whether the set of parameters in the URL Format string
+        match the set of parameters in the regular expression.
+
+        Django's `full_clean` calls `clean_fields` followed by `clean` method
+        and stores all ValidationErrors from all stages to return as JSON.
+        """
+
+        # Extract variables present in the pattern
+        pattern = filter_pattern_validator(self.pattern)
+        group_set = set(pattern.groupindex.keys())
+
+        # Extract variables used in the URL format string.  Note that
+        # this regex will incorrectly reject patterns that attempt to
+        # escape % using %%.
+        found_group_set: Set[str] = set()
+        group_match_regex = r"(?<!%)%\((?P<group_name>[^()]+)\)s"
+        for m in re.finditer(group_match_regex, self.url_format_string):
+            group_name = m.group("group_name")
+            found_group_set.add(group_name)
+
+        # Report patterns missing in linkifier pattern.
+        missing_in_pattern_set = found_group_set - group_set
+        if len(missing_in_pattern_set) > 0:
+            name = list(sorted(missing_in_pattern_set))[0]
+            raise ValidationError(
+                _("Group %(name)r in URL format string is not present in linkifier pattern."),
+                params={"name": name},
+            )
+
+        missing_in_url_set = group_set - found_group_set
+        # Report patterns missing in URL format string.
+        if len(missing_in_url_set) > 0:
+            # We just report the first missing pattern here. Users can
+            # incrementally resolve errors if there are multiple
+            # missing patterns.
+            name = list(sorted(missing_in_url_set))[0]
+            raise ValidationError(
+                _("Group %(name)r in linkifier pattern is not present in URL format string."),
+                params={"name": name},
+            )
 
     def __str__(self) -> str:
         return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
@@ -979,9 +1035,9 @@ def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
 
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
-    filters = []
+    linkifiers = []
     for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append(
+        linkifiers.append(
             LinkifierDict(
                 pattern=linkifier.pattern,
                 url_format=linkifier.url_format_string,
@@ -989,7 +1045,7 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
             )
         )
 
-    return filters
+    return linkifiers
 
 
 def flush_linkifiers(sender: Any, **kwargs: Any) -> None:
@@ -1563,9 +1619,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def has_permission(self, policy_name: str) -> bool:
         if policy_name not in [
             "create_stream_policy",
+            "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
             "move_messages_between_streams_policy",
+            "user_group_edit_policy",
         ]:
             raise AssertionError("Invalid policy")
 
@@ -1602,6 +1660,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def can_move_messages_between_streams(self) -> bool:
         return self.has_permission("move_messages_between_streams_policy")
+
+    def can_edit_user_groups(self) -> bool:
+        return self.has_permission("user_group_edit_policy")
+
+    def can_edit_topic_of_any_message(self) -> bool:
+        if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
+            return True
+        return self.has_permission("edit_topic_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)

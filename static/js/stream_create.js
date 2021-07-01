@@ -1,9 +1,9 @@
 import $ from "jquery";
 
 import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
+import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_new_stream_user from "../templates/new_stream_user.hbs";
 import render_new_stream_users from "../templates/new_stream_users.hbs";
-import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";

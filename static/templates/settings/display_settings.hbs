@@ -6,15 +6,15 @@
             <h3 class="inline-block">{{t "Language settings" }}</h3>
             <div class="alert-notification" id="language-settings-status"></div>
 
-            <div class="input-group user-name-section">
+            <div class="input-group">
                 <label class="inline-block title">{{t "Default language" }}</label>
                 <button id="default_language" type="button" class="button btn-link rounded small inline-block">
-                    <span id="default_language_name">{{page_params.default_language_name}}</span>
+                    <span id="default_language_name">{{default_language_name}}</span>
                     <i class="fa fa-pencil"></i>
                 </button>
             </div>
 
-            {{> ../default_language_modal guidelines_link="https://zulip.readthedocs.io/en/latest/translating/translating.html"}}
+            {{> ../default_language_modal language_list=language_list_dbl_col guidelines_link="https://zulip.readthedocs.io/en/latest/translating/translating.html"}}
         </div>
 
         <div id="user-display-settings">
@@ -65,19 +65,6 @@
                 <select name="twenty_four_hour_time" id="twenty_four_hour_time">
                     {{#each twenty_four_hour_time_values}}
                     <option value='{{ this.value }}'>{{ this.description }}</option>
-                    {{/each}}
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label for="timezone" class="dropdown-title">{{t "Time zone" }}</label>
-                <select name="timezone" id="user_timezone">
-                    {{#unless page_params.timezone}}
-                    <option></option>
-                    {{/unless}}
-
-                    {{#each timezones}}
-                    <option value="{{ this }}">{{ this }}</option>
                     {{/each}}
                 </select>
             </div>

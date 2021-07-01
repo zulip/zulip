@@ -21,7 +21,7 @@ class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
     def __init__(self, role: str, timeout: int, *args: Any, **kwargs: Any) -> None:
         self.role = role
         self.timeout = timeout
-        super().__init__(*args, *kwargs)
+        super().__init__(*args, **kwargs)
 
     def send(self, *args: Any, **kwargs: Any) -> HTTPResponse:
         if kwargs.get("timeout") is None:

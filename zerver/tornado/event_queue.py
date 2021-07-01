@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 from collections import deque
+from dataclasses import asdict
 from typing import (
     AbstractSet,
     Any,
@@ -24,6 +25,7 @@ from typing import (
     Optional,
     Sequence,
     Set,
+    Tuple,
     Union,
     cast,
 )
@@ -38,6 +40,7 @@ from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.decorator import cachify
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
+from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.request import JsonableError
 from zerver.lib.utils import statsd
@@ -733,48 +736,44 @@ def missedmessage_hook(
     for event in client.event_queue.contents(include_internal_data=True):
         if event["type"] != "message":
             continue
-        assert "flags" in event
+        internal_data = event.get("internal_data", {})
+        sender_id = event["message"]["sender_id"]
 
-        flags = event["flags"]
-
-        mentioned = "mentioned" in flags and "read" not in flags
-        private_message = event["message"]["type"] == "private"
-        # stream_push_notify is set in process_message_event.
-        stream_push_notify = event.get("internal_data", {}).get("stream_push_notify", False)
-        stream_email_notify = event.get("internal_data", {}).get("stream_email_notify", False)
-        wildcard_mention_notify = (
-            event.get("internal_data", {}).get("wildcard_mention_notify", False)
-            and "read" not in flags
-            and "wildcard_mentioned" in flags
+        user_notifications_data = UserMessageNotificationsData(
+            user_id=user_profile_id,
+            flags=event.get("flags", []),
+            sender_is_muted=internal_data.get("sender_is_muted", False),
+            mentioned=internal_data.get("mentioned", False),
+            stream_push_notify=internal_data.get("stream_push_notify", False),
+            stream_email_notify=internal_data.get("stream_email_notify", False),
+            wildcard_mention_notify=internal_data.get("wildcard_mention_notify", False),
+            # Since one is by definition idle, we don't need to check online_push_enabled
+            online_push_enabled=False,
         )
+
+        private_message = event["message"]["type"] == "private"
 
         stream_name = None
         if not private_message:
             stream_name = event["message"]["display_recipient"]
 
-        # Since one is by definition idle, we don't need to check online_push_enabled
-        online_push_enabled = False
         # Since we just GC'd the last event queue, the user is definitely idle.
         idle = True
 
         message_id = event["message"]["id"]
         # Pass on the information on whether a push or email notification was already sent.
         already_notified = dict(
-            push_notified=event.get("internal_data", {}).get("push_notified", False),
-            email_notified=event.get("internal_data", {}).get("email_notified", False),
+            push_notified=internal_data.get("push_notified", False),
+            email_notified=internal_data.get("email_notified", False),
         )
         maybe_enqueue_notifications(
-            user_profile_id,
-            message_id,
-            private_message,
-            mentioned,
-            wildcard_mention_notify,
-            stream_push_notify,
-            stream_email_notify,
-            stream_name,
-            online_push_enabled,
-            idle,
-            already_notified,
+            user_notifications_data=user_notifications_data,
+            acting_user_id=sender_id,
+            message_id=message_id,
+            private_message=private_message,
+            stream_name=stream_name,
+            idle=idle,
+            already_notified=already_notified,
         )
 
 
@@ -790,15 +789,12 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
 
 
 def maybe_enqueue_notifications(
-    user_profile_id: int,
+    *,
+    user_notifications_data: UserMessageNotificationsData,
+    acting_user_id: int,
     message_id: int,
     private_message: bool,
-    mentioned: bool,
-    wildcard_mention_notify: bool,
-    stream_push_notify: bool,
-    stream_email_notify: bool,
     stream_name: Optional[str],
-    online_push_enabled: bool,
     idle: bool,
     already_notified: Dict[str, bool],
 ) -> Dict[str, bool]:
@@ -811,20 +807,11 @@ def maybe_enqueue_notifications(
     """
     notified: Dict[str, bool] = {}
 
-    if (idle or online_push_enabled) and (
-        private_message or mentioned or wildcard_mention_notify or stream_push_notify
-    ):
-        notice = build_offline_notification(user_profile_id, message_id)
-        if private_message:
-            notice["trigger"] = "private_message"
-        elif mentioned:
-            notice["trigger"] = "mentioned"
-        elif wildcard_mention_notify:
-            notice["trigger"] = "wildcard_mentioned"
-        elif stream_push_notify:
-            notice["trigger"] = "stream_push_notify"
-        else:
-            raise AssertionError("Unknown notification trigger!")
+    if user_notifications_data.is_push_notifiable(private_message, acting_user_id, idle):
+        notice = build_offline_notification(user_notifications_data.user_id, message_id)
+        notice["trigger"] = user_notifications_data.get_push_notification_trigger(
+            private_message, acting_user_id, idle
+        )
         notice["stream_name"] = stream_name
         if not already_notified.get("push_notified"):
             queue_json_publish("missedmessage_mobile_notifications", notice)
@@ -834,18 +821,11 @@ def maybe_enqueue_notifications(
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
-    if idle and (private_message or mentioned or wildcard_mention_notify or stream_email_notify):
-        notice = build_offline_notification(user_profile_id, message_id)
-        if private_message:
-            notice["trigger"] = "private_message"
-        elif mentioned:
-            notice["trigger"] = "mentioned"
-        elif wildcard_mention_notify:
-            notice["trigger"] = "wildcard_mentioned"
-        elif stream_email_notify:
-            notice["trigger"] = "stream_email_notify"
-        else:
-            raise AssertionError("Unknown notification trigger!")
+    if user_notifications_data.is_email_notifiable(private_message, acting_user_id, idle):
+        notice = build_offline_notification(user_notifications_data.user_id, message_id)
+        notice["trigger"] = user_notifications_data.get_email_notification_trigger(
+            private_message, acting_user_id, idle
+        )
         notice["stream_name"] = stream_name
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
@@ -912,6 +892,12 @@ def process_message_event(
     send_to_clients = get_client_info_for_message_event(event_template, users)
 
     presence_idle_user_ids = set(event_template.get("presence_idle_user_ids", []))
+    online_push_user_ids = set(event_template.get("online_push_user_ids", []))
+    stream_push_user_ids = set(event_template.get("stream_push_user_ids", []))
+    stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
+    wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+    muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
+
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
     # Temporary transitional code: Zulip servers that have message
@@ -941,68 +927,51 @@ def process_message_event(
 
     for user_data in users:
         user_profile_id: int = user_data["id"]
-        flags: Iterable[str] = user_data.get("flags", [])
+        flags: Collection[str] = user_data.get("flags", [])
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
-        private_message = message_type == "private" and user_profile_id != sender_id
-        mentioned = "mentioned" in flags and "read" not in flags
-        stream_push_notify = user_data.get("stream_push_notify", False)
-        stream_email_notify = user_data.get("stream_email_notify", False)
-        wildcard_mention_notify = (
-            user_data.get("wildcard_mention_notify", False)
-            and "wildcard_mentioned" in flags
-            and "read" not in flags
+        private_message = message_type == "private"
+        user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
+            user_id=user_profile_id,
+            flags=flags,
+            online_push_user_ids=online_push_user_ids,
+            stream_push_user_ids=stream_push_user_ids,
+            stream_email_user_ids=stream_email_user_ids,
+            wildcard_mention_user_ids=wildcard_mention_user_ids,
+            muted_sender_user_ids=muted_sender_user_ids,
         )
-        sender_is_muted = user_data.get("sender_is_muted", False)
 
-        if sender_is_muted:
-            # If the sender is muted, never enqueue notifications.
+        internal_data = asdict(user_notifications_data)
+        # Remove fields sent through other pipes to save some space.
+        internal_data.pop("flags")
+        internal_data.pop("user_id")
+        extra_user_data[user_profile_id] = dict(internal_data=internal_data)
+
+        # If the message isn't notifiable had the user been idle, then the user
+        # shouldn't receive notifications even if they were online. In that case we can
+        # avoid the more expensive `receiver_is_off_zulip` call, and move on to process
+        # the next user.
+        if not user_notifications_data.is_notifiable(
+            private_message, acting_user_id=sender_id, idle=True
+        ):
             continue
 
-        # We first check if a message is potentially mentionable,
-        # since receiver_is_off_zulip is somewhat expensive.
-        if (
-            private_message
-            or mentioned
-            or wildcard_mention_notify
-            or stream_push_notify
-            or stream_email_notify
-        ):
-            idle = receiver_is_off_zulip(user_profile_id) or (
-                user_profile_id in presence_idle_user_ids
+        idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
+
+        stream_name = event_template.get("stream_name")
+
+        extra_user_data[user_profile_id]["internal_data"].update(
+            maybe_enqueue_notifications(
+                user_notifications_data=user_notifications_data,
+                acting_user_id=sender_id,
+                message_id=message_id,
+                private_message=private_message,
+                stream_name=stream_name,
+                idle=idle,
+                already_notified={},
             )
-
-            # TODO/compatibility: Translation code for the rename of
-            # `always_push_notify` to `online_push_enabled`.  Remove this
-            # when one can no longer directly upgrade from 4.x to master.
-            if "online_push_enabled" in user_data:
-                online_push_enabled = user_data["online_push_enabled"]
-            elif "always_push_notify" in user_data:
-                online_push_enabled = user_data["always_push_notify"]
-            else:
-                online_push_enabled = False
-
-            stream_name = event_template.get("stream_name")
-
-            result: Dict[str, Any] = {}
-            result["internal_data"] = maybe_enqueue_notifications(
-                user_profile_id,
-                message_id,
-                private_message,
-                mentioned,
-                wildcard_mention_notify,
-                stream_push_notify,
-                stream_email_notify,
-                stream_name,
-                online_push_enabled,
-                idle,
-                {},
-            )
-            result["internal_data"]["stream_push_notify"] = stream_push_notify
-            result["internal_data"]["stream_email_notify"] = stream_email_notify
-            result["internal_data"]["wildcard_mention_notify"] = wildcard_mention_notify
-            extra_user_data[user_profile_id] = result
+        )
 
     for client_data in send_to_clients.values():
         client = client_data["client"]
@@ -1111,7 +1080,6 @@ def process_message_update_event(
     # belong in the actual events.
     event_template = dict(orig_event)
     prior_mention_user_ids = set(event_template.pop("prior_mention_user_ids", []))
-    mention_user_ids = set(event_template.pop("mention_user_ids", []))
     presence_idle_user_ids = set(event_template.pop("presence_idle_user_ids", []))
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
@@ -1132,27 +1100,43 @@ def process_message_update_event(
 
     for user_data in users:
         user_profile_id = user_data["id"]
+
+        if "user_id" in event_template:
+            # The user we'll get here will be the sender if the message's
+            # content was edited, and the editor for topic edits. That's
+            # the correct "acting_user" for both cases.
+            acting_user_id = event_template["user_id"]
+        else:
+            # Events without a `user_id` field come from the do_update_embedded_data
+            # code path, and represent just rendering previews; there should be no
+            # real content changes.
+            # It doesn't really matter what we set `acting_user_id` in this case,
+            # becuase we know this event isn't meant to send notifications.
+            acting_user_id = user_profile_id
+
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
-        wildcard_mentioned = "wildcard_mentioned" in user_event["flags"]
-        wildcard_mention_notify = wildcard_mentioned and (
-            user_profile_id in wildcard_mention_user_ids
+
+        flags: Collection[str] = user_event["flags"]
+        user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
+            user_id=user_profile_id,
+            flags=flags,
+            online_push_user_ids=online_push_user_ids,
+            stream_push_user_ids=stream_push_user_ids,
+            stream_email_user_ids=stream_email_user_ids,
+            wildcard_mention_user_ids=wildcard_mention_user_ids,
+            muted_sender_user_ids=muted_sender_user_ids,
         )
 
         maybe_enqueue_notifications_for_message_update(
-            user_profile_id=user_profile_id,
+            user_notifications_data=user_notifications_data,
             message_id=message_id,
+            acting_user_id=acting_user_id,
             private_message=(stream_name is None),
-            mentioned=(user_profile_id in mention_user_ids),
-            wildcard_mention_notify=wildcard_mention_notify,
-            stream_push_notify=(user_profile_id in stream_push_user_ids),
-            stream_email_notify=(user_profile_id in stream_email_user_ids),
             stream_name=stream_name,
-            online_push_enabled=(user_profile_id in online_push_user_ids),
             presence_idle=(user_profile_id in presence_idle_user_ids),
-            muted_sender=(user_profile_id in muted_sender_user_ids),
             prior_mentioned=(user_profile_id in prior_mention_user_ids),
         )
 
@@ -1164,20 +1148,15 @@ def process_message_update_event(
 
 
 def maybe_enqueue_notifications_for_message_update(
-    user_profile_id: int,
+    user_notifications_data: UserMessageNotificationsData,
     message_id: int,
+    acting_user_id: int,
     private_message: bool,
-    mentioned: bool,
-    wildcard_mention_notify: bool,
-    stream_push_notify: bool,
-    stream_email_notify: bool,
     stream_name: Optional[str],
-    online_push_enabled: bool,
     presence_idle: bool,
-    muted_sender: bool,
     prior_mentioned: bool,
 ) -> None:
-    if muted_sender:
+    if user_notifications_data.sender_is_muted:
         # Never send notifications if the sender has been muted
         return
 
@@ -1202,7 +1181,7 @@ def maybe_enqueue_notifications_for_message_update(
         # without extending the UserMessage data model.
         return
 
-    if stream_push_notify or stream_email_notify:
+    if user_notifications_data.stream_push_notify or user_notifications_data.stream_email_notify:
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously
@@ -1210,21 +1189,61 @@ def maybe_enqueue_notifications_for_message_update(
         # model.
         return
 
-    idle = presence_idle or receiver_is_off_zulip(user_profile_id)
+    idle = presence_idle or receiver_is_off_zulip(user_notifications_data.user_id)
 
     maybe_enqueue_notifications(
-        user_profile_id=user_profile_id,
+        user_notifications_data=user_notifications_data,
         message_id=message_id,
+        acting_user_id=acting_user_id,
         private_message=private_message,
-        mentioned=mentioned,
-        wildcard_mention_notify=wildcard_mention_notify,
-        stream_push_notify=stream_push_notify,
-        stream_email_notify=stream_email_notify,
         stream_name=stream_name,
-        online_push_enabled=online_push_enabled,
         idle=idle,
         already_notified={},
     )
+
+
+def reformat_legacy_send_message_event(
+    event: Mapping[str, Any], users: Union[List[int], List[Mapping[str, Any]]]
+) -> Tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
+    # do_send_messages used to send events with users in dict format, with the
+    # dict containing the user_id and other data. We later trimmed down the user
+    # data to only contain the user_id and the usermessage flags, and put everything
+    # else in the event dict as lists.
+    # This block handles any old-format events still in the queue during upgrade.
+
+    modern_event = cast(MutableMapping[str, Any], event)
+    user_dicts = cast(List[MutableMapping[str, Any]], users)
+
+    # Back-calculate the older all-booleans format data in the `users` dicts into the newer
+    # all-lists format, and attach the lists to the `event` object.
+    modern_event["online_push_user_ids"] = []
+    modern_event["stream_push_user_ids"] = []
+    modern_event["stream_email_user_ids"] = []
+    modern_event["wildcard_mention_user_ids"] = []
+    modern_event["muted_sender_user_ids"] = []
+
+    for user in user_dicts:
+        user_id = user["id"]
+
+        if user.pop("stream_push_notify", False):
+            modern_event["stream_push_user_ids"].append(user_id)
+        if user.pop("stream_email_notify", False):
+            modern_event["stream_email_user_ids"].append(user_id)
+        if user.pop("wildcard_mention_notify", False):
+            modern_event["wildcard_mention_user_ids"].append(user_id)
+        if user.pop("sender_is_muted", False):
+            modern_event["muted_sender_user_ids"].append(user_id)
+
+        # TODO/compatibility: Another translation code block for the rename of
+        # `always_push_notify` to `online_push_enabled`.  Remove this
+        # when one can no longer directly upgrade from 4.x to 5.0-dev.
+        if user.pop("online_push_enabled", False) or user.pop("always_push_notify", False):
+            modern_event["online_push_user_ids"].append(user_id)
+
+        # We can calculate `mentioned` from the usermessage flags, so just remove it
+        user.pop("mentioned", False)
+
+    return (modern_event, user_dicts)
 
 
 def process_notification(notice: Mapping[str, Any]) -> None:
@@ -1233,7 +1252,13 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     start_time = time.time()
 
     if event["type"] == "message":
-        process_message_event(event, cast(List[Mapping[str, Any]], users))
+        if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
+            # TODO/compatibility: Remove this whole block once one can no
+            # longer directly upgrade directly from 4.x to 5.0-dev.
+            modern_event, user_dicts = reformat_legacy_send_message_event(event, users)
+            process_message_event(modern_event, user_dicts)
+        else:
+            process_message_event(event, cast(List[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(List[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":

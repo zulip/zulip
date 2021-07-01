@@ -15,7 +15,8 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as recent_topics from "./recent_topics";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -58,8 +59,8 @@ function set_hash(hash) {
 }
 
 function maybe_hide_recent_topics() {
-    if (recent_topics.is_visible()) {
-        recent_topics.hide();
+    if (recent_topics_util.is_visible()) {
+        recent_topics_ui.hide();
         return true;
     }
     return false;
@@ -105,7 +106,7 @@ function show_default_view() {
     // We only allow all_messages and recent_topics
     // to be rendered without a hash.
     if (page_params.default_view === "recent_topics") {
-        recent_topics.show();
+        recent_topics_ui.show();
     } else if (page_params.default_view === "all_messages") {
         show_all_message_view();
     } else {
@@ -127,6 +128,7 @@ function do_hashchange_normal(from_reload) {
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     const hash = window.location.hash.split("/");
+
     switch (hash[0]) {
         case "#narrow": {
             maybe_hide_recent_topics();
@@ -162,7 +164,7 @@ function do_hashchange_normal(from_reload) {
             show_default_view();
             break;
         case "#recent_topics":
-            recent_topics.show();
+            recent_topics_ui.show();
             break;
         case "#all_messages":
             show_all_message_view();
@@ -178,6 +180,8 @@ function do_hashchange_normal(from_reload) {
         case "#about-zulip":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
+        default:
+            show_default_view();
     }
     return false;
 }
@@ -308,6 +312,13 @@ function hashchanged(from_reload, e) {
     const was_internal_change = browser_history.save_old_hash();
 
     if (was_internal_change) {
+        return undefined;
+    }
+
+    // TODO: Migrate the `#reload` syntax to use slashes as separators
+    // so that this can be part of the main switch statement.
+    if (window.location.hash.startsWith("#reload")) {
+        // We don't want to change narrow if app is undergoing reload.
         return undefined;
     }
 

@@ -11,15 +11,13 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_change_logo_source,
-    do_change_plan_type,
-    do_create_user,
-)
+from zerver.lib.actions import change_user_is_active, do_change_plan_type, do_create_user
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
-from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.home import get_furthest_read_time
+from zerver.lib.home import (
+    get_billing_info,
+    get_furthest_read_time,
+    promote_sponsoring_zulip_in_realm,
+)
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
@@ -35,7 +33,6 @@ from zerver.models import (
     get_system_bot,
     get_user,
 )
-from zerver.views.home import compute_navbar_logo_url
 from zerver.worker.queue_processors import UserActivityWorker
 
 logger_string = "zulip.soft_deactivation"
@@ -46,6 +43,7 @@ class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "alert_words",
+        "apps_page_url",
         "available_notification_sounds",
         "avatar_source",
         "avatar_url",
@@ -55,11 +53,11 @@ class HomeTest(ZulipTestCase):
         "can_invite_others_to_realm",
         "can_subscribe_other_users",
         "color_scheme",
+        "corporate_enabled",
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
         "default_language",
-        "default_language_name",
         "default_view",
         "delivery_email",
         "demote_inactive_streams",
@@ -73,7 +71,6 @@ class HomeTest(ZulipTestCase):
         "enable_digest_emails",
         "enable_login_emails",
         "enable_marketing_emails",
-        "enable_marketing_emails_enabled",
         "enable_offline_email_notifications",
         "enable_offline_push_notifications",
         "enable_online_push_notifications",
@@ -99,10 +96,9 @@ class HomeTest(ZulipTestCase):
         "is_guest",
         "is_moderator",
         "is_owner",
-        "is_web_public_visitor",
+        "is_spectator",
         "jitsi_server_url",
         "language_list",
-        "language_list_dbl_col",
         "last_event_id",
         "left_side_userlist",
         "login_page",
@@ -129,10 +125,10 @@ class HomeTest(ZulipTestCase):
         "pm_content_in_desktop_notifications",
         "presence_enabled",
         "presences",
+        "promote_sponsoring_zulip",
         "prompt_for_invites",
         "queue_id",
         "realm_add_emoji_by_admins_only",
-        "realm_allow_community_topic_editing",
         "realm_allow_edit_history",
         "realm_allow_message_deleting",
         "realm_allow_message_editing",
@@ -155,6 +151,7 @@ class HomeTest(ZulipTestCase):
         "realm_digest_weekday",
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
+        "realm_edit_topic_policy",
         "realm_email_address_visibility",
         "realm_email_auth_enabled",
         "realm_email_changes_disabled",
@@ -216,6 +213,10 @@ class HomeTest(ZulipTestCase):
         "server_needs_upgrade",
         "server_timestamp",
         "settings_send_digest_emails",
+        "show_billing",
+        "show_invites",
+        "show_plans",
+        "show_webathena",
         "starred_message_counts",
         "starred_messages",
         "stop_words",
@@ -236,6 +237,7 @@ class HomeTest(ZulipTestCase):
         "webpack_public_path",
         "wildcard_mentions_notify",
         "zulip_feature_level",
+        "zulip_merge_base",
         "zulip_plan_is_not_limited",
         "zulip_version",
     ]
@@ -244,12 +246,8 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "start the conversation",
-            "Exclude messages with topic",
             "Keyboard shortcuts",
             "Loading...",
-            "Manage streams",
-            "Narrow to topic",
-            "Next message",
             "Filter streams",
             # Verify that the app styles get included
             "app-stubentry.js",
@@ -717,17 +715,18 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(get_realm("zulip").invite_to_realm_policy, Realm.POLICY_MEMBERS_ONLY)
         self.assertNotInHomePage("Invite more users")
 
-    def test_show_billing(self) -> None:
-        customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
+    def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")
-
-        # realm owner, but no CustomerPlan -> no billing link
         user.role = UserProfile.ROLE_REALM_OWNER
         user.save(update_fields=["role"])
-        self.login_user(user)
-        self.assertNotInHomePage("Billing")
+        # realm owner, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # realm owner, with inactive CustomerPlan -> show billing link
+        # realm owner, with inactive CustomerPlan and realm plan_type SELF_HOSTED -> show only billing link
+        customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
         CustomerPlan.objects.create(
             customer=customer,
             billing_cycle_anchor=timezone_now(),
@@ -736,83 +735,112 @@ class HomeTest(ZulipTestCase):
             tier=CustomerPlan.STANDARD,
             status=CustomerPlan.ENDED,
         )
-        self.assertInHomePage("Billing")
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertTrue(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # realm admin, with CustomerPlan -> no billing link
+        # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
+        do_change_plan_type(user.realm, Realm.LIMITED, acting_user=None)
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertTrue(billing_info.show_billing)
+        self.assertTrue(billing_info.show_plans)
+
+        # Always false without CORPORATE_ENABLED
+        with self.settings(CORPORATE_ENABLED=False):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
+
+        # Always false without a UserProfile
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(None)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
+
+        # realm admin, with CustomerPlan and realm plan_type LIMITED -> show only billing plans
         user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         user.save(update_fields=["role"])
-        self.assertNotInHomePage("Billing")
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertTrue(billing_info.show_plans)
 
-        # billing admin, with CustomerPlan -> show billing link
+        # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
+        do_change_plan_type(user.realm, Realm.STANDARD, acting_user=None)
         user.save(update_fields=["role", "is_billing_admin"])
-        self.assertInHomePage("Billing")
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertTrue(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # member, with CustomerPlan -> no billing link
+        # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
         user.is_billing_admin = False
         user.save(update_fields=["is_billing_admin"])
-        self.assertNotInHomePage("Billing")
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # guest, with CustomerPlan -> no billing link
+        # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_GUEST
         user.save(update_fields=["role"])
-        self.assertNotInHomePage("Billing")
+        do_change_plan_type(user.realm, Realm.SELF_HOSTED, acting_user=None)
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # billing admin, but no CustomerPlan -> no billing link
+        # billing admin, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
         user.save(update_fields=["role", "is_billing_admin"])
         CustomerPlan.objects.all().delete()
-        self.assertNotInHomePage("Billing")
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # billing admin, with sponsorship pending -> show billing link
+        # billing admin, with sponsorship pending and relam plan_type SELF_HOSTED -> show only billing link
         customer.sponsorship_pending = True
         customer.save(update_fields=["sponsorship_pending"])
-        self.assertInHomePage("Billing")
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertTrue(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-        # billing admin, no customer object -> make sure it doesn't crash
+        # billing admin, no customer object and relam plan_type SELF_HOSTED -> neither billing link or plans
         customer.delete()
-        result = self._get_home_page()
-        self.check_rendered_logged_in_app(result)
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
 
-    def test_show_plans(self) -> None:
+    def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")
-
-        # Don't show plans to guest users
-        self.login("polonius")
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
-        self.assertNotInHomePage("Plans")
-
-        # Show plans link to all other users if plan_type is LIMITED
-        self.login("hamlet")
-        self.assertInHomePage("Plans")
-
-        # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
-        self.assertNotInHomePage("Plans")
-
-        do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
-        self.assertNotInHomePage("Plans")
-
-    def test_show_support_zulip(self) -> None:
-        realm = get_realm("zulip")
-
-        self.login("hamlet")
-
-        self.assertInHomePage("Support Zulip")
 
         do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=None)
-        self.assertInHomePage("Support Zulip")
+        promote_zulip = promote_sponsoring_zulip_in_realm(realm)
+        self.assertTrue(promote_zulip)
 
         with self.settings(PROMOTE_SPONSORING_ZULIP=False):
-            self.assertNotInHomePage("Support Zulip")
+            promote_zulip = promote_sponsoring_zulip_in_realm(realm)
+        self.assertFalse(promote_zulip)
+
+        do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=None)
+        promote_zulip = promote_sponsoring_zulip_in_realm(realm)
+        self.assertTrue(promote_zulip)
 
         do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
-        self.assertNotInHomePage("Support Zulip")
+        promote_zulip = promote_sponsoring_zulip_in_realm(realm)
+        self.assertFalse(promote_zulip)
 
         do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
-        self.assertNotInHomePage("Support Zulip")
+        promote_zulip = promote_sponsoring_zulip_in_realm(realm)
+        self.assertFalse(promote_zulip)
 
     def test_desktop_home(self) -> None:
         self.login("hamlet")
@@ -823,73 +851,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         path = urllib.parse.urlparse(result["Location"]).path
         self.assertEqual(path, "/")
-
-    def test_compute_navbar_logo_url(self) -> None:
-        user_profile = self.example_user("hamlet")
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
-        )
-
-        do_change_logo_source(
-            user_profile.realm, Realm.LOGO_UPLOADED, night=False, acting_user=user_profile
-        )
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
-        )
-
-        do_change_logo_source(
-            user_profile.realm, Realm.LOGO_UPLOADED, night=True, acting_user=user_profile
-        )
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2",
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/logo.png?version=2",
-        )
-
-        # This configuration isn't super supported in the UI and is a
-        # weird choice, but we have a test for it anyway.
-        do_change_logo_source(
-            user_profile.realm, Realm.LOGO_DEFAULT, night=False, acting_user=user_profile
-        )
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params),
-            f"/user_avatars/{user_profile.realm_id}/realm/night_logo.png?version=2",
-        )
-
-        page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
-        add_realm_logo_fields(page_params, user_profile.realm)
-        self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
-        )
 
     @override_settings(SERVER_UPGRADE_NAG_DEADLINE_DAYS=365)
     def test_is_outdated_server(self) -> None:

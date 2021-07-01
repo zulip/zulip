@@ -53,10 +53,6 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         if os.path.exists(file_name):
             f = open(file_name, "r")
             for line in f:
-                # Set AUTHENTICATION_LINE to default_authentication_line.
-                # Set this every iteration, because deactivate_own_user
-                # will override this for its test.
-                AUTHENTICATION_LINE[0] = default_authentication_line
                 # A typical example from the Markdown source looks like this:
                 #     {generate_code_example(curl, ...}
                 if line.startswith("{generate_code_example(curl"):
@@ -78,30 +74,39 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             # that will be actually shown to users, we use the
             # Markdown rendering pipeline to compute the user-facing
             # example, and then run that to test it.
+
+            # Set AUTHENTICATION_LINE to default_authentication_line.
+            # Set this every iteration, because deactivate_own_user
+            # will override this for its test.
+            AUTHENTICATION_LINE[0] = default_authentication_line
+
             curl_command_html = md_engine.convert(line.strip())
             unescaped_html = html.unescape(curl_command_html)
-            curl_command_text = unescaped_html[len("<p><code>curl\n") : -len("</code></p>")]
-            curl_command_text = curl_command_text.replace(
-                "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
-            )
+            curl_regex = re.compile(r"<code>curl\n(.*?)</code>", re.DOTALL)
+            commands = re.findall(curl_regex, unescaped_html)
 
-            print("Testing {} ...".format(curl_command_text.split("\n")[0]))
-
-            # Turn the text into an arguments list.
-            generated_curl_command = [x for x in shlex.split(curl_command_text) if x != "\n"]
-
-            response_json = None
-            response = None
-            try:
-                # We split this across two lines so if curl fails and
-                # returns non-JSON output, we'll still print it.
-                response_json = subprocess.check_output(
-                    generated_curl_command, universal_newlines=True
+            for curl_command_text in commands:
+                curl_command_text = curl_command_text.replace(
+                    "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
                 )
-                response = json.loads(response_json)
-                assert response["result"] == "success"
-            except (AssertionError, Exception):
-                error_template = """
+
+                print("Testing {} ...".format(curl_command_text.split("\n")[0]))
+
+                # Turn the text into an arguments list.
+                generated_curl_command = [x for x in shlex.split(curl_command_text) if x != "\n"]
+
+                response_json = None
+                response = None
+                try:
+                    # We split this across two lines so if curl fails and
+                    # returns non-JSON output, we'll still print it.
+                    response_json = subprocess.check_output(
+                        generated_curl_command, universal_newlines=True
+                    )
+                    response = json.loads(response_json)
+                    assert response["result"] == "success"
+                except (AssertionError, Exception):
+                    error_template = """
 Error verifying the success of the API documentation curl example.
 
 File: {file_name}
@@ -123,16 +128,16 @@ Common reasons for why this could occur:
 
 To learn more about the test itself, see zerver/openapi/test_curl_examples.py.
 """
-                print(
-                    error_template.format(
-                        file_name=file_name,
-                        line=line,
-                        curl_command=generated_curl_command,
-                        response=response_json
-                        if response is None
-                        else json.dumps(response, indent=4),
+                    print(
+                        error_template.format(
+                            file_name=file_name,
+                            line=line,
+                            curl_command=generated_curl_command,
+                            response=response_json
+                            if response is None
+                            else json.dumps(response, indent=4),
+                        )
                     )
-                )
-                raise
+                    raise
 
     assert_all_helper_functions_called()

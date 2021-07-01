@@ -142,6 +142,19 @@ def check_int_in(possible_values: List[int]) -> Validator[int]:
     return validator
 
 
+def check_int_range(low: int, high: int) -> Validator[int]:
+    # low and high are both treated as valid values
+    def validator(var_name: str, val: object) -> int:
+        n = check_int(var_name, val)
+        if n < low:
+            raise ValidationError(_("{var_name} is too small").format(var_name=var_name))
+        if n > high:
+            raise ValidationError(_("{var_name} is too large").format(var_name=var_name))
+        return n
+
+    return validator
+
+
 def check_float(var_name: str, val: object) -> float:
     if not isinstance(val, float):
         raise ValidationError(_("{var_name} is not a float").format(var_name=var_name))
@@ -454,6 +467,84 @@ def check_widget_content(widget_content: object) -> Dict[str, Any]:
         raise ValidationError("unknown zform type: " + extra_data["type"])
 
     raise ValidationError("unknown widget type: " + widget_type)
+
+
+# This should match MAX_IDX in our client widgets. It is somewhat arbitrary.
+MAX_IDX = 1000
+
+
+def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
+    check_dict([("type", check_string)])("poll data", poll_data)
+
+    assert isinstance(poll_data, dict)
+
+    if poll_data["type"] == "vote":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+                ("vote", check_int_in([1, -1])),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    if poll_data["type"] == "question":
+        if not is_widget_author:
+            raise ValidationError("You can't edit a question unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("question", check_string),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    if poll_data["type"] == "new_option":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("option", check_string),
+                ("idx", check_int_range(0, MAX_IDX)),
+            ]
+        )
+        checker("poll data", poll_data)
+        return
+
+    raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
+
+
+def validate_todo_data(todo_data: object) -> None:
+    check_dict([("type", check_string)])("todo data", todo_data)
+
+    assert isinstance(todo_data, dict)
+
+    if todo_data["type"] == "new_task":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_int_range(0, MAX_IDX)),
+                ("task", check_string),
+                ("desc", check_string),
+                ("completed", check_bool),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    if todo_data["type"] == "strike":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 
 # Converter functions for use with has_request_variables

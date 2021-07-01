@@ -2,11 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-
-mock_cjs("jquery", $);
 
 const noop = () => {};
 
@@ -30,9 +28,8 @@ mock_esm("../../static/js/notifications", {
 mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
-mock_esm("../../static/js/recent_topics", {
+mock_esm("../../static/js/recent_topics_util", {
     is_visible: noop,
-    set_compose_defaults: noop,
 });
 mock_esm("../../static/js/drafts", {
     update_draft: noop,
@@ -47,6 +44,9 @@ mock_esm("../../static/js/message_lists", {
     current: {
         can_mark_messages_read: () => true,
     },
+});
+mock_esm("../../static/js/resize", {
+    reset_compose_textarea_max_height: noop,
 });
 
 const people = zrequire("people");
@@ -66,14 +66,14 @@ const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
 function assert_visible(sel) {
-    assert($(sel).visible());
+    assert.ok($(sel).visible());
 }
 
 function assert_hidden(sel) {
-    assert(!$(sel).visible());
+    assert.ok(!$(sel).visible());
 }
 
-function override_private_message_recipient(override) {
+function override_private_message_recipient({override}) {
     override(
         compose_state,
         "private_message_recipient",
@@ -93,14 +93,14 @@ function override_private_message_recipient(override) {
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         // We don't test the css calls; we just skip over them.
         $("#compose").css = () => {};
         $(".new_message_textarea").css = () => {};
 
         people.init();
         compose_state.set_message_type(false);
-        f(override);
+        f({override});
     });
 }
 
@@ -110,8 +110,8 @@ test("initial_state", () => {
     assert.equal(compose_state.has_message_content(), false);
 });
 
-test("start", (override) => {
-    override_private_message_recipient(override);
+test("start", ({override}) => {
+    override_private_message_recipient({override});
     override(compose_actions, "autosize_message_content", () => {});
     override(compose_actions, "expand_compose_box", () => {});
     override(compose_actions, "set_focus", () => {});
@@ -137,7 +137,7 @@ test("start", (override) => {
     assert.equal($("#stream_message_recipient_stream").val(), "stream1");
     assert.equal($("#stream_message_recipient_topic").val(), "topic1");
     assert.equal(compose_state.get_message_type(), "stream");
-    assert(compose_state.composing());
+    assert.ok(compose_state.composing());
 
     // Autofill stream field for single subscription
     const denmark = {
@@ -198,7 +198,7 @@ test("start", (override) => {
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
     assert.equal($("#compose-textarea").val(), "hello");
     assert.equal(compose_state.get_message_type(), "private");
-    assert(compose_state.composing());
+    assert.ok(compose_state.composing());
 
     // Cancel compose.
     let pill_cleared;
@@ -215,18 +215,18 @@ test("start", (override) => {
 
     assert_hidden("#compose_controls");
     cancel();
-    assert(abort_xhr_called);
-    assert(pill_cleared);
+    assert.ok(abort_xhr_called);
+    assert.ok(pill_cleared);
     assert_visible("#compose_controls");
     assert_hidden("#private-message");
-    assert(!compose_state.composing());
+    assert.ok(!compose_state.composing());
 });
 
-test("respond_to_message", (override) => {
+test("respond_to_message", ({override}) => {
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
-    override_private_message_recipient(override);
+    override_private_message_recipient({override});
 
     // Test PM
     const person = {
@@ -262,12 +262,12 @@ test("respond_to_message", (override) => {
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
 });
 
-test("reply_with_mention", (override) => {
+test("reply_with_mention", ({override}) => {
     compose_state.set_message_type("stream");
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
-    override_private_message_recipient(override);
+    override_private_message_recipient({override});
 
     const msg = {
         type: "stream",
@@ -308,7 +308,7 @@ test("reply_with_mention", (override) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_and_reply", (override) => {
+test("quote_and_reply", ({override}) => {
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
@@ -320,7 +320,7 @@ test("quote_and_reply", (override) => {
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
-    override_private_message_recipient(override);
+    override_private_message_recipient({override});
 
     let selected_message;
     override(message_lists.current, "selected_message", () => selected_message);
@@ -371,7 +371,7 @@ test("quote_and_reply", (override) => {
     success_function({
         raw_content: "Testing.",
     });
-    assert(replaced);
+    assert.ok(replaced);
 
     selected_message = {
         type: "stream",
@@ -390,7 +390,7 @@ test("quote_and_reply", (override) => {
     with_field(channel, "get", whiny_get, () => {
         quote_and_reply(opts);
     });
-    assert(replaced);
+    assert.ok(replaced);
 
     selected_message = {
         type: "stream",
@@ -405,7 +405,7 @@ test("quote_and_reply", (override) => {
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
     quote_and_reply(opts);
-    assert(replaced);
+    assert.ok(replaced);
 });
 
 test("get_focus_area", () => {
@@ -425,7 +425,7 @@ test("get_focus_area", () => {
     );
 });
 
-test("focus_in_empty_compose", (override) => {
+test("focus_in_empty_compose", ({override}) => {
     $("#compose-textarea").is = (attr) => {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
@@ -434,19 +434,19 @@ test("focus_in_empty_compose", (override) => {
     override(compose_state, "composing", () => true);
     $("#compose-textarea").val("");
     $("#compose-textarea").trigger("focus");
-    assert(compose_state.focus_in_empty_compose());
+    assert.ok(compose_state.focus_in_empty_compose());
 
     override(compose_state, "composing", () => false);
-    assert(!compose_state.focus_in_empty_compose());
+    assert.ok(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");
-    assert(!compose_state.focus_in_empty_compose());
+    assert.ok(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").trigger("blur");
-    assert(!compose_state.focus_in_empty_compose());
+    assert.ok(!compose_state.focus_in_empty_compose());
 });
 
-test("on_narrow", (override) => {
+test("on_narrow", ({override}) => {
     let narrowed_by_topic_reply;
     override(narrow_state, "narrowed_by_topic_reply", () => narrowed_by_topic_reply);
 
@@ -463,7 +463,7 @@ test("on_narrow", (override) => {
     compose_actions.on_narrow({
         force_close: true,
     });
-    assert(cancel_called);
+    assert.ok(cancel_called);
 
     let on_topic_narrow_called = false;
     override(compose_actions, "on_topic_narrow", () => {
@@ -473,7 +473,7 @@ test("on_narrow", (override) => {
     compose_actions.on_narrow({
         force_close: false,
     });
-    assert(on_topic_narrow_called);
+    assert.ok(on_topic_narrow_called);
 
     let update_message_list_called = false;
     narrowed_by_topic_reply = false;
@@ -484,7 +484,7 @@ test("on_narrow", (override) => {
     compose_actions.on_narrow({
         force_close: false,
     });
-    assert(update_message_list_called);
+    assert.ok(update_message_list_called);
 
     has_message_content = false;
     let start_called = false;
@@ -497,7 +497,7 @@ test("on_narrow", (override) => {
         trigger: "not-search",
         private_message_recipient: "not@empty.com",
     });
-    assert(start_called);
+    assert.ok(start_called);
 
     start_called = false;
     compose_actions.on_narrow({
@@ -505,12 +505,12 @@ test("on_narrow", (override) => {
         trigger: "search",
         private_message_recipient: "",
     });
-    assert(!start_called);
+    assert.ok(!start_called);
 
     narrowed_by_pm_reply = false;
     cancel_called = false;
     compose_actions.on_narrow({
         force_close: false,
     });
-    assert(cancel_called);
+    assert.ok(cancel_called);
 });

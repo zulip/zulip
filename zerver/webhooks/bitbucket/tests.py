@@ -9,7 +9,7 @@ TOPIC_BRANCH_EVENTS = "Repository name / master"
 class BitbucketHookTests(WebhookTestCase):
     STREAM_NAME = "bitbucket"
     URL_TEMPLATE = "/api/v1/external/bitbucket?stream={stream}"
-    FIXTURE_DIR_NAME = "bitbucket"
+    WEBHOOK_DIR_NAME = "bitbucket"
 
     def test_bitbucket_on_push_event(self) -> None:
         fixture_name = "push"

@@ -20,7 +20,7 @@ const cacheLoader: webpack.RuleSetUseItem = {
     },
 };
 
-export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] => {
+export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
 
     const config: webpack.Configuration = {
@@ -177,6 +177,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
         // the source snippets with the eval-* options.
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
+            minimize: env.minimize ?? production,
             minimizer: [
                 new CssMinimizerPlugin({
                     sourceMap: true,

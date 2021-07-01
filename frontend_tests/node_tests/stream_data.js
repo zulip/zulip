@@ -11,6 +11,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
@@ -23,13 +24,19 @@ const me = {
     user_id: 100,
 };
 
+const test_user = {
+    email: "test@zulip.com",
+    full_name: "Test User",
+    user_id: 101,
+};
+
 // set up user data
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         page_params.is_guest = false;
@@ -37,7 +44,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        f(override);
+        f({override});
     });
 }
 
@@ -71,9 +78,9 @@ test("basics", () => {
     };
     stream_data.add_sub(denmark);
     stream_data.add_sub(social);
-    assert(stream_data.all_subscribed_streams_are_in_home_view());
+    assert.ok(stream_data.all_subscribed_streams_are_in_home_view());
     stream_data.add_sub(test);
-    assert(!stream_data.all_subscribed_streams_are_in_home_view());
+    assert.ok(!stream_data.all_subscribed_streams_are_in_home_view());
 
     assert.equal(stream_data.get_sub("denmark"), denmark);
     assert.equal(stream_data.get_sub("Social"), social);
@@ -83,10 +90,10 @@ test("basics", () => {
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
-    assert(stream_data.is_subscribed("social"));
-    assert(stream_data.is_subscribed("Social"));
-    assert(!stream_data.is_subscribed("Denmark"));
-    assert(!stream_data.is_subscribed("Rome"));
+    assert.ok(stream_data.is_subscribed("social"));
+    assert.ok(stream_data.is_subscribed("Social"));
+    assert.ok(!stream_data.is_subscribed("Denmark"));
+    assert.ok(!stream_data.is_subscribed("Rome"));
 
     assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
     assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
@@ -95,8 +102,8 @@ test("basics", () => {
         "invite-only-public-history",
     );
 
-    assert(stream_data.get_invite_only("social"));
-    assert(!stream_data.get_invite_only("unknown"));
+    assert.ok(stream_data.get_invite_only("social"));
+    assert.ok(!stream_data.get_invite_only("unknown"));
 
     assert.equal(stream_data.get_color("social"), "red");
     assert.equal(stream_data.get_color("unknown"), "#c2c2c2");
@@ -104,17 +111,17 @@ test("basics", () => {
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
 
-    assert(!stream_data.is_muted(social.stream_id));
-    assert(stream_data.is_muted(denmark.stream_id));
+    assert.ok(!stream_data.is_muted(social.stream_id));
+    assert.ok(stream_data.is_muted(denmark.stream_id));
 
     assert.equal(stream_data.maybe_get_stream_name(), undefined);
     assert.equal(stream_data.maybe_get_stream_name(social.stream_id), "social");
     assert.equal(stream_data.maybe_get_stream_name(42), undefined);
 
     stream_data.set_realm_default_streams([denmark]);
-    assert(stream_data.is_default_stream_id(denmark.stream_id));
-    assert(!stream_data.is_default_stream_id(social.stream_id));
-    assert(!stream_data.is_default_stream_id(999999));
+    assert.ok(stream_data.is_default_stream_id(denmark.stream_id));
+    assert.ok(!stream_data.is_default_stream_id(social.stream_id));
+    assert.ok(!stream_data.is_default_stream_id(999999));
 
     assert.equal(stream_data.slug_to_name("2-social"), "social");
     assert.equal(stream_data.slug_to_name("2-whatever"), "social");
@@ -126,6 +133,54 @@ test("basics", () => {
 
     assert.equal(stream_data.slug_to_name("99-whatever"), "99-whatever");
     assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
+});
+
+test("get_subscribed_streams_for_user", () => {
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+        is_muted: true,
+        invite_only: true,
+        history_public_to_subscribers: true,
+    };
+    const social = {
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    const test = {
+        color: "yellow",
+        name: "test",
+        stream_id: 3,
+        is_muted: true,
+        invite_only: true,
+    };
+    const subs = [denmark, social, test];
+    for (const sub of subs) {
+        stream_data.add_sub(sub);
+    }
+
+    peer_data.set_subscribers(denmark.stream_id, [me.user_id, test_user.user_id]);
+    peer_data.set_subscribers(social.stream_id, [test_user.user_id]);
+    peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
+
+    // test_user is subscribed to all three streams, but current user (me)
+    // gets only two because of subscriber visibility policy of stream:
+    // #denmark: current user is subscribed to it so he can see its subscribers.
+    // #social: current user is can get this as neither this is invite onyl nor current
+    //          user is a guest.
+    // #test: current user is no longer subscribed to a private stream, so
+    //        he can not see whether test_user is subscribed to it.
+    assert.deepEqual(stream_data.get_subscribed_streams_for_user(test_user.user_id), [
+        denmark,
+        social,
+    ]);
 });
 
 test("renames", () => {
@@ -167,19 +222,19 @@ test("is_active", () => {
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     stream_data.subscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
-    assert(contains_sub(stream_data.subscribed_subs(), sub));
-    assert(!contains_sub(stream_data.unsubscribed_subs(), sub));
+    assert.ok(contains_sub(stream_data.subscribed_subs(), sub));
+    assert.ok(!contains_sub(stream_data.unsubscribed_subs(), sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     sub.pin_to_top = true;
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
     sub.pin_to_top = false;
 
     const opts = {
@@ -189,7 +244,7 @@ test("is_active", () => {
     };
     stream_topic_history.add_message(opts);
 
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     page_params.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.always.code;
@@ -198,26 +253,26 @@ test("is_active", () => {
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert(!stream_data.is_active(sub));
+    assert.ok(!stream_data.is_active(sub));
 
     sub.pin_to_top = true;
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
     sub.pin_to_top = false;
 
     stream_data.subscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert(!stream_data.is_active(sub));
+    assert.ok(!stream_data.is_active(sub));
 
     sub = {name: "lunch", subscribed: false, stream_id: 222};
     stream_data.add_sub(sub);
 
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     stream_topic_history.add_message(opts);
 
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     page_params.demote_inactive_streams = settings_config.demote_inactive_streams_values.never.code;
     stream_data.set_filter_out_inactives();
@@ -225,20 +280,20 @@ test("is_active", () => {
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     stream_data.subscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     sub.pin_to_top = true;
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 
     stream_topic_history.add_message(opts);
 
-    assert(stream_data.is_active(sub));
+    assert.ok(stream_data.is_active(sub));
 });
 
 test("admin_options", () => {
@@ -266,8 +321,8 @@ test("admin_options", () => {
     // non-admins can't do anything
     page_params.is_admin = false;
     let sub = make_sub();
-    assert(!is_realm_admin(sub));
-    assert(!can_change_stream_permissions(sub));
+    assert.ok(!is_realm_admin(sub));
+    assert.ok(!can_change_stream_permissions(sub));
 
     // just a sanity check that we leave "normal" fields alone
     assert.equal(sub.color, "blue");
@@ -277,22 +332,22 @@ test("admin_options", () => {
 
     // admins can make public streams become private
     sub = make_sub();
-    assert(is_realm_admin(sub));
-    assert(can_change_stream_permissions(sub));
+    assert.ok(is_realm_admin(sub));
+    assert.ok(can_change_stream_permissions(sub));
 
     // admins can only make private streams become public
     // if they are subscribed
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = false;
-    assert(is_realm_admin(sub));
-    assert(!can_change_stream_permissions(sub));
+    assert.ok(is_realm_admin(sub));
+    assert.ok(!can_change_stream_permissions(sub));
 
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
-    assert(is_realm_admin(sub));
-    assert(can_change_stream_permissions(sub));
+    assert.ok(is_realm_admin(sub));
+    assert.ok(can_change_stream_permissions(sub));
 });
 
 test("stream_settings", () => {
@@ -417,14 +472,14 @@ test("delete_sub", () => {
 
     stream_data.add_sub(canada);
 
-    assert(stream_data.is_subscribed("Canada"));
+    assert.ok(stream_data.is_subscribed("Canada"));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
-    assert(!stream_data.is_subscribed("Canada"));
-    assert(!stream_data.get_sub("Canada"));
-    assert(!sub_store.get(canada.stream_id));
+    assert.ok(!stream_data.is_subscribed("Canada"));
+    assert.ok(!stream_data.get_sub("Canada"));
+    assert.ok(!sub_store.get(canada.stream_id));
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
@@ -445,60 +500,60 @@ test("notifications", () => {
     };
     stream_data.add_sub(india);
 
-    assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
-    assert(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     page_params.enable_stream_desktop_notifications = true;
     page_params.enable_stream_audible_notifications = true;
-    assert(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
-    assert(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     page_params.enable_stream_desktop_notifications = false;
     page_params.enable_stream_audible_notifications = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
-    assert(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     india.desktop_notifications = true;
     india.audible_notifications = true;
-    assert(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
-    assert(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     india.desktop_notifications = false;
     india.audible_notifications = false;
     page_params.enable_stream_desktop_notifications = true;
     page_params.enable_stream_audible_notifications = true;
-    assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
-    assert(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
     page_params.wildcard_mentions_notify = true;
-    assert(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     page_params.wildcard_mentions_notify = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     india.wildcard_mentions_notify = true;
-    assert(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     page_params.wildcard_mentions_notify = true;
     india.wildcard_mentions_notify = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
 
     page_params.enable_stream_push_notifications = true;
-    assert(stream_data.receives_notifications(india.stream_id, "push_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "push_notifications"));
     page_params.enable_stream_push_notifications = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
     india.push_notifications = true;
-    assert(stream_data.receives_notifications(india.stream_id, "push_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "push_notifications"));
     page_params.enable_stream_push_notifications = true;
     india.push_notifications = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
 
     page_params.enable_stream_email_notifications = true;
-    assert(stream_data.receives_notifications(india.stream_id, "email_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
     page_params.enable_stream_email_notifications = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
     india.email_notifications = true;
-    assert(stream_data.receives_notifications(india.stream_id, "email_notifications"));
+    assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
     page_params.enable_stream_email_notifications = true;
     india.email_notifications = false;
-    assert(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
 
     const canada = {
         stream_id: 103,
@@ -580,7 +635,7 @@ test("notifications", () => {
     assert.deepEqual(unmatched_streams, expected_streams);
 
     // Get line coverage on defensive code with bogus stream_id.
-    assert(!stream_data.receives_notifications(999999));
+    assert.ok(!stream_data.receives_notifications(999999));
 });
 
 const tony = {
@@ -600,9 +655,9 @@ const jazy = {
 test("is_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
-    assert(!stream_data.is_stream_muted_by_name("tony"));
-    assert(stream_data.is_stream_muted_by_name("jazy"));
-    assert(stream_data.is_stream_muted_by_name("EEXISTS"));
+    assert.ok(!stream_data.is_stream_muted_by_name("tony"));
+    assert.ok(stream_data.is_stream_muted_by_name("jazy"));
+    assert.ok(stream_data.is_stream_muted_by_name("EEXISTS"));
 });
 
 test("is_notifications_stream_muted", () => {
@@ -610,17 +665,17 @@ test("is_notifications_stream_muted", () => {
     stream_data.add_sub(jazy);
 
     page_params.realm_notifications_stream_id = tony.stream_id;
-    assert(!stream_data.is_notifications_stream_muted());
+    assert.ok(!stream_data.is_notifications_stream_muted());
 
     page_params.realm_notifications_stream_id = jazy.stream_id;
-    assert(stream_data.is_notifications_stream_muted());
+    assert.ok(stream_data.is_notifications_stream_muted());
 });
 
 test("realm_has_notifications_stream", () => {
     page_params.realm_notifications_stream_id = 10;
-    assert(stream_data.realm_has_notifications_stream());
+    assert.ok(stream_data.realm_has_notifications_stream());
     page_params.realm_notifications_stream_id = -1;
-    assert(!stream_data.realm_has_notifications_stream());
+    assert.ok(!stream_data.realm_has_notifications_stream());
 });
 
 test("remove_default_stream", () => {
@@ -634,14 +689,14 @@ test("remove_default_stream", () => {
     stream_data.add_sub(remove_me);
     stream_data.set_realm_default_streams([remove_me]);
     stream_data.remove_default_stream(remove_me.stream_id);
-    assert(!stream_data.is_default_stream_id(remove_me.stream_id));
+    assert.ok(!stream_data.is_default_stream_id(remove_me.stream_id));
 });
 
 test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-test("create_sub", (override) => {
+test("create_sub", ({override}) => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -663,7 +718,7 @@ test("create_sub", (override) => {
     override(color_data, "pick_color", () => "#bd86e5");
 
     const india_sub = stream_data.create_sub_from_server_data(india);
-    assert(india_sub);
+    assert.ok(india_sub);
     assert.equal(india_sub.color, "#bd86e5");
     const new_sub = stream_data.create_sub_from_server_data(india);
     // make sure sub doesn't get created twice
@@ -677,7 +732,7 @@ test("create_sub", (override) => {
     );
 
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
-    assert(antarctica_sub);
+    assert.ok(antarctica_sub);
     assert.equal(antarctica_sub.color, "#76ce90");
 });
 
@@ -719,12 +774,12 @@ test("initialize", () => {
     page_params.realm_notifications_stream_id = -1;
 
     initialize();
-    assert(!stream_data.is_filtering_inactives());
+    assert.ok(!stream_data.is_filtering_inactives());
 
     const stream_names = new Set(stream_data.get_streams_for_admin().map((elem) => elem.name));
-    assert(stream_names.has("subscriptions"));
-    assert(stream_names.has("unsubscribed"));
-    assert(stream_names.has("never_subscribed"));
+    assert.ok(stream_names.has("subscriptions"));
+    assert.ok(stream_names.has("unsubscribed"));
+    assert.ok(stream_names.has("never_subscribed"));
     assert.equal(stream_data.get_notifications_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
@@ -755,7 +810,7 @@ test("filter inactives", () => {
     params.realm_default_streams = [];
 
     stream_data.initialize(params);
-    assert(!stream_data.is_filtering_inactives());
+    assert.ok(!stream_data.is_filtering_inactives());
 
     _.times(30, (i) => {
         const name = "random" + i.toString();
@@ -770,7 +825,7 @@ test("filter inactives", () => {
         stream_data.add_sub(sub);
     });
     stream_data.initialize(params);
-    assert(stream_data.is_filtering_inactives());
+    assert.ok(stream_data.is_filtering_inactives());
 });
 
 test("edge_cases", () => {

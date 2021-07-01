@@ -4,12 +4,11 @@ const {strict: assert} = require("assert");
 
 const {addDays} = require("date-fns");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-mock_cjs("jquery", $);
+page_params.is_spectator = false;
 
 const ls_container = new Map();
 
@@ -40,9 +39,9 @@ const notifications = zrequire("notifications");
 const util = zrequire("util");
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override}) => {
         localStorage.clear();
-        f(override);
+        f({override});
     });
 }
 
@@ -76,6 +75,13 @@ test("allow_notification_alert", () => {
     notifications.permission_state = () => "granted";
     notifications.granted_desktop_notifications_permission = () => "granted";
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
+
+    // Don't ask for permission to spectator.
+    util.is_mobile = () => false;
+    notifications.granted_desktop_notifications_permission = () => false;
+    notifications.permission_state = () => "granted";
+    page_params.is_spectator = true;
+    assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });
 
 test("profile_incomplete_alert", () => {
@@ -95,7 +101,7 @@ test("profile_incomplete_alert", () => {
     assert.equal(navbar_alerts.check_profile_incomplete(), false);
 });
 
-test("server_upgrade_alert hide_duration_expired", (override) => {
+test("server_upgrade_alert hide_duration_expired", ({override}) => {
     const ls = localstorage();
     const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 

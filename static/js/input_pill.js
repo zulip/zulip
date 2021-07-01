@@ -102,6 +102,7 @@ export function create(opts) {
                 id: payload.id,
                 display_value: item.display_value,
                 has_image,
+                deactivated: item.deactivated,
             };
 
             if (has_image) {

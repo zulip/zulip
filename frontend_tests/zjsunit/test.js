@@ -29,7 +29,11 @@ exports.run_test = (label, f, opts) => {
     zpage_params.reset();
 
     try {
-        namespace.with_overrides(f);
+        namespace._start_template_mocking();
+        namespace.with_overrides((override) => {
+            f({override, mock_template: namespace._mock_template});
+        });
+        namespace._finish_template_mocking();
     } catch (error) {
         console.info("-".repeat(50));
         console.info(`test failed: ${current_file_name} > ${label}`);

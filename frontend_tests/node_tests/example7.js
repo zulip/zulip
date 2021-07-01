@@ -60,7 +60,7 @@ message_lists.current = {};
 message_lists.home = {};
 
 const message_store = zrequire("message_store");
-const recent_topics = zrequire("recent_topics");
+const recent_topics_util = zrequire("recent_topics_util");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 const unread_ops = zrequire("unread_ops");
@@ -72,7 +72,7 @@ const denmark_stream = {
     subscribed: false,
 };
 
-run_test("unread_ops", (override) => {
+run_test("unread_ops", ({override}) => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
     message_store.clear_for_testing();
@@ -90,7 +90,7 @@ run_test("unread_ops", (override) => {
     ];
 
     // We don't want recent topics to process message for this test.
-    override(recent_topics, "is_visible", () => false);
+    override(recent_topics_util, "is_visible", () => false);
     // Show message_viewport as not visible so that messages will be stored as unread.
     override(message_viewport, "is_visible_and_focused", () => false);
 

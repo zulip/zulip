@@ -2,8 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -25,7 +24,6 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-mock_cjs("jquery", $);
 const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,
@@ -75,10 +73,10 @@ const short_msg = {
 };
 
 function test(label, f) {
-    run_test(label, (override) => {
+    run_test(label, ({override, mock_template}) => {
         $("#draft_overlay").css = () => {};
         localStorage.clear();
-        f(override);
+        f({override, mock_template});
     });
 }
 
@@ -86,7 +84,7 @@ test("legacy", () => {
     assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
-test("draft_model add", (override) => {
+test("draft_model add", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -121,7 +119,7 @@ test("draft_model edit", () => {
     });
 });
 
-test("draft_model delete", (override) => {
+test("draft_model delete", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
@@ -136,7 +134,7 @@ test("draft_model delete", (override) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", (override) => {
+test("snapshot_message", ({override}) => {
     let curr_draft;
 
     function map(field, f) {
@@ -163,7 +161,7 @@ test("snapshot_message", (override) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-test("initialize", (override) => {
+test("initialize", ({override}) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
@@ -171,7 +169,7 @@ test("initialize", (override) => {
             called = true;
         });
         f();
-        assert(called);
+        assert.ok(called);
     };
 
     drafts.initialize();
@@ -202,7 +200,7 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-test("format_drafts", (override) => {
+test("format_drafts", ({override, mock_template}) => {
     override(drafts, "remove_old_drafts", noop);
 
     function feb12() {
@@ -304,8 +302,7 @@ test("format_drafts", (override) => {
     const stub_render_now = timerender.render_now;
     override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
-    stub_templates((template_name, data) => {
-        assert.equal(template_name, "draft_table_body");
+    mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
         return "<draft table stub>";

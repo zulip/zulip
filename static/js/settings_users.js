@@ -1,15 +1,16 @@
 import $ from "jquery";
 
+import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
-import render_settings_deactivation_user_modal from "../templates/settings/deactivation_user_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import * as edit_fields_modal from "./edit_fields_modal";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -381,44 +382,6 @@ function start_data_load() {
     populate_users();
 }
 
-function open_human_form(person) {
-    const user_id = person.user_id;
-
-    const html = render_admin_human_form({
-        user_id,
-        email: person.email,
-        full_name: person.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !page_params.is_owner,
-    });
-    const div = $(html);
-    const modal_container = $("#user-info-form-modal-container");
-    modal_container.empty().append(div);
-    overlays.open_modal("#admin-human-form");
-    $("#user-role-select").val(person.role);
-    if (!page_params.is_owner) {
-        $("#user-role-select")
-            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
-            .hide();
-    }
-
-    const element = "#admin-human-form .custom-profile-field-form";
-    $(element).html("");
-    settings_account.append_custom_profile_fields(element, user_id);
-    settings_account.initialize_custom_date_type_fields(element);
-    const pills = settings_account.initialize_custom_user_type_fields(
-        element,
-        user_id,
-        true,
-        false,
-    );
-
-    return {
-        modal: div,
-        fields_user_pills: pills,
-    };
-}
-
 function get_human_profile_data(fields_user_pills) {
     /*
         This formats custom profile field data to send to the server.
@@ -429,7 +392,7 @@ function get_human_profile_data(fields_user_pills) {
         the settings_account.js logic.
     */
     const new_profile_data = [];
-    $("#admin-human-form .custom_user_field_value").each(function () {
+    $("#edit-user-form .custom_user_field_value").each(function () {
         // Remove duplicate datepicker input element generated flatpicker library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
@@ -455,42 +418,9 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
-function open_bot_form(person) {
-    const html = render_admin_bot_form({
-        user_id: person.user_id,
-        email: person.email,
-        full_name: person.full_name,
-    });
-    const div = $(html);
-    const modal_container = $("#user-info-form-modal-container");
-    modal_container.empty().append(div);
-    overlays.open_modal("#admin-bot-form");
-
-    // NOTE: building `owner_dropdown` is quite expensive!
-    const owner_id = bot_data.get(person.user_id).owner_id;
-
-    const user_ids = people.get_active_human_ids();
-    const users_list = user_ids.map((user_id) => ({
-        name: people.get_full_name(user_id),
-        value: user_id.toString(),
-    }));
-    const opts = {
-        widget_name: "edit_bot_owner",
-        data: users_list,
-        default_text: $t({defaultMessage: "No owner"}),
-        value: owner_id,
-    };
-    const owner_widget = dropdown_list_widget(opts);
-
-    return {
-        modal: div,
-        owner_widget,
-    };
-}
-
 function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
-    const modal_parent = $("#admin-user-list");
+    const modal_parent = $("#settings_content .organization-box");
     const opts = {
         username: user.full_name,
         email: user.email,
@@ -519,6 +449,7 @@ function confirm_deactivation(row, user_id, status_field) {
         html_body,
         html_yes_button: $t_html({defaultMessage: "Confirm"}),
         on_click: handle_confirm,
+        fade: true,
     });
 }
 
@@ -592,16 +523,44 @@ function handle_human_form(tbody, status_field) {
             return;
         }
 
-        const ret = open_human_form(person);
-        const modal = ret.modal;
-        const fields_user_pills = ret.fields_user_pills;
+        const modal_body_html = render_admin_human_form({
+            user_id,
+            email: person.email,
+            full_name: person.full_name,
+            user_role_values: settings_config.user_role_values,
+            disable_role_dropdown: person.is_owner && !page_params.is_owner,
+        });
 
-        modal.find(".submit_human_change").on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        const modal_parent = $("#user-info-form-modal-container");
+        let fields_user_pills;
 
-            const role = Number.parseInt(modal.find("#user-role-select").val().trim(), 10);
-            const full_name = modal.find("input[name='full_name']");
+        function set_role_dropdown_and_fields_user_pills() {
+            $("#user-role-select").val(person.role);
+            if (!page_params.is_owner) {
+                $("#user-role-select")
+                    .find(
+                        `option[value="${CSS.escape(
+                            settings_config.user_role_values.owner.code,
+                        )}"]`,
+                    )
+                    .hide();
+            }
+
+            const element = "#edit-user-form .custom-profile-field-form";
+            $(element).html("");
+            settings_account.append_custom_profile_fields(element, user_id);
+            settings_account.initialize_custom_date_type_fields(element);
+            fields_user_pills = settings_account.initialize_custom_user_type_fields(
+                element,
+                user_id,
+                true,
+                false,
+            );
+        }
+
+        function submit_user_details() {
+            const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+            const full_name = $("#edit-user-form").find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
             const url = "/json/users/" + encodeURIComponent(user_id);
@@ -612,7 +571,15 @@ function handle_human_form(tbody, status_field) {
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#admin-human-form");
+            overlays.close_modal("#edit-fields-modal");
+        }
+
+        edit_fields_modal.launch({
+            modal_label: $t({defaultMessage: "Change user info and roles"}),
+            parent: modal_parent,
+            modal_body_html,
+            on_click: submit_user_details,
+            post_render: set_role_dropdown_and_fields_user_pills,
         });
     });
 }
@@ -628,26 +595,62 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const {modal, owner_widget} = open_bot_form(bot);
+        const modal_body_html = render_admin_bot_form({
+            user_id,
+            email: bot.email,
+            full_name: bot.full_name,
+        });
 
-        modal.find(".submit_bot_change").on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        const modal_parent = $("#user-info-form-modal-container");
 
-            const full_name = modal.find("input[name='full_name']");
+        let owner_widget;
+
+        function submit_bot_details() {
+            const full_name = $("#edit-fields-modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
                 full_name: full_name.val(),
             };
 
+            if (owner_widget === undefined) {
+                blueslip.error("get_bot_owner_widget not called");
+            }
             const human_user_id = owner_widget.value();
             if (human_user_id) {
                 data.bot_owner_id = human_user_id;
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#admin-bot-form");
+            overlays.close_modal("#edit-fields-modal");
+        }
+
+        function get_bot_owner_widget() {
+            const owner_id = bot_data.get(user_id).owner_id;
+
+            const user_ids = people.get_active_human_ids();
+            const users_list = user_ids.map((user_id) => ({
+                name: people.get_full_name(user_id),
+                value: user_id.toString(),
+            }));
+
+            const opts = {
+                widget_name: "edit_bot_owner",
+                data: users_list,
+                default_text: $t({defaultMessage: "No owner"}),
+                value: owner_id,
+            };
+            // Note: Rendering this is quite expensive in
+            // organizations with 10Ks of users.
+            owner_widget = dropdown_list_widget(opts);
+        }
+
+        edit_fields_modal.launch({
+            modal_label: $t({defaultMessage: "Change bot info and owner"}),
+            parent: modal_parent,
+            modal_body_html,
+            on_click: submit_bot_details,
+            post_render: get_bot_owner_widget,
         });
     });
 }

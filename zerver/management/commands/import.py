@@ -77,8 +77,11 @@ import a database dump from one or more JSON files."""
 
         try:
             check_subdomain_available(subdomain, allow_reserved_subdomain)
-        except ValidationError:
-            raise CommandError("Subdomain reserved: pass --allow-reserved-subdomain to use.")
+        except ValidationError as e:
+            raise CommandError(
+                e.messages[0]
+                + "\nPass --allow-reserved-subdomain to override subdomain restrictions."
+            )
 
         paths = []
         for path in options["export_paths"]:

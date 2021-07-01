@@ -188,6 +188,13 @@ export class TopicListWidget {
             input.val(this.topic_search_text);
             input.trigger("focus");
 
+            // setup display of clear(x) button.
+            if (this.topic_search_text.length) {
+                $("#clear_search_topic_button").show();
+            } else {
+                $("#clear_search_topic_button").hide();
+            }
+
             // setup event handlers.
             const rebuild_list = () => this.build();
             input.on("input", rebuild_list);

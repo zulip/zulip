@@ -2,11 +2,11 @@ import $ from "jquery";
 import _ from "lodash";
 import tippy from "tippy.js";
 
+import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_subscription from "../templates/subscription.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
-import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -117,20 +117,12 @@ export function get_active_data() {
 }
 
 function selectText(element) {
-    let range;
-    let sel;
-    if (window.getSelection) {
-        sel = window.getSelection();
-        range = document.createRange();
-        range.selectNodeContents(element);
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(element);
 
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (document.body.createTextRange) {
-        range = document.body.createTextRange();
-        range.moveToElementText(element);
-        range.select();
-    }
+    sel.removeAllRanges();
+    sel.addRange(range);
 }
 
 function should_list_all_streams() {
@@ -199,8 +191,9 @@ export function update_stream_description(sub, description, rendered_description
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
 
-export function update_stream_privacy(sub, values) {
-    stream_data.update_stream_privacy(sub, values);
+export function update_stream_privacy(slim_sub, values) {
+    stream_data.update_stream_privacy(slim_sub, values);
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
     // Update UI elements
     update_left_panel_row(sub);
@@ -317,7 +310,8 @@ export function show_active_stream_in_left_panel() {
     }
 }
 
-export function update_settings_for_unsubscribed(sub) {
+export function update_settings_for_unsubscribed(slim_sub) {
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
     stream_ui_updates.update_subscribers_list(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
@@ -611,8 +605,8 @@ export function setup_page(callback) {
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_post_policy_values: stream_data.stream_post_policy_values,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-            realm_message_retention_setting:
-                stream_edit.get_display_text_for_realm_message_retention_setting,
+            org_level_message_retention_setting:
+                stream_edit.get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
             disable_message_retention_setting:
@@ -971,6 +965,7 @@ export function unsubscribe_from_private_stream(sub, from_stream_popover) {
         html_body,
         html_yes_button: $t_html({defaultMessage: "Confirm"}),
         on_click: unsubscribe_from_stream,
+        fade: true,
     });
 }
 
@@ -993,7 +988,7 @@ export function initialize() {
         open_create_stream();
     });
 
-    $(".subscriptions").on("click", "[data-dismiss]", (e) => {
+    $(".subscriptions").on("click", "#stream_creation_form [data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "Enter" would

@@ -2,7 +2,7 @@ import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -326,7 +326,7 @@ function filter_user_ids(user_filter_text, user_ids) {
             return false;
         }
 
-        if (muting.is_user_muted(user_id)) {
+        if (muted_users.is_user_muted(user_id)) {
             // Muted users are hidden from the right sidebar entirely.
             return false;
         }
@@ -338,7 +338,7 @@ function filter_user_ids(user_filter_text, user_ids) {
         return user_ids;
     }
 
-    // If a query is present in "Filter users", we return matches.
+    // If a query is present in "Search people", we return matches.
     user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
 
     let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
@@ -363,6 +363,12 @@ function get_filtered_user_id_list(user_filter_text) {
         // users who have been idle more than three weeks.  When the
         // filter text is blank, we show only those recently active users.
         base_user_id_list = presence.get_user_ids();
+
+        // Always include ourselves, even if we're "unavailable".
+        const my_user_id = people.my_current_user_id();
+        if (!base_user_id_list.includes(my_user_id)) {
+            base_user_id_list = [my_user_id, ...base_user_id_list];
+        }
     }
 
     const user_ids = filter_user_ids(user_filter_text, base_user_id_list);

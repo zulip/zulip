@@ -5,9 +5,10 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_logo_source
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.upload import upload_logo_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.validator import check_bool
@@ -22,10 +23,10 @@ def upload_logo(
     user_profile.realm.ensure_not_on_limited_plan()
 
     if len(request.FILES) != 1:
-        return json_error(_("You must upload exactly one logo."))
+        raise JsonableError(_("You must upload exactly one logo."))
     logo_file = list(request.FILES.values())[0]
     if (settings.MAX_LOGO_FILE_SIZE_MIB * 1024 * 1024) < logo_file.size:
-        return json_error(
+        raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
                 settings.MAX_LOGO_FILE_SIZE_MIB,
             )
