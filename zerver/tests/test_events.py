@@ -575,6 +575,13 @@ class NormalActionsTest(BaseAction):
                 state_change_expected=True,
             )
 
+            self.verify_action(
+                lambda: do_update_message_flags(
+                    user_profile, get_client("website"), "remove", "read", [message]
+                ),
+                state_change_expected=True,
+            )
+
     def test_send_message_to_existing_recipient(self) -> None:
         sender = self.example_user("cordelia")
         self.send_stream_message(
