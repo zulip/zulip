@@ -5,6 +5,8 @@ import marked from "../third/marked/lib/marked";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as compose from "./compose";
+import * as compose_state from "./compose_state";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as night_mode from "./night_mode";
@@ -30,9 +32,11 @@ What in the heck is a zcommand?
 
 export function send(opts) {
     const command = opts.command;
+    const command_data = JSON.stringify(opts.command_data);
     const on_success = opts.on_success;
     const data = {
         command,
+        command_data,
     };
 
     channel.post({
@@ -43,8 +47,14 @@ export function send(opts) {
                 on_success(data);
             }
         },
-        error() {
-            tell_user("server did not respond");
+        error(xhr) {
+            if (xhr.responseText) {
+                // Used to display custom message above compose
+                // to user from server.
+                tell_user(JSON.parse(xhr.responseText).msg);
+            } else {
+                tell_user("server did not respond");
+            }
         },
     });
 }
@@ -148,6 +158,18 @@ export function enter_fixed_mode() {
     });
 }
 
+export function send_giphy_zcommand(command_data) {
+    send({
+        command: "/giphy",
+        command_data,
+        on_success(data) {
+            if (data.msg) {
+                compose.compose_error(marked(data.msg));
+            }
+        },
+    });
+}
+
 export function process(message_content) {
     const content = message_content.trim();
 
@@ -191,6 +213,20 @@ export function process(message_content) {
 
     if (content === "/settings") {
         browser_history.go_to_location("settings/your-account");
+        return true;
+    }
+
+    if (content.indexOf("/giphy") === 0) {
+        const text = content.slice(6).trim();
+        const message_type = compose_state.get_message_type();
+        const data = {text};
+        if (message_type === "stream") {
+            data.stream = compose_state.stream_name();
+            data.topic = compose_state.topic();
+        } else {
+            data.recipient = compose_state.private_message_recipient();
+        }
+        send_giphy_zcommand(data);
         return true;
     }
 

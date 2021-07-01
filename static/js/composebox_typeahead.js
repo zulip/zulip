@@ -385,6 +385,10 @@ export const slash_commands = [
         name: "day",
     },
     {
+        text: $t({defaultMessage: "/giphy text (Send a random GIF related to text)"}),
+        name: "giphy",
+    },
+    {
         text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
         name: "fixed-width",
     },

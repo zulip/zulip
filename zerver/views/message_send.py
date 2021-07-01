@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Sequence, Union, cast
+from typing import Dict, Iterable, Optional, Sequence, Union, cast
 
 import pytz
 from dateutil.parser import parse as dateparser
@@ -23,6 +23,7 @@ from zerver.lib.message import render_markdown
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -312,9 +313,14 @@ def send_message_backend(
 
 @has_request_variables
 def zcommand_backend(
-    request: HttpRequest, user_profile: UserProfile, command: str = REQ("command")
+    request: HttpRequest,
+    user_profile: UserProfile,
+    command: str = REQ("command"),
+    command_data: Optional[Dict[str, str]] = REQ(
+        default=None, json_validator=check_dict(value_validator=check_string)
+    ),
 ) -> HttpResponse:
-    return json_success(process_zcommands(command, user_profile))
+    return json_success(process_zcommands(command, command_data, user_profile))
 
 
 @has_request_variables

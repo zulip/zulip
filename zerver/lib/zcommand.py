@@ -1,13 +1,23 @@
-from typing import Any, Dict
+import json
+from typing import Any, Dict, Optional
 
+import requests
+from django.conf import settings
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import do_set_user_display_setting
+from zerver.lib.actions import (
+    do_set_user_display_setting,
+    internal_send_huddle_message,
+    internal_send_stream_message,
+)
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.streams import access_stream_by_name
 from zerver.models import UserProfile
 
 
-def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
+def process_zcommands(
+    content: str, data: Optional[Dict[str, Any]], user_profile: UserProfile
+) -> Dict[str, Any]:
     def change_mode_setting(
         command: str, switch_command: str, setting: str, setting_value: int
     ) -> str:
@@ -73,4 +83,48 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
                 setting_value=False,
             )
         )
+    elif command == "giphy":
+        if data is None:
+            raise JsonableError(_("Invalid data."))
+        api_key = settings.GIPHY_API_KEY
+        text = data.get("text")
+        stream_name = data.get("stream")
+        topic = data.get("topic")
+        recipient = data.get("recipient")
+
+        # Get allowed content rating
+        rating = "g"
+        options = user_profile.realm.GIPHY_RATING_OPTIONS
+        for option in options:
+            if options[option]["id"] == user_profile.realm.giphy_rating:
+                rating = option
+                break
+
+        if not api_key or rating == "disabled":
+            raise JsonableError(
+                _(
+                    "GIPHY integration is disabled. Please contact administrator to enable this feature."
+                )
+            )
+
+        payload = {
+            "api_key": api_key,
+            "tag": str(text),  # Converted to str to fix mypy.
+            "rating": rating,
+        }
+        # Get a random GIF using GIPHY API related to the text.
+        response = requests.get("http://api.giphy.com/v1/gifs/random", params=payload)
+        if response.status_code == 200:
+            giphy_url = json.loads(response.text)["data"]["images"]["downsized_large"]["url"]
+            content = f"[{text}]({giphy_url})"
+            if stream_name and topic:
+                (stream, ignored_old_stream_sub) = access_stream_by_name(user_profile, stream_name)
+                internal_send_stream_message(user_profile, stream, topic, content)
+            elif recipient:
+                internal_send_huddle_message(
+                    user_profile.realm, user_profile, recipient.split(","), content
+                )
+            else:
+                raise JsonableError(_("Invalid data."))
+        return {}
     raise JsonableError(_("No such command: {}").format(command))
