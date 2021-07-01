@@ -252,6 +252,12 @@ jobs:
           chmod +x /tmp/production-verify
           chmod +x /tmp/send-failure-message
 
+      - name: Create cache directories
+        run: |
+          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R github "${dirs[@]}"
+
       - name: Upgrade production
         run: sudo /tmp/production-upgrade
 
