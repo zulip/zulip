@@ -81,9 +81,9 @@ export function update_regular_sub_settings(sub) {
             $settings.find(".email-address").text(sub.email_address);
             $settings.find(".stream-email-box").show();
         }
-        $settings.find(".regular_subscription_settings").addClass("in");
+        $settings.find(".personal_settings").addClass("in");
     } else {
-        $settings.find(".regular_subscription_settings").removeClass("in");
+        $settings.find(".personal_settings").removeClass("in");
         // Clear email address widget
         $settings.find(".email-address").html("");
     }
