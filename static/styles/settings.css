@@ -255,6 +255,7 @@ td .button {
     .table-sticky-headers th {
         position: sticky;
         top: 0;
+        z-index: 1;
     }
 
     .table-striped {
