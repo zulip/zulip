@@ -45,9 +45,9 @@ export function rerender_for_muted_topic(old_muted_topics) {
     }
 }
 
-export function handle_topic_updates(muted_topics) {
+export function handle_topic_updates(muted_topics_list) {
     const old_muted_topics = muted_topics.get_muted_topics();
-    muted_topics.set_muted_topics(muted_topics);
+    muted_topics.set_muted_topics(muted_topics_list);
     stream_popover.hide_topic_popover();
     unread_ui.update_unread_counts();
     rerender_for_muted_topic(old_muted_topics);
