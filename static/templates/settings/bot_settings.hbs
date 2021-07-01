@@ -44,9 +44,9 @@
                         <ul class="grey-box">
                             {{#each page_params.bot_types}}
                                 {{#if this.allowed}}
-                                 <li>
+                                <li>
                                     <label class="radio">
-                                        <input type="radio" name="bot_type" class="create_bot_type" value="{{this.type_id}}" required>
+                                        <input type="radio" name="bot_type" class="create_bot_type" value="{{this.type_id}}" required/>
                                         <b>{{t this.name}}:</b> {{t this.description}}
                                     </label>
                                 </li>
@@ -86,7 +86,7 @@
                             <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
                         </div>
                         <div class="input-group">
-                             <label for="interface_type" class="bot_input_label">{{t "Outgoing webhook message format" }}</label>
+                            <label for="interface_type" class="bot_input_label">{{t "Outgoing webhook message format" }}</label>
                             <select name="interface_type" id="create_interface_type">
                                 <option value="1">Zulip</option>
                                 <option value="2">{{t "Slack compatible" }}</option>

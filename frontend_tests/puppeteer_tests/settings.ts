@@ -140,7 +140,6 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 2",
         bot_short_name: "2",
-        bot_type: GENERIC_BOT_TYPE,
     });
 
     await page.click("#create_bot_button");
