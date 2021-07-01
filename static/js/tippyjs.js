@@ -185,4 +185,14 @@ export function initialize() {
         placement: "top",
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: ".rendered_markdown time",
+        allowHTML: true,
+        placement: "top",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

@@ -11,6 +11,8 @@ import {
 import $ from "jquery";
 import _ from "lodash";
 
+import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
+
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
@@ -203,13 +205,16 @@ export function render_date(time, time_above, today) {
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function render_markdown_timestamp(time, text) {
+export function render_markdown_timestamp(time) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
-    const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
+
+    const tz_offset_str = get_tz_with_UTC_offset(time);
+    const tooltip_html_content = render_markdown_time_tooltip({tz_offset_str});
+
     return {
         text: timestring,
-        title: titlestring,
+        tooltip_content: tooltip_html_content,
     };
 }
 
