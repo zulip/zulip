@@ -213,9 +213,9 @@ export function update_stream_name(sub, new_name) {
 }
 
 export function update_stream_description(sub) {
-    const stream_settings = settings_for_sub(sub);
-    stream_settings.find("input.description").val(sub.description);
-    stream_settings
+    const sub_settings = settings_for_sub(sub);
+    sub_settings.find("input.description").val(sub.description);
+    sub_settings
         .find(".stream-description-editable")
         .html(util.clean_user_content_links(sub.rendered_description));
 }
