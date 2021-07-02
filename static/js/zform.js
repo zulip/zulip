@@ -7,8 +7,8 @@ import * as schema from "./schema";
 import * as transmit from "./transmit";
 
 export function validate_extra_data(data) {
-    function check(data) {
-        function check_choice_data(data) {
+    function check() {
+        function check_choice_data() {
             function check_choice_item(field_name, val) {
                 return schema.check_record(field_name, val, {
                     short_name: schema.check_string,
@@ -28,13 +28,13 @@ export function validate_extra_data(data) {
         }
 
         if (data.type === "choices") {
-            return check_choice_data(data);
+            return check_choice_data();
         }
 
         return "unknown zform type: " + data.type;
     }
 
-    const msg = check(data);
+    const msg = check();
 
     if (msg) {
         blueslip.warn(msg);
@@ -55,7 +55,7 @@ export function activate(opts) {
         return undefined;
     }
 
-    function make_choices(data) {
+    function make_choices() {
         // Assign idx values to each of our choices so that
         // our template can create data-idx values for our
         // JS code to use later.
@@ -89,7 +89,7 @@ export function activate(opts) {
         let rendered_widget;
 
         if (data.type === "choices") {
-            rendered_widget = make_choices(data);
+            rendered_widget = make_choices();
             outer_elem.html(rendered_widget);
         }
     }
