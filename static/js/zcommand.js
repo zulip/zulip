@@ -31,13 +31,10 @@ What in the heck is a zcommand?
 export function send(opts) {
     const command = opts.command;
     const on_success = opts.on_success;
-    const data = {
-        command,
-    };
 
     channel.post({
         url: "/json/zcommand",
-        data,
+        data: {command},
         success(data) {
             if (on_success) {
                 on_success(data);
