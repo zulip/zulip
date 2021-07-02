@@ -232,10 +232,11 @@ run_test("get_full_datetime", () => {
     page_params.twenty_four_hour_time = false;
 
     // Test the GMT[+-]x:y logic.
+    const previous_env_tz = process.env.TZ;
     process.env.TZ = "Asia/Kolkata";
     expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+5.5)";
     assert.equal(timerender.get_full_datetime(time), expected);
-    delete process.env.TZ;
+    process.env.TZ = previous_env_tz;
 });
 
 run_test("last_seen_status_from_date", () => {
