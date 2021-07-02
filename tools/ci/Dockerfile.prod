@@ -9,11 +9,6 @@ FROM $BASE_IMAGE
 # Remove already existing rabbitmq mnesia directory files
 RUN sudo rm -rf /var/lib/rabbitmq/mnesia/*
 
-# The bionic hack used in production suite
-RUN if (. /etc/os-release && [ "$ID $VERSION_ID" = 'ubuntu 18.04' ]); then \
-      sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf; \
-    fi
-
 # Download the release tarball, start rabbitmq server and install the server
 ARG VERSION
 RUN cd $(mktemp -d) \

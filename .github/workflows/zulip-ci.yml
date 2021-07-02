@@ -101,13 +101,6 @@ jobs:
           key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
           restore-keys: v1-emoji-${{ matrix.os }}
 
-      - name: Do Bionic hack
-        if: ${{ matrix.is_bionic }}
-        run: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
-
       - name: Install dependencies
         run: |
           # This is the main setup job for the test suite

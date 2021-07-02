@@ -85,12 +85,6 @@ jobs:
           key: v1-emoji-${{ github.job }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
           restore-keys: v1-emoji-${{ github.job }}
 
-      - name: Do Bionic hack
-        run: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
-
       - name: Build production tarball
         run: ./tools/ci/production-build
 
@@ -179,13 +173,6 @@ jobs:
           path: /srv/zulip-npm-cache
           key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
           restore-keys: v1-yarn-deps-${{ matrix.os }}
-
-      - name: Do Bionic hack
-        if: ${{ matrix.is_bionic }}
-        run: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
       - name: Install production
         run: |
