@@ -20,6 +20,30 @@ export function clear_for_testing() {
     next_timerender_id = 0;
 }
 
+// Exported for tests only.
+export function get_tz_with_UTC_offset(time) {
+    const tz_offset = format(time, "xxx");
+    let timezone = new Intl.DateTimeFormat(undefined, {timeZoneName: "short"})
+        .formatToParts(time)
+        .find(({type}) => type === "timeZoneName").value;
+
+    if (timezone === "UTC") {
+        return "UTC";
+    }
+
+    // When user's locale doesn't match their timezone (eg. en_US for IST),
+    // we get `timezone` in the format of'GMT+x:y. We don't want to
+    // show that along with (UTC+x:y)
+    timezone = /GMT[+-][\d:]*/.test(timezone) ? "" : timezone;
+
+    const tz_UTC_offset = `(UTC${tz_offset})`;
+
+    if (timezone) {
+        return timezone + " " + tz_UTC_offset;
+    }
+    return tz_UTC_offset;
+}
+
 // Given a Date object 'time', returns an object:
 // {
 //      time_str:        a string for the current human-formatted version
@@ -307,12 +331,7 @@ export const absolute_time = (function () {
 })();
 
 export function get_full_datetime(time) {
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    const tz_offset = -time.getTimezoneOffset() / 60;
-
-    const time_options = {timeStyle: "long"};
+    const time_options = {timeStyle: "medium"};
 
     if (page_params.twenty_four_hour_time) {
         time_options.hourCycle = "h24";
@@ -321,15 +340,9 @@ export function get_full_datetime(time) {
     const date_string = time.toLocaleDateString();
     let time_string = time.toLocaleTimeString(undefined, time_options);
 
-    // In some rare cases where user's locale and timeZone doesn't suit,
-    // for eg. en-US with Indian timeZone gives GMT+5:30. We want to
-    // avoid showing something like: 27/6/21 at 12:00 GMT+x:y (UTC+N).
-    time_string = time_string.replace(/ GMT[+-][\d:]*/, "");
+    const tz_offset_str = get_tz_with_UTC_offset(time);
 
-    const tz_offset_sign = tz_offset > 0 ? "+" : "-";
-    const tz_offset_str = time_string.includes("UTC") ? "" : ` (UTC${tz_offset_sign}${tz_offset})`;
-
-    time_string = time_string + tz_offset_str;
+    time_string = time_string + " " + tz_offset_str;
 
     return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
 }

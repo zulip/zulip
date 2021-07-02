@@ -15,6 +15,25 @@ page_params.twenty_four_hour_time = true;
 
 const timerender = zrequire("timerender");
 
+run_test("get_tz_with_UTC_offset", () => {
+    let time = new Date(1555091573000); // 4/12/2019 5:52:53 PM (UTC+0)
+    assert.equal(timerender.get_tz_with_UTC_offset(time), "UTC");
+
+    const previous_env_tz = process.env.TZ;
+
+    // Test the GMT[+-]x:y logic.
+    process.env.TZ = "Asia/Kolkata";
+    assert.equal(timerender.get_tz_with_UTC_offset(time), "(UTC+05:30)");
+
+    process.env.TZ = "America/Los_Angeles";
+    assert.equal(timerender.get_tz_with_UTC_offset(time), "PDT (UTC-07:00)");
+
+    time = new Date(1741003800000); // 3/3/2025 12:10:00 PM (UTC+0)
+    assert.equal(timerender.get_tz_with_UTC_offset(time), "PST (UTC-08:00)");
+
+    process.env.TZ = previous_env_tz;
+});
+
 run_test("render_now_returns_today", () => {
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     const expected = {
@@ -234,7 +253,7 @@ run_test("get_full_datetime", () => {
     // Test the GMT[+-]x:y logic.
     const previous_env_tz = process.env.TZ;
     process.env.TZ = "Asia/Kolkata";
-    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+5.5)";
+    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
     assert.equal(timerender.get_full_datetime(time), expected);
     process.env.TZ = previous_env_tz;
 });
