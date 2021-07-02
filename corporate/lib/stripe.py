@@ -876,8 +876,8 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
             event_time=timezone_now(),
         )
     notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
-    for billing_admin in realm.get_human_billing_admin_users():
-        with override_language(billing_admin.default_language):
+    for user in realm.get_human_billing_admin_and_realm_owner_users():
+        with override_language(user.default_language):
             # Using variable to make life easier for translators if these details change.
             plan_name = "Zulip Cloud Standard"
             emoji = ":tada:"
@@ -885,7 +885,7 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
                 f"Your organization's request for sponsored hosting has been approved! {emoji}.\n"
                 f"You have been upgraded to {plan_name}, free of charge."
             )
-            internal_send_private_message(notification_bot, billing_admin, message)
+            internal_send_private_message(notification_bot, user, message)
 
 
 def is_sponsored_realm(realm: Realm) -> bool:

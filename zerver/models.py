@@ -648,7 +648,7 @@ class Realm(models.Model):
             role__in=roles,
         )
 
-    def get_human_billing_admin_users(self) -> QuerySet:
+    def get_human_billing_admin_and_realm_owner_users(self) -> QuerySet:
         return UserProfile.objects.filter(
             Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
             realm=self,
