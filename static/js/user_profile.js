@@ -172,13 +172,13 @@ export function show_user_profile(user) {
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
             {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
-            {label: $t({defaultMessage: "User groups"}), key: "groups-tab"},
+            {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
         callback(name, key) {
             $(".tabcontent").hide();
             $("#" + key).show();
             switch (key) {
-                case "groups-tab":
+                case "user-profile-groups-tab":
                     render_user_group_list(groups_of_user, user);
                     break;
                 case "user-profile-streams-tab":
