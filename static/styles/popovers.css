@@ -367,6 +367,14 @@ ul {
         .stream_list_info {
             margin-bottom: 8px;
         }
+
+        .stream-privacy {
+            display: inline-block;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
     }
     .stream-list-top-section {
         display: flex;
