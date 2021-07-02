@@ -179,12 +179,12 @@ function populate_messages_sent_over_time(data) {
     );
 
     function add_hover_handler() {
-        document.querySelector("#id_messages_sent_over_time").on("plotly_hover", (data) => {
+        document.querySelector("#id_messages_sent_over_time").on("plotly_hover", (plot_data) => {
             $("#hoverinfo").show();
             document.querySelector("#hover_date").textContent =
-                data.points[0].data.text[data.points[0].pointNumber];
+                plot_data.points[0].plot_data.text[plot_data.points[0].pointNumber];
             const values = [null, null, null];
-            for (const trace of data.points) {
+            for (const trace of plot_data.points) {
                 values[trace.curveNumber] = trace.y;
             }
             const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
@@ -739,12 +739,12 @@ function populate_number_of_users(data) {
     }
 
     function add_hover_handler() {
-        document.querySelector("#id_number_of_users").on("plotly_hover", (data) => {
+        document.querySelector("#id_number_of_users").on("plotly_hover", (plot_data) => {
             $("#users_hover_info").show();
             document.querySelector("#users_hover_date").textContent =
-                data.points[0].data.text[data.points[0].pointNumber];
+                plot_data.points[0].plot_data.text[plot_data.points[0].pointNumber];
             const values = [null, null, null];
-            for (const trace of data.points) {
+            for (const trace of plot_data.points) {
                 values[trace.curveNumber] = trace.y;
             }
             const hover_value_ids = [
@@ -872,12 +872,12 @@ function populate_messages_read_over_time(data) {
     );
 
     function add_hover_handler() {
-        document.querySelector("#id_messages_read_over_time").on("plotly_hover", (data) => {
+        document.querySelector("#id_messages_read_over_time").on("plotly_hover", (plot_data) => {
             $("#read_hover_info").show();
             document.querySelector("#read_hover_date").textContent =
-                data.points[0].data.text[data.points[0].pointNumber];
+                plot_data.points[0].plot_data.text[plot_data.points[0].pointNumber];
             const values = [null, null];
-            for (const trace of data.points) {
+            for (const trace of plot_data.points) {
                 values[trace.curveNumber] = trace.y;
             }
             const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
@@ -1034,10 +1034,10 @@ function populate_messages_read_over_time(data) {
     }
 }
 
-function get_chart_data(data, callback) {
+function get_chart_data(opts, callback) {
     $.get({
         url: "/json/analytics/chart_data" + page_params.data_url_suffix,
-        data,
+        data: opts,
         idempotent: true,
         success(data) {
             callback(data);
