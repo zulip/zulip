@@ -192,7 +192,7 @@ export function process_fenced_code(content) {
         };
     }
 
-    consume_line = function consume_line(output_lines, line) {
+    consume_line = (output_lines, line) => {
         const match = fence_re.exec(line);
         if (match) {
             const fence = match[1];
