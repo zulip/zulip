@@ -344,11 +344,11 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
     search_terms = search_terms.map((s) => s.trim());
 
     const filtered_items = items.filter((item) =>
-        search_terms.some((search_term) => {
+        search_terms.some((term) => {
             const lower_name = item_to_text(item).toLowerCase();
             const cands = lower_name.split(" ");
             cands.push(lower_name);
-            return cands.some((name) => name.startsWith(search_term));
+            return cands.some((name) => name.startsWith(term));
         }),
     );
 
