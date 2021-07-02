@@ -587,7 +587,7 @@ function with_first_message_id(stream_id, topic_name, success_cb, error_cb) {
     // To ensure this option works reliably at a small latency
     // cost for a rare operation, we just ask the server for the
     // latest message ID in the topic.
-    const data = {
+    const opts = {
         anchor: "newest",
         num_before: 1,
         num_after: 0,
@@ -599,7 +599,7 @@ function with_first_message_id(stream_id, topic_name, success_cb, error_cb) {
 
     channel.get({
         url: "/json/messages",
-        data,
+        data: opts,
         idempotent: true,
         success(data) {
             const message_id = data.messages[0].id;
