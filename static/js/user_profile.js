@@ -64,7 +64,7 @@ function render_user_stream_list(streams, user) {
             return format_user_stream_list_item(item, user);
         },
         filter: {
-            element: $("#streams-tab .stream-search"),
+            element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item && item.name.toLocaleLowerCase().includes(value);
             },
@@ -171,7 +171,7 @@ export function show_user_profile(user) {
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Streams"}), key: "streams-tab"},
+            {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "groups-tab"},
         ],
         callback(name, key) {
@@ -181,7 +181,7 @@ export function show_user_profile(user) {
                 case "groups-tab":
                     render_user_group_list(groups_of_user, user);
                     break;
-                case "streams-tab":
+                case "user-profile-streams-tab":
                     render_user_stream_list(user_streams, user);
                     break;
             }
@@ -233,7 +233,7 @@ export function register_click_handlers() {
             stream_row.closest("#user-profile-modal").attr("data-user-id"),
             10,
         );
-        const alert_box = $("#streams-tab .stream_list_info");
+        const alert_box = $("#user-profile-streams-tab .stream_list_info");
 
         function removal_success(data) {
             if (data.removed.length > 0) {
@@ -285,7 +285,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {
-        const input = $("#streams-tab .stream-search");
+        const input = $("#user-profile-streams-tab .stream-search");
         input.val("");
 
         // This is a hack to rerender complete
@@ -306,13 +306,13 @@ export function register_click_handlers() {
         hide_user_profile();
     });
 
-    $("body").on("input", "#streams-tab .stream-search", () => {
-        const input = $("#streams-tab .stream-search");
+    $("body").on("input", "#user-profile-streams-tab .stream-search", () => {
+        const input = $("#user-profile-streams-tab .stream-search");
         if (input.val().trim().length > 0) {
-            $("#streams-tab #clear_stream_search").show();
+            $("#user-profile-streams-tab #clear_stream_search").show();
             input.css("margin-right", "-20px");
         } else {
-            $("#streams-tab #clear_stream_search").hide();
+            $("#user-profile-streams-tab #clear_stream_search").hide();
             input.css("margin-right", "0");
         }
     });
