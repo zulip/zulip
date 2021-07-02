@@ -78,17 +78,17 @@ function wrap_tex(tex) {
     }
 }
 
-function wrap_spoiler(header, text, stash_func) {
+function wrap_spoiler(header, text, stash_html) {
     const header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">';
     const end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">';
     const footer_html = "</div></div>";
 
     const output = [
-        stash_func(header_div_open_html),
+        stash_html(header_div_open_html),
         header,
-        stash_func(end_header_start_content_html),
+        stash_html(end_header_start_content_html),
         text,
-        stash_func(footer_html),
+        stash_html(footer_html),
     ];
     return output.join("\n\n");
 }
