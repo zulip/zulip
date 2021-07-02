@@ -83,5 +83,6 @@ streams.  You can configure which roles have permission to do so:
 
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Configure message retention policy](/help/message-retention-policy)
+* [Move content to another stream](/help/move-content-to-another-stream)
 * [Rename a topic](/help/rename-a-topic)
 * [Restrict topic editing](/help/configure-who-can-edit-topics)
