@@ -33,7 +33,7 @@ export function get_list_info(stream_id, zoomed) {
         const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
 
         if (!zoomed) {
-            function should_show_topic(topics_selected) {
+            function should_show_topic(no_topics_selected) {
                 // This function exists just for readability, to
                 // avoid long chained conditionals to determine
                 // which topics to include.
@@ -64,7 +64,7 @@ export function get_list_info(stream_id, zoomed) {
                 // We include older topics with unread messages up
                 // until max_topics_with_unread total topics have
                 // been included.
-                if (num_unread > 0 && topics_selected < max_topics_with_unread) {
+                if (num_unread > 0 && no_topics_selected < max_topics_with_unread) {
                     return true;
                 }
 
