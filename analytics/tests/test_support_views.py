@@ -5,6 +5,7 @@ import orjson
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from analytics.views.support import get_org_type_display_name
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.lib.actions import (
@@ -70,10 +71,12 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
+            org_type_display_name = get_org_type_display_name(zulip_realm.org_type)
             first_human_user = zulip_realm.get_first_human_user()
             assert first_human_user is not None
             self.assert_in_success_response(
                 [
+                    f"<b>Organization type</b>: {org_type_display_name}",
                     f"<b>First human user</b>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",

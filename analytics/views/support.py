@@ -291,6 +291,7 @@ def support(request: HttpRequest) -> HttpResponse:
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
     context["get_discount_for_realm"] = get_discount_for_realm
+    context["get_org_type_display_name"] = get_org_type_display_name
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     return render(request, "analytics/support.html", context=context)
