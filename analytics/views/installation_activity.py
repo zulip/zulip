@@ -22,7 +22,7 @@ from analytics.views.activity_common import (
     realm_stats_link,
     remote_installation_stats_link,
 )
-from analytics.views.support import get_plan_name
+from analytics.views.support import get_org_type_display_name, get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -102,6 +102,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             realm.string_id,
             realm.date_created,
             realm.plan_type,
+            realm.org_type,
             coalesce(wau_table.value, 0) wau_count,
             coalesce(dau_table.value, 0) dau_count,
             coalesce(user_count_table.value, 0) user_profile_count,
@@ -233,6 +234,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
         total_arr += sum(estimated_arrs.values())
 
+    for row in rows:
+        row["org_type_string"] = get_org_type_display_name(row["org_type"])
+
     # augment data with realm_minutes
     total_hours = 0.0
     for row in rows:
@@ -271,6 +275,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     total_row = dict(
         string_id="Total",
         plan_type_string="",
+        org_type_string="",
         effective_rate="",
         arr=total_arr,
         stats_link="",

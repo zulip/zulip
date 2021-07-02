@@ -28,7 +28,14 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserProfile, get_realm
+from zerver.models import (
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    UserProfile,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
