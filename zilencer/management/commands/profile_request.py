@@ -33,6 +33,7 @@ class MockRequest(HttpRequest):
             "num_before": 1200,
             "num_after": 200,
         }
+        self.POST = self.REQUEST
         self.GET: Dict[Any, Any] = {}
         self.session = MockSession()
 
