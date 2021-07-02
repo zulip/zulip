@@ -1641,10 +1641,12 @@ div.focused_table {
 }
 
 .search_icon {
-    color: hsl(0, 0%, 80%);
+    /* These rules match the .dropdown-toggle CSS for the gear menu. */
+    color: inherit;
+    opacity: 0.5;
     text-decoration: none;
     &:hover {
-        color: hsl(0, 0%, 0%);
+        opacity: 1;
     }
 }
 
