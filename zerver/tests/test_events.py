@@ -111,6 +111,7 @@ from zerver.lib.event_schema import (
     check_default_streams,
     check_delete_message,
     check_has_zoom_token,
+    check_heartbeat,
     check_hotspots,
     check_invites_changed,
     check_message,
@@ -200,9 +201,11 @@ from zerver.models import (
     get_user_by_delivery_email,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema
+from zerver.tornado.django_api import send_event
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
+    create_heartbeat_event,
     send_restart_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
@@ -592,6 +595,17 @@ class NormalActionsTest(BaseAction):
             state_change_expected=False,
         )
         check_reaction_add("events[0]", events[0])
+
+    def test_heartbeat_event(self) -> None:
+        events = self.verify_action(
+            lambda: send_event(
+                self.user_profile.realm,
+                create_heartbeat_event(),
+                [self.user_profile.id],
+            ),
+            state_change_expected=False,
+        )
+        check_heartbeat("events[0]", events[0])
 
     def test_add_submessage(self) -> None:
         cordelia = self.example_user("cordelia")

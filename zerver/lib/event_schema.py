@@ -288,6 +288,23 @@ def check_has_zoom_token(
     assert event["value"] == value
 
 
+heartbeat_event = event_dict_type(
+    required_keys=[
+        # force vertical
+        ("type", Equals("heartbeat")),
+    ]
+)
+_check_hearbeat = make_checker(heartbeat_event)
+
+
+def check_heartbeat(
+    # force vertical
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
+    _check_hearbeat(var_name, event)
+
+
 _hotspot = DictType(
     required_keys=[
         # force vertical

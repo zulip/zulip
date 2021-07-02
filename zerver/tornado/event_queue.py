@@ -75,6 +75,10 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 
+def create_heartbeat_event() -> Dict[str, str]:
+    return dict(type="heartbeat")
+
+
 class ClientDescriptor:
     def __init__(
         self,
@@ -234,7 +238,8 @@ class ClientDescriptor:
         def timeout_callback() -> None:
             self._timeout_handle = None
             # All clients get heartbeat events
-            self.add_event(dict(type="heartbeat"))
+            heartbeat_event = create_heartbeat_event()
+            self.add_event(heartbeat_event)
 
         ioloop = tornado.ioloop.IOLoop.instance()
         interval = HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)

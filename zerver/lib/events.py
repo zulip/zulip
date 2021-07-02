@@ -613,6 +613,10 @@ def apply_event(
                 if stream_dict["first_message_id"] is None:
                     stream_dict["first_message_id"] = event["message"]["id"]
 
+    elif event["type"] == "heartbeat":
+        # It may be impossible for a heartbeat event to actually reach
+        # this code path. But in any case, they're noops.
+        pass
     elif event["type"] == "hotspots":
         state["hotspots"] = event["hotspots"]
     elif event["type"] == "custom_profile_fields":

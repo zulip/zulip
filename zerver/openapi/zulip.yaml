@@ -1806,6 +1806,24 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Heartbeat events are sent by the server to avoid
+                                longpolling connections being affected by networks that
+                                kill idle HTTP connections.
+
+                                Clients do not need to do anything to process these
+                                events, beyond the common `last_event_id` accounting.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - heartbeat
+                              example: {"type": "heartbeat", "id": 0}
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent when the set of onboarding "hotspots" to show for
                                 the current user have changed (E.g. because the user dismissed one).
 
