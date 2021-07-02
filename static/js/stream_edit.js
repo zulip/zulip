@@ -960,8 +960,8 @@ export function initialize() {
         }
 
         function do_archive_stream() {
-            const stream_id = $(".confirm_dialog_yes_button").data("stream-id");
-            if (!stream_id) {
+            const dialog_stream_id = $(".confirm_dialog_yes_button").data("stream-id");
+            if (!dialog_stream_id) {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Invalid stream id"}),
                     $(".stream_change_property_info"),
