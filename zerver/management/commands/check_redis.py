@@ -20,11 +20,11 @@ class Command(BaseCommand):
 
     def _check_within_range(
         self,
-        key: str,
+        key: bytes,
         count_func: Callable[[], int],
-        trim_func: Optional[Callable[[str, int], object]] = None,
+        trim_func: Optional[Callable[[bytes, int], object]] = None,
     ) -> None:
-        user_id = int(key.split(":")[1])
+        user_id = int(key.split(b":")[2])
         user = get_user_profile_by_id(user_id)
         entity = RateLimitedUser(user)
         max_calls = entity.max_api_calls()
@@ -50,10 +50,10 @@ than max_api_calls! (trying to trim) %s %s",
             raise CommandError("This machine is not using Redis or rate limiting, aborting")
 
         # Find all keys, and make sure they're all within size constraints
-        wildcard_list = "ratelimit:*:*:list"
-        wildcard_zset = "ratelimit:*:*:zset"
+        wildcard_list = "ratelimit:*:*:*:list"
+        wildcard_zset = "ratelimit:*:*:*:zset"
 
-        trim_func: Optional[Callable[[str, int], object]] = lambda key, max_calls: client.ltrim(
+        trim_func: Optional[Callable[[bytes, int], object]] = lambda key, max_calls: client.ltrim(
             key, 0, max_calls - 1
         )
         if not options["trim"]:
