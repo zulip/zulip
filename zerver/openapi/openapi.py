@@ -8,7 +8,7 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
 from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
 from openapi_core import create_spec
@@ -320,7 +320,7 @@ def get_openapi_parameters(
     return parameters
 
 
-def get_openapi_return_values(endpoint: str, method: str) -> List[Dict[str, Any]]:
+def get_openapi_return_values(endpoint: str, method: str) -> Dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
     # In cases where we have used oneOf, the schemas only differ in examples
@@ -491,7 +491,7 @@ def likely_deprecated_parameter(parameter_description: str) -> bool:
     return "**Deprecated**" in parameter_description
 
 
-def check_deprecated_consistency(argument: Dict[str, Any], description: str) -> None:
+def check_deprecated_consistency(argument: Mapping[str, Any], description: str) -> None:
     # Test to make sure deprecated parameters are marked so.
     if likely_deprecated_parameter(description):
         assert argument["deprecated"]
@@ -510,7 +510,7 @@ SKIP_JSON = {
 def validate_request(
     url: str,
     method: str,
-    data: Dict[str, Any],
+    data: Union[str, bytes, Dict[str, Any]],
     http_headers: Dict[str, Any],
     json_url: bool,
     status_code: str,
