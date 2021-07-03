@@ -27,7 +27,7 @@ responses
 isort
 
 # For doing highly usable Python profiling
-line-profiler<3.2  # https://github.com/pyutils/line_profiler/issues/77
+line-profiler
 
 # for pep8 linter
 pycodestyle

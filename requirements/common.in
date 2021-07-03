@@ -29,7 +29,7 @@ ipython
 jedi<0.18.0
 
 # Needed for image processing
-Pillow
+Pillow<8.3.0  # 8.3.0 imports defusedxml, which is pinned at 0.6.0 by python3-saml because social-auth-core because PyJWT because apns2 and twilio, and therefore breaks Python-Markdown (https://github.com/tiran/defusedxml/issues/54)
 
 # Needed for building complex DB queries
 SQLAlchemy==1.3.*  # 1.4 has badly busted type annotations
