@@ -323,8 +323,7 @@ def walk_tree(
     while queue:
         currElement = queue.popleft()
         for child in currElement:
-            if child:
-                queue.append(child)
+            queue.append(child)
 
             result = processor(child)
             if result is not None:
@@ -374,8 +373,7 @@ def walk_tree_with_family(
     while queue:
         currElementPair = queue.popleft()
         for child in currElementPair.value:
-            if child:
-                queue.append(ElementPair(parent=currElementPair, value=child))
+            queue.append(ElementPair(parent=currElementPair, value=child))
             result = processor(child)
             if result is not None:
                 if currElementPair.parent is not None:

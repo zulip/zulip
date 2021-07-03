@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type, cast
 
 import redis
 from django.conf import settings
@@ -427,7 +427,9 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     pipe.watch(list_key)
 
                     # Get the last elem that we'll trim (so we can remove it from our sorted set)
-                    last_val = pipe.lindex(list_key, max_api_calls - 1)
+                    last_val = cast(  # mypy doesn’t know the pipe is in immediate mode
+                        Optional[bytes], pipe.lindex(list_key, max_api_calls - 1)
+                    )
 
                     # Restart buffered execution
                     pipe.multi()

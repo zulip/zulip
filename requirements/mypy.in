@@ -4,3 +4,17 @@
 # See requirements/README.md for more detail.
 mypy
 sqlalchemy-stubs
+types-boto
+types-certifi
+types-chardet
+types-dataclasses
+types-decorator
+types-Markdown
+types-orjson
+types-polib
+types-python-dateutil
+types-pytz
+types-PyYAML
+types-redis
+types-requests
+types-six
