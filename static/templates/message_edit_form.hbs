@@ -54,8 +54,15 @@
         <div class="message_edit_spinner"></div>
         <div class="controls edit-controls">
             {{#if is_editable}}
-                <button type="button" class="button small rounded sea-green message_edit_save">{{t "Save" }}</button>
-                <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
+                <div class="btn-wrapper inline-block">
+                    <button type="button" class="button small rounded sea-green message_edit_save">
+                        <object class="loader" type="image/svg+xml" data="/static/images/loader.svg"></object>
+                        <span>{{t "Save" }}</span>
+                    </button>
+                </div>
+                <div class="btn-wrapper inline-block">
+                    <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
+                </div>
                 {{#if is_content_editable}}
                 <div class="message-edit-feature-group">
                     {{> compose_control_buttons }}

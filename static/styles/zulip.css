@@ -1470,6 +1470,25 @@ div.focused_table {
     align-items: baseline;
 }
 
+.message_edit_save .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 28px;
+    margin-top: -10px;
+    top: 6px;
+    width: 30px;
+}
+
+.edit-controls {
+    .btn-wrapper {
+        cursor: not-allowed;
+    }
+    .disable-btn {
+        pointer-events: none;
+    }
+}
+
 .topic_edit {
     display: none;
     line-height: 22px;

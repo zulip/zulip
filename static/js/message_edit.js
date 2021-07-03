@@ -192,17 +192,22 @@ export function update_message_topic_editing_pencil() {
 }
 
 export function hide_message_edit_spinner(row) {
-    const spinner = row.find(".message_edit_spinner");
-    loading.destroy_indicator(spinner);
-    $(".message_edit_form .message_edit_save").show();
-    $(".message_edit_form .message_edit_cancel").show();
+    row.find(".loader").hide();
+    row.find(".message_edit_save span").show();
+    row.find(".message_edit_save").removeClass("disable-btn");
+    row.find(".message_edit_cancel").removeClass("disable-btn");
 }
 
 export function show_message_edit_spinner(row) {
-    const spinner = row.find(".message_edit_spinner");
-    loading.make_indicator(spinner);
-    $(".message_edit_form .message_edit_save").hide();
-    $(".message_edit_form .message_edit_cancel").hide();
+    row.find(".loader").css("display", "inline-block");
+    row.find(".message_edit_save span").hide();
+    row.find(".message_edit_save").addClass("disable-btn");
+    row.find(".message_edit_cancel").addClass("disable-btn");
+    row.find("object").on("load", function () {
+        const doc = this.getSVGDocument();
+        const $svg = $(doc).find("svg");
+        $svg.find("rect").css("fill", "#000");
+    });
 }
 
 export function show_topic_edit_spinner(row) {
