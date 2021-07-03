@@ -474,7 +474,7 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_fixture(self, function: str, name: Optional[str] = None) -> List[str]:
+    def render_fixture(self, function: str, name: str) -> List[str]:
         path, method = function.rsplit(":", 1)
         return generate_openapi_fixture(path, method, name)
 
