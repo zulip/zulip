@@ -9,7 +9,11 @@ import {$t} from "./i18n";
 // Return a boolean indicating whether the password is acceptable.
 // Also updates a Bootstrap progress bar control (a jQuery object)
 // if provided.
-export function password_quality(password, bar, password_field) {
+export function password_quality(
+    password: string,
+    bar: JQuery | undefined,
+    password_field: JQuery,
+): boolean {
     const min_length = password_field.data("minLength");
     const min_guesses = password_field.data("minGuesses");
 
@@ -17,7 +21,7 @@ export function password_quality(password, bar, password_field) {
     const acceptable = password.length >= min_length && result.guesses >= min_guesses;
 
     if (bar !== undefined) {
-        const t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
+        const t = Number(result.crack_times_seconds.offline_slow_hashing_1e4_per_second);
         let bar_progress = Math.min(1, Math.log(1 + t) / 22);
 
         // Even if zxcvbn loves your short password, the bar should be
@@ -36,7 +40,7 @@ export function password_quality(password, bar, password_field) {
     return acceptable;
 }
 
-export function password_warning(password, password_field) {
+export function password_warning(password: string, password_field: JQuery): string {
     const min_length = password_field.data("minLength");
 
     if (password.length < min_length) {
