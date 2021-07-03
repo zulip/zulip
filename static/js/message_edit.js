@@ -1038,9 +1038,6 @@ export function delete_topic(stream_id, topic_name) {
         data: {
             topic_name,
         },
-        success() {
-            overlays.close_modal("#delete_topic_modal");
-        },
     });
 }
 
