@@ -223,11 +223,21 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
     }
 
-    .nav-tabs {
+    #send_message_form .messagebox {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .message_comp {
+        background-color: hsla(0, 0%, 0%, 0.1);
+    }
+
+    .message_comp .nav-tabs {
         border-bottom-color: hsla(0, 0%, 0%, 0.2);
 
-        > li > a:hover {
+        > li:not(.active) > a:hover {
             color: hsl(200, 79%, 66%);
+            background: none;
+            border: 1px solid transparent;
         }
 
         > li.active > a {

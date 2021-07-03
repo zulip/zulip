@@ -44,16 +44,18 @@
         </div>
     </div>
     <div class="message_comp">
-        <div class="alert" id="compose-send-status">
-            <span class="compose-send-status-close">&times;</span>
-            <span id="compose-error-msg"></span>
+        <div class="composition-alerts">
+            <div class="alert" id="compose-send-status">
+                <span class="compose-send-status-close">&times;</span>
+                <span id="compose-error-msg"></span>
+            </div>
+            <div id="compose_invite_users" class="alert home-error-bar"></div>
+            <div id="compose-all-everyone" class="alert home-error-bar"></div>
+            <div id="compose-announce" class="alert home-error-bar"></div>
+            <div id="compose_not_subscribed" class="alert home-error-bar"></div>
+            <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
+            <div id="out-of-view-notification" class="notification-alert"></div>
         </div>
-        <div id="compose_invite_users" class="alert home-error-bar"></div>
-        <div id="compose-all-everyone" class="alert home-error-bar"></div>
-        <div id="compose-announce" class="alert home-error-bar"></div>
-        <div id="compose_not_subscribed" class="alert home-error-bar"></div>
-        <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
-        <div id="out-of-view-notification" class="notification-alert"></div>
         <div class="composition-area">
             <div id="compose_top_right">
                 <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 title="{{t 'Expand compose' }}"></button>
@@ -65,7 +67,7 @@
                 <div class="compose_table">
                     <ul id="stream-message" class="nav nav-tabs" role="tablist">
                         <div class="receiving_streams">
-                                <div class="stream-selection-header-colorblock message_header_stream"></div>
+                            <div class="stream-selection-header-colorblock message_header_stream"></div>
                             <div class="stream-info">
                                 <span id="compose-lock-icon">
                                     <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
@@ -119,6 +121,18 @@
                                     </label>
                                 </div>
                                 <span id="compose_limit_indicator"></span>
+                            </div>
+                        </div>
+                        <div class="drag"></div>
+                        <div id="below-compose-content">
+                            <button type="submit" id="compose-send-button" class="button small send_message" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
+                            {{> compose_control_buttons }}
+                            <span id="sending-indicator"></span>
+                            <div id="send_controls" class="new-style">
+                                <label id="enter-sends-label" class="compose_checkbox_label checkbox">
+                                    <input type="checkbox" id="enter_sends" />
+                                    <span></span>{{t 'Press Enter to send' }}
+                                </label>
                             </div>
                         </div>
                     </div>
