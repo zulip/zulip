@@ -116,10 +116,7 @@ mock_esm("../../static/js/stream_list", {
 mock_esm("../../static/js/timerender", {
     last_seen_status_from_date: () => "Just now",
 
-    get_full_datetime: () => ({
-        date: "date",
-        time: "time",
-    }),
+    get_full_datetime: () => "date at time",
 });
 mock_esm("../../static/js/sub_store", {
     get: (stream) => {
@@ -292,7 +289,7 @@ function generate_topic_data(topic_info_array) {
             invite_only: false,
             is_web_public: true,
             last_msg_time: "Just now",
-            full_last_msg_date_time: "date time",
+            full_last_msg_date_time: "date at time",
             senders: [1, 2],
             stream: "stream" + stream_id,
             stream_color: "",

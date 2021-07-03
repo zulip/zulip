@@ -278,7 +278,7 @@ function format_topic(topic_data) {
         muted,
         topic_muted,
         participated: topic_data.participated,
-        full_last_msg_date_time: full_datetime.date + " " + full_datetime.time,
+        full_last_msg_date_time: full_datetime,
     };
 }
 
