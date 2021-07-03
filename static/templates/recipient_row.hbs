@@ -10,6 +10,11 @@
                 {{! invite only lock }}
                 {{#if invite_only}}
                 <i class="fa fa-lock invite-stream-icon" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}"></i>
+                {{! web public globe }}
+                {{else if is_web_public}}
+                <i class="fa fa-globe invite-stream-icon" title="{{t 'This is a global stream' }} aria-label="{{t 'This is a global stream' }}"></i>
+                {{else}}
+                <span class="hashtag invite-stream-icon"></span>
                 {{/if}}
                 {{display_recipient}}</a>
 
