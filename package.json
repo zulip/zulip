@@ -92,6 +92,7 @@
     "@types/terser-webpack-plugin": "^4.1.0",
     "@types/webpack": "^4.4.32",
     "@types/webpack-dev-server": "^3.1.6",
+    "@types/zxcvbn": "^4.4.1",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "babel-plugin-rewire-ts": "^1.4.0",
