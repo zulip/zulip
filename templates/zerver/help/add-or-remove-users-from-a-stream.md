@@ -45,4 +45,18 @@ including streams the admin is not subscribed to.
 
 {end_tabs}
 
+## From user profile modal (alternate method)
+
+{start_tabs}
+
+1. Open full profile of user.
+
+2. Go to streams tab.
+
+3. Find the stream from which you want to remove the user.
+
+4. Click **Unsubscribe**.
+
+{end_tabs}
+
 [configure-invites]: /help/configure-who-can-invite-to-streams
