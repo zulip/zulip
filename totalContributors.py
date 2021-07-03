@@ -17,24 +17,24 @@ def add_log(dict, input):
 
 def retrieve_log(repo, version):
     return subprocess.check_output(
-        ["git", "shortlog", "-s", version], universal_newlines=True, cwd=path(repo)
+        ["git", "shortlog", "-s", version], universal_newlines=True, cwd=find_path(repo)
     ).splitlines()
 
 
 def find_version(time, repo):
     versions_list = subprocess.check_output(
-        ["git", "tag", "-l"], universal_newlines=True, cwd=path(repo)
+        ["git", "tag", "-l"], universal_newlines=True, cwd=find_path(repo)
     ).splitlines()
     for version in versions_list:
         version_time = subprocess.check_output(
-            ["git", "log", "-1", "--format=%ai", version], universal_newlines=True, cwd=path(repo)
+            ["git", "log", "-1", "--format=%ai", version], universal_newlines=True, cwd=find_path(repo)
         ).split()[0]
         if datetime.strptime(version_time, "%Y-%m-%d") >= datetime.strptime(time, "%Y-%m-%d"):
             return version
     return version
 
 
-def path(repo):
+def find_path(repo):
     return os.path.dirname(pathlib.Path().resolve()) + "/" + repo
 
 
