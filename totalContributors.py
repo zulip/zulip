@@ -27,7 +27,9 @@ def find_version(time, repo):
     ).splitlines()
     for version in versions_list:
         version_time = subprocess.check_output(
-            ["git", "log", "-1", "--format=%ai", version], universal_newlines=True, cwd=find_path(repo)
+            ["git", "log", "-1", "--format=%ai", version],
+            universal_newlines=True,
+            cwd=find_path(repo),
         ).split()[0]
         if datetime.strptime(version_time, "%Y-%m-%d") >= datetime.strptime(time, "%Y-%m-%d"):
             return version
