@@ -58,7 +58,7 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
 def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
     rows = []
     for k, v in user_summary.items():
-        if k == "name":
+        if k in ["name", "role"]:
             continue
         client = k
         count = v["count"]
