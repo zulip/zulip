@@ -5,21 +5,21 @@ import random
 import re
 import sys
 
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.join(tools_dir, "..")
+sys.path.insert(0, root_dir)
+
 # check for the venv
-from lib import sanity_check
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
 from zulint.command import LinterConfig, add_default_linter_arguments
 
-from linter_lib.custom_check import non_py_rules, python_rules
+from tools.linter_lib.custom_check import non_py_rules, python_rules
 
 
 def run() -> None:
-    tools_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = os.path.dirname(tools_dir)
-    sys.path.insert(0, root_dir)
-
     from tools.lib.test_script import (
         add_provision_check_override_param,
         assert_provisioning_status_ok,

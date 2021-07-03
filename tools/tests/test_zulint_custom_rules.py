@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from zulint.custom_rules import RuleList
 
-from linter_lib.custom_check import non_py_rules, python_rules
+from tools.linter_lib.custom_check import non_py_rules, python_rules
 
 ROOT_DIR = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py`."
@@ -13,9 +13,10 @@ CHECK_MESSAGE = "Fix the corresponding rule in `tools/linter_lib/custom_check.py
 
 class TestRuleList(TestCase):
     def setUp(self) -> None:
-        self.all_rules = python_rules.rules
+        all_rules = list(python_rules.rules)
         for rule in non_py_rules:
-            self.all_rules.extend(rule.rules)
+            all_rules.extend(rule.rules)
+        self.all_rules = all_rules
 
     def test_paths_in_rules(self) -> None:
         """Verifies that the paths mentioned in linter rules actually exist"""

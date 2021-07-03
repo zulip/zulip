@@ -7,16 +7,16 @@ import sys
 from typing import Iterator
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# check for the venv
-from lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 os.chdir(ZULIP_PATH)
 sys.path.insert(0, ZULIP_PATH)
 
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
 from tools.lib.test_script import add_provision_check_override_param
+from tools.lib.test_server import test_server_running
 
 parser = argparse.ArgumentParser()
 add_provision_check_override_param(parser)
@@ -27,8 +27,6 @@ parser.add_argument(
     help="Skip checking of external links.",
 )
 options = parser.parse_args()
-
-from tools.lib.test_server import test_server_running
 
 os.makedirs("var/help-documentation", exist_ok=True)
 

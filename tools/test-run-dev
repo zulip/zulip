@@ -6,7 +6,9 @@ import sys
 import time
 from typing import Tuple
 
-from lib import sanity_check
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 

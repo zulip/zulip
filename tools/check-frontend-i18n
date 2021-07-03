@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-from typing import List
-
-# check for the venv
-from lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 import argparse
 import json
 import os
 import subprocess
 import sys
+from typing import List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
 from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 
 
