@@ -656,7 +656,7 @@ export function end_message_row_edit(row) {
     const message = message_lists.current.get(rows.id(row));
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
-        message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
+        const original_scrollTop = message_viewport.scrollTop();
 
         // Clean up resize event listeners
         const listeners = currently_editing_messages.get(message.id).listeners;
@@ -671,6 +671,7 @@ export function end_message_row_edit(row) {
 
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message(row);
+        message_viewport.scrollTop(original_scrollTop - scroll_by);
 
         compose.abort_video_callbacks(message.id);
     }
