@@ -42,7 +42,7 @@ def find_path(repo):
 if len(sys.argv) > 1:
     zulip_version = sys.argv[1]
 else:
-    zulip_version = str(4.3)
+    zulip_version = "4.3"
 
 time = subprocess.check_output(
     ["git", "log", "-1", "--format=%ai", zulip_version], universal_newlines=True
@@ -64,3 +64,5 @@ for repo_name in [
 
 for keys in out_dict:
     print(str(out_dict[keys]) + "\t" + keys)
+
+print("Zulip Version " + zulip_version)
