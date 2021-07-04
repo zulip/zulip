@@ -37,6 +37,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
 from zerver.lib.exceptions import (
+    AccessDeniedError,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     JsonableError,
@@ -1519,7 +1520,9 @@ class TestInternalNotifyView(ZulipTestCase):
 
         with self.settings(SHARED_SECRET="broken"):
             self.assertFalse(authenticate_notify(req))
-            self.assertEqual(self.internal_notify(True, req).status_code, 403)
+            with self.assertRaises(AccessDeniedError) as context:
+                self.internal_notify(True, req)
+            self.assertEqual(context.exception.http_status_code, 403)
 
     def test_external_requests(self) -> None:
         secret = "random"
@@ -1530,7 +1533,9 @@ class TestInternalNotifyView(ZulipTestCase):
 
         with self.settings(SHARED_SECRET=secret):
             self.assertFalse(authenticate_notify(req))
-            self.assertEqual(self.internal_notify(True, req).status_code, 403)
+            with self.assertRaises(AccessDeniedError) as context:
+                self.internal_notify(True, req)
+            self.assertEqual(context.exception.http_status_code, 403)
 
     def test_is_local_address(self) -> None:
         self.assertTrue(is_local_addr("127.0.0.1"))

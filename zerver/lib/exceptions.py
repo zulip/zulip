@@ -375,3 +375,14 @@ class InvitationError(JsonableError):
         self.errors: List[Tuple[str, str, bool]] = errors
         self.sent_invitations: bool = sent_invitations
         self.license_limit_reached: bool = license_limit_reached
+
+
+class AccessDeniedError(JsonableError):
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Access denied")

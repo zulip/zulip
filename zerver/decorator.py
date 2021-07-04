@@ -24,6 +24,7 @@ from django_otp import user_has_device
 from two_factor.utils import default_device
 
 from zerver.lib.exceptions import (
+    AccessDeniedError,
     ErrorCode,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
@@ -39,7 +40,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_method_not_allowed, json_success, json_unauthorized
+from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
@@ -798,7 +799,7 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
             request: HttpRequest, *args: object, **kwargs: object
         ) -> HttpResponse:
             if not authenticate_notify(request):
-                return json_error(_("Access denied"), status=403)
+                raise AccessDeniedError()
             is_tornado_request = hasattr(request, "_tornado_handler")
             # These next 2 are not security checks; they are internal
             # assertions to help us find bugs.
