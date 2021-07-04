@@ -48,6 +48,16 @@
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
+            <li class="top_left_drafts top_left_row hidden-for-spectators">
+                <a href="#drafts">
+                    <span class="filter-icon">
+                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Drafts' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+            </li>
             <li class="top_left_recent_topics top_left_row" title="{{t 'Recent topics' }} (t)">
                 <a href="#recent_topics">
                     <span class="filter-icon">
