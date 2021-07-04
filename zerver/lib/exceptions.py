@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type, TypeVar
 
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 T = TypeVar("T", bound="AbstractEnum")
@@ -390,3 +391,14 @@ class AccessDeniedError(JsonableError):
 
 class ResourceNotFoundError(JsonableError):
     http_status_code = 404
+
+
+class ValidationFailureError(JsonableError):
+    # This class translations a Django ValidationError into a
+    # Zulip-style JsonableError, sending back just the first error for
+    # consistency of API.
+    data_fields = ["errors"]
+
+    def __init__(self, error: ValidationError) -> None:
+        super().__init__(error.messages[0])
+        self.errors = dict(error)
