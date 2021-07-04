@@ -386,3 +386,7 @@ class AccessDeniedError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Access denied")
+
+
+class ResourceNotFoundError(JsonableError):
+    http_status_code = 404

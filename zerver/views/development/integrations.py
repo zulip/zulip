@@ -6,10 +6,10 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.test import Client
 
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import UserProfile, get_realm
@@ -60,7 +60,7 @@ def send_webhook_fixture_message(
 def get_fixtures(request: HttpResponse, integration_name: str = REQ()) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
-        return json_error(f'"{integration_name}" is not a valid webhook integration.', status=404)
+        raise ResourceNotFoundError(f'"{integration_name}" is not a valid webhook integration.')
 
     fixtures = {}
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
@@ -68,7 +68,7 @@ def get_fixtures(request: HttpResponse, integration_name: str = REQ()) -> HttpRe
         msg = ('The integration "{valid_integration_name}" does not have fixtures.').format(
             valid_integration_name=valid_integration_name
         )
-        return json_error(msg, status=404)
+        raise ResourceNotFoundError(msg)
 
     for fixture in os.listdir(fixtures_dir):
         fixture_path = os.path.join(fixtures_dir, fixture)
@@ -121,14 +121,14 @@ def send_all_webhook_fixture_messages(
 ) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
-        return json_error(f'"{integration_name}" is not a valid webhook integration.', status=404)
+        raise ResourceNotFoundError(f'"{integration_name}" is not a valid webhook integration.')
 
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")
     if not os.path.exists(fixtures_dir):
         msg = ('The integration "{valid_integration_name}" does not have fixtures.').format(
             valid_integration_name=valid_integration_name
         )
-        return json_error(msg, status=404)
+        raise ResourceNotFoundError(msg)
 
     responses = []
     for fixture in os.listdir(fixtures_dir):

@@ -44,9 +44,14 @@ from zerver.lib.actions import (
     internal_prep_private_message,
     internal_prep_stream_message,
 )
-from zerver.lib.exceptions import ErrorCode, JsonableError, OrganizationOwnerRequired
+from zerver.lib.exceptions import (
+    ErrorCode,
+    JsonableError,
+    OrganizationOwnerRequired,
+    ResourceNotFoundError,
+)
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import (
     StreamDict,
@@ -780,7 +785,7 @@ def json_stream_exists(
     try:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
     except JsonableError as e:
-        return json_error(e.msg, status=404)
+        raise ResourceNotFoundError(e.msg)
 
     # access_stream functions return a subscription if and only if we
     # are already subscribed.

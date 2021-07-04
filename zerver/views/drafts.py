@@ -7,10 +7,10 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles_by_ids
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.validator import (
@@ -128,7 +128,7 @@ def edit_draft(
     try:
         draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
     except Draft.DoesNotExist:
-        return json_error(_("Draft does not exist"), status=404)
+        raise ResourceNotFoundError(_("Draft does not exist"))
 
     valid_draft_dict = further_validated_draft_dict(draft_dict, user_profile)
     draft_object.content = valid_draft_dict["content"]
@@ -144,7 +144,7 @@ def delete_draft(request: HttpRequest, user_profile: UserProfile, draft_id: int)
     try:
         draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
     except Draft.DoesNotExist:
-        return json_error(_("Draft does not exist"), status=404)
+        raise ResourceNotFoundError(_("Draft does not exist"))
 
     draft_object.delete()
     return json_success()

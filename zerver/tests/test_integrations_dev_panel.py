@@ -124,6 +124,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         target_url = "/devtools/integrations/somerandomnonexistantintegration/fixtures"
         response = self.client_get(target_url)
         expected_response = {
+            "code": "BAD_REQUEST",
             "msg": '"somerandomnonexistantintegration" is not a valid webhook integration.',
             "result": "error",
         }
@@ -138,6 +139,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         target_url = "/devtools/integrations/airbrake/fixtures"
         response = self.client_get(target_url)
         expected_response = {
+            "code": "BAD_REQUEST",
             "msg": 'The integration "airbrake" does not have fixtures.',
             "result": "error",
         }
@@ -319,6 +321,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "/devtools/integrations/send_all_webhook_fixture_messages", data
         )
         expected_response = {
+            "code": "BAD_REQUEST",
             "msg": 'The integration "appfollow" does not have fixtures.',
             "result": "error",
         }
