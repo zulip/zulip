@@ -39,20 +39,20 @@ import * as util from "./util";
 
 export const show_subs_pane = {
     nothing_selected() {
-        $(".stream-info-title, .settings, #stream-creation").hide();
-        $("#stream_settings_title, .nothing-selected").show();
+        $(".settings, #stream-creation").hide();
+        $(".nothing-selected").show();
         $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
     },
     settings(stream_name) {
-        $(".stream-info-title, .settings, #stream-creation").hide();
-        $("#stream_settings_title, .settings").show();
+        $(".settings, #stream-creation").hide();
+        $(".settings").show();
         $("#subscription_overlay .stream-info-title").text(
             $t({defaultMessage: "Settings for #{stream_name}"}, {stream_name}),
         );
     },
     create_stream() {
-        $(".stream-info-title, .nothing-selected, .settings, #stream-creation").hide();
-        $("#add_new_stream_title, #stream-creation").show();
+        $(".nothing-selected, .settings, #stream-creation").hide();
+        $("#stream-creation").show();
         $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create stream"}));
     },
 };
