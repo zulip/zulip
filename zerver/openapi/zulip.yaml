@@ -7878,6 +7878,18 @@ paths:
         `DELETE {{ api_url }}/v1/users/{user_id}`
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: spammer
+          in: query
+          description: |
+            Whether or not the user should be renamed as a spammer.
+
+            **Changes**: New in Zulip 5.0 (feature level 76).
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+          required: false
       responses:
         "200":
           description: Success

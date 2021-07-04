@@ -93,15 +93,19 @@ def check_last_owner(user_profile: UserProfile) -> bool:
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
 
+@has_request_variables
 def deactivate_user_backend(
-    request: HttpRequest, user_profile: UserProfile, user_id: int
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id: int,
+    spammer: Optional[bool] = REQ(default=None, json_validator=check_bool),
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
-    return _deactivate_user_profile_backend(request, user_profile, target)
+    return _deactivate_user_profile_backend(request, user_profile, target, spammer)
 
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -122,9 +126,16 @@ def deactivate_bot_backend(
 
 
 def _deactivate_user_profile_backend(
-    request: HttpRequest, user_profile: UserProfile, target: UserProfile
+    request: HttpRequest,
+    user_profile: UserProfile,
+    target: UserProfile,
+    spammer: Optional[bool] = None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    do_deactivate_user(
+        target,
+        spammer=spammer,
+        acting_user=user_profile,
+    )
     return json_success()
 
 

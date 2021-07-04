@@ -1315,6 +1315,26 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.assertTrue(user.is_active)
 
+    def test_api_with_spammer_true(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("hamlet")
+        self.assertFalse(user.full_name.endswith(" (spammer)"))
+
+        result = self.client_delete(
+            f"/json/users/{user.id}", {"spammer": orjson.dumps(True).decode()}
+        )
+        self.assert_json_success(result)
+        user = self.example_user("hamlet")
+        self.assertTrue(user.full_name.endswith(" (spammer)"))
+
+        result = self.client_post(f"/json/users/{user.id}/reactivate")
+        self.assert_json_success(result)
+        user = self.example_user("hamlet")
+        self.assertFalse(user.full_name.endswith(" (spammer)"))
+
     def test_api_with_nonexistent_user(self) -> None:
         self.login("iago")
 
