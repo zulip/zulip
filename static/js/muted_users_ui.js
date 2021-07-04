@@ -1,5 +1,3 @@
-import $ from "jquery";
-
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 
 import * as activity from "./activity";
@@ -27,13 +25,11 @@ export function confirm_mute_user(user_id) {
         mute_user(user_id);
     }
 
-    const modal_parent = $(".mute-user-modal-holder");
     const html_body = render_confirm_mute_user({
         user_name: people.get_full_name(user_id),
     });
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Mute user"}),
         help_link: "/help/mute-a-user",
         html_body,
