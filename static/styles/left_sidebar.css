@@ -562,10 +562,3 @@ li.expanded_private_message {
         display: none;
     }
 }
-
-li.top_left_all_messages a,
-li.top_left_private_messages a,
-li.top_left_mentions a,
-li.top_left_starred_messages a {
-    display: block;
-}
