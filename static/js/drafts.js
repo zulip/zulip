@@ -26,9 +26,6 @@ import * as ui_util from "./ui_util";
 import * as util from "./util";
 
 function set_count(count) {
-    const draft_count = count.toString();
-    const text = $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count});
-    $(".compose_drafts_button").text(text);
     const drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom(drafts_li, count);
 }
@@ -147,10 +144,10 @@ export function restore_message(draft) {
 
 function draft_notify() {
     // Display a tooltip to notify the user about the saved draft.
-    const instance = tippy(".compose_drafts_button", {
+    const instance = tippy(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
         arrow: true,
-        placement: "top",
+        placement: "right",
     })[0];
     instance.show();
     function remove_instance() {
