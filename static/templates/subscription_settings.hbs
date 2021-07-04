@@ -46,6 +46,15 @@
                 <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
             </div>
             {{/with}}
+            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
+                <label class="sub_settings_title">
+                    {{t "Email address" }}
+                    {{> help_link_widget link="/help/message-a-stream-by-email" }}
+                </label>
+                <div class="stream-email">
+                    <span class="email-address">{{sub.email_address}}</span>
+                </div>
+            </div>
         </div>
 
         <div class="personal_settings stream_section collapse {{#sub.subscribed}}in{{/sub.subscribed}}">
@@ -81,15 +90,6 @@
         </div>
 
         <div class="subscriber_settings stream_section">
-            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <label class="sub_settings_title">
-                    {{t "Email address" }}
-                    {{> help_link_widget link="/help/message-a-stream-by-email" }}
-                </label>
-                <div class="stream-email">
-                    <span class="email-address">{{sub.email_address}}</span>
-                </div>
-            </div>
             {{#with sub}}
             <div class="subscription-members-setting">
                 {{> subscription_members}}
