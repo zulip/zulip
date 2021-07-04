@@ -42,16 +42,16 @@ def find_path(repo):
 
 # extract git version and time
 if len(sys.argv) > 1:
-    zulip_version = sys.argv[1]
+    previous_zulip_version = sys.argv[1]
 else:
-    zulip_version = "4.3"
+    previous_zulip_version = "4.3"
 
 time = subprocess.check_output(
-    ["git", "log", "-1", "--format=%ai", zulip_version], universal_newlines=True
+    ["git", "log", "-1", "--format=%ai", previous_zulip_version], universal_newlines=True
 ).split()[0]
 
 out_dict = {}
-zulip = retrieve_log("zulip", zulip_version)
+zulip = retrieve_log("zulip", previous_zulip_version)
 add_log(out_dict, zulip)
 for repo_name in [
     "zulip-mobile",
@@ -67,4 +67,4 @@ for repo_name in [
 for keys in out_dict:
     print(str(out_dict[keys]) + "\t" + keys)
 
-print("Zulip Version " + zulip_version)
+print("Previous Zulip version " + previous_zulip_version)
