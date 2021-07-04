@@ -153,7 +153,7 @@ function draft_notify() {
     function remove_instance() {
         instance.destroy();
     }
-    setTimeout(remove_instance, 1500);
+    setTimeout(remove_instance, 3000);
 }
 
 export function update_draft(opts = {}) {
