@@ -419,7 +419,6 @@ function get_human_profile_data(fields_user_pills) {
 
 function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
-    const modal_parent = $("#settings_content .organization-box");
     const opts = {
         username: user.full_name,
         email: user.email,
@@ -443,7 +442,6 @@ function confirm_deactivation(row, user_id, status_field) {
     }
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
         html_body,
         on_click: handle_confirm,
@@ -539,7 +537,6 @@ function handle_human_form(tbody, status_field) {
             disable_role_dropdown: person.is_owner && !page_params.is_owner,
         });
 
-        const modal_parent = $("#user-info-form-modal-container");
         let fields_user_pills;
 
         function set_role_dropdown_and_fields_user_pills() {
@@ -584,7 +581,6 @@ function handle_human_form(tbody, status_field) {
 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change user info and roles"}),
-            parent: modal_parent,
             html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
@@ -609,8 +605,6 @@ function handle_bot_form(tbody, status_field) {
             email: bot.email,
             full_name: bot.full_name,
         });
-
-        const modal_parent = $("#user-info-form-modal-container");
 
         let owner_widget;
 
@@ -656,7 +650,6 @@ function handle_bot_form(tbody, status_field) {
 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
-            parent: modal_parent,
             html_body,
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,

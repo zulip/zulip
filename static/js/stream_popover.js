@@ -543,7 +543,7 @@ export function register_stream_handlers() {
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         const sub = stream_popover_sub(e);
-        stream_settings_ui.sub_or_unsub(sub, true);
+        stream_settings_ui.sub_or_unsub(sub);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -664,11 +664,9 @@ export function register_topic_handlers() {
 
         hide_topic_popover();
 
-        const modal_parent = $("#delete-topic-modal-holder");
         const html_body = render_delete_topic_modal(args);
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Delete topic"}),
             help_link: "/help/delete-a-topic",
             html_body,

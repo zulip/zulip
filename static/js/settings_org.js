@@ -1235,10 +1235,8 @@ export function build_page() {
         }
 
         const html_body = render_settings_deactivate_realm_modal();
-        const modal_parent = $(".organization-box");
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Deactivate organization"}),
             help_link: "/help/deactivate-your-organization",
             html_body,

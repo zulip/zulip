@@ -19,9 +19,8 @@ import * as settings_data from "./settings_data";
         1) We create DOM on the fly, and we remove
            the DOM once it's closed.
 
-        2) We attach the DOM for the modal to conf.parent,
-           and this temporary DOM location will influence
-           how styles work.
+        2) We attach the DOM for the modal to the body element
+           to avoid style interference from other elements.
 
         3) The cancel button is driven by bootstrap.js.
 
@@ -68,7 +67,6 @@ export function launch(conf) {
         "html_heading",
         "html_body",
         "on_click",
-        "parent",
     ];
 
     // Optional parameters:
@@ -103,7 +101,7 @@ export function launch(conf) {
         danger_submit_button: conf.danger_submit_button,
     });
     const dialog = $(html);
-    conf.parent.append(dialog);
+    $("body").append(dialog);
 
     if (conf.post_render !== undefined) {
         conf.post_render();
@@ -126,7 +124,7 @@ export function launch(conf) {
     });
 
     if (conf.focus_submit_on_open) {
-        conf.parent.on("shown.bs.modal", () => {
+        dialog.on("shown.bs.modal", () => {
             submit_button.trigger("focus");
         });
     }

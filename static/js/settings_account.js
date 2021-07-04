@@ -598,9 +598,7 @@ export function set_up() {
             });
         }
         const html_body = render_confirm_deactivate_own_user();
-        const modal_parent = $("#account-settings .account-settings-form");
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Deactivate your account"}),
             html_body,
             on_click: handle_confirm,
