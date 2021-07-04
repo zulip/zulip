@@ -128,8 +128,19 @@ body.night-mode {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
-    .modal-bg {
+    .modal-bg,
+    .modal__container {
         background-color: hsl(212, 28%, 18%);
+    }
+
+    .modal__close {
+        &::before {
+            color: hsl(236, 33%, 90%);
+        }
+
+        &:hover {
+            background: hsla(0, 0%, 91%, 0.1);
+        }
     }
 
     .streams_popover .sp-container {

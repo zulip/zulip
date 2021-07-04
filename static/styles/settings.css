@@ -1577,17 +1577,6 @@ input[type="checkbox"] {
     }
 }
 
-/* Dialog widgets should be centered, which this roughly achieves. */
-#dialog_widget_modal {
-    top: calc(50% - 120px);
-}
-
-/* In the settings overlay, we need slightly different CSS for alignment. */
-#settings_overlay_container #dialog_widget_modal {
-    top: 50%;
-    vertical-align: center;
-}
-
 /* These have enough space for all the options in German. */
 .setting_desktop_icon_count_display,
 #id_realm_waiting_period_setting,
@@ -1616,16 +1605,6 @@ input[type="checkbox"] {
 
 .m-t-10 {
     margin-top: 10px;
-}
-
-.dialog_submit_button .loader {
-    display: none;
-    vertical-align: top;
-    position: relative;
-    height: 30px;
-    margin-top: -10px;
-    top: 5px;
-    width: 30px;
 }
 
 .dropdown-list-widget {
