@@ -1,62 +1,66 @@
 import $ from "jquery";
+import Micromodal from "micromodal";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
-import render_dialog_heading from "../templates/dialog_widget_heading.hbs";
 
 import * as blueslip from "./blueslip";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import * as settings_data from "./settings_data";
 
 /*
-    Look for dialog_widget in settings_users
-    to see an example of how to use this widget.  It's
-    pretty simple to use!
-
-    Some things to note:
-
-        1) We create DOM on the fly, and we remove
-           the DOM once it's closed.
-
-        2) We attach the DOM for the modal to the body element
-           to avoid style interference from other elements.
-
-        3) The cancel button is driven by bootstrap.js.
-
-        4) For settings, we have a click handler in settings.js
-           that will close the dialog via overlays.close_active_modal.
-
-        5) We assume that since this is a modal, you will
-           only ever have one dialog active at any
-           time.
-
-        6) If a modal wants a loading spinner, it should pass loading_spinner: true.
-           This will show a loading spinner when the yes button is clicked.
-           The caller is responsible for calling hide_dialog_spinner()
-           to hide the spinner in both success and error handlers.
-
-        7) If a caller needs to run code after the modal body is added
-           to DOM, it can do so by passing a post_render hook.
-*/
+ *  Look for confirm_dialog in settings_user_groups
+ *  to see an example of how to use this widget.  It's
+ *  pretty simple to use!
+ *
+ *  Some things to note:
+ *      1) We create DOM on the fly, and we remove
+ *         the DOM once it's closed.
+ *
+ *      2) We attach the DOM for the modal to the body element
+ *         to avoid interference from other elements.
+ *
+ *      3) For settings, we have a click handler in settings.js
+ *         that will close the dialog via overlays.close_active_modal.
+ *
+ *      4) We assume that since this is a modal, you will
+ *         only ever have one confirm dialog active at any
+ *         time.
+ *
+ *      5) If a modal wants a loading spinner, it should pass loading_spinner: true.
+ *         This will show a loading spinner when the yes button is clicked.
+ *         The caller is responsible for calling hide_confirm_dialog_spinner()
+ *         to hide the spinner in both success and error handlers.
+ *
+ *      6) If loading_spinner is used, don't hide it on `success`. This modal has a fade out
+ *         animation. This causes the `Confirm` button to be shown for a split second if the
+ *         spinner is hidden.
+ *         Just close the modal. This will remove the whole modal from the DOM without
+ *         needing to remove the spinner.
+ *
+ *      7) If a caller needs to run code after the modal body is added
+ *          to DOM, it can do so by passing a post_render hook.
+ */
 
 export function hide_dialog_spinner() {
-    $(".dialog_submit_button .loader").hide();
     $(".dialog_submit_button span").show();
-    $(".dialog_submit_button").prop("disabled", false);
-    $("#dialog_widget_modal .close-modal-btn").prop("disabled", false);
+    $("#dialog_widget_modal .modal__btn").prop("disabled", false);
+
+    const spinner = $("#dialog_widget_modal .modal__spinner");
+    loading.destroy_indicator(spinner);
 }
 
 export function show_dialog_spinner() {
-    const using_dark_theme = settings_data.using_dark_theme();
-    loading.show_button_spinner($(".dialog_submit_button .loader"), using_dark_theme);
     $(".dialog_submit_button span").hide();
-    $(".dialog_submit_button").prop("disabled", true);
-    $("#dialog_widget_modal .close-modal-btn").prop("disabled", true);
+    // Disable both the buttons.
+    $("#dialog_widget_modal .modal__btn").prop("disabled", true);
+
+    const spinner = $("#dialog_widget_modal .modal__spinner");
+    loading.make_indicator(spinner);
 }
 
 export function close_modal() {
-    overlays.close_modal("#dialog_widget_modal");
+    Micromodal.close("dialog_widget_modal");
 }
 
 export function launch(conf) {
@@ -73,7 +77,6 @@ export function launch(conf) {
     // * html_submit_button: Submit button text.
     // * close_on_submit: Whether to close modal on clicking submit.
     // * focus_submit_on_open: Whether to focus submit button on open.
-    // * danger_submit_button: Whether to use danger button styling for submit button.
     // * help_link: A help link in the heading area.
 
     for (const f of mandatory_fields) {
@@ -89,15 +92,11 @@ export function launch(conf) {
     }
 
     const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
-    const html_dialog_heading = render_dialog_heading({
+    const html = render_dialog_widget({
         heading_text: conf.html_heading,
         link: conf.help_link,
-    });
-    const html = render_dialog_widget({
         html_submit_button,
-        html_dialog_heading,
         html_body: conf.html_body,
-        danger_submit_button: conf.danger_submit_button,
     });
     const dialog = $(html);
     $("body").append(dialog);
@@ -118,16 +117,15 @@ export function launch(conf) {
         conf.on_click(e);
     });
 
-    dialog.on("hidden.bs.modal", () => {
-        dialog.remove();
+    overlays.open_modal("dialog_widget_modal", {
+        autoremove: true,
+        micromodal: true,
+        micromodal_opts: {
+            onShow: () => {
+                if (conf.focus_submit_on_open) {
+                    submit_button.trigger("focus");
+                }
+            },
+        },
     });
-
-    if (conf.focus_submit_on_open) {
-        dialog.on("shown.bs.modal", () => {
-            submit_button.trigger("focus");
-        });
-    }
-
-    // Open the modal
-    overlays.open_modal("#dialog_widget_modal");
 }

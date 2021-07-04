@@ -872,6 +872,7 @@ export function initialize() {
                 !$(e.target).closest(".overlay").length &&
                 !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".modal").length &&
+                !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
                 $(e.target).closest("body").length

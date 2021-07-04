@@ -28,7 +28,7 @@ $("body").ready(() => {
         if (!overlays.is_modal_open()) {
             return;
         }
-        if ($(e.target).closest(".modal").length > 0) {
+        if ($(e.target).closest(".modal, .micromodal").length > 0) {
             return;
         }
         e.preventDefault();

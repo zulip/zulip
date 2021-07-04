@@ -47,6 +47,7 @@
     "jquery-validation": "^1.19.0",
     "katex": "^0.13.2",
     "lodash": "^4.17.19",
+    "micromodal": "^0.4.6",
     "mini-css-extract-plugin": "^2.2.2",
     "plotly.js": "^2.0.0",
     "postcss": "^8.0.3",
