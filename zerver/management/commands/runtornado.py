@@ -1,22 +1,19 @@
+import asyncio
 import logging
 import sys
 from typing import Any, Callable
 from urllib.parse import SplitResult
+
+from zerver.tornado.ioloop_logging import CustomEventLoopPolicy
+
+asyncio.set_event_loop_policy(CustomEventLoopPolicy())
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import ioloop
 from tornado.log import app_log
 
-# We must call zerver.tornado.ioloop_logging.instrument_tornado_ioloop
-# before we import anything else from our project in order for our
-# Tornado load logging to work; otherwise we might accidentally import
-# zerver.lib.queue (which will instantiate the Tornado ioloop) before
-# this.
-from zerver.tornado.ioloop_logging import instrument_tornado_ioloop
-
 settings.RUNNING_INSIDE_TORNADO = True
-instrument_tornado_ioloop()
 
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
@@ -108,11 +105,11 @@ class Command(BaseCommand):
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
 
-                instance = ioloop.IOLoop.instance()
+                instance = ioloop.IOLoop.current()
 
                 if django.conf.settings.DEBUG:
-                    instance.set_blocking_log_threshold(5)
-                    instance.handle_callback_exception = handle_callback_exception
+                    instance.asyncio_loop.slow_callback_duration = 5
+                    instance.asyncio_loop.set_debug(True)
                 instance.start()
             except KeyboardInterrupt:
                 sys.exit(0)

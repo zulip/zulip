@@ -5,7 +5,7 @@ import pwd
 import signal
 import subprocess
 import sys
-from typing import Any, Callable, Generator, List, Sequence
+from typing import Any, List, Sequence
 from urllib.parse import urlunparse
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +16,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from tornado import gen, httpclient, httputil, web
+from tornado import httpclient, httputil, web
 from tornado.ioloop import IOLoop
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
@@ -196,10 +196,7 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     return newpath
 
 
-@gen.engine
-def fetch_request(
-    url: str, callback: Any, **kwargs: Any
-) -> "Generator[Callable[..., Any], Any, None]":
+async def fetch_request(url: str, callback: Any, **kwargs: Any) -> None:
     # use large timeouts to handle polling requests
     req = httpclient.HTTPRequest(
         url,
@@ -209,8 +206,7 @@ def fetch_request(
         **kwargs,
     )
     client = httpclient.AsyncHTTPClient()
-    # wait for response
-    response = yield gen.Task(client.fetch, req)
+    response = await client.fetch(req)
     callback(response)
 
 
@@ -264,10 +260,8 @@ class BaseHandler(web.RequestHandler):
                 self.add_header(header, v)
             if response.body:
                 self.write(response.body)
-        self.finish()
 
-    @web.asynchronous
-    def prepare(self) -> None:
+    async def prepare(self) -> None:
         if "X-REAL-IP" not in self.request.headers:
             self.request.headers["X-REAL-IP"] = self.request.remote_ip
         if "X-FORWARDED_PORT" not in self.request.headers:
@@ -280,7 +274,7 @@ class BaseHandler(web.RequestHandler):
             self.target_host,
         )
         try:
-            fetch_request(
+            await fetch_request(
                 url=url,
                 callback=self.handle_response,
                 method=self.request.method,
@@ -295,7 +289,6 @@ class BaseHandler(web.RequestHandler):
             else:
                 self.set_status(500)
                 self.write("Internal server error:\n" + str(e))
-                self.finish()
 
 
 class WebPackHandler(BaseHandler):
@@ -311,12 +304,10 @@ class TornadoHandler(BaseHandler):
 
 
 class ErrorHandler(BaseHandler):
-    @web.asynchronous
-    def prepare(self) -> None:
+    async def prepare(self) -> None:
         print(FAIL + "Unexpected request: " + ENDC, self.request.path)
         self.set_status(500)
         self.write("path not supported")
-        self.finish()
 
 
 class Application(web.Application):
@@ -335,15 +326,16 @@ class Application(web.Application):
 
 
 def on_shutdown() -> None:
-    IOLoop.instance().stop()
+    IOLoop.current().stop()
 
 
 def shutdown_handler(*args: Any, **kwargs: Any) -> None:
-    io_loop = IOLoop.instance()
-    if io_loop._callbacks:
-        io_loop.call_later(1, shutdown_handler)
-    else:
+    io_loop = IOLoop.current()
+    # TODO: Figure out why this raises an error.
+    try:
         io_loop.stop()
+    finally:
+        io_loop.close()
 
 
 def print_listeners() -> None:
@@ -394,7 +386,7 @@ try:
 
     print_listeners()
 
-    ioloop = IOLoop.instance()
+    ioloop = IOLoop.current()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
     ioloop.start()

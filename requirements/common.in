@@ -94,7 +94,7 @@ redis
 sourcemap
 
 # Tornado used for server->client push system
-tornado==4.*  # https://github.com/zulip/zulip/issues/8913
+tornado
 
 # Fast JSON parser
 orjson

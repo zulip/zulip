@@ -95,7 +95,7 @@ def start(io_loop=None, check_time=500):
         gen_log.warning("tornado.autoreload started more than once in the same process")
     modify_times = {}
     callback = functools.partial(_reload_on_update, modify_times)
-    scheduler = ioloop.PeriodicCallback(callback, check_time, io_loop=io_loop)
+    scheduler = ioloop.PeriodicCallback(callback, check_time)
     scheduler.start()
 
 
