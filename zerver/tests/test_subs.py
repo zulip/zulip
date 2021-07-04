@@ -45,7 +45,7 @@ from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.message import aggregate_unread_data, get_raw_unread_data
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
@@ -2792,7 +2792,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             return json_success()
 
         def thunk2() -> HttpResponse:
-            return json_error("random failure")
+            raise JsonableError("random failure")
 
         with self.assertRaises(JsonableError):
             compose_views([thunk1, thunk2])

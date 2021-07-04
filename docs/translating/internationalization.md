@@ -170,12 +170,11 @@ from django.utils.translation import gettext as _
 ```
 
 Zulip expects all the error messages to be translatable as well.  To
-ensure this, the error message passed to `json_error` and
-`JsonableError` should always be a literal string enclosed by `_()`
+ensure this, the error message passed to `JsonableError`
+should always be a literal string enclosed by `_()`
 function, e.g.:
 
 ```
-json_error(_('English text'))
 JsonableError(_('English text'))
 ```
 

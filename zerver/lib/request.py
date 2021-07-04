@@ -272,7 +272,7 @@ arguments_map: Dict[str, List[str]] = defaultdict(list)
 # the default parameter values used by has_request_variables.
 #
 # Note that this can't be used in helper functions which are not
-# expected to call json_error or json_success, as it uses json_error
+# expected to call json_success or raise JsonableError, as it uses JsonableError
 # internally when it encounters an error
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     num_params = view_func.__code__.co_argcount

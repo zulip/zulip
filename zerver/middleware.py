@@ -39,7 +39,7 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.request import set_request, unset_request
-from zerver.lib.response import json_error, json_response_from_error, json_unauthorized
+from zerver.lib.response import json_response, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
@@ -448,7 +448,7 @@ class JsonErrorHandler(MiddlewareMixin):
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
             json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
-            return json_error(_("Internal server error"), status=500)
+            return json_response(res_type="error", msg=_("Internal server error"), status=500)
         return None
 
 

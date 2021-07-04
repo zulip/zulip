@@ -319,18 +319,6 @@ python_rules = RuleList(
             "good_lines": ["return json_success()"],
             "bad_lines": ["return json_success({})"],
         },
-        {
-            "pattern": r"\Wjson_error\(_\(?\w+\)",
-            "exclude": {"zerver/tests", "zerver/views/development/"},
-            "description": "Argument to json_error should be a literal string enclosed by _()",
-            "good_lines": ['return json_error(_("string"))'],
-            "bad_lines": ["return json_error(_variable)", "return json_error(_(variable))"],
-        },
-        {
-            "pattern": r"""\Wjson_error\(['"].+[),]$""",
-            "exclude": {"zerver/tests", "zerver/views/development/"},
-            "description": "Argument to json_error should be a literal string enclosed by _()",
-        },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
             "pattern": r"\WJsonableError\(_\(?\w.+\)",

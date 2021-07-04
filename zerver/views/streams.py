@@ -371,7 +371,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
         for thunk in thunks:
             response = thunk()
             if response.status_code != 200:
-                raise JsonableError(response.content)
+                raise JsonableError(response.content)  # nocoverage
             json_dict.update(orjson.loads(response.content))
     return json_success(json_dict)
 
