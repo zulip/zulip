@@ -26,6 +26,7 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_realm_owners
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -196,17 +197,18 @@ def cents_to_dollar_string(cents: int) -> str:
     return f"{cents / 100.:,.2f}"
 
 
-class BillingError(Exception):
+class BillingError(JsonableError):
+    data_fields = ["error_description"]
     # error messages
     CONTACT_SUPPORT = gettext_lazy("Something went wrong. Please contact {email}.")
     TRY_RELOADING = gettext_lazy("Something went wrong. Please reload the page.")
 
     # description is used only for tests
     def __init__(self, description: str, message: Optional[str] = None) -> None:
-        self.description = description
+        self.error_description = description
         if message is None:
             message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
-        self.message = message
+        super().__init__(message)
 
 
 class LicenseLimitError(Exception):

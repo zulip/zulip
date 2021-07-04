@@ -49,7 +49,7 @@ from zerver.decorator import (
 from zerver.lib.actions import do_make_user_billing_admin
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.validator import check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, get_realm
@@ -156,7 +156,7 @@ def upgrade(
             billing_logger.warning(
                 "BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
                 "schedule=%s, license_management=%s, licenses=%s, has stripe_token: %s",
-                e.description,
+                e.error_description,
                 user.id,
                 user.realm.id,
                 user.realm.string_id,
@@ -166,12 +166,12 @@ def upgrade(
                 licenses,
                 stripe_token is not None,
             )
-        return json_error(e.message, data={"error_description": e.description})
+        raise
     except Exception:
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         error_description = "uncaught exception during upgrade"
-        return json_error(error_message, data={"error_description": error_description})
+        raise BillingError(error_description, error_message)
     else:
         return json_success()
 
@@ -417,12 +417,7 @@ def update_plan(
                     licenses=licenses
                 )
             )
-        try:
-            validate_licenses(
-                plan.charge_automatically, licenses, get_latest_seat_count(user.realm)
-            )
-        except BillingError as e:
-            return json_error(e.message, data={"error_description": e.description})
+        validate_licenses(plan.charge_automatically, licenses, get_latest_seat_count(user.realm))
         update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
         return json_success()
 
@@ -439,14 +434,11 @@ def update_plan(
                     "Your plan is already scheduled to renew with {licenses_at_next_renewal} licenses."
                 ).format(licenses_at_next_renewal=licenses_at_next_renewal)
             )
-        try:
-            validate_licenses(
-                plan.charge_automatically,
-                licenses_at_next_renewal,
-                get_latest_seat_count(user.realm),
-            )
-        except BillingError as e:
-            return json_error(e.message, data={"error_description": e.description})
+        validate_licenses(
+            plan.charge_automatically,
+            licenses_at_next_renewal,
+            get_latest_seat_count(user.realm),
+        )
         update_license_ledger_for_manual_plan(
             plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
         )
@@ -462,8 +454,5 @@ def replace_payment_source(
     user: UserProfile,
     stripe_token: str = REQ(),
 ) -> HttpResponse:
-    try:
-        do_replace_payment_source(user, stripe_token, pay_invoices=True)
-    except BillingError as e:
-        return json_error(e.message, data={"error_description": e.description})
+    do_replace_payment_source(user, stripe_token, pay_invoices=True)
     return json_success()

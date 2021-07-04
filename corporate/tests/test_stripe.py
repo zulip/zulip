@@ -464,7 +464,7 @@ class StripeTest(StripeTestCase):
         with self.assertLogs("corporate.stripe", "ERROR") as error_log:
             with self.assertRaises(BillingError) as context:
                 raise_invalid_request_error()
-            self.assertEqual("other stripe error", context.exception.description)
+            self.assertEqual("other stripe error", context.exception.error_description)
             self.assertEqual(
                 error_log.output, ["ERROR:corporate.stripe:Stripe error: None None None None"]
             )
@@ -480,8 +480,8 @@ class StripeTest(StripeTestCase):
         with self.assertLogs("corporate.stripe", "INFO") as info_log:
             with self.assertRaises(StripeCardError) as context:
                 raise_card_error()
-            self.assertIn("not a valid credit card", context.exception.message)
-            self.assertEqual("card error", context.exception.description)
+            self.assertIn("not a valid credit card", str(context.exception))
+            self.assertEqual("card error", context.exception.error_description)
             self.assertEqual(
                 info_log.output, ["INFO:corporate.stripe:Stripe card error: None None None None"]
             )
@@ -1305,7 +1305,9 @@ class StripeTest(StripeTestCase):
         with self.assertLogs("corporate.stripe", "WARNING") as m:
             with self.assertRaises(BillingError) as context:
                 self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
-        self.assertEqual("subscribing with existing subscription", context.exception.description)
+        self.assertEqual(
+            "subscribing with existing subscription", context.exception.error_description
+        )
         self.assertEqual(
             m.output[0],
             f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {hamlet.realm.id}> id> trying to upgrade, but has an active subscription",
@@ -2336,7 +2338,9 @@ class StripeTest(StripeTestCase):
             m.output[0],
             f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {user.realm.id}> id> trying to upgrade, but has an active subscription",
         )
-        self.assertEqual(context.exception.description, "subscribing with existing subscription")
+        self.assertEqual(
+            context.exception.error_description, "subscribing with existing subscription"
+        )
 
         invoice_plans_as_needed(self.next_year)
 
@@ -3384,10 +3388,12 @@ class InvoiceTest(StripeTestCase):
         assert plan and plan.customer
         plan.customer.stripe_customer_id = None
         plan.customer.save(update_fields=["stripe_customer_id"])
-        with self.assertRaisesRegex(
-            BillingError, "Realm zulip has a paid plan without a Stripe customer"
-        ):
+        with self.assertRaises(BillingError) as context:
             invoice_plan(plan, timezone_now())
+        self.assertRegex(
+            context.exception.error_description,
+            "Realm zulip has a paid plan without a Stripe customer",
+        )
 
     @mock_stripe()
     def test_invoice_plan(self, *mocks: Mock) -> None:
