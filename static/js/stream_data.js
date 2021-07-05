@@ -383,7 +383,7 @@ export function get_subscribed_streams_for_user(user_id) {
     // Note that we only have access to subscribers of some streams
     // depending on our role.
     const all_subs = get_unsorted_subs();
-    const subscribed_subs = [];
+    const subscribed_streams = [];
     for (const sub of all_subs) {
         if (!can_view_subscribers(sub)) {
             // Private streams that we have been removed from appear
@@ -392,11 +392,11 @@ export function get_subscribed_streams_for_user(user_id) {
             continue;
         }
         if (is_user_subscribed(sub.stream_id, user_id)) {
-            subscribed_subs.push(sub);
+            subscribed_streams.push(sub);
         }
     }
 
-    return subscribed_subs;
+    return subscribed_streams;
 }
 
 export function get_invite_stream_data() {
