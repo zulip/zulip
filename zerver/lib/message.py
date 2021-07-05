@@ -128,7 +128,7 @@ def truncate_content(content: str, max_length: int, truncation_message: str) -> 
 
 
 def normalize_body(body: str) -> str:
-    body = body.rstrip()
+    body = body.rstrip().lstrip("\n")
     if len(body) == 0:
         raise JsonableError(_("Message must not be empty"))
     if "\x00" in body:
