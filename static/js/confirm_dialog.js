@@ -34,6 +34,9 @@ import * as settings_data from "./settings_data";
            This will show a loading spinner when the yes button is clicked.
            The caller is responsible for calling hide_dialog_spinner()
            to hide the spinner in both success and error handlers.
+
+        7) If a caller needs to run code after the modal body is added
+           to DOM, it can do so by passing a post_render hook.
 */
 
 export function hide_dialog_spinner() {
@@ -97,6 +100,10 @@ export function launch(conf) {
     const submit_button_span = dialog.find(".dialog_submit_button span");
 
     submit_button_span.html(conf.html_submit_button);
+
+    if (conf.post_render !== undefined) {
+        conf.post_render();
+    }
 
     const submit_button = dialog.find(".dialog_submit_button");
     // Set up handlers.
