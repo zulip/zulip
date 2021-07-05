@@ -212,7 +212,7 @@ def join_bigbluebutton(
     checksum: str = REQ(),
 ) -> HttpResponse:
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
-        raise JsonableError(_("Big Blue Button is not configured."))
+        raise JsonableError(_("BigBlueButton is not configured."))
     else:
         try:
             response = requests.get(
@@ -230,14 +230,14 @@ def join_bigbluebutton(
             )
             response.raise_for_status()
         except requests.RequestException:
-            raise JsonableError(_("Error connecting to the Big Blue Button server."))
+            raise JsonableError(_("Error connecting to the BigBlueButton server."))
 
         payload = ElementTree.fromstring(response.text)
         if payload.find("messageKey").text == "checksumError":
-            raise JsonableError(_("Error authenticating to the Big Blue Button server."))
+            raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
         if payload.find("returncode").text != "SUCCESS":
-            raise JsonableError(_("Big Blue Button server returned an unexpected error."))
+            raise JsonableError(_("BigBlueButton server returned an unexpected error."))
 
         join_params = urlencode(  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
             {

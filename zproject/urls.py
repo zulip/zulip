@@ -490,7 +490,7 @@ v1_api_and_json_patterns = [
     ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
-    # Used to generate a Big Blue Button video call URL
+    # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
@@ -607,7 +607,7 @@ i18n_urls = [
     path("calls/zoom/register", register_zoom_user),
     path("calls/zoom/complete", complete_zoom_user),
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
-    # Used to join a Big Blue Button video call
+    # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
     # API and integrations documentation
     path("integrations/doc-html/<integration_name>", integration_doc),
