@@ -772,10 +772,9 @@ export function to_compose_target() {
         }
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const topics = stream_topic_history.get_recent_topic_names(stream_id);
         const operators = [{operator: "stream", operand: stream_name}];
         const topic = compose_state.topic();
-        if (topics.includes(topic)) {
+        if (topic !== "") {
             operators.push({operator: "topic", operand: topic});
         }
         activate(operators, opts);
