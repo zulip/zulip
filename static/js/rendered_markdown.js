@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 
@@ -7,6 +6,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
+import * as copy_button_widget from "./copy_button_widget";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -228,10 +228,12 @@ export const update_elements = (content) => {
         }
         const copy_button = $(copy_code_button());
         $pre.prepend(copy_button);
-        new ClipboardJS(copy_button[0], {
-            text(copy_element) {
-                return $(copy_element).siblings("code").text();
-            },
+
+        copy_button_widget.show({
+            element: copy_button,
+            placement: "left",
+            content: $t({defaultMessage: "Copy code"}),
+            text: (copy_element) => $(copy_element).siblings("code").text(),
         });
     });
 
