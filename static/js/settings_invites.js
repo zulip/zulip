@@ -206,7 +206,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
-            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            html_submit_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_revoke_invite,
             fade: true,
         });
@@ -232,7 +232,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
-            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            html_submit_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_resend_invite,
             fade: true,
         });

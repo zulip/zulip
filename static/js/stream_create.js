@@ -441,7 +441,7 @@ export function set_up_handlers() {
                 parent: modal_parent,
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
                 html_body,
-                html_yes_button: $t_html({defaultMessage: "Confirm"}),
+                html_submit_button: $t_html({defaultMessage: "Confirm"}),
                 on_click: () => {
                     create_stream();
                 },

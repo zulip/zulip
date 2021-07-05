@@ -62,7 +62,7 @@ export function launch(conf) {
         // templates.
         "html_heading",
         "html_body",
-        "html_yes_button",
+        "html_submit_button",
         "on_click",
         "parent",
     ];
@@ -89,13 +89,13 @@ export function launch(conf) {
     );
     confirm_dialog.find(".confirm_dialog_body").append(conf.html_body);
 
-    const yes_button_span = confirm_dialog.find(".confirm_dialog_yes_button span");
+    const submit_button_span = confirm_dialog.find(".confirm_dialog_yes_button span");
 
-    yes_button_span.html(conf.html_yes_button);
+    submit_button_span.html(conf.html_submit_button);
 
-    const yes_button = confirm_dialog.find(".confirm_dialog_yes_button");
+    const submit_button = confirm_dialog.find(".confirm_dialog_yes_button");
     // Set up handlers.
-    yes_button.on("click", () => {
+    submit_button.on("click", () => {
         if (conf.loading_spinner) {
             show_confirm_dialog_spinner();
         } else {
@@ -112,6 +112,6 @@ export function launch(conf) {
     overlays.open_modal("#confirm_dialog_modal");
 
     conf.parent.on("shown.bs.modal", () => {
-        yes_button.trigger("focus");
+        submit_button.trigger("focus");
     });
 }
