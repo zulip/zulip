@@ -62,7 +62,6 @@ EXEMPT_FILES = {
     "static/js/desktop_integration.js",
     "static/js/drafts.js",
     "static/js/echo.js",
-    "static/js/edit_fields_modal.js",
     "static/js/emoji_picker.js",
     "static/js/emojisets.js",
     "static/js/favicon.js",

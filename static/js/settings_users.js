@@ -11,7 +11,6 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import * as edit_fields_modal from "./edit_fields_modal";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -607,7 +606,7 @@ function handle_bot_form(tbody, status_field) {
         let owner_widget;
 
         function submit_bot_details() {
-            const full_name = $("#edit-fields-modal").find("input[name='full_name']");
+            const full_name = $("#dialog_widget_modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
@@ -623,7 +622,7 @@ function handle_bot_form(tbody, status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#edit-fields-modal");
+            overlays.close_modal("#dialog_widget_modal");
         }
 
         function get_bot_owner_widget() {
@@ -646,12 +645,13 @@ function handle_bot_form(tbody, status_field) {
             owner_widget = dropdown_list_widget(opts);
         }
 
-        edit_fields_modal.launch({
+        dialog_widget.launch({
             html_heading: $t({defaultMessage: "Change bot info and owner"}),
             parent: modal_parent,
             html_body,
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
+            fade: true,
         });
     });
 }
