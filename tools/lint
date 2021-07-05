@@ -134,7 +134,7 @@ def run() -> None:
         command,
         ["py"],
         pass_targets=False,
-        description="Static type checker for Python (config: mypy.ini)",
+        description="Static type checker for Python (config: pyproject.toml)",
     )
     linter_config.external_linter(
         "tsc",
