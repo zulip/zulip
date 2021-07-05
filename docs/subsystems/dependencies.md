@@ -192,7 +192,7 @@ highlighting.  The system is largely managed by the code in
 * **Mypy type checker**.  Because we're using mypy in a strict mode,
   when you add use of a new Python dependency, you usually need to
   either adds stubs to the `stubs/` directory for the library, or edit
-  `mypy.ini` in the root of the Zulip project to configure
+  `pyproject.toml` in the root of the Zulip project to configure
   `ignore_missing_imports` for the new library.  See
   [our mypy docs][mypy-docs] for more details.
 

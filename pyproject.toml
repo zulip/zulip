@@ -7,3 +7,44 @@ src_paths = [".", "tools", "tools/setup/emoji"]
 known_third_party = "zulip"
 profile = "black"
 line_length = 100
+
+[tool.mypy]
+# Logistics of what code to check and how to handle the data.
+scripts_are_modules = true
+show_traceback = true
+# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
+# for notes on how we manage mypy stubs.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
+
+# These are all the options that would be enabled by mypy --strict, in
+# the order listed by the mypy --help documentation of --strict.  We
+# do not yet enable all of them.
+warn_unused_configs = true
+disallow_any_generics = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = false
+no_implicit_reexport = false
+strict_equality = true
+
+# Display the codes needed for # type: ignore[code] annotations.
+show_error_codes = true
+
+# We use a lot of third-party libraries we don't have stubs for, as
+# well as a handful of our own modules that we haven't told mypy how
+# to find.  Ignore them.  (For some details, see:
+# `git log -p -S ignore_missing_imports -- mypy.ini`.)
+#
+# This doesn't get in the way of using the stubs we *do* have.
+ignore_missing_imports = true
+
+# Warn of unreachable or redundant code.
+warn_unreachable = true
