@@ -47,7 +47,7 @@ function sort_url(a, b) {
 function open_linkifier_edit_form(linkifier_id) {
     const linkifiers_list = page_params.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
-    const modal_body_html = render_admin_linkifier_edit_form({
+    const html_body = render_admin_linkifier_edit_form({
         linkifier_id,
         pattern: linkifier.pattern,
         url_format_string: linkifier.url_format,
@@ -103,9 +103,9 @@ function open_linkifier_edit_form(linkifier_id) {
     }
 
     edit_fields_modal.launch({
-        modal_label: $t({defaultMessage: "Edit linkfiers"}),
+        html_heading: $t({defaultMessage: "Edit linkfiers"}),
         parent: modal_parent,
-        modal_body_html,
+        html_body,
         on_click: submit_linkifier_form,
     });
 }

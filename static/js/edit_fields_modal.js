@@ -27,7 +27,7 @@ import * as overlays from "./overlays";
 */
 
 export function launch(modal_fields) {
-    const required_modal_fields = ["modal_label", "parent", "modal_body_html", "on_click"];
+    const required_modal_fields = ["html_heading", "parent", "html_body", "on_click"];
 
     for (const field of required_modal_fields) {
         if (!modal_fields[field]) {
@@ -36,7 +36,7 @@ export function launch(modal_fields) {
     }
 
     const html = render_edit_fields_modal({
-        modal_label: modal_fields.modal_label,
+        html_heading: modal_fields.html_heading,
     });
     const edit_fields_modal = $(html);
     modal_fields.parent.append(edit_fields_modal);
@@ -45,7 +45,7 @@ export function launch(modal_fields) {
         overlays.close_modal("#edit-fields-modal");
     }
 
-    edit_fields_modal.find(".edit-fields-modal-body").html(modal_fields.modal_body_html);
+    edit_fields_modal.find(".edit-fields-modal-body").html(modal_fields.html_body);
 
     if (modal_fields.post_render !== undefined) {
         modal_fields.post_render();

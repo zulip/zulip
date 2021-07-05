@@ -523,7 +523,7 @@ function handle_human_form(tbody, status_field) {
             return;
         }
 
-        const modal_body_html = render_admin_human_form({
+        const html_body = render_admin_human_form({
             user_id,
             email: person.email,
             full_name: person.full_name,
@@ -575,9 +575,9 @@ function handle_human_form(tbody, status_field) {
         }
 
         edit_fields_modal.launch({
-            modal_label: $t({defaultMessage: "Change user info and roles"}),
+            html_heading: $t({defaultMessage: "Change user info and roles"}),
             parent: modal_parent,
-            modal_body_html,
+            html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
         });
@@ -595,7 +595,7 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const modal_body_html = render_admin_bot_form({
+        const html_body = render_admin_bot_form({
             user_id,
             email: bot.email,
             full_name: bot.full_name,
@@ -646,9 +646,9 @@ function handle_bot_form(tbody, status_field) {
         }
 
         edit_fields_modal.launch({
-            modal_label: $t({defaultMessage: "Change bot info and owner"}),
+            html_heading: $t({defaultMessage: "Change bot info and owner"}),
             parent: modal_parent,
-            modal_body_html,
+            html_body,
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
         });
