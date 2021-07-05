@@ -20,7 +20,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.validator import check_list, check_string
 from zerver.models import UserProfile
 
-MISSING_EVENT_HEADER_MESSAGE = """
+MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
 is missing the HTTP {header_name} header.  Because this header is how
 {integration_name} indicates the event type, this usually indicates a configuration

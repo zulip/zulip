@@ -899,6 +899,21 @@ class MessagePOSTTest(ZulipTestCase):
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content, "  I like whitespace at the end!")
 
+        # Test if it removes the new line from the beginning of the message.
+        post_data = {
+            "type": "stream",
+            "to": "Verona",
+            "client": "test suite",
+            "content": "\nAvoid the new line at the beginning of the message.",
+            "topic": "Test topic",
+        }
+        result = self.client_post("/json/messages", post_data)
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(
+            sent_message.content, "Avoid the new line at the beginning of the message."
+        )
+
     @override_settings(MAX_MESSAGE_LENGTH=25)
     def test_long_message(self) -> None:
         """
