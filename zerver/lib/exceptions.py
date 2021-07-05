@@ -291,48 +291,32 @@ class AuthenticationFailedError(JsonableError):
         return _("Your username or password is incorrect")
 
 
-class UserDeactivatedError(JsonableError):
+class UserDeactivatedError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.USER_DEACTIVATED
-    http_status_code = 403
-
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def msg_format() -> str:
         return _("Account is deactivated")
 
 
-class RealmDeactivatedError(JsonableError):
+class RealmDeactivatedError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
-    http_status_code = 403
-
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def msg_format() -> str:
         return _("This organization has been deactivated")
 
 
-class PasswordAuthDisabledError(JsonableError):
+class PasswordAuthDisabledError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.PASSWORD_AUTH_DISABLED
-    http_status_code = 403
-
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def msg_format() -> str:
         return _("Password authentication is disabled in this organization")
 
 
-class PasswordResetRequiredError(JsonableError):
+class PasswordResetRequiredError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.PASSWORD_RESET_REQUIRED
-    http_status_code = 403
-
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def msg_format() -> str:
