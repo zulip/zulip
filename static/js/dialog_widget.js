@@ -62,7 +62,7 @@ export function show_dialog_spinner() {
 }
 
 export function launch(conf) {
-    const html = render_dialog_widget({fade: conf.fade});
+    const html = render_dialog_widget({fade: conf.fade, is_confirm_dialog: conf.is_confirm_dialog});
     const dialog = $(html);
 
     const mandatory_fields = [
