@@ -59,7 +59,7 @@ TAB_DISPLAY_NAMES = {
     "restrict-by-email-domain": "Restrict by email domain",
     "zoom": "Zoom",
     "jitsi-meet": "Jitsi Meet",
-    "bigbluebutton": "Big Blue Button",
+    "bigbluebutton": "BigBlueButton",
     "disable": "Disabled",
     "chrome": "Chrome",
     "firefox": "Firefox",

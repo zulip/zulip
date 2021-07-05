@@ -656,7 +656,7 @@ test("set_up", ({override, mock_template}) => {
         },
         big_blue_button: {
             id: 4,
-            name: "Big Blue Button",
+            name: "BigBlueButton",
         },
     };
 
