@@ -80,7 +80,18 @@ function FakeElement(selector, opts) {
                 // if ($.find().length) { //success }
                 return [];
             }
-            throw new Error("Cannot find " + child_selector + " in " + selector);
+            throw new Error(`
+                We need you to simulate the results of $(...).find(...)
+                by using set_find_results. You want something like this:
+
+                    const container = ...;
+                    const child = ...;
+                    container.set_find_results("${child_selector}", child);
+
+                Then calling container.find("${child_selector}") will return
+                the "child" zjquery element.
+
+                `);
         },
         get_on_handler(name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
