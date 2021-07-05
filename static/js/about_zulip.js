@@ -1,9 +1,10 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_about_zulip from "../templates/about_zulip.hbs";
 
 import * as browser_history from "./browser_history";
+import * as copy_button_widget from "./copy_button_widget";
+import {$t} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 
@@ -16,7 +17,13 @@ export function launch() {
         },
     });
 
-    new ClipboardJS("#about-zulip .fa-copy");
+    $("#about-zulip .fa-copy").each(function () {
+        copy_button_widget.show({
+            element: $(this),
+            placement: "right",
+            content: $t({defaultMessage: "Copy version"}),
+        });
+    });
 }
 
 export function initialize() {
