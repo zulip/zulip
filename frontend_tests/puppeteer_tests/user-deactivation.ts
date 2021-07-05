@@ -33,12 +33,12 @@ async function test_deactivate_user(page: Page): Promise<void> {
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            "#confirm_dialog_modal .confirm_dialog_yes_button",
+            "#confirm_dialog_modal .confirm_dialog_submit_button",
         ),
         "Confirm",
         "Deactivate button has incorrect text.",
     );
-    await page.click("#confirm_dialog_modal .confirm_dialog_yes_button");
+    await page.click("#confirm_dialog_modal .confirm_dialog_submit_button");
     await page.waitForSelector("#user-field-status", {hidden: true});
 }
 

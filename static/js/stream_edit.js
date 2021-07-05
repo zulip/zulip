@@ -926,7 +926,7 @@ export function initialize() {
         }
 
         function do_archive_stream() {
-            const stream_id = $(".confirm_dialog_yes_button").data("stream-id");
+            const stream_id = $(".confirm_dialog_submit_button").data("stream-id");
             if (!stream_id) {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Invalid stream id"}),
@@ -957,7 +957,7 @@ export function initialize() {
             fade: true,
         });
 
-        $(".confirm_dialog_yes_button").attr("data-stream-id", stream_id);
+        $(".confirm_dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {

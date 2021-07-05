@@ -36,16 +36,16 @@ import * as overlays from "./overlays";
 */
 
 export function hide_confirm_dialog_spinner() {
-    $(".confirm_dialog_yes_button .loader").hide();
-    $(".confirm_dialog_yes_button span").show();
-    $(".confirm_dialog_yes_button").prop("disabled", false);
+    $(".confirm_dialog_submit_button .loader").hide();
+    $(".confirm_dialog_submit_button span").show();
+    $(".confirm_dialog_submit_button").prop("disabled", false);
 }
 
 export function show_confirm_dialog_spinner() {
-    $(".confirm_dialog_yes_button .loader").css("display", "inline-block");
-    $(".confirm_dialog_yes_button span").hide();
-    $(".confirm_dialog_yes_button").prop("disabled", true);
-    $(".confirm_dialog_yes_button object").on("load", function () {
+    $(".confirm_dialog_submit_button .loader").css("display", "inline-block");
+    $(".confirm_dialog_submit_button span").hide();
+    $(".confirm_dialog_submit_button").prop("disabled", true);
+    $(".confirm_dialog_submit_button object").on("load", function () {
         const doc = this.getSVGDocument();
         const $svg = $(doc).find("svg");
         $svg.find("rect").css("fill", "#000");
@@ -89,11 +89,11 @@ export function launch(conf) {
     );
     confirm_dialog.find(".confirm_dialog_body").append(conf.html_body);
 
-    const submit_button_span = confirm_dialog.find(".confirm_dialog_yes_button span");
+    const submit_button_span = confirm_dialog.find(".confirm_dialog_submit_button span");
 
     submit_button_span.html(conf.html_submit_button);
 
-    const submit_button = confirm_dialog.find(".confirm_dialog_yes_button");
+    const submit_button = confirm_dialog.find(".confirm_dialog_submit_button");
     // Set up handlers.
     submit_button.on("click", () => {
         if (conf.loading_spinner) {
