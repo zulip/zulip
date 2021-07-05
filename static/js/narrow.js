@@ -31,7 +31,6 @@ import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
-import * as stream_topic_history from "./stream_topic_history";
 import * as top_left_corner from "./top_left_corner";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
