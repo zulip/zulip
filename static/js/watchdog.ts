@@ -1,4 +1,4 @@
-const unsuspend_callbacks = [];
+const unsuspend_callbacks: (() => void)[] = [];
 let watchdog_time = Date.now();
 
 // This field keeps track of whether we are attempting to
@@ -7,11 +7,11 @@ let watchdog_time = Date.now();
 // system when coming back from unsuspend.
 let suspect_offline = false;
 
-export function set_suspect_offline(suspected) {
+export function set_suspect_offline(suspected: boolean): void {
     suspect_offline = suspected;
 }
 
-export function suspects_user_is_offline() {
+export function suspects_user_is_offline(): boolean {
     return suspect_offline;
 }
 
@@ -25,7 +25,7 @@ export function suspects_user_is_offline() {
     to reset ourselves accordingly.
 */
 
-export function check_for_unsuspend() {
+export function check_for_unsuspend(): void {
     const new_time = Date.now();
     if (new_time - watchdog_time > 20000) {
         // 20 seconds.
@@ -41,7 +41,7 @@ export function check_for_unsuspend() {
     watchdog_time = new_time;
 }
 
-export function on_unsuspend(f) {
+export function on_unsuspend(f: () => void): void {
     unsuspend_callbacks.push(f);
 }
 
