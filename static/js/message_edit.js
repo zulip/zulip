@@ -13,6 +13,7 @@ import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
@@ -981,7 +982,7 @@ export function delete_message(msg_id) {
                 currently_deleting_messages = currently_deleting_messages.filter(
                     (id) => id !== msg_id,
                 );
-                confirm_dialog.hide_dialog_spinner();
+                dialog_widget.hide_dialog_spinner();
                 overlays.close_modal("#dialog_widget_modal");
             },
             error(xhr) {
@@ -989,7 +990,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
 
-                confirm_dialog.hide_dialog_spinner();
+                dialog_widget.hide_dialog_spinner();
                 ui_report.error(
                     $t_html({defaultMessage: "Error deleting message"}),
                     xhr,

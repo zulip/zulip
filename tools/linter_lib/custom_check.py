@@ -130,7 +130,7 @@ js_rules = RuleList(
                 "static/js/portico",
                 "static/js/lightbox.js",
                 "static/js/ui_report.ts",
-                "static/js/confirm_dialog.js",
+                "static/js/dialog_widget.js",
                 "static/js/edit_fields_modal.js",
                 "frontend_tests/",
             },

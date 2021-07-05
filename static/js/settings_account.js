@@ -12,6 +12,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
+import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -561,7 +562,7 @@ export function set_up() {
             channel.del({
                 url: "/json/users/me",
                 success() {
-                    confirm_dialog.hide_dialog_spinner();
+                    dialog_widget.hide_dialog_spinner();
                     overlays.close_modal("#dialog_widget_modal");
                     window.location.href = "/login/";
                 },
@@ -587,7 +588,7 @@ export function set_up() {
                             rendered_error_msg = error_last_user;
                         }
                     }
-                    confirm_dialog.hide_dialog_spinner();
+                    dialog_widget.hide_dialog_spinner();
                     overlays.close_modal("#dialog_widget_modal");
                     $("#account-settings-status")
                         .addClass("alert-error")
