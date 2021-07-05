@@ -41,12 +41,20 @@ from zerver.forms import (
     OurAuthenticationForm,
     ZulipPasswordResetForm,
 )
+from zerver.lib.exceptions import (
+    AuthenticationFailedError,
+    InvalidSubdomainError,
+    PasswordAuthDisabledError,
+    PasswordResetRequiredError,
+    RealmDeactivatedError,
+    UserDeactivatedError,
+)
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
@@ -822,7 +830,7 @@ def api_fetch_api_key(
 
     realm = get_realm_from_request(request)
     if realm is None:
-        raise JsonableError(_("Invalid subdomain"))
+        raise InvalidSubdomainError()
 
     if not ldap_auth_enabled(realm=realm):
         # In case we don't authenticate against LDAP, check for a valid
@@ -832,33 +840,15 @@ def api_fetch_api_key(
         request=request, username=username, password=password, realm=realm, return_data=return_data
     )
     if return_data.get("inactive_user"):
-        return json_error(
-            _("Your account has been disabled."), data={"reason": "user disable"}, status=403
-        )
+        raise UserDeactivatedError()
     if return_data.get("inactive_realm"):
-        return json_error(
-            _("This organization has been deactivated."),
-            data={"reason": "realm deactivated"},
-            status=403,
-        )
+        raise RealmDeactivatedError()
     if return_data.get("password_auth_disabled"):
-        return json_error(
-            _("Password auth is disabled in your team."),
-            data={"reason": "password auth disabled"},
-            status=403,
-        )
+        raise PasswordAuthDisabledError()
     if return_data.get("password_reset_needed"):
-        return json_error(
-            _("You need to reset your password."),
-            data={"reason": "password reset needed"},
-            status=403,
-        )
+        raise PasswordResetRequiredError()
     if user_profile is None:
-        return json_error(
-            _("Your username or password is incorrect."),
-            data={"reason": "incorrect_creds"},
-            status=403,
-        )
+        raise AuthenticationFailedError()
 
     # Maybe sending 'user_logged_in' signal is the better approach:
     #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)

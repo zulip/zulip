@@ -53,6 +53,9 @@ class ErrorCode(AbstractEnum):
     RATE_LIMIT_HIT = ()
     USER_DEACTIVATED = ()
     REALM_DEACTIVATED = ()
+    PASSWORD_AUTH_DISABLED = ()
+    PASSWORD_RESET_REQUIRED = ()
+    AUTHENTICATION_FAILED = ()
 
 
 class JsonableError(Exception):
@@ -274,6 +277,20 @@ class StreamAdministratorRequired(JsonableError):
         return _("Must be an organization or stream administrator")
 
 
+class AuthenticationFailedError(JsonableError):
+    # Generic class for authentication failures
+    code: ErrorCode = ErrorCode.AUTHENTICATION_FAILED
+    # Bug: Shouldn't this be 401?
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Your username or password is incorrect")
+
+
 class UserDeactivatedError(JsonableError):
     code: ErrorCode = ErrorCode.USER_DEACTIVATED
     http_status_code = 403
@@ -296,6 +313,30 @@ class RealmDeactivatedError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("This organization has been deactivated")
+
+
+class PasswordAuthDisabledError(JsonableError):
+    code: ErrorCode = ErrorCode.PASSWORD_AUTH_DISABLED
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Password authentication is disabled in this organization")
+
+
+class PasswordResetRequiredError(JsonableError):
+    code: ErrorCode = ErrorCode.PASSWORD_RESET_REQUIRED
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Your password has been disabled and needs to be reset")
 
 
 class MarkdownRenderingException(Exception):

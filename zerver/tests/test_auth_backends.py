@@ -4030,7 +4030,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         result = self.client_post(
             "/api/v1/fetch_api_key", dict(username=self.email, password="wrong")
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 403)
 
     def test_invalid_subdomain(self) -> None:
         with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
@@ -4038,7 +4038,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=initial_password(self.email)),
             )
-        self.assert_json_error(result, "Invalid subdomain", 400)
+        self.assert_json_error(result, "Invalid subdomain", 404)
 
     def test_password_auth_disabled(self) -> None:
         with mock.patch("zproject.backends.password_auth_enabled", return_value=False):
@@ -4046,7 +4046,9 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username=self.email, password=initial_password(self.email)),
             )
-            self.assert_json_error_contains(result, "Password auth is disabled", 403)
+            self.assert_json_error_contains(
+                result, "Password authentication is disabled in this organization", 403
+            )
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auth_email_auth_disabled_success(self) -> None:
@@ -4072,14 +4074,14 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 403)
 
         self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 403)
 
         self.change_ldap_user_attr("hamlet", "department", "zulip")
         result = self.client_post(
@@ -4105,7 +4107,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 403)
 
         self.change_ldap_user_attr("hamlet", "test2", "testing")
         # Check with only one set
@@ -4113,7 +4115,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 403)
 
         self.change_ldap_user_attr("hamlet", "test1", "test")
         # Setting org_membership to not cause django_ldap_auth to warn, when synchronising
@@ -4148,7 +4150,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 403)
 
         # Override access with `org_membership`
         self.change_ldap_user_attr("hamlet", "department", "zulip")
@@ -4167,7 +4169,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect.", 403)
+            self.assert_json_error(result, "Your username or password is incorrect", 403)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -4175,7 +4177,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_error_contains(result, "Your account has been disabled", 403)
+        self.assert_json_error_contains(result, "Account is deactivated", 403)
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
@@ -4204,7 +4206,9 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username=self.email, password=password),
             )
-            self.assert_json_error(result, "You need to reset your password.", 403)
+            self.assert_json_error(
+                result, "Your password has been disabled and needs to be reset", 403
+            )
 
 
 class DevFetchAPIKeyTest(ZulipTestCase):
@@ -4229,12 +4233,12 @@ class DevFetchAPIKeyTest(ZulipTestCase):
     def test_unregistered_user(self) -> None:
         email = "foo@zulip.com"
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=email))
-        self.assert_json_error_contains(result, "This user is not registered.", 403)
+        self.assert_json_error_contains(result, "Your username or password is incorrect", 403)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_error_contains(result, "Your account has been disabled", 403)
+        self.assert_json_error_contains(result, "Account is deactivated", 403)
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
@@ -4254,7 +4258,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/dev_fetch_api_key",
                 dict(username=self.email, password=initial_password(self.email)),
             )
-            self.assert_json_error_contains(result, "Invalid subdomain", 400)
+            self.assert_json_error_contains(result, "Invalid subdomain", 404)
 
 
 class DevGetEmailsTest(ZulipTestCase):
