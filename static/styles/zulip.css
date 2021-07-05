@@ -2321,8 +2321,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 20px;
 }
 
-.topic_move_spinner,
-#confirm_dialog_spinner {
+.topic_move_spinner {
     margin: 0 auto;
 }
 
