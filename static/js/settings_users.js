@@ -9,6 +9,7 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import * as edit_fields_modal from "./edit_fields_modal";
 import {$t, $t_html} from "./i18n";
@@ -570,15 +571,16 @@ function handle_human_form(tbody, status_field) {
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#edit-fields-modal");
+            overlays.close_modal("#dialog_widget_modal");
         }
 
-        edit_fields_modal.launch({
-            html_heading: $t({defaultMessage: "Change user info and roles"}),
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Change user info and roles"}),
             parent: modal_parent,
             html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
+            fade: true,
         });
     });
 }
