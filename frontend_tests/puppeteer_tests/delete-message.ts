@@ -18,12 +18,12 @@ async function delete_message_test(page: Page): Promise<void> {
     const messages_quantitiy = await page.evaluate(() => $("#zhome .message_row").length);
     const last_message_id = await click_delete_and_return_last_msg_id(page);
 
-    await page.waitForSelector("#confirm_dialog_modal", {visible: true});
-    await page.click(".confirm_dialog_submit_button");
-    await page.waitForSelector(".confirm_dialog_submit_button .loader", {
+    await page.waitForSelector("#dialog_widget_modal", {visible: true});
+    await page.click(".dialog_submit_button");
+    await page.waitForSelector(".dialog_submit_button .loader", {
         visible: true,
     });
-    await page.waitForSelector(".confirm_dialog_submit_button span", {hidden: true});
+    await page.waitForSelector(".dialog_submit_button span", {hidden: true});
 
     await page.waitForFunction(
         (expected_length: number) => $("#zhome .message_row").length === expected_length,
@@ -32,7 +32,7 @@ async function delete_message_test(page: Page): Promise<void> {
     );
 
     await page.waitForSelector(`#${CSS.escape(last_message_id!)}`, {hidden: true});
-    await page.waitForSelector(".confirm_dialog_submit_button .loader", {
+    await page.waitForSelector(".dialog_submit_button .loader", {
         hidden: true,
     });
 }

@@ -981,19 +981,19 @@ export function delete_message(msg_id) {
                 currently_deleting_messages = currently_deleting_messages.filter(
                     (id) => id !== msg_id,
                 );
-                confirm_dialog.hide_confirm_dialog_spinner();
-                overlays.close_modal("#confirm_dialog_modal");
+                confirm_dialog.hide_dialog_spinner();
+                overlays.close_modal("#dialog_widget_modal");
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
                     (id) => id !== msg_id,
                 );
 
-                confirm_dialog.hide_confirm_dialog_spinner();
+                confirm_dialog.hide_dialog_spinner();
                 ui_report.error(
                     $t_html({defaultMessage: "Error deleting message"}),
                     xhr,
-                    $("#confirm_dialog_error"),
+                    $("#dialog_error"),
                 );
             },
         });

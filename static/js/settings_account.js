@@ -561,8 +561,8 @@ export function set_up() {
             channel.del({
                 url: "/json/users/me",
                 success() {
-                    confirm_dialog.hide_confirm_dialog_spinner();
-                    overlays.close_modal("#confirm_dialog_modal");
+                    confirm_dialog.hide_dialog_spinner();
+                    overlays.close_modal("#dialog_widget_modal");
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -587,8 +587,8 @@ export function set_up() {
                             rendered_error_msg = error_last_user;
                         }
                     }
-                    confirm_dialog.hide_confirm_dialog_spinner();
-                    overlays.close_modal("#confirm_dialog_modal");
+                    confirm_dialog.hide_dialog_spinner();
+                    overlays.close_modal("#dialog_widget_modal");
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)
