@@ -223,7 +223,11 @@ export function start(msg_type, opts) {
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // PM recipient should be.
-    if (opts.trigger === "compose_hotkey" || opts.trigger === "new topic button") {
+    if (
+        opts.trigger === "compose_hotkey" ||
+        opts.trigger === "new topic button" ||
+        opts.trigger === "new private message"
+    ) {
         opts.topic = "";
         opts.private_message_recipient = "";
     }
