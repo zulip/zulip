@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_change_stream_info_modal from "../templates/change_stream_info_modal.hbs";
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
@@ -153,7 +154,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
 }
 
 function get_stream_id(target) {
-    const row = $(target).closest(".stream-row, .subscription_settings");
+    const row = $(target).closest(".stream-row, .subscription_settings, .save-button");
     return Number.parseInt(row.attr("data-stream-id"), 10);
 }
 
@@ -209,14 +210,14 @@ function get_subscriber_list(sub_row) {
 export function update_stream_name(sub, new_name) {
     const sub_settings = settings_for_sub(sub);
     sub_settings.find(".email-address").text(sub.email_address);
-    sub_settings.find(".stream-name-editable").text(new_name);
+    sub_settings.find(".sub-stream-name").text(new_name);
 }
 
 export function update_stream_description(sub) {
     const stream_settings = settings_for_sub(sub);
     stream_settings.find("input.description").val(sub.description);
     stream_settings
-        .find(".stream-description-editable")
+        .find(".sub-stream-description")
         .html(util.clean_user_content_links(sub.rendered_description));
 }
 
@@ -529,6 +530,7 @@ export function show_settings_for(node) {
     const sub_settings = settings_for_sub(sub);
 
     $(".nothing-selected").hide();
+    $("#subscription_overlay .stream_change_property_info").hide();
 
     sub_settings.addClass("show");
 
@@ -687,96 +689,6 @@ function change_stream_privacy(e) {
     });
 }
 
-export function change_stream_name(e) {
-    e.preventDefault();
-    const sub_settings = $(e.target).closest(".subscription_settings");
-    const stream_id = get_stream_id(e.target);
-    const new_name_box = sub_settings.find(".stream-name-editable");
-    const new_name = new_name_box.text().trim();
-    const old_name = stream_data.maybe_get_stream_name(stream_id);
-
-    $(".stream_change_property_info").hide();
-
-    if (old_name === new_name) {
-        return;
-    }
-
-    channel.patch({
-        url: "/json/streams/" + stream_id,
-        data: {new_name},
-        success() {
-            new_name_box.val("");
-            ui_report.success(
-                $t_html({defaultMessage: "The stream has been renamed!"}),
-                $(".stream_change_property_info"),
-            );
-        },
-        error(xhr) {
-            new_name_box.text(old_name);
-            ui_report.error(
-                $t_html({defaultMessage: "Error"}),
-                xhr,
-                $(".stream_change_property_info"),
-            );
-        },
-    });
-}
-
-export function set_raw_description(target, destination) {
-    const sub = get_sub_for_target(target);
-    if (!sub) {
-        blueslip.error("set_raw_description() fails");
-        return;
-    }
-    destination.text(sub.description);
-}
-
-export function change_stream_description(e) {
-    e.preventDefault();
-
-    const sub_settings = $(e.target).closest(".subscription_settings");
-    const sub = get_sub_for_target(e.target);
-    if (!sub) {
-        blueslip.error("change_stream_description() fails");
-        return;
-    }
-
-    const stream_id = sub.stream_id;
-    const description = sub_settings.find(".stream-description-editable").text().trim();
-    $(".stream_change_property_info").hide();
-
-    if (description === sub.description) {
-        sub_settings
-            .find(".stream-description-editable")
-            .html(util.clean_user_content_links(sub.rendered_description));
-        return;
-    }
-
-    channel.patch({
-        url: "/json/streams/" + stream_id,
-        data: {
-            description,
-        },
-        success() {
-            // The event from the server will update the rest of the UI
-            ui_report.success(
-                $t_html({defaultMessage: "The stream description has been updated!"}),
-                $(".stream_change_property_info"),
-            );
-        },
-        error(xhr) {
-            sub_settings
-                .find(".stream-description-editable")
-                .html(util.clean_user_content_links(sub.rendered_description));
-            ui_report.error(
-                $t_html({defaultMessage: "Error"}),
-                xhr,
-                $(".stream_change_property_info"),
-            );
-        },
-    });
-}
-
 export function archive_stream(stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
@@ -835,11 +747,65 @@ export function initialize() {
 
     $("#subscriptions_table").on("click", "#change-stream-privacy-button", change_stream_privacy);
 
-    $("#subscriptions_table").on("click", ".close-modal-btn", (e) => {
-        // This fixes a weird bug in which, subscription_settings hides
-        // unexpectedly by clicking the cancel button in a modal on top of it.
+    $("#subscriptions_table").on("click", "#open_stream_info_modal", (e) => {
+        e.preventDefault();
         e.stopPropagation();
+        const stream_id = get_stream_id(e.target);
+        const stream = sub_store.get(stream_id);
+        const template_data = {
+            stream_id,
+            stream_name: stream.name,
+            stream_description: stream.description,
+        };
+        const change_stream_info_modal = render_change_stream_info_modal(template_data);
+        $("#change_stream_info_modal").remove();
+        $("#subscriptions_table").append(change_stream_info_modal);
+        overlays.open_modal("#change_stream_info_modal");
     });
+
+    $("#subscriptions_table").on("keypress", "#change_stream_description", (e) => {
+        // Stream descriptions can not be multiline, so disable enter key
+        // to prevent new line
+        if (e.key === "Enter") {
+            return false;
+        }
+        return true;
+    });
+
+    $("#subscriptions_table").on("click", "#save_stream_info", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const sub = get_sub_for_target(e.currentTarget);
+
+        const url = `/json/streams/${sub.stream_id}`;
+        const data = {};
+        const new_name = $("#change_stream_name").val().trim();
+        const new_description = $("#change_stream_description").val().trim();
+
+        if (new_name === sub.name && new_description === sub.description) {
+            return;
+        }
+        if (new_name !== sub.name) {
+            data.new_name = new_name;
+        }
+        if (new_description !== sub.description) {
+            data.description = new_description;
+        }
+
+        const status_element = $(".stream_change_property_info");
+        overlays.close_modal("#change_stream_info_modal");
+        settings_ui.do_settings_change(channel.patch, url, data, status_element);
+    });
+
+    $("#subscriptions_table").on(
+        "click",
+        ".close-modal-btn, .close-change-stream-info-modal",
+        (e) => {
+            // This fixes a weird bug in which, subscription_settings hides
+            // unexpectedly by clicking the cancel button in a modal on top of it.
+            e.stopPropagation();
+        },
+    );
 
     $("#subscriptions_table").on(
         "change",

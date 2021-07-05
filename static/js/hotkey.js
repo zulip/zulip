@@ -211,7 +211,6 @@ export function processing_text() {
         $focused_elt.is("input") ||
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
-        $focused_elt.hasClass("editable-section") ||
         $focused_elt.parents(".pill-container").length >= 1 ||
         $focused_elt.attr("id") === "compose-send-button"
     );
@@ -232,10 +231,6 @@ export function process_escape_key(e) {
         // Recent topics uses escape to switch focus from RT search / filters to topics table.
         // If focus is already on the table it returns false.
         return true;
-    }
-
-    if (in_content_editable_widget(e)) {
-        return false;
     }
 
     if (feedback_widget.is_open()) {
@@ -398,11 +393,6 @@ export function process_enter_key(e) {
 
     if (emoji_picker.reactions_popped()) {
         return emoji_picker.navigate("enter", e);
-    }
-
-    if (in_content_editable_widget(e)) {
-        $(e.target).parent().find(".checkmark").trigger("click");
-        return false;
     }
 
     if (handle_popover_events("enter")) {
@@ -628,12 +618,6 @@ export function process_hotkey(e, hotkey) {
 
     if ((event_name === "up_arrow" || event_name === "down_arrow") && overlays.streams_open()) {
         return subs.switch_rows(event_name);
-    }
-
-    if (in_content_editable_widget(e)) {
-        // We handle the Enter key in process_enter_key().
-        // We ignore all other keys.
-        return false;
     }
 
     if (event_name === "up_arrow" && list_util.inside_list(e)) {

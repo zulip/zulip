@@ -34,7 +34,6 @@ import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
-import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
@@ -711,84 +710,6 @@ export function initialize() {
 
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
-
-    {
-        const map = {
-            ".stream-description-editable": {
-                on_start: stream_edit.set_raw_description,
-                on_save: stream_edit.change_stream_description,
-            },
-            ".stream-name-editable": {
-                on_start: null,
-                on_save: stream_edit.change_stream_name,
-            },
-        };
-
-        $(document).on("keydown", ".editable-section", function (e) {
-            e.stopPropagation();
-            // Cancel editing description if Escape key is pressed.
-            if (e.key === "Escape") {
-                $("[data-finish-editing='.stream-description-editable']").hide();
-                $(this).attr("contenteditable", false);
-                $(this).text($(this).attr("data-prev-text"));
-                $("[data-make-editable]").html("");
-            } else if (e.key === "Enter") {
-                $(this).siblings(".checkmark").trigger("click");
-            }
-        });
-
-        $(document).on("drop", ".editable-section", () => false);
-
-        $(document).on("input", ".editable-section", function () {
-            // if there are any child nodes, inclusive of <br> which means you
-            // have lines in your description or title, you're doing something
-            // wrong.
-            for (let x = 0; x < this.childNodes.length; x += 1) {
-                if (this.childNodes[x].nodeType !== 3) {
-                    this.textContent = this.textContent.replace(/\n/, "");
-                    break;
-                }
-            }
-        });
-
-        $("body").on("click", "[data-make-editable]", function () {
-            const selector = $(this).attr("data-make-editable");
-            const edit_area = $(this).parent().find(`${selector}`);
-            $(selector).removeClass("stream-name-edit-box");
-            if (edit_area.attr("contenteditable") === "true") {
-                $(`[data-finish-editing='${CSS.escape(selector)}']`).hide();
-                edit_area.attr("contenteditable", false);
-                edit_area.text(edit_area.attr("data-prev-text"));
-                $(this).html("");
-            } else {
-                $(`[data-finish-editing='${CSS.escape(selector)}']`).show();
-
-                $(selector).addClass("stream-name-edit-box");
-                edit_area
-                    .attr("data-prev-text", edit_area.text().trim())
-                    .attr("contenteditable", true);
-
-                if (map[selector].on_start) {
-                    map[selector].on_start(this, edit_area);
-                }
-
-                ui_util.place_caret_at_end(edit_area[0]);
-
-                $(this).html("&times;");
-            }
-        });
-
-        $("body").on("click", "[data-finish-editing]", function (e) {
-            const selector = $(this).attr("data-finish-editing");
-            $(selector).removeClass("stream-name-edit-box");
-            if (map[selector].on_save) {
-                map[selector].on_save(e);
-                $(this).hide();
-                $(this).parent().find(`${selector}`).attr("contenteditable", false);
-                $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
-            }
-        });
-    }
 
     // HOTSPOTS
 

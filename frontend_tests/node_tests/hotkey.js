@@ -255,10 +255,6 @@ run_test("allow normal typing when processing text", ({override}) => {
     assert_unmapped("bfmoyz");
     assert_unmapped("BEFHILNOQTUWXYZ");
 
-    // We have to skip some checks due to the way the code is
-    // currently organized for mapped keys.
-    override(hotkey, "in_content_editable_widget", () => false);
-
     // All letters should return false if we are composing text.
     override(hotkey, "processing_text", () => true);
 
@@ -477,11 +473,6 @@ run_test("motion_keys", () => {
     assert_mapping("left_arrow", lightbox, "prev");
     assert_mapping("right_arrow", lightbox, "next");
     overlays.lightbox_open = () => false;
-
-    hotkey.__Rewire__("in_content_editable_widget", () => true);
-    assert_unmapped("down_arrow");
-    assert_unmapped("up_arrow");
-    hotkey.__Rewire__("in_content_editable_widget", () => false);
 
     overlays.settings_open = () => true;
     assert_unmapped("end");
