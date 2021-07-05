@@ -11,6 +11,18 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 76**
+
+* [`POST /fetch_api_key`](/api/fetch_api_key), [`POST
+  /dev_fetch_api_key`](/api/dev_fetch_api_key): The HTTP status for
+  authentication errors is now 401. This was previously 403.
+* All API endpoints now use the HTTP 401 error status for API requests
+  involving a deactivated user or realm. This was previously 403.
+* Mobile push notifications now include the `mentioned_user_group_id`
+  and `mentioned_user_group_name` fields when a user group containing
+  the user is mentioned.  Previously, these were indistinguishable
+  from personal mentions (as both types have `trigger="mention"`).
+
 **Feature level 75**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `allow_community_topic_editing`

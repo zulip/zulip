@@ -4057,7 +4057,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         result = self.client_post(
             "/api/v1/fetch_api_key", dict(username=self.email, password="wrong")
         )
-        self.assert_json_error(result, "Your username or password is incorrect", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
     def test_invalid_subdomain(self) -> None:
         with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
@@ -4074,7 +4074,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 dict(username=self.email, password=initial_password(self.email)),
             )
             self.assert_json_error_contains(
-                result, "Password authentication is disabled in this organization", 403
+                result, "Password authentication is disabled in this organization", 401
             )
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
@@ -4101,14 +4101,14 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "department", "zulip")
         result = self.client_post(
@@ -4134,7 +4134,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "test2", "testing")
         # Check with only one set
@@ -4142,7 +4142,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "test1", "test")
         # Setting org_membership to not cause django_ldap_auth to warn, when synchronising
@@ -4177,7 +4177,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         # Override access with `org_membership`
         self.change_ldap_user_attr("hamlet", "department", "zulip")
@@ -4196,7 +4196,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect", 403)
+            self.assert_json_error(result, "Your username or password is incorrect", 401)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -4204,7 +4204,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_error_contains(result, "Account is deactivated", 403)
+        self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
@@ -4212,7 +4212,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 401)
 
     def test_old_weak_password_after_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -4234,7 +4234,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 dict(username=self.email, password=password),
             )
             self.assert_json_error(
-                result, "Your password has been disabled and needs to be reset", 403
+                result, "Your password has been disabled and needs to be reset", 401
             )
 
 
@@ -4260,17 +4260,17 @@ class DevFetchAPIKeyTest(ZulipTestCase):
     def test_unregistered_user(self) -> None:
         email = "foo@zulip.com"
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=email))
-        self.assert_json_error_contains(result, "Your username or password is incorrect", 403)
+        self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_error_contains(result, "Account is deactivated", 403)
+        self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 401)
 
     def test_dev_auth_disabled(self) -> None:
         with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):

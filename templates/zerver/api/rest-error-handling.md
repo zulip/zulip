@@ -19,6 +19,10 @@ errors common to many endpoints:
 
 {generate_code_example|/rest-error-handling:post|fixture(400)}
 
+{generate_code_example|/rest-error-handling:post|fixture(401)}
+
+{generate_code_example|/rest-error-handling:post|fixture(403)}
+
 {generate_code_example|/rest-error-handling:post|fixture(429)}
 
 The `retry-after` paremeter in the response indicates how many seconds
@@ -49,5 +53,3 @@ limit.
 
 **Changes**: The `code` field in the response is new in Zulip 4.0
 (feature level 36).
-
-{generate_code_example|/rest-error-handling:post|fixture(403)}

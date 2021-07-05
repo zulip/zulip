@@ -280,8 +280,7 @@ class StreamAdministratorRequired(JsonableError):
 class AuthenticationFailedError(JsonableError):
     # Generic class for authentication failures
     code: ErrorCode = ErrorCode.AUTHENTICATION_FAILED
-    # Bug: Shouldn't this be 401?
-    http_status_code = 403
+    http_status_code = 401
 
     def __init__(self) -> None:
         pass
