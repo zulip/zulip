@@ -4,8 +4,8 @@ import render_admin_linkifier_edit_form from "../templates/settings/admin_linkif
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
 import * as channel from "./channel";
-import * as edit_fields_modal from "./edit_fields_modal";
-import {$t, $t_html} from "./i18n";
+import * as dialog_widget from "./dialog_widget";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -55,21 +55,21 @@ function open_linkifier_edit_form(linkifier_id) {
     const modal_parent = $("#linkifier-edit-form-modal-container");
 
     function submit_linkifier_form() {
-        const change_linkifier_button = $(".submit-modal-button");
+        const change_linkifier_button = $(".dialog_submit_button");
         change_linkifier_button.prop("disabled", true);
 
-        const modal = $("#edit-fields-modal");
+        const modal = $("#dialog_widget_modal");
         const url = "/json/realm/filters/" + encodeURIComponent(linkifier_id);
         const pattern = modal.find("#edit-linkifier-pattern").val().trim();
         const url_format_string = modal.find("#edit-linkifier-url-format-string").val().trim();
         const data = {pattern, url_format_string};
         const pattern_status = modal.find("#edit-linkifier-pattern-status").expectOne();
         const format_status = modal.find("#edit-linkifier-format-status").expectOne();
-        const edit_fields_modal_status = modal.find("#edit-fields-modal-status").expectOne();
+        const dialog_error_element = modal.find("#dialog_error").expectOne();
         const opts = {
             success_continuation() {
                 change_linkifier_button.prop("disabled", false);
-                overlays.close_modal("#edit-fields-modal");
+                overlays.close_modal("#dialog_widget_modal");
             },
             error_continuation(xhr) {
                 change_linkifier_button.prop("disabled", false);
@@ -79,15 +79,11 @@ function open_linkifier_edit_form(linkifier_id) {
                         xhr,
                         pattern_status,
                         format_status,
-                        edit_fields_modal_status,
+                        dialog_error_element,
                     );
                 } else {
                     // This must be `Linkifier not found` error.
-                    ui_report.error(
-                        $t_html({defaultMessage: "Failed"}),
-                        xhr,
-                        edit_fields_modal_status,
-                    );
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, dialog_error_element);
                 }
             },
             // Show the error message only on edit linkifier modal.
@@ -102,11 +98,12 @@ function open_linkifier_edit_form(linkifier_id) {
         );
     }
 
-    edit_fields_modal.launch({
-        html_heading: $t({defaultMessage: "Edit linkfiers"}),
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
         parent: modal_parent,
         html_body,
         on_click: submit_linkifier_form,
+        fade: true,
     });
 }
 
