@@ -45,7 +45,7 @@ export function launch(modal_fields) {
         overlays.close_modal("#edit-fields-modal");
     }
 
-    edit_fields_modal.find(".edit-fields-modal-body").html(modal_fields.html_body);
+    edit_fields_modal.find(".edit-fields-modal-body").append(modal_fields.html_body);
 
     if (modal_fields.post_render !== undefined) {
         modal_fields.post_render();
