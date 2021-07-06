@@ -454,18 +454,6 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertFalse(realm.deactivated)
 
-    def test_change_bot_creation_policy(self) -> None:
-        # We need an admin user.
-        self.login("iago")
-        req = dict(bot_creation_policy=orjson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_success(result)
-
-        invalid_add_bot_permission = 4
-        req = dict(bot_creation_policy=orjson.dumps(invalid_add_bot_permission).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid bot_creation_policy")
-
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
