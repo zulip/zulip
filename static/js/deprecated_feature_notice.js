@@ -1,15 +1,11 @@
-import $ from "jquery";
-
-import render_deprecated_feature_notice from "../templates/deprecated_feature_notice.hbs";
-
 import * as blueslip from "./blueslip";
 import * as common from "./common";
-import {$t} from "./i18n";
+import * as dialog_widget from "./dialog_widget";
+import {$t_html} from "./i18n";
 import {localstorage} from "./localstorage";
-import * as overlays from "./overlays";
 
 export function get_hotkey_deprecation_notice(originalHotkey, replacementHotkey) {
-    return $t(
+    return $t_html(
         {
             defaultMessage:
                 'We\'ve replaced the "{originalHotkey}" hotkey with "{replacementHotkey}" to make this common shortcut easier to trigger.',
@@ -44,14 +40,16 @@ export function maybe_show_deprecation_notice(key) {
     }
 
     if (!shown_deprecation_notices.includes(key)) {
-        const rendered_deprecated_feature_notice = render_deprecated_feature_notice({message});
-        const deprecated_feature_notice = $(rendered_deprecated_feature_notice);
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Deprecation notice"}),
+            html_body: message,
+            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            on_click: () => {},
+            close_on_submit: true,
+            focus_submit_on_open: true,
+            single_footer_button: true,
+        });
 
-        $(".app").append(deprecated_feature_notice);
-
-        overlays.open_modal("#deprecation-notice-modal", {autoremove: true});
-        $("#deprecation-notice-message").text(message);
-        $("#close-deprecation-notice").trigger("focus");
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
             localStorage.setItem(
