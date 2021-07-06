@@ -759,6 +759,19 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             )
             do_update_embedded_data(message.sender, message, message.content, rendered_content)
 
+    def timer_expired(
+        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
+    ) -> None:
+        assert len(events) == 1
+        event = events[0]
+
+        logging.warning(
+            "Timed out after %s seconds while fetching URLs for message %s: %s",
+            limit,
+            event["message_id"],
+            event["urls"],
+        )
+
 
 @assign_queue("outgoing_webhooks")
 class OutgoingWebhookWorker(QueueProcessingWorker):
