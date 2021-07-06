@@ -690,42 +690,13 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_stream_policy=[
-                Realm.POLICY_ADMINS_ONLY,
-                Realm.POLICY_MEMBERS_ONLY,
-                Realm.POLICY_FULL_MEMBERS_ONLY,
-                Realm.POLICY_MODERATORS_ONLY,
-            ],
-            user_group_edit_policy=[
-                Realm.USER_GROUP_EDIT_POLICY_ADMINS,
-                Realm.USER_GROUP_EDIT_POLICY_MEMBERS,
-            ],
-            private_message_policy=[
-                Realm.PRIVATE_MESSAGE_POLICY_UNLIMITED,
-                Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
-            ],
-            invite_to_stream_policy=[
-                Realm.POLICY_ADMINS_ONLY,
-                Realm.POLICY_MEMBERS_ONLY,
-                Realm.POLICY_FULL_MEMBERS_ONLY,
-                Realm.POLICY_MODERATORS_ONLY,
-            ],
-            wildcard_mention_policy=[
-                Realm.WILDCARD_MENTION_POLICY_EVERYONE,
-                Realm.WILDCARD_MENTION_POLICY_MEMBERS,
-                Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
-                Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS,
-                Realm.WILDCARD_MENTION_POLICY_ADMINS,
-                Realm.WILDCARD_MENTION_POLICY_NOBODY,
-                Realm.WILDCARD_MENTION_POLICY_MODERATORS,
-            ],
-            bot_creation_policy=[1, 2],
-            email_address_visibility=[
-                Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-                Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-                Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
-                Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-            ],
+            create_stream_policy=Realm.COMMON_POLICY_TYPES,
+            user_group_edit_policy=Realm.USER_GROUP_EDIT_POLICY_TYPES,
+            private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
+            invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
+            wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
+            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
+            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
             video_chat_provider=[
                 dict(
                     video_chat_provider=orjson.dumps(
@@ -738,18 +709,8 @@ class RealmAPITest(ZulipTestCase):
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=[
-                Realm.POLICY_ADMINS_ONLY,
-                Realm.POLICY_MEMBERS_ONLY,
-                Realm.POLICY_FULL_MEMBERS_ONLY,
-                Realm.POLICY_MODERATORS_ONLY,
-            ],
-            move_messages_between_streams_policy=[
-                Realm.POLICY_ADMINS_ONLY,
-                Realm.POLICY_MEMBERS_ONLY,
-                Realm.POLICY_FULL_MEMBERS_ONLY,
-                Realm.POLICY_MODERATORS_ONLY,
-            ],
+            invite_to_realm_policy=Realm.COMMON_POLICY_TYPES,
+            move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
