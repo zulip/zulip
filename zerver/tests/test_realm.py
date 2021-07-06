@@ -466,24 +466,6 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Invalid bot_creation_policy")
 
-    def test_change_email_address_visibility(self) -> None:
-        # We need an admin user.
-        user_profile = self.example_user("iago")
-
-        self.login_user(user_profile)
-        invalid_value = 12
-        req = dict(email_address_visibility=orjson.dumps(invalid_value).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid email_address_visibility")
-
-        req = dict(
-            email_address_visibility=orjson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS).decode()
-        )
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_success(result)
-        realm = get_realm("zulip")
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
-
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
