@@ -628,17 +628,13 @@ class WorkerTest(ZulipTestCase):
 
     def test_get_active_worker_queues(self) -> None:
         test_queue_names = set(get_active_worker_queues(only_test_queues=True))
-        # Actually 6, but test_timeouts, which defines TimeoutWorker,
-        # is called after this
-        self.assertEqual(5, len(test_queue_names))
-
-        # This misses that TestWorker, defined in test_worker_noname
-        # with no assign_queue, because it runs after this
-
         worker_queue_names = {
             queue_class.queue_name
             for base in [QueueProcessingWorker, EmailSendingWorker, LoopQueueProcessingWorker]
             for queue_class in base.__subclasses__()
             if not isabstract(queue_class)
         }
+
+        # Verify that the set of active worker queues equals the set
+        # of of subclasses without is_test_queue set.
         self.assertEqual(set(get_active_worker_queues()), worker_queue_names - test_queue_names)
