@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as common from "./common";
 
-export function show(error_html, bad_input, alert_class = "alert-error") {
+export function show(error_html: string, bad_input?: JQuery, alert_class = "alert-error"): void {
     $("#compose-send-status")
         .removeClass(common.status_classes)
         .addClass(alert_class)
@@ -16,11 +16,11 @@ export function show(error_html, bad_input, alert_class = "alert-error") {
     }
 }
 
-export function show_not_subscribed(error_html, bad_input) {
+export function show_not_subscribed(error_html: string, bad_input?: JQuery): void {
     show(error_html, bad_input, "home-error-bar");
     $(".compose-send-status-close").hide();
 }
 
-export function hide() {
+export function hide(): void {
     $("#compose-send-status").stop(true).fadeOut(500);
 }
