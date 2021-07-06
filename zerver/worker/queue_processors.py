@@ -197,10 +197,6 @@ def retry_send_email_failures(
     return wrapper
 
 
-def timer_expired(limit: int, event_count: int, signal: int, frame: FrameType) -> None:
-    raise WorkerTimeoutException(limit, event_count)
-
-
 class QueueProcessingWorker(ABC):
     queue_name: str
     MAX_CONSUME_SECONDS: Optional[int] = 30
@@ -292,7 +288,9 @@ class QueueProcessingWorker(ABC):
                 try:
                     signal.signal(
                         signal.SIGALRM,
-                        functools.partial(timer_expired, self.MAX_CONSUME_SECONDS, len(events)),
+                        functools.partial(
+                            self.timer_expired, self.MAX_CONSUME_SECONDS, len(events)
+                        ),
                     )
                     try:
                         signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
@@ -338,6 +336,9 @@ class QueueProcessingWorker(ABC):
     def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
         self.do_consume(consume_func, [event])
+
+    def timer_expired(self, limit: int, event_count: int, signal: int, frame: FrameType) -> None:
+        raise WorkerTimeoutException(limit, event_count)
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         with configure_scope() as scope:
