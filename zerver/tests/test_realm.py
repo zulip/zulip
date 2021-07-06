@@ -762,12 +762,16 @@ class RealmAPITest(ZulipTestCase):
             self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))
-        else:
-            self.set_up_db(name, vals[0])
-            realm = self.update_with_api(name, vals[1])
-            self.assertEqual(getattr(realm, name), vals[1])
-            realm = self.update_with_api(name, vals[0])
-            self.assertEqual(getattr(realm, name), vals[0])
+            return
+
+        self.set_up_db(name, vals[0])
+
+        for val in vals[1:]:
+            realm = self.update_with_api(name, val)
+            self.assertEqual(getattr(realm, name), val)
+
+        realm = self.update_with_api(name, vals[0])
+        self.assertEqual(getattr(realm, name), vals[0])
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
