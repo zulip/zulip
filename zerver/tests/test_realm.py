@@ -412,18 +412,8 @@ class RealmTest(ZulipTestCase):
         self.assertIsNone(realm.get_signup_notifications_stream())
 
     def test_change_realm_default_language(self) -> None:
-        new_lang = "de"
-        realm = get_realm("zulip")
-        self.assertNotEqual(realm.default_language, new_lang)
         # we need an admin user.
         self.login("iago")
-
-        req = dict(default_language=new_lang)
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_success(result)
-        realm = get_realm("zulip")
-        self.assertEqual(realm.default_language, new_lang)
-
         # Test to make sure that when invalid languages are passed
         # as the default realm language, correct validation error is
         # raised and the invalid language is not saved in db
