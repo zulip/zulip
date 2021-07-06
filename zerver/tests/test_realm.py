@@ -508,20 +508,6 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Invalid invite_to_realm_policy")
 
-    def test_change_move_messages_between_streams_policy(self) -> None:
-        # We need an admin user.
-        self.login("iago")
-        req = dict(
-            move_messages_between_streams_policy=orjson.dumps(Realm.POLICY_ADMINS_ONLY).decode()
-        )
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_success(result)
-
-        invalid_value = 10
-        req = dict(move_messages_between_streams_policy=orjson.dumps(invalid_value).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid move_messages_between_streams_policy")
-
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
