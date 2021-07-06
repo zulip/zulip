@@ -567,7 +567,7 @@ input.text-error {
             font-size: 1.2rem;
             font-weight: 400;
             color: hsl(0, 0%, 20%);
-            opacity: 0.5;
+            opacity: 0.7;
         }
     }
 
