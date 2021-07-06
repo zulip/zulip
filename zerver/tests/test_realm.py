@@ -484,18 +484,6 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
 
-    def test_change_invite_to_stream_policy(self) -> None:
-        # We need an admin user.
-        self.login("iago")
-        req = dict(invite_to_stream_policy=orjson.dumps(Realm.POLICY_ADMINS_ONLY).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_success(result)
-
-        invalid_value = 10
-        req = dict(invite_to_stream_policy=orjson.dumps(invalid_value).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid invite_to_stream_policy")
-
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
