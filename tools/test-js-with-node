@@ -171,7 +171,7 @@ EXEMPT_FILES = {
     "static/js/ui_util.ts",
     "static/js/unread_ops.js",
     "static/js/unread_ui.js",
-    "static/js/upload_widget.js",
+    "static/js/upload_widget.ts",
     "static/js/user_profile.js",
     "static/js/user_status_ui.js",
     "static/js/webpack_public_path.js",
