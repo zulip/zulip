@@ -43,7 +43,7 @@ function uncondense_row(row) {
 
 export function uncollapse(row) {
     // Uncollapse a message, restoring the condensed message [More] or
-    // [Condense] link if necessary.
+    // [Show less] link if necessary.
     const message = message_lists.current.get(rows.id(row));
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
@@ -58,7 +58,7 @@ export function uncollapse(row) {
             condense_row(row);
         } else if (message.condensed === false) {
             // This message was un-condensed by the user, so re-show the
-            // [Condense] link.
+            // [Show less] link.
             uncondense_row(row);
         } else if (content.hasClass("could-be-condensed")) {
             // By default, condense a long message.
@@ -78,7 +78,7 @@ export function uncollapse(row) {
 
 export function collapse(row) {
     // Collapse a message, hiding the condensed message [More] or
-    // [Condense] link if necessary.
+    // [Show less] link if necessary.
     const message = message_lists.current.get(rows.id(row));
     message.collapsed = true;
 
