@@ -288,9 +288,7 @@ class QueueProcessingWorker(ABC):
                 try:
                     signal.signal(
                         signal.SIGALRM,
-                        functools.partial(
-                            self.timer_expired, self.MAX_CONSUME_SECONDS, len(events)
-                        ),
+                        functools.partial(self.timer_expired, self.MAX_CONSUME_SECONDS, events),
                     )
                     try:
                         signal.alarm(self.MAX_CONSUME_SECONDS * len(events))
@@ -337,8 +335,10 @@ class QueueProcessingWorker(ABC):
         consume_func = lambda events: self.consume(events[0])
         self.do_consume(consume_func, [event])
 
-    def timer_expired(self, limit: int, event_count: int, signal: int, frame: FrameType) -> None:
-        raise WorkerTimeoutException(limit, event_count)
+    def timer_expired(
+        self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
+    ) -> None:
+        raise WorkerTimeoutException(limit, len(events))
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         with configure_scope() as scope:
