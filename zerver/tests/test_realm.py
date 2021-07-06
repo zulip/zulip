@@ -536,20 +536,6 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Invalid user_group_edit_policy")
 
-    def test_private_message_policy(self) -> None:
-        # We need an admin user.
-        self.login("iago")
-        req = dict(
-            private_message_policy=orjson.dumps(Realm.PRIVATE_MESSAGE_POLICY_DISABLED).decode()
-        )
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_success(result)
-
-        invalid_value = 10
-        req = dict(private_message_policy=orjson.dumps(invalid_value).decode())
-        result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid private_message_policy")
-
     def test_invalid_integer_attribute_values(self) -> None:
 
         integer_values = [key for key, value in Realm.property_types.items() if value is int]
