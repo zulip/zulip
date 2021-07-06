@@ -1,5 +1,6 @@
 import base64
 import os
+import signal
 import time
 from collections import defaultdict
 from inspect import isabstract
@@ -23,6 +24,7 @@ from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     EmailSendingWorker,
+    FetchLinksEmbedData,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
     QueueProcessingWorker,
@@ -581,6 +583,37 @@ class WorkerTest(ZulipTestCase):
         self.assert_length(events, 1)
         event = events[0]
         self.assertEqual(event["type"], "timeout")
+
+    def test_embed_links_timeout(self) -> None:
+        @queue_processors.assign_queue("timeout_worker", is_test_queue=True)
+        class TimeoutWorker(FetchLinksEmbedData):
+            MAX_CONSUME_SECONDS = 1
+
+            def consume(self, data: Mapping[str, Any]) -> None:
+                # Send SIGALRM to ourselves to simulate a timeout.
+                pid = os.getpid()
+                os.kill(pid, signal.SIGALRM)
+
+        fake_client = self.FakeClient()
+        fake_client.enqueue(
+            "timeout_worker",
+            {
+                "type": "timeout",
+                "message_id": 15,
+                "urls": ["first", "second"],
+            },
+        )
+
+        with simulated_queue_client(lambda: fake_client):
+            worker = TimeoutWorker()
+            worker.setup()
+            worker.ENABLE_TIMEOUTS = True
+            with self.assertLogs(level="WARNING") as m:
+                worker.start()
+                self.assertEqual(
+                    m.records[0].message,
+                    "Timed out after 1 seconds while fetching URLs for message 15: ['first', 'second']",
+                )
 
     def test_worker_noname(self) -> None:
         class TestWorker(queue_processors.QueueProcessingWorker):
