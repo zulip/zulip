@@ -361,17 +361,12 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
     everything goes right.  (This helps clients avoid extra latency
     hops.)  It rolls back the transaction when things go wrong in any
     one of the composed methods.
-
-    TODO: Move this a utils-like module if we end up using it more widely.
-
     """
 
     json_dict: Dict[str, Any] = {}
     with transaction.atomic():
         for thunk in thunks:
             response = thunk()
-            if response.status_code != 200:
-                raise JsonableError(response.content)  # nocoverage
             json_dict.update(orjson.loads(response.content))
     return json_success(json_dict)
 
