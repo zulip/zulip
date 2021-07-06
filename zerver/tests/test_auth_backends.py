@@ -2588,9 +2588,7 @@ class AppleAuthMixin:
         headers = {"kid": "SOMEKID"}
         private_key = settings.APPLE_ID_TOKEN_GENERATION_KEY
 
-        id_token = jwt.encode(payload, private_key, algorithm="RS256", headers=headers).decode(
-            "utf-8"
-        )
+        id_token = jwt.encode(payload, private_key, algorithm="RS256", headers=headers)
 
         return id_token
 
@@ -4966,7 +4964,7 @@ class TestJWTLogin(ZulipTestCase):
             realm = get_realm("zulip")
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
 
             user_profile = get_user_by_delivery_email(email, realm)
             data = {"json_web_token": web_token}
@@ -4979,7 +4977,7 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
             data = {"json_web_token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assert_json_error_contains(
@@ -4991,7 +4989,7 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
             data = {"json_web_token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assert_json_error_contains(
@@ -5021,7 +5019,7 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
             data = {"json_web_token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
@@ -5033,7 +5031,7 @@ class TestJWTLogin(ZulipTestCase):
             with mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
                 key = settings.JWT_AUTH_KEYS["acme"]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS["acme"]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+                web_token = jwt.encode(payload, key, algorithm)
 
                 data = {"json_web_token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
@@ -5046,7 +5044,7 @@ class TestJWTLogin(ZulipTestCase):
             with mock.patch("zerver.views.auth.get_subdomain", return_value=""):
                 key = settings.JWT_AUTH_KEYS[""]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS[""]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+                web_token = jwt.encode(payload, key, algorithm)
 
                 data = {"json_web_token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
@@ -5059,7 +5057,7 @@ class TestJWTLogin(ZulipTestCase):
             with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
                 key = settings.JWT_AUTH_KEYS["zulip"]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+                web_token = jwt.encode(payload, key, algorithm)
 
                 data = {"json_web_token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
