@@ -97,9 +97,6 @@ def json_change_settings(
     old_password: str = REQ(default=""),
     new_password: str = REQ(default=""),
 ) -> HttpResponse:
-    if not (full_name or new_password or email):
-        raise JsonableError(_("Please fill out all fields."))
-
     if new_password != "":
         return_data: Dict[str, Any] = {}
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):

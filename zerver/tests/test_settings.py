@@ -322,16 +322,6 @@ class ChangeSettingsTest(ZulipTestCase):
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
-    def test_changing_nothing_returns_error(self) -> None:
-        """
-        We need to supply at least one non-empty parameter
-        to this API, or it should fail.  (Eventually, we should
-        probably use a patch interface for these changes.)
-        """
-        self.login("hamlet")
-        result = self.client_patch("/json/settings", dict(old_password="ignored"))
-        self.assert_json_error(result, "Please fill out all fields.")
-
     def do_test_change_user_display_setting(self, setting_name: str) -> None:
 
         test_changes: Dict[str, Any] = dict(
