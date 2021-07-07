@@ -289,7 +289,14 @@ class OpenAPIArgumentsTest(ZulipTestCase):
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    buggy_documentation_endpoints: Set[str] = set([])
+    buggy_documentation_endpoints: Set[str] = {
+        # These endpoints were merged with the main /settings
+        # endpoint, and exist for temporary backwards-compatibility;
+        # as a result their documentation reflects the state before
+        # they were removed.
+        "/settings/display",
+        "/settings/notifications",
+    }
 
     def convert_regex_to_url_pattern(self, regex_pattern: str) -> str:
         """Convert regular expressions style URL patterns to their
