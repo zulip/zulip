@@ -115,6 +115,16 @@ class WorkerTimeoutException(Exception):
         return f"Timed out after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
 
+class InterruptConsumeException(Exception):
+    """
+    This exception is to be thrown inside event consume function
+    if the intention is to simply interrupt the processing
+    of the current event and normally continue the work of the queue.
+    """
+
+    pass
+
+
 class WorkerDeclarationException(Exception):
     pass
 
@@ -341,6 +351,11 @@ class QueueProcessingWorker(ABC):
         raise WorkerTimeoutException(limit, len(events))
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
+        if isinstance(exception, InterruptConsumeException):
+            # The exception signals that no further error handling
+            # is needed and the worker can proceed.
+            return
+
         with configure_scope() as scope:
             scope.set_context(
                 "events",
@@ -771,6 +786,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             event["message_id"],
             event["urls"],
         )
+        raise InterruptConsumeException
 
 
 @assign_queue("outgoing_webhooks")
