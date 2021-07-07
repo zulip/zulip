@@ -403,8 +403,6 @@ LOG_API_EVENT_TYPES = False
 # the server.
 # TODO: Replace this with a smarter "run on only one server" system.
 STAGING = False
-# Configuration option for our email/Zulip error reporting.
-STAGING_ERROR_NOTIFICATIONS = False
 
 # How long to wait before presence should treat a user as offline.
 # TODO: Figure out why this is different from the corresponding
