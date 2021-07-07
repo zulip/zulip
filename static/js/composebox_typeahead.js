@@ -354,7 +354,7 @@ function filter_mention_name(current_token) {
     } else if (current_token.startsWith("*")) {
         current_token = current_token.slice(1);
     }
-    if (current_token.length < 1 || current_token.lastIndexOf("*") !== -1) {
+    if (current_token.lastIndexOf("*") !== -1) {
         return false;
     }
 
@@ -648,7 +648,7 @@ export function get_candidates(query) {
             current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
-        if (!current_token) {
+        if (!current_token && typeof current_token === "boolean") {
             this.completing = null;
             return false;
         }
