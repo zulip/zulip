@@ -1,4 +1,5 @@
 import base64
+import datetime
 import os
 import signal
 import time
@@ -19,7 +20,15 @@ from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, simulated_queue_client
-from zerver.models import PreregistrationUser, UserActivity, get_client, get_realm, get_stream
+from zerver.models import (
+    NotificationTriggers,
+    PreregistrationUser,
+    ScheduledMessageNotificationEmail,
+    UserActivity,
+    get_client,
+    get_realm,
+    get_stream,
+)
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
@@ -144,17 +153,31 @@ class WorkerTest(ZulipTestCase):
             content="where art thou, othello?",
         )
 
-        events = [
-            dict(user_profile_id=hamlet.id, message_id=hamlet1_msg_id),
-            dict(user_profile_id=hamlet.id, message_id=hamlet2_msg_id),
-            dict(user_profile_id=othello.id, message_id=othello_msg_id),
-        ]
+        hamlet_event1 = dict(
+            user_profile_id=hamlet.id,
+            message_id=hamlet1_msg_id,
+            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+        )
+        hamlet_event2 = dict(
+            user_profile_id=hamlet.id,
+            message_id=hamlet2_msg_id,
+            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+            mentioned_user_group_id=4,
+        )
+        othello_event = dict(
+            user_profile_id=othello.id,
+            message_id=othello_msg_id,
+            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+        )
+
+        events = [hamlet_event1, hamlet_event2, othello_event]
 
         fake_client = self.FakeClient()
         for event in events:
             fake_client.enqueue("missedmessage_emails", event)
 
         mmw = MissedMessageWorker()
+        batch_duration = datetime.timedelta(seconds=mmw.BATCH_DURATION)
 
         class MockTimer:
             is_running = False
@@ -174,36 +197,100 @@ class WorkerTest(ZulipTestCase):
         send_mock = patch(
             "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip",
         )
-        mmw.BATCH_DURATION = 0
 
-        bonus_event = dict(user_profile_id=hamlet.id, message_id=hamlet3_msg_id)
+        bonus_event_hamlet = dict(
+            user_profile_id=hamlet.id,
+            message_id=hamlet3_msg_id,
+            trigger=NotificationTriggers.PRIVATE_MESSAGE,
+        )
+
+        def check_row(
+            row: ScheduledMessageNotificationEmail,
+            scheduled_timestamp: datetime.datetime,
+            mentioned_user_group_id: Optional[int],
+        ) -> None:
+            self.assertEqual(row.trigger, NotificationTriggers.PRIVATE_MESSAGE)
+            self.assertEqual(row.scheduled_timestamp, scheduled_timestamp)
+            self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
 
         with send_mock as sm, timer_mock as tm:
             with simulated_queue_client(lambda: fake_client):
                 self.assertFalse(timer.is_alive())
-                mmw.setup()
-                mmw.start()
-                self.assertTrue(timer.is_alive())
-                fake_client.enqueue("missedmessage_emails", bonus_event)
 
-                # Double-calling start is our way to get it to run again
+                time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+                expected_scheduled_timestamp = time_zero + batch_duration
+                with patch("zerver.worker.queue_processors.timezone_now", return_value=time_zero):
+                    mmw.setup()
+                    mmw.start()
+
+                    # The events should be saved in the database
+                    hamlet_row1 = ScheduledMessageNotificationEmail.objects.get(
+                        user_profile_id=hamlet.id, message_id=hamlet1_msg_id
+                    )
+                    check_row(hamlet_row1, expected_scheduled_timestamp, None)
+
+                    hamlet_row2 = ScheduledMessageNotificationEmail.objects.get(
+                        user_profile_id=hamlet.id, message_id=hamlet2_msg_id
+                    )
+                    check_row(hamlet_row2, expected_scheduled_timestamp, 4)
+
+                    othello_row1 = ScheduledMessageNotificationEmail.objects.get(
+                        user_profile_id=othello.id, message_id=othello_msg_id
+                    )
+                    check_row(othello_row1, expected_scheduled_timestamp, None)
+
+                    # Additionally, the timer should have be started
+                    self.assertTrue(timer.is_alive())
+
+                # If another event is received, test that it gets saved with the same
+                # `expected_scheduled_timestamp` as the earlier events.
+                fake_client.enqueue("missedmessage_emails", bonus_event_hamlet)
                 self.assertTrue(timer.is_alive())
-                mmw.start()
-                with self.assertLogs(level="INFO") as info_logs:
-                    # Now, we actually send the emails.
+                few_moments_later = time_zero + datetime.timedelta(seconds=3)
+                with patch(
+                    "zerver.worker.queue_processors.timezone_now", return_value=few_moments_later
+                ):
+                    # Double-calling start is our way to get it to run again
+                    mmw.start()
+                    hamlet_row3 = ScheduledMessageNotificationEmail.objects.get(
+                        user_profile_id=hamlet.id, message_id=hamlet3_msg_id
+                    )
+                    check_row(hamlet_row3, expected_scheduled_timestamp, None)
+
+                # Now let us test `maybe_send_batched_emails`
+                # If called too early, it shouldn't process the emails.
+                one_minute_premature = expected_scheduled_timestamp - datetime.timedelta(seconds=60)
+                with patch(
+                    "zerver.worker.queue_processors.timezone_now", return_value=one_minute_premature
+                ):
                     mmw.maybe_send_batched_emails()
-                self.assertEqual(
-                    info_logs.output,
-                    [
+                    self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 4)
+
+                # If called after `expected_scheduled_timestamp`, it should process all emails.
+                one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+                with self.assertLogs(level="INFO") as info_logs, patch(
+                    "zerver.worker.queue_processors.timezone_now", return_value=one_minute_overdue
+                ):
+                    mmw.maybe_send_batched_emails()
+                    self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+
+                    self.assert_length(info_logs.output, 2)
+                    self.assertIn(
                         f"INFO:root:Batch-processing 3 missedmessage_emails events for user {hamlet.id}",
+                        info_logs.output,
+                    )
+                    self.assertIn(
                         f"INFO:root:Batch-processing 1 missedmessage_emails events for user {othello.id}",
-                    ],
-                )
+                        info_logs.output,
+                    )
 
-                self.assertEqual(mmw.timer_event, None)
+                    # All batches got processed. Verify that the timer isn't running.
+                    self.assertEqual(mmw.timer_event, None)
 
-        self.assertEqual(tm.call_args[0][0], 5)  # should sleep 5 seconds
+        # Check that the frequency of calling maybe_send_batched_emails is correct (5 seconds)
+        self.assertEqual(tm.call_args[0][0], 5)
 
+        # Verify the payloads now
         args = [c[0] for c in sm.call_args_list]
         arg_dict = {
             arg[0].id: dict(
