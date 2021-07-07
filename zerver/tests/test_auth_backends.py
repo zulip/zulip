@@ -1808,9 +1808,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
         with {email}, {first_name}, {last_name} placeholders, that can
         be filled out with the data we want.
         """
-        name_parts = name.split(" ")
-        first_name = name_parts[0]
-        last_name = name_parts[1]
+        if name:
+            name_parts = name.split(" ")
+            first_name = name_parts[0]
+            last_name = name_parts[1]
+        else:
+            first_name = ""
+            last_name = ""
 
         extra_attrs = ""
         for extra_attr_name, extra_attr_values in extra_attributes.items():
@@ -1839,6 +1843,29 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
+
+    def test_auth_registration_with_no_name_provided(self) -> None:
+        """
+        The SAMLResponse may not actually provide name values, which is considered
+        unexpected behavior for most social backends, but SAML is an exception. The
+        signup flow should proceed normally, without pre-filling the name in the
+        registration form.
+        """
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name="")
+        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup=True)
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            "",
+            "Full Name",
+            skip_registration_form=False,
+            expect_full_name_prepopulated=False,
+        )
 
     def test_social_auth_no_key(self) -> None:
         """
