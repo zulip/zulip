@@ -1,16 +1,6 @@
 #set_user_status_modal {
     /* A narrower width is more attractive for this modal. */
     width: 384px;
-    @media (width < $ml_min) {
-        width: 100%;
-    }
-
-    /* Center `position-fixed` modal */
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin-left: 0;
-    /* We are setting a z-index so emoji popover can be visible on top of it. */
-    z-index: 105;
 
     .user_status_content_wrapper {
         display: flex;
