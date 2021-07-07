@@ -504,6 +504,7 @@ def fetch_initial_state_data(
         for prop in UserProfile.property_types:
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
+        state["timezone"] = settings_user.timezone
 
     if want("update_global_notifications"):
         for notification in UserProfile.notification_setting_types:
@@ -1071,7 +1072,8 @@ def apply_event(
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
-        assert event["setting_name"] in UserProfile.property_types
+        if event["setting_name"] != "timezone":
+            assert event["setting_name"] in UserProfile.property_types
         state[event["setting_name"]] = event["setting"]
     elif event["type"] == "update_global_notifications":
         assert event["notification_name"] in UserProfile.notification_setting_types

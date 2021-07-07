@@ -5012,8 +5012,11 @@ def do_change_enter_sends(user_profile: UserProfile, enter_sends: bool) -> None:
 def do_set_user_display_setting(
     user_profile: UserProfile, setting_name: str, setting_value: Union[bool, str, int]
 ) -> None:
-    property_type = UserProfile.property_types[setting_name]
-    assert isinstance(setting_value, property_type)
+    if setting_name == "timezone":
+        assert isinstance(setting_value, str)
+    else:
+        property_type = UserProfile.property_types[setting_name]
+        assert isinstance(setting_value, property_type)
     setattr(user_profile, setting_name, setting_value)
     user_profile.save(update_fields=[setting_name])
     event = {

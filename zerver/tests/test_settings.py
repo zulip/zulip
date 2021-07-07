@@ -386,6 +386,7 @@ class ChangeSettingsTest(ZulipTestCase):
         )
         for setting in user_settings:
             self.do_test_change_user_display_setting(setting)
+        self.do_test_change_user_display_setting("timezone")
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")

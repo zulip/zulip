@@ -1414,8 +1414,11 @@ def check_update_display_settings(
     setting = event["setting"]
 
     assert isinstance(setting_name, str)
-    setting_type = UserProfile.property_types[setting_name]
-    assert isinstance(setting, setting_type)
+    if setting_name == "timezone":
+        assert isinstance(setting, str)
+    else:
+        setting_type = UserProfile.property_types[setting_name]
+        assert isinstance(setting, setting_type)
 
     if setting_name == "default_language":
         assert "language_name" in event.keys()

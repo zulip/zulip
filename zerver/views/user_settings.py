@@ -224,6 +224,10 @@ def update_display_settings_backend(
             do_set_user_display_setting(user_profile, k, v)
             result[k] = v
 
+    if timezone is not None and user_profile.timezone != timezone:
+        do_set_user_display_setting(user_profile, "timezone", timezone)
+        result["timezone"] = timezone
+
     return json_success(result)
 
 

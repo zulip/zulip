@@ -27,6 +27,7 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
     setattr(target_profile, "full_name", source_profile.full_name)
     setattr(target_profile, "enter_sends", source_profile.enter_sends)
+    setattr(target_profile, "timezone", source_profile.timezone)
     target_profile.save()
 
     if source_profile.avatar_source == UserProfile.AVATAR_FROM_USER:

@@ -2106,14 +2106,11 @@ class UserDisplayActionTest(BaseAction):
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
             default_view=["all_messages", "recent_topics"],
-            timezone=["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""],
             demote_inactive_streams=[2, 3, 1],
             color_scheme=[2, 3, 1],
         )
 
         num_events = 1
-        if setting_name == "timezone":
-            num_events = 2
         values = test_changes.get(setting_name)
 
         property_type = UserProfile.property_types[setting_name]
@@ -2134,12 +2131,22 @@ class UserDisplayActionTest(BaseAction):
 
             check_update_display_settings("events[0]", events[0])
 
-            if setting_name == "timezone":
-                check_realm_user_update("events[1]", events[1], "timezone")
-
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
+
+    def test_set_user_timezone(self) -> None:
+        values = ["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""]
+        num_events = 2
+
+        for value in values:
+            events = self.verify_action(
+                lambda: do_set_user_display_setting(self.user_profile, "timezone", value),
+                num_events=num_events,
+            )
+
+            check_update_display_settings("events[0]", events[0])
+            check_realm_user_update("events[1]", events[1], "timezone")
 
 
 class SubscribeActionTest(BaseAction):

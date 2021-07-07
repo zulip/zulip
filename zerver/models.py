@@ -1442,7 +1442,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         high_contrast_mode=bool,
         left_side_userlist=bool,
         starred_message_counts=bool,
-        timezone=str,
         translate_emoticons=bool,
         twenty_four_hour_time=bool,
     )
