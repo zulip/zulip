@@ -1246,6 +1246,22 @@ class UserBaseSettings(models.Model):
     realm_name_in_notifications: bool = models.BooleanField(default=False)
     presence_enabled: bool = models.BooleanField(default=True)
 
+    # Define the types of the various automatically managed properties
+    property_types = dict(
+        color_scheme=int,
+        default_language=str,
+        default_view=str,
+        demote_inactive_streams=int,
+        dense_mode=bool,
+        emojiset=str,
+        fluid_layout_width=bool,
+        high_contrast_mode=bool,
+        left_side_userlist=bool,
+        starred_message_counts=bool,
+        translate_emoticons=bool,
+        twenty_four_hour_time=bool,
+    )
+
     class Meta:
         abstract = True
 
@@ -1457,22 +1473,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     zoom_token: Optional[object] = models.JSONField(default=None, null=True)
 
     objects: UserManager = UserManager()
-
-    # Define the types of the various automatically managed properties
-    property_types = dict(
-        color_scheme=int,
-        default_language=str,
-        default_view=str,
-        demote_inactive_streams=int,
-        dense_mode=bool,
-        emojiset=str,
-        fluid_layout_width=bool,
-        high_contrast_mode=bool,
-        left_side_userlist=bool,
-        starred_message_counts=bool,
-        translate_emoticons=bool,
-        twenty_four_hour_time=bool,
-    )
 
     notification_setting_types = dict(
         enable_desktop_notifications=bool,
