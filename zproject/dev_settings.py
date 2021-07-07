@@ -78,8 +78,6 @@ INVITES_MIN_USER_AGE_DAYS = 0
 
 EMBEDDED_BOTS_ENABLED = True
 
-SAVE_FRONTEND_STACKTRACES = True
-
 SYSTEM_ONLY_REALMS: Set[str] = set()
 USING_PGROONGA = True
 # Flush cache after migration.

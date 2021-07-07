@@ -12,7 +12,6 @@ import * as blueslip_stacktrace from "./blueslip_stacktrace";
 import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
-export let last_stacktrace: string | undefined;
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -163,15 +162,6 @@ function report_error(
             }
         },
     });
-
-    if (page_params.save_stacktraces) {
-        // Save the stacktrace so it can be examined even in
-        // development servers.  (N.B. This assumes you have set DEBUG
-        // = False on your development server, or else this code path
-        // won't execute to begin with -- useful for testing
-        // (un)minification.)
-        last_stacktrace = stack;
-    }
 }
 
 class BlueslipError extends Error {

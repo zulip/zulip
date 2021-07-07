@@ -10,7 +10,6 @@ export const page_params: {
     }[];
     development_environment: boolean;
     request_language: string;
-    save_stacktraces: boolean;
     translation_data: Record<string, string>;
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();
