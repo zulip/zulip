@@ -1262,6 +1262,28 @@ class UserBaseSettings(models.Model):
         twenty_four_hour_time=bool,
     )
 
+    notification_setting_types = dict(
+        enable_desktop_notifications=bool,
+        enable_digest_emails=bool,
+        enable_login_emails=bool,
+        enable_marketing_emails=bool,
+        enable_offline_email_notifications=bool,
+        enable_offline_push_notifications=bool,
+        enable_online_push_notifications=bool,
+        enable_sounds=bool,
+        enable_stream_desktop_notifications=bool,
+        enable_stream_email_notifications=bool,
+        enable_stream_push_notifications=bool,
+        enable_stream_audible_notifications=bool,
+        wildcard_mentions_notify=bool,
+        message_content_in_email_notifications=bool,
+        notification_sound=str,
+        pm_content_in_desktop_notifications=bool,
+        desktop_icon_count_display=int,
+        realm_name_in_notifications=bool,
+        presence_enabled=bool,
+    )
+
     class Meta:
         abstract = True
 
@@ -1473,28 +1495,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     zoom_token: Optional[object] = models.JSONField(default=None, null=True)
 
     objects: UserManager = UserManager()
-
-    notification_setting_types = dict(
-        enable_desktop_notifications=bool,
-        enable_digest_emails=bool,
-        enable_login_emails=bool,
-        enable_marketing_emails=bool,
-        enable_offline_email_notifications=bool,
-        enable_offline_push_notifications=bool,
-        enable_online_push_notifications=bool,
-        enable_sounds=bool,
-        enable_stream_desktop_notifications=bool,
-        enable_stream_email_notifications=bool,
-        enable_stream_push_notifications=bool,
-        enable_stream_audible_notifications=bool,
-        wildcard_mentions_notify=bool,
-        message_content_in_email_notifications=bool,
-        notification_sound=str,
-        pm_content_in_desktop_notifications=bool,
-        desktop_icon_count_display=int,
-        realm_name_in_notifications=bool,
-        presence_enabled=bool,
-    )
 
     ROLE_ID_TO_NAME_MAP = {
         ROLE_REALM_OWNER: gettext_lazy("Organization owner"),
