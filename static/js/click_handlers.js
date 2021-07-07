@@ -828,10 +828,17 @@ export function initialize() {
         }
 
         if (compose_state.composing()) {
-            if ($(e.target).closest("a").length > 0) {
+            if (
+                $(e.target).closest("a").length > 0 ||
+                $(e.target).closest(".copy_codeblock").length > 0
+            ) {
                 // Refocus compose message text box if one clicks an external
-                // link/url to view something else while composing a message
-                // See issue #4331 for more details
+                // link/url to view something else while composing a message.
+                // See issue #4331 for more details.
+                //
+                // We do the same when copying a code block, since the
+                // most likely next action within Zulip is to paste it
+                // into compose and modify it.
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (
