@@ -319,7 +319,7 @@ textarea.new_message_textarea {
     margin-top: 5px;
 
     &.over_limit {
-        box-shadow: 0 0 0pt 1pt hsl(0, 100%, 50%) !important;
+        box-shadow: 0 0 0 1pt hsl(0, 100%, 50%) !important;
     }
 }
 
