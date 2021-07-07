@@ -409,10 +409,6 @@ export const slash_commands = [
         name: "poll",
     },
     {
-        text: $t({defaultMessage: "/settings (Load settings menu)"}),
-        name: "settings",
-    },
-    {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
     },

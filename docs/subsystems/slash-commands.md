@@ -10,7 +10,6 @@ Currently supported slash commands are:
 - `/ping` to ping to server and get back the time for the round
 trip. Mainly for testing.
 - `/fluid-width` and `/fixed-width` to toggle that setting
-- `/settings` to open the settings page
 
 It is important to distinguish slash commands from the
 [widget system](/subsystems/widgets.md). Slash commands essentially
