@@ -167,6 +167,20 @@
     margin-top: 6px;
 }
 
+#compose_limit_indicator {
+    position: relative;
+    margin-right: 8px;
+    top: 3px;
+    float: right;
+    font-size: 12px;
+    color: hsl(39, 100%, 50%);
+
+    &.over_limit {
+        color: hsl(0, 100%, 50%);
+        font-weight: bold;
+    }
+}
+
 #compose {
     position: fixed;
     bottom: 0;
@@ -303,6 +317,10 @@ textarea.new_message_textarea {
     margin-bottom: 0;
     resize: vertical !important;
     margin-top: 5px;
+
+    &.over_limit {
+        box-shadow: 0 0 0pt 1pt hsl(0, 100%, 50%) !important;
+    }
 }
 
 textarea.new_message_textarea,

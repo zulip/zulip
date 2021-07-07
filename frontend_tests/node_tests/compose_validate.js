@@ -461,3 +461,57 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({override
         $t_html({defaultMessage: "Guests are not allowed to post to this stream."}),
     );
 });
+
+test_ui("test_check_and_set_overflow_text", () => {
+    page_params.max_message_length = 10000;
+
+    const textarea = $("#compose-textarea");
+    const indicator = $("#compose_limit_indicator");
+
+    // Indicator should show red colored text
+    textarea.val("a".repeat(10000 + 1));
+    compose_validate.check_and_set_overflow_text();
+    assert.ok(indicator.hasClass("over_limit"));
+    assert.equal(indicator.text(), "10001/10000");
+    assert.ok(textarea.hasClass("over_limit"));
+
+    // Indicator should show orange colored text
+    textarea.val("a".repeat(9000 + 1));
+    compose_validate.check_and_set_overflow_text();
+    assert.ok(!indicator.hasClass("over_limit"));
+    assert.equal(indicator.text(), "9001/10000");
+    assert.ok(!textarea.hasClass("over_limit"));
+
+    // Indicator must be empty
+    textarea.val("a".repeat(9000));
+    compose_validate.check_and_set_overflow_text();
+    assert.ok(!indicator.hasClass("over_limit"));
+    assert.equal(indicator.text(), "");
+    assert.ok(!textarea.hasClass("over_limit"));
+});
+
+test_ui("test_message_overflow", ({override}) => {
+    page_params.max_message_length = 10000;
+
+    override(reminder, "is_deferred_delivery", () => false);
+
+    const sub = {
+        stream_id: 101,
+        name: "social",
+        subscribed: true,
+    };
+
+    stream_data.add_sub(sub);
+    page_params.user_id = 30;
+    const message = "a".repeat(10000 + 1);
+
+    compose_state.stream_name("social");
+    compose_state.topic("priyam");
+    $("#compose-textarea").val(message);
+
+    assert.ok(!compose_validate.validate());
+    assert.equal($("#compose-error-msg").html(), "never-been-set");
+
+    $("#compose-textarea").val("a");
+    assert.ok(compose_validate.validate());
+});

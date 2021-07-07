@@ -84,7 +84,7 @@
                     </div>
                     <div>
                         <div class="messagebox">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" maxlength="10000" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
                             <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
                                 <div class="markdown_preview_spinner"></div>
                                 <div class="preview_content rendered_markdown"></div>
@@ -100,6 +100,7 @@
                                         <span></span>{{t 'Press Enter to send' }}
                                     </label>
                                 </div>
+                                <span id="compose_limit_indicator"></span>
                             </div>
                         </div>
                     </div>

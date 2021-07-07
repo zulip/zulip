@@ -464,6 +464,29 @@ function validate_private_message() {
     return true;
 }
 
+export function check_and_set_overflow_text() {
+    const text = compose_state.message_content();
+    const max_length = page_params.max_message_length;
+    const indicator = $("#compose_limit_indicator");
+
+    if (text.length > max_length) {
+        indicator.addClass("over_limit");
+        $("#compose-textarea").addClass("over_limit");
+        indicator.text(text.length + "/" + max_length);
+    } else if (text.length > 0.9 * max_length) {
+        indicator.removeClass("over_limit");
+        $("#compose-textarea").removeClass("over_limit");
+        indicator.text(text.length + "/" + max_length);
+    } else {
+        indicator.text("");
+        $("#compose-textarea").removeClass("over_limit");
+
+        if ($("#compose-send-status").hasClass("alert-error")) {
+            $("#compose-send-status").stop(true).fadeOut();
+        }
+    }
+}
+
 export function validate() {
     $("#compose-send-button").prop("disabled", true).trigger("blur");
     const message_content = compose_state.message_content();
@@ -488,6 +511,12 @@ export function validate() {
                     "You need to be running Zephyr mirroring in order to send messages!",
             }),
         );
+        return false;
+    }
+
+    if (message_content.length > page_params.max_message_length) {
+        // We don't display an error message, since the red box already
+        // communicates clearly what you did wrong.
         return false;
     }
 
