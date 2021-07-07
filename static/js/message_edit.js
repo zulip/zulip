@@ -1004,7 +1004,6 @@ export function delete_message(msg_id) {
         parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Delete message"}),
         html_body,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
         help_link: "/help/edit-or-delete-a-message#delete-a-message",
         on_click: do_delete_message,
         loading_spinner: true,

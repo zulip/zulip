@@ -16,7 +16,6 @@ export function confirm_unstar_all_messages() {
         parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Unstar all messages"}),
         html_body,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
         on_click: message_flags.unstar_all_messages,
     });
 }
@@ -41,7 +40,6 @@ export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
         parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Unstar messages in topic"}),
         html_body,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
         on_click,
     });
 }

@@ -37,7 +37,6 @@ export function confirm_mute_user(user_id) {
         html_heading: $t({defaultMessage: "Mute user"}),
         help_link: "/help/mute-a-user",
         html_body,
-        html_submit_button: $t({defaultMessage: "Confirm"}),
         on_click,
     });
 }

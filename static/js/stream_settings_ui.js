@@ -970,7 +970,6 @@ export function unsubscribe_from_private_stream(sub, from_stream_popover) {
             {stream_name: sub.name},
         ),
         html_body,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
         on_click: unsubscribe_from_stream,
         fade: true,
     });

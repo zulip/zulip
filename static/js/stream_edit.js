@@ -899,7 +899,6 @@ export function initialize() {
                     {stream_name: sub.name},
                 ),
                 html_body,
-                html_submit_button: $t_html({defaultMessage: "Confirm"}),
                 on_click: remove_user_from_private_stream,
                 fade: true,
             });
@@ -968,7 +967,6 @@ export function initialize() {
             ),
             help_link: "/help/archive-a-stream",
             html_body,
-            html_submit_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_archive_stream,
             fade: true,
         });

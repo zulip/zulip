@@ -447,7 +447,6 @@ function confirm_deactivation(row, user_id, status_field) {
         parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
         html_body,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
         on_click: handle_confirm,
         fade: true,
     });

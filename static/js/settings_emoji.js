@@ -269,7 +269,6 @@ export function set_up() {
                     parent: modal_parent,
                     html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
                     html_body,
-                    html_submit_button: $t_html({defaultMessage: "Confirm"}),
                     on_click: submit_custom_emoji_request,
                     fade: true,
                 });

@@ -4,6 +4,7 @@ import render_dialog_widget from "../templates/dialog_widget.hbs";
 import render_dialog_heading from "../templates/dialog_widget_heading.hbs";
 
 import * as blueslip from "./blueslip";
+import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
 import * as settings_data from "./settings_data";
 
@@ -64,18 +65,17 @@ export function launch(conf) {
     const html = render_dialog_widget({fade: conf.fade});
     const dialog = $(html);
 
-    const conf_fields = [
-        // The next three fields should be safe HTML. If callers
+    const mandatory_fields = [
+        // The html_ fields should be safe HTML. If callers
         // interpolate user data into strings, they should use
         // templates.
         "html_heading",
         "html_body",
-        "html_submit_button",
         "on_click",
         "parent",
     ];
 
-    for (const f of conf_fields) {
+    for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
             blueslip.error("programmer omitted " + f);
         }
@@ -99,7 +99,8 @@ export function launch(conf) {
 
     const submit_button_span = dialog.find(".dialog_submit_button span");
 
-    submit_button_span.html(conf.html_submit_button);
+    let html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
+    submit_button_span.html(html_submit_button);
 
     if (conf.post_render !== undefined) {
         conf.post_render();
