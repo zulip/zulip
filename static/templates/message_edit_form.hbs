@@ -17,7 +17,7 @@
                     {{/each}}
                 </select>
                 <i class="fa fa-angle-right" aria-hidden="true" {{#unless is_stream_editable}}style="display:none"{{/unless}}></i>
-                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
+                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
                 <div class="message_edit_breadcrumb_messages"  style='display:none;'>
                     <label class="checkbox">
                         <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />

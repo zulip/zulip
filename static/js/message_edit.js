@@ -272,14 +272,18 @@ function handle_message_row_edit_keydown(e) {
                     composebox_typeahead.handle_enter($(e.target), e);
                     return;
                 }
+            } else if ($(".typeahead:visible").length > 0) {
+                // Accepting typeahead is handled by the typeahead library.
+                return;
             } else if (
                 $(e.target).hasClass("message_edit_topic") ||
                 $(e.target).hasClass("message_edit_topic_propagate")
             ) {
+                // Enter should save the topic edit, as long as it's
+                // not being used to accept typeahead.
                 const row = $(e.target).closest(".message_row");
                 save_message_row_edit(row);
                 e.stopPropagation();
-                e.preventDefault();
             }
             return;
         case "Escape": // Handle escape keys in the message_edit form.
@@ -296,6 +300,11 @@ function handle_inline_topic_edit_keydown(e) {
     let row;
     switch (e.key) {
         case "Enter": // Handle Enter key in the recipient bar/inline topic edit form
+            if ($(".typeahead:visible").length > 0) {
+                // Accepting typeahead should not trigger a save.
+                e.preventDefault();
+                return;
+            }
             row = $(e.target).closest(".recipient_row");
             save_inline_topic_edit(row);
             e.stopPropagation();
@@ -561,6 +570,7 @@ function edit_message(row, raw_content) {
             set_propagate_selector_display();
         });
     }
+    composebox_typeahead.initialize_topic_edit_typeahead(message_edit_topic, message.stream, true);
 }
 
 function start_edit_maintaining_scroll(row, content) {
@@ -641,7 +651,13 @@ export function start_inline_topic_edit(recipient_row) {
     if (topic === compose.empty_topic_placeholder()) {
         topic = "";
     }
-    form.find(".inline_topic_edit").val(topic).trigger("select").trigger("focus");
+    const inline_topic_edit_input = form.find(".inline_topic_edit");
+    inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
+    composebox_typeahead.initialize_topic_edit_typeahead(
+        inline_topic_edit_input,
+        message.stream,
+        false,
+    );
 }
 
 export function is_editing(id) {
@@ -685,6 +701,8 @@ export function end_message_row_edit(row) {
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
     row.find(".message_edit").trigger("blur");
+    // We should hide the editing typeahead if it is visible
+    row.find("input.message_edit_topic").trigger("blur");
 }
 
 export function save_inline_topic_edit(row) {

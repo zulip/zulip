@@ -990,6 +990,28 @@ export function compose_trigger_selection(event) {
     return false;
 }
 
+export function initialize_topic_edit_typeahead(form_field, stream_name, dropup) {
+    const options = {
+        fixed: true,
+        dropup,
+        highlighter(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+        sorter(items) {
+            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(this.query)) {
+                sorted.unshift(this.query);
+            }
+            return sorted;
+        },
+        source() {
+            return topics_seen_for(stream_name);
+        },
+        items: 5,
+    };
+    form_field.typeahead(options);
+}
+
 function get_header_html() {
     let tip_text = "";
     switch (this.completing) {
