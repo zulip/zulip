@@ -404,7 +404,7 @@ export function update_messages(events) {
 
         // Rerender "Message edit history" if it was open to the edited message.
         if (
-            $("#message-edit-history").hasClass("in") &&
+            $("#message-edit-history").parents(".micromodal").hasClass("modal--open") &&
             msg.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
         ) {
             message_edit_history.fetch_and_render_message_history(msg);
