@@ -279,7 +279,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's [notification
-                                settings](/api/update-notification-settings) have changed.
+                                settings](/api/update-settings) have changed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -8423,152 +8423,152 @@ paths:
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_digest_emails:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_login_emails:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_marketing_emails:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_offline_email_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_offline_push_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_online_push_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_sounds:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_desktop_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_email_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_push_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_audible_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       wildcard_mentions_notify:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       message_content_in_email_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       notification_sound:
                         type: string
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       pm_content_in_desktop_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       desktop_icon_count_display:
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       realm_name_in_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       presence_enabled:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       available_notification_sounds:
                         type: array
                         items:
@@ -8586,8 +8586,8 @@ paths:
 
                           The color scheme selected by the user.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       default_language:
                         type: string
                         description: |
@@ -8595,8 +8595,8 @@ paths:
 
                           The default language chosen by the user.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       demote_inactive_streams:
                         type: integer
                         description: |
@@ -8604,8 +8604,8 @@ paths:
 
                           Whether the user has chosen to demote inactive streams.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       dense_mode:
                         type: boolean
                         description: |
@@ -8614,8 +8614,8 @@ paths:
                           Whether the user has switched on dense mode.  Dense mode is an experimental
                           feature that is only available in development environments.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       emojiset:
                         type: string
                         description: |
@@ -8623,8 +8623,8 @@ paths:
 
                           The name of the emojiset that the user has chosen.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       fluid_layout_width:
                         type: boolean
                         description: |
@@ -8632,8 +8632,8 @@ paths:
 
                           Whether the user has chosen for the layout width to be fluid.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       default_view:
                         type: string
                         description: |
@@ -8644,8 +8644,8 @@ paths:
 
                           Currently supported values are `all_messages` and `recent_topics`.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       high_contrast_mode:
                         type: boolean
                         description: |
@@ -8653,8 +8653,8 @@ paths:
 
                           Whether has switched on high contrast mode.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       left_side_userlist:
                         type: boolean
                         description: |
@@ -8664,8 +8664,8 @@ paths:
                           on the left side of the screen (for desktop app and web app) in narrow
                           windows.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       starred_message_counts:
                         type: boolean
                         description: |
@@ -8674,8 +8674,8 @@ paths:
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       timezone:
                         type: string
                         description: |
@@ -8684,8 +8684,8 @@ paths:
                           The timezone configured for the user.  This is used primarily to display
                           the user's timezone to other users.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       translate_emoticons:
                         type: boolean
                         description: |
@@ -8694,8 +8694,8 @@ paths:
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       twenty_four_hour_time:
                         type: boolean
                         description: |
@@ -8704,8 +8704,8 @@ paths:
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       emojiset_choices:
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
@@ -8716,8 +8716,8 @@ paths:
                           Only relevant to clients with configuration UI for choosing an emojiset;
                           the currently selected emojiset is available in the `emojiset` key.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                         type: array
                         items:
                           type: object
@@ -9926,263 +9926,32 @@ paths:
                             },
                           ],
                       }
-  /settings/notifications:
+  /settings:
     patch:
-      operationId: update-notification-settings
-      summary: Update notification settings
+      operationId: update-settings
+      summary: Update settings
       tags: ["users"]
       description: |
-        This endpoint is used to edit the user's global notification settings.
-        See [this endpoint](/api/update-subscription-settings) for
-        per-stream notification settings.
+        This endpoint is used to edit the current user's settings.
 
-        `PATCH {{ api_url }}/v1/settings/notifications`
-      x-curl-examples-parameters:
-        oneOf:
-          - type: include
-            parameters:
-              enum:
-                - enable_offline_push_notifications
-                - enable_online_push_notifications
-      parameters:
-        - name: enable_stream_desktop_notifications
-          in: query
-          description: |
-            Enable visual desktop notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_stream_email_notifications
-          in: query
-          description: |
-            Enable email notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_stream_push_notifications
-          in: query
-          description: |
-            Enable mobile notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_stream_audible_notifications
-          in: query
-          description: |
-            Enable audible desktop notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: notification_sound
-          in: query
-          description: |
-            Notification sound name.
+        `PATCH {{ api_url }}/v1/settings`
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 63).
-          schema:
-            type: string
-          example: ding
-        - name: enable_desktop_notifications
-          in: query
-          description: |
-            Enable visual desktop notifications for private messages and @-mentions.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_sounds
-          in: query
-          description: |
-            Enable audible desktop notifications for private messages and
-            @-mentions.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_offline_email_notifications
-          in: query
-          description: |
-            Enable email notifications for private messages and @-mentions received
-            when the user is offline.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_offline_push_notifications
-          in: query
-          description: |
-            Enable mobile notification for private messages and @-mentions received
-            when the user is offline.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_online_push_notifications
-          in: query
-          description: |
-            Enable mobile notification for private messages and @-mentions received
-            when the user is online.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_digest_emails
-          in: query
-          description: |
-            Enable digest emails when the user is away.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_marketing_emails
-          in: query
-          description: |
-            Enable marketing emails. Has no function outside Zulip Cloud.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_login_emails
-          in: query
-          description: |
-            Enable email notifications for new logins to account.
-          schema:
-            type: boolean
-          example: true
-        - name: message_content_in_email_notifications
-          in: query
-          description: |
-            Include the message's content in email notifications for new messages.
-          schema:
-            type: boolean
-          example: true
-        - name: pm_content_in_desktop_notifications
-          in: query
-          description: |
-            Include content of private messages in desktop notifications.
-          schema:
-            type: boolean
-          example: true
-        - name: wildcard_mentions_notify
-          in: query
-          description: |
-            Whether wildcard mentions (E.g. @**all**) should send notifications
-            like a personal mention.
-          schema:
-            type: boolean
-          example: true
-        - name: desktop_icon_count_display
-          in: query
-          description: |
-            Unread count summary (appears in desktop sidebar and browser tab)
+        **Changes**: Prior to Zulip 5.0 (feature level 80), this
+        endpoint only supported the `full_name`, `email`,
+        `old_password`, and `new_password` parameters. Notification
+        settings were managed by `PATCH /settings/notifications`, and
+        all other settings by `PATCH /settings/display`. The feature level
+        80 migration to merge these endpoints did not change how request
+        parameters are encoded. Note, however, that it did change the
+        handling of any invalid parameters present in a request to change
+        notification or display settings, since the merged endpoint uses
+        the new response format that was introduced for `/settings` in
+        Zulip 5.0 (feature level 78).
 
-            * 1 - All unreads
-            * 2 - Private messages and mentions
-            * 3 - None
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
-        - name: realm_name_in_notifications
-          in: query
-          description: |
-            Include organization name in subject of message notification emails.
-          schema:
-            type: boolean
-          example: true
-        - name: presence_enabled
-          in: query
-          description: |
-            Display the presence status to other users when online.
-          schema:
-            type: boolean
-          example: true
-      x-response-description: |
-        The server will return the settings that have been changed after the request,
-        with their new value. Please note that this doesn't necessarily mean that it
-        will return all the settings passed as parameters in the request, but only
-        those ones that were different than the already existing setting.
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      enable_desktop_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_desktop_notifications`, if it was changed in
-                          this request.
-                      enable_digest_emails:
-                        type: boolean
-                        description: |
-                          The setting for `enable_digest_emails`, if it was changed in this
-                          request.
-                      enable_marketing_emails:
-                        type: boolean
-                        description: |
-                          The setting for `enable_marketing_emails`, if it was changed in this
-                          request.
-                      enable_offline_email_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_offline_email_notifications`, if it was changed
-                          in this request.
-                      enable_offline_push_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_offline_push_notifications`, if it was changed
-                          in this request.
-                      enable_online_push_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_online_push_notifications`, if it was changed in
-                          this request.
-                      enable_sounds:
-                        type: boolean
-                        description: |
-                          The setting for `enable_sounds`, if it was changed in this request.
-                      enable_stream_email_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_stream_email_notifications`, if it was changed
-                          in this request.
-                      enable_stream_push_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_stream_push_notifications`, if it was changed in
-                          this request.
-                      enable_stream_audible_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_stream_audible_notifications`, if it was changed
-                          in this request.
-                      message_content_in_email_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `message_content_in_email_notifications`, if it was
-                          changed in this request.
-                    example:
-                      {
-                        "enable_offline_push_notifications": true,
-                        "enable_online_push_notifications": true,
-                        "msg": "",
-                        "result": "success",
-                      }
-  /settings/display:
-    patch:
-      operationId: update-display-settings
-      summary: Update display settings
-      tags: ["users"]
-      description: |
-        This endpoint is used to edit the current user's user interface settings.
-
-        `PATCH {{ api_url }}/v1/settings/display`
+        The `/settings/display` and `/settings/notifications`
+        endpoints are now deprecated aliases for this endpoint for
+        backwards-compatibility, and will be removed once clients have
+        migrated to use this endpoint.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -10190,18 +9959,48 @@ paths:
               enum:
                 - left_side_userlist
                 - emojiset
-      x-response-description: |
-        #### Return values
-
-        The server will return the settings that have been changed after the request,
-        with their new value. Please note that this doesn't necessarily mean that it
-        will return all the settings passed as parameters in the request, but only
-        those ones that were different from the already existing setting.
       parameters:
+        - name: full_name
+          in: query
+          description: |
+            A new display name for the user.
+          schema:
+            type: string
+          example: NewName
+        - name: email
+          in: query
+          description: |
+            Asks the server to initiate a confirmation sequence to change the user's email
+            address to the indicated value. The user will need to demonstrate control of the
+            new email address by clicking a confirmation link sent to that address.
+          schema:
+            type: string
+          example: newname@example.com
+        - name: old_password
+          in: query
+          description: |
+            The user's old Zulip password (or LDAP password, if LDAP authentication is in use).
+
+            Required only when sending the `new_password` parameter.
+          schema:
+            type: string
+          example: old12345
+        - name: new_password
+          in: query
+          description: |
+            The user's new Zulip password (or LDAP password, if LDAP authentication is in use).
+
+            The `old_password` parameter must be included in the request.
+          schema:
+            type: string
+          example: new12345
         - name: twenty_four_hour_time
           in: query
           description: |
             Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10210,6 +10009,9 @@ paths:
           description: |
             This setting has no effect at present.  It is reserved for use in controlling
             the default font size in Zulip.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10218,6 +10020,9 @@ paths:
           description: |
             Whether clients should display the [number of starred
             messages](/help/star-a-message#display-the-number-of-starred-messages).
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10226,6 +10031,9 @@ paths:
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
             for the web app's center panel (message feed, recent topics) on wide screens.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10234,6 +10042,9 @@ paths:
           description: |
             This setting is reserved for use to control variations in Zulip's design
             to help visually impaired users.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10248,6 +10059,9 @@ paths:
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           content:
             application/json:
               schema:
@@ -10262,6 +10076,9 @@ paths:
           description: |
             Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
             in messages the user sends.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10275,7 +10092,10 @@ paths:
             The value needs to be a standard language code that the Zulip server has
             translation data for; for example, `"en"` for English or `"de"` for German.
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 63).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 63).
           schema:
             type: string
           example: en
@@ -10288,7 +10108,10 @@ paths:
             * "recent_topics" - Recent topics view
             * "all_messages" - All messages view
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: all_messages
@@ -10298,6 +10121,9 @@ paths:
             Whether the users list on left sidebar in narrow windows.
 
             This feature is not heavily used and is likely to be reworked.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10312,7 +10138,10 @@ paths:
             * "twitter" - Twitter
             * "text" - Plain text
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: "google"
@@ -10324,6 +10153,9 @@ paths:
             * 1 - Automatic
             * 2 - Always
             * 3 - Never
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           content:
             application/json:
               schema:
@@ -10341,10 +10173,220 @@ paths:
             Timezone values supported by the server are served at
             [/static/generated/timezones.json](/static/generated/timezones.json).
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: "Asia/Kolkata"
+        - name: enable_stream_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_email_notifications
+          in: query
+          description: |
+            Enable email notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_push_notifications
+          in: query
+          description: |
+            Enable mobile notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_audible_notifications
+          in: query
+          description: |
+            Enable audible desktop notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: notification_sound
+          in: query
+          description: |
+            Notification sound name.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 63).
+          schema:
+            type: string
+          example: ding
+        - name: enable_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for private messages and @-mentions.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_sounds
+          in: query
+          description: |
+            Enable audible desktop notifications for private messages and
+            @-mentions.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_offline_email_notifications
+          in: query
+          description: |
+            Enable email notifications for private messages and @-mentions received
+            when the user is offline.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_offline_push_notifications
+          in: query
+          description: |
+            Enable mobile notification for private messages and @-mentions received
+            when the user is offline.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_online_push_notifications
+          in: query
+          description: |
+            Enable mobile notification for private messages and @-mentions received
+            when the user is online.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_digest_emails
+          in: query
+          description: |
+            Enable digest emails when the user is away.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_marketing_emails
+          in: query
+          description: |
+            Enable marketing emails. Has no function outside Zulip Cloud.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_login_emails
+          in: query
+          description: |
+            Enable email notifications for new logins to account.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: message_content_in_email_notifications
+          in: query
+          description: |
+            Include the message's content in email notifications for new messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: pm_content_in_desktop_notifications
+          in: query
+          description: |
+            Include content of private messages in desktop notifications.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: wildcard_mentions_notify
+          in: query
+          description: |
+            Whether wildcard mentions (E.g. @**all**) should send notifications
+            like a personal mention.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: desktop_icon_count_display
+          in: query
+          description: |
+            Unread count summary (appears in desktop sidebar and browser tab)
+
+            * 1 - All unreads
+            * 2 - Private messages and mentions
+            * 3 - None
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: realm_name_in_notifications
+          in: query
+          description: |
+            Include organization name in subject of message notification emails.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: presence_enabled
+          in: query
+          description: |
+            Display the presence status to other users when online.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -10358,69 +10400,32 @@ paths:
                     properties:
                       result: {}
                       msg: {}
-                      twenty_four_hour_time:
-                        type: boolean
+                      ignored_parameters_unsupported:
+                        type: array
+                        items:
+                          type: string
                         description: |
-                          The setting for `twenty_four_hour_time`, if it was changed in this request.
-                      dense_mode:
-                        type: boolean
-                        description: |
-                          The setting for `dense_mode`, if it was changed in this request.
-                          This setting is however reserved for future, and can not be
-                          modified in production environment.
-                      starred_message_counts:
-                        type: boolean
-                        description: |
-                          The setting for `starred_message_counts`, if it was changed
-                          in this request.
-                      fluid_layout_width:
-                        type: boolean
-                        description: |
-                          The setting for `fluid_layout_width`, if it was changed
-                          in this request.
-                      high_contrast_mode:
-                        type: boolean
-                        description: |
-                          The setting for `high_contrast_mode`, if it was changed in
-                          this request.
-                          This setting is however reserved for future, and can not be
-                          modified in production environment.
-                      color_scheme:
-                        type: integer
-                        description: |
-                          The numerical key corresponding to new `color_scheme` if it was changed in this request.
-                      translate_emoticons:
-                        type: boolean
-                        description: |
-                          The setting for `translate_emoticons`, if it was changed in this request.
-                      default_language:
-                        type: string
-                        description: |
-                          The language code corresponding to new `default_language` if it was changed in this request.
-                      default_view:
-                        type: string
-                        description: |
-                          The new setting for `default_view`, if it was changed in this request.
-                      left_side_userlist:
-                        type: boolean
-                        description: |
-                          The setting for `left_side_userlist`, if it was changed in this request.
-                      emojiset:
-                        type: string
-                        description: |
-                          The string identifier corresponding to new `emojiset` if it was changed in this request.
-                      demote_inactive_streams:
-                        type: integer
-                        description: |
-                          The numerical key corresponding to new `demote_inactive_streams` setting if it was changed in this request.
-                      timezone:
-                        type: string
-                        description: |
-                          The setting for `timezone`, if it was changed in this request.
+                          This field lists any parameters sent in the request that are not
+                          supported by the endpoint. While this can be expected, e.g. when sending
+                          both current and legacy names for a parameter to a Zulip server of
+                          unknown version, this often indicates a bug in the client
+                          implementation or an attempt to configure a new feature, while
+                          connected to an older Zulip server that does not support the feature.
+
+                          **Changes**: New in Zulip 5.0 (feature level 78). Previously,
+                          the `/settings` endpoint indicated which parameters it had
+                          processed by including in the response object `"key": value`
+                          entries for values successfully changed by the request.
+
+                          The `/settings/notifications` and `/settings/display` endpoints
+                          also had this behavior before they became aliases of `/settings`
+                          in Zulip 5.0 (feature level 80).
+
+                          Before those changes, request parameters that were not supported
+                          or were unchanged were silently ignored.
                     example:
                       {
-                        "emojiset": "google",
-                        "left_side_userlist": true,
+                        "ignored_parameters_unsupported": ["name", "password"],
                         "msg": "",
                         "result": "success",
                       }

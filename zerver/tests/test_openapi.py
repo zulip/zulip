@@ -253,7 +253,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/users/me/android_gcm_reg_id",
         "/users/me/apns_device_token",
         #### These personal settings endpoints have modest value to document:
-        "/settings",
         "/users/me/avatar",
         "/users/me/api_key/regenerate",
         # Much more valuable would be an org admin bulk-upload feature.

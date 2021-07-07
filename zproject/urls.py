@@ -182,11 +182,9 @@ from zerver.views.user_settings import (
     change_enter_sends,
     confirm_email_change,
     delete_avatar_backend,
-    json_change_notify_settings,
     json_change_settings,
     regenerate_api_key,
     set_avatar_backend,
-    update_display_settings_backend,
 )
 from zerver.views.users import (
     add_bot_backend,
@@ -414,8 +412,13 @@ v1_api_and_json_patterns = [
     ),
     # settings -> zerver.views.user_settings
     rest_path("settings", PATCH=json_change_settings),
-    rest_path("settings/display", PATCH=update_display_settings_backend),
-    rest_path("settings/notifications", PATCH=json_change_notify_settings),
+    # These next two are legacy aliases for /settings, from before
+    # we merged the endpoints. They are documented in the `/json/settings`
+    # documentation, rather than having dedicated pages.
+    rest_path("settings/display", PATCH=(json_change_settings, {"intentionally_undocumented"})),
+    rest_path(
+        "settings/notifications", PATCH=(json_change_settings, {"intentionally_undocumented"})
+    ),
     # users/me/alert_words -> zerver.views.alert_words
     rest_path(
         "users/me/alert_words",
