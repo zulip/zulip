@@ -102,6 +102,16 @@ def zulip():
     <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
     },
     {
+        markdown: `\
+\`\`\`python hl_lines="1"
+def zulip():
+    print "Zulip"
+\`\`\``,
+        output_html: `\
+<div class="codehilite"><pre><span class="hll"><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span></span>
+    <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
+    },
+    {
         note_html: $t_html(
             {
                 defaultMessage:
