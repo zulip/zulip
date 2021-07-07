@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 
+from zerver.lib.actions import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -76,11 +77,14 @@ class MutedUsersTests(ZulipTestCase):
         result = self.api_post(hamlet, url)
         self.assert_json_error(result, "User already muted")
 
-    def test_add_muted_user_valid_data(self) -> None:
+    def _test_add_muted_user_valid_data(self, deactivate_user: bool = False) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
+
+        if deactivate_user:
+            do_deactivate_user(cordelia, acting_user=None)
 
         with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
             url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
@@ -112,6 +116,12 @@ class MutedUsersTests(ZulipTestCase):
             ),
         )
 
+    def test_add_muted_user_valid_data(self) -> None:
+        self._test_add_muted_user_valid_data()
+
+    def test_add_muted_user_deactivated_user(self) -> None:
+        self._test_add_muted_user_valid_data(deactivate_user=True)
+
     def test_remove_muted_user_unmute_before_muting(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -121,11 +131,14 @@ class MutedUsersTests(ZulipTestCase):
         result = self.api_delete(hamlet, url)
         self.assert_json_error(result, "User is not muted")
 
-    def test_remove_muted_user_valid_data(self) -> None:
+    def _test_remove_muted_user_valid_data(self, deactivate_user: bool = False) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
+
+        if deactivate_user:
+            do_deactivate_user(cordelia, acting_user=None)
 
         with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
             url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
@@ -162,6 +175,12 @@ class MutedUsersTests(ZulipTestCase):
                 orjson.dumps({"unmuted_user_id": cordelia.id}).decode(),
             ),
         )
+
+    def test_remove_muted_user_valid_data(self) -> None:
+        self._test_remove_muted_user_valid_data()
+
+    def test_remove_muted_user_deactivated_user(self) -> None:
+        self._test_remove_muted_user_valid_data(deactivate_user=True)
 
     def test_get_muting_users(self) -> None:
         hamlet = self.example_user("hamlet")
