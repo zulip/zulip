@@ -1197,18 +1197,22 @@ test("begins_typeahead", ({override}) => {
     assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
 
-    assert_typeahead_equals("@", false);
-    assert_typeahead_equals("@_", false);
-    assert_typeahead_equals(" @", false);
-    assert_typeahead_equals(" @_", false);
+    assert_typeahead_equals("@", all_mentions);
+    assert_typeahead_equals("@_", people_only);
+    assert_typeahead_equals(" @", all_mentions);
+    assert_typeahead_equals(" @_", people_only);
+    assert_typeahead_equals("@*", all_mentions);
+    assert_typeahead_equals("@_*", people_only);
+    assert_typeahead_equals("@**", all_mentions);
+    assert_typeahead_equals("@_**", people_only);
     assert_typeahead_equals("test @**o", all_mentions);
     assert_typeahead_equals("test @_**o", people_only);
     assert_typeahead_equals("test @*o", all_mentions);
     assert_typeahead_equals("test @_*k", people_only);
     assert_typeahead_equals("test @*h", all_mentions);
     assert_typeahead_equals("test @_*h", people_only);
-    assert_typeahead_equals("test @", false);
-    assert_typeahead_equals("test @_", false);
+    assert_typeahead_equals("test @", all_mentions);
+    assert_typeahead_equals("test @_", people_only);
     assert_typeahead_equals("test no@o", false);
     assert_typeahead_equals("test no@_k", false);
     assert_typeahead_equals("@ ", false);
