@@ -104,10 +104,10 @@ def zulip_browser_error(report: Dict[str, Any]) -> None:
     )
 
 
-def notify_server_error(report: Dict[str, Any], skip_error_zulip: bool = False) -> None:
+def notify_server_error(report: Dict[str, Any]) -> None:
     report = defaultdict(lambda: None, report)
     email_server_error(report)
-    if settings.ERROR_BOT and not skip_error_zulip:
+    if settings.ERROR_BOT:
         zulip_server_error(report)
 
 

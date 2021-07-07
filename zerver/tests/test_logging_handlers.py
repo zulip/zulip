@@ -200,21 +200,20 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             "zerver.lib.error_notify.notify_server_error", side_effect=Exception("queue error")
         ):
             self.handler.emit(record)
-        with self.settings(STAGING_ERROR_NOTIFICATIONS=False):
-            with mock_queue_publish(
-                "zerver.logging_handlers.queue_json_publish", side_effect=Exception("queue error")
-            ) as m:
-                with patch("logging.warning") as log_mock:
-                    self.handler.emit(record)
-                    m.assert_called_once()
-                    log_mock.assert_called_once_with(
-                        "Reporting an exception triggered an exception!", exc_info=True
-                    )
-            with mock_queue_publish("zerver.logging_handlers.queue_json_publish") as m:
-                with patch("logging.warning") as log_mock:
-                    self.handler.emit(record)
-                    m.assert_called_once()
-                    log_mock.assert_not_called()
+        with mock_queue_publish(
+            "zerver.logging_handlers.queue_json_publish", side_effect=Exception("queue error")
+        ) as m:
+            with patch("logging.warning") as log_mock:
+                self.handler.emit(record)
+                m.assert_called_once()
+                log_mock.assert_called_once_with(
+                    "Reporting an exception triggered an exception!", exc_info=True
+                )
+        with mock_queue_publish("zerver.logging_handlers.queue_json_publish") as m:
+            with patch("logging.warning") as log_mock:
+                self.handler.emit(record)
+                m.assert_called_once()
+                log_mock.assert_not_called()
 
         # Test no exc_info
         record.exc_info = None
