@@ -493,7 +493,6 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
 
-    realm_logo.rerender();
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
@@ -506,6 +505,7 @@ export function initialize_everything() {
     initialize_right_sidebar();
     compose.initialize();
     initialize_navbar();
+    realm_logo.rerender();
 
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
