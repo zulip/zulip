@@ -18,7 +18,7 @@ tippy.setDefaultProps({
     // Some delay to showing / hiding the tooltip makes
     // it look less forced and more natural.
     delay: [100, 20],
-    placement: "auto",
+    placement: "top",
 
     // disable animations to make the
     // tooltips feel snappy
@@ -111,7 +111,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".compose_control_button",
-        placement: "top",
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
@@ -120,7 +119,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".message_control_button",
-        placement: "top",
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
@@ -154,7 +152,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".message_time",
-        placement: "top",
         appendTo: () => document.body,
         onShow(instance) {
             const time_elem = $(instance.reference);
@@ -170,7 +167,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".recipient_row_date > span",
-        placement: "top",
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
@@ -182,14 +178,12 @@ export function initialize() {
     // box or it is not limited by the parent container.
     delegate("body", {
         target: [".recipient_bar_icon", ".sidebar-title", "#user_filter_icon"],
-        placement: "top",
         appendTo: () => document.body,
     });
 
     delegate("body", {
         target: ".rendered_markdown time",
         allowHTML: true,
-        placement: "top",
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

@@ -17,13 +17,13 @@
                 <div class="recent_topic_actions">
                     <div class="recent_topics_focusable">
                         {{#if topic_muted}}
-                        <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }}" data-tippy-placement="top" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
+                        <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
                         {{else}}
-                        <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }}" data-tippy-placement="top" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+                        <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
                         {{/if}}
                     </div>
                     <div class="recent_topics_focusable">
-                        <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" data-tippy-placement="top" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
+                        <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
                     </div>
                 </div>
             </div>
@@ -32,17 +32,17 @@
     <td class='recent_topic_users'>
         <ul class="recent_topics_participants">
             {{#if other_senders_count}}
-            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{other_sender_names}}" data-tippy-placement="top" data-tippy-allowHtml="true">
+            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{other_sender_names}}" data-tippy-allowHtml="true">
                 <span class="recent_topics_participant_overflow">+{{other_senders_count}}</span>
             </li>
             {{/if}}
             {{#each senders}}
                 {{#if this.is_muted}}
-                <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}" data-tippy-placement="top">
+                <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}">
                     <span><i class="fa fa-user recent_topics_participant_overflow"></i></span>
                 </li>
                 {{else}}
-                <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{this.full_name}}" data-tippy-placement="top">
+                <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{this.full_name}}">
                     <img src="{{this.avatar_url_small}}" class="recent_topics_participant_avatar" />
                 </li>
                 {{/if}}
@@ -50,7 +50,7 @@
         </ul>
     </td>
     <td class="recent_topic_timestamp">
-        <div class="last_msg_time tippy-zulip-tooltip" data-tippy-content="{{this.full_last_msg_date_time}}" data-tippy-placement="top">
+        <div class="last_msg_time tippy-zulip-tooltip" data-tippy-content="{{this.full_last_msg_date_time}}">
             {{ last_msg_time }}
         </div>
     </td>
