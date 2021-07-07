@@ -3340,6 +3340,33 @@ class NotificationTriggers:
     STREAM_EMAIL = "stream_email_notify"
 
 
+class ScheduledMessageNotificationEmail(models.Model):
+    """Stores planned outgoing message notification emails. They may be
+    processed earlier should Zulip choose to batch multiple messages
+    in a single email, but typically will be processed just after
+    scheduled_timestamp.
+    """
+
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    message: Message = models.ForeignKey(Message, on_delete=CASCADE)
+
+    EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
+        (NotificationTriggers.PRIVATE_MESSAGE, "Private message"),
+        (NotificationTriggers.MENTION, "Mention"),
+        (NotificationTriggers.WILDCARD_MENTION, "Wildcard mention"),
+        (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
+    ]
+
+    trigger: str = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)
+    mentioned_user_group: Optional[UserGroup] = models.ForeignKey(
+        UserGroup, null=True, on_delete=CASCADE
+    )
+
+    # Timestamp for when the notification should be processed and sent.
+    # Calculated from the time the event was received and the batching period.
+    scheduled_timestamp: datetime.datetime = models.DateTimeField(db_index=True)
+
+
 class ScheduledMessage(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     sender: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)

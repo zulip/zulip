@@ -1056,7 +1056,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         with queries_captured() as queries:
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
-        self.assert_length(queries, 18)
+        self.assert_length(queries, 19)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))

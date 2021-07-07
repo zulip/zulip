@@ -146,6 +146,7 @@ ALL_ZULIP_TABLES = {
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
+    "zerver_scheduledmessagenotificationemail",
     "zerver_service",
     "zerver_stream",
     "zerver_submessage",
@@ -182,6 +183,8 @@ NON_EXPORTED_TABLES = {
     # missed-message email addresses include the server's hostname and
     # expire after a few days.
     "zerver_missedmessageemailaddress",
+    # Scheduled message notification email data is for internal use by the server.
+    "zerver_scheduledmessagenotificationemail",
     # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
     "zerver_pushdevicetoken",
