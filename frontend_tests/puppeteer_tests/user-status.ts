@@ -25,7 +25,7 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
     );
 
     // Wait for the modal to completely open.
-    await page.waitForFunction(() => document.activeElement?.classList.contains("user_status"));
+    await common.wait_for_micromodal_to_open(page);
 }
 
 async function test_user_status(page: Page): Promise<void> {
@@ -55,7 +55,7 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForSelector(".emoji-info-popover", {hidden: true});
     await page.waitForSelector(`.selected_emoji${tada_emoji_selector}`);
 
-    await page.click(".set_user_status");
+    await page.click("#set_user_status_modal .dialog_submit_button");
     // It should close the modal after saving.
     await page.waitForSelector("#set_user_status_modal", {hidden: true});
 

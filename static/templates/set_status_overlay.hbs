@@ -1,39 +1,25 @@
-<div id="set_user_status_modal" class="modal modal-bg hide fade new-style" role="dialog" aria-labelledby="set_user_status_modal_label" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close close-modal-btn" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-        <h3 id="set_user_status_modal_label">{{t "Set status" }} </h3>
+<div class="new-style user_status_content_wrapper">
+    <div class="status_emoji_wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}"  tabindex="0" id="selected_emoji">
+        {{> status_emoji_selector}}
     </div>
-    <div class="modal-body">
-        <div class="user_status_content_wrapper">
-            <div class="status_emoji_wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}"  tabindex="0" id="selected_emoji">
-                {{> status_emoji_selector}}
-            </div>
-            <input type="text" class="user_status" placeholder="{{t 'Your status' }}" maxlength="60"/>
-            <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
-                <i class="fa fa-remove" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div class="user-status-options">
-            {{#each default_status_messages_and_emoji_info}}
-                <button type="button" class="button no-style user-status-value">
-                    {{#if emoji.emoji_alt_code}}
-                        <div class="emoji_alt_code">&nbsp:{{emoji.emoji_name}}:</div>
-                    {{else}}
-                        {{#if emoji.url}}
-                        <img src="{{emoji.url}}" class="emoji status_emoji" />
-                        {{else}}
-                        <div class="emoji status_emoji emoji-{{emoji.emoji_code}}"></div>
-                        {{/if}}
-                    {{/if}}
-                    {{status_text}}
-                </button>
-            {{/each}}
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button class="button rounded close-modal-btn" data-dismiss="modal">{{t "Cancel" }}</button>
-        <button class="button rounded sea-green set_user_status">
-            {{t "Save" }}
+    <input type="text" class="user_status" placeholder="{{t 'Your status' }}" maxlength="60"/>
+    <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
+        <i class="fa fa-remove" aria-hidden="true"></i>
+    </button>
+</div>
+<div class="new-style user-status-options">
+    {{#each default_status_messages_and_emoji_info}}
+        <button type="button" class="button no-style user-status-value">
+            {{#if emoji.emoji_alt_code}}
+                <div class="emoji_alt_code">&nbsp:{{emoji.emoji_name}}:</div>
+            {{else}}
+                {{#if emoji.url}}
+                <img src="{{emoji.url}}" class="emoji status_emoji" />
+                {{else}}
+                <div class="emoji status_emoji emoji-{{emoji.emoji_code}}"></div>
+                {{/if}}
+            {{/if}}
+            {{status_text}}
         </button>
-    </div>
+    {{/each}}
 </div>
