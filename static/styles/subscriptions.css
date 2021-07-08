@@ -1016,7 +1016,7 @@
             padding: 5px 0;
 
             input[type="radio"] {
-                margin: 0 0 1px 0;
+                margin: 3.5px 0 1px 0;
             }
 
             &:last-of-type {
