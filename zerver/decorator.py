@@ -48,7 +48,11 @@ from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
+    from zilencer.models import (
+        RateLimitedRemoteZulipServer,
+        RemoteZulipServer,
+        get_remote_server_by_uuid,
+    )
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
@@ -851,6 +855,12 @@ def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
     RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
 
 
+def rate_limit_remote_server(
+    request: HttpRequest, remote_server: "RemoteZulipServer", domain: str
+) -> None:
+    RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
+
+
 def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Returns a decorator"""
 
@@ -869,9 +879,7 @@ def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
 
             user = request.user
 
-            if isinstance(user, AnonymousUser) or (
-                settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer)
-            ):
+            if isinstance(user, AnonymousUser):
                 # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
                 # with the nginx configuration to guarantee this to be *the* correct
                 # IP address to use - without worrying we'll grab the IP of a proxy.
@@ -879,6 +887,8 @@ def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
                 assert ip_addr
                 rate_limit_ip(request, ip_addr, domain="api_by_ip")
                 return func(request, *args, **kwargs)
+            elif settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer):
+                rate_limit_remote_server(request, user, domain="api_by_remote_server")
             else:
                 assert isinstance(user, UserProfile)
                 rate_limit_user(request, user, domain="api_by_user")

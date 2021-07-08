@@ -173,6 +173,20 @@ itself. If your organization does not want to submit these statistics,
 you can disable this feature at any time by setting
 `SUBMIT_USAGE_STATISTICS=False` in `/etc/zulip/settings.py`.
 
+## Rate limits
+
+The Mobile Push Notifications Service API has a very high default rate
+limit of 1000 requests per minute. A Zulip server makes requests to
+this API every time it sends a push notification, which is fairly
+frequent, but we believe it to be unlikely that a self-hosted
+installation will hit this limit.
+
+This limit is primarily intended to protect the service against DoS
+attacks (intentional or otherwise). If you hit this limit or you
+anticipate that your server will require sending more push
+notifications than the limit permits, please [contact
+support](https://zulip.com/help/contact-support).
+
 ## Sending push notifications directly from your server
 
 This section documents an alternative way to send push notifications

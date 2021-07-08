@@ -262,6 +262,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
 RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "api_by_user": [],
     "api_by_ip": [],
+    "api_by_remote_server": [],
     "authenticate_by_username": [],
     "password_reset_form_by_email": [],
 }

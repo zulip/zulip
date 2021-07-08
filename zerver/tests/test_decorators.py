@@ -674,7 +674,7 @@ class RateLimitTestCase(ZulipTestCase):
         self.assertTrue(rate_limit_mock.called)
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
-    def test_rate_limiting_happens_by_ip_if_remote_server(self) -> None:
+    def test_rate_limiting_happens_if_remote_server(self) -> None:
         server_uuid = "1234-abcd"
         server = RemoteZulipServer(
             uuid=server_uuid,
@@ -698,7 +698,7 @@ class RateLimitTestCase(ZulipTestCase):
 
         f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_ip") as rate_limit_mock:
+            with mock.patch("zerver.decorator.rate_limit_remote_server") as rate_limit_mock:
                 with self.errors_disallowed():
                     self.assertEqual(f(req), "some value")
 

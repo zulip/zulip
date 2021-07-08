@@ -378,6 +378,9 @@ RATE_LIMITING_RULES = {
     "api_by_ip": [
         (60, 100),
     ],
+    "api_by_remote_server": [
+        (60, 1000),
+    ],
     "authenticate_by_username": [
         (1800, 5),  # 5 login attempts within 30 minutes
     ],

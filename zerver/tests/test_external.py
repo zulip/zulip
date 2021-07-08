@@ -1,11 +1,12 @@
 import time
 from typing import Callable
-from unittest import mock
+from unittest import mock, skipUnless
 
 import DNS
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.forms import email_is_not_mit_mailing_list
 from zerver.lib.rate_limiter import (
@@ -17,7 +18,10 @@ from zerver.lib.rate_limiter import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.models import UserProfile
+from zerver.models import PushDeviceToken, UserProfile
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RateLimitedRemoteZulipServer, RemoteZulipServer
 
 
 class MITNameTest(ZulipTestCase):
@@ -167,6 +171,31 @@ class RateLimitTests(ZulipTestCase):
             # We need this in a finally block to ensure the test cleans up after itself
             # even in case of failure, to avoid polluting the rules state.
             remove_ratelimit_rule(1, 5, domain="api_by_ip")
+
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+    def test_hit_ratelimits_as_remote_server(self) -> None:
+        add_ratelimit_rule(1, 5, domain="api_by_remote_server")
+        server_uuid = "1234-abcd"
+        server = RemoteZulipServer(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+        server.save()
+
+        endpoint = "/api/v1/remotes/push/register"
+        payload = {"user_id": 10, "token": "111222", "token_kind": PushDeviceToken.GCM}
+        try:
+            # Remote servers can only make requests to the root subdomain.
+            original_default_subdomain = self.DEFAULT_SUBDOMAIN
+            self.DEFAULT_SUBDOMAIN = ""
+
+            RateLimitedRemoteZulipServer(server).clear_history()
+            self.do_test_hit_ratelimits(lambda: self.uuid_post(server_uuid, endpoint, payload))
+        finally:
+            self.DEFAULT_SUBDOMAIN = original_default_subdomain
+            remove_ratelimit_rule(1, 5, domain="api_by_remote_server")
 
     def test_hit_ratelimiterlockingexception(self) -> None:
         user = self.example_user("cordelia")
