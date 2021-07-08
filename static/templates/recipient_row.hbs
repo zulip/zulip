@@ -30,6 +30,10 @@
                 </a>
                 <!-- The missing whitespace on the next line is a hack; ideally, would be user-select: none. -->
             </span><span class="recipient_bar_controls no-select">
+                <span class="topic_edit hidden-for-spectators">
+                    <span class="topic_edit_form" id="{{id}}"></span>
+                </span>
+
                 {{! exterior links (e.g. to a trac ticket) }}
                 {{#each topic_links}}
                 <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="no-underline">
@@ -45,10 +49,6 @@
                     <i class="fa fa-pencil on_hover_topic_edit recipient_bar_icon hidden-for-spectators" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}} data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
                     {{/if}}
                 {{/if}}
-
-                <span class="topic_edit hidden-for-spectators">
-                    <span class="topic_edit_form" id="{{id}}"></span>
-                </span>
 
                 {{#if topic_is_resolved}}
                     <i class="fa fa-check on_hover_topic_unresolve recipient_bar_icon" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as unresolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as unresolved' }}"></i>
