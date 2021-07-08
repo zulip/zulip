@@ -33,6 +33,7 @@ const message_events = mock_esm("../../static/js/message_events");
 const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
 const reactions = mock_esm("../../static/js/reactions");
@@ -245,7 +246,7 @@ run_test("muted_users", ({override}) => {
     const event = event_fixtures.muted_users;
 
     const stub = make_stub();
-    override(muting_ui, "handle_user_updates", stub.f);
+    override(muted_users_ui, "handle_user_updates", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("muted_users");

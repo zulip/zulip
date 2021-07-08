@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");
@@ -59,7 +59,7 @@ run_test("settings", ({override}) => {
     };
 
     let unmute_user_called = false;
-    muting_ui.unmute_user = (user_id) => {
+    muted_users_ui.unmute_user = (user_id) => {
         assert.equal(user_id, 5);
         unmute_user_called = true;
     };
