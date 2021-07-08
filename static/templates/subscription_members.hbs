@@ -1,9 +1,9 @@
 {{#render_subscribers}}
 <div class="subscriber_list_settings_container" {{#unless can_access_subscribers}}style="display: none"{{/unless}}>
     <div class="subscriber_list_settings">
-        <label class="sub_settings_title float-left">
+        <h3 class="stream_setting_subsection_title float-left">
             {{t "Stream membership" }}
-        </label>
+        </h3>
         <div class="subscriber-search float-right">
             <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
         </div>

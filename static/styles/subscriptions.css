@@ -200,10 +200,10 @@
     color: hsl(0, 100%, 50%);
 }
 
-.sub_settings_title {
-    line-height: 30px;
+.stream_setting_subsection_title {
+    font-size: 1.5em;
+    line-height: 1.5;
     margin: 10px 0 0 0;
-    font-size: 16px;
 }
 
 .new-stream-name,
@@ -966,8 +966,10 @@
         }
     }
 
-    #personal_settings_label_container {
-        margin-bottom: 5px;
+    #personal-stream-settings {
+        .stream_change_property_status {
+            margin: 9px auto 3px 3px;
+        }
     }
 
     .loading_indicator_text {

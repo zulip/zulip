@@ -47,22 +47,20 @@
             </div>
             {{/with}}
             <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
-                <label class="sub_settings_title">
+                <h3 class="stream_setting_subsection_title">
                     {{t "Email address" }}
                     {{> help_link_widget link="/help/message-a-stream-by-email" }}
-                </label>
+                </h3>
                 <div class="stream-email">
                     <span class="email-address">{{sub.email_address}}</span>
                 </div>
             </div>
         </div>
 
-        <div class="personal_settings stream_section collapse {{#sub.subscribed}}in{{/sub.subscribed}}">
-            <div id="personal_settings_label_container">
-                <label class="sub_settings_title inline-block">
-                    {{t "Personal settings" }}
-                </label>
-                <div id="stream_change_property_status{{sub.stream_id}}" class="alert-notification"></div>
+        <div id="personal-stream-settings" class="personal_settings stream_section collapse {{#sub.subscribed}}in{{/sub.subscribed}}">
+            <div class="subsection-header">
+                <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
+                <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
             </div>
             <div class="subscription-config">
                 <ul class="grey-box">
