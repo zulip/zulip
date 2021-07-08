@@ -13,7 +13,6 @@ from django.utils.cache import patch_vary_headers
 from tornado.wsgi import WSGIContainer
 
 from zerver.lib.response import json_response
-from zerver.middleware import async_request_timer_restart, async_request_timer_stop
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
@@ -45,6 +44,10 @@ def finish_handler(
 ) -> None:
     err_msg = f"Got error finishing handler for queue {event_queue_id}"
     try:
+        # We import async_request_timer_restart during runtime
+        # to avoid cyclic dependency with zerver.lib.request
+        from zerver.middleware import async_request_timer_restart
+
         # We call async_request_timer_restart here in case we are
         # being finished without any events (because another
         # get_events request has supplanted this request)
@@ -143,6 +146,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             response = self.get_response(request)
 
             if hasattr(response, "asynchronous"):
+                # We import async_request_timer_restart during runtime
+                # to avoid cyclic dependency with zerver.lib.request
+                from zerver.middleware import async_request_timer_stop
+
                 # For asynchronous requests, this is where we exit
                 # without returning the HttpResponse that Django
                 # generated back to the user in order to long-poll the

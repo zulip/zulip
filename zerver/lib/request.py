@@ -1,5 +1,7 @@
 import threading
+import weakref
 from collections import defaultdict
+from dataclasses import dataclass, field
 from functools import wraps
 from types import FunctionType
 from typing import (
@@ -8,6 +10,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    MutableMapping,
     Optional,
     Sequence,
     TypeVar,
@@ -22,8 +25,54 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from typing_extensions import Literal
 
+import zerver.lib.rate_limiter as rate_limiter
+import zerver.tornado.handlers as handlers
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.types import Validator, ViewFuncT
+from zerver.models import Client, Realm
+
+
+@dataclass
+class ZulipRequestNotes:
+    """This class contains extra metadata that Zulip associated with a
+    Django HttpRequest object.
+
+    Note that most Optional fields will be definitely not None once
+    middlware has run. In the future, we may want to express that in
+    the types by having different types ZulipEarlyRequestNotes and
+    post-middleware ZulipRequestNotes types, but for now we have a lot
+    of `assert request_notes.foo is not None` when accessing them.
+    """
+
+    client: Optional[Client] = None
+    client_name: Optional[str] = None
+    client_version: Optional[str] = None
+    log_data: Optional[MutableMapping[str, Any]] = None
+    rate_limit: Optional[str] = None
+    requestor_for_logs: Optional[str] = None
+    # We use realm_cached to indicate whether the realm is cached or not.
+    # Because the default value of realm is None, which can indicate "unset"
+    # and "nonexistence" at the same time.
+    realm: Optional[Realm] = None
+    has_fetched_realm: bool = False
+    set_language: Optional[str] = None
+    ratelimits_applied: List["rate_limiter.RateLimitResult"] = field(default_factory=lambda: [])
+    query: Optional[str] = None
+    error_format: Optional[str] = None
+    placeholder_open_graph_description: Optional[str] = None
+    saved_response: Optional[HttpResponse] = None
+    tornado_handler: Optional["handlers.AsyncDjangoHandler"] = None
+
+
+request_notes_map: MutableMapping[HttpRequest, ZulipRequestNotes] = weakref.WeakKeyDictionary()
+
+
+def get_request_notes(request: HttpRequest) -> ZulipRequestNotes:
+    try:
+        return request_notes_map[request]
+    except KeyError:
+        request_notes_map[request] = ZulipRequestNotes()
+        return request_notes_map[request]
 
 
 class RequestConfusingParmsError(JsonableError):
