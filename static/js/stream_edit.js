@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_change_stream_info_modal from "../templates/change_stream_info_modal.hbs";
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
+import render_stream_description from "../templates/stream_description.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
 import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
@@ -221,9 +222,10 @@ export function update_stream_name(sub, new_name) {
 export function update_stream_description(sub) {
     const stream_settings = settings_for_sub(sub);
     stream_settings.find("input.description").val(sub.description);
-    stream_settings
-        .find(".sub-stream-description")
-        .html(util.clean_user_content_links(sub.rendered_description));
+    const html = render_stream_description({
+        rendered_description: util.clean_user_content_links(sub.rendered_description),
+    });
+    stream_settings.find(".stream-description").html(html);
 }
 
 export function invite_user_to_stream(user_ids, sub, success, failure) {

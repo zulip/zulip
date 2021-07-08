@@ -33,9 +33,9 @@
                 </div>
             </div>
             <div class="stream-description">
-                <span class="sub-stream-description rendered_markdown" data-no-description="{{t 'No description.' }}">
-                    {{rendered_markdown rendered_description}}
-                </span>
+                {{> stream_description
+                  rendered_description=rendered_description
+                  }}
             </div>
             <div class="subscription-type">
                 <div class="subscription-type-text">

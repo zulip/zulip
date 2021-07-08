@@ -759,7 +759,6 @@
     }
 }
 
-#subscription_overlay .stream-description .sub-stream-description:empty::after,
 .stream-row .sub-info-box .description:empty::after {
     content: attr(data-no-description);
     font-style: italic;
