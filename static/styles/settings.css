@@ -1592,10 +1592,13 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     button {
         margin: 0 5px;
         &.dropdown-toggle {
-            /* Matches bootstrap hardcoded 30px height for select elements,
-               which we want to match the size of. */
-            height: 30px;
-            padding: 0;
+            /* Match settings for select elements. */
+            padding: 4px 6px;
+
+            span {
+                line-height: 20px;
+                height: 1.4em;
+            }
         }
 
         &:disabled i {
