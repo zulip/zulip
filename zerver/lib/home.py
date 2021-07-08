@@ -16,7 +16,6 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
-from zerver.lib.users import compute_show_invites
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
 
@@ -179,7 +178,6 @@ def build_page_params_for_home_page_load(
 
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
     billing_info = get_billing_info(user_profile)
-    show_invites = compute_show_invites(user_profile)
     user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
@@ -206,7 +204,6 @@ def build_page_params_for_home_page_load(
         show_billing=billing_info.show_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
         show_plans=billing_info.show_plans,
-        show_invites=show_invites,
         show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.

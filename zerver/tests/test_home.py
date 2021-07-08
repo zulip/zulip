@@ -21,7 +21,6 @@ from zerver.lib.home import (
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
-from zerver.lib.users import compute_show_invites
 from zerver.models import (
     DefaultStream,
     Realm,
@@ -214,7 +213,6 @@ class HomeTest(ZulipTestCase):
         "server_timestamp",
         "settings_send_digest_emails",
         "show_billing",
-        "show_invites",
         "show_plans",
         "show_webathena",
         "starred_message_counts",
@@ -1040,33 +1038,3 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["default_language"], "es")
-
-    def test_compute_show_invites_and_add_streams_admin(self) -> None:
-        user = self.example_user("iago")
-
-        realm = user.realm
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        realm.save()
-
-        show_invites = compute_show_invites(user)
-        self.assertEqual(show_invites, True)
-
-    def test_compute_show_invites_and_add_streams_require_admin(self) -> None:
-        user = self.example_user("hamlet")
-
-        realm = user.realm
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        realm.save()
-
-        show_invites = compute_show_invites(user)
-        self.assertEqual(show_invites, False)
-
-    def test_compute_show_invites_and_add_streams_guest(self) -> None:
-        user = self.example_user("polonius")
-
-        show_invites = compute_show_invites(user)
-        self.assertEqual(show_invites, False)
-
-    def test_compute_show_invites_and_add_streams_unauthenticated(self) -> None:
-        show_invites = compute_show_invites(None)
-        self.assertEqual(show_invites, False)
