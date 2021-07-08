@@ -222,7 +222,7 @@
 
     .subscriber_list_container {
         position: relative;
-        max-height: 300px;
+        max-height: 100%;
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
