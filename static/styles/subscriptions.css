@@ -201,6 +201,7 @@
 }
 
 .stream_setting_subsection_title {
+    display: inline-block;
     font-size: 1.5em;
     line-height: 1.5;
     margin: 10px 0 0 0;
@@ -843,7 +844,8 @@
         }
     }
 
-    .stream-header {
+    .stream-header,
+    .stream_setting_subsection_header {
         white-space: nowrap;
 
         .stream-name {
@@ -867,7 +869,6 @@
 
         .button-group {
             float: right;
-            margin-top: -5px;
 
             .deactivate {
                 margin-right: 3px;
@@ -924,10 +925,13 @@
 
     .subscription-type {
         margin-bottom: 10px;
-        opacity: 0.5;
 
         .subscription-type-text {
             display: inline;
+            ul {
+                margin: 0 0 10px 14px;
+                list-style-type: unset;
+            }
         }
 
         b {
@@ -1149,10 +1153,16 @@
 }
 
 @media (width < $sm_min) {
-    #subscription_overlay .subscription_settings .button-group {
-        display: block;
-        float: right;
-        margin-top: 10px;
+    #subscription_overlay .subscription_settings {
+        .button-group {
+            display: block;
+            float: right;
+            margin-top: 10px;
+        }
+
+        .stream-header .button-group {
+            margin-top: -5px;
+        }
     }
 
     #subscription_overlay .subscription_settings .stream_change_property_info {
