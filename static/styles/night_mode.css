@@ -1066,16 +1066,6 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .small_square_button {
-        &.small_square_check {
-            background-color: hsl(166, 35%, 52%);
-            color: hsl(0, 0%, 90%);
-
-            &:hover {
-                background-color: hsl(156, 30%, 45%);
-                color: hsl(0, 0%, 95%);
-            }
-        }
-
         &.small_square_x {
             background-color: hsl(0, 0%, 95%);
             color: hsl(0, 0%, 42%);
