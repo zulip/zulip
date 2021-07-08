@@ -61,6 +61,7 @@ const overlays = mock_esm("../../static/js/overlays", {
     lightbox_open: () => false,
     drafts_open: () => false,
     info_overlay_open: () => false,
+    is_modal_open: () => false,
 });
 const popovers = mock_esm("../../static/js/popovers", {
     actions_popped: () => false,
@@ -314,6 +315,11 @@ run_test("drafts closed w/other overlay", ({override}) => {
 run_test("drafts closed launch", ({override}) => {
     override(overlays, "is_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
+});
+
+run_test("modal open", ({override}) => {
+    override(overlays, "is_modal_open", () => true);
+    test_normal_typing();
 });
 
 run_test("misc", () => {
