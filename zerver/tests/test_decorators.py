@@ -591,11 +591,14 @@ class RateLimitTestCase(ZulipTestCase):
 
         f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
+            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
+                "zerver.decorator.rate_limit_ip"
+            ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     self.assertEqual(f(req), "some value")
 
-        self.assertFalse(rate_limit_mock.called)
+        self.assertFalse(rate_limit_ip_mock.called)
+        self.assertFalse(rate_limit_user_mock.called)
 
     def test_debug_clients_skip_rate_limiting(self) -> None:
         class Client:
@@ -613,12 +616,15 @@ class RateLimitTestCase(ZulipTestCase):
 
         f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
+            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
+                "zerver.decorator.rate_limit_ip"
+            ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     with self.settings(DEBUG_RATE_LIMITING=True):
                         self.assertEqual(f(req), "some value")
 
-        self.assertFalse(rate_limit_mock.called)
+        self.assertFalse(rate_limit_ip_mock.called)
+        self.assertFalse(rate_limit_user_mock.called)
 
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self) -> None:
         class Client:
@@ -636,11 +642,14 @@ class RateLimitTestCase(ZulipTestCase):
 
         f = rate_limit()(f)
         with self.settings(RATE_LIMITING=False):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
+            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
+                "zerver.decorator.rate_limit_ip"
+            ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     self.assertEqual(f(req), "some value")
 
-        self.assertFalse(rate_limit_mock.called)
+        self.assertFalse(rate_limit_ip_mock.called)
+        self.assertFalse(rate_limit_user_mock.called)
 
     def test_rate_limiting_happens_in_normal_case(self) -> None:
         class Client:
@@ -665,7 +674,7 @@ class RateLimitTestCase(ZulipTestCase):
         self.assertTrue(rate_limit_mock.called)
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
-    def test_rate_limiting_skipped_if_remote_server(self) -> None:
+    def test_rate_limiting_happens_by_ip_if_remote_server(self) -> None:
         server_uuid = "1234-abcd"
         server = RemoteZulipServer(
             uuid=server_uuid,
@@ -689,11 +698,34 @@ class RateLimitTestCase(ZulipTestCase):
 
         f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
+            with mock.patch("zerver.decorator.rate_limit_ip") as rate_limit_mock:
                 with self.errors_disallowed():
                     self.assertEqual(f(req), "some value")
 
-        self.assertFalse(rate_limit_mock.called)
+        self.assertTrue(rate_limit_mock.called)
+
+    def test_rate_limiting_happens_by_ip_if_unauthed(self) -> None:
+        class Client:
+            name = "external"
+
+        class Request:
+            client = Client()
+            META = {"REMOTE_ADDR": "3.3.3.3"}
+            user = AnonymousUser()
+
+        req = Request()
+
+        def f(req: Any) -> str:
+            return "some value"
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch("zerver.decorator.rate_limit_ip") as rate_limit_mock:
+                with self.errors_disallowed():
+                    self.assertEqual(f(req), "some value")
+
+        self.assertTrue(rate_limit_mock.called)
 
 
 class ValidatorTestCase(ZulipTestCase):

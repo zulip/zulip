@@ -375,6 +375,9 @@ RATE_LIMITING_RULES = {
     "api_by_user": [
         (60, 200),  # 200 requests max every minute
     ],
+    "api_by_ip": [
+        (60, 100),
+    ],
     "authenticate_by_username": [
         (1800, 5),  # 5 login attempts within 30 minutes
     ],
@@ -389,7 +392,7 @@ RATE_LIMITING_RULES = {
 # which has its own buckets separate from the default backend.
 # In principle, it should be impossible to make requests to tornado that fall into
 # other domains, but we use this list as an extra precaution.
-RATE_LIMITING_DOMAINS_FOR_TORNADO = ["api_by_user"]
+RATE_LIMITING_DOMAINS_FOR_TORNADO = ["api_by_user", "api_by_ip"]
 
 # These ratelimits are also documented publicly at
 # https://zulip.readthedocs.io/en/latest/production/email-gateway.html

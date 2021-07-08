@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple, Type
 from unittest import mock
 
 from zerver.lib.rate_limiter import (
+    RateLimitedIPAddr,
     RateLimitedObject,
     RateLimitedUser,
     RateLimiterBackend,
@@ -193,13 +194,18 @@ class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
 
     def test_used_in_tornado(self) -> None:
         user_profile = self.example_user("hamlet")
+        ip_addr = "192.168.0.123"
         with self.settings(RUNNING_INSIDE_TORNADO=True):
-            obj = RateLimitedUser(user_profile, domain="api_by_user")
-        self.assertEqual(obj.backend, TornadoInMemoryRateLimiterBackend)
+            user_obj = RateLimitedUser(user_profile, domain="api_by_user")
+            ip_obj = RateLimitedIPAddr(ip_addr, domain="api_by_ip")
+        self.assertEqual(user_obj.backend, TornadoInMemoryRateLimiterBackend)
+        self.assertEqual(ip_obj.backend, TornadoInMemoryRateLimiterBackend)
 
         with self.settings(RUNNING_INSIDE_TORNADO=True):
-            obj = RateLimitedUser(user_profile, domain="some_domain")
-        self.assertEqual(obj.backend, RedisRateLimiterBackend)
+            user_obj = RateLimitedUser(user_profile, domain="some_domain")
+            ip_obj = RateLimitedIPAddr(ip_addr, domain="some_domain")
+        self.assertEqual(user_obj.backend, RedisRateLimiterBackend)
+        self.assertEqual(ip_obj.backend, RedisRateLimiterBackend)
 
     def test_block_access(self) -> None:
         obj = self.create_object("test", [(2, 5)])

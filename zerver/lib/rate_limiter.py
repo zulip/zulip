@@ -132,6 +132,24 @@ class RateLimitedUser(RateLimitedObject):
         return rules[self.domain]
 
 
+class RateLimitedIPAddr(RateLimitedObject):
+    def __init__(self, ip_addr: str, domain: str = "api_by_ip") -> None:
+        self.ip_addr = ip_addr
+        self.domain = domain
+        if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
+            backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
+        else:
+            backend = None
+        super().__init__(backend=backend)
+
+    def key(self) -> str:
+        # The angle brackets are important since IPv6 addresses contain :.
+        return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return rules[self.domain]
+
+
 def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
     KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"

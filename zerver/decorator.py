@@ -38,7 +38,7 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.rate_limiter import RateLimitedUser
+from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
@@ -847,6 +847,10 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 
+def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
+    RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
+
+
 def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Returns a decorator"""
 
@@ -868,14 +872,16 @@ def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
             if isinstance(user, AnonymousUser) or (
                 settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer)
             ):
-                # We can only rate-limit logged-in users for now.
-                # We also only support rate-limiting authenticated
-                # views right now.
-                # TODO: implement per-IP non-authed rate limiting
+                # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
+                # with the nginx configuration to guarantee this to be *the* correct
+                # IP address to use - without worrying we'll grab the IP of a proxy.
+                ip_addr = request.META["REMOTE_ADDR"]
+                assert ip_addr
+                rate_limit_ip(request, ip_addr, domain="api_by_ip")
                 return func(request, *args, **kwargs)
-
-            assert isinstance(user, UserProfile)
-            rate_limit_user(request, user, domain="api_by_user")
+            else:
+                assert isinstance(user, UserProfile)
+                rate_limit_user(request, user, domain="api_by_user")
 
             return func(request, *args, **kwargs)
 

@@ -9,6 +9,7 @@ from django.http import HttpResponse
 
 from zerver.forms import email_is_not_mit_mailing_list
 from zerver.lib.rate_limiter import (
+    RateLimitedIPAddr,
     RateLimitedUser,
     RateLimiterLockingException,
     add_ratelimit_rule,
@@ -100,6 +101,16 @@ class RateLimitTests(ZulipTestCase):
             },
         )
 
+    def send_unauthed_api_request(self) -> HttpResponse:
+        result = self.client_get("/json/messages")
+        # We're not making a correct request here, but rate-limiting is supposed
+        # to happen before the request fails due to not being correctly made. Thus
+        # we expect either an 400 error if the request is allowed by the rate limiter,
+        # or 429 if we're above the limit. We don't expect to see other status codes here,
+        # so we assert for safety.
+        self.assertIn(result.status_code, [400, 429])
+        return result
+
     def test_headers(self) -> None:
         user = self.example_user("hamlet")
         RateLimitedUser(user).clear_history()
@@ -146,6 +157,16 @@ class RateLimitTests(ZulipTestCase):
         RateLimitedUser(user).clear_history()
 
         self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
+
+    def test_hit_ratelimits_as_ip(self) -> None:
+        add_ratelimit_rule(1, 5, domain="api_by_ip")
+        try:
+            RateLimitedIPAddr("127.0.0.1").clear_history()
+            self.do_test_hit_ratelimits(self.send_unauthed_api_request)
+        finally:
+            # We need this in a finally block to ensure the test cleans up after itself
+            # even in case of failure, to avoid polluting the rules state.
+            remove_ratelimit_rule(1, 5, domain="api_by_ip")
 
     def test_hit_ratelimiterlockingexception(self) -> None:
         user = self.example_user("cordelia")
