@@ -844,8 +844,7 @@
         }
     }
 
-    .stream-header,
-    .stream_setting_subsection_header {
+    .stream-header {
         white-space: nowrap;
 
         .stream-name {
@@ -908,6 +907,20 @@
         .no-description {
             font-style: italic;
             color: hsl(0, 0%, 67%);
+        }
+    }
+
+    .stream_setting_subsection_header {
+        display: flex;
+
+        .stream_permission_change_info {
+            margin: 12px auto 0 3px;
+        }
+
+        .button-group {
+            display: inline;
+            margin-left: auto;
+            align-self: center;
         }
     }
 
@@ -1056,6 +1069,12 @@
     }
 }
 
+#stream_privacy_modal .modal-body {
+    .grey-box {
+        margin-bottom: 20px;
+    }
+}
+
 @media (width < $lg_min) {
     .subscriptions-container {
         max-width: 95%;
@@ -1190,6 +1209,14 @@
             .ind-tab {
                 width: 85px;
             }
+        }
+    }
+
+    #subscription_overlay .stream_setting_subsection_header {
+        display: block;
+
+        .stream_permission_change_info {
+            margin: 12px auto 0 3px;
         }
     }
 }

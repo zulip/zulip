@@ -642,11 +642,11 @@ function get_message_retention_days_from_sub(sub) {
 function change_stream_privacy(e) {
     e.stopPropagation();
 
-    const stream_id = $(e.target).data("stream-id");
-    const sub = sub_store.get(stream_id);
     const data = {};
-    const stream_privacy_status = $(".stream-privacy-status");
-    stream_privacy_status.hide();
+    const stream_id = $(e.target).data("stream-id");
+    const url = "/json/streams/" + stream_id;
+    const status_element = $(".stream_permission_change_info");
+    const sub = sub_store.get(stream_id);
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
     const stream_post_policy = Number.parseInt(
@@ -696,25 +696,13 @@ function change_stream_privacy(e) {
         data.message_retention_days = JSON.stringify(message_retention_days);
     }
 
-    $(".stream_change_property_info").hide();
+    overlays.close_modal("#stream_privacy_modal");
 
     if (Object.keys(data).length === 0) {
-        overlays.close_modal("#stream_privacy_modal");
         return;
     }
 
-    channel.patch({
-        url: "/json/streams/" + stream_id,
-        data,
-        success() {
-            overlays.close_modal("#stream_privacy_modal");
-            // The rest will be done by update stream event we will get.
-        },
-        error(xhr) {
-            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, stream_privacy_status);
-            $("#change-stream-privacy-button").text($t({defaultMessage: "Try again"}));
-        },
-    });
+    settings_ui.do_settings_change(channel.patch, url, data, status_element);
 }
 
 export function archive_stream(stream_id, alert_element, stream_row) {
