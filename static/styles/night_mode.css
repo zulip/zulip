@@ -403,6 +403,8 @@ on a dark background, and don't change the dark labels dark either. */
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    .expand_composebox_button,
+    .collapse_composebox_button,
     #message_edit_tooltip,
     .clear_search_button,
     .clear_search_button:focus,
@@ -423,6 +425,8 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 80%);
     }
 
+    .expand_composebox_button:hover,
+    .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
     #message_view_header .search_icon:hover,
