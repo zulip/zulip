@@ -1,4 +1,5 @@
 import time
+from typing import Callable
 from unittest import mock
 
 import DNS
@@ -118,14 +119,11 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result["X-RateLimit-Remaining"])
         self.assertEqual(limit, newlimit + 1)
 
-    def test_hit_ratelimits(self) -> None:
-        user = self.example_user("cordelia")
-        RateLimitedUser(user).clear_history()
-
+    def do_test_hit_ratelimits(self, request_func: Callable[[], HttpResponse]) -> HttpResponse:
         start_time = time.time()
         for i in range(6):
             with mock.patch("time.time", return_value=(start_time + i * 0.1)):
-                result = self.send_api_message(user, f"some stuff {i}")
+                result = request_func()
 
         self.assertEqual(result.status_code, 429)
         json = result.json()
@@ -135,13 +133,19 @@ class RateLimitTests(ZulipTestCase):
         self.assertTrue("Retry-After" in result)
         self.assertEqual(result["Retry-After"], "0.5")
 
-        # We actually wait a second here, rather than force-clearing our history,
+        # We simulate waiting a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
         with mock.patch("time.time", return_value=(start_time + 1.01)):
-            result = self.send_api_message(user, "Good message")
+            result = request_func()
 
-            self.assert_json_success(result)
+            self.assertNotEqual(result, 429)
+
+    def test_hit_ratelimits_as_user(self) -> None:
+        user = self.example_user("cordelia")
+        RateLimitedUser(user).clear_history()
+
+        self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
 
     def test_hit_ratelimiterlockingexception(self) -> None:
         user = self.example_user("cordelia")
