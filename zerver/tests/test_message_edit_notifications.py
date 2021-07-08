@@ -191,7 +191,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             mentioned=True,
             flags=["mentioned"],
-            stream_name="Scotland",
             already_notified={},
         )
 
@@ -320,7 +319,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             acting_user_id=hamlet.id,
             message_id=message_id,
             mentioned=True,
-            stream_name="Scotland",
             flags=["mentioned"],
             online_push_enabled=True,
             idle=False,
@@ -356,7 +354,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            stream_name="Scotland",
             online_push_enabled=True,
             idle=False,
             already_notified={},
@@ -394,7 +391,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             acting_user_id=self.example_user("hamlet").id,
             mentioned=True,
             flags=["mentioned"],
-            stream_name="Scotland",
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -427,7 +423,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             wildcard_mention_notify=True,
             flags=["wildcard_mentioned"],
-            stream_name="Scotland",
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -485,7 +480,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             message_id=message_id,
             mentioned=True,
             flags=["mentioned"],
-            stream_name="Scotland",
             idle=False,
             already_notified={},
         )

@@ -705,8 +705,6 @@ def build_offline_notification(user_profile_id: int, message_id: int) -> Dict[st
     return {
         "user_profile_id": user_profile_id,
         "message_id": message_id,
-        "type": "add",
-        "timestamp": time.time(),
     }
 
 
@@ -759,10 +757,6 @@ def missedmessage_hook(
         private_message = event["message"]["type"] == "private"
         mentioned_user_group_id = internal_data.get("mentioned_user_group_id")
 
-        stream_name = None
-        if not private_message:
-            stream_name = event["message"]["display_recipient"]
-
         # Since we just GC'd the last event queue, the user is definitely idle.
         idle = True
 
@@ -777,7 +771,6 @@ def missedmessage_hook(
             acting_user_id=sender_id,
             message_id=message_id,
             private_message=private_message,
-            stream_name=stream_name,
             mentioned_user_group_id=mentioned_user_group_id,
             idle=idle,
             already_notified=already_notified,
@@ -801,7 +794,6 @@ def maybe_enqueue_notifications(
     acting_user_id: int,
     message_id: int,
     private_message: bool,
-    stream_name: Optional[str],
     mentioned_user_group_id: Optional[int],
     idle: bool,
     already_notified: Dict[str, bool],
@@ -820,7 +812,7 @@ def maybe_enqueue_notifications(
         notice["trigger"] = user_notifications_data.get_push_notification_trigger(
             private_message, acting_user_id, idle
         )
-        notice["stream_name"] = stream_name
+        notice["type"] = "add"
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("push_notified"):
             queue_json_publish("missedmessage_mobile_notifications", notice)
@@ -835,7 +827,6 @@ def maybe_enqueue_notifications(
         notice["trigger"] = user_notifications_data.get_email_notification_trigger(
             private_message, acting_user_id, idle
         )
-        notice["stream_name"] = stream_name
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
@@ -971,15 +962,12 @@ def process_message_event(
 
         idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
 
-        stream_name = event_template.get("stream_name")
-
         extra_user_data[user_profile_id]["internal_data"].update(
             maybe_enqueue_notifications(
                 user_notifications_data=user_notifications_data,
                 acting_user_id=sender_id,
                 message_id=message_id,
                 private_message=private_message,
-                stream_name=stream_name,
                 mentioned_user_group_id=mentioned_user_group_id,
                 idle=idle,
                 already_notified={},
@@ -1148,7 +1136,6 @@ def process_message_update_event(
             message_id=message_id,
             acting_user_id=acting_user_id,
             private_message=(stream_name is None),
-            stream_name=stream_name,
             presence_idle=(user_profile_id in presence_idle_user_ids),
             prior_mentioned=(user_profile_id in prior_mention_user_ids),
         )
@@ -1165,7 +1152,6 @@ def maybe_enqueue_notifications_for_message_update(
     message_id: int,
     acting_user_id: int,
     private_message: bool,
-    stream_name: Optional[str],
     presence_idle: bool,
     prior_mentioned: bool,
 ) -> None:
@@ -1214,7 +1200,6 @@ def maybe_enqueue_notifications_for_message_update(
         message_id=message_id,
         acting_user_id=acting_user_id,
         private_message=private_message,
-        stream_name=stream_name,
         mentioned_user_group_id=mentioned_user_group_id,
         idle=idle,
         already_notified={},
