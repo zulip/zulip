@@ -26,15 +26,25 @@ the validation Zulip has today.
 
 Our API documentation is defined by a few sets of files:
 
-* Most data describing API endpoints and examples is stored in our
-  [OpenAPI configuration](../documentation/openapi.md) at
+* The primary source of our API documentation is the Zulip server's
+  [OpenAPI description](../documentation/openapi.md) at
   `zerver/openapi/zulip.yaml`.
-* The top-level templates live under `templates/zerver/api/*`, and are
-  written using the Markdown framework that powers our [user
-  docs](../documentation/user.md), with some special extensions for
-  rendering nice code blocks and example responses.  We expect to
-  eventually remove most of these files where it is possible to
-  fully generate the documentation from the OpenAPI files.
+* The documentation is written the same Markdown framework that powers
+  our [user docs](../documentation/user.md), with some special
+  extensions for rendering nice code blocks and example
+  responses. Most API endpoints share a common template,
+  `templates/zerver/api/api-doc-template.md`, which renders the
+  OpenAPI description of the API endpoint. A handful of endpoints that
+  require special content, as well as pages that document general API
+  details rather than specific endpoints, live at
+  `templates/zerver/api/*.md`.
+* We have an extensive set of tests designed to validate that the data
+  in the OpenAPI file matching the implementation. Specifically,
+  `zerver/tests/test_openapi.py` compares every endpoint's accepted
+  parameters in `views` code with those declared in `zulip.yaml`.  And
+  the [backend test suite](../testing/testing-with-django.md) checks
+  that every API response served during our extensive backend test
+  suite matches one the declared OpenAPI schema for that endpoint.
 * The text for the Python examples comes from a test suite for the
   Python API documentation (`zerver/openapi/python_examples.py`; run via
   `tools/test-api`).  The `generate_code_example` macro will magically
@@ -49,13 +59,6 @@ Our API documentation is defined by a few sets of files:
 * The REST API index
   (`templates/zerver/help/include/rest-endpoints.md`) in the broader
   /api left sidebar (`templates/zerver/api/sidebar_index.md`).
-* We have an extensive set of tests designed to validate that the data
-  in this file is correct, `zerver/tests/test_openapi.py` compares
-  every endpoint's accepted parameters in `views` code with those
-  declared in `zulip.yaml`.  And [backend test
-  suite](../testing/testing-with-django.md) and checks that every API
-  response served during our extensive backend test suite matches one
-  the declared OpenAPI schema for that endpoint.
 
 This first section is focused on explaining how the API documentation
 system is put together; when actually documenting an endpoint, you'll
@@ -74,19 +77,21 @@ We highly recommend looking at those resources while reading this page.
 If you look at the documentation for existing endpoints, you'll notice
 that a typical endpoint's documentation is divided into four sections:
 
-* The top-level **Description**
+* The top-level **Title and description**
 * **Usage examples**
 * **Arguments**
 * **Responses**
 
 The rest of this guide describes how each of these sections works.
 
-### Description
+### Title and description
 
-Displayed at the top of any REST endpoint documentation page, this
-should explain what the endpoint does in clear English. Include
-details on how to use it correctly or what it's good or bad for, with
-links to any alternative endpoints the user might want to consider.
+Displayed at the top of any REST endpoint documentation page, the
+title comes from the `summary` parameter in OpenAPI data. The
+description should explain what the endpoint does in clear
+English. Include details on how to use it correctly or what it's good
+or bad for, with links to any alternative endpoints the user might
+want to consider.
 
 These sections should often contain a link to the documentation of the
 relevant feature in `/help/`.
@@ -117,6 +122,11 @@ writes a Markdown file block that looks something like this:
 {end_tabs}
 ```
 
+In some cases, one wants to configure specific parameters to be
+included or excluded from the example `curl` requests for readability
+reasons. One can do that using the `x-curl-examples-parameters`
+parameter.
+
 #### Writing Python examples
 
 For the Python examples, you'll write the example in
@@ -143,7 +153,7 @@ This is an actual Python function which will be run as part of the
 function will verify that the result of that request is as defined in
 the examples in `zerver/openapi/zulip.yaml`.
 
-To run as part of the testsuite, the `render_message` function needs
+To run as part of the test suite, the `render_message` function needs
 to be called from `test_messages` (or one of the other functions at
 the bottom of the file).  The final function, `test_the_api`, is what
 actually runs the tests.  Tests with the `openapi_test_function`
@@ -161,6 +171,11 @@ substitute it in place of
 `{generate_code_example(python)|/messages/render:post|example}`
 wherever that string appears in the API documentation.
 
+* Additional Python imports can be added using the custom
+  `x-python-examples-extra-imports` field in the OpenAPI definition.
+* Endpoints that only administrators can use should be tagged with the
+  custom `x-requires-administrator` field in the OpenAPI definition.
+
 ### Parameters
 
 We have a separate Markdown extension to document the parameters that
@@ -177,6 +192,10 @@ Just as in the usage examples, the `/messages/render` key must match a
 URL definition in `zerver/openapi/zulip.yaml`, and that URL definition
 must have a `post` HTTP method defined.
 
+Additional content that you'd like to appear in the parameter
+description area can be declared using the custom
+`x-parameter-description` field in the OpenAPI definition.
+
 ### Displaying example payloads/responses
 
 If you've already followed the steps in the [Usage examples](#usage-examples)
@@ -188,6 +207,10 @@ defined in the OpenAPI `zulip.yaml` for a given endpoint
 ```
 {generate_code_example|/messages/render:post|fixture}
 ```
+
+Additional content that you'd like to appear in the responses part of
+the page can be added using the custom `x-response-description` field
+in the OpenAPI definition.
 
 ## Step by step guide
 
@@ -264,12 +287,17 @@ above.
    comments. The lines inside these comments are what will be displayed as the
    code example on our `/api` page.
 
-1. Finally, write the Markdown file for your API endpoint under
-   `templates/zerver/api/`.  This is usually pretty easy to template
-   off existing endpoints; but refer to the system explanations above
-   for details.
+1. Finally, if the API docs page of the endpoint doesn't follow the
+   common API docs template in
+   `templates/zerver/api/api-docs-template.md`, then add its custom
+   Markdown file under `templates/zerver/api/`. However, it is a goal
+   to minimize the number of files that diverse from the common
+   template, so only do this if there's a good reason.
 
-1. Add the Markdown file to the index in `templates/zerver/help/include/rest-endpoints.md`.
+1. Add the endpoint to the index in
+   `templates/zerver/help/include/rest-endpoints.md`. The URL should
+   match the `operationId` for the endpoint, and the link text should
+   match the title of the endpoint from the OpenAPI `summary` field.
 
 1. Test your endpoint, pretending to be a new user in a hurry, by
    visiting it via the links on `http://localhost:9991/api` (the API
