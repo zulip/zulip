@@ -1643,8 +1643,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = "mentioned"
         message.stream_name = "Verona"
-        mentioned_user_group_name = user_group.name
-        payload = get_message_payload_apns(user_profile, message, mentioned_user_group_name)
+        payload = get_message_payload_apns(user_profile, message, user_group.id, user_group.name)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1665,6 +1664,8 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "realm_id": self.sender.realm.id,
                     "realm_uri": self.sender.realm.uri,
                     "user_id": user_profile.id,
+                    "mentioned_user_group_id": user_group.id,
+                    "mentioned_user_group_name": user_group.name,
                 }
             },
         }
@@ -1741,7 +1742,12 @@ class TestGetAPNsPayload(PushNotificationTest):
 
 class TestGetGCMPayload(PushNotificationTest):
     def _test_get_message_payload_gcm_mentions(
-        self, trigger: str, alert: str, mentioned_user_group_name: Optional[str] = None
+        self,
+        trigger: str,
+        alert: str,
+        *,
+        mentioned_user_group_id: Optional[int] = None,
+        mentioned_user_group_name: Optional[str] = None,
     ) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
@@ -1751,29 +1757,33 @@ class TestGetGCMPayload(PushNotificationTest):
         message.trigger = trigger
 
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message, mentioned_user_group_name)
-        self.assertDictEqual(
-            payload,
-            {
-                "user_id": hamlet.id,
-                "event": "message",
-                "alert": alert,
-                "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
-                "content": "a" * 200 + "…",
-                "content_truncated": True,
-                "server": settings.EXTERNAL_HOST,
-                "realm_id": hamlet.realm.id,
-                "realm_uri": hamlet.realm.uri,
-                "sender_id": hamlet.id,
-                "sender_email": hamlet.email,
-                "sender_full_name": "King Hamlet",
-                "sender_avatar_url": absolute_avatar_url(message.sender),
-                "recipient_type": "stream",
-                "stream": get_display_recipient(message.recipient),
-                "topic": message.topic_name(),
-            },
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, mentioned_user_group_id, mentioned_user_group_name
         )
+        expected_payload = {
+            "user_id": hamlet.id,
+            "event": "message",
+            "alert": alert,
+            "zulip_message_id": message.id,
+            "time": datetime_to_timestamp(message.date_sent),
+            "content": "a" * 200 + "…",
+            "content_truncated": True,
+            "server": settings.EXTERNAL_HOST,
+            "realm_id": hamlet.realm.id,
+            "realm_uri": hamlet.realm.uri,
+            "sender_id": hamlet.id,
+            "sender_email": hamlet.email,
+            "sender_full_name": "King Hamlet",
+            "sender_avatar_url": absolute_avatar_url(message.sender),
+            "recipient_type": "stream",
+            "stream": get_display_recipient(message.recipient),
+            "topic": message.topic_name(),
+        }
+
+        if mentioned_user_group_id is not None:
+            expected_payload["mentioned_user_group_id"] = mentioned_user_group_id
+            expected_payload["mentioned_user_group_name"] = mentioned_user_group_name
+        self.assertDictEqual(payload, expected_payload)
         self.assertDictEqual(
             gcm_options,
             {
@@ -1787,8 +1797,13 @@ class TestGetGCMPayload(PushNotificationTest):
         )
 
     def test_get_message_payload_gcm_user_group_mention(self) -> None:
+        # Note that the @mobile_team user group doesn't actually
+        # exist; this test is just verifying the formatting logic.
         self._test_get_message_payload_gcm_mentions(
-            "mentioned", "King Hamlet mentioned @mobile_team in #Verona", "mobile_team"
+            "mentioned",
+            "King Hamlet mentioned @mobile_team in #Verona",
+            mentioned_user_group_id=3,
+            mentioned_user_group_name="mobile_team",
         )
 
     def test_get_message_payload_gcm_wildcard_mention(self) -> None:

@@ -668,13 +668,22 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     return data
 
 
-def get_message_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+def get_message_payload(
+    user_profile: UserProfile,
+    message: Message,
+    mentioned_user_group_id: Optional[int] = None,
+    mentioned_user_group_name: Optional[str] = None,
+) -> Dict[str, Any]:
     """Common fields for `message` payloads, for all platforms."""
     data = get_base_payload(user_profile)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data["sender_id"] = message.sender.id
     data["sender_email"] = message.sender.email
+    if mentioned_user_group_id is not None:
+        assert mentioned_user_group_name is not None
+        data["mentioned_user_group_id"] = mentioned_user_group_id
+        data["mentioned_user_group_name"] = mentioned_user_group_name
 
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
@@ -753,10 +762,15 @@ def get_apns_badge_count_future(
 
 
 def get_message_payload_apns(
-    user_profile: UserProfile, message: Message, mentioned_user_group_name: Optional[str] = None
+    user_profile: UserProfile,
+    message: Message,
+    mentioned_user_group_id: Optional[int] = None,
+    mentioned_user_group_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
-    zulip_data = get_message_payload(user_profile, message)
+    zulip_data = get_message_payload(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+    )
     zulip_data.update(
         message_ids=[message.id],
     )
@@ -780,10 +794,15 @@ def get_message_payload_apns(
 
 
 def get_message_payload_gcm(
-    user_profile: UserProfile, message: Message, mentioned_user_group_name: Optional[str] = None
+    user_profile: UserProfile,
+    message: Message,
+    mentioned_user_group_id: Optional[int] = None,
+    mentioned_user_group_name: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """A `message` payload + options, for Android via GCM/FCM."""
-    data = get_message_payload(user_profile, message)
+    data = get_message_payload(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+    )
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
@@ -926,9 +945,11 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         user_group = access_user_group_by_id(mentioned_user_group_id, user_profile)
         mentioned_user_group_name = user_group.name
 
-    apns_payload = get_message_payload_apns(user_profile, message, mentioned_user_group_name)
+    apns_payload = get_message_payload_apns(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+    )
     gcm_payload, gcm_options = get_message_payload_gcm(
-        user_profile, message, mentioned_user_group_name
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
