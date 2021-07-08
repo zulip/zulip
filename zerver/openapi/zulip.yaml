@@ -2351,6 +2351,76 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user when [message flags][message-flags] are added
+                                to a message.
+
+                                [message-flags]: /api/update-message-flags#available-flags
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message_flags
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                operation:
+                                  deprecated: true
+                                  description: |
+                                    Old name for `op` for this event type.
+
+                                    **Deprecated**: This is deprecated; please use `op` instead
+                                    starting with Zulip 4.0 (feature level 32).
+                                  type: string
+                                  enum:
+                                    - remove
+                                flag:
+                                  type: string
+                                  description: |
+                                    The flag that was added.
+                                  enum:
+                                    - read
+                                messages:
+                                  type: array
+                                  description: |
+                                    Array containing the ids of all messages to which
+                                    the flag was added.
+                                  items:
+                                    type: integer
+                                all:
+                                  type: boolean
+                                  description: |
+                                    Whether the flag was added to all messages (E.g. all messages
+                                    were marked as read).
+                                    If this is true, then the `messages` array will be empty.
+                                messages_by_conversation:
+                                  type: object
+                                  items:
+                                    $ref: "#/components/schemas/BasicStream"
+                                  description: |
+                                    Present if `message` and `update_message_flags` are both present in
+                                    `event_types`.
+
+                                    A set of data structures describing the conversations containing
+                                    the 50000 most recent unread messages the user has received.  This will usually
+                                    contain every unread message the user has received, but clients should support
+                                    users with even more unread messages (and not hardcode the number 50000).
+                              example:
+                                {
+                                  "type": "update_message_flags",
+                                  "op": "remove",
+                                  "operation": "remove",
+                                  "flag": "read",
+                                  "messages": [63],
+                                  "all": false,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user when [message flags][message-flags] are
                                 removed from a message.
 
