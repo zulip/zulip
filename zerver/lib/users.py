@@ -349,16 +349,6 @@ def validate_user_custom_profile_data(
             raise JsonableError(error.message)
 
 
-def compute_show_invites(user_profile: Optional[UserProfile]) -> bool:
-    if user_profile is None:
-        return False
-
-    if user_profile.is_guest:
-        return False
-
-    return user_profile.can_invite_others_to_realm()
-
-
 def can_access_delivery_email(user_profile: UserProfile) -> bool:
     realm = user_profile.realm
     if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
