@@ -119,6 +119,9 @@ export function initialize() {
 
     delegate("body", {
         target: ".message_control_button",
+        // This ensures that the tooltip doesn't
+        // hide by the selected message blue border.
+        appendTo: () => document.body,
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
