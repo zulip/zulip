@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 
 const settings_muted_topics = zrequire("settings_muted_topics");
 const stream_data = zrequire("stream_data");
@@ -72,7 +72,7 @@ run_test("settings", ({override}) => {
     };
 
     let unmute_topic_called = false;
-    muting_ui.unmute_topic = (stream_id, topic) => {
+    muted_topics_ui.unmute_topic = (stream_id, topic) => {
         assert.equal(stream_id, frontend.stream_id);
         assert.equal(topic, "js");
         unmute_topic_called = true;

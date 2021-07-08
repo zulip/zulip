@@ -20,8 +20,8 @@ import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users_ui from "./muted_users_ui";
-import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as night_mode from "./night_mode";
@@ -135,7 +135,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "muted_topics":
-            muting_ui.handle_topic_updates(event.muted_topics);
+            muted_topics_ui.handle_topic_updates(event.muted_topics);
             break;
 
         case "muted_users":

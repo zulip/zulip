@@ -29,9 +29,9 @@ import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as muted_topics from "./muted_topics";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users from "./muted_users";
 import * as muted_users_ui from "./muted_users_ui";
-import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
@@ -1165,7 +1165,7 @@ export function register_click_handlers() {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         hide_actions_popover();
-        muting_ui.mute_topic(stream_id, topic);
+        muted_topics_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1175,7 +1175,7 @@ export function register_click_handlers() {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         hide_actions_popover();
-        muting_ui.unmute_topic(stream_id, topic);
+        muted_topics_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });

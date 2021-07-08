@@ -94,7 +94,7 @@ EXEMPT_FILES = {
     "static/js/message_scroll.js",
     "static/js/message_util.js",
     "static/js/message_viewport.js",
-    "static/js/muting_ui.js",
+    "static/js/muted_topics_ui.js",
     "static/js/muted_users_ui.js",
     "static/js/narrow.js",
     "static/js/navigate.js",

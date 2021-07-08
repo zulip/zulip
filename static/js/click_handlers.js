@@ -24,7 +24,7 @@ import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
@@ -348,9 +348,9 @@ export function initialize() {
         const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
         const topic = $elt.attr("data-topic-name");
         if (mute_topic) {
-            muting_ui.mute_topic(stream_id, topic);
+            muted_topics_ui.mute_topic(stream_id, topic);
         } else {
-            muting_ui.unmute_topic(stream_id, topic);
+            muted_topics_ui.unmute_topic(stream_id, topic);
         }
     }
 

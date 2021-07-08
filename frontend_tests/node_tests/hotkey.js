@@ -51,7 +51,7 @@ const lightbox = mock_esm("../../static/js/lightbox");
 const list_util = mock_esm("../../static/js/list_util");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_lists = mock_esm("../../static/js/message_lists");
-const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const narrow = mock_esm("../../static/js/narrow");
 const navigate = mock_esm("../../static/js/navigate");
 const overlays = mock_esm("../../static/js/overlays", {
@@ -383,7 +383,7 @@ run_test("emoji picker", ({override}) => {
 run_test("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", muting_ui, "toggle_topic_mute");
+    assert_mapping("M", muted_topics_ui, "toggle_topic_mute");
 });
 
 run_test("n/p keys", () => {

@@ -4,7 +4,7 @@ import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
 import * as muted_topics from "./muted_topics";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as ui from "./ui";
 
 export let loaded = false;
@@ -42,7 +42,7 @@ export function set_up() {
 
         e.stopPropagation();
 
-        muting_ui.unmute_topic(stream_id, topic);
+        muted_topics_ui.unmute_topic(stream_id, topic);
     });
 
     populate_list();
