@@ -2,8 +2,7 @@
     {{#if invite_only}}
     <li>
         {{#tr}}
-            This is a <z-icon></z-icon> <b>private stream</b>. Only people who have been invited can access its content, but any member of the stream can invite others.
-            {{#*inline "z-icon"}}<span class="fa fa-lock" aria-hidden="true"></span>{{/inline}}
+        This is a <b>private stream</b>. Only people who have been invited can access its content, but any member of the stream can invite others.
         {{/tr}}
     </li>
     <li>
@@ -14,15 +13,13 @@
     {{else if is_web_public}}
     <li>
         {{#tr}}
-            This is a <z-icon></z-icon> <b>web public stream</b>. Any member of the organization can join without an invitation and anyone on the internet can read the content published.
-            {{#*inline "z-icon"}}<i class="fa fa-globe" aria-hidden="true"></i>{{/inline}}
+        This is a <b>web public stream</b>. Any member of the organization can join without an invitation and anyone on the internet can read the content published.
         {{/tr}}
     </li>
     {{else}}
     <li>
         {{#tr}}
-            This is a <z-icon></z-icon> <b>public stream</b>. Any member of the organization can join without an invitation.
-            {{#*inline "z-icon"}}<i class="hash" aria-hidden="true"></i>{{/inline}}
+        This is a <b>public stream</b>. Any member of the organization can join without an invitation.
         {{/tr}}
     </li>
     {{/if}}
