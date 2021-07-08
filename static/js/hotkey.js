@@ -558,6 +558,10 @@ export function process_hotkey(e, hotkey) {
             return process_shift_tab_key();
     }
 
+    if (overlays.is_modal_open()) {
+        return false;
+    }
+
     // TODO: break out specific handlers for up_arrow,
     //       down_arrow, and backspace
     switch (event_name) {
