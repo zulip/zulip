@@ -192,7 +192,14 @@ class RateLimitTests(ZulipTestCase):
             self.DEFAULT_SUBDOMAIN = ""
 
             RateLimitedRemoteZulipServer(server).clear_history()
-            self.do_test_hit_ratelimits(lambda: self.uuid_post(server_uuid, endpoint, payload))
+            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as m:
+                self.do_test_hit_ratelimits(lambda: self.uuid_post(server_uuid, endpoint, payload))
+            self.assertEqual(
+                m.output,
+                [
+                    "WARNING:zerver.lib.rate_limiter:Remote server <RemoteZulipServer demo.example.com 1234-abcd> exceeded rate limits on domain api_by_remote_server"
+                ],
+            )
         finally:
             self.DEFAULT_SUBDOMAIN = original_default_subdomain
             remove_ratelimit_rule(1, 5, domain="api_by_remote_server")

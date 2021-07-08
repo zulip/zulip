@@ -38,7 +38,7 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
+from zerver.lib.rate_limiter import RateLimited, RateLimitedIPAddr, RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
@@ -53,6 +53,8 @@ if settings.ZILENCER_ENABLED:
         RemoteZulipServer,
         get_remote_server_by_uuid,
     )
+
+rate_limiter_logger = logging.getLogger("zerver.lib.rate_limiter")
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
@@ -858,7 +860,13 @@ def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
 def rate_limit_remote_server(
     request: HttpRequest, remote_server: "RemoteZulipServer", domain: str
 ) -> None:
-    RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
+    try:
+        RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
+    except RateLimited as e:
+        rate_limiter_logger.warning(
+            "Remote server %s exceeded rate limits on domain %s", remote_server, domain
+        )
+        raise e
 
 
 def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
