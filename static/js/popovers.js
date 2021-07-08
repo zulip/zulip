@@ -30,6 +30,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as muted_topics from "./muted_topics";
 import * as muted_users from "./muted_users";
+import * as muted_users_ui from "./muted_users_ui";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -958,14 +959,14 @@ export function register_click_handlers() {
         hide_user_sidebar_popover();
         e.stopPropagation();
         e.preventDefault();
-        muting_ui.confirm_mute_user(user_id);
+        muted_users_ui.confirm_mute_user(user_id);
     });
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-unmute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_message_info_popover();
         hide_user_sidebar_popover();
-        muting_ui.unmute_user(user_id);
+        muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
     });

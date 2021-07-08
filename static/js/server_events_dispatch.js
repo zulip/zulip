@@ -20,6 +20,7 @@ import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as muted_users_ui from "./muted_users_ui";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
@@ -138,7 +139,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "muted_users":
-            muting_ui.handle_user_updates(event.muted_users);
+            muted_users_ui.handle_user_updates(event.muted_users);
             break;
 
         case "presence":

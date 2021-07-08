@@ -1,24 +1,15 @@
-import $ from "jquery";
 import _ from "lodash";
 
-import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_topic_muted from "../templates/topic_muted.hbs";
 
-import * as activity from "./activity";
 import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as muted_topics from "./muted_topics";
-import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
-import * as people from "./people";
-import * as pm_list from "./pm_list";
-import * as popovers from "./popovers";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_muted_topics from "./settings_muted_topics";
-import * as settings_muted_users from "./settings_muted_users";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -122,62 +113,4 @@ export function toggle_topic_mute(message) {
     } else if (message.type === "stream") {
         mute_topic(stream_id, topic, true);
     }
-}
-
-export function mute_user(user_id) {
-    channel.post({
-        url: "/json/users/me/muted_users/" + user_id,
-        idempotent: true,
-    });
-}
-
-export function confirm_mute_user(user_id) {
-    function on_click() {
-        mute_user(user_id);
-    }
-
-    const modal_parent = $(".mute-user-modal-holder");
-    const html_body = render_confirm_mute_user({
-        user_name: people.get_full_name(user_id),
-    });
-
-    confirm_dialog.launch({
-        parent: modal_parent,
-        html_heading: $t({defaultMessage: "Mute user"}),
-        help_link: "/help/mute-a-user",
-        html_body,
-        html_submit_button: $t({defaultMessage: "Confirm"}),
-        on_click,
-    });
-}
-
-export function unmute_user(user_id) {
-    channel.del({
-        url: "/json/users/me/muted_users/" + user_id,
-        idempotent: true,
-    });
-}
-
-export function rerender_for_muted_user() {
-    message_lists.current.update_muting_and_rerender();
-    if (message_lists.current !== message_lists.home) {
-        message_lists.home.update_muting_and_rerender();
-    }
-
-    if (overlays.settings_open() && settings_muted_users.loaded) {
-        settings_muted_users.populate_list();
-    }
-
-    activity.redraw();
-    pm_list.update_private_messages();
-
-    // If a user is (un)muted, we want to update their avatars on the recent topics
-    // participants column.
-    recent_topics_ui.complete_rerender();
-}
-
-export function handle_user_updates(muted_user_ids) {
-    popovers.hide_all();
-    muted_users.set_muted_users(muted_user_ids);
-    rerender_for_muted_user();
 }
