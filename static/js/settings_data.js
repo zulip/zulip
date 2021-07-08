@@ -158,3 +158,18 @@ export function user_can_edit_topic_of_any_message() {
     }
     return user_has_permission(page_params.realm_edit_topic_policy);
 }
+
+export function using_dark_theme() {
+    if (page_params.color_scheme === settings_config.color_scheme_values.night.code) {
+        return true;
+    }
+
+    if (
+        page_params.color_scheme === settings_config.color_scheme_values.automatic.code &&
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+        return true;
+    }
+    return false;
+}

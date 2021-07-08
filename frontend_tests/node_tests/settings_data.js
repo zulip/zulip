@@ -225,3 +225,25 @@ test_message_policy(
     "realm_edit_topic_policy",
     settings_data.user_can_edit_topic_of_any_message,
 );
+
+run_test("using_dark_theme", () => {
+    page_params.color_scheme = settings_config.color_scheme_values.night.code;
+    assert.equal(settings_data.using_dark_theme(), true);
+
+    page_params.color_scheme = settings_config.color_scheme_values.automatic.code;
+
+    window.matchMedia = (query) => {
+        assert.equal(query, "(prefers-color-scheme: dark)");
+        return {matches: true};
+    };
+    assert.equal(settings_data.using_dark_theme(), true);
+
+    window.matchMedia = (query) => {
+        assert.equal(query, "(prefers-color-scheme: dark)");
+        return {matches: false};
+    };
+    assert.equal(settings_data.using_dark_theme(), false);
+
+    page_params.color_scheme = settings_config.color_scheme_values.day.code;
+    assert.equal(settings_data.using_dark_theme(), false);
+});
