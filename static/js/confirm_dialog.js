@@ -5,6 +5,7 @@ import render_confirm_dialog_heading from "../templates/confirm_dialog_heading.h
 
 import * as blueslip from "./blueslip";
 import * as overlays from "./overlays";
+import * as settings_data from "./settings_data";
 
 /*
     Look for confirm_dialog in settings_user_groups
@@ -45,11 +46,13 @@ export function show_confirm_dialog_spinner() {
     $(".confirm_dialog_submit_button .loader").css("display", "inline-block");
     $(".confirm_dialog_submit_button span").hide();
     $(".confirm_dialog_submit_button").prop("disabled", true);
-    $(".confirm_dialog_submit_button object").on("load", function () {
-        const doc = this.getSVGDocument();
-        const $svg = $(doc).find("svg");
-        $svg.find("rect").css("fill", "#000");
-    });
+    if (!settings_data.using_dark_theme()) {
+        $(".confirm_dialog_submit_button object").on("load", function () {
+            const doc = this.getSVGDocument();
+            const $svg = $(doc).find("svg");
+            $svg.find("rect").css("fill", "#000");
+        });
+    }
 }
 
 export function launch(conf) {
