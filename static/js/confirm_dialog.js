@@ -40,12 +40,14 @@ export function hide_confirm_dialog_spinner() {
     $(".confirm_dialog_submit_button .loader").hide();
     $(".confirm_dialog_submit_button span").show();
     $(".confirm_dialog_submit_button").prop("disabled", false);
+    $("#confirm_dialog_modal .close-modal-btn").prop("disabled", false);
 }
 
 export function show_confirm_dialog_spinner() {
     $(".confirm_dialog_submit_button .loader").css("display", "inline-block");
     $(".confirm_dialog_submit_button span").hide();
     $(".confirm_dialog_submit_button").prop("disabled", true);
+    $("#confirm_dialog_modal .close-modal-btn").prop("disabled", true);
     if (!settings_data.using_dark_theme()) {
         $(".confirm_dialog_submit_button object").on("load", function () {
             const doc = this.getSVGDocument();
