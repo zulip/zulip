@@ -912,10 +912,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     if user_message is not None:
         # If the user has read the message already, don't push-notify.
-        #
-        # TODO: It feels like this is already handled when things are
-        # put in the queue; maybe we should centralize this logic with
-        # the `zerver/tornado/event_queue.py` logic?
         if user_message.flags.read or user_message.flags.active_mobile_push_notification:
             return
 
