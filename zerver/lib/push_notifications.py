@@ -549,7 +549,7 @@ def initialize_push_notifications() -> None:
         )
 
 
-def get_gcm_alert(message: Message) -> str:
+def get_gcm_alert(message: Message, mentioned_user_group_name: Optional[str] = None) -> str:
     """
     Determine what alert string to display based on the missed messages.
     """
@@ -560,7 +560,10 @@ def get_gcm_alert(message: Message) -> str:
     elif message.recipient.type == Recipient.PERSONAL and message.trigger == "private_message":
         return f"New private message from {sender_str}"
     elif message.is_stream_message() and message.trigger == "mentioned":
-        return f"{sender_str} mentioned you in #{display_recipient}"
+        if mentioned_user_group_name is None:
+            return f"{sender_str} mentioned you in #{display_recipient}"
+        else:
+            return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
     elif message.is_stream_message() and message.trigger == "wildcard_mentioned":
         return f"{sender_str} mentioned everyone in #{display_recipient}"
     else:
@@ -777,8 +780,7 @@ def get_message_payload_apns(
 
 
 def get_message_payload_gcm(
-    user_profile: UserProfile,
-    message: Message,
+    user_profile: UserProfile, message: Message, mentioned_user_group_name: Optional[str] = None
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """A `message` payload + options, for Android via GCM/FCM."""
     data = get_message_payload(user_profile, message)
@@ -787,7 +789,7 @@ def get_message_payload_gcm(
         content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
         data.update(
             event="message",
-            alert=get_gcm_alert(message),
+            alert=get_gcm_alert(message, mentioned_user_group_name),
             zulip_message_id=message.id,  # message_id is reserved for CCS
             time=datetime_to_timestamp(message.date_sent),
             content=content,
@@ -925,7 +927,9 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         mentioned_user_group_name = user_group.name
 
     apns_payload = get_message_payload_apns(user_profile, message, mentioned_user_group_name)
-    gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
+    gcm_payload, gcm_options = get_message_payload_gcm(
+        user_profile, message, mentioned_user_group_name
+    )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     if uses_notification_bouncer():
