@@ -18,7 +18,7 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as muted_topics from "./muted_topics";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
@@ -618,7 +618,7 @@ export function register_topic_handlers() {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        muted_topics_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -631,7 +631,7 @@ export function register_topic_handlers() {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute_topic(stream_id, topic);
+        muted_topics_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
