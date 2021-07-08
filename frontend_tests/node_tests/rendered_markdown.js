@@ -278,7 +278,7 @@ run_test("timestamp", ({mock_template}) => {
     assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM\n');
     assert.equal(
         $timestamp.attr("data-tippy-content"),
-        "Everyone sees this in their own timezone.\n<br/>\nYour time zone: UTC\n",
+        "Everyone sees this in their own time zone.\n<br/>\nYour time zone: UTC\n",
     );
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
