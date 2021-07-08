@@ -1740,13 +1740,13 @@ class TestGetAPNsPayload(PushNotificationTest):
 
 
 class TestGetGCMPayload(PushNotificationTest):
-    def test_get_message_payload_gcm(self) -> None:
+    def _test_get_message_payload_gcm_mentions(self, trigger: str, alert: str) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.content = "a" * 210
         message.rendered_content = "a" * 210
         message.save()
-        message.trigger = "mentioned"
+        message.trigger = trigger
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(hamlet, message)
@@ -1755,7 +1755,7 @@ class TestGetGCMPayload(PushNotificationTest):
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New mention from King Hamlet",
+                "alert": alert,
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": "a" * 200 + "…",
@@ -1779,7 +1779,17 @@ class TestGetGCMPayload(PushNotificationTest):
             },
         )
 
-    def test_get_message_payload_gcm_personal(self) -> None:
+    def test_get_message_payload_gcm_personal_mention(self) -> None:
+        self._test_get_message_payload_gcm_mentions(
+            "mentioned", "King Hamlet mentioned you in #Verona"
+        )
+
+    def test_get_message_payload_gcm_wildcard_mention(self) -> None:
+        self._test_get_message_payload_gcm_mentions(
+            "wildcard_mentioned", "King Hamlet mentioned everyone in #Verona"
+        )
+
+    def test_get_message_payload_gcm_private_message(self) -> None:
         message = self.get_message(Recipient.PERSONAL, 1)
         message.trigger = "private_message"
         hamlet = self.example_user("hamlet")
@@ -1823,7 +1833,7 @@ class TestGetGCMPayload(PushNotificationTest):
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New stream message from King Hamlet in Denmark",
+                "alert": "New stream message from King Hamlet in #Denmark",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": message.content,
@@ -1860,7 +1870,7 @@ class TestGetGCMPayload(PushNotificationTest):
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New stream message from King Hamlet in Denmark",
+                "alert": "New stream message from King Hamlet in #Denmark",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": "*This organization has disabled including message content in mobile push notifications*",

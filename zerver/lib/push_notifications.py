@@ -554,17 +554,18 @@ def get_gcm_alert(message: Message) -> str:
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
+    display_recipient = get_display_recipient(message.recipient)
     if message.recipient.type == Recipient.HUDDLE and message.trigger == "private_message":
         return f"New private group message from {sender_str}"
     elif message.recipient.type == Recipient.PERSONAL and message.trigger == "private_message":
         return f"New private message from {sender_str}"
-    elif message.is_stream_message() and (
-        message.trigger == "mentioned" or message.trigger == "wildcard_mentioned"
-    ):
-        return f"New mention from {sender_str}"
+    elif message.is_stream_message() and message.trigger == "mentioned":
+        return f"{sender_str} mentioned you in #{display_recipient}"
+    elif message.is_stream_message() and message.trigger == "wildcard_mentioned":
+        return f"{sender_str} mentioned everyone in #{display_recipient}"
     else:
         assert message.is_stream_message() and message.trigger == "stream_push_notify"
-        return f"New stream message from {sender_str} in {get_display_recipient(message.recipient)}"
+        return f"New stream message from {sender_str} in #{display_recipient}"
 
 
 def get_mobile_push_content(rendered_content: str) -> str:
