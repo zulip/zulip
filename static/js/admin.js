@@ -126,8 +126,8 @@ export function build_page() {
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
-        // If no night mode logo is specified but a day mode one is,
-        // use the day mode one.  See also similar code in realm_logo.js.
+        // If no dark mode logo is specified but a light mode one is,
+        // use the light mode one.  See also similar code in realm_logo.js.
         options.realm_night_logo_url = options.realm_logo_url;
     }
 

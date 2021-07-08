@@ -61,7 +61,7 @@ export function tell_user(msg) {
 
 export function enter_day_mode() {
     send({
-        command: "/day",
+        command: "/light",
         on_success(data) {
             night_mode.disable();
             feedback_widget.show({
@@ -71,11 +71,11 @@ export function enter_day_mode() {
                 },
                 on_undo() {
                     send({
-                        command: "/night",
+                        command: "/dark",
                     });
                 },
-                title_text: $t({defaultMessage: "Day mode"}),
-                undo_button_text: $t({defaultMessage: "Night"}),
+                title_text: $t({defaultMessage: "Light mode"}),
+                undo_button_text: $t({defaultMessage: "Dark"}),
             });
         },
     });
@@ -83,7 +83,7 @@ export function enter_day_mode() {
 
 export function enter_night_mode() {
     send({
-        command: "/night",
+        command: "/dark",
         on_success(data) {
             night_mode.enable();
             feedback_widget.show({
@@ -93,11 +93,11 @@ export function enter_night_mode() {
                 },
                 on_undo() {
                     send({
-                        command: "/day",
+                        command: "/light",
                     });
                 },
-                title_text: $t({defaultMessage: "Night mode"}),
-                undo_button_text: $t({defaultMessage: "Day"}),
+                title_text: $t({defaultMessage: "Dark mode"}),
+                undo_button_text: $t({defaultMessage: "Light"}),
             });
         },
     });
@@ -166,14 +166,12 @@ export function process(message_content) {
         return true;
     }
 
-    const day_commands = ["/day", "/light"];
-    if (day_commands.includes(content)) {
+    if (content === "/light") {
         enter_day_mode();
         return true;
     }
 
-    const night_commands = ["/night", "/dark"];
-    if (night_commands.includes(content)) {
+    if (content === "/dark") {
         enter_night_mode();
         return true;
     }

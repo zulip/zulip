@@ -6,7 +6,7 @@ and both these terms are often user interchangeably.
 
 Currently supported slash commands are:
 
-- `/day` and `/night` to change the UI theme
+- `/dark` and `/light` to change the UI theme
 - `/ping` to ping to server and get back the time for the round
 trip. Mainly for testing.
 - `/fluid-width` and `/fixed-width` to toggle that setting

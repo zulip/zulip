@@ -377,12 +377,8 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Toggle night mode)"}),
+        text: $t({defaultMessage: "/dark (use dark mode)"}),
         name: "dark",
-    },
-    {
-        text: $t({defaultMessage: "/day (Toggle day mode)"}),
-        name: "day",
     },
     {
         text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
@@ -393,16 +389,12 @@ export const slash_commands = [
         name: "fluid-width",
     },
     {
-        text: $t({defaultMessage: "/light (Toggle day mode)"}),
+        text: $t({defaultMessage: "/light (use light mode)"}),
         name: "light",
     },
     {
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
-    },
-    {
-        text: $t({defaultMessage: "/night (Toggle night mode)"}),
-        name: "night",
     },
     {
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
