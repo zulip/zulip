@@ -2282,16 +2282,6 @@ div.floating_recipient {
         outline: none;
     }
 
-    &.small_square_check {
-        background-color: hsl(166, 35%, 57%);
-        color: hsl(0, 0%, 95%);
-
-        &:hover {
-            background-color: hsl(156, 30%, 50%);
-            color: hsl(0, 0%, 100%);
-        }
-    }
-
     &.small_square_x {
         background-color: hsl(0, 0%, 100%);
         color: hsl(0, 0%, 47%);
