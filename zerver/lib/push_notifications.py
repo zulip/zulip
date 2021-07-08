@@ -700,16 +700,15 @@ def get_apns_alert_title(message: Message) -> str:
 
 
 def get_apns_alert_subtitle(
-    user_profile: UserProfile, message: Message, mentioned_user_group_id: Optional[int] = None
+    user_profile: UserProfile, message: Message, mentioned_user_group_name: Optional[str] = None
 ) -> str:
     """
     On an iOS notification, this is the second bolded line.
     """
     if message.trigger == "mentioned":
-        if mentioned_user_group_id is not None:
-            user_group = access_user_group_by_id(mentioned_user_group_id, user_profile)
+        if mentioned_user_group_name is not None:
             return _("{full_name} mentioned @{user_group_name}:").format(
-                full_name=message.sender.full_name, user_group_name=user_group.name
+                full_name=message.sender.full_name, user_group_name=mentioned_user_group_name
             )
         else:
             return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
@@ -750,7 +749,7 @@ def get_apns_badge_count_future(
 
 
 def get_message_payload_apns(
-    user_profile: UserProfile, message: Message, mentioned_user_group_id: Optional[int] = None
+    user_profile: UserProfile, message: Message, mentioned_user_group_name: Optional[str] = None
 ) -> Dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
     zulip_data = get_message_payload(user_profile, message)
@@ -764,7 +763,9 @@ def get_message_payload_apns(
         apns_data = {
             "alert": {
                 "title": get_apns_alert_title(message),
-                "subtitle": get_apns_alert_subtitle(user_profile, message, mentioned_user_group_id),
+                "subtitle": get_apns_alert_subtitle(
+                    user_profile, message, mentioned_user_group_name
+                ),
                 "body": content,
             },
             "sound": "default",
@@ -915,10 +916,14 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             return
 
     message.trigger = missed_message["trigger"]
+    mentioned_user_group_name = None
+    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
-    apns_payload = get_message_payload_apns(
-        user_profile, message, missed_message.get("mentioned_user_group_id")
-    )
+    if mentioned_user_group_id is not None:
+        user_group = access_user_group_by_id(mentioned_user_group_id, user_profile)
+        mentioned_user_group_name = user_group.name
+
+    apns_payload = get_message_payload_apns(user_profile, message, mentioned_user_group_name)
     gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 

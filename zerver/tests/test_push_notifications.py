@@ -1643,8 +1643,8 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = "mentioned"
         message.stream_name = "Verona"
-        mentioned_user_group_id = user_group.id
-        payload = get_message_payload_apns(user_profile, message, mentioned_user_group_id)
+        mentioned_user_group_name = user_group.name
+        payload = get_message_payload_apns(user_profile, message, mentioned_user_group_name)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
