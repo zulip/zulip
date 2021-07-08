@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import {page_params} from "./page_params";
-import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
 
 export function build_realm_logo_widget(upload_function, is_night) {
@@ -82,14 +82,7 @@ export function rerender() {
         );
     }
 
-    if (
-        (page_params.color_scheme === settings_config.color_scheme_values.night.code &&
-            page_params.realm_night_logo_source !== "D") ||
-        (page_params.color_scheme === settings_config.color_scheme_values.automatic.code &&
-            page_params.realm_night_logo_source !== "D" &&
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
+    if (settings_data.using_dark_theme() && page_params.realm_night_logo_source !== "D") {
         $("#realm-logo").attr("src", page_params.realm_night_logo_url);
     } else {
         $("#realm-logo").attr("src", page_params.realm_logo_url);
