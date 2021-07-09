@@ -634,14 +634,18 @@ def list_supervisor_processes(*args: str) -> List[str]:
         universal_newlines=True,
         stdout=subprocess.PIPE,
     )
-    # `supercisorctl status` returns 3 if any are stopped, which is fine here.
-    if worker_status.returncode not in (0, 3):
+    # `supercisorctl status` returns 3 if any are stopped, which is
+    # fine here; and exit code 4 is for no such process, which is
+    # handled below.
+    if worker_status.returncode not in (0, 3, 4):
         worker_status.check_returncode()
 
     processes = []
     for status_line in worker_status.stdout.splitlines():
-        processes.append(status_line.split()[0])
+        if not re.search(r"ERROR \(no such (process|group)\)", status_line):
+            processes.append(status_line.split()[0])
     return processes
+
 
 def has_process_fts_updates() -> bool:
     return (
