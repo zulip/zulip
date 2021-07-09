@@ -264,12 +264,12 @@ class DecoratorTestCase(ZulipTestCase):
             return payload
 
         request = HostRequestMock()
-        request.body = "notjson"
+        request.body = b"notjson"
         with self.assertRaises(JsonableError) as cm:
             get_payload(request)
         self.assertEqual(str(cm.exception), "Malformed JSON")
 
-        request.body = '{"a": "b"}'
+        request.body = b'{"a": "b"}'
         self.assertEqual(get_payload(request), {"a": "b"})
 
     def logger_output(self, output_string: str, type: str, logger: str) -> str:
@@ -340,7 +340,7 @@ class DecoratorTestCase(ZulipTestCase):
 
         with self.assertLogs("zulip.zerver.webhooks", level="INFO") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = "{}"
+                request.body = b"{}"
                 request.content_type = "application/json"
                 my_webhook_raises_exception(request)
 
@@ -349,7 +349,7 @@ class DecoratorTestCase(ZulipTestCase):
 
         with self.assertLogs("zulip.zerver.webhooks", level="INFO") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = "notjson"
+                request.body = b"notjson"
                 request.content_type = "text/plain"
                 my_webhook_raises_exception(request)
 
@@ -358,7 +358,7 @@ class DecoratorTestCase(ZulipTestCase):
         # exception raised in the webhook function should be re-raised
         with self.assertLogs("zulip.zerver.webhooks", level="ERROR") as log:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
-                request.body = "invalidjson"
+                request.body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
                 my_webhook_raises_exception(request)
@@ -371,7 +371,7 @@ class DecoratorTestCase(ZulipTestCase):
         exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
         with self.assertLogs("zulip.zerver.webhooks.unsupported", level="ERROR") as log:
             with self.assertRaisesRegex(UnsupportedWebhookEventType, exception_msg):
-                request.body = "invalidjson"
+                request.body = b"invalidjson"
                 request.content_type = "application/json"
                 request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
                 my_webhook_raises_exception_unsupported_event(request)
@@ -487,7 +487,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = "{}"
+        request.body = b"{}"
         request.content_type = "text/plain"
 
         with mock.patch("zerver.decorator.webhook_logger.exception") as mock_exception:
@@ -508,7 +508,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = "{}"
+        request.body = b"{}"
         request.content_type = "text/plain"
 
         with mock.patch(
@@ -534,7 +534,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.method = "POST"
         request.host = "zulip.testserver"
 
-        request.body = "{}"
+        request.body = b"{}"
         request.content_type = "application/json"
 
         with mock.patch("zerver.decorator.webhook_logger.exception") as mock_exception:
