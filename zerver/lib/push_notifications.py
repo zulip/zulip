@@ -28,6 +28,7 @@ from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     ArchivedMessage,
     Message,
+    NotificationTriggers,
     PushDeviceToken,
     Recipient,
     UserMessage,
@@ -559,19 +560,25 @@ def get_gcm_alert(message: Message, mentioned_user_group_name: Optional[str] = N
     """
     sender_str = message.sender.full_name
     display_recipient = get_display_recipient(message.recipient)
-    if message.recipient.type == Recipient.HUDDLE and message.trigger == "private_message":
+    if (
+        message.recipient.type == Recipient.HUDDLE
+        and message.trigger == NotificationTriggers.PRIVATE_MESSAGE
+    ):
         return f"New private group message from {sender_str}"
-    elif message.recipient.type == Recipient.PERSONAL and message.trigger == "private_message":
+    elif (
+        message.recipient.type == Recipient.PERSONAL
+        and message.trigger == NotificationTriggers.PRIVATE_MESSAGE
+    ):
         return f"New private message from {sender_str}"
-    elif message.is_stream_message() and message.trigger == "mentioned":
+    elif message.is_stream_message() and message.trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is None:
             return f"{sender_str} mentioned you in #{display_recipient}"
         else:
             return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
-    elif message.is_stream_message() and message.trigger == "wildcard_mentioned":
+    elif message.is_stream_message() and message.trigger == NotificationTriggers.WILDCARD_MENTION:
         return f"{sender_str} mentioned everyone in #{display_recipient}"
     else:
-        assert message.is_stream_message() and message.trigger == "stream_push_notify"
+        assert message.is_stream_message() and message.trigger == NotificationTriggers.STREAM_PUSH
         return f"New stream message from {sender_str} in #{display_recipient}"
 
 
@@ -722,14 +729,14 @@ def get_apns_alert_subtitle(
     """
     On an iOS notification, this is the second bolded line.
     """
-    if message.trigger == "mentioned":
+    if message.trigger == NotificationTriggers.MENTION:
         if mentioned_user_group_name is not None:
             return _("{full_name} mentioned @{user_group_name}:").format(
                 full_name=message.sender.full_name, user_group_name=mentioned_user_group_name
             )
         else:
             return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
-    elif message.trigger == "wildcard_mentioned":
+    elif message.trigger == NotificationTriggers.WILDCARD_MENTION:
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""

@@ -3331,6 +3331,15 @@ class MissedMessageEmailAddress(models.Model):
         self.save(update_fields=["times_used"])
 
 
+class NotificationTriggers:
+    # "private_message" is for 1:1 PMs as well as huddles
+    PRIVATE_MESSAGE = "private_message"
+    MENTION = "mentioned"
+    WILDCARD_MENTION = "wildcard_mentioned"
+    STREAM_PUSH = "stream_push_notify"
+    STREAM_EMAIL = "stream_email_notify"
+
+
 class ScheduledMessage(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     sender: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)

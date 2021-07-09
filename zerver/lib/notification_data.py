@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
+from zerver.models import NotificationTriggers
 
 
 @dataclass
@@ -74,13 +75,13 @@ class UserMessageNotificationsData:
             return None
 
         if private_message:
-            return "private_message"
+            return NotificationTriggers.PRIVATE_MESSAGE
         elif self.mentioned:
-            return "mentioned"
+            return NotificationTriggers.MENTION
         elif self.wildcard_mention_notify:
-            return "wildcard_mentioned"
+            return NotificationTriggers.WILDCARD_MENTION
         elif self.stream_push_notify:
-            return "stream_push_notify"
+            return NotificationTriggers.STREAM_PUSH
         else:
             return None
 
@@ -102,13 +103,13 @@ class UserMessageNotificationsData:
             return None
 
         if private_message:
-            return "private_message"
+            return NotificationTriggers.PRIVATE_MESSAGE
         elif self.mentioned:
-            return "mentioned"
+            return NotificationTriggers.MENTION
         elif self.wildcard_mention_notify:
-            return "wildcard_mentioned"
+            return NotificationTriggers.WILDCARD_MENTION
         elif self.stream_email_notify:
-            return "stream_email_notify"
+            return NotificationTriggers.STREAM_EMAIL
         else:
             return None
 
