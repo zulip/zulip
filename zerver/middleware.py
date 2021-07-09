@@ -577,10 +577,12 @@ class HostDomainMiddleware(MiddlewareMixin):
 
         subdomain = get_subdomain(request)
         if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+            request_notes = get_request_notes(request)
             try:
-                request.realm = get_realm(subdomain)
+                request_notes.realm = get_realm(subdomain)
             except Realm.DoesNotExist:
                 return render(request, "zerver/invalid_realm.html", status=404)
+            request_notes.has_fetched_realm = True
         return None
 
 

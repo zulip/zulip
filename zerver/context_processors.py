@@ -17,6 +17,7 @@ from version import (
 from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.request import get_request_notes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, UserProfile, get_realm
@@ -50,19 +51,22 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
+    request_notes = get_request_notes(request)
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
-    if not hasattr(request, "realm"):
-        # We cache the realm object from this function on the request,
+    if not request_notes.has_fetched_realm:
+        # We cache the realm object from this function on the request data,
         # so that functions that call get_realm_from_request don't
         # need to do duplicate queries on the same realm while
         # processing a single request.
         subdomain = get_subdomain(request)
+        request_notes = get_request_notes(request)
         try:
-            request.realm = get_realm(subdomain)
+            request_notes.realm = get_realm(subdomain)
         except Realm.DoesNotExist:
-            request.realm = None
-    return request.realm
+            request_notes.realm = None
+        request_notes.has_fetched_realm = True
+    return request_notes.realm
 
 
 def get_valid_realm_from_request(request: HttpRequest) -> Realm:
