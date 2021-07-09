@@ -13,6 +13,7 @@ from scripts.lib.zulip_tools import (
     WARNING,
     has_application_server,
     has_process_fts_updates,
+    list_supervisor_processes,
 )
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -41,11 +42,15 @@ if has_application_server():
     services.extend(["zulip-tornado", "zulip-tornado:*"])
     services.append("zulip-workers:*")
     if has_application_server(once=True):
+        # These used to be included in "zulip-workers:*"; since we may
+        # be stopping an older version of Zulip, which has not applied
+        # puppet to reload the new list of processes, only stop them
+        # if they currently exist according to `supervisorctl`.
         services.extend(
-            [
+            list_supervisor_processes(
                 "zulip_deliver_scheduled_emails",
                 "zulip_deliver_scheduled_messages",
-            ]
+            ),
         )
 
 subprocess.check_call(["supervisorctl", "stop", *services])
