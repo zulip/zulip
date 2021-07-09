@@ -9,7 +9,7 @@ from analytics.models import StreamCount
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    do_activate_user,
+    do_activate_mirror_dummy_user,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -70,7 +70,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = do_create_user("email", "password", realm, "full_name", acting_user=None)
         do_deactivate_user(user, acting_user=user)
-        do_activate_user(user, acting_user=user)
+        do_activate_mirror_dummy_user(user, acting_user=user)
         do_deactivate_user(user, acting_user=user)
         do_reactivate_user(user, acting_user=user)
         self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 6)

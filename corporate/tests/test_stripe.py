@@ -78,7 +78,7 @@ from corporate.models import (
     get_customer_by_realm,
 )
 from zerver.lib.actions import (
-    do_activate_user,
+    do_activate_mirror_dummy_user,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
@@ -3366,8 +3366,8 @@ class LicenseLedgerTest(StripeTestCase):
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
         do_deactivate_user(user, acting_user=None)
         do_reactivate_user(user, acting_user=None)
-        # Not a proper use of do_activate_user, but fine for this test
-        do_activate_user(user, acting_user=None)
+        # Not a proper use of do_activate_mirror_dummy_user, but fine for this test
+        do_activate_mirror_dummy_user(user, acting_user=None)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
                 "is_renewal", "licenses", "licenses_at_next_renewal"

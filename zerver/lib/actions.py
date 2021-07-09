@@ -707,7 +707,22 @@ def do_create_user(
     return user_profile
 
 
-def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
+def do_activate_mirror_dummy_user(
+    user_profile: UserProfile, *, acting_user: Optional[UserProfile]
+) -> None:
+    """Called to have a user "take over" a "mirror dummy" user
+    (i.e. is_mirror_dummy=True) account when they sign up with the
+    same email address.
+
+    Essentially, the result should be as though we had created the
+    UserProfile just now with do_create_user, except that the mirror
+    dummy user may appear as the recipient or sender of messages from
+    before their account was fully created.
+
+    TODO: This function likely has bugs resulting from this being a
+    parallel code path to do_create_user; e.g. it likely does not
+    handle preferences or default streams properly.
+    """
     with transaction.atomic():
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
@@ -744,8 +759,7 @@ def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserPro
 
 
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
-    # Unlike do_activate_user, this is meant for re-activating existing users,
-    # so it doesn't reset their password, etc.
+    """Reactivate a user that had previously been deactivated"""
     with transaction.atomic():
         change_user_is_active(user_profile, True)
 
