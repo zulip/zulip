@@ -15,13 +15,13 @@
 
         {{#if is_active }}
             {{#if show_email}}
-            <li class="user_popover_email">
-                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                {{ user_email }}
-                <div class="tooltip_holder">
-                    <span class="email_tooltip">{{ user_email }}</span>
-                </div>
-            </li>
+            {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
+            <div>
+                <li class="user_popover_email">
+                    <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
+                    {{ user_email }}
+                </li>
+            </div>
             {{/if}}
         {{else}}
             <li class="user_popover_email half-opacity italic">{{#tr}}(This user has been deactivated){{/tr}}</li>
