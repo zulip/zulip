@@ -157,6 +157,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
         self._test("/why-zulip/", "Why Zulip?")
         self._test("/for/open-source/", "for open source projects")
+        self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/for/research/", "for researchers")
         self._test("/for/companies/", "in a company")
         self._test("/for/working-groups-and-communities/", "standards bodies")
