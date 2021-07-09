@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(
                 choices=[
                     (1, "Normal"),
+                    (2, "Resolve Topic Notification"),
                 ],
                 default=1,
             ),
@@ -26,6 +27,7 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(
                 choices=[
                     (1, "Normal"),
+                    (2, "Resolve Topic Notification"),
                 ],
                 default=1,
             ),

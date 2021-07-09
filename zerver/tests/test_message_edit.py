@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
@@ -16,6 +17,7 @@ from zerver.lib.actions import (
     do_update_message,
     get_topic_messages,
     get_user_info_for_message_updates,
+    maybe_send_resolve_topic_notifications,
 )
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
@@ -1956,6 +1958,7 @@ class EditMessageTest(EditMessageTestCase):
 
         self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
 
+    @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
     def test_mark_topic_as_resolved(self) -> None:
         self.login("iago")
         admin_user = self.example_user("iago")
@@ -2031,14 +2034,20 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         unresolved_topic = original_topic
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "message_id": id1,
-                "topic": unresolved_topic,
-                "propagate_mode": "change_all",
-            },
-        )
+
+        # Now unresolve the topic after the grace period
+        with mock.patch(
+            "zerver.lib.actions.timezone_now",
+            return_value=messages[2].date_sent + datetime.timedelta(seconds=80),
+        ):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "message_id": id1,
+                    "topic": unresolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
 
         self.assert_json_success(result)
         for msg_id in [id1, id2]:
@@ -2053,6 +2062,104 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             messages[3].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
+        )
+
+    @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
+    def test_mark_topic_as_resolved_within_grace_period(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        original_topic = "topic 1"
+        id1 = self.send_stream_message(
+            self.example_user("hamlet"), "new", content="message 1", topic_name=original_topic
+        )
+        id2 = self.send_stream_message(
+            admin_user, "new", content="message 2", topic_name=original_topic
+        )
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, resolved_topic)
+        self.assert_length(messages, 3)
+        self.assertEqual(
+            messages[2].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        unresolved_topic = original_topic
+
+        # Now unresolve the topic within the grace period.
+        with mock.patch(
+            "zerver.lib.actions.timezone_now",
+            return_value=messages[2].date_sent + datetime.timedelta(seconds=4),
+        ):
+            result = self.client_patch(
+                "/json/messages/" + str(id1),
+                {
+                    "message_id": id1,
+                    "topic": unresolved_topic,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                unresolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, stream, unresolved_topic)
+        self.assert_length(messages, 2)
+        self.assertEqual(
+            messages[1].content,
+            "message 2",
+        )
+
+    def test_send_resolve_topic_notification_with_no_topic_messages(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        original_topic = "topic 1"
+        message_id = self.send_stream_message(
+            self.example_user("hamlet"), "new", content="message 1", topic_name=original_topic
+        )
+
+        message = Message.objects.get(id=message_id)
+        do_delete_messages(admin_user.realm, [message])
+
+        resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        maybe_send_resolve_topic_notifications(
+            user_profile=admin_user,
+            stream=stream,
+            old_topic=original_topic,
+            new_topic=resolve_topic,
+        )
+
+        topic_messages = get_topic_messages(admin_user, stream, resolve_topic)
+        self.assert_length(topic_messages, 1)
+        self.assertEqual(
+            topic_messages[0].content,
+            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
 
 

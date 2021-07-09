@@ -5735,6 +5735,26 @@ class MessageUpdateUserInfoResult(TypedDict):
     mention_user_ids: Set[int]
 
 
+def confirm_topic_resolve_grace_period(stream: Stream, topic: str) -> bool:
+    message_args = {"recipient": stream.recipient, TOPIC_NAME: topic}
+    last_message = Message.objects.filter(**message_args).last()
+
+    if last_message is None:
+        return False
+
+    if last_message.type != Message.MessageType.RESOLVE_TOPIC_NOTIFICATION:
+        return False
+
+    current_time = timezone_now()
+    time_difference = (current_time - last_message.date_sent).total_seconds()
+
+    if time_difference > settings.RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS:
+        return False
+
+    do_delete_messages(stream.realm, [last_message])
+    return True
+
+
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
@@ -5771,6 +5791,9 @@ def maybe_send_resolve_topic_notifications(
         # administrator can the messages in between. We consider this
         # to be a fundamental risk of irresponsible message deletion,
         # not a bug with the "resolve topics" feature.
+        return
+
+    if confirm_topic_resolve_grace_period(stream, new_topic):
         return
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
