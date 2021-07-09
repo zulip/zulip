@@ -42,11 +42,12 @@ class RateLimitedObject(ABC):
         )
 
     def rate_limit_request(self, request: HttpRequest) -> None:
-        ratelimited, time = self.rate_limit()
+        from zerver.lib.request import get_request_notes
 
-        if not hasattr(request, "_ratelimits_applied"):
-            request._ratelimits_applied = []
-        request._ratelimits_applied.append(
+        ratelimited, time = self.rate_limit()
+        request_notes = get_request_notes(request)
+
+        request_notes.ratelimits_applied.append(
             RateLimitResult(
                 entity=self,
                 secs_to_freedom=time,
@@ -61,8 +62,8 @@ class RateLimitedObject(ABC):
 
         calls_remaining, seconds_until_reset = self.api_calls_left()
 
-        request._ratelimits_applied[-1].remaining = calls_remaining
-        request._ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
+        request_notes.ratelimits_applied[-1].remaining = calls_remaining
+        request_notes.ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
 
     def block_access(self, seconds: int) -> None:
         "Manually blocks an entity for the desired number of seconds"

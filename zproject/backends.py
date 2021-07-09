@@ -70,7 +70,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, validate_email_
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
-from zerver.lib.request import JsonableError
+from zerver.lib.request import JsonableError, get_request_notes
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
@@ -259,12 +259,11 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
 
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    if not hasattr(request, "_ratelimits_applied"):
-        return False
+    request_notes = get_request_notes(request)
 
     return any(
         isinstance(r.entity, RateLimitedAuthenticationByUsername)
-        for r in request._ratelimits_applied
+        for r in request_notes.ratelimits_applied
     )
 
 
