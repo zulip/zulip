@@ -74,6 +74,10 @@ def get_apns_context() -> Optional[APNsContext]:
     # import time.
     import aioapns
 
+    # aioapns logs at "error" level for every non-successful request,
+    # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
+    logging.getLogger("aioapns").setLevel(logging.CRITICAL)
+
     if settings.APNS_CERT_FILE is None:
         return None
 
