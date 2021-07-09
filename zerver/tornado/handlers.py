@@ -44,8 +44,9 @@ def finish_handler(
 ) -> None:
     err_msg = f"Got error finishing handler for queue {event_queue_id}"
     try:
-        # We import async_request_timer_restart during runtime
-        # to avoid cyclic dependency with zerver.lib.request
+        # We do the import during runtime to avoid cyclic dependency
+        # with zerver.lib.request
+        from zerver.lib.request import get_request_notes
         from zerver.middleware import async_request_timer_restart
 
         # We call async_request_timer_restart here in case we are
@@ -54,10 +55,12 @@ def finish_handler(
         handler = get_handler_by_id(handler_id)
         request = handler._request
         async_request_timer_restart(request)
+        log_data = get_request_notes(request).log_data
+        assert log_data is not None
         if len(contents) != 1:
-            request._log_data["extra"] = f"[{event_queue_id}/1]"
+            log_data["extra"] = f"[{event_queue_id}/1]"
         else:
-            request._log_data["extra"] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
+            log_data["extra"] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
 
         handler.zulip_finish(
             dict(result="success", msg="", events=contents, queue_id=event_queue_id),
@@ -222,13 +225,16 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # HttpResponse with all Django middleware run.
         request = self.convert_tornado_request_to_django_request()
 
+        # We import get_request_notes during runtime to avoid
+        # cyclic import
+        from zerver.lib.request import get_request_notes
+
+        request_notes = get_request_notes(request)
+        old_request_notes = get_request_notes(old_request)
+
         # Add to this new HttpRequest logging data from the processing of
         # the original request; we will need these for logging.
-        #
-        # TODO: Design a cleaner way to manage these attributes,
-        # perhaps via creating a ZulipHttpRequest class that contains
-        # these attributes with a copy method.
-        request._log_data = old_request._log_data
+        request_notes.log_data = old_request_notes.log_data
         if hasattr(request, "_rate_limit"):
             request._rate_limit = old_request._rate_limit
         if hasattr(request, "_requestor_for_logs"):

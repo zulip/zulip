@@ -38,7 +38,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import set_request, unset_request
+from zerver.lib.request import get_request_notes, set_request, unset_request
 from zerver.lib.response import json_response, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
@@ -61,7 +61,9 @@ def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
 
 
 def async_request_timer_stop(request: HttpRequest) -> None:
-    record_request_stop_data(request._log_data)
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    record_request_stop_data(log_data)
 
 
 def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
@@ -75,11 +77,13 @@ def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
 
 
 def async_request_timer_restart(request: HttpRequest) -> None:
-    if "time_restarted" in request._log_data:
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    if "time_restarted" in log_data:
         # Don't destroy data when being called from
         # finish_current_handler
         return
-    record_request_restart_data(request._log_data)
+    record_request_restart_data(log_data)
 
 
 def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
@@ -337,22 +341,28 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
+        request_notes = get_request_notes(request)
 
-        if hasattr(request, "_log_data"):
+        if request_notes.log_data is not None:
             # Sanity check to ensure this is being called from the
             # Tornado code path that returns responses asynchronously.
             assert getattr(request, "saved_response", False)
 
-            # Avoid re-initializing request._log_data if it's already there.
+            # Avoid re-initializing request_notes.log_data if it's already there.
             return
 
         request.client_name, request.client_version = parse_client(request)
-        request._log_data = {}
-        record_request_start_data(request._log_data)
+        request_notes.log_data = {}
+        record_request_start_data(request_notes.log_data)
 
     def process_view(
-        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+        self,
+        request: HttpRequest,
+        view_func: ViewFuncT,
+        args: List[str],
+        kwargs: Dict[str, Any],
     ) -> None:
+        request_notes = get_request_notes(request)
         if hasattr(request, "saved_response"):
             # The below logging adjustments are unnecessary (because
             # we've already imported everything) and incorrect
@@ -364,10 +374,13 @@ class LogRequests(MiddlewareMixin):
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
         # importing modules on the first start)
-        request._log_data["startup_time_delta"] = time.time() - request._log_data["time_started"]
+        assert request_notes.log_data is not None
+        request_notes.log_data["startup_time_delta"] = (
+            time.time() - request_notes.log_data["time_started"]
+        )
         # And then completely reset our tracking to only cover work
         # done as part of this request
-        record_request_start_data(request._log_data)
+        record_request_start_data(request_notes.log_data)
 
     def process_response(
         self, request: HttpRequest, response: StreamingHttpResponse
@@ -400,8 +413,10 @@ class LogRequests(MiddlewareMixin):
             content = response.content
             content_iter = None
 
+        request_notes = get_request_notes(request)
+        assert request_notes.log_data is not None
         write_log_line(
-            request._log_data,
+            request_notes.log_data,
             request.path,
             request.method,
             remote_ip,

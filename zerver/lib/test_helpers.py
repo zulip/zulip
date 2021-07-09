@@ -43,6 +43,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.request import ZulipRequestNotes, request_notes_map
 from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
 from zerver.models import (
     Client,
@@ -319,6 +320,10 @@ class HostRequestMock(HttpRequest):
         self._body = b""
         self.content_type = ""
         self.client_name = ""
+
+        request_notes_map[self] = ZulipRequestNotes(
+            log_data={},
+        )
 
     @property
     def body(self) -> bytes:

@@ -14,7 +14,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import human_users_only
 from zerver.lib.markdown import privacy_clean_markdown
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
@@ -54,7 +54,9 @@ def report_send_times(
     if displayed > 0:
         displayed_str = str(displayed)
 
-    request._log_data[
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data[
         "extra"
     ] = f"[{time}ms/{received_str}ms/{displayed_str}ms/echo:{locally_echoed}/diff:{rendered_content_disparity}]"
 
@@ -79,7 +81,9 @@ def report_narrow_times(
     initial_free: int = REQ(converter=to_non_negative_int),
     network: int = REQ(converter=to_non_negative_int),
 ) -> HttpResponse:
-    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
     realm = get_valid_realm_from_request(request)
     base_key = statsd_key(realm.string_id, clean_periods=True)
     statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
@@ -95,7 +99,9 @@ def report_unnarrow_times(
     initial_core: int = REQ(converter=to_non_negative_int),
     initial_free: int = REQ(converter=to_non_negative_int),
 ) -> HttpResponse:
-    request._log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
     realm = get_valid_realm_from_request(request)
     base_key = statsd_key(realm.string_id, clean_periods=True)
     statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)

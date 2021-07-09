@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables, internal_notify_view, process_client
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import get_request_notes
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
@@ -36,7 +37,9 @@ def cleanup_event_queue(
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
         raise JsonableError(_("You are not authorized to access this queue"))
-    request._log_data["extra"] = f"[{queue_id}]"
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{queue_id}]"
     client.cleanup()
     return json_success()
 
@@ -145,7 +148,9 @@ def get_events_backend(
 
     result = fetch_events(events_query)
     if "extra_log_data" in result:
-        request._log_data["extra"] = result["extra_log_data"]
+        log_data = get_request_notes(request).log_data
+        assert log_data is not None
+        log_data["extra"] = result["extra_log_data"]
 
     if result["type"] == "async":
         # Mark this response with .asynchronous; this will result in
