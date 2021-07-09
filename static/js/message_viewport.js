@@ -6,6 +6,7 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as rows from "./rows";
 import * as util from "./util";
 
@@ -316,7 +317,9 @@ export function is_narrow() {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
     // test for this.
-    return window.innerWidth < media_breakpoints_num.xl;
+    // Spectator is always in narrow mode since we hide the right sidebar by default
+    // in this case.
+    return window.innerWidth < media_breakpoints_num.xl || page_params.is_spectator;
 }
 
 export function system_initiated_animate_scroll(scroll_amount) {

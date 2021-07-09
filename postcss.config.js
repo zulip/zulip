@@ -15,6 +15,7 @@ module.exports = ({file}) => ({
             }),
         require("postcss-nested"),
         require("postcss-extend-rule"),
+        require("postcss-mixins"),
         require("postcss-simple-vars")({variables: media_breakpoints}),
         require("postcss-calc"),
         require("postcss-media-minmax"),

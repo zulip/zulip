@@ -67,7 +67,7 @@ export function initialize() {
                 media_breakpoints.xl_min +
                 ") { #compose-content, .header-main .column-middle { margin-right: " +
                 (right_sidebar_width + sbWidth) +
-                "px !important; } } " +
+                "px; } } " +
                 "@media (min-width: " +
                 media_breakpoints.md_min +
                 ") { .fixed-app .column-middle { margin-left: " +

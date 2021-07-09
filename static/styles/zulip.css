@@ -2702,8 +2702,7 @@ select.inline_select_topic_edit {
     }
 }
 
-/* This max-width must be synced with message_viewport.is_narrow */
-@media (width < $xl_min) {
+@define-mixin narrow_width_styles {
     .app-main,
     .header-main {
         min-width: 750px;
@@ -2783,9 +2782,60 @@ select.inline_select_topic_edit {
     }
 }
 
+/* This max-width must be synced with message_viewport.is_narrow */
+@media (width < $xl_min) {
+    @mixin narrow_width_styles;
+}
+
+.spectator-view {
+    @mixin narrow_width_styles;
+
+    /* Don't allow messages to also take the space of right sidebar. */
+    @media (width >= $xl_min) {
+        .header-main,
+        .app {
+            max-width: $xl_min !important;
+            margin: auto;
+        }
+    }
+
+    @media (width < $md_min) {
+        /* Fix gear icon position. */
+        .header-main .column-right {
+            right: 7px;
+        }
+    }
+
+    #userlist-toggle {
+        display: none;
+    }
+
+    .top-navbar-container,
+    #searchbox_legacy .navbar-search.expanded,
+    #searchbox .navbar-search.expanded {
+        width: calc(100% - 50px);
+    }
+
+    #top_navbar #navbar-buttons {
+        margin-right: 5px !important;
+    }
+}
+
 @media (width < $md_min) {
     body {
         padding: 0;
+    }
+
+    .spectator-view {
+        .top-navbar-container,
+        #searchbox_legacy .navbar-search.expanded,
+        #searchbox .navbar-search.expanded {
+            width: calc(100% - 50px);
+        }
+
+        #top_navbar #navbar-buttons {
+            margin-right: -19px !important;
+        }
     }
 
     .column-left {
@@ -2820,7 +2870,7 @@ select.inline_select_topic_edit {
     html,
     .app-main,
     .header-main {
-        min-width: 350px;
+        min-width: 350px !important;
     }
 
     .column-middle,
@@ -2882,107 +2932,109 @@ select.inline_select_topic_edit {
 }
 
 @media (width < $sm_min) {
-    .column-right.expanded .right-sidebar,
-    .column-left.expanded .left-sidebar {
-        margin-top: 31px;
-    }
+    body {
+        .column-right.expanded .right-sidebar,
+        .column-left.expanded .left-sidebar {
+            margin-top: 31px;
+        }
 
-    .column-left.expanded {
-        .left-sidebar {
-            padding: 0;
+        .column-left.expanded {
+            .left-sidebar {
+                padding: 0;
 
-            #streams_header {
-                padding-right: 10px;
+                #streams_header {
+                    padding-right: 10px;
+                }
+            }
+
+            .narrows_panel {
+                margin-top: 10px;
             }
         }
 
-        .narrows_panel {
-            margin-top: 10px;
-        }
-    }
-
-    .search_closed .fa-search {
-        top: 5px;
-    }
-
-    #streamlist-toggle,
-    #navbar-buttons,
-    .navbar-search,
-    #message_view_header,
-    #searchbox,
-    #searchbox_legacy,
-    .header {
-        height: 30px;
-        line-height: 30px;
-    }
-
-    #search_query {
-        height: 30px !important;
-        vertical-align: text-bottom;
-    }
-
-    #streamlist-toggle-button {
-        height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -8px;
-    }
-
-    #searchbox,
-    #searchbox_legacy {
-        .input-append .fa-search {
+        .search_closed .fa-search {
             top: 5px;
         }
 
-        .search_button,
-        .search_button:disabled:hover {
-            top: 0;
+        #streamlist-toggle,
+        #navbar-buttons,
+        .navbar-search,
+        #message_view_header,
+        #searchbox,
+        #searchbox_legacy,
+        .header {
+            height: 30px;
+            line-height: 30px;
         }
-    }
 
-    #message_view_header_underpadding {
-        top: 30px;
-        height: 10px;
-    }
+        #search_query {
+            height: 30px !important;
+            vertical-align: text-bottom;
+        }
 
-    .messagebox-content {
-        padding-right: 15px;
-    }
+        #streamlist-toggle-button {
+            height: 30px;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
 
-    /* In mobile views we place it just to the right of the time element */
-    .message_controls {
-        right: 40px;
-    }
+        #navbar-buttons ul.nav .dropdown-toggle,
+        #navbar-buttons ul.nav li.active .dropdown-toggle {
+            top: -8px;
+        }
 
-    .include-sender .message_controls {
-        background: none !important;
-        padding: none !important;
-        border: none !important;
-    }
+        #searchbox,
+        #searchbox_legacy {
+            .input-append .fa-search {
+                top: 5px;
+            }
 
-    .message_time {
-        left: auto;
-        right: -5px;
-    }
+            .search_button,
+            .search_button:disabled:hover {
+                top: 0;
+            }
+        }
 
-    .sender_name {
-        max-width: 250px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        line-height: 15px;
-    }
+        #message_view_header_underpadding {
+            top: 30px;
+            height: 10px;
+        }
 
-    #floating_recipient_bar {
-        top: 40px;
-    }
+        .messagebox-content {
+            padding-right: 15px;
+        }
 
-    .message_content {
-        padding-right: 50px;
+        /* In mobile views we place it just to the right of the time element */
+        .message_controls {
+            right: 40px;
+        }
+
+        .include-sender .message_controls {
+            background: none !important;
+            padding: none !important;
+            border: none !important;
+        }
+
+        .message_time {
+            left: auto;
+            right: -5px;
+        }
+
+        .sender_name {
+            max-width: 250px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            line-height: 15px;
+        }
+
+        #floating_recipient_bar {
+            top: 40px;
+        }
+
+        .message_content {
+            padding-right: 50px;
+        }
     }
 }
 
@@ -2995,7 +3047,7 @@ select.inline_select_topic_edit {
     html,
     .app-main,
     .header-main {
-        min-width: 320px;
+        min-width: 320px !important;
     }
 }
 
