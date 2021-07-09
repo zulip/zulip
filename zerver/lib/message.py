@@ -68,10 +68,24 @@ class RawReactionRow(TypedDict):
     user_profile_id: int
 
 
+class RawUnreadStreamDict(TypedDict):
+    stream_id: int
+    topic: str
+    sender_id: int
+
+
+class RawUnreadPrivateMessageDict(TypedDict):
+    sender_id: int
+
+
+class RawUnreadHuddleDict(TypedDict):
+    user_ids_string: str
+
+
 class RawUnreadMessagesResult(TypedDict):
-    pm_dict: Dict[int, Any]
-    stream_dict: Dict[int, Any]
-    huddle_dict: Dict[int, Any]
+    pm_dict: Dict[int, RawUnreadPrivateMessageDict]
+    stream_dict: Dict[int, RawUnreadStreamDict]
+    huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
     muted_stream_ids: List[int]
     unmuted_stream_msgs: Set[int]
@@ -857,7 +871,7 @@ def huddle_users(recipient_id: int) -> str:
 
 
 def aggregate_message_dict(
-    input_dict: Dict[int, Dict[str, Any]], lookup_fields: List[str], collect_senders: bool
+    input_dict: Dict[int, Any], lookup_fields: List[str], collect_senders: bool
 ) -> List[Dict[str, Any]]:
     lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
 
@@ -999,10 +1013,10 @@ def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
 
-    pm_dict: Dict[int, Any] = {}
-    stream_dict: Dict[int, Any] = {}
+    pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
+    stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
-    huddle_dict: Dict[int, Any] = {}
+    huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
     mentions: Set[int] = set()
     total_unreads = 0
 
@@ -1178,12 +1192,11 @@ def apply_unread_message_event(
     if message_type == "stream":
         stream_id = message["stream_id"]
         topic = message[TOPIC_NAME]
-        new_row = dict(
+        state["stream_dict"][message_id] = RawUnreadStreamDict(
             stream_id=stream_id,
             topic=topic,
             sender_id=sender_id,
         )
-        state["stream_dict"][message_id] = new_row
 
         if stream_id not in state["muted_stream_ids"]:
             # This next check hits the database.
@@ -1197,20 +1210,19 @@ def apply_unread_message_event(
             other_id = user_profile.id
 
         # The `sender_id` field here is misnamed.
-        new_row = dict(
+        state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
             sender_id=other_id,
         )
-        state["pm_dict"][message_id] = new_row
 
     else:
         display_recipient = message["display_recipient"]
         user_ids = [obj["id"] for obj in display_recipient]
         user_ids = sorted(user_ids)
         user_ids_string = ",".join(str(uid) for uid in user_ids)
-        new_row = dict(
+
+        state["huddle_dict"][message_id] = RawUnreadHuddleDict(
             user_ids_string=user_ids_string,
         )
-        state["huddle_dict"][message_id] = new_row
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
