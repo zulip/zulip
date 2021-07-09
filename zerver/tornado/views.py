@@ -114,7 +114,8 @@ def get_events_backend(
     handler: AsyncDjangoHandler = tornado_handler
 
     if user_client is None:
-        valid_user_client = request.client
+        valid_user_client = get_request_notes(request).client
+        assert valid_user_client is not None
     else:
         valid_user_client = user_client
 

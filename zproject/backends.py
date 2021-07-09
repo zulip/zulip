@@ -278,7 +278,9 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
 
     request = args[1]
     username = kwargs["username"]
-    if not hasattr(request, "client") or not client_is_exempt_from_rate_limiting(request):
+    if get_request_notes(request).client is None or not client_is_exempt_from_rate_limiting(
+        request
+    ):
         # Django cycles through enabled authentication backends until one succeeds,
         # or all of them fail. If multiple backends are tried like this, we only want
         # to execute rate_limit_authentication_* once, on the first attempt:

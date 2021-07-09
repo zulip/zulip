@@ -37,9 +37,10 @@ def update_message_flags(
     flag: str = REQ(),
 ) -> HttpResponse:
     request_notes = get_request_notes(request)
+    assert request_notes.client is not None
     assert request_notes.log_data is not None
 
-    count = do_update_message_flags(user_profile, request.client, operation, flag, messages)
+    count = do_update_message_flags(user_profile, request_notes.client, operation, flag, messages)
 
     target_count_str = str(len(messages))
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
@@ -50,8 +51,9 @@ def update_message_flags(
 
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    count = do_mark_all_as_read(user_profile, request.client)
     request_notes = get_request_notes(request)
+    assert request_notes.client is not None
+    count = do_mark_all_as_read(user_profile, request_notes.client)
 
     log_data_str = f"[{count} updated]"
     assert request_notes.log_data is not None

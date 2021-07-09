@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.actions import check_send_private_message
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile, get_user
 
@@ -22,5 +22,7 @@ def api_yo_app_webhook(
 ) -> HttpResponse:
     body = f"Yo from {username}"
     receiving_user = get_user(email, user_profile.realm)
-    check_send_private_message(user_profile, request.client, receiving_user, body)
+    client = get_request_notes(request).client
+    assert client is not None
+    check_send_private_message(user_profile, client, receiving_user, body)
     return json_success()

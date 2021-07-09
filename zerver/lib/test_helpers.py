@@ -300,8 +300,6 @@ class HostRequestMock(HttpRequest):
         self.host = host
         self.GET = QueryDict(mutable=True)
         self.method = ""
-        if client_name is not None:
-            self.client = get_client(client_name)
 
         # Convert any integer parameters passed into strings, even
         # though of course the HTTP API would do so.  Ideally, we'd
@@ -322,11 +320,12 @@ class HostRequestMock(HttpRequest):
         self.user = user_profile
         self._body = b""
         self.content_type = ""
-        self.client_name = ""
 
         request_notes_map[self] = ZulipRequestNotes(
+            client_name="",
             log_data={},
             tornado_handler=tornado_handler,
+            client=get_client(client_name) if client_name is not None else None,
         )
 
     @property

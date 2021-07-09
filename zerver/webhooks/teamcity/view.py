@@ -10,7 +10,7 @@ from zerver.lib.actions import (
     check_send_private_message,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -137,7 +137,9 @@ def api_teamcity_webhook(
             return json_success()
 
         body = f"Your personal build for {body}"
-        check_send_private_message(user_profile, request.client, teamcity_user, body)
+        client = get_request_notes(request).client
+        assert client is not None
+        check_send_private_message(user_profile, client, teamcity_user, body)
 
         return json_success()
 

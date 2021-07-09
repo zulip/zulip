@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_list, check_string
 from zerver.models import Stream, UserProfile
@@ -79,9 +79,12 @@ def events_register_backend(
     if client_capabilities is None:
         client_capabilities = {}
 
+    client = get_request_notes(request).client
+    assert client is not None
+
     ret = do_events_register(
         user_profile,
-        request.client,
+        client,
         apply_markdown,
         client_gravatar,
         slim_presence,

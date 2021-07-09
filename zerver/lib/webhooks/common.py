@@ -14,7 +14,7 @@ from zerver.lib.actions import (
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.validator import check_list, check_string
@@ -107,9 +107,11 @@ def check_send_webhook_message(
         ):
             return
 
+    client = get_request_notes(request).client
+    assert client is not None
     if stream is None:
         assert user_profile.bot_owner is not None
-        check_send_private_message(user_profile, request.client, user_profile.bot_owner, body)
+        check_send_private_message(user_profile, client, user_profile.bot_owner, body)
     else:
         # Some third-party websites (such as Atlassian's Jira), tend to
         # double escape their URLs in a manner that escaped space characters
@@ -125,11 +127,9 @@ def check_send_webhook_message(
 
         try:
             if stream.isdecimal():
-                check_send_stream_message_by_id(
-                    user_profile, request.client, int(stream), topic, body
-                )
+                check_send_stream_message_by_id(user_profile, client, int(stream), topic, body)
             else:
-                check_send_stream_message(user_profile, request.client, stream, topic, body)
+                check_send_stream_message(user_profile, client, stream, topic, body)
         except StreamDoesNotExistError:
             # A PM will be sent to the bot_owner by check_message, notifying
             # that the webhook bot just tried to send a message to a non-existent

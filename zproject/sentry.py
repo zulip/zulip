@@ -52,8 +52,8 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
         request = get_current_request()
         if request:
             request_notes = get_request_notes(request)
-            if hasattr(request, "client"):
-                event["tags"]["client"] = request.client.name
+            if request_notes.client is not None:
+                event["tags"]["client"] = request_notes.client.name
             if request_notes.realm is not None:
                 event["tags"].setdefault("realm", request_notes.realm.string_id)
     return event

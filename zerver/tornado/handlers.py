@@ -243,9 +243,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         if request_notes.requestor_for_logs is not None:
             request_notes.requestor_for_logs = old_request_notes.requestor_for_logs
         request.user = old_request.user
-        request.client = old_request.client
-        request.client_name = old_request.client_name
-        request.client_version = old_request.client_version
+        request_notes.client = old_request_notes.client
+        request_notes.client_name = old_request_notes.client_name
+        request_notes.client_version = old_request_notes.client_version
 
         # The saved_response attribute, if present, causes
         # rest_dispatch to return the response immediately before

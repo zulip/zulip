@@ -170,7 +170,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,
-        "platform": request.client_name,
+        "platform": get_request_notes(request).client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
         "default_page_params": default_page_params,

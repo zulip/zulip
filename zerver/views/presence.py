@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from zerver.decorator import human_users_only
 from zerver.lib.actions import do_update_user_status, update_user_presence
 from zerver.lib.presence import get_presence_for_user, get_presence_response
-from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.request import REQ, JsonableError, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
@@ -75,11 +75,13 @@ def update_user_status_backend(
     if (away is None) and (status_text is None):
         raise JsonableError(_("Client did not pass any new values."))
 
+    client = get_request_notes(request).client
+    assert client is not None
     do_update_user_status(
         user_profile=user_profile,
         away=away,
         status_text=status_text,
-        client_id=request.client.id,
+        client_id=client.id,
     )
 
     return json_success()
@@ -99,9 +101,9 @@ def update_active_status_backend(
     if status_val is None:
         raise JsonableError(_("Invalid status: {}").format(status))
     elif user_profile.presence_enabled:
-        update_user_presence(
-            user_profile, request.client, timezone_now(), status_val, new_user_input
-        )
+        client = get_request_notes(request).client
+        assert client is not None
+        update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
         ret: Dict[str, Any] = {}
