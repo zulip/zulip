@@ -273,12 +273,20 @@ def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
             )
         else:
             subschema_count = 1
+
         for subschema_index in range(subschema_count):
             if subschema_count != 1:
                 subschema_status_code = status_code + "_" + str(subschema_index)
             else:
                 subschema_status_code = status_code
             fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
+            if status_code == "200":
+                status_string = "Success"
+            else:
+                status_string = "Error"
+            response_title = fixture_dict.get("code", status_string).replace("_", " ").title()
+            rendered_title = f"<div><h4 class='response-title'>{response_title}</h4><span class='api-field-type'>&ensp;HTTP {status_code} response</span></div>"
+            fixture.append(rendered_title)
             fixture_description = (
                 get_openapi_fixture_description(endpoint, method, subschema_status_code).strip()
                 + ":"
@@ -286,7 +294,6 @@ def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
             fixture_json = json.dumps(
                 fixture_dict, indent=4, sort_keys=True, separators=(",", ": ")
             )
-
             fixture.extend(fixture_description.splitlines())
             fixture.append("``` json")
             fixture.extend(fixture_json.splitlines())

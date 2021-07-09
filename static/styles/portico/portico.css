@@ -1736,6 +1736,10 @@ label.label-title {
     color: hsl(176, 46.4%, 41%);
 }
 
+.response-title {
+    display: inline;
+}
+
 .desktop-redirect-box {
     text-align: center;
 
