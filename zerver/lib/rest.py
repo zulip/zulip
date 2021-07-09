@@ -14,6 +14,7 @@ from zerver.decorator import (
     process_as_post,
 )
 from zerver.lib.exceptions import MissingAuthenticationError
+from zerver.lib.request import get_request_notes
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
@@ -66,11 +67,11 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     etc, as that is where we route HTTP verbs to target functions.
     """
     supported_methods: Dict[str, Any] = {}
-
-    if hasattr(request, "saved_response"):
+    request_notes = get_request_notes(request)
+    if request_notes.saved_response is not None:
         # For completing long-polled Tornado requests, we skip the
         # view function logic and just return the response.
-        return request.saved_response
+        return request_notes.saved_response
 
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
@@ -99,9 +100,9 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             target_function = supported_methods[method_to_use]
             view_flags = set()
 
-        # Set request._query for update_activity_user(), which is called
+        # Set request_notes.query for update_activity_user(), which is called
         # by some of the later wrappers.
-        request._query = target_function.__name__
+        request_notes.query = target_function.__name__
 
         # We want to support authentication by both cookies (web client)
         # and API keys (API clients). In the former case, we want to

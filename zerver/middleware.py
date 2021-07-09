@@ -346,7 +346,7 @@ class LogRequests(MiddlewareMixin):
         if request_notes.log_data is not None:
             # Sanity check to ensure this is being called from the
             # Tornado code path that returns responses asynchronously.
-            assert getattr(request, "saved_response", False)
+            assert request_notes.saved_response is not None
 
             # Avoid re-initializing request_notes.log_data if it's already there.
             return
@@ -363,7 +363,7 @@ class LogRequests(MiddlewareMixin):
         kwargs: Dict[str, Any],
     ) -> None:
         request_notes = get_request_notes(request)
-        if hasattr(request, "saved_response"):
+        if request_notes.saved_response is not None:
             # The below logging adjustments are unnecessary (because
             # we've already imported everything) and incorrect
             # (because they'll overwrite data from pre-long-poll
@@ -458,7 +458,7 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
-        if request.error_format == "JSON":
+        if get_request_notes(request).error_format == "JSON":
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
             json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
@@ -474,9 +474,9 @@ class TagRequests(MiddlewareMixin):
 
     def process_request(self, request: HttpRequest) -> None:
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
-            request.error_format = "JSON"
+            get_request_notes(request).error_format = "JSON"
         else:
-            request.error_format = "HTML"
+            get_request_notes(request).error_format = "HTML"
 
 
 class CsrfFailureError(JsonableError):
@@ -493,7 +493,7 @@ class CsrfFailureError(JsonableError):
 
 
 def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
-    if request.error_format == "JSON":
+    if get_request_notes(request).error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
@@ -516,9 +516,10 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
         # An additional responsibility of our override of this middleware is to save the user's language
         # preference in a cookie. That determination is made by code handling the request
-        # and saved in the _set_language flag so that it can be used here.
-        if hasattr(request, "_set_language"):
-            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request._set_language)
+        # and saved in the set_language flag so that it can be used here.
+        set_language = get_request_notes(request).set_language
+        if set_language is not None:
+            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, set_language)
 
         return response
 
@@ -611,8 +612,12 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
 
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
+    placeholder_open_graph_description = get_request_notes(
+        request
+    ).placeholder_open_graph_description
+    assert placeholder_open_graph_description is not None
     return content.replace(
-        request.placeholder_open_graph_description.encode("utf-8"),
+        placeholder_open_graph_description.encode("utf-8"),
         first_paragraph_text.encode("utf-8"),
     )
 
@@ -622,7 +627,7 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
         self, request: HttpRequest, response: StreamingHttpResponse
     ) -> StreamingHttpResponse:
 
-        if getattr(request, "placeholder_open_graph_description", None) is not None:
+        if get_request_notes(request).placeholder_open_graph_description is not None:
             assert not response.streaming
             response.content = alter_content(request, response.content)
         return response

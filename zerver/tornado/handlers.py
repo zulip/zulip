@@ -250,7 +250,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # request/middleware system to run unmodified while avoiding
         # running expensive things like Zulip's authentication code a
         # second time.
-        request.saved_response = json_response(
+        request_notes.saved_response = json_response(
             res_type=result_dict["result"], data=result_dict, status=self.get_status()
         )
 

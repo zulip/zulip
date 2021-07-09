@@ -84,10 +84,11 @@ def update_user_activity(
     if request.META["PATH_INFO"] == "/json/users/me/presence":
         return
 
+    request_notes = get_request_notes(request)
     if query is not None:
         pass
-    elif hasattr(request, "_query"):
-        query = request._query
+    elif request_notes.query is not None:
+        query = request_notes.query
     else:
         query = request.META["PATH_INFO"]
 
@@ -112,7 +113,7 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
                 request.path,
                 extra={"status_code": 405, "request": request},
             )
-            if request.error_format == "JSON":
+            if get_request_notes(request).error_format == "JSON":
                 return json_method_not_allowed(["POST"])
             else:
                 return TemplateResponse(
@@ -442,7 +443,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
 def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
-        request._query = view_func.__name__
+        get_request_notes(request).query = view_func.__name__
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
