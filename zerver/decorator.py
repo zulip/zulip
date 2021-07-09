@@ -39,7 +39,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimited, RateLimitedIPAddr, RateLimitedUser
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -432,7 +432,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Log in with two factor authentication as well.
@@ -815,7 +815,8 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
                 raise RuntimeError("Tornado notify view called with no Tornado handler")
             if not is_tornado_view and is_tornado_request:
                 raise RuntimeError("Django notify view called with Tornado handler")
-            request._requestor_for_logs = "internal"
+            request_notes = get_request_notes(request)
+            request_notes.requestor_for_logs = "internal"
             return view_func(request, *args, **kwargs)
 
         return _wrapped_func_arguments

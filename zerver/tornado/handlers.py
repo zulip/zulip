@@ -237,8 +237,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         request_notes.log_data = old_request_notes.log_data
         if request_notes.rate_limit is not None:
             request_notes.rate_limit = old_request_notes.rate_limit
-        if hasattr(request, "_requestor_for_logs"):
-            request._requestor_for_logs = old_request._requestor_for_logs
+        if request_notes.requestor_for_logs is not None:
+            request_notes.requestor_for_logs = old_request_notes.requestor_for_logs
         request.user = old_request.user
         request.client = old_request.client
         request.client_name = old_request.client_name

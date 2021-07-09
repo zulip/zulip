@@ -53,7 +53,7 @@ from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.request import REQ, JsonableError, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
@@ -354,7 +354,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     return response
 
@@ -859,7 +859,7 @@ def api_fetch_api_key(
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

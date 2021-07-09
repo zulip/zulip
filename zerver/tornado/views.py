@@ -50,7 +50,7 @@ def get_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, client_name="internal")
     return get_events_backend(request, user_profile)
 
