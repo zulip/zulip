@@ -1,7 +1,6 @@
 class zulip_ops::profile::nagios {
   include zulip_ops::profile::base
   include zulip_ops::apache
-  include zulip::nagios
 
   $nagios_packages = [# Packages needed for Nagios
                       'nagios3',
