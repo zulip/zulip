@@ -628,6 +628,21 @@ def has_application_server(once: bool = False) -> bool:
     )
 
 
+def list_supervisor_processes(*args: str) -> List[str]:
+    worker_status = subprocess.run(
+        ["supervisorctl", "status", *args],
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+    )
+    # `supercisorctl status` returns 3 if any are stopped, which is fine here.
+    if worker_status.returncode not in (0, 3):
+        worker_status.check_returncode()
+
+    processes = []
+    for status_line in worker_status.stdout.splitlines():
+        processes.append(status_line.split()[0])
+    return processes
+
 def has_process_fts_updates() -> bool:
     return (
         # Current path
