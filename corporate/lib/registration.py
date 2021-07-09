@@ -64,7 +64,7 @@ def send_user_unable_to_signup_message_to_signup_notification_stream(
     )
 
     send_message_to_signup_notification_stream(
-        get_system_bot(settings.NOTIFICATION_BOT), realm, message
+        get_system_bot(settings.NOTIFICATION_BOT, realm.id), realm, message
     )
 
 
