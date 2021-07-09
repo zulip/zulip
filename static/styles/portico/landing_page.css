@@ -2206,6 +2206,10 @@ nav {
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px 50px;
 
+    &.empty-hero {
+        padding: 50px 50px 70px 50px;
+    }
+
     background-color: hsl(153, 32%, 55%);
     color: hsl(0, 0%, 100%);
 }

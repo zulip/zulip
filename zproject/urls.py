@@ -627,6 +627,7 @@ i18n_urls = [
     path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
+    path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path(
         "for/working-groups-and-communities/",
         landing_view,
