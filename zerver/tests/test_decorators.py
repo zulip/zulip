@@ -135,11 +135,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> int:
             return x + x
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         request.POST = dict(bogus="5555")
         with self.assertRaises(RequestVariableMissingError):
@@ -174,11 +170,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> int:
             return sum(numbers)
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)
@@ -209,11 +201,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> int:
             return sum(numbers)
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)
@@ -239,11 +227,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> str:
             return value[1:-1]
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         with self.assertRaises(RequestVariableMissingError):
             get_middle_characters(request)
@@ -577,17 +561,12 @@ class RateLimitTestCase(ZulipTestCase):
         return mock.patch("logging.error", side_effect=TestLoggingErrorException)
 
     def test_internal_local_clients_skip_rate_limiting(self) -> None:
-        class Client:
-            name = "internal"
+        META = {"REMOTE_ADDR": "127.0.0.1"}
+        user = AnonymousUser()
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "127.0.0.1"}
-            user = AnonymousUser()
+        request = HostRequestMock(client_name="internal", user_profile=user, meta_data=META)
 
-        req = Request()
-
-        def f(req: Any) -> str:
+        def f(request: Any) -> str:
             return "some value"
 
         f = rate_limit()(f)
@@ -596,21 +575,16 @@ class RateLimitTestCase(ZulipTestCase):
                 "zerver.decorator.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
-                    self.assertEqual(f(req), "some value")
+                    self.assertEqual(f(request), "some value")
 
         self.assertFalse(rate_limit_ip_mock.called)
         self.assertFalse(rate_limit_user_mock.called)
 
     def test_debug_clients_skip_rate_limiting(self) -> None:
-        class Client:
-            name = "internal"
+        META = {"REMOTE_ADDR": "3.3.3.3"}
+        user = AnonymousUser()
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "3.3.3.3"}
-            user = AnonymousUser()
-
-        req = Request()
+        req = HostRequestMock(client_name="internal", user_profile=user, meta_data=META)
 
         def f(req: Any) -> str:
             return "some value"
@@ -628,15 +602,10 @@ class RateLimitTestCase(ZulipTestCase):
         self.assertFalse(rate_limit_user_mock.called)
 
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self) -> None:
-        class Client:
-            name = "external"
+        META = {"REMOTE_ADDR": "3.3.3.3"}
+        user = self.example_user("hamlet")
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "3.3.3.3"}
-            user = self.example_user("hamlet")
-
-        req = Request()
+        req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
 
         def f(req: Any) -> str:
             return "some value"
@@ -653,15 +622,10 @@ class RateLimitTestCase(ZulipTestCase):
         self.assertFalse(rate_limit_user_mock.called)
 
     def test_rate_limiting_happens_in_normal_case(self) -> None:
-        class Client:
-            name = "external"
+        META = {"REMOTE_ADDR": "3.3.3.3"}
+        user = self.example_user("hamlet")
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "3.3.3.3"}
-            user = self.example_user("hamlet")
-
-        req = Request()
+        req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
 
         def f(req: Any) -> str:
             return "some value"
@@ -683,16 +647,9 @@ class RateLimitTestCase(ZulipTestCase):
             hostname="demo.example.com",
             last_updated=timezone_now(),
         )
+        META = {"REMOTE_ADDR": "3.3.3.3"}
 
-        class Client:
-            name = "external"
-
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "3.3.3.3"}
-            user = server
-
-        req = Request()
+        req = HostRequestMock(client_name="external", user_profile=server, meta_data=META)
 
         def f(req: Any) -> str:
             return "some value"
@@ -706,15 +663,10 @@ class RateLimitTestCase(ZulipTestCase):
         self.assertTrue(rate_limit_mock.called)
 
     def test_rate_limiting_happens_by_ip_if_unauthed(self) -> None:
-        class Client:
-            name = "external"
+        META = {"REMOTE_ADDR": "3.3.3.3"}
+        user = AnonymousUser()
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "3.3.3.3"}
-            user = AnonymousUser()
-
-        req = Request()
+        req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
 
         def f(req: Any) -> str:
             return "some value"
@@ -1510,21 +1462,16 @@ class TestValidateApiKey(ZulipTestCase):
 class TestInternalNotifyView(ZulipTestCase):
     BORING_RESULT = "boring"
 
-    class Request:
-        def __init__(self, POST: Dict[str, Any], META: Dict[str, Any]) -> None:
-            self.POST = POST
-            self.META = META
-            self.method = "POST"
-
     def internal_notify(self, is_tornado: bool, req: HttpRequest) -> HttpResponse:
         boring_view = lambda req: self.BORING_RESULT
         return internal_notify_view(is_tornado)(boring_view)(req)
 
     def test_valid_internal_requests(self) -> None:
         secret = "random"
-        request: HttpRequest = self.Request(
-            POST=dict(secret=secret),
-            META=dict(REMOTE_ADDR="127.0.0.1"),
+        request = HostRequestMock(
+            post_data=dict(secret=secret),
+            meta_data=dict(REMOTE_ADDR="127.0.0.1"),
+            tornado_handler=None,
         )
 
         with self.settings(SHARED_SECRET=secret):
@@ -1546,28 +1493,28 @@ class TestInternalNotifyView(ZulipTestCase):
 
     def test_internal_requests_with_broken_secret(self) -> None:
         secret = "random"
-        req = self.Request(
-            POST=dict(secret=secret),
-            META=dict(REMOTE_ADDR="127.0.0.1"),
+        request = HostRequestMock(
+            post_data=dict(secret=secret),
+            meta_data=dict(REMOTE_ADDR="127.0.0.1"),
         )
 
         with self.settings(SHARED_SECRET="broken"):
-            self.assertFalse(authenticate_notify(req))
+            self.assertFalse(authenticate_notify(request))
             with self.assertRaises(AccessDeniedError) as context:
-                self.internal_notify(True, req)
+                self.internal_notify(True, request)
             self.assertEqual(context.exception.http_status_code, 403)
 
     def test_external_requests(self) -> None:
         secret = "random"
-        req = self.Request(
-            POST=dict(secret=secret),
-            META=dict(REMOTE_ADDR="3.3.3.3"),
+        request = HostRequestMock(
+            post_data=dict(secret=secret),
+            meta_data=dict(REMOTE_ADDR="3.3.3.3"),
         )
 
         with self.settings(SHARED_SECRET=secret):
-            self.assertFalse(authenticate_notify(req))
+            self.assertFalse(authenticate_notify(request))
             with self.assertRaises(AccessDeniedError) as context:
-                self.internal_notify(True, req)
+                self.internal_notify(True, request)
             self.assertEqual(context.exception.http_status_code, 403)
 
     def test_is_local_address(self) -> None:
@@ -1808,32 +1755,32 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         def test_view(request: HttpRequest) -> HttpResponse:
             return HttpResponse("Success")
 
-        request = HttpRequest()
-        request.META["SERVER_NAME"] = "localhost"
-        request.META["SERVER_PORT"] = 80
-        request.META["PATH_INFO"] = ""
-        request.user = hamlet = self.example_user("hamlet")
-        request.user.is_verified = lambda: False
-        request.client_name = ""
+        meta_data = {
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": 80,
+            "PATH_INFO": "",
+        }
+        user = hamlet = self.example_user("hamlet")
+        user.is_verified = lambda: False
         self.login_user(hamlet)
+        request = HostRequestMock(
+            client_name="", user_profile=user, meta_data=meta_data, host="zulip.testserver"
+        )
         request.session = self.client.session
-        request.get_host = lambda: "zulip.testserver"
 
         response = test_view(request)
         content = getattr(response, "content")
         self.assertEqual(content.decode(), "Success")
 
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
-            request = HttpRequest()
-            request.META["SERVER_NAME"] = "localhost"
-            request.META["SERVER_PORT"] = 80
-            request.META["PATH_INFO"] = ""
-            request.user = hamlet = self.example_user("hamlet")
-            request.user.is_verified = lambda: False
-            request.client_name = ""
+            user = hamlet = self.example_user("hamlet")
+            user.is_verified = lambda: False
             self.login_user(hamlet)
+            request = HostRequestMock(
+                client_name="", user_profile=user, meta_data=meta_data, host="zulip.testserver"
+            )
             request.session = self.client.session
-            request.get_host = lambda: "zulip.testserver"
+            assert type(request.user) is UserProfile
             self.create_default_device(request.user)
 
             response = test_view(request)
@@ -1851,16 +1798,19 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             return HttpResponse("Success")
 
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
-            request = HttpRequest()
-            request.META["SERVER_NAME"] = "localhost"
-            request.META["SERVER_PORT"] = 80
-            request.META["PATH_INFO"] = ""
-            request.user = hamlet = self.example_user("hamlet")
-            request.user.is_verified = lambda: True
-            request.client_name = ""
+            meta_data = {
+                "SERVER_NAME": "localhost",
+                "SERVER_PORT": 80,
+                "PATH_INFO": "",
+            }
+            user = hamlet = self.example_user("hamlet")
+            user.is_verified = lambda: True
             self.login_user(hamlet)
+            request = HostRequestMock(
+                client_name="", user_profile=user, meta_data=meta_data, host="zulip.testserver"
+            )
             request.session = self.client.session
-            request.get_host = lambda: "zulip.testserver"
+            assert type(request.user) is UserProfile
             self.create_default_device(request.user)
 
             response = test_view(request)

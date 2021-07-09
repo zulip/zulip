@@ -5,10 +5,10 @@ from unittest import mock
 from django.db import IntegrityError
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import create_mirror_user_if_needed, get_client
+from zerver.lib.actions import create_mirror_user_if_needed
 from zerver.lib.create_user import create_user_profile
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from zerver.lib.test_helpers import HostRequestMock, reset_emails_in_zulip_realm
 from zerver.models import UserProfile, get_realm, get_user
 from zerver.views.message_send import InvalidMirrorInput, create_mirrored_message_users
 
@@ -25,15 +25,13 @@ class MirroredMessageUsersTest(ZulipTestCase):
             create_mirrored_message_users(request, user, recipients)
 
     def test_invalid_client(self) -> None:
-        client = get_client(name="banned_mirror")  # Invalid!!!
-
         user = self.example_user("hamlet")
         sender = user
 
         recipients: List[str] = []
 
-        Request = namedtuple("Request", ["POST", "client"])
-        request = Request(POST=dict(sender=sender.email, type="private"), client=client)
+        post_data = dict(sender=sender.email, type="private")
+        request = HostRequestMock(post_data=post_data, client_name="banned_mirror")
 
         with self.assertRaises(InvalidMirrorInput):
             create_mirrored_message_users(request, user, recipients)
@@ -46,12 +44,10 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.mit_user("starnine")
         sender = user
 
-        Request = namedtuple("Request", ["POST", "client"])
+        post_data = dict(sender=sender.email, type="private")
 
         for client_name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]:
-            client = get_client(name=client_name)
-
-            request = Request(POST=dict(sender=sender.email, type="private"), client=client)
+            request = HostRequestMock(post_data=post_data, client_name=client_name)
 
             with self.assertRaises(InvalidMirrorInput):
                 create_mirrored_message_users(request, user, recipients)
@@ -62,8 +58,6 @@ class MirroredMessageUsersTest(ZulipTestCase):
     )
     def test_zephyr_mirror_new_recipient(self, ignored: object) -> None:
         """Test mirror dummy user creation for PM recipients"""
-        client = get_client(name="zephyr_mirror")
-
         user = self.mit_user("starnine")
         sender = self.mit_user("sipbtest")
         new_user_email = "bob_the_new_user@mit.edu"
@@ -72,8 +66,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         recipients = [user.email, new_user_email]
 
         # Now make the request.
-        Request = namedtuple("Request", ["POST", "client"])
-        request = Request(POST=dict(sender=sender.email, type="private"), client=client)
+        post_data = dict(sender=sender.email, type="private")
+        request = HostRequestMock(post_data=post_data, client_name="zephyr_mirror")
 
         mirror_sender = create_mirrored_message_users(request, user, recipients)
 
@@ -93,16 +87,14 @@ class MirroredMessageUsersTest(ZulipTestCase):
     )
     def test_zephyr_mirror_new_sender(self, ignored: object) -> None:
         """Test mirror dummy user creation for sender when sending to stream"""
-        client = get_client(name="zephyr_mirror")
-
         user = self.mit_user("starnine")
         sender_email = "new_sender@mit.edu"
 
         recipients = ["stream_name"]
 
         # Now make the request.
-        Request = namedtuple("Request", ["POST", "client"])
-        request = Request(POST=dict(sender=sender_email, type="stream"), client=client)
+        post_data = dict(sender=sender_email, type="stream")
+        request = HostRequestMock(post_data=post_data, client_name="zephyr_mirror")
 
         mirror_sender = create_mirrored_message_users(request, user, recipients)
 
@@ -112,7 +104,6 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
     def test_irc_mirror(self) -> None:
         reset_emails_in_zulip_realm()
-        client = get_client(name="irc_mirror")
 
         sender = self.example_user("hamlet")
 
@@ -123,8 +114,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         ]
 
         # Now make the request.
-        Request = namedtuple("Request", ["POST", "client"])
-        request = Request(POST=dict(sender=sender.email, type="private"), client=client)
+        post_data = dict(sender=sender.email, type="private")
+        request = HostRequestMock(post_data=post_data, client_name="irc_mirror")
 
         mirror_sender = create_mirrored_message_users(request, sender, recipients)
 
@@ -140,7 +131,6 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
     def test_jabber_mirror(self) -> None:
         reset_emails_in_zulip_realm()
-        client = get_client(name="jabber_mirror")
 
         sender = self.example_user("hamlet")
         user = sender
@@ -152,8 +142,8 @@ class MirroredMessageUsersTest(ZulipTestCase):
         ]
 
         # Now make the request.
-        Request = namedtuple("Request", ["POST", "client"])
-        request = Request(POST=dict(sender=sender.email, type="private"), client=client)
+        post_data = dict(sender=sender.email, type="private")
+        request = HostRequestMock(post_data=post_data, client_name="jabber_mirror")
 
         mirror_sender = create_mirrored_message_users(request, user, recipients)
 
