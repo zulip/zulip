@@ -1775,11 +1775,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/zxcvbn@^4.4.1":
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/@types/zxcvbn/-/zxcvbn-4.4.1.tgz#46e42cbdcee681b22181478feaf4af2bc4c1abd2"
-  integrity sha512-3NoqvZC2W5gAC5DZbTpCeJ251vGQmgcWIHQJGq2J240HY6ErQ9aWKkwfoKJlHLx+A83WPNTZ9+3cd2ILxbvr1w==
-
 "@typescript-eslint/eslint-plugin@^4.0.1":
   version "4.28.2"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-4.28.2.tgz#7a8320f00141666813d0ae43b49ee8244f7cf92a"
@@ -2150,6 +2145,21 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz#e77a97fbd345b76d83245edcd17d393b1b41fb31"
   integrity sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==
+
+"@zxcvbn-ts/core@^1.0.0-beta.0":
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@zxcvbn-ts/core/-/core-1.0.0-beta.0.tgz#a616beacb83dbfe9174408ebabee746f3468b0ec"
+  integrity sha512-E2rHy2jrCDzJ62xqY5KteOHR+y7uPqL6FLUPVCDZmeYrAZRgB+CpO0QIQKLVrxwssx0YhApmE23eHmouce+OUA==
+
+"@zxcvbn-ts/language-common@^1.0.0-beta.0":
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@zxcvbn-ts/language-common/-/language-common-1.0.0-beta.0.tgz#ba0a78c79592d8a398e87943a06f857e146b932e"
+  integrity sha512-o77ywgJIhZBQZBzqES4xUTwklQtxZn5naOl/M4m7vuS8hRbduMEoKM0bt4F/zU8Qi4hQBanN91Ln6PswmSyuMw==
+
+"@zxcvbn-ts/language-en@^1.0.0-beta.0":
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@zxcvbn-ts/language-en/-/language-en-1.0.0-beta.0.tgz#ec188cb6dbb6b6884eca3c300d5c2d445cf0f4df"
+  integrity sha512-e3qqFlf/sJJLO73Z1roFc6maAg4gVUth4B5nWNIY4U5vc2oJ9J/raOjfOb7XZijAZWU1sN2TdV84l7JZ/lPLzg==
 
 a-big-triangle@^1.0.3:
   version "1.0.3"
@@ -14834,8 +14844,3 @@ zwitch@^1.0.0:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/zwitch/-/zwitch-1.0.5.tgz#d11d7381ffed16b742f6af7b3f223d5cd9fe9920"
   integrity sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==
-
-zxcvbn@^4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/zxcvbn/-/zxcvbn-4.4.2.tgz#28ec17cf09743edcab056ddd8b1b06262cc73c30"
-  integrity sha1-KOwXzwl0PtyrBW3dixsGJizHPDA=

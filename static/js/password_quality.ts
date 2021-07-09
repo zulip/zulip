@@ -1,6 +1,16 @@
-import zxcvbn from "zxcvbn";
+import {ZxcvbnOptions, zxcvbn} from "@zxcvbn-ts/core";
+import zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
+import zxcvbnEnPackage from "@zxcvbn-ts/language-en";
 
 import {$t} from "./i18n";
+
+ZxcvbnOptions.setOptions({
+    translations: zxcvbnEnPackage.translations,
+    dictionary: {
+        ...zxcvbnCommonPackage.dictionary,
+        ...zxcvbnEnPackage.dictionary,
+    },
+});
 
 // Note: this module is loaded asynchronously from the app with
 // import() to keep zxcvbn out of the initial page load.  Do not
@@ -21,7 +31,7 @@ export function password_quality(
     const acceptable = password.length >= min_length && result.guesses >= min_guesses;
 
     if (bar !== undefined) {
-        const t = Number(result.crack_times_seconds.offline_slow_hashing_1e4_per_second);
+        const t = result.crackTimesSeconds.offlineSlowHashing1e4PerSecond;
         let bar_progress = Math.min(1, Math.log(1 + t) / 22);
 
         // Even if zxcvbn loves your short password, the bar should be
