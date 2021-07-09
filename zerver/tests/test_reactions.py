@@ -104,11 +104,11 @@ class ReactionEmojiTest(ZulipTestCase):
                 "emoji_code": "1f642",
                 "reaction_type": "unicode_emoji",
                 "user": {
-                    "email": "user10@zulip.testserver",
-                    "id": 10,
+                    "email": f"user{sender.id}@zulip.testserver",
+                    "id": sender.id,
                     "full_name": "King Hamlet",
                 },
-                "user_id": 10,
+                "user_id": sender.id,
             }
         ]
         self.assertEqual(expected_reaction_data, message["reactions"])
