@@ -41,7 +41,7 @@ security:
 paths:
   /fetch_api_key:
     post:
-      operationId: fetch_api_key
+      operationId: fetch-api-key
       summary: Fetch an API key (production)
       tags: ["authentication"]
       description: |
@@ -101,7 +101,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /dev_fetch_api_key:
     post:
-      operationId: dev_fetch_api_key
+      operationId: dev-fetch-api-key
       summary: Fetch an API key (development only)
       tags: ["authentication"]
       description: |
@@ -137,7 +137,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /events:
     get:
-      operationId: get_events
+      operationId: get-events
       summary: Get events from an event queue
       tags: ["real_time_events"]
       description: |
@@ -3883,7 +3883,7 @@ paths:
 
                       The following is the error response in such case
     delete:
-      operationId: delete_queue
+      operationId: delete-queue
       summary: Delete an event queue
       tags: ["real_time_events"]
       description: |
@@ -3913,7 +3913,7 @@ paths:
                       associated queue has already been deleted
   /get_stream_id:
     get:
-      operationId: get_stream_id
+      operationId: get-stream-id
       summary: Get stream ID
       tags: ["streams"]
       description: |
@@ -3963,7 +3963,7 @@ paths:
                     description: An example JSON response for when the supplied stream does not exist
   /mark_all_as_read:
     post:
-      operationId: mark_all_as_read
+      operationId: mark-all-as-read
       summary: Mark all messages as read
       tags: ["messages"]
       description: |
@@ -3981,7 +3981,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /mark_stream_as_read:
     post:
-      operationId: mark_stream_as_read
+      operationId: mark-stream-as-read
       summary: Mark messages in a stream as read
       tags: ["messages"]
       description: |
@@ -4006,7 +4006,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /mark_topic_as_read:
     post:
-      operationId: mark_topic_as_read
+      operationId: mark-topic-as-read
       summary: Mark messages in a topic as read
       tags: ["messages"]
       description: |
@@ -4039,7 +4039,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /attachments:
     get:
-      operationId: get_attachments
+      operationId: get-attachments
       summary: Get attachments
       tags: ["users"]
       description: |
@@ -4094,7 +4094,7 @@ paths:
                       }
   /messages:
     get:
-      operationId: get_messages
+      operationId: get-messages
       summary: Get messages
       tags: ["messages"]
       description: |
@@ -4350,7 +4350,7 @@ paths:
                           ],
                       }
     post:
-      operationId: send_message
+      operationId: send-message
       summary: Send a message
       tags: ["messages"]
       description: |
@@ -4474,7 +4474,7 @@ paths:
                           that does not exist
   /messages/{message_id}/history:
     get:
-      operationId: get_message_history
+      operationId: get-message-history
       summary: Get a message's edit history
       tags: ["messages"]
       description: |
@@ -4595,7 +4595,7 @@ paths:
                   - description: An example JSON response for when the specified message does not exist
   /messages/flags:
     post:
-      operationId: update_message_flags
+      operationId: update-message-flags
       summary: Update personal message flags
       tags: ["messages"]
       description: |
@@ -4735,7 +4735,7 @@ paths:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
   /messages/render:
     post:
-      operationId: render_message
+      operationId: render-message
       summary: Render message
       tags: ["messages"]
       description: |
@@ -4769,7 +4769,7 @@ paths:
                       }
   /messages/{message_id}/reactions:
     post:
-      operationId: add_reaction
+      operationId: add-reaction
       summary: Add an emoji reaction
       tags: ["messages"]
       description: |
@@ -4820,7 +4820,7 @@ paths:
                     description: An example JSON error response for when the emoji code is invalid
 
     delete:
-      operationId: remove_reaction
+      operationId: remove-reaction
       summary: Remove an emoji reaction
       tags: ["messages"]
       description: |
@@ -4870,7 +4870,7 @@ paths:
                     description: An example JSON error response for when the emoji code is invalid
   /messages/matches_narrow:
     get:
-      operationId: check_messages_match_narrow
+      operationId: check-messages-match-narrow
       summary: Check if messages match a narrow
       tags: ["messages"]
       description: |
@@ -4968,7 +4968,7 @@ paths:
                       }
   /messages/{message_id}:
     get:
-      operationId: get_raw_message
+      operationId: get-raw-message
       summary: Get a message's raw Markdown
       tags: ["messages"]
       description: |
@@ -5017,7 +5017,7 @@ paths:
                       is not visible to the user making the query (e.g. it was a PM between other
                       two users)
     patch:
-      operationId: update_message
+      operationId: update-message
       summary: Edit a message
       tags: ["messages"]
       description: |
@@ -5148,7 +5148,7 @@ paths:
                       A typical JSON response for when one doesn't have the permission to
                       edit a particular message
     delete:
-      operationId: delete_message
+      operationId: delete-message
       summary: Delete a message
       tags: ["messages"]
       description: |
@@ -5195,7 +5195,7 @@ paths:
                           }
   /user_uploads:
     post:
-      operationId: upload_file
+      operationId: upload-file
       summary: Upload a file
       tags: ["messages"]
       description: |
@@ -5258,7 +5258,7 @@ paths:
                       }
   /user_uploads/{realm_id_str}/{filename}:
     get:
-      operationId: get_file_temporary_url
+      operationId: get-file-temporary-url
       summary: Get public temporary URL
       tags: ["messages"]
       description: |
@@ -5307,7 +5307,7 @@ paths:
 
   /users:
     get:
-      operationId: get_users
+      operationId: get-users
       summary: Get all users
       tags: ["users"]
       description: |
@@ -5434,7 +5434,7 @@ paths:
                           ],
                       }
     post:
-      operationId: create_user
+      operationId: create-user
       summary: Create a user
       tags: ["users"]
       description: |
@@ -5506,7 +5506,7 @@ paths:
                       email address already exists in the realm
   /users/{user_id}/reactivate:
     post:
-      operationId: reactivate_user
+      operationId: reactivate-user
       summary: Reactivate a user
       tags: ["users"]
       x-requires-administrator: true
@@ -5531,7 +5531,7 @@ paths:
 
   /users/{user_id_or_email}/presence:
     get:
-      operationId: get_user_presence
+      operationId: get-user-presence
       summary: Get user presence
       tags: ["users"]
       description: |
@@ -5620,7 +5620,7 @@ paths:
                       }
   /users/me:
     get:
-      operationId: get_own_user
+      operationId: get-own-user
       summary: Get own user
       tags: ["users"]
       description: |
@@ -5814,7 +5814,7 @@ paths:
                           },
                       }
     delete:
-      operationId: deactivate_own_user
+      operationId: deactivate-own-user
       summary: Deactivate own user
       tags: ["users"]
       description: |
@@ -5851,7 +5851,7 @@ paths:
                       organization owner in an organization
   /users/me/{stream_id}/topics:
     get:
-      operationId: get_stream_topics
+      operationId: get-stream-topics
       summary: Get topics in a stream
       tags: ["streams"]
       description: |
@@ -5918,7 +5918,7 @@ paths:
                       of a non-existing stream (or also a private stream they don't have access to)
   /users/me/subscriptions:
     get:
-      operationId: get_subscriptions
+      operationId: get-subscriptions
       summary: Get subscribed streams
       tags: ["streams"]
       description: |
@@ -6147,7 +6147,7 @@ paths:
                           A typical response for when the requesting user does not have access to
                           a private stream and `authorization_errors_fatal` is `False`
     patch:
-      operationId: update_subscriptions
+      operationId: update-subscriptions
       summary: Update subscriptions
       tags: ["streams"]
       description: |
@@ -6346,7 +6346,7 @@ paths:
                   - description: A typical failed JSON response for when the target stream does not exist
   /users/me/subscriptions/muted_topics:
     patch:
-      operationId: mute_topic
+      operationId: mute-topic
       summary: Topic muting
       tags: ["streams"]
       description: |
@@ -6430,7 +6430,7 @@ paths:
                           topic that had not been previously muted
   /users/me/muted_users/{muted_user_id}:
     post:
-      operationId: mute_user
+      operationId: mute-user
       summary: Mute a user
       tags: ["users"]
       description: |
@@ -6496,7 +6496,7 @@ paths:
                           {"msg": "User already muted", "result": "error"}
                         description: An example JSON response for when the user is already muted
     delete:
-      operationId: unmute_user
+      operationId: unmute-user
       summary: Unmute a user
       tags: ["users"]
       description: |
@@ -6534,7 +6534,7 @@ paths:
 
   /users/{user_id}/subscriptions/{stream_id}:
     get:
-      operationId: get_subscription_status
+      operationId: get-subscription-status
       summary: Get subscription status
       tags: ["streams"]
       description: |
@@ -6568,7 +6568,7 @@ paths:
                       {"msg": "", "result": "success", "is_subscribed": false}
   /realm/emoji/{emoji_name}:
     post:
-      operationId: upload_custom_emoji
+      operationId: upload-custom-emoji
       summary: Upload custom emoji
       tags: ["server_and_organizations"]
       description: |
@@ -6624,7 +6624,7 @@ paths:
 
   /realm/emoji:
     get:
-      operationId: get_custom_emoji
+      operationId: get-custom-emoji
       summary: Get all custom emoji
       tags: ["server_and_organizations"]
       description: |
@@ -6669,7 +6669,7 @@ paths:
                       }
   /realm/profile_fields:
     get:
-      operationId: get_custom_profile_fields
+      operationId: get-custom-profile-fields
       summary: Get all custom profile fields
       tags: ["server_and_organizations"]
       description: |
@@ -6770,7 +6770,7 @@ paths:
                           ],
                       }
     patch:
-      operationId: reorder_custom_profile_fields
+      operationId: reorder-custom-profile-fields
       summary: Reorder custom profile fields
       tags: ["server_and_organizations"]
       description: |
@@ -6808,7 +6808,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - $ref: "#/components/schemas/SuccessDescription"
     post:
-      operationId: create_custom_profile_field
+      operationId: create-custom-profile-field
       summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
@@ -6892,7 +6892,7 @@ paths:
                     example: {"result": "success", "msg": "", "id": 9}
   /users/me/subscriptions/properties:
     post:
-      operationId: update_subscription_settings
+      operationId: update-subscription-settings
       summary: Update subscription settings
       tags: ["streams"]
       description: |
@@ -7029,7 +7029,7 @@ paths:
                       }
   /users/{email}:
     get:
-      operationId: get_user_by_email
+      operationId: get-user-by-email
       summary: Get a user by email
       tags: ["users"]
       description: |
@@ -7133,7 +7133,7 @@ paths:
                       }
   /users/{user_id}:
     get:
-      operationId: get_user
+      operationId: get-user
       summary: Get a user
       tags: ["users"]
       description: |
@@ -7222,7 +7222,7 @@ paths:
                           },
                       }
     patch:
-      operationId: update_user
+      operationId: update-user
       summary: Update a user
       tags: ["users"]
       x-requires-administrator: true
@@ -7303,7 +7303,7 @@ paths:
                     description: A typical unsuccessful JSON response
 
     delete:
-      operationId: deactivate_user
+      operationId: deactivate-user
       summary: Deactivate a user
       tags: ["users"]
       x-requires-administrator: true
@@ -7342,7 +7342,7 @@ paths:
                       organization owner in an organization
   /realm/linkifiers:
     get:
-      operationId: get_linkifiers
+      operationId: get-linkifiers
       summary: Get linkifiers
       tags: ["server_and_organizations"]
       description: |
@@ -7405,7 +7405,7 @@ paths:
                       }
   /realm/filters:
     post:
-      operationId: add_linkifier
+      operationId: add-linkifier
       summary: Add a linkifier
       tags: ["server_and_organizations"]
       description: |
@@ -7437,7 +7437,7 @@ paths:
                     example: {"id": 42, "result": "success", "msg": ""}
   /realm/filters/{filter_id}:
     delete:
-      operationId: remove_linkifier
+      operationId: remove-linkifier
       summary: Remove a linkifier
       tags: ["server_and_organizations"]
       description: |
@@ -7465,7 +7465,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - $ref: "#/components/schemas/SuccessDescription"
     patch:
-      operationId: update_linkifier
+      operationId: update-linkifier
       summary: Update a linkifier
       tags: ["server_and_organizations"]
       description: |
@@ -7498,7 +7498,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /realm/playgrounds:
     post:
-      operationId: add_code_playground
+      operationId: add-code-playground
       summary: Add a code playground
       tags: ["server_and_organizations"]
       description: |
@@ -7556,7 +7556,7 @@ paths:
                     example: {"id": 1, "result": "success", "msg": ""}
   /realm/playgrounds/{playground_id}:
     delete:
-      operationId: remove_code_playground
+      operationId: remove-code-playground
       summary: Remove a code playground
       tags: ["server_and_organizations"]
       description: |
@@ -7586,7 +7586,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /register:
     post:
-      operationId: register_queue
+      operationId: register-queue
       summary: Register an event queue
       tags: ["real_time_events"]
       description: |
@@ -9675,7 +9675,7 @@ paths:
                       }
   /server_settings:
     get:
-      operationId: get_server_settings
+      operationId: get-server-settings
       summary: Get server settings
       tags: ["server_and_organizations"]
       x-response-description: |
@@ -9929,7 +9929,7 @@ paths:
                       }
   /settings/notifications:
     patch:
-      operationId: update_notification_settings
+      operationId: update-notification-settings
       summary: Update notification settings
       tags: ["users"]
       description: |
@@ -10177,7 +10177,7 @@ paths:
                       }
   /settings/display:
     patch:
-      operationId: update_display_settings
+      operationId: update-display-settings
       summary: Update display settings
       tags: ["users"]
       description: |
@@ -10427,7 +10427,7 @@ paths:
                       }
   /streams:
     get:
-      operationId: get_streams
+      operationId: get-streams
       summary: Get all streams
       tags: ["streams"]
       description: |
@@ -10601,7 +10601,7 @@ paths:
                       administrator)
   /streams/{stream_id}:
     delete:
-      operationId: archive_stream
+      operationId: archive-stream
       summary: Archive a stream
       tags: ["streams"]
       description: |
@@ -10635,7 +10635,7 @@ paths:
                       }
                     description: An example JSON response for when the supplied stream does not exist
     patch:
-      operationId: update_stream
+      operationId: update-stream
       summary: Update a stream
       tags: ["streams"]
       description: |
@@ -10731,7 +10731,7 @@ paths:
                     description: An example JSON response for when the supplied stream does not exist
   /typing:
     post:
-      operationId: set_typing_status
+      operationId: set-typing-status
       summary: Set "typing" status
       tags: ["users"]
       description: |
@@ -10849,7 +10849,7 @@ paths:
 
   /user_groups/create:
     post:
-      operationId: create_user_group
+      operationId: create-user-group
       summary: Create a user group
       tags: ["users"]
       description: |
@@ -10912,7 +10912,7 @@ paths:
                     description: An example JSON error response for when the one of the users does not exist
   /user_groups/{user_group_id}/members:
     post:
-      operationId: update_user_group_members
+      operationId: update-user-group-members
       summary: Update user group members
       tags: ["users"]
       description: |
@@ -10956,7 +10956,7 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
   /user_groups/{user_group_id}:
     patch:
-      operationId: update_user_group
+      operationId: update-user-group
       summary: Update a user group
       tags: ["users"]
       description: |
@@ -11000,7 +11000,7 @@ paths:
                       }
                     description: An example JSON response when the user group ID is invalid
     delete:
-      operationId: remove_user_group
+      operationId: remove-user-group
       summary: Delete a user group
       tags: ["users"]
       description: |
@@ -11037,7 +11037,7 @@ paths:
 
   /user_groups:
     get:
-      operationId: get_user_groups
+      operationId: get-user-groups
       summary: Get user groups
       tags: ["users"]
       description: |
@@ -11125,7 +11125,7 @@ paths:
           description: Success
   /rest-error-handling:
     post:
-      operationId: rest_error_handling
+      operationId: rest-error-handling
       summary: Error handling
       tags: ["real_time_events"]
       description: |
@@ -11160,7 +11160,7 @@ paths:
                   - $ref: "#/components/schemas/RateLimitedError"
   /zulip-outgoing-webhook:
     post:
-      operationId: zulip_outgoing_webhooks
+      operationId: zulip-outgoing-webhooks
       summary: Outgoing webhooks
       tags: ["webhooks"]
       description: |
@@ -11267,7 +11267,7 @@ paths:
   /calls/bigbluebutton/create:
     get:
       tags: ["streams"]
-      operationId: create_big_blue_button_video_call
+      operationId: create-big-blue-button-video-call
       summary: Create BigBlueButton video call
       description: |
         Create a video call URL for a BigBlueButton video call.

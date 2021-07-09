@@ -92,9 +92,8 @@ class MarkdownDirectoryView(ApiURLView):
         article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
 
         if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
-            endpoint_path = article.replace("-", "_")
             try:
-                endpoint_name, endpoint_method = get_endpoint_from_operationid(endpoint_path)
+                endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
                 path = "/zerver/api/api-doc-template.md"
             except AssertionError:
                 return DocumentationArticle(
@@ -159,7 +158,7 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             elif self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
-                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1].replace("-", "_")
+                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             else:
