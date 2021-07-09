@@ -54,7 +54,7 @@ from zerver.lib.request import (
 )
 from zerver.lib.response import json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.test_helpers import DummyHandler, HostRequestMock
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
@@ -1535,7 +1535,7 @@ class TestInternalNotifyView(ZulipTestCase):
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, request)
 
-        request._tornado_handler = "set"
+        get_request_notes(request).tornado_handler = DummyHandler()
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(request))
             self.assertEqual(self.internal_notify(True, request), self.BORING_RESULT)

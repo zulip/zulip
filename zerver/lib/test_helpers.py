@@ -323,6 +323,7 @@ class HostRequestMock(HttpRequest):
 
         request_notes_map[self] = ZulipRequestNotes(
             log_data={},
+            tornado_handler=DummyHandler(),
         )
 
     @property
