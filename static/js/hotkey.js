@@ -37,7 +37,7 @@ import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 
@@ -582,7 +582,7 @@ export function process_hotkey(e, hotkey) {
             return false;
         }
         if (event_name === "narrow_by_topic" && overlays.streams_open()) {
-            subs.keyboard_sub();
+            stream_settings_ui.keyboard_sub();
             return true;
         }
         if (event_name === "show_lightbox" && overlays.lightbox_open()) {
@@ -621,7 +621,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     if ((event_name === "up_arrow" || event_name === "down_arrow") && overlays.streams_open()) {
-        return subs.switch_rows(event_name);
+        return stream_settings_ui.switch_rows(event_name);
     }
 
     if (event_name === "up_arrow" && list_util.inside_list(e)) {
@@ -703,7 +703,7 @@ export function process_hotkey(e, hotkey) {
             lightbox.prev();
             return true;
         } else if (overlays.streams_open()) {
-            subs.toggle_view(event_name);
+            stream_settings_ui.toggle_view(event_name);
             return true;
         }
 
@@ -716,7 +716,7 @@ export function process_hotkey(e, hotkey) {
             lightbox.next();
             return true;
         } else if (overlays.streams_open()) {
-            subs.toggle_view(event_name);
+            stream_settings_ui.toggle_view(event_name);
             return true;
         }
     }
@@ -724,7 +724,7 @@ export function process_hotkey(e, hotkey) {
     // Prevent navigation in the background when the overlays are active.
     if (overlays.is_active()) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
-            subs.view_stream();
+            stream_settings_ui.view_stream();
             return true;
         }
         if (
@@ -732,7 +732,7 @@ export function process_hotkey(e, hotkey) {
             overlays.streams_open() &&
             settings_data.user_can_create_streams()
         ) {
-            subs.open_create_stream();
+            stream_settings_ui.open_create_stream();
             return true;
         }
         return false;

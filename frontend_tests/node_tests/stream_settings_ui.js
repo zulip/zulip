@@ -21,7 +21,7 @@ mock_esm("../../static/js/hash_util", {
 set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
-const subs = zrequire("subs");
+const stream_settings_ui = zrequire("stream_settings_ui");
 
 run_test("redraw_left_panel", ({mock_template}) => {
     // set-up sub rows stubs
@@ -88,7 +88,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         populated_subs = data.subscriptions;
     });
 
-    subs.render_left_panel_superset();
+    stream_settings_ui.render_left_panel_superset();
 
     const sub_stubs = [];
 
@@ -115,7 +115,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(!denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
-        const stream_ids = subs.redraw_left_panel(params);
+        const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,
             expected_streams.map((sub) => sub.stream_id),

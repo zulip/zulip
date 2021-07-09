@@ -31,9 +31,9 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as stream_settings_data from "./stream_settings_data";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import * as subs from "./subs";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_group_pill from "./user_group_pill";
@@ -183,16 +183,16 @@ export function open_edit_panel_for_row(stream_row) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
-    subs.show_subs_pane.settings(sub.name);
+    stream_settings_ui.show_subs_pane.settings(sub.name);
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
     setup_stream_settings(stream_row);
 }
 
 export function open_edit_panel_empty() {
-    const tab_key = $(subs.get_active_data().tabs[0]).attr("data-tab-key");
+    const tab_key = $(stream_settings_ui.get_active_data().tabs[0]).attr("data-tab-key");
     $(".stream-row.active").removeClass("active");
-    subs.show_subs_pane.nothing_selected();
+    stream_settings_ui.show_subs_pane.nothing_selected();
     setup_subscriptions_tab_hash(tab_key);
 }
 
@@ -575,7 +575,7 @@ function stream_is_muted_changed(e) {
     const sub_settings = settings_for_sub(sub);
     const notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.set_muted(
+    stream_settings_ui.set_muted(
         sub,
         e.target.checked,
         `#stream_change_property_status${CSS.escape(sub.stream_id)}`,
@@ -727,7 +727,7 @@ export function initialize() {
             return;
         }
 
-        subs.sub_or_unsub(sub);
+        stream_settings_ui.sub_or_unsub(sub);
     });
 
     $("#subscriptions_table").on("click", ".change-stream-privacy", (e) => {
@@ -917,7 +917,7 @@ export function initialize() {
         const stream_row = $(
             `#subscriptions_table div.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
         );
-        subs.sub_or_unsub(sub, false, stream_row);
+        stream_settings_ui.sub_or_unsub(sub, false, stream_row);
 
         if (!sub.subscribed) {
             open_edit_panel_for_row(stream_row);

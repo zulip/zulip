@@ -21,7 +21,7 @@ import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
 
@@ -205,7 +205,7 @@ function do_hashchange_overlay(old_hash) {
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
         if (base === "streams") {
-            subs.change_state(section);
+            stream_settings_ui.change_state(section);
             return;
         }
 
@@ -266,7 +266,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "streams") {
-        subs.launch(section);
+        stream_settings_ui.launch(section);
         return;
     }
 

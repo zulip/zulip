@@ -3478,7 +3478,7 @@ def internal_send_huddle_message(
 
 
 def pick_color(user_profile: UserProfile, used_colors: Set[str]) -> str:
-    # These colors are shared with the palette in subs.js.
+    # These colors are shared with the palette in stream_settings_ui.js.
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
     if available_colors:

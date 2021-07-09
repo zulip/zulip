@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as color_class from "./color_class";
 import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
@@ -102,7 +102,7 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
 function picker_do_change_color(color) {
     const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
     const hex_color = color.toHexString();
-    subs.set_color(stream_id, hex_color);
+    stream_settings_ui.set_color(stream_id, hex_color);
 }
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
 

@@ -29,7 +29,7 @@ const message_viewport = mock_esm("../../static/js/message_viewport");
 const narrow = mock_esm("../../static/js/narrow");
 const overlays = mock_esm("../../static/js/overlays");
 const settings = mock_esm("../../static/js/settings");
-const subs = mock_esm("../../static/js/subs");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const ui_util = mock_esm("../../static/js/ui_util");
 mock_esm("../../static/js/top_left_corner", {
     handle_narrow_deactivated: () => {},
@@ -137,7 +137,7 @@ function test_helper({override, change_tab}) {
     stub(narrow, "deactivate");
     stub(overlays, "close_for_hash_change");
     stub(settings, "launch");
-    stub(subs, "launch");
+    stub(stream_settings_ui, "launch");
     stub(ui_util, "blur_active_element");
 
     if (change_tab) {
@@ -244,7 +244,7 @@ run_test("hash_interactions", ({override}) => {
     window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
-        [subs, "launch"],
+        [stream_settings_ui, "launch"],
     ]);
 
     recent_topics_ui_shown = false;

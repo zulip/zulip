@@ -15,8 +15,8 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
-import * as subs from "./subs";
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so
@@ -57,10 +57,14 @@ export function update_property(stream_id, property, value, other_values) {
             settings_notifications.update_page();
             break;
         case "name":
-            subs.update_stream_name(sub, value);
+            stream_settings_ui.update_stream_name(sub, value);
             break;
         case "description":
-            subs.update_stream_description(sub, value, other_values.rendered_description);
+            stream_settings_ui.update_stream_description(
+                sub,
+                value,
+                other_values.rendered_description,
+            );
             break;
         case "email_address":
             sub.email_address = value;
@@ -70,16 +74,16 @@ export function update_property(stream_id, property, value, other_values) {
             stream_list.refresh_pinned_or_unpinned_stream(sub);
             break;
         case "invite_only":
-            subs.update_stream_privacy(sub, {
+            stream_settings_ui.update_stream_privacy(sub, {
                 invite_only: value,
                 history_public_to_subscribers: other_values.history_public_to_subscribers,
             });
             break;
         case "stream_post_policy":
-            subs.update_stream_post_policy(sub, value);
+            stream_settings_ui.update_stream_post_policy(sub, value);
             break;
         case "message_retention_days":
-            subs.update_message_retention_setting(sub, value);
+            stream_settings_ui.update_message_retention_setting(sub, value);
             break;
         default:
             blueslip.warn("Unexpected subscription property type", {
@@ -112,7 +116,7 @@ export function mark_subscribed(sub, subscribers, color) {
         // needed.
         blueslip.warn("Frontend needed to pick a color in mark_subscribed");
         color = color_data.pick_color();
-        subs.set_color(sub.stream_id, color);
+        stream_settings_ui.set_color(sub.stream_id, color);
     }
     stream_data.subscribe_myself(sub);
     if (subscribers) {
@@ -120,7 +124,7 @@ export function mark_subscribed(sub, subscribers, color) {
     }
 
     if (overlays.streams_open()) {
-        subs.update_settings_for_subscribed(sub);
+        stream_settings_ui.update_settings_for_subscribed(sub);
     }
 
     // update navbar if necessary
@@ -144,7 +148,7 @@ export function mark_unsubscribed(sub) {
     } else if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
         if (overlays.streams_open()) {
-            subs.update_settings_for_unsubscribed(sub);
+            stream_settings_ui.update_settings_for_unsubscribed(sub);
         }
         // update navbar if necessary
         message_view_header.maybe_rerender_title_area_for_stream(sub);
@@ -166,7 +170,7 @@ export function remove_deactivated_user_from_all_streams(user_id) {
     for (const sub of all_subs) {
         if (stream_data.is_user_subscribed(sub.stream_id, user_id)) {
             peer_data.remove_subscriber(sub.stream_id, user_id);
-            subs.update_subscribers_ui(sub);
+            stream_settings_ui.update_subscribers_ui(sub);
         }
     }
 }

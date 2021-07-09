@@ -34,8 +34,8 @@ import * as server_events from "./server_events";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
-import * as subs from "./subs";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -653,7 +653,7 @@ export function initialize() {
             return;
         }
         const sub = stream_data.get_sub(stream_name);
-        subs.sub_or_unsub(sub);
+        stream_settings_ui.sub_or_unsub(sub);
         $("#compose-send-status").hide();
     });
 

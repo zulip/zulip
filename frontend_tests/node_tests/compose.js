@@ -39,7 +39,7 @@ const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
 const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
-const subs = mock_esm("../../static/js/subs");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const transmit = mock_esm("../../static/js/transmit");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
@@ -1105,7 +1105,7 @@ test_ui("on_events", ({override}) => {
             subscribed: false,
         };
         let compose_not_subscribed_called = false;
-        subs.sub_or_unsub = () => {
+        stream_settings_ui.sub_or_unsub = () => {
             compose_not_subscribed_called = true;
         };
 
