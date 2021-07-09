@@ -5,7 +5,7 @@ from typing import Optional
 from django.db import models
 from django.db.models import CASCADE
 
-from zerver.models import Realm
+from zerver.models import Realm, UserProfile
 
 
 class Customer(models.Model):
@@ -189,3 +189,19 @@ class LicenseLedger(models.Model):
     # the same billing period. For plans on automatic license management this value is usually
     # equal to the number of activated users in the organization.
     licenses_at_next_renewal: Optional[int] = models.IntegerField(null=True)
+
+
+class ZulipSponsorshipRequest(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    requested_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    org_type: int = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+
+    MAX_ORG_URL_LENGTH: int = 200
+    org_website: str = models.URLField(max_length=MAX_ORG_URL_LENGTH)
+
+    org_description: str = models.TextField(default="")

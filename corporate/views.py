@@ -4,8 +4,10 @@ from typing import Any, Dict, Optional, Union
 from urllib.parse import urlencode, urljoin, urlunsplit
 
 import stripe
+from django import forms
 from django.conf import settings
 from django.core import signing
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -37,6 +39,7 @@ from corporate.lib.stripe import (
 )
 from corporate.models import (
     CustomerPlan,
+    ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
     get_customer_by_realm,
@@ -52,7 +55,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.validator import check_int, check_int_in, check_string_in
-from zerver.models import UserProfile, get_realm
+from zerver.models import Realm, UserProfile, get_org_type_display_name, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -220,9 +223,23 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             "monthly_price": 800,
             "percent_off": float(percent_off),
         },
+        "sorted_org_types": sorted(
+            [
+                org_type
+                for org_type in Realm.ORG_TYPES.values()
+                if not org_type.get("hidden_for_sponsorship")
+            ],
+            key=lambda d: d["display_order"],
+        ),
     }
     response = render(request, "corporate/upgrade.html", context=context)
     return response
+
+
+class SponsorshipRequestForm(forms.Form):
+    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH)
+    organization_type = forms.IntegerField()
+    description = forms.CharField(widget=forms.Textarea)
 
 
 @require_organization_member
@@ -245,12 +262,35 @@ def sponsorship(
         urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
     )
 
+    post_data = request.POST.copy()
+    # We need to do this because the field name in the template
+    # for organization type contains a hyphen and the form expects
+    # an underscore.
+    post_data.update(organization_type=organization_type)
+    form = SponsorshipRequestForm(post_data)
+
+    with transaction.atomic():
+        if form.is_valid():
+            sponsorship_request = ZulipSponsorshipRequest(
+                realm=realm,
+                requested_by=user,
+                org_website=form.cleaned_data["website"],
+                org_description=form.cleaned_data["description"],
+                org_type=form.cleaned_data["organization_type"],
+            )
+            sponsorship_request.save()
+
+        update_sponsorship_status(realm, True, acting_user=user)
+        do_make_user_billing_admin(user)
+
+    org_type_display_name = get_org_type_display_name(form.cleaned_data["organization_type"])
+
     context = {
         "requested_by": requested_by,
         "user_role": user_role,
         "string_id": realm.string_id,
         "support_url": support_url,
-        "organization_type": organization_type,
+        "organization_type": org_type_display_name,
         "website": website,
         "description": description,
     }
@@ -262,9 +302,6 @@ def sponsorship(
         reply_to_email=user.delivery_email,
         context=context,
     )
-
-    update_sponsorship_status(realm, True, acting_user=user)
-    do_make_user_billing_admin(user)
 
     return json_success()
 

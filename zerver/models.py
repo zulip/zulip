@@ -410,12 +410,14 @@ class Realm(models.Model):
             "name": "Unspecified",
             "id": 0,
             "hidden": True,
+            "hidden_for_sponsorship": True,
             "display_order": 0,
         },
         "business": {
             "name": "Business",
             "id": 10,
             "hidden": False,
+            "hidden_for_sponsorship": True,
             "display_order": 1,
         },
         "opensource": {
@@ -452,6 +454,7 @@ class Realm(models.Model):
             "name": "Government",
             "id": 70,
             "hidden": False,
+            "hidden_for_sponsorship": True,
             "display_order": 7,
         },
         "political_group": {

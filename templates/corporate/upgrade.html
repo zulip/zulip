@@ -224,13 +224,11 @@
                                     <h4>Organization type</h4>
                                 </label>
                                 <select name="organization-type" required style="width: 100%;" required>
-                                    <option disabled selected value=""> -- select --</option>
-                                    <option value="open_source">{{_('Open source')}}</option>
-                                    <option value="research">{{_('Academic research')}}</option>
-                                    <option value="education">{{_('Education')}}</option>
-                                    <option value="non_profit">{{_('Non-Profit')}}</option>
-                                    <option value="event">{{_('Event (hackathons, conferences, etc.)')}}</option>
-                                    <option value="other">{{_('Other')}}</option>
+                                    {% for org_type in sorted_org_types %}
+                                        {% if not org_type.hidden %}
+                                        <option value="{{ org_type.id }}">{{ _(org_type.name) }}</option>
+                                        {% endif %}
+                                    {% endfor %}
                                 </select>
                                 <br />
                                 <label>

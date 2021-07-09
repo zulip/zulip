@@ -73,6 +73,7 @@ from corporate.models import (
     Customer,
     CustomerPlan,
     LicenseLedger,
+    ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
     get_customer_by_realm,
@@ -1460,12 +1461,23 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         data = {
-            "organization-type": "Open-source",
+            "organization-type": Realm.ORG_TYPES["opensource"]["id"],
             "website": "https://infinispan.org/",
             "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
         }
         response = self.client_post("/json/billing/sponsorship", data)
         self.assert_json_success(response)
+
+        sponsorship_request = ZulipSponsorshipRequest.objects.filter(
+            realm=user.realm, requested_by=user
+        ).first()
+        assert sponsorship_request is not None
+        self.assertEqual(sponsorship_request.org_website, data["website"])
+        self.assertEqual(sponsorship_request.org_description, data["description"])
+        self.assertEqual(
+            sponsorship_request.org_type,
+            Realm.ORG_TYPES["opensource"]["id"],
+        )
 
         customer = get_customer_by_realm(user.realm)
         assert customer is not None
@@ -1477,7 +1489,7 @@ class StripeTest(StripeTestCase):
         for message in outbox:
             self.assert_length(message.to, 1)
             self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
-            self.assertEqual(message.subject, "Sponsorship request (Open-source) for zulip")
+            self.assertEqual(message.subject, "Sponsorship request (Open-source project) for zulip")
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip sponsorship <noreply-", self.email_display_from(message))
