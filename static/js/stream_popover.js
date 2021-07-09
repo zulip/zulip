@@ -29,8 +29,8 @@ import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
-import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
 // We handle stream popovers and topic popovers in this
@@ -461,7 +461,7 @@ export function register_stream_handlers() {
     $("body").on("click", ".pin_to_top", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
-        subs.toggle_pin_to_top_stream(sub);
+        stream_settings_ui.toggle_pin_to_top_stream(sub);
         e.stopPropagation();
     });
 
@@ -518,7 +518,7 @@ export function register_stream_handlers() {
     $("body").on("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
-        subs.set_muted(sub, !sub.is_muted);
+        stream_settings_ui.set_muted(sub, !sub.is_muted);
         e.stopPropagation();
     });
 
@@ -542,7 +542,7 @@ export function register_stream_handlers() {
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         const sub = stream_popover_sub(e);
-        subs.sub_or_unsub(sub, true);
+        stream_settings_ui.sub_or_unsub(sub, true);
         e.preventDefault();
         e.stopPropagation();
     });

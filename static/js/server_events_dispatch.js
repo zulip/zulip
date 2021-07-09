@@ -54,10 +54,10 @@ import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
-import * as subs from "./subs";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
@@ -398,7 +398,7 @@ export function dispatch_normal_event(event) {
         case "stream":
             switch (event.op) {
                 case "update":
-                    // Legacy: Stream properties are still managed by subs.js on the client side.
+                    // Legacy: Stream properties are still managed by stream_settings_ui.js on the client side.
                     stream_events.update_property(event.stream_id, event.property, event.value, {
                         rendered_description: event.rendered_description,
                         history_public_to_subscribers: event.history_public_to_subscribers,
@@ -411,7 +411,7 @@ export function dispatch_normal_event(event) {
                     for (const stream of event.streams) {
                         const sub = sub_store.get(stream.stream_id);
                         if (overlays.streams_open()) {
-                            subs.add_sub_to_table(sub);
+                            stream_settings_ui.add_sub_to_table(sub);
                         }
                     }
                     break;
@@ -421,7 +421,7 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        subs.remove_stream(stream.stream_id);
+                        stream_settings_ui.remove_stream(stream.stream_id);
                         stream_data.delete_sub(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
@@ -485,7 +485,7 @@ export function dispatch_normal_event(event) {
 
                     for (const stream_id of stream_ids) {
                         const sub = sub_store.get(stream_id);
-                        subs.update_subscribers_ui(sub);
+                        stream_settings_ui.update_subscribers_ui(sub);
                     }
 
                     compose_fade.update_faded_users();
@@ -499,7 +499,7 @@ export function dispatch_normal_event(event) {
 
                     for (const stream_id of stream_ids) {
                         const sub = sub_store.get(stream_id);
-                        subs.update_subscribers_ui(sub);
+                        stream_settings_ui.update_subscribers_ui(sub);
                     }
 
                     compose_fade.update_faded_users();

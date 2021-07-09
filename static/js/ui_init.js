@@ -76,7 +76,7 @@ import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -522,7 +522,7 @@ export function initialize_everything() {
     pm_conversations.recent.initialize(pm_conversations_params);
     muted_topics.initialize();
     muted_users.initialize();
-    subs.initialize();
+    stream_settings_ui.initialize();
     stream_list.initialize();
     condense.initialize();
     spoilers.initialize();

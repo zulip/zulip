@@ -8,7 +8,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 
 export function initialize_disable_btn_hint_popover(
     btn_wrapper,
@@ -41,7 +41,7 @@ export function initialize_disable_btn_hint_popover(
 
 export function initialize_cant_subscribe_popover(sub) {
     const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
-    const settings_button = subs.settings_button_for_sub(sub);
+    const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     initialize_disable_btn_hint_popover(
         button_wrapper,
         settings_button,
@@ -72,7 +72,7 @@ export function update_toggler_for_sub(sub) {
 
 export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
-    const settings_button = subs.settings_button_for_sub(sub);
+    const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     if (sub.subscribed) {
         settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
     } else {
@@ -140,8 +140,8 @@ export function update_stream_row_in_settings_tab(sub) {
     // If user is subscribed to stream, it will show sub row under
     // "Subscribed" tab, otherwise if stream is not public hide
     // stream row under tab.
-    if (subs.is_subscribed_stream_tab_active()) {
-        const sub_row = subs.row_for_stream_id(sub.stream_id);
+    if (stream_settings_ui.is_subscribed_stream_tab_active()) {
+        const sub_row = stream_settings_ui.row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
             sub_row.removeClass("notdisplayed");
         } else if (sub.invite_only || page_params.is_guest) {

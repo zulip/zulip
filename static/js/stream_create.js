@@ -15,7 +15,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 
 let created_stream;
@@ -260,7 +260,7 @@ function create_stream() {
 export function new_stream_clicked(stream_name) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
-    subs.show_subs_pane.create_stream();
+    stream_settings_ui.show_subs_pane.create_stream();
     $(".stream-row.active").removeClass("active");
 
     if (stream_name !== "") {

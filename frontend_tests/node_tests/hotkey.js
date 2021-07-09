@@ -73,7 +73,7 @@ const reactions = mock_esm("../../static/js/reactions");
 const search = mock_esm("../../static/js/search");
 const settings_data = mock_esm("../../static/js/settings_data");
 const stream_list = mock_esm("../../static/js/stream_list");
-const subs = mock_esm("../../static/js/subs");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 
 mock_esm("../../static/js/hotspots", {
     is_open: () => false,
@@ -278,9 +278,9 @@ run_test("streams", ({override}) => {
     settings_data.user_can_create_streams = () => true;
     override(overlays, "streams_open", () => true);
     override(overlays, "is_active", () => true);
-    assert_mapping("S", subs, "keyboard_sub");
-    assert_mapping("V", subs, "view_stream");
-    assert_mapping("n", subs, "open_create_stream");
+    assert_mapping("S", stream_settings_ui, "keyboard_sub");
+    assert_mapping("V", stream_settings_ui, "view_stream");
+    assert_mapping("n", stream_settings_ui, "open_create_stream");
     settings_data.user_can_create_streams = () => false;
     assert_unmapped("n");
 });
@@ -471,8 +471,8 @@ run_test("motion_keys", () => {
     overlays.info_overlay_open = () => false;
 
     overlays.streams_open = () => true;
-    assert_mapping("up_arrow", subs, "switch_rows");
-    assert_mapping("down_arrow", subs, "switch_rows");
+    assert_mapping("up_arrow", stream_settings_ui, "switch_rows");
+    assert_mapping("down_arrow", stream_settings_ui, "switch_rows");
     overlays.streams_open = () => false;
 
     overlays.lightbox_open = () => true;
