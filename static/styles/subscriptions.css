@@ -223,7 +223,8 @@
 
     .subscriber_list_container {
         position: relative;
-        max-height: 100%;
+        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
+        max-height: calc(95vh - 282px);
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
