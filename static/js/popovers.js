@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import {add, formatISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
-import {hideAll} from "tippy.js";
+import tippy, {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
@@ -137,6 +137,24 @@ function init_email_clipboard() {
     });
 }
 
+function init_email_tooltip(user) {
+    /*
+        This displays the email tooltip for folks
+        who have names that would overflow past the right
+        edge of our user mention popup.
+    */
+
+    $(".user_popover_email").each(function () {
+        if (this.clientWidth < this.scrollWidth) {
+            tippy(this, {
+                placement: "bottom",
+                content: people.get_visible_email(user),
+                interactive: true,
+            });
+        }
+    });
+}
+
 function load_medium_avatar(user, elt) {
     const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
     const user_avatar_url = new URL(avatar_path, window.location.href);
@@ -244,6 +262,8 @@ function render_user_info_popover(
     popover_element.popover("show");
 
     init_email_clipboard();
+    init_email_tooltip(user);
+
     load_medium_avatar(user, $(".popover-avatar"));
 }
 
@@ -995,16 +1015,6 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = target.data("popover");
-    });
-
-    $("body").on("mouseenter", ".user_popover_email", function () {
-        const tooltip_holder = $(this).find("div");
-
-        if (this.offsetWidth < this.scrollWidth) {
-            tooltip_holder.addClass("display-tooltip");
-        } else {
-            tooltip_holder.removeClass("display-tooltip");
-        }
     });
 
     $("body").on("click", ".respond_button", (e) => {

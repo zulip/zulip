@@ -1029,14 +1029,6 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid 1px solid hsl(144, 45%, 62%);
     }
 
-    .email_tooltip {
-        background-color: hsl(211, 16%, 30%);
-    }
-
-    .email_tooltip::after {
-        border-bottom-color: hsl(211, 16%, 30%) !important;
-    }
-
     #bots_lists_navbar .active a {
         color: hsl(0, 0%, 87%);
         background-color: hsl(212, 28%, 18%);
