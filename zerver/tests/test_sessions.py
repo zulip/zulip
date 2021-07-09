@@ -103,7 +103,8 @@ class TestSessions(ZulipTestCase):
         with self.assertLogs(level="INFO") as info_logs:
             delete_all_deactivated_user_sessions()
         self.assertEqual(
-            info_logs.output, ["INFO:root:Deactivating session for deactivated user 8"]
+            info_logs.output,
+            [f"INFO:root:Deactivating session for deactivated user {user_profile_3.id}"],
         )
         result = self.client_get("/")
         self.check_rendered_spectator(result)
