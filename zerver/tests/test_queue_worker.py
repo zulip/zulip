@@ -195,8 +195,8 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(
                     info_logs.output,
                     [
-                        "INFO:root:Batch-processing 3 missedmessage_emails events for user 10",
-                        "INFO:root:Batch-processing 1 missedmessage_emails events for user 12",
+                        f"INFO:root:Batch-processing 3 missedmessage_emails events for user {hamlet.id}",
+                        f"INFO:root:Batch-processing 1 missedmessage_emails events for user {othello.id}",
                     ],
                 )
 
