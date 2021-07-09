@@ -1967,7 +1967,7 @@ class MarkdownTest(ZulipTestCase):
         # incorrect(as it uses hamlet's id) so it should not be able
         # to use that data for creating a valid mention.
 
-        content = f"@**King Hamlet|10** and @**aaron|{hamlet.id}**"
+        content = f"@**King Hamlet|{hamlet.id}** and @**aaron|{hamlet.id}**"
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
