@@ -38,13 +38,67 @@ strict_equality = true
 # Display the codes needed for # type: ignore[code] annotations.
 show_error_codes = true
 
-# We use a lot of third-party libraries we don't have stubs for, as
-# well as a handful of our own modules that we haven't told mypy how
-# to find.  Ignore them.  (For some details, see:
-# `git log -p -S ignore_missing_imports -- mypy.ini`.)
-#
-# This doesn't get in the way of using the stubs we *do* have.
-ignore_missing_imports = true
-
 # Warn of unreachable or redundant code.
 warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = [
+    "ahocorasick.*",
+    "aioapns.*",
+    "backoff.*",
+    "bitfield.*",
+    "bmemcached.*",
+    "boto3.*",
+    "botocore.*",
+    "bs4.*",
+    "cairosvg.*",
+    "commonmark.*",
+    "coverage.*",
+    "cssutils.*",
+    "defusedxml.*",
+    "digitalocean.*",
+    "disposable_email_domains.*",
+    "django.*",
+    "django_auth_ldap.*",
+    "django_otp.*",
+    "django_sendfile.*",
+    "django_statsd.*",
+    "DNS.*",
+    "fakeldap.*",
+    "gcm.*",
+    "gitlint.*",
+    "jsonref.*",
+    "jsonschema.*",
+    "ldap.*",
+    "lxml.*",
+    "markdown_include.*",
+    "moto.*",
+    "netifaces.*",
+    "oauthlib.*",
+    "onelogin.*",
+    "openapi_core.*",
+    "openapi_schema_validator.*",
+    "pika.*",
+    "PIL.*",
+    "premailer.*",
+    "psycopg2.*",
+    "pygments.*",
+    "pyinotify.*",
+    "pyoembed.*",
+    "pyuca.*",
+    "recommonmark.*",
+    "requests_oauthlib.*",
+    "scrapy.*",
+    "social_core.*",
+    "social_django.*",
+    "sourcemap.*",
+    "sphinx_rtd_theme.*",
+    "talon_core.*",
+    "tlds.*",
+    "tornado.*",
+    "twitter.*",
+    "two_factor.*",
+    "urllib3.*",
+    "zxcvbn.*",
+]
+ignore_missing_imports = true
