@@ -284,6 +284,8 @@ export function finish() {
     }
 
     if (!compose_validate.validate()) {
+        // If the message failed validation, hide the sending indicator.
+        $("#sending-indicator").hide();
         return false;
     }
 
