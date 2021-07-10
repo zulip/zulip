@@ -522,10 +522,14 @@ export function validate() {
     }
 
     if (/^\s*$/.test(message_content)) {
-        compose_error.show(
-            $t_html({defaultMessage: "You have nothing to send!"}),
-            $("#compose-textarea"),
-        );
+        // Avoid showing an error message when "enter sends" is enabled,
+        // as it is more likely that the user has hit "Enter" accidentally.
+        if (!page_params.enter_sends) {
+            compose_error.show(
+                $t_html({defaultMessage: "You have nothing to send!"}),
+                $("#compose-textarea"),
+            );
+        }
         return false;
     }
 
