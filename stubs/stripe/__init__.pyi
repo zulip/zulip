@@ -23,28 +23,22 @@ class Customer:
     description: str
     discount: Optional[Discount]
     metadata: Dict[str, str]
-
     @staticmethod
-    def retrieve(customer_id: str=..., expand: Optional[List[str]]=...) -> Customer:
-        ...
-
+    def retrieve(customer_id: str = ..., expand: Optional[List[str]] = ...) -> Customer: ...
     @staticmethod
-    def create(description: str=..., email: str=..., metadata: Dict[str, Any]=...,
-               source: Optional[str]=..., coupon: Optional[str]=...) -> Customer:
-        ...
-
+    def create(
+        description: str = ...,
+        email: str = ...,
+        metadata: Dict[str, Any] = ...,
+        source: Optional[str] = ...,
+        coupon: Optional[str] = ...,
+    ) -> Customer: ...
     @staticmethod
-    def save(customer: Customer) -> Customer:
-        ...
-
+    def save(customer: Customer) -> Customer: ...
     @staticmethod
-    def delete_discount(customer: Customer) -> None:
-        ...
-
+    def delete_discount(customer: Customer) -> None: ...
     @staticmethod
-    def list(limit: Optional[int]=...) -> List[Customer]:
-        ...
-
+    def list(limit: Optional[int] = ...) -> List[Customer]: ...
 
 class Invoice:
     id: str
@@ -58,42 +52,37 @@ class Invoice:
     status: str
     status_transitions: Any
     total: int
-
     @staticmethod
-    def upcoming(customer: str=..., subscription: str=...,
-                 subscription_items: List[Dict[str, Union[str, int]]]=...) -> Invoice:
-        ...
-
+    def upcoming(
+        customer: str = ...,
+        subscription: str = ...,
+        subscription_items: List[Dict[str, Union[str, int]]] = ...,
+    ) -> Invoice: ...
     @staticmethod
-    def list(billing: str=..., customer: str=...,
-             status: str=..., limit: Optional[int]=...,
-             starting_after: Optional[Invoice]=...,
-             ) -> List[Invoice]:
-        ...
-
+    def list(
+        billing: str = ...,
+        customer: str = ...,
+        status: str = ...,
+        limit: Optional[int] = ...,
+        starting_after: Optional[Invoice] = ...,
+    ) -> List[Invoice]: ...
     @staticmethod
-    def create(auto_advance: bool=..., billing: str=..., customer: str=...,
-               days_until_due: Optional[int]=..., statement_descriptor: str=...) -> Invoice:
-        ...
-
+    def create(
+        auto_advance: bool = ...,
+        billing: str = ...,
+        customer: str = ...,
+        days_until_due: Optional[int] = ...,
+        statement_descriptor: str = ...,
+    ) -> Invoice: ...
     @staticmethod
-    def finalize_invoice(invoice: Invoice) -> Invoice:
-        ...
-
+    def finalize_invoice(invoice: Invoice) -> Invoice: ...
     @staticmethod
-    def pay(invoice: Invoice, paid_out_of_band: bool=False) -> Invoice:
-        ...
-
+    def pay(invoice: Invoice, paid_out_of_band: bool = False) -> Invoice: ...
     @staticmethod
-    def void_invoice(id: str) -> None:
-        ...
-
-    def get(self, key: str) -> Any:
-        ...
-
+    def void_invoice(id: str) -> None: ...
+    def get(self, key: str) -> Any: ...
     @staticmethod
-    def refresh(invoice: Invoice) -> Invoice:
-        ...
+    def refresh(invoice: Invoice) -> Invoice: ...
 
 class Subscription:
     created: int
@@ -103,24 +92,21 @@ class Subscription:
     days_until_due: Optional[int]
     proration_date: int
     quantity: int
-
     @staticmethod
-    def create(customer: str=..., billing: str=..., days_until_due: Optional[int]=...,
-               items: List[Dict[str, Any]]=...,
-               prorate: bool=..., tax_percent: float=...) -> Subscription:
-        ...
-
+    def create(
+        customer: str = ...,
+        billing: str = ...,
+        days_until_due: Optional[int] = ...,
+        items: List[Dict[str, Any]] = ...,
+        prorate: bool = ...,
+        tax_percent: float = ...,
+    ) -> Subscription: ...
     @staticmethod
-    def save(subscription: Subscription, idempotency_key: str=...) -> Subscription:
-        ...
-
+    def save(subscription: Subscription, idempotency_key: str = ...) -> Subscription: ...
     @staticmethod
-    def delete(subscription: Subscription) -> Subscription:
-        ...
-
+    def delete(subscription: Subscription) -> Subscription: ...
     @staticmethod
-    def retrieve(subscription_id: str) -> Subscription:
-        ...
+    def retrieve(subscription_id: str) -> Subscription: ...
 
 class Source:
     id: str
@@ -135,18 +121,23 @@ class Card:
 
 class Plan:
     id: str
-
     @staticmethod
-    def create(currency: str=..., interval: str=..., product: str=..., amount: int=...,
-               billing_scheme: str=..., nickname: str=..., usage_type: str=...) -> Plan:
-        ...
+    def create(
+        currency: str = ...,
+        interval: str = ...,
+        product: str = ...,
+        amount: int = ...,
+        billing_scheme: str = ...,
+        nickname: str = ...,
+        usage_type: str = ...,
+    ) -> Plan: ...
 
 class Product:
     id: str
-
     @staticmethod
-    def create(name: str=..., type: str=..., statement_descriptor: str=..., unit_label: str=...) -> Product:
-        ...
+    def create(
+        name: str = ..., type: str = ..., statement_descriptor: str = ..., unit_label: str = ...
+    ) -> Product: ...
 
 class Discount:
     coupon: Coupon
@@ -154,16 +145,13 @@ class Discount:
 class Coupon:
     id: str
     percent_off: int
-
     @staticmethod
-    def create(duration: str=..., name: str=..., percent_off: int=...) -> Coupon:
-        ...
+    def create(duration: str = ..., name: str = ..., percent_off: int = ...) -> Coupon: ...
 
 class Token:
     id: str
     @staticmethod
-    def create(card: Dict[str, Any]) -> Token:
-        ...
+    def create(card: Dict[str, Any]) -> Token: ...
 
 class Charge:
     amount: int
@@ -172,29 +160,34 @@ class Charge:
     receipt_email: str
     source: Source
     statement_descriptor: str
-
     @staticmethod
-    def list(customer: Optional[str]) -> List[Charge]:
-        ...
-
+    def list(customer: Optional[str]) -> List[Charge]: ...
     @staticmethod
-    def create(amount: int=..., currency: str=..., customer: str=..., description: str=...,
-               receipt_email: str=..., statement_descriptor: str=...) -> Charge:
-        ...
+    def create(
+        amount: int = ...,
+        currency: str = ...,
+        customer: str = ...,
+        description: str = ...,
+        receipt_email: str = ...,
+        statement_descriptor: str = ...,
+    ) -> Charge: ...
 
 class InvoiceItem:
     @staticmethod
-    def create(amount: int=..., currency: str=..., customer: str=..., description: str=...,
-               discountable: bool=..., period: Dict[str, int]=..., quantity: int=...,
-               unit_amount: int=..., idempotency_key: Optional[str]=...) -> InvoiceItem:
-        ...
-
+    def create(
+        amount: int = ...,
+        currency: str = ...,
+        customer: str = ...,
+        description: str = ...,
+        discountable: bool = ...,
+        period: Dict[str, int] = ...,
+        quantity: int = ...,
+        unit_amount: int = ...,
+        idempotency_key: Optional[str] = ...,
+    ) -> InvoiceItem: ...
     @staticmethod
-    def list(customer: Optional[str]) -> List[InvoiceItem]:
-        ...
+    def list(customer: Optional[str]) -> List[InvoiceItem]: ...
 
 class InvoiceLineItem:
     amount: int
-
-    def get(self, key: str) -> Any:
-        ...
+    def get(self, key: str) -> Any: ...
