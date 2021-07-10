@@ -405,10 +405,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, try having a user who didn't receive the message try to publish it, and fail
         body = f"Illegal message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        cordelia = self.example_user("cordelia")
         with self.assertLogs(level="WARNING") as warn_log:
-            self.send_stream_message(self.example_user("cordelia"), "Denmark", body, "test")
+            self.send_stream_message(cordelia, "Denmark", body, "test")
         self.assertTrue(
-            "WARNING:root:User 8 tried to share upload" in warn_log.output[0]
+            f"WARNING:root:User {cordelia.id} tried to share upload" in warn_log.output[0]
             and "but lacks permission" in warn_log.output[0]
         )
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
