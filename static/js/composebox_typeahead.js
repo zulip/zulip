@@ -12,6 +12,7 @@ import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
@@ -218,7 +219,10 @@ function handle_keydown(e) {
                 // Enter
                 if (should_enter_send(e)) {
                     e.preventDefault();
-                    if (!$("#compose-send-button").prop("disabled")) {
+                    if (
+                        compose_validate.warn_for_text_overflow_when_tries_to_send() &&
+                        !$("#compose-send-button").prop("disabled")
+                    ) {
                         $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }

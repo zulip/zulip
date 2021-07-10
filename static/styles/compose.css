@@ -353,9 +353,22 @@ textarea.new_message_textarea {
     resize: vertical !important;
     margin-top: 5px;
 
+    @keyframes flash {
+        0% {
+            box-shadow: none;
+        }
+        100% {
+            box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
+        }
+    }
+
     &.over_limit,
     &.over_limit:focus {
         box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
+
+        &.flash {
+            animation: flash 0.5s ease-in-out infinite;
+        }
     }
 }
 

@@ -113,7 +113,7 @@ function clear_box() {
     compose_validate.set_user_acknowledged_announce_flag(undefined);
 
     clear_textarea();
-    compose_validate.check_and_set_overflow_text();
+    compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);

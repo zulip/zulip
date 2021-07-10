@@ -180,7 +180,7 @@ export function create_message_object() {
 
 export function clear_compose_box() {
     $("#compose-textarea").val("").trigger("focus");
-    compose_validate.check_and_set_overflow_text();
+    compose_validate.check_overflow_text();
     drafts.delete_active_draft();
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
@@ -617,7 +617,7 @@ export function initialize() {
     });
 
     $("#compose-textarea").on("input propertychange", () => {
-        compose_validate.check_and_set_overflow_text();
+        compose_validate.check_overflow_text();
     });
 
     $("#compose form").on("submit", (e) => {

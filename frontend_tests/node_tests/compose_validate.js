@@ -462,29 +462,38 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({override
     );
 });
 
-test_ui("test_check_and_set_overflow_text", () => {
+test_ui("test_check_overflow_text", () => {
     page_params.max_message_length = 10000;
 
     const textarea = $("#compose-textarea");
     const indicator = $("#compose_limit_indicator");
+    const send_button = $("#compose-send-button");
 
     // Indicator should show red colored text
     textarea.val("a".repeat(10000 + 1));
-    compose_validate.check_and_set_overflow_text();
+    compose_validate.check_overflow_text();
     assert.ok(indicator.hasClass("over_limit"));
     assert.equal(indicator.text(), "10001/10000");
     assert.ok(textarea.hasClass("over_limit"));
+    assert.equal(
+        $("#compose-error-msg").html(),
+        "translated HTML: Message length should'nt be greatar than 10000 characters.",
+    );
+    assert.ok(send_button.prop("disabled"));
+
+    $("#compose-send-status").stop = () => ({fadeOut: () => {}});
 
     // Indicator should show orange colored text
     textarea.val("a".repeat(9000 + 1));
-    compose_validate.check_and_set_overflow_text();
+    compose_validate.check_overflow_text();
     assert.ok(!indicator.hasClass("over_limit"));
     assert.equal(indicator.text(), "9001/10000");
     assert.ok(!textarea.hasClass("over_limit"));
+    assert.ok(!send_button.prop("disabled"));
 
     // Indicator must be empty
     textarea.val("a".repeat(9000));
-    compose_validate.check_and_set_overflow_text();
+    compose_validate.check_overflow_text();
     assert.ok(!indicator.hasClass("over_limit"));
     assert.equal(indicator.text(), "");
     assert.ok(!textarea.hasClass("over_limit"));
