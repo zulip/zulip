@@ -676,7 +676,7 @@ export function set_up() {
 
         settings_ui.do_settings_change(
             channel.patch,
-            "/json/settings/display",
+            "/json/settings",
             data,
             $(".timezone-setting-status").expectOne(),
         );
