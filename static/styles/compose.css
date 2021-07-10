@@ -353,8 +353,9 @@ textarea.new_message_textarea {
     resize: vertical !important;
     margin-top: 5px;
 
-    &.over_limit {
-        box-shadow: 0 0 0 1pt hsl(0, 100%, 50%) !important;
+    &.over_limit,
+    &.over_limit:focus {
+        box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
     }
 }
 
