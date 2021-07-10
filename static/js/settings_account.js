@@ -682,8 +682,6 @@ export function set_up() {
         );
     });
 
-    $("#user_presence_enabled").val(user_settings.presence_enabled);
-
     $("#user_presence_enabled").on("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
