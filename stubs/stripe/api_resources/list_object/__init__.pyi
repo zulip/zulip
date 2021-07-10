@@ -1,5 +1,6 @@
+from typing import Any, Dict, Iterator, List, Optional
+
 from stripe import Subscription
-from typing import Optional, Any, Dict, List, Iterator
 
 class SubscriptionListObject:
     data: List[Subscription]

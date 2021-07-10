@@ -1,12 +1,12 @@
 # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
 # for notes on how we manage mypy stubs.
 
+from typing import Any, Dict, List, Optional, Union
+
+import stripe.api_requestor as api_requestor
 import stripe.error as error
 import stripe.util as util
-import stripe.api_requestor as api_requestor
 from stripe.api_resources.list_object import SubscriptionListObject
-
-from typing import Optional, Any, Dict, List, Union
 
 api_key: Optional[str]
 
