@@ -464,7 +464,7 @@ function validate_private_message() {
     return true;
 }
 
-export function check_and_set_overflow_text() {
+export function check_overflow_text() {
     const text = compose_state.message_content();
     const max_length = page_params.max_message_length;
     const indicator = $("#compose_limit_indicator");
@@ -473,18 +473,43 @@ export function check_and_set_overflow_text() {
         indicator.addClass("over_limit");
         $("#compose-textarea").addClass("over_limit");
         indicator.text(text.length + "/" + max_length);
+        compose_error.show(
+            $t_html(
+                {
+                    defaultMessage:
+                        "Message length should'nt be greatar than {max_length} characters.",
+                },
+                {max_length},
+            ),
+        );
+        $("#compose-send-button").prop("disabled", true);
     } else if (text.length > 0.9 * max_length) {
         indicator.removeClass("over_limit");
         $("#compose-textarea").removeClass("over_limit");
         indicator.text(text.length + "/" + max_length);
+
+        $("#compose-send-button").prop("disabled", false);
+        if ($("#compose-send-status").hasClass("alert-error")) {
+            $("#compose-send-status").stop(true).fadeOut();
+        }
     } else {
         indicator.text("");
         $("#compose-textarea").removeClass("over_limit");
 
+        $("#compose-send-button").prop("disabled", false);
         if ($("#compose-send-status").hasClass("alert-error")) {
             $("#compose-send-status").stop(true).fadeOut();
         }
     }
+}
+
+export function warn_for_text_overflow_when_tries_to_send() {
+    if (compose_state.message_content().length > page_params.max_message_length) {
+        $("#compose-textarea").addClass("flash");
+        setTimeout(() => $("#compose-textarea").removeClass("flash"), 1500);
+        return false;
+    }
+    return true;
 }
 
 export function validate() {
@@ -513,10 +538,7 @@ export function validate() {
         );
         return false;
     }
-
-    if (message_content.length > page_params.max_message_length) {
-        // We don't display an error message, since the red box already
-        // communicates clearly what you did wrong.
+    if (!warn_for_text_overflow_when_tries_to_send()) {
         return false;
     }
 
