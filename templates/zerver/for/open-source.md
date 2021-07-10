@@ -1,3 +1,13 @@
+[Zulip Standard](/plans) is free for open-source communities! To join the
+hundreds of open-source projects we sponsor, you can request sponsorship
+from your organization's
+[billing page](/accounts/go/?next=/upgrade%23sponsorship), or contact us at
+[sales@zulip.com](mailto:sales@zulip.com) to check whether your organization
+qualifies.
+
+
+------------------------------------------
+
 The Zulip core developers have decades of combined experience leading
 and growing open source communities. We use Zulip to fashion the
 day-to-day experience of being a part of our project. No other chat
@@ -89,16 +99,6 @@ community succeed too!
 
 Below, we’ve collected a list of [Zulip features](/features) that are
 particularly useful to open source communities.
-
-### Free hosting at zulip.com.
-
-Zulip sponsors free hosting for hundreds of open source projects,
-supported by (and is identical to) zulip.com’s commercial
-offerings. This offer extends to any community involved in supporting
-free and open source software: development projects, foundations,
-meetups, hackathons, conference committees, and more. If you’re not
-sure whether your organization qualifies, send us an email at
-support@zulip.com.
 
 ### Moderation suite.
 
