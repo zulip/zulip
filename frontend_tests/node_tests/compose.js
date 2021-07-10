@@ -518,10 +518,7 @@ test_ui("enter_with_preview_open", ({override}) => {
     compose.enter_with_preview_open();
 
     assert.ok($("#enter_sends").prop("checked"));
-    assert.equal(
-        $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "You have nothing to send!"}),
-    );
+    assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
 test_ui("finish", ({override}) => {
