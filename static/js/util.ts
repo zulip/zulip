@@ -1,11 +1,13 @@
 import _ from "lodash";
 
+import type {Message, PrivateMessage, StreamMessage, UpdateMessageEvent} from "./types";
+
 // TODO: Move the TOPIC_NAME to appropriate
 // message module when it is converted to TS.
-export const TOPIC_NAME = "subject";
+export const TOPIC_NAME = "subject" as const;
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
-export function random_int(min, max) {
+export function random_int(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -19,7 +21,11 @@ export function random_int(min, max) {
 // for some i and false otherwise.
 //
 // Usage: lower_bound(array, value, less)
-export function lower_bound(array, value, less) {
+export function lower_bound<T>(
+    array: T[],
+    value: T,
+    less: (a: T, b: T, index: number) => boolean,
+): number {
     let first = 0;
     const last = array.length;
 
@@ -40,11 +46,14 @@ export function lower_bound(array, value, less) {
     return first;
 }
 
-function lower_same(a, b) {
+function lower_same(a: string, b: string): boolean {
     return a.toLowerCase() === b.toLowerCase();
 }
 
-export const same_stream_and_topic = function util_same_stream_and_topic(a, b) {
+export const same_stream_and_topic = function util_same_stream_and_topic(
+    a: StreamMessage,
+    b: StreamMessage,
+): boolean {
     // Streams and topics are case-insensitive.
     return (
         a.stream_id === b.stream_id &&
@@ -52,16 +61,16 @@ export const same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     );
 };
 
-export function is_pm_recipient(user_id, message) {
+export function is_pm_recipient(user_id: number, message: PrivateMessage): boolean {
     const recipients = message.to_user_ids.split(",");
     return recipients.includes(user_id.toString());
 }
 
-export function extract_pm_recipients(recipients) {
+export function extract_pm_recipients(recipients: string): string[] {
     return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
 }
 
-export const same_recipient = function util_same_recipient(a, b) {
+export const same_recipient = function util_same_recipient(a?: Message, b?: Message): boolean {
     if (a === undefined || b === undefined) {
         return false;
     }
@@ -78,7 +87,7 @@ export const same_recipient = function util_same_recipient(a, b) {
     return false;
 };
 
-export const same_sender = function util_same_sender(a, b) {
+export const same_sender = function util_same_sender(a?: Message, b?: Message): boolean {
     return (
         a !== undefined &&
         b !== undefined &&
@@ -86,7 +95,7 @@ export const same_sender = function util_same_sender(a, b) {
     );
 };
 
-export function normalize_recipients(recipients) {
+export function normalize_recipients(recipients: string): string {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
@@ -102,7 +111,7 @@ export function normalize_recipients(recipients) {
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of
 // typing.
-export function robust_uri_decode(str) {
+export function robust_uri_decode(str: string): string {
     let end = str.length;
     while (end > 0) {
         try {
@@ -121,7 +130,7 @@ export function robust_uri_decode(str) {
 // doesn't support the ECMAScript Internationalization API
 // Specification, do a dumb string comparison because
 // String.localeCompare is really slow.
-export function make_strcmp() {
+export function make_strcmp(): (a: string, b: string) => number {
     try {
         const collator = new Intl.Collator();
         return collator.compare;
@@ -129,14 +138,14 @@ export function make_strcmp() {
         // continue regardless of error
     }
 
-    return function util_strcmp(a, b) {
+    return function util_strcmp(a: string, b: string): number {
         return a < b ? -1 : a > b ? 1 : 0;
     };
 }
 
 export const strcmp = make_strcmp();
 
-export const array_compare = function util_array_compare(a, b) {
+export const array_compare = function util_array_compare<T>(a: T[], b: T[]): boolean {
     if (a.length !== b.length) {
         return false;
     }
@@ -157,40 +166,41 @@ export const array_compare = function util_array_compare(a, b) {
  * which should be a function that computes the uncached value.
  */
 const unassigned_value_sentinel = Symbol("unassigned_value_sentinel");
-export class CachedValue {
-    _value = unassigned_value_sentinel;
+export class CachedValue<T> {
+    _value: T | typeof unassigned_value_sentinel = unassigned_value_sentinel;
+    compute_value: () => T;
 
-    constructor(opts) {
+    constructor(opts: {compute_value(): T}) {
         this.compute_value = opts.compute_value;
     }
 
-    get() {
+    get(): T {
         if (this._value === unassigned_value_sentinel) {
             this._value = this.compute_value();
         }
         return this._value;
     }
 
-    reset() {
+    reset(): void {
         this._value = unassigned_value_sentinel;
     }
 }
 
-export function find_wildcard_mentions(message_content) {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
+export function find_wildcard_mentions(message_content: string): string | null {
+    const mention = /(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/.exec(message_content);
     if (mention === null) {
         return null;
     }
     return mention[3];
 }
 
-export const move_array_elements_to_front = function util_move_array_elements_to_front(
-    array,
-    selected,
-) {
+export const move_array_elements_to_front = function util_move_array_elements_to_front<T>(
+    array: T[],
+    selected: T[],
+): T[] {
     const selected_hash = new Set(selected);
-    const selected_elements = [];
-    const unselected_elements = [];
+    const selected_elements: T[] = [];
+    const unselected_elements: T[] = [];
     for (const element of array) {
         (selected_hash.has(element) ? selected_elements : unselected_elements).push(element);
     }
@@ -198,43 +208,47 @@ export const move_array_elements_to_front = function util_move_array_elements_to
 };
 
 // check by the userAgent string if a user's client is likely mobile.
-export function is_mobile() {
+export function is_mobile(): boolean {
     const regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 }
 
-export function sorted_ids(ids) {
+export function sorted_ids(ids: string[] | number[]): number[] {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
-    let id_list = ids.map((s) => Number.parseInt(s, 10));
+    let id_list = ids.map((s) => Number.parseInt(s.toString(), 10));
     id_list.sort((a, b) => a - b);
     id_list = _.sortedUniq(id_list);
 
     return id_list;
 }
 
-export function set_match_data(target, source) {
+export function set_match_data(target: Message, source: Message): void {
     target.match_subject = source.match_subject;
     target.match_content = source.match_content;
 }
 
-export function get_match_topic(obj) {
+export function get_match_topic(obj: Message): string | undefined {
     return obj.match_subject;
 }
 
-export function get_draft_topic(obj) {
+export function get_draft_topic(obj: Message): string {
+    if (obj.type === "private") {
+        return "";
+    }
+
     // We will need to support subject for old drafts.
     return obj.topic || obj[TOPIC_NAME] || "";
 }
 
-export function get_reload_topic(obj) {
+export function get_reload_topic(obj: {topic?: string; subject?: string}): string {
     // When we first upgrade to releases that have
     // topic=foo in the code, the user's reload URL
     // may still have subject=foo from the prior version.
     return obj.topic || obj[TOPIC_NAME] || "";
 }
 
-export function get_edit_event_topic(obj) {
+export function get_edit_event_topic(obj: UpdateMessageEvent): string {
     if (obj.topic === undefined) {
         return obj[TOPIC_NAME];
     }
@@ -244,25 +258,25 @@ export function get_edit_event_topic(obj) {
     return obj.topic;
 }
 
-export function get_edit_event_orig_topic(obj) {
+export function get_edit_event_orig_topic(obj: UpdateMessageEvent): string | undefined {
     return obj.orig_subject;
 }
 
-export function get_edit_event_prev_topic(obj) {
+export function get_edit_event_prev_topic(obj: UpdateMessageEvent): string | undefined {
     return obj.prev_subject;
 }
 
-export function is_topic_synonym(operator) {
+export function is_topic_synonym(operator: string): boolean {
     return operator === "subject";
 }
 
-export function convert_message_topic(message) {
-    if (message.topic === undefined) {
+export function convert_message_topic(message: StreamMessage): void {
+    if (message.topic === undefined && message.subject !== undefined) {
         message.topic = message.subject;
     }
 }
 
-export function clean_user_content_links(html) {
+export function clean_user_content_links(html: string): string {
     const content = new DOMParser().parseFromString(html, "text/html").body;
     for (const elt of content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
@@ -275,6 +289,10 @@ export function clean_user_content_links(html) {
         // Zulip web app using our hashchange system, do not require
         // these attributes.
         const href = elt.getAttribute("href");
+        if (href === null) {
+            throw new Error("No href attribute found in <a> tag");
+        }
+
         let url;
         try {
             url = new URL(href, window.location.href);
@@ -307,7 +325,7 @@ export function clean_user_content_links(html) {
         if (url.origin === window.location.origin && url.pathname.startsWith("/user_uploads/")) {
             title = legacy_title = url.pathname.slice(url.pathname.lastIndexOf("/") + 1);
         } else {
-            title = url;
+            title = url.href;
             legacy_title = href;
         }
         elt.setAttribute(
@@ -318,7 +336,11 @@ export function clean_user_content_links(html) {
     return content.innerHTML;
 }
 
-export function filter_by_word_prefix_match(items, search_term, item_to_text) {
+export function filter_by_word_prefix_match<T>(
+    items: T[],
+    search_term: string,
+    item_to_text: (item: T) => string,
+): T[] {
     if (search_term === "") {
         return items;
     }
@@ -338,7 +360,7 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
     return filtered_items;
 }
 
-export function get_time_from_date_muted(date_muted) {
+export function get_time_from_date_muted(date_muted?: number): number {
     if (date_muted === undefined) {
         return Date.now();
     }

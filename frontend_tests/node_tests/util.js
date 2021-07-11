@@ -296,4 +296,18 @@ run_test("clean_user_content_links", () => {
             "<a>unsafe</a> " +
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',
     );
+
+    assert.throws(() => {
+        util.clean_user_content_links("<a>No href attribute</a>");
+    }, "No href attribute found");
+});
+
+run_test("get_draft_topic", () => {
+    assert.deepEqual(util.get_draft_topic({type: "private"}), "");
+});
+
+run_test("convert_message_topic", () => {
+    const message = {subject: "Test"};
+    util.convert_message_topic(message);
+    assert.deepEqual(message.topic, message.subject);
 });
