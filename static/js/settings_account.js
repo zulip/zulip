@@ -691,7 +691,7 @@ export function set_up() {
         const data = {presence_enabled: $("#presence_enabled").prop("checked")};
         settings_ui.do_settings_change(
             channel.patch,
-            "/json/settings/notifications",
+            "/json/settings",
             data,
             $(".privacy-setting-status").expectOne(),
         );
