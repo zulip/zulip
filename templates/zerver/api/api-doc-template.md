@@ -30,6 +30,4 @@
 
 #### Example response
 
-{generate_code_example|API_ENDPOINT_NAME|fixture(200)}
-
-{generate_code_example|API_ENDPOINT_NAME|fixture(400)}
+{generate_code_example|API_ENDPOINT_NAME|fixture}

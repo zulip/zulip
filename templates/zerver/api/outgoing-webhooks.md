@@ -46,7 +46,7 @@ settings][settings].
 
 ## Outgoing webhook format
 
-{generate_code_example|/zulip-outgoing-webhook:post|fixture(200)}
+{generate_code_example|/zulip-outgoing-webhook:post|fixture}
 
 ### Fields documentation
 

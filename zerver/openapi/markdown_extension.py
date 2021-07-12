@@ -451,14 +451,12 @@ class APICodeExamplesPreprocessor(Preprocessor):
                     language, options = parse_language_and_options(match.group(2))
                     function = match.group(3)
                     key = match.group(4)
-                    argument = match.group(6)
                     if self.api_url is None:
                         raise AssertionError("Cannot render curl API examples without API URL set.")
                     options["api_url"] = self.api_url
 
                     if key == "fixture":
-                        if argument:
-                            text = self.render_fixture(function, name=argument)
+                        text = self.render_fixture(function)
                     elif key == "example":
                         path, method = function.rsplit(":", 1)
                         if language in ADMIN_CONFIG_LANGUAGES and check_requires_administrator(
@@ -484,9 +482,9 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_fixture(self, function: str, name: str) -> List[str]:
+    def render_fixture(self, function: str) -> List[str]:
         path, method = function.rsplit(":", 1)
-        return generate_openapi_fixture(path, method, name)
+        return generate_openapi_fixture(path, method)
 
 
 class APIDescriptionPreprocessor(Preprocessor):

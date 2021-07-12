@@ -182,12 +182,11 @@ must have a `post` HTTP method defined.
 If you've already followed the steps in the [Usage examples](#usage-examples)
 section, this part should be fairly trivial.
 
-You can use the following Markdown directive to render the fixtures
-defined in the OpenAPI `zulip.yaml` for a given endpoint and status
-code:
+You can use the following Markdown directive to render all the fixtures
+defined in the OpenAPI `zulip.yaml` for a given endpoint
 
 ```
-{generate_code_example|/messages/render:post|fixture(200)}
+{generate_code_example|/messages/render:post|fixture}
 ```
 
 ## Step by step guide

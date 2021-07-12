@@ -17,13 +17,7 @@ translated into French if the user has a French locale).
 Each endpoint documents its own unique errors; below, we document
 errors common to many endpoints:
 
-{generate_code_example|/rest-error-handling:post|fixture(400)}
-
-{generate_code_example|/rest-error-handling:post|fixture(401)}
-
-{generate_code_example|/rest-error-handling:post|fixture(403)}
-
-{generate_code_example|/rest-error-handling:post|fixture(429)}
+{generate_code_example|/rest-error-handling:post|fixture}
 
 The `retry-after` paremeter in the response indicates how many seconds
 the client must wait before making additional requests.
