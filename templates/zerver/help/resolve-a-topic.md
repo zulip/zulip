@@ -24,6 +24,22 @@ on when topic editing is allowed.
 
 ## Mark a topic as resolved
 
+Marking a topic as resolved edits its name to add the `✔ ` and
+triggers an automated message from Notification Bot explaining that
+you resolved the topic.
+
+### Via the message topic bar
+
+{start_tabs}
+
+1. Hover over a topic in the message recipient pane.
+
+2. Click on the **✔** icon to mark it as resolved.
+
+{end_tabs}
+
+### Via the left sidebar
+
 {start_tabs}
 
 {!topic-actions.md!}
@@ -32,11 +48,23 @@ on when topic editing is allowed.
 
 {end_tabs}
 
-Marking a topic as resolved edits its name to add the `✔ ` and
-triggers an automated message from Notification Bot explaining that
-you resolved the topic.
-
 ## Mark a topic as unresolved
+
+Marking a topic as unresolved edits its name to remove the `✔ ` and
+triggers an automated message from Notification Bot explaining that
+you unresolved the topic.
+
+### Via the message topic bar
+
+{start_tabs}
+
+1. Hover over a topic in the message recipient pane.
+
+2. Click on the **✔** icon to mark it as unresolved.
+
+{end_tabs}
+
+### Via the left sidebar
 
 {start_tabs}
 
@@ -46,9 +74,6 @@ you resolved the topic.
 
 {end_tabs}
 
-Marking a topic as unresolved edits its name to remove the `✔ ` and
-triggers an automated message from Notification Bot explaining that
-you unresolved the topic.
 
 ## Details
 
