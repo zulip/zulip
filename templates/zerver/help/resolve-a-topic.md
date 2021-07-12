@@ -1,28 +1,55 @@
 # Resolve a topic
 
-Zulip's topics are ideal for discussing workflow, including support,
-issues, production errors, and much more.
+Zulip's [topics](/help/about-streams-and-topics) are very
+helpful for customer support, answering questions, investigating
+issues and production errors, and other workflows.
 
-Resolving topics can support workflow in a variety of ways, and it's
-common to have different policies on using it for different streams
-even within an organization. A common approach is support contexts is
-to mark topics as resolved when one would close a support ticket,
-either because the question was answered, or because investigation is
-complete and remaining work has been transferred to an external issue
-tracker.
+Resolving topics makes it easy to track the status of each question,
+investigation, or notification. Marking a topic as resolved:
 
-Marking a topic as resolved renames it (`example topic` becomes `✔
-example topic`) and triggers an automated message from Notification
-Bot explaining that you resolved the topic.
+* Puts a ✔ at the beginning of the topic name, e.g. `example topic`
+  becomes `✔ example topic`.
+* Triggers an automated message from Notification Bot indicating that
+  you resolved the topic.
+* Changes whether the topic appears when using the `is:resolved` and
+  `-is:resolved` [search operators](/help/search-for-messages).
 
-Users can resolve/unresolve topics when they have permission to edit
-the topic.  Organization administrators can [configure who can edit
-topics](/help/configure-who-can-edit-topics), or turn off message
+Marking a topic as unresolved removes the ✔ and also triggers a
+Notification Bot message.
+
+It's often helpful to define a policy for when to resolve topics that
+fits how topics are used in a given stream. Here are some common
+approaches for deciding when to mark a topic as resolved:
+
+* **Support**: When the support interaction is complete. Resolving
+  topics is particularly useful for internal support teams that might
+  not need a dedicated support ticket tracker.
+* **Issues, errors and production incidents**: When investigation or
+  incident response is complete, and any follow-up work has been
+  transferred to the appropriate tracker.
+* **Workflow management**: What the work described in the topic is
+  complete and any follow-ups have been transcribed.
+* **Answering questions**: When the question has been fully answered,
+  and follow-ups would be best discussed in a new topic.
+
+Users can resolve and unresolve a topic if they have permission to edit
+topics. Organization administrators can [configure who can edit
+topics](/help/configure-who-can-edit-topics) or turn off message
 editing entirely. See the [guide to message and topic
-editing](/help/configure-message-editing-and-deletion) for the details
+editing](/help/configure-message-editing-and-deletion) for details
 on when topic editing is allowed.
 
 ## Mark a topic as resolved
+
+### Via the message recipient bar
+
+{start_tabs}
+
+1. Click on the **✔** icon to mark an unresolved topic as resolved.
+
+{end_tabs}
+
+### Via the left sidebar
 
 {start_tabs}
 
@@ -34,6 +61,16 @@ on when topic editing is allowed.
 
 ## Mark a topic as unresolved
 
+### Via the message recipient bar
+
+{start_tabs}
+
+1. Click on the **✔** icon to mark a resolved topic as unresolved.
+
+{end_tabs}
+
+### Via the left sidebar
+
 {start_tabs}
 
 {!topic-actions.md!}
@@ -42,9 +79,6 @@ on when topic editing is allowed.
 
 {end_tabs}
 
-Marking a topic as unresolved edits its name to remove the `✔ ` and
-triggers an automated message from Notification Bot explaining that
-you unresolved the topic.
 
 ## Details
 
@@ -53,14 +87,17 @@ you unresolved the topic.
   human users will likely only send messages to the resolved topic.
 * [Integrations](/integrations) will usually send new messages to the
   original topic (`example topic`) after a topic is resolved. This is
-  useful for alerting integrations, where a repeat alert might have a
-  different cause. You can mark the topic as resolved as normal once
+  useful for alerting integrations, where a repeating alert might have a
+  different cause. You can mark the topic resolved (as normal) once
   you've investigated the situation.
-* Users can still send messages to a topic after it is resolved; this
-  is important for thank you messages as well as to discuss whether
+* Users can still send messages to a resolved topic; this
+  is important for _"thank you"_ messages and to discuss whether
   the topic was incorrectly marked as resolved.
 
 ## Related articles
 
 * [Rename a topic](/help/rename-a-topic)
+* [Move content to another topic](/help/move-content-to-another-topic)
+* [Restrict topic editing](/help/configure-who-can-edit-topics)
+* [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
 * [API documentation for resolving topics](/api/update-message)
