@@ -2659,6 +2659,10 @@ select.inline_select_topic_edit {
     .about-zulip-logo img {
         height: 40px;
     }
+
+    i.fa-copy {
+        cursor: pointer;
+    }
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
