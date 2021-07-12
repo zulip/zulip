@@ -50,7 +50,7 @@ def api_slack_incoming_webhook(
         for attachment in payload["attachments"]:
             body = add_attachment(attachment, body)
 
-    if body == "" and "text" in payload:
+    if body == "" and "text" in payload and payload["text"] is not None:
         body += payload["text"]
         if "icon_emoji" in payload and payload["icon_emoji"] is not None:
             body = "{} {}".format(payload["icon_emoji"], body)

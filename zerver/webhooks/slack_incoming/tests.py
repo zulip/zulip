@@ -18,6 +18,12 @@ Hello, world.
             expected_message,
         )
 
+    def test_null_message(self) -> None:
+        self.check_webhook(
+            "null_text",
+            expect_noop=True,
+        )
+
     def test_message_as_www_urlencoded(self) -> None:
         expected_topic = "devops"
         expected_message = """
