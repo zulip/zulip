@@ -81,6 +81,7 @@ def add_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200_0")
 
+    ensure_users([26], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
@@ -238,6 +239,7 @@ def get_user_by_email(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
+    ensure_users([8], ["cordelia"])
 
     # {code_example|start}
     # Fetch details on a user given a user ID
@@ -255,6 +257,7 @@ def get_single_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:delete")
 def deactivate_user(client: Client) -> None:
+    ensure_users([8], ["cordelia"])
 
     # {code_example|start}
     # Deactivate a user
@@ -276,6 +279,7 @@ def reactivate_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:patch")
 def update_user(client: Client) -> None:
+    ensure_users([8, 10], ["cordelia", "hamlet"])
 
     # {code_example|start}
     # Change a user's full name.
@@ -294,6 +298,8 @@ def update_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:get")
 def get_subscription_status(client: Client) -> None:
+    ensure_users([7], ["zoe"])
+
     # {code_example|start}
     # Check whether a user is a subscriber to a given stream.
     user_id = 7
