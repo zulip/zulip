@@ -522,9 +522,19 @@ function handle_human_form(tbody, status_field) {
             return;
         }
 
+        let user_email = settings_data.email_for_user_settings(person);
+        if (!user_email) {
+            // When email_address_visibility is "Nobody", we still
+            // want to show the fake email address in the edit form.
+            //
+            // We may in the future want to just hide the form field
+            // for this situation, once we display user IDs.
+            user_email = person.email;
+        }
+
         const html_body = render_admin_human_form({
             user_id,
-            email: person.email,
+            email: user_email,
             full_name: person.full_name,
             user_role_values: settings_config.user_role_values,
             disable_role_dropdown: person.is_owner && !page_params.is_owner,
