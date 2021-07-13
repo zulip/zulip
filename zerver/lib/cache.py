@@ -579,7 +579,7 @@ def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
 def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
-    from zerver.models import is_cross_realm_bot_email
+    from zerver.models import is_system_bot_email
 
     keys = []
     for user_profile in user_profiles:
@@ -590,7 +590,7 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
         keys.append(
             user_profile_delivery_email_cache_key(user_profile.delivery_email, user_profile.realm)
         )
-        if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
+        if user_profile.is_bot and is_system_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
             keys.append(bot_profile_cache_key(user_profile.email, user_profile.realm_id))
 

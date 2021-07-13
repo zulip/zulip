@@ -249,7 +249,7 @@ from zerver.models import (
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id,
-    is_cross_realm_bot_email,
+    is_system_bot_email,
     linkifiers_for_realm,
     query_for_ids,
     realm_filters_for_realm,
@@ -2607,7 +2607,7 @@ def validate_recipient_user_profiles(
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same realm.
     realms = set()
-    if not is_cross_realm_bot_email(sender.email):
+    if not is_system_bot_email(sender.email):
         realms.add(sender.realm_id)
 
     for user_profile in user_profiles:
@@ -2620,7 +2620,7 @@ def validate_recipient_user_profiles(
                 _("'{email}' is no longer using Zulip.").format(email=user_profile.email)
             )
         recipient_profiles_map[user_profile.id] = user_profile
-        if not is_cross_realm_bot_email(user_profile.email):
+        if not is_system_bot_email(user_profile.email):
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
@@ -6806,7 +6806,7 @@ def do_send_confirmation_email(
 
 
 def email_not_system_bot(email: str) -> None:
-    if is_cross_realm_bot_email(email):
+    if is_system_bot_email(email):
         msg = email_reserved_for_system_bots_error(email)
         code = msg
         raise ValidationError(

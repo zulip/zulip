@@ -21,7 +21,7 @@ from zerver.models import (
     get_realm_stream,
     get_stream,
     get_stream_by_id_in_realm,
-    is_cross_realm_bot_email,
+    is_system_bot_email,
 )
 from zerver.tornado.django_api import send_event
 
@@ -190,7 +190,7 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
 
 
 def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream: Stream) -> None:
-    if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
+    if sender.is_realm_admin or is_system_bot_email(sender.delivery_email):
         pass
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
         raise JsonableError(_("Only organization administrators can send to this stream."))
@@ -236,7 +236,7 @@ def access_stream_for_send_message(
         else:
             raise JsonableError(_("User not authorized for this query"))
 
-    if is_cross_realm_bot_email(sender.delivery_email):
+    if is_system_bot_email(sender.delivery_email):
         return
 
     if stream.realm_id != sender.realm_id:

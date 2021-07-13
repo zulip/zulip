@@ -3090,7 +3090,7 @@ def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfil
 
 
 def get_user_including_cross_realm(email: str, realm: Realm) -> UserProfile:
-    if is_cross_realm_bot_email(email):
+    if is_system_bot_email(email):
         return get_system_bot(email, realm.id)
     return get_user(email, realm)
 
@@ -3154,7 +3154,7 @@ def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
 
-def is_cross_realm_bot_email(email: str) -> bool:
+def is_system_bot_email(email: str) -> bool:
     return email.lower() in settings.SYSTEM_BOTS_EMAILS
 
 

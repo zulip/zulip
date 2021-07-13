@@ -16,7 +16,7 @@ from zerver.models import (
     email_to_domain,
     email_to_username,
     get_users_by_delivery_email,
-    is_cross_realm_bot_email,
+    is_system_bot_email,
 )
 
 
@@ -148,7 +148,7 @@ def get_existing_user_errors(
     user_dict = {user.delivery_email.lower(): user for user in users}
 
     def process_email(email: str) -> None:
-        if is_cross_realm_bot_email(email):
+        if is_system_bot_email(email):
             if verbose:
                 msg = email_reserved_for_system_bots_error(email)
             else:
