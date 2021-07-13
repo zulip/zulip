@@ -481,6 +481,11 @@ function get_is_filter_suggestions(last, operators) {
             description: "unread messages",
             invalid: [{operator: "is", operand: "unread"}],
         },
+        {
+            search_string: "is:resolved",
+            description: "topics marked as resolved",
+            invalid: [{operator: "is", operand: "resolved"}],
+        },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
