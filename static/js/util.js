@@ -159,12 +159,12 @@ export const array_compare = function util_array_compare(a, b) {
  * You must supply a option to the constructor called compute_value
  * which should be a function that computes the uncached value.
  */
-const unassigned_value_sentinel = {};
+const unassigned_value_sentinel = Symbol("unassigned_value_sentinel");
 export class CachedValue {
     _value = unassigned_value_sentinel;
 
     constructor(opts) {
-        Object.assign(this, opts);
+        this.compute_value = opts.compute_value;
     }
 
     get() {
