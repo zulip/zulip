@@ -1299,7 +1299,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "262a": {"canonical_name": "star_and_crescent", "aliases": ["islam"]},
     "1f549": {"canonical_name": "om", "aliases": ["hinduism"]},
     "2638": {"canonical_name": "wheel_of_dharma", "aliases": ["buddhism"]},
-    "2721": {"canonical_name": "star_of_david", "aliases": ["judiasm"]},
+    "2721": {"canonical_name": "star_of_david", "aliases": ["judaism"]},
     # can't find any explanation of this at all. Is an alternate star of david?
     # '1f52f': {'canonical_name': 'X', 'aliases': ['six_pointed_star']},
     "1f54e": {"canonical_name": "menorah", "aliases": []},
