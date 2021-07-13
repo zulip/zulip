@@ -28,9 +28,7 @@
 
 #### Example response
 
-{generate_code_example|/mark_all_as_read:post|fixture(200)}
-
-{generate_code_example|/mark_all_as_read:post|fixture(400)}
+{generate_code_example|/mark_all_as_read:post|fixture}
 
 {generate_api_title(/mark_stream_as_read:post)}
 
@@ -64,9 +62,7 @@
 
 #### Example response
 
-{generate_code_example|/mark_stream_as_read:post|fixture(200)}
-
-{generate_code_example|/mark_stream_as_read:post|fixture(400)}
+{generate_code_example|/mark_stream_as_read:post|fixture}
 
 # Mark messages in a topic as read
 {generate_api_title(/mark_topic_as_read:post)}
@@ -101,6 +97,4 @@
 
 #### Example response
 
-{generate_code_example|/mark_topic_as_read:post|fixture(200)}
-
-{generate_code_example|/mark_topic_as_read:post|fixture(400)}
+{generate_code_example|/mark_topic_as_read:post|fixture}

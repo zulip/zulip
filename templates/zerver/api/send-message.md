@@ -76,6 +76,4 @@ file.
 
 #### Example response
 
-{generate_code_example|/messages:post|fixture(200)}
-
-{generate_code_example|/messages:post|fixture(400)}
+{generate_code_example|/messages:post|fixture}

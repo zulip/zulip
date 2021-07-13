@@ -254,39 +254,43 @@ def get_parameters_description(endpoint: str, method: str) -> str:
     )
 
 
-def generate_openapi_fixture(endpoint: str, method: str, status_code: str = "200") -> List[str]:
+def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
     """Generate fixture to be rendered"""
     fixture = []
-    if status_code not in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]:
-        subschema_count = 0
-    elif (
-        "oneOf"
-        in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-            "content"
-        ]["application/json"]["schema"]
+    for status_code in sorted(
+        openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     ):
-        subschema_count = len(
-            openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+        if (
+            "oneOf"
+            in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
                 "content"
-            ]["application/json"]["schema"]["oneOf"]
-        )
-    else:
-        subschema_count = 1
-    for subschema_index in range(subschema_count):
-        if subschema_count != 1:
-            subschema_status_code = status_code + "_" + str(subschema_index)
+            ]["application/json"]["schema"]
+        ):
+            subschema_count = len(
+                openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+                    "content"
+                ]["application/json"]["schema"]["oneOf"]
+            )
         else:
-            subschema_status_code = status_code
-        fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
-        fixture_description = (
-            get_openapi_fixture_description(endpoint, method, subschema_status_code).strip() + ":"
-        )
-        fixture_json = json.dumps(fixture_dict, indent=4, sort_keys=True, separators=(",", ": "))
+            subschema_count = 1
+        for subschema_index in range(subschema_count):
+            if subschema_count != 1:
+                subschema_status_code = status_code + "_" + str(subschema_index)
+            else:
+                subschema_status_code = status_code
+            fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
+            fixture_description = (
+                get_openapi_fixture_description(endpoint, method, subschema_status_code).strip()
+                + ":"
+            )
+            fixture_json = json.dumps(
+                fixture_dict, indent=4, sort_keys=True, separators=(",", ": ")
+            )
 
-        fixture.extend(fixture_description.splitlines())
-        fixture.append("``` json")
-        fixture.extend(fixture_json.splitlines())
-        fixture.append("```")
+            fixture.extend(fixture_description.splitlines())
+            fixture.append("``` json")
+            fixture.extend(fixture_json.splitlines())
+            fixture.append("```")
     return fixture
 
 
