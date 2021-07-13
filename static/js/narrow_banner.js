@@ -127,6 +127,8 @@ function pick_empty_narrow_banner() {
                 case "unread":
                     // You have no unread messages.
                     return $("#no_unread_narrow_message");
+                case "resolved":
+                    return $("#empty_narrow_resolved_topics");
             }
             // fallthrough to default case if no match is found
             break;

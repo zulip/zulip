@@ -60,6 +60,7 @@ function hide_all_empty_narrow_messages() {
         "#empty_narrow_group_private_message",
         "#silent_user",
         "#empty_search_narrow_message",
+        "#empty_narrow_resolved_topics",
     ];
     for (const selector of all_empty_narrow_messages) {
         $(selector).hide();
@@ -132,6 +133,11 @@ run_test("show_empty_narrow_message", () => {
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.ok($("#no_unread_narrow_message").visible());
+
+    set_filter([["is", "resolved"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.ok($("#empty_narrow_resolved_topics").visible());
 
     set_filter([["pm-with", ["Yo"]]]);
     hide_all_empty_narrow_messages();
