@@ -266,6 +266,11 @@ export function enter_with_preview_open() {
     }
 }
 
+function show_sending_indicator(whats_happening) {
+    $("#sending-indicator").text(whats_happening);
+    $("#sending-indicator").show();
+}
+
 export function finish() {
     clear_preview_area();
     clear_invites();
@@ -283,6 +288,12 @@ export function finish() {
         return undefined;
     }
 
+    $("#compose-send-button").prop("disabled", true).trigger("blur");
+    if (reminder.is_deferred_delivery(message_content)) {
+        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
+    } else {
+        show_sending_indicator($t({defaultMessage: "Sending..."}));
+    }
     if (!compose_validate.validate()) {
         // If the message failed validation, hide the sending indicator.
         $("#sending-indicator").hide();

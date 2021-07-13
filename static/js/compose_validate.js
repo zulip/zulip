@@ -8,11 +8,10 @@ import * as channel from "./channel";
 import * as compose_error from "./compose_error";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
-import {$t, $t_html} from "./i18n";
+import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as reminder from "./reminder";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
@@ -46,11 +45,6 @@ export function clear_all_everyone_warnings() {
     $("#compose-all-everyone").hide();
     $("#compose-all-everyone").empty();
     $("#compose-send-status").hide();
-}
-
-function show_sending_indicator(whats_happening) {
-    $("#sending-indicator").text(whats_happening);
-    $("#sending-indicator").show();
 }
 
 function show_announce_warnings(stream_id) {
@@ -513,14 +507,7 @@ export function warn_for_text_overflow_when_tries_to_send() {
 }
 
 export function validate() {
-    $("#compose-send-button").prop("disabled", true).trigger("blur");
     const message_content = compose_state.message_content();
-    if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
-    } else {
-        show_sending_indicator($t({defaultMessage: "Sending..."}));
-    }
-
     if (/^\s*$/.test(message_content)) {
         // Avoid showing an error message when "enter sends" is enabled,
         // as it is more likely that the user has hit "Enter" accidentally.
