@@ -1176,7 +1176,7 @@ if PRODUCTION:
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False
 
-CROSS_REALM_BOT_EMAILS = {
+SYSTEM_BOTS_EMAILS = {
     "notification-bot@zulip.com",
     "welcome-bot@zulip.com",
     "emailgateway@zulip.com",

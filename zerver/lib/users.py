@@ -428,7 +428,7 @@ def format_user_row(
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
-        if row["email"] in settings.CROSS_REALM_BOT_EMAILS:
+        if row["email"] in settings.SYSTEM_BOTS_EMAILS:
             result["is_system_bot"] = True
 
         # Note that bot_owner_id can be None with legacy data.
@@ -462,7 +462,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> Dict[str, Any]:
 
 def get_cross_realm_dicts() -> List[Dict[str, Any]]:
     users = bulk_get_users(
-        list(settings.CROSS_REALM_BOT_EMAILS),
+        list(settings.SYSTEM_BOTS_EMAILS),
         None,
         base_query=UserProfile.objects.filter(realm__string_id=settings.SYSTEM_BOT_REALM),
     ).values()

@@ -2314,7 +2314,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         return get_user(email, get_realm(subdomain))
 
     @override_settings(
-        CROSS_REALM_BOT_EMAILS=[
+        SYSTEM_BOTS_EMAILS=[
             "notification-bot@zulip.com",
             "welcome-bot@zulip.com",
             "support@3.example.com",
@@ -2349,7 +2349,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         notification_bot = get_system_bot(notification_bot_email, internal_realm.id)
         with self.settings(
-            CROSS_REALM_BOT_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
+            SYSTEM_BOTS_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
         ):
             # HACK: We should probably be creating this "bot" user another
             # way, but since you can't register a user with a

@@ -3155,7 +3155,7 @@ def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
 
 
 def is_cross_realm_bot_email(email: str) -> bool:
-    return email.lower() in settings.CROSS_REALM_BOT_EMAILS
+    return email.lower() in settings.SYSTEM_BOTS_EMAILS
 
 
 # The Huddle class represents a group of individuals who have had a

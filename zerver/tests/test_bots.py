@@ -1584,7 +1584,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertTrue(is_cross_realm_bot_email("notification-BOT@zulip.com"))
         self.assertFalse(is_cross_realm_bot_email("random-bot@zulip.com"))
 
-        with self.settings(CROSS_REALM_BOT_EMAILS={"random-bot@zulip.com"}):
+        with self.settings(SYSTEM_BOTS_EMAILS={"random-bot@zulip.com"}):
             self.assertTrue(is_cross_realm_bot_email("random-bot@zulip.com"))
             self.assertFalse(is_cross_realm_bot_email("notification-bot@zulip.com"))
 

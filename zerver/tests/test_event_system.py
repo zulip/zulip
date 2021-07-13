@@ -1118,7 +1118,7 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
             user_avatar_url_field_optional=True,
         )
 
-        for bot_email in settings.CROSS_REALM_BOT_EMAILS:
+        for bot_email in settings.SYSTEM_BOTS_EMAILS:
             bot_profile = get_system_bot(bot_email, realm.id)
             self.assertTrue(bot_profile.id in result)
             self.assertTrue(result[bot_profile.id]["is_system_bot"])

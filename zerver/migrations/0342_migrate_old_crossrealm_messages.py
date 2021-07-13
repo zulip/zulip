@@ -6,7 +6,7 @@ from django.db import migrations, transaction
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-CROSS_REALM_BOT_EMAILS = {
+SYSTEM_BOTS_EMAILS = {
     "notification-bot@zulip.com",
     "welcome-bot@zulip.com",
     "emailgateway@zulip.com",
@@ -31,7 +31,7 @@ def migrate_cross_realm_messages(apps: StateApps, schema_editor: DatabaseSchemaE
 
     cross_realm_bots = list(
         UserProfile.objects.filter(
-            email__in=settings.CROSS_REALM_BOT_EMAILS, realm__string_id=settings.SYSTEM_BOT_REALM
+            email__in=settings.SYSTEM_BOTS_EMAILS, realm__string_id=settings.SYSTEM_BOT_REALM
         ).select_related("recipient")
     )
     cross_realm_bot_ids = [bot.id for bot in cross_realm_bots]
