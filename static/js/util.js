@@ -93,11 +93,12 @@ export function normalize_recipients(recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = recipients.split(",").map((s) => s.trim());
-    recipients = recipients.map((s) => s.toLowerCase());
-    recipients = recipients.filter((s) => s.length > 0);
-    recipients.sort();
-    return recipients.join(",");
+    return recipients
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+        .sort()
+        .join(",");
 }
 
 // Avoid URI decode errors by removing characters from the end
