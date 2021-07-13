@@ -568,7 +568,7 @@ class HomeTest(ZulipTestCase):
 
         for field in buckets:
             users = page_params[field]
-            self.assertTrue(len(users) >= 3, field)
+            self.assertGreaterEqual(len(users), 3, field)
             for rec in users:
                 self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                 if field == "realm_bots":

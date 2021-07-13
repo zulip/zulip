@@ -4880,7 +4880,7 @@ class GetSubscribersTest(ZulipTestCase):
         with queries_captured() as queries:
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
-        self.assertTrue(len(subscribed_streams) >= 2)
+        self.assertGreaterEqual(len(subscribed_streams), 2)
         for sub in subscribed_streams:
             if not sub["name"].startswith("mit_"):
                 raise AssertionError("Unexpected stream!")
