@@ -130,6 +130,11 @@ run_test("get_unread_ids", () => {
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
 
+    terms = [{operator: "is", operand: "resolved"}];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [stream_msg.id]);
+
     terms = [{operator: "sender", operand: "me@example.com"}];
     set_filter(terms);
     // note that our candidate ids are just "all" ids now
