@@ -672,8 +672,10 @@ IGNORED_TEAM_ACTIONS = [
     "removed_from_repository",
 ]
 
+ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
-@webhook_view("GitHub", notify_bot_owner_on_invalid_json=True)
+
+@webhook_view("GitHub", notify_bot_owner_on_invalid_json=True, all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_github_webhook(
     request: HttpRequest,
@@ -709,7 +711,7 @@ def api_github_webhook(
     )
     body = body_function(helper)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success()
 
 
