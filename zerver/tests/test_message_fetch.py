@@ -34,7 +34,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
-from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
+from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.topic_mutes import set_topic_mutes
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.upload import create_attachment
@@ -247,6 +247,14 @@ class NarrowBuilderTest(ZulipTestCase):
             param_2=0,
         )
         self._do_add_term_test(term, where_clause, params)
+
+    def test_add_term_using_is_operator_for_resolved_topics(self) -> None:
+        term = dict(operator="is", operand="resolved")
+        self._do_add_term_test(term, "WHERE (subject LIKE %(subject_1)s || '%%'")
+
+    def test_add_term_using_is_operator_for_negated_resolved_topics(self) -> None:
+        term = dict(operator="is", operand="resolved", negated=True)
+        self._do_add_term_test(term, "WHERE (subject NOT LIKE %(subject_1)s || '%%'")
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
@@ -527,7 +535,7 @@ class NarrowLibraryTest(ZulipTestCase):
         fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/narrow.json")
         with open(fixtures_path, "rb") as f:
             scenarios = orjson.loads(f.read())
-        self.assert_length(scenarios, 9)
+        self.assert_length(scenarios, 10)
         for scenario in scenarios:
             narrow = scenario["narrow"]
             accept_events = scenario["accept_events"]
@@ -661,6 +669,11 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator="streams", operand="public"),
             dict(operator="is", operand="alerted"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            dict(operator="streams", operand="public"),
+            dict(operator="is", operand="resolved"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -2494,6 +2507,22 @@ class GetOldMessagesTest(ZulipTestCase):
             dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
         )
         self.assert_length(result["messages"], 0)
+
+    def test_get_messages_for_resolved_topics(self) -> None:
+        self.login("cordelia")
+        cordelia = self.example_user("cordelia")
+
+        self.send_stream_message(cordelia, "Verona", "whatever1")
+        resolved_topic_name = RESOLVED_TOPIC_PREFIX + "foo"
+        anchor = self.send_stream_message(cordelia, "Verona", "whatever2", resolved_topic_name)
+        self.send_stream_message(cordelia, "Verona", "whatever3")
+
+        narrow = [dict(operator="is", operand="resolved")]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=1, num_after=1)
+        )
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], anchor)
 
     def test_get_visible_messages_with_anchor(self) -> None:
         def messages_matches_ids(messages: List[Dict[str, Any]], message_ids: List[int]) -> None:

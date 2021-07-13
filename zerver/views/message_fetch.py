@@ -47,7 +47,13 @@ from zerver.lib.streams import (
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
 )
-from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa, topic_match_sa
+from zerver.lib.topic import (
+    DB_TOPIC_NAME,
+    MATCH_TOPIC,
+    get_resolved_topic_condition_sa,
+    topic_column_sa,
+    topic_match_sa,
+)
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.types import Validator
 from zerver.lib.utils import statsd
@@ -233,6 +239,9 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
+            return query.where(maybe_negate(cond))
+        elif operand == "resolved":
+            cond = get_resolved_topic_condition_sa()
             return query.where(maybe_negate(cond))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 

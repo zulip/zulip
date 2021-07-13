@@ -82,6 +82,11 @@ def topic_match_sa(topic_name: str) -> "ColumnElement[bool]":
     return topic_cond
 
 
+def get_resolved_topic_condition_sa() -> "ColumnElement[bool]":
+    resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
+    return resolved_topic_cond
+
+
 def topic_column_sa() -> "ColumnElement[str]":
     return column("subject", Text)
 
