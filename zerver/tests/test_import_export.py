@@ -90,7 +90,7 @@ class QueryUtilTest(ZulipTestCase):
         for query in get_queries():
             # For our test to be meaningful, we want non-empty queries
             # at first
-            assert len(list(query)) > 0
+            self.assertGreater(len(list(query)), 0)
 
         queries = get_queries()
 
@@ -142,7 +142,7 @@ class QueryUtilTest(ZulipTestCase):
             len(all_msg_ids),
             len(Message.objects.exclude(sender_id=cordelia.id)),
         )
-        self.assertTrue(len(all_msg_ids) > 15)
+        self.assertGreater(len(all_msg_ids), 15)
 
         # Verify assertions about disjoint-ness.
         queries = [
