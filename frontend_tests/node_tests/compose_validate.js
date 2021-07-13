@@ -13,7 +13,6 @@ set_global("document", {location: {}});
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_state = zrequire("compose_state");
-const reminder = mock_esm("../../static/js/reminder");
 const ui_util = mock_esm("../../static/js/ui_util");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -113,7 +112,6 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 
 test_ui("validate", ({override, mock_template}) => {
     override(compose_actions, "update_placeholder_text", () => {});
-    override(reminder, "is_deferred_delivery", () => false);
 
     function initialize_pm_pill() {
         $.clear_all_elements();
@@ -144,17 +142,13 @@ test_ui("validate", ({override, mock_template}) => {
     initialize_pm_pill();
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#sending-indicator").visible());
-    assert.ok(!$("#compose-send-button").is_focused());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "You have nothing to send!"}),
     );
 
-    reminder.is_deferred_delivery = () => true;
     compose_validate.validate();
-    assert.equal($("#sending-indicator").text(), "translated: Scheduling...");
-    reminder.is_deferred_delivery = () => {};
 
     add_content_to_compose_box();
     let zephyr_checked = false;
@@ -312,8 +306,6 @@ test_ui("test_wildcard_mention_allowed", () => {
 });
 
 test_ui("validate_stream_message", ({override, mock_template}) => {
-    override(reminder, "is_deferred_delivery", () => false);
-
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -362,9 +354,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", ({override}) => {
-    override(reminder, "is_deferred_delivery", () => false);
-
+test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -401,9 +391,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({override}) => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", ({override}) => {
-    override(reminder, "is_deferred_delivery", () => false);
-
+test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     page_params.is_admin = false;
     page_params.is_moderator = false;
     page_params.is_guest = false;
@@ -440,9 +428,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({override})
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_full_members_only", ({override}) => {
-    override(reminder, "is_deferred_delivery", () => false);
-
+test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     page_params.is_admin = false;
     page_params.is_guest = true;
     const sub = {
@@ -499,10 +485,8 @@ test_ui("test_check_overflow_text", () => {
     assert.ok(!textarea.hasClass("over_limit"));
 });
 
-test_ui("test_message_overflow", ({override}) => {
+test_ui("test_message_overflow", () => {
     page_params.max_message_length = 10000;
-
-    override(reminder, "is_deferred_delivery", () => false);
 
     const sub = {
         stream_id: 101,

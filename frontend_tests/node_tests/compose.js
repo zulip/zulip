@@ -546,7 +546,7 @@ test_ui("finish", ({override}) => {
     })();
 
     (function test_when_compose_validation_succeed() {
-        $("#compose-textarea").hide();
+        // Testing successfully sending of a message.
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
@@ -564,11 +564,35 @@ test_ui("finish", ({override}) => {
             send_message_called = true;
         });
         assert.ok(compose.finish());
+        assert.equal($("#sending-indicator").text(), "translated: Sending...");
         assert.ok($("#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
         assert.ok(send_message_called);
+        assert.ok(compose_finished_event_checked);
+
+        // Testing successful scheduling of message.
+        $("#compose .undo_markdown_preview").show();
+        $("#compose .preview_message_area").show();
+        $("#compose .markdown_preview").hide();
+        $("#compose-textarea").val("foobarfoobar");
+        compose_state.set_message_type("stream");
+        override(compose_state, "stream_name", () => "social");
+        override(people, "get_by_user_id", () => []);
+        compose_finished_event_checked = false;
+        let schedule_message = false;
+        override(reminder, "schedule_message", () => {
+            schedule_message = true;
+        });
+        reminder.is_deferred_delivery = () => true;
+        assert.ok(compose.finish());
+        assert.equal($("#sending-indicator").text(), "translated: Scheduling...");
+        assert.ok($("#compose-textarea").visible());
+        assert.ok(!$("#compose .undo_markdown_preview").visible());
+        assert.ok(!$("#compose .preview_message_area").visible());
+        assert.ok($("#compose .markdown_preview").visible());
+        assert.ok(schedule_message);
         assert.ok(compose_finished_event_checked);
     })();
 });
