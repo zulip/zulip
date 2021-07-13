@@ -39,6 +39,8 @@ Here is the **full list of search operators**.
 * `is:alerted`: See [alert words](/help/add-an-alert-word).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
+* `is:resolved`: Search messages in [resolved topics](/help/resolve-a-topic).
+* `-is:resolved`: Search messages in [unresolved topics](/help/resolve-a-topic).
 * `is:unread`
 * `has:link`
 * `has:image`
