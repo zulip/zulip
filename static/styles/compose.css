@@ -93,7 +93,7 @@
     }
 
     .nav-tabs > li:last-child {
-        margin-right: 28px;
+        margin-right: 36px; /* Makes space for the close and expand buttons */
     }
 
     .stream-selection-header-colorblock.message_header_private_message {
@@ -240,6 +240,11 @@
 
         &:hover {
             opacity: 1;
+        }
+
+        &.expand_composebox_button,
+        &.collapse_composebox_button {
+            margin-top: -6px;
         }
     }
 }
