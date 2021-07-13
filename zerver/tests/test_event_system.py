@@ -439,7 +439,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile)
-        self.assertTrue(len(result["realm_bots"]) > 2)
+        self.assertGreater(len(result["realm_bots"]), 2)
 
     def test_max_message_id_with_no_history(self) -> None:
         user_profile = self.example_user("aaron")

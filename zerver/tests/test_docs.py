@@ -116,7 +116,7 @@ class DocPageTest(ZulipTestCase):
         endpoint_list = [f"/api/{endpoint}" for endpoint in endpoint_list_set]
         # Validate that the parsing logic isn't broken, since if it
         # broke, the below would become a noop.
-        self.assertTrue(len(endpoint_list) > 70)
+        self.assertGreater(len(endpoint_list), 70)
 
         for endpoint in endpoint_list:
             self._test(endpoint, "", doc_html_str=True)

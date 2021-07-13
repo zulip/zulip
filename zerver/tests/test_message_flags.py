@@ -173,7 +173,7 @@ class UnreadCountTests(ZulipTestCase):
         content = "Test message for unset read bit"
         last_msg = self.send_stream_message(self.example_user("hamlet"), "Verona", content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
-        self.assertEqual(len(user_messages) > 0, True)
+        self.assertGreater(len(user_messages), 0)
         for um in user_messages:
             self.assertEqual(um.message.content, content)
             if um.user_profile.email != self.example_email("hamlet"):

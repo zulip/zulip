@@ -1818,7 +1818,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual(default_streams, {stream_name})
 
         other_streams = {stream["name"] for stream in streams if not stream["is_default"]}
-        self.assertTrue(len(other_streams) > 0)
+        self.assertGreater(len(other_streams), 0)
 
         # and remove it
         result = self.client_delete("/json/default_streams", dict(stream_id=stream.id))
@@ -4971,7 +4971,7 @@ class GetSubscribersTest(ZulipTestCase):
         result_dict = result.json()
         self.assertIn("subscribers", result_dict)
         self.assertIsInstance(result_dict["subscribers"], list)
-        self.assertTrue(len(result_dict["subscribers"]) > 0)
+        self.assertGreater(len(result_dict["subscribers"]), 0)
 
     def test_nonsubscriber_private_stream(self) -> None:
         """

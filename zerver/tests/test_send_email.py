@@ -44,7 +44,7 @@ class TestBuildEmail(ZulipTestCase):
             language="en",
         )
         self.assertEqual(mail.extra_headers["From"], overly_long_address)
-        self.assertTrue(len(sanitize_address(mail.extra_headers["From"], "utf-8")) > 320)
+        self.assertGreater(len(sanitize_address(mail.extra_headers["From"], "utf-8")), 320)
 
         with mock.patch.object(
             EmailBackend, "send_messages", side_effect=SMTPDataError(242, "From field too long.")

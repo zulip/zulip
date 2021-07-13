@@ -306,7 +306,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             .exclude(message_id=race_message_id)
             .order_by("-message_id")[ONBOARDING_UNREAD_MESSAGES : ONBOARDING_UNREAD_MESSAGES + 1]
         )
-        self.assertTrue(len(older_messages) > 0)
+        self.assertGreater(len(older_messages), 0)
         for msg in older_messages:
             self.assertTrue(msg.flags.read.is_set)
 
@@ -3823,7 +3823,7 @@ class UserSignUpTest(InviteUserBase):
         with open(lear_path_id, "rb") as f:
             lear_avatar_bits = f.read()
 
-        self.assertTrue(len(zulip_avatar_bits) > 500)
+        self.assertGreater(len(zulip_avatar_bits), 500)
         self.assertEqual(zulip_avatar_bits, lear_avatar_bits)
 
     def test_signup_invalid_subdomain(self) -> None:

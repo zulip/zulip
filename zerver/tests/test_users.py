@@ -1966,7 +1966,7 @@ class DeleteUserTest(ZulipTestCase):
         personal_message_ids_to_hamlet = Message.objects.filter(
             recipient=hamlet_personal_recipient
         ).values_list("id", flat=True)
-        self.assertTrue(len(personal_message_ids_to_hamlet) > 0)
+        self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(sender=hamlet).exists())
 
         huddle_message_ids_from_cordelia = [
@@ -1981,7 +1981,7 @@ class DeleteUserTest(ZulipTestCase):
                 user_profile=hamlet, recipient__type=Recipient.HUDDLE
             ).values_list("recipient_id", flat=True)
         )
-        self.assertTrue(len(huddle_with_hamlet_recipient_ids) > 0)
+        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
         do_delete_user(hamlet)
 
