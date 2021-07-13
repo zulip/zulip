@@ -4654,11 +4654,11 @@ class GetSubscribersTest(ZulipTestCase):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
-        self.assertTrue(len(subscribed_streams) >= 11)
+        self.assertGreaterEqual(len(subscribed_streams), 11)
         for sub in subscribed_streams:
             if not sub["name"].startswith("stream_"):
                 continue
-            self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
+            self.assert_length(sub["subscribers"], len(users_to_subscribe))
         self.assert_length(queries, 5)
 
     def test_never_subscribed_streams(self) -> None:
@@ -4742,7 +4742,7 @@ class GetSubscribersTest(ZulipTestCase):
         for stream_dict in never_subscribed:
             name = stream_dict["name"]
             self.assertFalse("invite_only" in name)
-            self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
+            self.assert_length(stream_dict["subscribers"], len(users_to_subscribe))
 
         # Send private stream subscribers to all realm admins.
         def test_admin_case() -> None:
@@ -4755,7 +4755,7 @@ class GetSubscribersTest(ZulipTestCase):
                 len(public_streams) + len(private_streams) + len(web_public_streams),
             )
             for stream_dict in never_subscribed:
-                self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
+                self.assert_length(stream_dict["subscribers"], len(users_to_subscribe))
 
         test_admin_case()
 
@@ -4885,9 +4885,9 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("mit_"):
                 raise AssertionError("Unexpected stream!")
             if sub["name"] == "mit_invite_only":
-                self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
+                self.assert_length(sub["subscribers"], len(users_to_subscribe))
             else:
-                self.assertTrue(len(sub["subscribers"]) == 0)
+                self.assert_length(sub["subscribers"], 0)
         self.assert_length(queries, 5)
 
     def test_nonsubscriber(self) -> None:
@@ -4963,7 +4963,7 @@ class GetSubscribersTest(ZulipTestCase):
         # A guest user can only see never subscribed streams that are web-public.
         # For Polonius, the only web public stream that he is not subscribed at
         # this point is Rome.
-        self.assertTrue(len(never_subscribed) == 1)
+        self.assert_length(never_subscribed, 1)
 
         web_public_stream_id = never_subscribed[0]["stream_id"]
         result = self.client_get(f"/json/streams/{web_public_stream_id}/members")

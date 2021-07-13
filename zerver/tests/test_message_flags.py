@@ -245,7 +245,7 @@ class UnreadCountTests(ZulipTestCase):
         )
 
         differences = [key for key in expected if expected[key] != event[key]]
-        self.assertTrue(len(differences) == 0)
+        self.assert_length(differences, 0)
 
         hamlet = self.example_user("hamlet")
         um = list(UserMessage.objects.filter(message=message_id))
@@ -316,7 +316,7 @@ class UnreadCountTests(ZulipTestCase):
         )
 
         differences = [key for key in expected if expected[key] != event[key]]
-        self.assertTrue(len(differences) == 0)
+        self.assert_length(differences, 0)
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:

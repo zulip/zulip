@@ -527,7 +527,7 @@ class NarrowLibraryTest(ZulipTestCase):
         fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/narrow.json")
         with open(fixtures_path, "rb") as f:
             scenarios = orjson.loads(f.read())
-        self.assertTrue(len(scenarios) == 9)
+        self.assert_length(scenarios, 9)
         for scenario in scenarios:
             narrow = scenario["narrow"]
             accept_events = scenario["accept_events"]

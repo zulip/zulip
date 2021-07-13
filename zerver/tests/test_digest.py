@@ -184,7 +184,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             self.assert_length(queries, 12)
             self.assert_length(cache_tries, 0)
 
-        self.assertEqual(mock_send_future_email.call_count, len(digest_users))
+        self.assert_length(digest_users, mock_send_future_email.call_count)
 
         for i, digest_user in enumerate(digest_users):
             kwargs = mock_send_future_email.call_args_list[i][1]
@@ -286,7 +286,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         users = self.active_human_users(realm)
 
         num_queued_users = len(queue_mock.call_args[0][0])
-        self.assertEqual(num_queued_users, len(users))
+        self.assert_length(users, num_queued_users)
 
         # Simulate that we have sent digests for all our users.
         bulk_write_realm_audit_logs(users)
@@ -315,7 +315,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
-        self.assertEqual(num_queued_users, len(users))
+        self.assert_length(users, num_queued_users)
 
         for user in users:
             last_visit = timezone_now() - datetime.timedelta(days=1)
@@ -339,7 +339,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
-        self.assertEqual(num_queued_users, len(users))
+        self.assert_length(users, num_queued_users)
 
     def tuesday(self) -> datetime.datetime:
         return datetime.datetime(year=2016, month=1, day=5, tzinfo=datetime.timezone.utc)
