@@ -28,7 +28,7 @@ one created by Zulip into it:
 
 ```shell
 sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
-sudo curl -Lo /etc/nginx/nginx.conf.zulip \
+sudo curl -fL -o /etc/nginx/nginx.conf.zulip \
     https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/templates/nginx.conf.template.erb
 sudo meld /etc/nginx/nginx.conf /etc/nginx/nginx.conf.zulip  # be sure to merge to the right
 ```

@@ -27,7 +27,7 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
         [ "$(nvm --version)" != "$nvm_version" ]
     }; then
         mkdir -p "$NVM_DIR"
-        curl_opts=(-L)
+        curl_opts=(-fL)
         if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
             curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
         fi

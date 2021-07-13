@@ -20,7 +20,7 @@ with the following commands:
 
 ```
 cd $(mktemp -d)
-curl -LO https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+curl -fLO https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
 

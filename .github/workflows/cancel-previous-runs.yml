@@ -28,7 +28,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           workflow_api_url=https://api.github.com/repos/$REPOSITORY/actions/workflows
-          curl $workflow_api_url -o workflows.json
+          curl -fL $workflow_api_url -o workflows.json
 
           script="const {workflows} = require('./workflows'); \
                   const ids = workflows.map(workflow => workflow.id); \
