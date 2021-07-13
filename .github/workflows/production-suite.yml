@@ -259,11 +259,8 @@ jobs:
       - name: Upgrade production
         run: sudo /tmp/production-upgrade
 
-        # TODO: We should be running production-verify here, but it
-        # doesn't pass yet.
-        #
-        # - name: Verify install
-        #   run: sudo /tmp/production-verify
+      - name: Verify install
+        run: sudo /tmp/production-verify
 
       - name: Report status
         if: failure()

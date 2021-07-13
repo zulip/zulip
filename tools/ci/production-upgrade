@@ -39,3 +39,5 @@ UPGRADE_SCRIPT=/home/zulip/deployments/current/scripts/lib/upgrade-zulip
 
 # Execute the upgrade.
 sudo "$UPGRADE_SCRIPT" /tmp/zulip-server-test.tar.gz
+
+sudo supervisorctl restart all
