@@ -42,11 +42,6 @@
                 background-repeat: no-repeat;
             }
 
-            &:focus ~ span {
-                outline: 1px dotted;
-                outline: -webkit-focus-ring-color auto 5px;
-            }
-
             &:disabled ~ span {
                 opacity: 0.5;
                 cursor: not-allowed;
