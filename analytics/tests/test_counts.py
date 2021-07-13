@@ -220,7 +220,7 @@ class AnalyticsTestCase(ZulipTestCase):
                     else:
                         kwargs["realm"] = self.default_realm
             self.assertEqual(table.objects.filter(**kwargs).count(), 1)
-        self.assertEqual(table.objects.count(), len(arg_values))
+        self.assert_length(arg_values, table.objects.count())
 
 
 class TestProcessCountStat(AnalyticsTestCase):

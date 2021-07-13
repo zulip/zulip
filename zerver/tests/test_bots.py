@@ -56,7 +56,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def assert_num_bots_equal(self, count: int) -> None:
         result = self.client_get("/json/bots")
         self.assert_json_success(result)
-        self.assertEqual(count, len(result.json()["bots"]))
+        self.assert_length(result.json()["bots"], count)
 
     def create_bot(self, **extras: Any) -> Dict[str, Any]:
         bot_info = {

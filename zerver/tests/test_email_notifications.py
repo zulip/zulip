@@ -289,7 +289,7 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
         )
-        self.assertEqual(2, len(scheduled_emails))
+        self.assert_length(scheduled_emails, 2)
         self.assertEqual(
             orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
         )
