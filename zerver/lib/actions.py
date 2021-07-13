@@ -158,6 +158,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (
     LEGACY_PREV_TOPIC,
     ORIG_TOPIC,
+    RESOLVED_TOPIC_PREFIX,
     TOPIC_LINKS,
     TOPIC_NAME,
     filter_by_exact_message_topic,
@@ -5695,9 +5696,6 @@ def do_update_message_flags(
 class MessageUpdateUserInfoResult(TypedDict):
     message_user_ids: Set[int]
     mention_user_ids: Set[int]
-
-
-RESOLVED_TOPIC_PREFIX = "✔ "
 
 
 def maybe_send_resolve_topic_notifications(

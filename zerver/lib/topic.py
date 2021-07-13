@@ -16,6 +16,9 @@ TOPIC_NAME = "subject"
 TOPIC_LINKS = "topic_links"
 MATCH_TOPIC = "match_subject"
 
+# Prefix use to mark topic as resolved.
+RESOLVED_TOPIC_PREFIX = "✔ "
+
 # This constant is actually embedded into
 # the JSON data for message edit history,
 # so we'll always need to handle legacy data
