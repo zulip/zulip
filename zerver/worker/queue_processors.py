@@ -667,7 +667,7 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
 
 
 @assign_queue("missedmessage_mobile_notifications")
-class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
+class PushNotificationsWorker(QueueProcessingWorker):
     def start(self) -> None:
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
@@ -679,7 +679,13 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
         try:
             if event.get("type", "add") == "remove":
                 message_ids = event.get("message_ids")
-                if message_ids is None:  # legacy task across an upgrade
+                if message_ids is None:
+                    # TODO/compatibility: Previously, we sent only one `message_id` in
+                    # a payload for notification remove events. This was later changed
+                    # to send a list of `message_ids` (with that field name), but we need
+                    # compatibility code for events present in the queue during upgrade.
+                    # Remove this when one can no longer upgrade from 1.9.2 (or earlier)
+                    # to any version after 2.0.0
                     message_ids = [event["message_id"]]
                 handle_remove_push_notification(event["user_profile_id"], message_ids)
             else:
