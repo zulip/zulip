@@ -204,7 +204,7 @@ developing locally.
 2. On your remote machine, run:
    ```
    $ mkdir -p ~/bin
-   $ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
+   $ curl -fL -o ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
    $ chmod a+x ~/bin/rmate
    ```
 3. Make sure the remote server is running in VS Code (you can

@@ -23,8 +23,8 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
         distribution=$(lsb_release -si | tr '[:upper:]' '[:lower:]')
         groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
         groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
-        curl -LO "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
-        curl -LO "https://packages.groonga.org/$distribution/$groonga_apt_source_deb_sign"
+        curl -fLO "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
+        curl -fLO "https://packages.groonga.org/$distribution/$groonga_apt_source_deb_sign"
         gpg \
             --homedir="$tmp_gpg_home" \
             --verify \
