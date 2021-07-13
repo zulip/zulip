@@ -1311,7 +1311,6 @@ td.pointer {
     opacity: 0.7;
 }
 
-.on_hover_topic_unresolve,
 .on_hover_topic_unmute {
     opacity: 0.7;
 
@@ -1321,6 +1320,7 @@ td.pointer {
     }
 }
 
+.on_hover_topic_unresolve,
 .on_hover_topic_resolve,
 .on_hover_topic_mute {
     opacity: 0.2;
