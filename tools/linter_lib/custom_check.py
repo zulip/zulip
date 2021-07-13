@@ -278,6 +278,16 @@ python_rules = RuleList(
             "bad_lines": ["assertEqual(len(data), 2)"],
         },
         {
+            "pattern": "assertTrue[(]len[(][^ ]*[)]",
+            "description": "Use assert_length or assertGreater helper instead of assertTrue(len(..) ..).",
+            "good_lines": ["assert_length(data, 2)", "assertGreater(len(data), 2)"],
+            "bad_lines": [
+                "assertTrue(len(data) == 2)",
+                "assertTrue(len(data) >= 2)",
+                "assertTrue(len(data) > 2)",
+            ],
+        },
+        {
             "pattern": r"#\s*type:\s*ignore(?!\[[^][]+\] +# +\S)",
             "exclude": {"tools/tests", "zerver/lib/test_runner.py", "zerver/tests"},
             "description": '"type: ignore" should always end with "# type: ignore[code] # explanation for why"',
