@@ -1,5 +1,5 @@
 [program:smokescreen]
-command=/usr/local/bin/smokescreen-<%= @version %>
+command=/usr/local/bin/smokescreen-<%= @version %> --listen-ip <%= @listen_address %>
 priority=15
 autostart=true
 autorestart=true

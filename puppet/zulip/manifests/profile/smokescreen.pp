@@ -42,6 +42,7 @@ class zulip::profile::smokescreen {
     notify  => Service[supervisor],
   }
 
+  $listen_address = zulipconf('http_proxy', 'listen_address', '127.0.0.1')
   file { '/etc/supervisor/conf.d/zulip/smokescreen.conf':
     ensure  => file,
     require => [
