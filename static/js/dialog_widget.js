@@ -62,9 +62,6 @@ export function show_dialog_spinner() {
 }
 
 export function launch(conf) {
-    const html = render_dialog_widget({fade: conf.fade, is_confirm_dialog: conf.is_confirm_dialog});
-    const dialog = $(html);
-
     const mandatory_fields = [
         // The html_ fields should be safe HTML. If callers
         // interpolate user data into strings, they should use
@@ -75,11 +72,24 @@ export function launch(conf) {
         "parent",
     ];
 
+    // Optional parameters:
+    // * html_submit_button: Submit button text.
+    // * close_on_submit: Whether to close modal on clicking submit.
+    // * focus_submit_on_open: Whether to focus submit button on open.
+    // * danger_submit_button: Whether to use danger button styling for submit button.
+    // * help_link: A help link in the heading area.
+
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
             blueslip.error("programmer omitted " + f);
         }
     }
+
+    const html = render_dialog_widget({
+        fade: conf.fade,
+        danger_submit_button: conf.danger_submit_button,
+    });
+    const dialog = $(html);
 
     conf.parent.append(dialog);
 
@@ -99,7 +109,7 @@ export function launch(conf) {
 
     const submit_button_span = dialog.find(".dialog_submit_button span");
 
-    let html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
+    const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
     submit_button_span.html(html_submit_button);
 
     if (conf.post_render !== undefined) {
@@ -111,7 +121,7 @@ export function launch(conf) {
     submit_button.on("click", () => {
         if (conf.loading_spinner) {
             show_dialog_spinner();
-        } else if (conf.is_confirm_dialog) {
+        } else if (conf.close_on_submit) {
             overlays.close_modal("#dialog_widget_modal");
         }
         conf.on_click();
@@ -124,7 +134,7 @@ export function launch(conf) {
     // Open the modal
     overlays.open_modal("#dialog_widget_modal");
 
-    if (conf.is_confirm_dialog) {
+    if (conf.focus_submit_on_open) {
         conf.parent.on("shown.bs.modal", () => {
             submit_button.trigger("focus");
         });
