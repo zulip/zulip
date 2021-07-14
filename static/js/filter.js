@@ -453,10 +453,6 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["is-mentioned"])) {
-            return true;
-        }
-
         if (_.isEqual(term_types, ["is-resolved"])) {
             return true;
         }
@@ -494,15 +490,20 @@ export class Filter {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
         // is: private, pm-with:,
-        // is: mentioned, is: resolved
+        // is: resolved
         if (this.can_mark_messages_read()) {
             return true;
         }
         // that leaves us with checking:
         // is: starred
         // (which can_mark_messages_read_does not check as starred messages are always read)
+        // is: mentioned
+        // We don't mark messages as read when in mentioned narrow.
         const term_types = this.sorted_term_types();
 
+        if (_.isEqual(term_types, ["is-mentioned"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
