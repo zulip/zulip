@@ -131,12 +131,12 @@ export function launch(conf) {
         dialog.remove();
     });
 
-    // Open the modal
-    overlays.open_modal("#dialog_widget_modal");
-
     if (conf.focus_submit_on_open) {
         conf.parent.on("shown.bs.modal", () => {
             submit_button.trigger("focus");
         });
     }
+
+    // Open the modal
+    overlays.open_modal("#dialog_widget_modal");
 }
