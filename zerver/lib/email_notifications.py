@@ -41,7 +41,6 @@ from zerver.models import (
     get_context_for_message,
     get_display_recipient,
     get_user_profile_by_id,
-    receives_offline_email_notifications,
 )
 
 
@@ -585,8 +584,6 @@ def handle_missedmessage_emails(
     }
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    if not receives_offline_email_notifications(user_profile):
-        return
 
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be

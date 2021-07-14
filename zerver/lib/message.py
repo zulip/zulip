@@ -111,6 +111,8 @@ class SendMessageRequest:
     mentioned_user_groups_map: Dict[int, int]
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
+    pm_mention_push_disabled_user_ids: Set[int]
+    pm_mention_email_disabled_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     muted_sender_user_ids: Set[int]

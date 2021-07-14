@@ -1456,6 +1456,8 @@ def render_incoming_message(
 class RecipientInfoResult(TypedDict):
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
+    pm_mention_email_disabled_user_ids: Set[int]
+    pm_mention_push_disabled_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
@@ -1586,6 +1588,8 @@ def get_recipient_info(
         query = UserProfile.objects.filter(is_active=True).values(
             "id",
             "enable_online_push_notifications",
+            "enable_offline_email_notifications",
+            "enable_offline_push_notifications",
             "is_bot",
             "bot_type",
             "long_term_idle",
@@ -1628,6 +1632,16 @@ def get_recipient_info(
         lambda r: r["enable_online_push_notifications"],
     )
 
+    # We deal with only the users who have disabled this setting, since that
+    # will ususally be much smaller a set than those who have enabled it (which
+    # is the default)
+    pm_mention_email_disabled_user_ids = get_ids_for(
+        lambda r: not r["enable_offline_email_notifications"]
+    )
+    pm_mention_push_disabled_user_ids = get_ids_for(
+        lambda r: not r["enable_offline_push_notifications"]
+    )
+
     # Service bots don't get UserMessage rows.
     um_eligible_user_ids = get_ids_for(
         lambda r: not is_service_bot(r),
@@ -1656,6 +1670,8 @@ def get_recipient_info(
     info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
+        pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
+        pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
@@ -1859,6 +1875,8 @@ def build_message_send_dict(
         rendering_result=rendering_result,
         active_user_ids=info["active_user_ids"],
         online_push_user_ids=info["online_push_user_ids"],
+        pm_mention_email_disabled_user_ids=info["pm_mention_email_disabled_user_ids"],
+        pm_mention_push_disabled_user_ids=info["pm_mention_push_disabled_user_ids"],
         stream_push_user_ids=info["stream_push_user_ids"],
         stream_email_user_ids=info["stream_email_user_ids"],
         muted_sender_user_ids=info["muted_sender_user_ids"],
@@ -2012,14 +2030,20 @@ def do_send_messages(
         sender = send_request.message.sender
         message_type = wide_message_dict["type"]
         active_users_data = [
-            UserMessageNotificationsData.from_user_id_sets(
-                user_id=user_id,
-                flags=user_flags.get(user_id, []),
-                online_push_user_ids=send_request.online_push_user_ids,
-                stream_push_user_ids=send_request.stream_push_user_ids,
-                stream_email_user_ids=send_request.stream_email_user_ids,
-                wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
-                muted_sender_user_ids=send_request.muted_sender_user_ids,
+            ActivePresenceIdleUserData(
+                alerted="has_alert_word" in user_flags.get(user_id, []),
+                notifications_data=UserMessageNotificationsData.from_user_id_sets(
+                    user_id=user_id,
+                    flags=user_flags.get(user_id, []),
+                    private_message=(message_type == "private"),
+                    online_push_user_ids=send_request.online_push_user_ids,
+                    pm_mention_push_disabled_user_ids=send_request.pm_mention_push_disabled_user_ids,
+                    pm_mention_email_disabled_user_ids=send_request.pm_mention_email_disabled_user_ids,
+                    stream_push_user_ids=send_request.stream_push_user_ids,
+                    stream_email_user_ids=send_request.stream_email_user_ids,
+                    wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
+                    muted_sender_user_ids=send_request.muted_sender_user_ids,
+                ),
             )
             for user_id in send_request.active_user_ids
         ]
@@ -2027,7 +2051,6 @@ def do_send_messages(
         presence_idle_user_ids = get_active_presence_idle_user_ids(
             realm=sender.realm,
             sender_id=sender.id,
-            message_type=message_type,
             active_users_data=active_users_data,
         )
 
@@ -2037,6 +2060,10 @@ def do_send_messages(
             message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
             online_push_user_ids=list(send_request.online_push_user_ids),
+            pm_mention_push_disabled_user_ids=list(send_request.pm_mention_push_disabled_user_ids),
+            pm_mention_email_disabled_user_ids=list(
+                send_request.pm_mention_email_disabled_user_ids
+            ),
             stream_push_user_ids=list(send_request.stream_push_user_ids),
             stream_email_user_ids=list(send_request.stream_email_user_ids),
             wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
@@ -6057,6 +6084,10 @@ def do_update_message(
         )
 
         event["online_push_user_ids"] = list(info["online_push_user_ids"])
+        event["pm_mention_push_disabled_user_ids"] = list(info["pm_mention_push_disabled_user_ids"])
+        event["pm_mention_email_disabled_user_ids"] = list(
+            info["pm_mention_email_disabled_user_ids"]
+        )
         event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
         event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
         event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
@@ -6673,11 +6704,15 @@ def gather_subscriptions(
     return (subscribed, unsubscribed)
 
 
+class ActivePresenceIdleUserData(TypedDict):
+    alerted: bool
+    notifications_data: UserMessageNotificationsData
+
+
 def get_active_presence_idle_user_ids(
     realm: Realm,
     sender_id: int,
-    message_type: str,
-    active_users_data: List[UserMessageNotificationsData],
+    active_users_data: List[ActivePresenceIdleUserData],
 ) -> List[int]:
     """
     Given a list of active_user_ids, we build up a subset
@@ -6691,17 +6726,16 @@ def get_active_presence_idle_user_ids(
     if realm.presence_disabled:
         return []
 
-    is_private_message = message_type == "private"
-
     user_ids = set()
     for user_data in active_users_data:
-        alerted = "has_alert_word" in user_data.flags
+        user_notifications_data: UserMessageNotificationsData = user_data["notifications_data"]
+        alerted = user_data["alerted"]
 
         # We only need to know the presence idle state for a user if this message would be notifiable
         # for them if they were indeed idle. Only including those users in the calculation below is a
         # very important optimization for open communities with many inactive users.
-        if user_data.is_notifiable(is_private_message, sender_id, idle=True) or alerted:
-            user_ids.add(user_data.user_id)
+        if user_notifications_data.is_notifiable(sender_id, idle=True) or alerted:
+            user_ids.add(user_notifications_data.user_id)
 
     return filter_presence_idle_user_ids(user_ids)
 

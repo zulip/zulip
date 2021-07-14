@@ -8,26 +8,34 @@ from zerver.models import NotificationTriggers
 @dataclass
 class UserMessageNotificationsData:
     user_id: int
-    flags: Collection[str]
-    mentioned: bool
     online_push_enabled: bool
+    pm_email_notify: bool
+    pm_push_notify: bool
+    mention_email_notify: bool
+    mention_push_notify: bool
     stream_push_notify: bool
     stream_email_notify: bool
     wildcard_mention_notify: bool
     sender_is_muted: bool
 
     def __post_init__(self) -> None:
-        if self.mentioned:
-            assert "mentioned" in self.flags
-        if self.wildcard_mention_notify:
-            assert "wildcard_mentioned" in self.flags
+        # Check that there's no dubious data.
+        if self.pm_email_notify or self.pm_push_notify:
+            assert not (self.stream_email_notify or self.stream_push_notify)
+
+        if self.stream_email_notify or self.stream_push_notify:
+            assert not (self.pm_email_notify or self.pm_push_notify)
 
     @classmethod
     def from_user_id_sets(
         cls,
+        *,
         user_id: int,
         flags: Collection[str],
+        private_message: bool,
         online_push_user_ids: Set[int],
+        pm_mention_push_disabled_user_ids: Set[int],
+        pm_mention_email_disabled_user_ids: Set[int],
         stream_push_user_ids: Set[int],
         stream_email_user_ids: Set[int],
         wildcard_mention_user_ids: Set[int],
@@ -36,10 +44,22 @@ class UserMessageNotificationsData:
         wildcard_mention_notify = (
             user_id in wildcard_mention_user_ids and "wildcard_mentioned" in flags
         )
+
+        pm_email_notify = user_id not in pm_mention_email_disabled_user_ids and private_message
+        mention_email_notify = (
+            user_id not in pm_mention_email_disabled_user_ids and "mentioned" in flags
+        )
+
+        pm_push_notify = user_id not in pm_mention_push_disabled_user_ids and private_message
+        mention_push_notify = (
+            user_id not in pm_mention_push_disabled_user_ids and "mentioned" in flags
+        )
         return cls(
             user_id=user_id,
-            flags=flags,
-            mentioned=("mentioned" in flags),
+            pm_email_notify=pm_email_notify,
+            mention_email_notify=mention_email_notify,
+            pm_push_notify=pm_push_notify,
+            mention_push_notify=mention_push_notify,
             online_push_enabled=(user_id in online_push_user_ids),
             stream_push_notify=(user_id in stream_push_user_ids),
             stream_email_notify=(user_id in stream_email_user_ids),
@@ -47,24 +67,18 @@ class UserMessageNotificationsData:
             sender_is_muted=(user_id in muted_sender_user_ids),
         )
 
-    # TODO: The following functions should also look at the `enable_offline_push_notifications` and
-    # `enable_offline_email_notifications` settings (for PMs and mentions), but currently they
-    # don't.
-
     # For these functions, acting_user_id is the user sent a message
     # (or edited a message) triggering the event for which we need to
     # determine notifiability.
-    def is_notifiable(self, private_message: bool, acting_user_id: int, idle: bool) -> bool:
-        return self.is_email_notifiable(
-            private_message, acting_user_id, idle
-        ) or self.is_push_notifiable(private_message, acting_user_id, idle)
+    def is_notifiable(self, acting_user_id: int, idle: bool) -> bool:
+        return self.is_email_notifiable(acting_user_id, idle) or self.is_push_notifiable(
+            acting_user_id, idle
+        )
 
-    def is_push_notifiable(self, private_message: bool, acting_user_id: int, idle: bool) -> bool:
-        return self.get_push_notification_trigger(private_message, acting_user_id, idle) is not None
+    def is_push_notifiable(self, acting_user_id: int, idle: bool) -> bool:
+        return self.get_push_notification_trigger(acting_user_id, idle) is not None
 
-    def get_push_notification_trigger(
-        self, private_message: bool, acting_user_id: int, idle: bool
-    ) -> Optional[str]:
+    def get_push_notification_trigger(self, acting_user_id: int, idle: bool) -> Optional[str]:
         if not idle and not self.online_push_enabled:
             return None
 
@@ -74,9 +88,12 @@ class UserMessageNotificationsData:
         if self.sender_is_muted:
             return None
 
-        if private_message:
+        # The order here is important. If, for example, both
+        # `mention_push_notify` and `stream_push_notify` are True, we
+        # want to classify it as a mention, since that's more salient.
+        if self.pm_push_notify:
             return NotificationTriggers.PRIVATE_MESSAGE
-        elif self.mentioned:
+        elif self.mention_push_notify:
             return NotificationTriggers.MENTION
         elif self.wildcard_mention_notify:
             return NotificationTriggers.WILDCARD_MENTION
@@ -85,14 +102,10 @@ class UserMessageNotificationsData:
         else:
             return None
 
-    def is_email_notifiable(self, private_message: bool, acting_user_id: int, idle: bool) -> bool:
-        return (
-            self.get_email_notification_trigger(private_message, acting_user_id, idle) is not None
-        )
+    def is_email_notifiable(self, acting_user_id: int, idle: bool) -> bool:
+        return self.get_email_notification_trigger(acting_user_id, idle) is not None
 
-    def get_email_notification_trigger(
-        self, private_message: bool, acting_user_id: int, idle: bool
-    ) -> Optional[str]:
+    def get_email_notification_trigger(self, acting_user_id: int, idle: bool) -> Optional[str]:
         if not idle:
             return None
 
@@ -102,9 +115,12 @@ class UserMessageNotificationsData:
         if self.sender_is_muted:
             return None
 
-        if private_message:
+        # The order here is important. If, for example, both
+        # `mention_email_notify` and `stream_email_notify` are True, we
+        # want to classify it as a mention, since that's more salient.
+        if self.pm_email_notify:
             return NotificationTriggers.PRIVATE_MESSAGE
-        elif self.mentioned:
+        elif self.mention_email_notify:
             return NotificationTriggers.MENTION
         elif self.wildcard_mention_notify:
             return NotificationTriggers.WILDCARD_MENTION

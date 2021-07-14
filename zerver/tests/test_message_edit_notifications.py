@@ -188,8 +188,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            mentioned=True,
-            flags=["mentioned"],
+            mention_email_notify=True,
+            mention_push_notify=True,
             already_notified={},
         )
 
@@ -317,8 +317,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            mentioned=True,
-            flags=["mentioned"],
+            mention_push_notify=True,
+            mention_email_notify=True,
             online_push_enabled=True,
             idle=False,
             already_notified={},
@@ -362,9 +362,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = info["queue_messages"]
 
-        # Even though Cordelia has enable_online_push_notifications set
-        # to True, we don't send her any offline notifications, since she
-        # was not mentioned.
+        # Cordelia being present and having `enable_online_push_notifications`
+        # does not mean we'll send her notifications for messages which she
+        # wouldn't otherwise have received notifications for.
         self.assert_length(queue_messages, 0)
 
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
@@ -388,8 +388,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             message_id=message_id,
             acting_user_id=self.example_user("hamlet").id,
-            mentioned=True,
-            flags=["mentioned"],
+            mention_email_notify=True,
+            mention_push_notify=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -421,7 +421,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             acting_user_id=hamlet.id,
             message_id=message_id,
             wildcard_mention_notify=True,
-            flags=["wildcard_mentioned"],
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -477,8 +476,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            mentioned=True,
-            flags=["mentioned"],
+            mention_email_notify=True,
+            mention_push_notify=True,
             idle=False,
             already_notified={},
         )

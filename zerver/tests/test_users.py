@@ -1520,6 +1520,8 @@ class RecipientInfoTest(ZulipTestCase):
         expected_info = dict(
             active_user_ids=all_user_ids,
             online_push_user_ids=set(),
+            pm_mention_email_disabled_user_ids=set(),
+            pm_mention_push_disabled_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
@@ -1531,6 +1533,22 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         self.assertEqual(info, expected_info)
+
+        hamlet.enable_offline_email_notifications = False
+        hamlet.enable_offline_push_notifications = False
+        hamlet.save()
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_wildcard_mention=False,
+        )
+        self.assertEqual(info["pm_mention_email_disabled_user_ids"], set([hamlet.id]))
+        self.assertEqual(info["pm_mention_push_disabled_user_ids"], set([hamlet.id]))
+        hamlet.enable_offline_email_notifications = True
+        hamlet.enable_offline_push_notifications = True
+        hamlet.save()
 
         cordelia.wildcard_mentions_notify = False
         cordelia.save()

@@ -1339,9 +1339,11 @@ Output:
     ) -> UserMessageNotificationsData:
         return UserMessageNotificationsData(
             user_id=user_id,
-            flags=kwargs.get("flags", []),
-            mentioned=kwargs.get("mentioned", False),
             online_push_enabled=kwargs.get("online_push_enabled", False),
+            pm_email_notify=kwargs.get("pm_email_notify", False),
+            pm_push_notify=kwargs.get("pm_push_notify", False),
+            mention_email_notify=kwargs.get("mention_email_notify", False),
+            mention_push_notify=kwargs.get("mention_push_notify", False),
             stream_email_notify=kwargs.get("stream_email_notify", False),
             stream_push_notify=kwargs.get("stream_push_notify", False),
             wildcard_mention_notify=kwargs.get("wildcard_mention_notify", False),
@@ -1363,7 +1365,6 @@ Output:
             user_notifications_data=user_notifications_data,
             message_id=message_id,
             acting_user_id=acting_user_id,
-            private_message=kwargs.get("private_message", False),
             mentioned_user_group_id=kwargs.get("mentioned_user_group_id", None),
             idle=kwargs.get("idle", True),
             already_notified=kwargs.get(

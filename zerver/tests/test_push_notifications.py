@@ -76,8 +76,6 @@ from zerver.models import (
     get_display_recipient,
     get_realm,
     get_stream,
-    receives_offline_push_notifications,
-    receives_online_push_notifications,
 )
 
 if settings.ZILENCER_ENABLED:
@@ -927,18 +925,6 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
             with self.assertRaises(PushNotificationBouncerRetryLaterError):
                 handle_push_notification(self.user_profile.id, missed_message)
-
-    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
-    def test_disabled_notifications(self, mock_push_notifications: mock.MagicMock) -> None:
-        user_profile = self.example_user("hamlet")
-        user_profile.enable_online_email_notifications = False
-        user_profile.enable_online_push_notifications = False
-        user_profile.enable_offline_email_notifications = False
-        user_profile.enable_offline_push_notifications = False
-        user_profile.enable_stream_push_notifications = False
-        user_profile.save()
-        handle_push_notification(user_profile.id, {})
-        mock_push_notifications.assert_called()
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
@@ -2312,60 +2298,6 @@ class TestClearOnRead(ZulipTestCase):
         self.assert_length(groups, 1)
         self.assertEqual(sum(len(g) for g in groups), len(message_ids))
         self.assertEqual({id for g in groups for id in g}, set(message_ids))
-
-
-class TestReceivesNotificationsFunctions(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.user = self.example_user("cordelia")
-
-    def test_receivers_online_notifications_when_user_is_a_bot(self) -> None:
-        self.user.is_bot = True
-
-        self.user.enable_online_push_notifications = True
-        self.assertFalse(receives_online_push_notifications(self.user))
-
-        self.user.enable_online_push_notifications = False
-        self.assertFalse(receives_online_push_notifications(self.user))
-
-    def test_receivers_online_notifications_when_user_is_not_a_bot(self) -> None:
-        self.user.is_bot = False
-
-        self.user.enable_online_push_notifications = True
-        self.assertTrue(receives_online_push_notifications(self.user))
-
-        self.user.enable_online_push_notifications = False
-        self.assertFalse(receives_online_push_notifications(self.user))
-
-    def test_receivers_offline_notifications_when_user_is_a_bot(self) -> None:
-        self.user.is_bot = True
-
-        self.user.enable_offline_push_notifications = True
-        self.assertFalse(receives_offline_push_notifications(self.user))
-
-        self.user.enable_offline_push_notifications = False
-        self.assertFalse(receives_offline_push_notifications(self.user))
-
-        self.user.enable_offline_push_notifications = False
-        self.assertFalse(receives_offline_push_notifications(self.user))
-
-        self.user.enable_offline_push_notifications = True
-        self.assertFalse(receives_offline_push_notifications(self.user))
-
-    def test_receivers_offline_notifications_when_user_is_not_a_bot(self) -> None:
-        self.user.is_bot = False
-
-        self.user.enable_offline_push_notifications = True
-        self.assertTrue(receives_offline_push_notifications(self.user))
-
-        self.user.enable_offline_push_notifications = False
-        self.assertFalse(receives_offline_push_notifications(self.user))
-
-        self.user.enable_offline_push_notifications = False
-        self.assertFalse(receives_offline_push_notifications(self.user))
-
-        self.user.enable_offline_push_notifications = True
-        self.assertTrue(receives_offline_push_notifications(self.user))
 
 
 class TestPushNotificationsContent(ZulipTestCase):

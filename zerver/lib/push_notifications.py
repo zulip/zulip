@@ -35,8 +35,6 @@ from zerver.models import (
     UserProfile,
     get_display_recipient,
     get_user_profile_by_id,
-    receives_offline_push_notifications,
-    receives_online_push_notifications,
 )
 
 if TYPE_CHECKING:
@@ -903,11 +901,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if not push_notifications_enabled():
         return
     user_profile = get_user_profile_by_id(user_profile_id)
-    if not (
-        receives_offline_push_notifications(user_profile)
-        or receives_online_push_notifications(user_profile)
-    ):
-        return
 
     try:
         (message, user_message) = access_message(user_profile, missed_message["message_id"])

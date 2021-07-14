@@ -23,14 +23,7 @@ from zerver.lib.email_notifications import (
 from zerver.lib.send_email import FromAddress, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import create_user_group
-from zerver.models import (
-    ScheduledEmail,
-    UserMessage,
-    UserProfile,
-    get_realm,
-    get_stream,
-    receives_offline_email_notifications,
-)
+from zerver.models import ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -1361,37 +1354,3 @@ class TestMissedMessages(ZulipTestCase):
             + 'title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
-
-
-class TestReceivesNotificationsFunctions(ZulipTestCase):
-    def test_receivers_offline_notifications_when_user_is_a_bot(self) -> None:
-        hamlet = self.example_user("hamlet")
-        hamlet.is_bot = True
-
-        hamlet.enable_offline_email_notifications = True
-        self.assertFalse(receives_offline_email_notifications(hamlet))
-
-        hamlet.enable_offline_email_notifications = False
-        self.assertFalse(receives_offline_email_notifications(hamlet))
-
-        hamlet.enable_offline_email_notifications = True
-        self.assertFalse(receives_offline_email_notifications(hamlet))
-
-        hamlet.enable_offline_email_notifications = False
-        self.assertFalse(receives_offline_email_notifications(hamlet))
-
-    def test_receivers_offline_notifications_when_user_is_not_a_bot(self) -> None:
-        hamlet = self.example_user("hamlet")
-        hamlet.is_bot = False
-
-        hamlet.enable_offline_email_notifications = True
-        self.assertTrue(receives_offline_email_notifications(hamlet))
-
-        hamlet.enable_offline_email_notifications = False
-        self.assertFalse(receives_offline_email_notifications(hamlet))
-
-        hamlet.enable_offline_email_notifications = True
-        self.assertTrue(receives_offline_email_notifications(hamlet))
-
-        hamlet.enable_offline_email_notifications = False
-        self.assertFalse(receives_offline_email_notifications(hamlet))
