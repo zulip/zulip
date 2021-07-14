@@ -585,4 +585,10 @@ div.overlay {
         background-color: hsl(240, 41%, 50%);
         box-shadow: 0 1px 4px hsl(0, 0%, 0%, 0.3);
     }
+
+    &:focus {
+        background-color: hsl(240, 41%, 50%);
+        box-shadow: 0 1px 4px 0 hsl(235, 18%, 7%);
+        outline: none;
+    }
 }

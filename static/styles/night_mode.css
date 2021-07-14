@@ -1076,6 +1076,10 @@ body.night-mode {
     .auto-select:focus {
         outline-color: hsl(0, 0%, 67%);
     }
+
+    .animated-purple-button:focus {
+        box-shadow: 0 1px 4px 0 hsl(0, 0%, 100%, 0.666);
+    }
 }
 
 @supports (-moz-appearance: none) {
