@@ -210,7 +210,10 @@ def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     message_info = event["message"]
     content = "Failure! " + failure_message
     response_data = dict(content=content)
-    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+    try:
+        send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+    except JsonableError:
+        pass
 
 
 def get_message_url(event: Dict[str, Any]) -> str:
