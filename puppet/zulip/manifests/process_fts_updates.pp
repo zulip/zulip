@@ -28,7 +28,7 @@ class zulip::process_fts_updates {
 
   file { "${zulip::common::supervisor_conf_dir}/zulip_db.conf":
     ensure  => file,
-    require => Package[supervisor],
+    require => [Package[supervisor], Package['python3-psycopg2']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
