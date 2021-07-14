@@ -85,32 +85,26 @@ export function launch(conf) {
         }
     }
 
-    const html = render_dialog_widget({
-        fade: conf.fade,
-        danger_submit_button: conf.danger_submit_button,
-    });
-    const dialog = $(html);
-
-    conf.parent.append(dialog);
-
     // Close any existing modals--on settings screens you can
     // have multiple buttons that need confirmation.
     if (overlays.is_modal_open()) {
         overlays.close_modal("#dialog_widget_modal");
     }
 
-    dialog.find(".dialog_heading").html(
-        render_dialog_heading({
-            heading_text: conf.html_heading,
-            link: conf.help_link,
-        }),
-    );
-    dialog.find(".dialog_body").append(conf.html_body);
-
-    const submit_button_span = dialog.find(".dialog_submit_button span");
-
     const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
-    submit_button_span.html(html_submit_button);
+    const html_dialog_heading = render_dialog_heading({
+        heading_text: conf.html_heading,
+        link: conf.help_link,
+    });
+    const html = render_dialog_widget({
+        fade: conf.fade,
+        html_submit_button,
+        html_dialog_heading,
+        html_body: conf.html_body,
+        danger_submit_button: conf.danger_submit_button,
+    });
+    const dialog = $(html);
+    conf.parent.append(dialog);
 
     if (conf.post_render !== undefined) {
         conf.post_render();
