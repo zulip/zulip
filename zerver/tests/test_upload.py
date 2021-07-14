@@ -579,21 +579,18 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         host = user_3.realm.host
 
         # Send a message from @zulip.com -> @uploadtest.example.com
-        self.login_user(user_2)
+        self.login_user(user_3)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/user_uploads", {"file": fp})
+        result = self.client_post("/json/user_uploads", {"file": fp}, subdomain=test_subdomain)
         uri = result.json()["uri"]
         fp_path_id = re.sub("/user_uploads/", "", uri)
         body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
-        with self.settings(SYSTEM_BOTS_EMAILS={user_2.email, user_3.email}):
-            user_2.is_bot = True
-            user_2.save(update_fields=["is_bot"])
-            internal_send_private_message(
-                sender=get_system_bot(user_2.email, user_2.realm_id),
-                recipient_user=user_1,
-                content=body,
-            )
+        internal_send_private_message(
+            sender=user_3,
+            recipient_user=user_1,
+            content=body,
+        )
 
         self.login_user(user_1)
         response = self.client_get(uri, subdomain=test_subdomain)
@@ -602,9 +599,19 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(b"zulip!", data)
         self.logout()
 
-        # Confirm other cross-realm users can't read it.
-        self.login_user(user_3)
-        response = self.client_get(uri, subdomain=test_subdomain)
+        # Confirm users in other realms can't read it.
+        self.login_user(user_2)
+        with self.assertLogs(level="WARN") as m:
+            response = self.client_get(uri, subdomain=test_subdomain)
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(
+                m.output,
+                [
+                    "WARNING:root:User test-og-bot@zulip.com (zulip) attempted to access API on wrong subdomain (uploadtest.example.com)"
+                ],
+            )
+
+        response = self.client_get(uri)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
 

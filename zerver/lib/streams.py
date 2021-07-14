@@ -236,13 +236,12 @@ def access_stream_for_send_message(
         else:
             raise JsonableError(_("User not authorized for this query"))
 
+    if stream.realm_id != sender.realm_id:
+        # Sending to other realm's streams is always disallowed.
+        raise JsonableError(_("User not authorized for this query"))
+
     if is_system_bot_email(sender.delivery_email):
         return
-
-    if stream.realm_id != sender.realm_id:
-        # Sending to other realm's streams is always disallowed,
-        # with the exception of cross-realm bots.
-        raise JsonableError(_("User not authorized for this query"))
 
     if stream.is_web_public:
         # Even guest users can write to web-public streams.

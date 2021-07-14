@@ -2604,12 +2604,8 @@ def validate_recipient_user_profiles(
 ) -> Sequence[UserProfile]:
     recipient_profiles_map: Dict[int, UserProfile] = {}
 
-    # We exempt cross-realm bots from the check that all the recipients
-    # are in the same realm.
     realms = set()
-    if not is_system_bot_email(sender.email):
-        realms.add(sender.realm_id)
-
+    realms.add(sender.realm_id)
     for user_profile in user_profiles:
         if (
             not user_profile.is_active
@@ -2620,8 +2616,7 @@ def validate_recipient_user_profiles(
                 _("'{email}' is no longer using Zulip.").format(email=user_profile.email)
             )
         recipient_profiles_map[user_profile.id] = user_profile
-        if not is_system_bot_email(user_profile.email):
-            realms.add(user_profile.realm_id)
+        realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
