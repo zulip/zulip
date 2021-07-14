@@ -3,6 +3,7 @@
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Streams and topics](/help/about-streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
+* [Using Zulip via email](/help/using-zulip-via-email)
 
 # Using Zulip
 
