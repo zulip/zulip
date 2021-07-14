@@ -5,13 +5,15 @@ the search bar at the top of the screen.
 
 ## Example
 
-* `stream:design has:link is:starred new logo`
+* `stream:design has:link -is:starred new logo`
 
-Searches for messages in `#design` that have a link, that you starred, and
-that have the words `new` and `logo`.
+Searches for messages in `#design` that have a link, that you haven't
+starred, and that contain the words `new` and `logo`.
 
 The permalink for that search (web only) will look something like
-`https://your-zulip-url/#narrow/stream/123-design/has/link/is/starred/search/new.20logo`.
+this:
+
+`https://your-zulip-url/#narrow/stream/123-design/has/link/-is/starred/search/new.20logo`.
 
 ## List of operators
 
@@ -45,6 +47,13 @@ Here is the **full list of search operators**.
   between you, Bob, and Ada.
 * `group-pm-with:ada@zulip.com,bob@zulip.com`: Search all group
   private messages that include Ada and Bob.
+
+### Excluding messages
+
+Zulip's search operators can be negated, to exclude messages matching
+the rule.  For example, `stream:design -is:resolved -has:image` will
+match all messages that don't contain an image and were sent to
+unresolved topics in the `#design` stream.
 
 ## Searching shared history
 
