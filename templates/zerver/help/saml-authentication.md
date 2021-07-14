@@ -6,6 +6,9 @@ self-hosting or on the Zulip Cloud Plus plan.
 This page documents details on how to set up SAML authentication with
 Zulip with various common SAML identity providers.
 
+If you are self-hosting, this documentation is likely still useful for
+how to configure these SAML providers to work with Zulip.
+
 ## Configure SAML with Okta
 
 1. Make sure you have created your organization.
@@ -109,6 +112,45 @@ Zulip with various common SAML identity providers.
      * Optionally, you can also send us an icon that should be shown on the button.
 
 1. We will take care of the server-side setup and let you know as soon as it's ready.
+
+## Configure SAML with Keycloak
+
+1. Make sure you have created your organization.
+1. Make sure your Keycloak server is up and running. We assume the URL
+   is `https://keycloak.example.com` and your Keycloak realm is `master` (which
+   is the default name for a Keycloak realm).
+1. In Keycloak, register a new Client for your Zulip organization:
+    * Client-ID: `https://<subdomain>.zulipchat.com`
+    * Client Protocol: `saml`
+    * Client SAML Endpoint: leave this field empty
+1. In the `Settings` tab for your new Keycloak client, set the following properties:
+    - Valid Redirect URIs: `https://auth.zulipchat.com/*`
+    - Base URL: `https://auth.zulipchat.com/complete/saml/`
+    - Client Signature Required: `Disable`
+1. In the `Mappers` tab for your new Keycloak client:
+    1. Create a Mapper for first name:
+        * Property: `firstName`
+        * Friendly Name: `first_name`
+        * SAML Attribute Name: `first_name`
+        * SAML Attribute Name Format: `Basic`
+    1. Create a Mapper for last name:
+        * Property: `lastName`
+        * Friendly Name: `last_name`
+        * SAML Attribute Name: `last_name`
+        * SAML Attribute Name Format: `Basic`
+    1. Create a Mapper for email address:
+        * Property: `email`
+        * Friendly Name: `email`
+        * SAML Attribute Name: `email`
+        * SAML Attribute Name Format: `Basic`
+
+1. The Keycloak side of configuration should be ready! Send the
+following information to Zulip Support at support@zulip.com:
+
+    * The URL of your Zulip Cloud organization, i.e. `https://example.zulipchat.com`.
+    * The URL of your Keycloak realm. If `master` is your Keycloak
+      realm name, then the Keycloak realm URL should resemble
+      `https://keycloak.example.com/auth/realms/master`.
 
 
 ## Related articles

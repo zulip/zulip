@@ -893,6 +893,8 @@ help_markdown_rules = RuleList(
             "pattern": r"\b[rR]ealm[s]?\b",
             "include_only": {"templates/zerver/help/"},
             "exclude": {"templates/zerver/help/change-organization-url.md"},
+            # Keycloak uses the term realm as well.
+            "exclude_pattern": "[Kk]eycloak",
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",

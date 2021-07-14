@@ -529,6 +529,64 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
+### Using Keycloak as a SAML IdP
+
+1. Make sure you reviewed [this article][saml-help-center], which
+   details how to configure Keycloak properly to use SAML with Zulip.
+2. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
+   `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
+   configuration. Specifically, if `entity_id` is
+   `https://keycloak.example.com/auth/realms/master`, then `url`
+   should be
+   `https://keycloak.example.com/auth/realms/master/protocol/saml`
+3. Your Keycloak public certificate must be saved on the Zulip server
+   as `{idp_name}.crt` in `/etc/zulip/idps/`. You can obtain the
+   certificate from the Keycloak UI in the `Keys` tab.  Click on the
+   button `Certificate` and copy the content.
+
+   (Alternatively, open the URL in your browser
+   `https://keycloak.example.com/auth/realms/master/protocol/saml/descriptor`.
+   Replace the domain (`keycloak.example.com`) as well as the realm
+   name (`master`) in the url. The certificate is the content inside
+   `<ds:X509Certificate>[...]</ds:X509Certificate>`).
+
+   Save the certificate in a new `{idp_name}.crt` file constructed as follows:
+   ```
+   -----BEGIN CERTIFICATE-----
+   {Paste the content here}
+   -----END CERTIFICATE-----
+   ```
+
+4. If you want to sign SAML requests, you have to do two things in Keycloak:
+   1. In the Keycloak client settings you setup previously, open the
+      `Settings` tab and **enable** `Client Signature Required`.
+   2. Keycloak can generate the Client private key and certificate
+      automatically, but Zulip's SAML library does not support the
+      resulting certificates.  Instead, you must generate the key and
+      certificate on the Zulip server and import them into Keycloak:
+      1. Generate **Zulip server public certificate** and the corresponding **private key**:
+         ```bash
+         openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key \
+           -out zulip-cert.crt -days 365 -nodes
+         ```
+      2. Generate a JKS keystore (replace `{mypassword}` and
+         `{myalias}` in the `keytool` invocation):
+         ```bash
+         openssl pkcs12 -export -out domainname.pfx -inkey zulip-private-key.key -in zulip-cert.crt
+         keytool -importkeystore -srckeystore domainname.pfx -srcstoretype pkcs12 \
+           -srcalias 1 -srcstorepass {mypassword} -destkeystore domainname.jks \
+           -deststoretype jks -destalias {myalias}
+         ```
+
+         You can run the above on the Zulip server. If you instead run
+         it on a Mac, you may want to use the keychain
+         administration tool to generate the JKS keystore with a UI instead of
+         using the `keytool` command. (see also: https://stackoverflow.com/a/41250334)
+      3. Then switch to the `SAML Keys` tab of your Keycloak
+         client. Import `domainname.pfx` into Keycloak. After
+         importing, only the certificate will be displayed (not the private
+         key).
+
 ## Apache-based SSO with `REMOTE_USER`
 
 If you have any existing SSO solution where a preferred way to deploy
