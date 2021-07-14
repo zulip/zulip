@@ -254,6 +254,11 @@ To use Smokescreen:
     port = 4750
     ```
 
+1. If you intend to also make the Smokescreen install available to
+   other hosts, set `listen_address` in the same block.  Note that you
+   must control access to the Smokescreen port if you do this, as
+   failing to do so opens a public HTTP proxy!
+
 1. As root, run
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
    will compile and install Smokescreen, reconfigure services to use
@@ -665,3 +670,8 @@ proxy](#using-an-outgoing-http-proxy).
 #### `port`
 
 The TCP port of the HTTP `CONNECT` proxy on the host specified above.
+
+#### `listen_address`
+
+The IP address that Smokescreen should bind to and listen on.
+Defaults to `127.0.0.1`.
