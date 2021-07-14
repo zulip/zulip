@@ -75,7 +75,7 @@
     "url-loader": "^4.1.1",
     "webfonts-loader": "^7.0.1",
     "webpack": "^4.33.0",
-    "webpack-bundle-tracker": "https://codeload.github.com/andersk/webpack-bundle-tracker/tar.gz/8eae919a6e90c01f60516d59afd18e10e2c935a8",
+    "webpack-bundle-tracker": "^1.2.0",
     "webpack-cli": "^4.6.0",
     "winchan": "^0.2.1",
     "zxcvbn": "^4.4.2"
