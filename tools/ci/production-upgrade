@@ -16,8 +16,8 @@ set -x
 # * For rabbitmq-server, we likely need to do this to work around the
 # hostname changing on reboot causing RabbitMQ to not boot.
 # * For supervisor, we don't understand why it doesn't start properly.
-sudo apt-get remove rabbitmq-server supervisor && sudo apt-get purge rabbitmq-server supervisor
-sudo apt-get install rabbitmq-server supervisor
+sudo apt-get -y purge rabbitmq-server supervisor
+sudo apt-get -y install rabbitmq-server supervisor
 
 # Start the postgresql service.
 sudo service postgresql start
