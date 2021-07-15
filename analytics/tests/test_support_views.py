@@ -292,6 +292,10 @@ class TestSupportEndpoint(ZulipTestCase):
             check_realm_reactivation_link_query_result(result)
             check_zulip_realm_query_result(result)
 
+    def test_get_org_type_display_name(self) -> None:
+        self.assertEqual(get_org_type_display_name(Realm.ORG_TYPES["business"]["id"]), "Business")
+        self.assertEqual(get_org_type_display_name(883), "")
+
     @mock.patch("analytics.views.support.update_billing_method_of_current_plan")
     def test_change_billing_method(self, m: mock.Mock) -> None:
         cordelia = self.example_user("cordelia")
