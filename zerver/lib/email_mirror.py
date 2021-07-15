@@ -345,7 +345,6 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:
                     content_type,
                     attachment,
                     user_profile,
-                    target_realm=realm,
                 )
                 formatted_link = f"[{filename}]({s3_url})"
                 attachment_links.append(formatted_link)
