@@ -103,8 +103,8 @@ class EmailChangeTestCase(ZulipTestCase):
         url = "/json/settings"
         self.assert_length(mail.outbox, 0)
         result = self.client_patch(url, data)
+        self.assert_json_success(result)
         self.assert_length(mail.outbox, 1)
-        self.assert_in_success_response(["Check your email for a confirmation link."], result)
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
@@ -127,7 +127,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
         # Now confirm trying to change your email back doesn't throw an immediate error
         result = self.client_patch(url, {"email": "hamlet@zulip.com"})
-        self.assert_in_success_response(["Check your email for a confirmation link."], result)
+        self.assert_json_success(result)
 
     def test_unauthorized_email_change(self) -> None:
         data = {"email": "hamlet-new@zulip.com"}
@@ -149,7 +149,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.login("iago")
         url = "/json/settings"
         result = self.client_patch(url, data)
-        self.assert_in_success_response(["Check your email for a confirmation link."], result)
+        self.assert_json_success(result)
 
     def test_email_change_already_taken(self) -> None:
         data = {"email": "cordelia@zulip.com"}
@@ -170,7 +170,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_length(mail.outbox, 0)
         result = self.client_patch(url, data)
         self.assert_length(mail.outbox, 1)
-        self.assert_in_success_response(["Check your email for a confirmation link."], result)
+        self.assert_json_success(result)
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
