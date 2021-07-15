@@ -28,15 +28,29 @@ let loading_newer_messages_indicator_showing = false;
 
 export function show_loading_older() {
     if (!loading_older_messages_indicator_showing) {
+        // Narrowed view indicators.
         loading.make_indicator($("#loading_older_messages_indicator"), {abs_positioned: true});
-        loading_older_messages_indicator_showing = true;
         floating_recipient_bar.hide();
+
+        // Recent topics indicators.
+        $("#recent_topics_table .bottom-messages-logo").show();
+        loading.make_indicator($("#recent_topics_loading_messages_indicator"), {
+            abs_positioned: true,
+        });
+
+        loading_older_messages_indicator_showing = true;
     }
 }
 
 export function hide_loading_older() {
     if (loading_older_messages_indicator_showing) {
+        // Narrowed view indicators.
         loading.destroy_indicator($("#loading_older_messages_indicator"));
+
+        // Recent topics indicators.
+        $("#recent_topics_table .bottom-messages-logo").hide();
+        loading.destroy_indicator($("#recent_topics_loading_messages_indicator"));
+
         loading_older_messages_indicator_showing = false;
     }
 }

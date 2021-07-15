@@ -2195,13 +2195,15 @@ div.floating_recipient {
 }
 
 #loading_older_messages_indicator_box_container,
-#loading_newer_messages_indicator_box_container {
+#loading_newer_messages_indicator_box_container,
+#recent_topics_loading_messages_indicator_box_container {
     position: absolute;
     left: 50%;
 }
 
 #loading_older_messages_indicator_box,
-#loading_newer_messages_indicator_box {
+#loading_newer_messages_indicator_box,
+#recent_topics_loading_messages_indicator_box {
     position: relative;
     left: -50%;
     top: -43px;

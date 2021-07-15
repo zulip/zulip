@@ -329,7 +329,8 @@ export function maybe_load_older_messages(opts) {
 
     do_backfill({
         msg_list,
-        num_before: consts.backward_batch_size,
+        num_before: opts.num_before || consts.backward_batch_size,
+        cont: opts.cont,
     });
 }
 

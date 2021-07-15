@@ -78,6 +78,9 @@
         .table_fix_head table {
             /* To keep border properties to the thead th. */
             border-collapse: separate;
+        }
+
+        .bottom_whitespace {
             /* For visual reasons, in a message feed, we require a large
              * bottom_whitespace to make it convenient to display new
              * messages as they come in and prevent occluding the last
@@ -88,7 +91,7 @@
              * overlap content. Add some more margin so that user
              * can clearly see the end of the topics.
              */
-            margin-bottom: 100px;
+            height: 120px;
         }
 
         #recent_topics_filter_buttons {

@@ -9,6 +9,8 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
+import * as message_fetch from "./message_fetch";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
@@ -162,6 +164,17 @@ export function get_focused_row_message() {
     return undefined;
 }
 
+function compute_max_number_of_rows_in_view() {
+    const row_height = $("#recent_topics_table table tbody tr").height();
+    const filter_div_height = $("#recent_topics_filter_buttons").height();
+    const message_view_header = $("#message_view_header").height();
+    const compose_container = $("#compose-container").height();
+
+    const table_height =
+        window.innerHeight - message_view_header - filter_div_height - compose_container;
+    return Math.floor(table_height / row_height);
+}
+
 function revive_current_focus() {
     // After re-render, the current_focus_elem is no longer linked
     // to the focused element, this function attempts to revive the
@@ -179,6 +192,12 @@ function revive_current_focus() {
     }
 
     if (is_table_focused()) {
+        const total_rows = $("#recent_topics_table table tbody tr").length;
+
+        const max_rows = Math.max(total_rows - compute_max_number_of_rows_in_view(), 0);
+        if (row_focus > max_rows) {
+            row_focus = max_rows;
+        }
         set_table_focus(row_focus, col_focus);
         return true;
     }
@@ -511,15 +530,35 @@ function set_focus_to_element_in_center() {
 }
 
 function is_scroll_position_for_render(scroll_container) {
-    const table_bottom_margin = 100; // Extra margin at the bottom of table.
+    const bottom_whitespace = 120; // whitespace at the bottom of table.
     const table_row_height = 50;
     return (
         scroll_container.scrollTop +
             scroll_container.clientHeight +
-            table_bottom_margin +
+            bottom_whitespace +
             table_row_height >
         scroll_container.scrollHeight
     );
+}
+
+function maybe_load_more() {
+    // Load older messages only when scrolling is completed.
+    const bottom_element = document.querySelector("#recent_topics_table .bottom_whitespace");
+    if (!bottom_element) {
+        return;
+    }
+    const bottom_element_rect = bottom_element.getBoundingClientRect();
+    const view_height = document
+        .querySelector("#recent_topics_table .simplebar-wrapper")
+        .getBoundingClientRect();
+
+    if (bottom_element_rect.bottom - view_height.bottom - 1 <= 0) {
+        message_fetch.maybe_load_older_messages({
+            msg_list: message_lists.home,
+            num_before: 1000,
+            cont: maybe_load_more,
+        });
+    }
 }
 
 export function complete_rerender() {
@@ -569,7 +608,12 @@ export function complete_rerender() {
         simplebar_container: $("#recent_topics_table .table_fix_head"),
         callback_after_render: revive_current_focus,
         is_scroll_position_for_render,
-        post_scroll__pre_render_callback: set_focus_to_element_in_center,
+        post_scroll__pre_render_callback: () => {
+            // Check if we should load older messages.
+            maybe_load_more();
+
+            set_focus_to_element_in_center();
+        },
         get_min_load_count,
     });
 }
