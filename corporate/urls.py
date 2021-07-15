@@ -4,14 +4,8 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import TemplateView
 
-from corporate.views import (
-    billing_home,
-    initial_upgrade,
-    replace_payment_source,
-    sponsorship,
-    update_plan,
-    upgrade,
-)
+from corporate.views.billing_page import billing_home, replace_payment_source, update_plan
+from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
 from zerver.lib.rest import rest_path
 
 i18n_urlpatterns: Any = [
