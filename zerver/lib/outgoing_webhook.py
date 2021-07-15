@@ -265,7 +265,10 @@ def notify_bot_owner(
         display_recipient=[dict(email=bot_owner.email)],
     )
     response_data = dict(content=notification_message)
-    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+    try:
+        send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+    except JsonableError:
+        pass
 
 
 def request_retry(event: Dict[str, Any], failure_message: Optional[str] = None) -> None:
