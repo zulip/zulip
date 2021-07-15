@@ -15,9 +15,6 @@ from zerver.models import UserProfile, get_user_profile_by_api_key
 
 
 class ChangeSettingsTest(ZulipTestCase):
-    def check_well_formed_change_settings_response(self, result: Dict[str, Any]) -> None:
-        self.assertIn("full_name", result)
-
     # DEPRECATED, to be deleted after all uses of check_for_toggle_param
     # are converted into check_for_toggle_param_patch.
     def check_for_toggle_param(self, pattern: str, param: str) -> None:
@@ -68,8 +65,6 @@ class ChangeSettingsTest(ZulipTestCase):
             ),
         )
         self.assert_json_success(json_result)
-        result = orjson.loads(json_result.content)
-        self.check_well_formed_change_settings_response(result)
 
         user.refresh_from_db()
         self.assertEqual(user.full_name, "Foo Bar")

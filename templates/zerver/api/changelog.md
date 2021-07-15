@@ -17,6 +17,9 @@ below features are supported.
   which is a list of parameters that were ignored by the endpoint,
   to the response object.
 
+* `PATCH /settings`: Removed `full_name` and `account_email` fields
+  from the response object.
+
 **Feature level 77**
 
 * [`GET /events`](/api/get-events): Removed `recipient_id` and

@@ -171,7 +171,7 @@ class RealmTest(ZulipTestCase):
         self.login("iago")
         url = "/json/settings"
         result = self.client_patch(url, data)
-        self.assert_in_success_response(['"full_name":"New Iago"'], result)
+        self.assert_json_success(result)
 
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is
