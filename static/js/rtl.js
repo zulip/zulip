@@ -1,4 +1,4 @@
-import * as util from "./util";
+import _ from "lodash";
 
 // How to determine the direction of a paragraph (P1-P3): https://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
 // Embedding level: https://www.unicode.org/reports/tr9/tr9-35.html#BD2
@@ -91,11 +91,11 @@ function get_bidi_class(ch) {
     if (pdi_chars.has(ch)) {
         return "PDI";
     }
-    let i = util.lower_bound(rl_ranges, ch);
+    let i = _.sortedIndex(rl_ranges, ch);
     if (i < rl_ranges.length && (rl_ranges[i] === ch || i % 2 === 1)) {
         return "R"; // R, AL
     }
-    i = util.lower_bound(lr_ranges, ch);
+    i = _.sortedIndex(lr_ranges, ch);
     if (i < lr_ranges.length && (lr_ranges[i] === ch || i % 2 === 1)) {
         return "L";
     }
