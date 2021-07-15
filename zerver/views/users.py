@@ -99,13 +99,18 @@ def deactivate_user_backend(
     user_profile: UserProfile,
     user_id: int,
     spammer: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    message_delete_action: Optional[int] = REQ(
+        default=None, json_validator=check_int_in(Message.DEACTIVATED_USER_MESSAGE_DELETE_ACTION)
+    ),
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
-    return _deactivate_user_profile_backend(request, user_profile, target, spammer)
+    return _deactivate_user_profile_backend(
+        request, user_profile, target, spammer, message_delete_action
+    )
 
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -130,11 +135,13 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     spammer: Optional[bool] = None,
+    message_delete_action: Optional[int] = None,
 ) -> HttpResponse:
     do_deactivate_user(
         target,
         spammer=spammer,
         acting_user=user_profile,
+        message_delete_action=message_delete_action,
     )
     return json_success()
 

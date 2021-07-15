@@ -2377,6 +2377,15 @@ class ArchivedMessage(AbstractMessage):
 class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
+    NO_DELETE_ACTION = 0
+    DELETE_PUBLIC_STREAM_MESSAGES = 1
+    DELETE_ALL_MESSAGES = 2
+    DEACTIVATED_USER_MESSAGE_DELETE_ACTION = [
+        NO_DELETE_ACTION,
+        DELETE_PUBLIC_STREAM_MESSAGES,
+        DELETE_ALL_MESSAGES,
+    ]
+
     def topic_name(self) -> str:
         """
         Please start using this helper to facilitate an

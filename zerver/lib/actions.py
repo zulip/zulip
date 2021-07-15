@@ -1191,10 +1191,74 @@ def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet:
     return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
 
 
+def classify_messages(messages: Iterable[Message]) -> Dict[str, Dict[int, Any]]:
+    # This function sorts the messages into a format that can be
+    # used by delete_deactivated_user_messages function to delete
+    # messages from a topic together in bulk and messages from a
+    # a private message individually.
+
+    message_dict: Dict[str, Dict[int, Any]] = {"stream": {}, "private": {}}
+    messages = list(messages)
+    stream_messages = [
+        message for message in messages if message.recipient.type == Recipient.STREAM
+    ]
+    private_messages = [
+        message for message in messages if message.recipient.type != Recipient.STREAM
+    ]
+
+    for message in stream_messages:
+        recipient_id = message.recipient.id
+        topic_name = message.topic_name()
+        if recipient_id in message_dict["stream"]:
+            if message.topic_name() in message_dict["stream"][recipient_id]:
+                message_dict["stream"][recipient_id][topic_name].append(message)
+            else:
+                message_dict["stream"][recipient_id][topic_name] = [message]
+        else:
+            message_dict["stream"][recipient_id] = {}
+            message_dict["stream"][recipient_id][topic_name] = [message]
+
+    for message in private_messages:
+        recipient_id = message.recipient.id
+        if recipient_id in message_dict["private"]:
+            message_dict["private"][recipient_id].append(message)
+        else:
+            message_dict["private"][recipient_id] = [message]
+
+    return message_dict
+
+
+def delete_deactivated_user_messages(user_profile: UserProfile, delete_policy: int) -> None:
+    """
+    Function to delete the messages of a user upon deactivation.
+    """
+    user_messages = Message.objects.filter(sender=user_profile)
+
+    if delete_policy == Message.DELETE_PUBLIC_STREAM_MESSAGES:
+        public_stream_messages = [
+            message for message in user_messages if message.is_public_stream_message()
+        ]
+        public_message_dict = classify_messages(public_stream_messages)
+
+        for stream, topic in public_message_dict["stream"].items():
+            for topic, messages in topic.items():
+                do_delete_messages(user_profile.realm, messages)
+    elif delete_policy == Message.DELETE_ALL_MESSAGES:
+        user_message_dict = classify_messages(user_messages)
+
+        for stream, topic in user_message_dict["stream"].items():
+            for topic, messages in topic.items():
+                do_delete_messages(user_profile.realm, messages)
+        for privates, messages in user_message_dict["private"].items():
+            for message in messages:
+                do_delete_messages(user_profile.realm, [message])
+
+
 def do_deactivate_user(
     user_profile: UserProfile,
     _cascade: bool = True,
     spammer: Optional[bool] = None,
+    message_delete_action: Optional[int] = None,
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
@@ -1227,6 +1291,9 @@ def do_deactivate_user(
 
         if spammer and not user_profile.full_name.endswith(" (spammer)"):
             check_change_full_name(user_profile, user_profile.full_name + " (spammer)", acting_user)
+
+        if message_delete_action is not None:
+            delete_deactivated_user_messages(user_profile, message_delete_action)
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
