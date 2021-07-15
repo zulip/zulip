@@ -45,14 +45,7 @@ run_test("is_pm_recipient", () => {
 });
 
 run_test("lower_bound", () => {
-    let arr = [10, 20, 30, 40, 50];
-    assert.equal(util.lower_bound(arr, 5), 0);
-    assert.equal(util.lower_bound(arr, 10), 0);
-    assert.equal(util.lower_bound(arr, 15), 1);
-    assert.equal(util.lower_bound(arr, 50), 4);
-    assert.equal(util.lower_bound(arr, 55), 5);
-
-    arr = [{x: 10}, {x: 20}, {x: 30}];
+    const arr = [{x: 10}, {x: 20}, {x: 30}, {x: 40}, {x: 50}];
 
     function compare(a, b) {
         return a.x < b;
@@ -61,6 +54,8 @@ run_test("lower_bound", () => {
     assert.equal(util.lower_bound(arr, 5, compare), 0);
     assert.equal(util.lower_bound(arr, 10, compare), 0);
     assert.equal(util.lower_bound(arr, 15, compare), 1);
+    assert.equal(util.lower_bound(arr, 50, compare), 4);
+    assert.equal(util.lower_bound(arr, 55, compare), 5);
 });
 
 run_test("same_recipient", () => {

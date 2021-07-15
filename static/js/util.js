@@ -14,15 +14,10 @@ export function random_int(min, max) {
 //   array[i] < value
 // for some i and false otherwise.
 //
-// Usage: lower_bound(array, value, [less])
+// Usage: lower_bound(array, value, less)
 export function lower_bound(array, value, less) {
     let first = 0;
     const last = array.length;
-    if (less === undefined) {
-        less = function (a, b) {
-            return a < b;
-        };
-    }
 
     let len = last - first;
     let middle;
