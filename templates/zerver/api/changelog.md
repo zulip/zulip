@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 78**
+
+* `PATCH /settings`: Added `ignored_parameters_unsupported` field,
+  which is a list of parameters that were ignored by the endpoint,
+  to the response object.
+
 **Feature level 77**
 
 * [`GET /events`](/api/get-events): Removed `recipient_id` and
