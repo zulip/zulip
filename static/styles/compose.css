@@ -227,6 +227,7 @@
         border: 0;
         padding: 0;
         margin-left: 4px;
+        vertical-align: unset;
 
         &:hover {
             opacity: 1;
