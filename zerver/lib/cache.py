@@ -34,7 +34,7 @@ from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
-    from zerver.models import Message, Realm, UserProfile
+    from zerver.models import Attachment, Message, MutedUser, Realm, Stream, SubMessage, UserProfile
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
@@ -607,63 +607,70 @@ def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
     cache_delete_many(keys)
 
 
-def changed(kwargs: Any, fields: List[str]) -> bool:
-    if kwargs.get("update_fields") is None:
+def changed(update_fields: Optional[Sequence[str]], fields: List[str]) -> bool:
+    if update_fields is None:
         # adds/deletes should invalidate the cache
         return True
 
-    update_fields = set(kwargs["update_fields"])
-    for f in fields:
-        if f in update_fields:
-            return True
-
-    return False
+    update_fields_set = set(update_fields)
+    return any(f in update_fields_set for f in fields)
 
 
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
-def flush_user_profile(sender: Any, **kwargs: Any) -> None:
-    user_profile = kwargs["instance"]
+def flush_user_profile(
+    *,
+    instance: "UserProfile",
+    update_fields: Optional[Sequence[str]] = None,
+    **kwargs: object,
+) -> None:
+    user_profile = instance
     delete_user_profile_caches([user_profile])
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
-    if changed(kwargs, realm_user_dict_fields):
+    if changed(update_fields, realm_user_dict_fields):
         cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ["is_active"]):
+    if changed(update_fields, ["is_active"]):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ["role"]):
+    if changed(update_fields, ["role"]):
         cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
-    if changed(kwargs, ["email", "full_name", "id", "is_mirror_dummy"]):
+    if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
         delete_display_recipient_cache(user_profile)
 
     # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
-    if user_profile.is_bot and changed(kwargs, bot_dict_fields):
+    if user_profile.is_bot and changed(update_fields, bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
 
 
-def flush_muting_users_cache(sender: Any, **kwargs: Any) -> None:
-    mute_object = kwargs["instance"]
+def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None:
+    mute_object = instance
     cache_delete(get_muting_users_cache_key(mute_object.muted_user_id))
 
 
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
-def flush_realm(sender: Any, from_deletion: bool = False, **kwargs: Any) -> None:
-    realm = kwargs["instance"]
+def flush_realm(
+    *,
+    instance: "Realm",
+    update_fields: Optional[Sequence[str]] = None,
+    from_deletion: bool = False,
+    **kwargs: object,
+) -> None:
+    realm = instance
     users = realm.get_active_users()
     delete_user_profile_caches(users)
 
     if (
         from_deletion
         or realm.deactivated
-        or (kwargs["update_fields"] is not None and "string_id" in kwargs["update_fields"])
+        or (update_fields is not None and "string_id" in update_fields)
     ):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
@@ -673,7 +680,7 @@ def flush_realm(sender: Any, from_deletion: bool = False, **kwargs: Any) -> None
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
-    elif changed(kwargs, ["description"]):
+    elif changed(update_fields, ["description"]):
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
 
@@ -696,21 +703,26 @@ def realm_text_description_cache_key(realm: "Realm") -> str:
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
-def flush_stream(sender: Any, **kwargs: Any) -> None:
+def flush_stream(
+    *,
+    instance: "Stream",
+    update_fields: Optional[Sequence[str]] = None,
+    **kwargs: object,
+) -> None:
     from zerver.models import UserProfile
 
-    stream = kwargs["instance"]
+    stream = instance
     items_for_remote_cache = {}
 
-    if kwargs.get("update_fields") is None:
+    if update_fields is None:
         cache_delete(get_stream_cache_key(stream.name, stream.realm_id))
     else:
         items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
         cache_set_many(items_for_remote_cache)
 
     if (
-        kwargs.get("update_fields") is None
-        or "name" in kwargs["update_fields"]
+        update_fields is None
+        or "name" in update_fields
         and UserProfile.objects.filter(
             Q(default_sending_stream=stream) | Q(default_events_register_stream=stream)
         ).exists()
@@ -718,10 +730,15 @@ def flush_stream(sender: Any, **kwargs: Any) -> None:
         cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
 
 
-def flush_used_upload_space_cache(sender: Any, **kwargs: Any) -> None:
-    attachment = kwargs["instance"]
+def flush_used_upload_space_cache(
+    *,
+    instance: "Attachment",
+    created: Optional[bool] = None,
+    **kwargs: object,
+) -> None:
+    attachment = instance
 
-    if kwargs.get("created") is None or kwargs.get("created") is True:
+    if created is None or created:
         cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 
@@ -737,13 +754,13 @@ def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> st
     return "open_graph_description_path:{}".format(make_safe_digest(request.META["PATH_INFO"]))
 
 
-def flush_message(sender: Any, **kwargs: Any) -> None:
-    message = kwargs["instance"]
+def flush_message(*, instance: "Message", **kwargs: object) -> None:
+    message = instance
     cache_delete(to_dict_cache_key_id(message.id))
 
 
-def flush_submessage(sender: Any, **kwargs: Any) -> None:
-    submessage = kwargs["instance"]
+def flush_submessage(*, instance: "SubMessage", **kwargs: object) -> None:
+    submessage = instance
     # submessages are not cached directly, they are part of their
     # parent messages
     message_id = submessage.message_id
