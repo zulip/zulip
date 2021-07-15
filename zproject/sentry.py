@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Optional
 
 import sentry_sdk
 from django.utils.translation import override as override_language
-from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -59,7 +58,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
     return event
 
 
-def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
+def setup_sentry(dsn: Optional[str]) -> None:
     if not dsn:
         return
     if PRODUCTION:
@@ -77,7 +76,6 @@ def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
             DjangoIntegration(),
             RedisIntegration(),
             SqlalchemyIntegration(),
-            *integrations,
         ],
         before_send=add_context,
         # Because we strip the email/username from the Sentry data
