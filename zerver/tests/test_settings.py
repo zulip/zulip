@@ -409,6 +409,17 @@ class ChangeSettingsTest(ZulipTestCase):
                 result = self.client_post("/json/users/me/avatar", {"f1": fp1})
             self.assert_json_error(result, "Avatar changes are disabled in this organization.", 400)
 
+    def test_invalid_setting_name(self) -> None:
+        self.login("hamlet")
+
+        # Now try an invalid setting name
+        json_result = self.client_patch("/json/settings", dict(invalid_setting="value"))
+        self.assert_json_success(json_result)
+
+        result = orjson.loads(json_result.content)
+        self.assertIn("ignored_parameters_unsupported", result)
+        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_setting"])
+
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:

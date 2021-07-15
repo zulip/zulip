@@ -13,6 +13,7 @@ from typing import (
     MutableMapping,
     Optional,
     Sequence,
+    Set,
     TypeVar,
     Union,
     cast,
@@ -62,6 +63,8 @@ class ZulipRequestNotes:
     placeholder_open_graph_description: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
     tornado_handler: Optional["handlers.AsyncDjangoHandler"] = None
+    processed_parameters: Set[str] = field(default_factory=set)
+    ignored_parameters: Set[str] = field(default_factory=set)
 
 
 request_notes_map: MutableMapping[HttpRequest, ZulipRequestNotes] = weakref.WeakKeyDictionary()
@@ -353,6 +356,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+        request_notes = get_request_notes(request)
         for param in post_params:
             func_var_name = param.func_var_name
             if param.path_only:
@@ -386,10 +390,13 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             post_var_name: Optional[str] = None
 
             for req_var in post_var_names:
+                assert req_var is not None
                 if req_var in request.POST:
                     val = request.POST[req_var]
+                    request_notes.processed_parameters.add(req_var)
                 elif req_var in request.GET:
                     val = request.GET[req_var]
+                    request_notes.processed_parameters.add(req_var)
                 else:
                     # This is covered by test_REQ_aliases, but coverage.py
                     # fails to recognize this for some reason.

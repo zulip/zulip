@@ -173,6 +173,17 @@ def json_change_settings(
             # Note that check_change_full_name strips the passed name automatically
             result["full_name"] = check_change_full_name(user_profile, full_name, user_profile)
 
+    # TODO: Do this more generally.
+    from zerver.lib.request import get_request_notes
+
+    request_notes = get_request_notes(request)
+    for req_var in request.POST:
+        if req_var not in request_notes.processed_parameters:
+            request_notes.ignored_parameters.add(req_var)
+
+    if len(request_notes.ignored_parameters) > 0:
+        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
+
     return json_success(result)
 
 
