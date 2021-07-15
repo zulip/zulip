@@ -156,7 +156,8 @@ def send_apple_push_notification(
         DeviceTokenClass = PushDeviceToken
 
     logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
-    message = {"aps": modernize_apns_payload(payload_data)}
+    payload_data = modernize_apns_payload(payload_data).copy()
+    message = {**payload_data.pop("custom", {}), "aps": payload_data}
     retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
