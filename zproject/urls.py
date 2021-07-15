@@ -553,7 +553,7 @@ i18n_urls = [
     ),
     path("accounts/deactivated/", show_deactivation_notice),
     # Displays digest email content in browser.
-    path("digest/", digest_page),
+    path("digest/", digest_page, name="digest_page"),
     # Registration views, require a confirmation ID.
     path("accounts/home/", accounts_home),
     path(

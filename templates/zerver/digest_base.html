@@ -11,6 +11,17 @@
             <div class="portico-page" id="digest-page-title">
                 <h1> Zulip digest </h1>
             </div>
+            <div>
+                <form action="{{ url('digest_page') }}" method="post"
+                  class="form-inline">
+                    {{ csrf_input }}
+                    <label for="message-weight">Message weight:</label>
+                    <input type="number" id="message-weight" name="message_weight" value="1" >
+                    <label for="sender-weight">Sender weight:</label>
+                    <input type="number" id="sender-weight" name="sender_weight"  value="1">
+                    <button class="full-width" type="submit">{{ _('Submit') }}</button>
+                </form>
+            </div>
             <div class="digest-email-html">
                 {% include 'zerver/emails/compiled/digest.html' %}
                 <img id="digest-footer" src="/static/images/emails/footer.png"/>

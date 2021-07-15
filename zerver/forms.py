@@ -501,3 +501,8 @@ class RealmRedirectForm(forms.Form):
         except Realm.DoesNotExist:
             raise ValidationError(_("We couldn't find that Zulip organization."))
         return subdomain
+
+
+class DigestParameterForm(forms.Form):
+    message_weight = forms.FloatField()
+    sender_weight = forms.FloatField()
