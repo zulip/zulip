@@ -587,12 +587,10 @@ a.compose_control_button.hide {
 }
 
 #compose.compose-fullscreen {
-    height: 100%;
     z-index: 99;
 
     #compose-container {
-        margin-top: 50px;
-        height: calc(100% - 50px);
+        height: 100%;
     }
 
     .message_comp {
