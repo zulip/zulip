@@ -13,3 +13,8 @@
     If you'd like this integration to always send to a specific topic,
     just include the (URL-encoded) topic as an additional parameter
     (E.g. for `your topic`, append `&topic=your%20topic` to the URL).
+
+    {% if all_event_types is defined %}
+    {!event-filtering-instruction-indented.md!}
+
+    {% endif %}
