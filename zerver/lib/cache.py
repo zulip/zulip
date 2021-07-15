@@ -656,9 +656,11 @@ def flush_muting_users_cache(sender: Any, **kwargs: Any) -> None:
 # a Realm object.  The main tricky thing here is that Realm info is
 # generally cached indirectly through user_profile objects.
 def flush_realm(sender: Any, from_deletion: bool = False, **kwargs: Any) -> None:
+    # Late import to avoid cyclic dependency.
+    from zerver.models import UserProfile
+
     realm = kwargs["instance"]
-    users = realm.get_active_users()
-    delete_user_profile_caches(users)
+    delete_user_profile_caches(UserProfile.objects.filter(realm=realm))
 
     if (
         from_deletion
