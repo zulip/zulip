@@ -30,6 +30,7 @@
 # L Petersen <lpetersen@gmx.net>, 2021
 # Gustav Gyges, 2021
 # n3w2oo <kontakt@n3w2oo.net>, 2021
+# Kai Spindler <kaiwasaki@gmail.com>, 2021
 # Roman Bannack <apxwn@yandex.ru>, 2021
 # 
 #, fuzzy
@@ -705,27 +706,27 @@ msgstr "Status setzen"
 
 #: templates/zerver/app/index.html:153
 msgid "Status message"
-msgstr ""
+msgstr "Statusnachricht"
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "In einer Konferenz"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "Unterwegs"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "Krankgeschrieben"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "Im Urlaub"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "Arbeitet von zu Hause"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -4108,12 +4109,12 @@ msgstr "Ungültige Nachricht"
 #: zerver/lib/actions.py:6020
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
-msgstr "Dieses Thema wurde von {user} nach {new_location} verschoben"
+msgstr "Dieses Thema wurde von {user} nach {new_location} verschoben."
 
 #: zerver/lib/actions.py:6025
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
-msgstr "Dieses Thema wurde von {user} aus {old_location} hierher verschoben"
+msgstr "Dieses Thema wurde von {user} aus {old_location} hierher verschoben."
 
 #: zerver/lib/actions.py:6518
 #, python-brace-format

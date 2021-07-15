@@ -424,7 +424,7 @@
   "Message retention for stream": "Aufbewahren von Nachrichten für Stream",
   "Message retention period": "Zeitraum für die Aufbewahrung von Nachrichten",
   "Message sent when you were not subscribed": "Nachricht wurde versandt, als du hier noch nicht abonniert hattest.",
-  "Message {recipient_label}": "Nachricht {recipient_label}",
+  "Message {recipient_label}": "Nachricht an {recipient_label}",
   "Message {recipient_names}": "Nachricht an {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "Nachricht an {recipient_names} ({recipient_status})",
   "Messages in this stream will be automatically deleted after {retention_days} days.": "Nachrichten in diesem Stream werden nach {retention_days} Tagen automatisch gelöscht.",

@@ -17,9 +17,9 @@
 # pavel.romanowski, 2021
 # Султонбек Ахмедов <nyfe@bk.ru>, 2021
 # Pavel Borisov <pashamba@gmail.com>, 2021
-# Sergey Korablin <s.korablin@gmail.com>, 2021
 # Alex Morozov <morozov@podmoskovie.info>, 2021
 # Roman Bannack <apxwn@yandex.ru>, 2021
+# Sergey Korablin <s.korablin@gmail.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -28,7 +28,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Roman Bannack <apxwn@yandex.ru>, 2021\n"
+"Last-Translator: Sergey Korablin <s.korablin@gmail.com>, 2021\n"
 "Language-Team: Russian (https://www.transifex.com/zulip/teams/53893/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -695,27 +695,27 @@ msgstr "Установить статус"
 
 #: templates/zerver/app/index.html:153
 msgid "Status message"
-msgstr ""
+msgstr "Статус"
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "На встрече"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "В дороге"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "Болею"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "В отпуске"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "Работаю удаленно"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -5413,7 +5413,7 @@ msgstr "Неверный провайдер видеочатов {}"
 
 #: zerver/views/realm.py:140
 msgid "Invalid giphy_rating {}"
-msgstr ""
+msgstr "Неверный giphy_rating {}"
 
 #: zerver/views/realm_domains.py:31
 msgid "Invalid domain: {}"
@@ -5478,7 +5478,7 @@ msgstr "Вы должны загрузить только один логото�
 
 #: zerver/views/realm_playgrounds.py:32
 msgid "Invalid playground"
-msgstr ""
+msgstr "Неверная интерактивная среда"
 
 #: zerver/views/registration.py:558
 msgid "The organization creation link has expired or is not valid."

@@ -9,6 +9,7 @@
 # alebrahimyahmed <alebrahimyahmed@gmail.com>, 2021
 # najla seghaier <seghaier.najla95@gmail.com>, 2021
 # Akash Nimare <svnitakash@gmail.com>, 2021
+# aljahmi2002 <aljahmi2002@gmail.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -17,7 +18,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Akash Nimare <svnitakash@gmail.com>, 2021\n"
+"Last-Translator: aljahmi2002 <aljahmi2002@gmail.com>, 2021\n"
 "Language-Team: Arabic (https://www.transifex.com/zulip/teams/53893/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,11 +28,11 @@ msgstr ""
 
 #: analytics/views.py:140 zerver/decorator.py:538 zerver/decorator.py:550
 msgid "Not allowed for guest users"
-msgstr "غير مسموح للمستعملين الزائرين"
+msgstr "غير مسموح للمستخدمين الزائرين"
 
 #: analytics/views.py:184
 msgid "Invalid organization"
-msgstr "منظمة غير صالحة"
+msgstr "منظمة غير صحيحة"
 
 #: analytics/views.py:315
 msgid "Public streams"
@@ -192,7 +193,7 @@ msgstr "الأنشطة اليومية"
 
 #: templates/analytics/stats.html:64
 msgid "15 day actives"
-msgstr "15 day actives"
+msgstr "أنشطة 15 يوم "
 
 #: templates/analytics/stats.html:65
 msgid "Total users"
@@ -205,7 +206,7 @@ msgstr "المستخدمين"
 
 #: templates/analytics/stats.html:84
 msgid "Messages sent by recipient type"
-msgstr ""
+msgstr "الرسائل المرسلة عن طريق نوع المستلم"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
