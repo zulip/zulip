@@ -1882,9 +1882,10 @@ def do_send_messages(
         if send_request is not None
     ]
 
-    # Save the message receipts in the database
-    user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
-    with transaction.atomic():
+    # Use durable=True to assert that we're not already inside an
+    # outer atomic block that could still roll back the effects of
+    # this one after we send events to RabbitMQ below.
+    with transaction.atomic(durable=True):
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
         # Claim attachments in message
@@ -1895,6 +1896,8 @@ def do_send_messages(
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
 
+        # Save the message receipts in the database
+        user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
