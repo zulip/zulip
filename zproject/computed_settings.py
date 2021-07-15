@@ -1185,4 +1185,4 @@ SENTRY_DSN = os.environ.get("SENTRY_DSN", SENTRY_DSN)
 if SENTRY_DSN:
     from .sentry import setup_sentry
 
-    setup_sentry(SENTRY_DSN)
+    setup_sentry(SENTRY_DSN, get_config("machine", "deploy_type", "development"))

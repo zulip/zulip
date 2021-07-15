@@ -11,8 +11,6 @@ from sentry_sdk.utils import capture_internal_exceptions
 from version import ZULIP_VERSION
 from zerver.lib.request import get_request_notes
 
-from .config import PRODUCTION, STAGING
-
 if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
 
@@ -58,16 +56,9 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
     return event
 
 
-def setup_sentry(dsn: Optional[str]) -> None:
+def setup_sentry(dsn: Optional[str], environment: str) -> None:
     if not dsn:
         return
-    if PRODUCTION:
-        if STAGING:
-            environment = "staging"
-        else:
-            environment = "production"
-    else:
-        environment = "development"
     sentry_sdk.init(
         dsn=dsn,
         environment=environment,

@@ -9,7 +9,6 @@ config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
 PRODUCTION = config_file.has_option("machine", "deploy_type")
-STAGING = config_file.get("machine", "deploy_type", fallback="") == "staging"
 DEVELOPMENT = not PRODUCTION
 
 secrets_file = configparser.RawConfigParser()
