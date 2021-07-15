@@ -144,6 +144,23 @@ export function wrap_text_with_markdown(textarea, prefix, suffix) {
     }
 }
 
+export function set_compose_box_top(set_top) {
+    if (set_top) {
+        // As `#compose` has `position: fixed` property, we cannot
+        // make the compose-box to attain the correct height just by
+        // using CSS. If that wasn't the case, we could have somehow
+        // refactored the HTML so as to consider only the space below
+        // below the `#navbar_alerts` as `height: 100%` of `#compose`.
+        const compose_top =
+            $("#navbar_alerts_wrapper").height() +
+            $(".header").height() +
+            Number.parseInt($(".header").css("paddingBottom"), 10);
+        $("#compose").css("top", compose_top + "px");
+    } else {
+        $("#compose").css("top", "");
+    }
+}
+
 export function make_compose_box_full_size() {
     set_full_size(true);
 
@@ -152,6 +169,9 @@ export function make_compose_box_full_size() {
     autosize.destroy($("#compose-textarea"));
 
     $("#compose").addClass("compose-fullscreen");
+
+    // Set the `top` property of compose-box.
+    set_compose_box_top(true);
 
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
@@ -162,6 +182,9 @@ export function make_compose_box_original_size() {
     set_full_size(false);
 
     $("#compose").removeClass("compose-fullscreen");
+
+    // Unset the `top` property of compose-box.
+    set_compose_box_top(false);
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
