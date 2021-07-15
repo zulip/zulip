@@ -833,10 +833,10 @@ class Realm(models.Model):
         return self.is_zephyr_mirror_realm
 
 
-def realm_post_delete_handler(sender: Any, **kwargs: Any) -> None:
+def realm_post_delete_handler(*, instance: Realm, **kwargs: object) -> None:
     # This would be better as a functools.partial, but for some reason
     # Django doesn't call it even when it's registered as a post_delete handler.
-    flush_realm(sender, from_deletion=True, **kwargs)
+    flush_realm(instance=instance, from_deletion=True)
 
 
 post_save.connect(flush_realm, sender=Realm)
@@ -982,8 +982,8 @@ def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     return d
 
 
-def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
-    realm = kwargs["instance"].realm
+def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
+    realm = instance.realm
     cache_set(
         get_realm_emoji_cache_key(realm), get_realm_emoji_uncached(realm), timeout=3600 * 24 * 7
     )
@@ -1127,8 +1127,8 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     return linkifiers
 
 
-def flush_linkifiers(sender: Any, **kwargs: Any) -> None:
-    realm_id = kwargs["instance"].realm_id
+def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
+    realm_id = instance.realm_id
     cache_delete(get_linkifiers_cache_key(realm_id))
     try:
         per_request_linkifiers_cache.pop(realm_id)
@@ -3923,8 +3923,8 @@ def flush_realm_alert_words(realm: Realm) -> None:
     cache_delete(realm_alert_words_automaton_cache_key(realm))
 
 
-def flush_alert_word(sender: Any, **kwargs: Any) -> None:
-    realm = kwargs["instance"].realm
+def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
+    realm = instance.realm
     flush_realm_alert_words(realm)
 
 

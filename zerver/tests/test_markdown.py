@@ -2,7 +2,7 @@ import copy
 import os
 import re
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, cast
 from unittest import mock
 
 import orjson
@@ -1468,7 +1468,7 @@ class MarkdownTest(ZulipTestCase):
 
             instance = Instance()
             instance.realm_id = realm.id
-            flush_linkifiers(sender=None, instance=instance)
+            flush_linkifiers(sender=RealmFilter, instance=cast(RealmFilter, instance))
 
         def save_new_linkifier() -> None:
             linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_format_string="whatever")
