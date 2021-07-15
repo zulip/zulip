@@ -331,7 +331,7 @@ export function show_new_stream_modal() {
     clear_error_display();
 }
 
-export function create_handlers_for_users(container) {
+function create_handlers_for_users(container) {
     // container should be $('#people_to_add')...see caller to verify
     function update_checked_state_for_users(value, users) {
         // Update the all_users backing data structure for
