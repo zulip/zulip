@@ -113,6 +113,7 @@ export function launch(conf) {
         } else if (conf.close_on_submit) {
             overlays.close_modal("#dialog_widget_modal");
         }
+        $("#dialog_error").empty();
         conf.on_click();
     });
 
