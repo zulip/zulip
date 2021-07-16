@@ -33,12 +33,13 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequired,
     OrganizationMemberRequired,
     OrganizationOwnerRequired,
+    RateLimited,
     RealmDeactivatedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.rate_limiter import RateLimited, RateLimitedIPAddr, RateLimitedUser
+from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
 from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain

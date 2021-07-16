@@ -54,11 +54,10 @@ from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
 )
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -67,10 +66,10 @@ from zerver.lib.test_helpers import (
     load_subdomain_token,
     use_s3_backend,
 )
+from zerver.lib.types import Validator
 from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.validator import (
-    Validator,
     check_bool,
     check_dict_only,
     check_int,

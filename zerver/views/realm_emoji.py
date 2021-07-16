@@ -10,7 +10,8 @@ from zerver.lib.emoji import (
     check_valid_emoji_name,
     name_to_codepoint,
 )
-from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import RealmEmoji, UserProfile
 

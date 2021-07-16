@@ -11,8 +11,8 @@ from zerver.lib.actions import (
 )
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import extract_message_dict
-from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm

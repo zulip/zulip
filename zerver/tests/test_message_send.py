@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.decorator import JsonableError
 from zerver.lib.actions import (
     build_message_send_dict,
     check_message,
@@ -35,6 +34,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (

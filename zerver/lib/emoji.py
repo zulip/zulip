@@ -5,8 +5,7 @@ from typing import Tuple
 import orjson
 from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile

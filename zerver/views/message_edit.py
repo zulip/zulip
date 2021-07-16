@@ -7,12 +7,11 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import check_update_message, do_delete_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.message import access_message
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic

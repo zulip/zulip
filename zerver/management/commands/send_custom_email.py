@@ -2,8 +2,9 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.conf import settings
+from django.core.management.base import CommandError
 
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.send_email import send_custom_email
 from zerver.models import Realm, UserProfile
 

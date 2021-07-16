@@ -11,10 +11,11 @@ from zerver.decorator import do_login, require_post
 from zerver.lib.exceptions import (
     AuthenticationFailedError,
     InvalidSubdomainError,
+    JsonableError,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
-from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import get_api_key

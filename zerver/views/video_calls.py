@@ -21,10 +21,11 @@ from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
 from requests_oauthlib import OAuth2Session
 
-from zerver.decorator import REQ, has_request_variables, zulip_login_required
+from zerver.decorator import zulip_login_required
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url, add_query_to_redirect_url

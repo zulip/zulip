@@ -38,11 +38,11 @@ from typing_extensions import TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.decorator import cachify
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
-from zerver.lib.request import JsonableError
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
 from zerver.tornado.autoreload import add_reload_hook

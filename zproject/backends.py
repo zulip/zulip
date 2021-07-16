@@ -67,10 +67,11 @@ from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
-from zerver.lib.request import JsonableError, get_request_notes
+from zerver.lib.request import get_request_notes
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (

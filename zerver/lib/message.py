@@ -14,7 +14,8 @@ from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
-from analytics.lib.counts import COUNT_STATS, RealmCount
+from analytics.lib.counts import COUNT_STATS
+from analytics.models import RealmCount
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
     cache_with_key,
@@ -22,15 +23,11 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import (
-    DisplayRecipientT,
-    UserDisplayRecipient,
-    bulk_fetch_display_recipients,
-)
+from zerver.lib.display_recipient import bulk_fetch_display_recipients
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
-from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
     get_subscribed_stream_recipient_ids_for_user,
@@ -39,6 +36,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,

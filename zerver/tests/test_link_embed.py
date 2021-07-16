@@ -9,9 +9,9 @@ from django.utils.html import escape
 from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
 
-from zerver.lib.actions import queue_json_publish
 from zerver.lib.cache import NotFoundInCache, cache_set, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata

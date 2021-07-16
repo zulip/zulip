@@ -1,7 +1,9 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from django.core.management.base import CommandError
+
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.models import UserProfile, get_user_profile_by_api_key
 

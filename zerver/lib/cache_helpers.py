@@ -16,6 +16,7 @@ from zerver.lib.cache import (
     cache_set_many,
     get_remote_cache_requests,
     get_remote_cache_time,
+    get_stream_cache_key,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
     user_profile_cache_key,
@@ -30,7 +31,6 @@ from zerver.models import (
     Stream,
     UserProfile,
     get_client_cache_key,
-    get_stream_cache_key,
     huddle_hash_cache_key,
 )
 

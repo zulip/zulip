@@ -2,9 +2,10 @@ from argparse import ArgumentParser
 from typing import Any, List
 
 from django.contrib.auth.tokens import default_token_generator
+from django.core.management.base import CommandError
 
 from zerver.forms import generate_password_reset_url
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
 

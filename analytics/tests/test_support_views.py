@@ -5,7 +5,6 @@ import orjson
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
-from analytics.views.support import get_org_type_display_name
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.lib.actions import (
@@ -21,6 +20,7 @@ from zerver.models import (
     Realm,
     UserMessage,
     UserProfile,
+    get_org_type_display_name,
     get_realm,
 )
 

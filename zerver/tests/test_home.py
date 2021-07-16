@@ -8,6 +8,7 @@ import orjson
 import pytz
 from django.conf import settings
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
@@ -20,7 +21,7 @@ from zerver.lib.home import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
+from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.models import (
     DefaultStream,
     Realm,

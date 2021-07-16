@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
 
 from django.conf import settings
-from django.db import connection
+from django.db import connection, models
 from django.db.models import F
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 
@@ -20,15 +20,7 @@ from analytics.models import (
 )
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import (
-    Message,
-    Realm,
-    RealmAuditLog,
-    Stream,
-    UserActivityInterval,
-    UserProfile,
-    models,
-)
+from zerver.models import Message, Realm, RealmAuditLog, Stream, UserActivityInterval, UserProfile
 
 ## Logging setup ##
 

@@ -1,9 +1,10 @@
 from typing import Any
 
+from django.core.management.base import CommandError
 from django.db import ProgrammingError
 
 from confirmation.models import generate_realm_creation_url
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 
 
