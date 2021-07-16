@@ -2532,6 +2532,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 
+    .stream_header_colorblock {
+        margin-bottom: 20px;
+    }
+
     textarea {
         width: 100%;
         min-width: 206px;
