@@ -993,7 +993,7 @@ def void_all_open_invoices(realm: Realm) -> int:
 
 
 def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
-    if customer.stripe_customer_id is None:
+    if customer.stripe_customer_id is None:  # nocoverage
         return False
 
     open_invoice_count = 0
@@ -1004,7 +1004,7 @@ def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
 
 
 def downgrade_small_realms_behind_on_payments_as_needed() -> None:
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().exclude(stripe_customer_id=None)
     for customer in customers:
         realm = customer.realm
 
