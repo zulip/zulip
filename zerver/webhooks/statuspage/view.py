@@ -20,6 +20,8 @@ COMPONENT_TEMPLATE = "**{name}** has changed status from **{old_status}** to **{
 
 TOPIC_TEMPLATE = "{name}: {description}"
 
+ALL_EVENT_TYPES = ["incident", "component"]
+
 
 def get_incident_events_body(payload: Dict[str, Any]) -> str:
     return INCIDENT_TEMPLATE.format(
@@ -51,7 +53,7 @@ def get_component_topic(payload: Dict[str, Any]) -> str:
     )
 
 
-@webhook_view("Statuspage")
+@webhook_view("Statuspage", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_statuspage_webhook(
     request: HttpRequest,
@@ -60,13 +62,15 @@ def api_statuspage_webhook(
 ) -> HttpResponse:
 
     if "incident" in payload:
+        event = "incident"
         topic = get_incident_topic(payload)
         body = get_incident_events_body(payload)
     elif "component" in payload:
+        event = "component"
         topic = get_component_topic(payload)
         body = get_components_update_body(payload)
     else:
         raise UnsupportedWebhookEventType("unknown-event")
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success()

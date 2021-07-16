@@ -19,7 +19,10 @@ The {status} **{name}** messaged:
 """.strip()
 
 
-@webhook_view("GoSquared")
+ALL_EVENT_TYPES = ["chat_message", "traffic_spike"]
+
+
+@webhook_view("GoSquared", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_gosquared_webhook(
     request: HttpRequest,
@@ -41,7 +44,7 @@ def api_gosquared_webhook(
             website_name=domain_name, website_url=acc_url, user_num=user_num
         )
         topic = f"GoSquared - {domain_name}"
-        check_send_webhook_message(request, user_profile, topic, body)
+        check_send_webhook_message(request, user_profile, topic, body, "traffic_spike")
 
     # Live chat message event
     elif payload.get("message") is not None and payload.get("person") is not None:
@@ -54,7 +57,7 @@ def api_gosquared_webhook(
                 name=payload["person"]["_anon"]["name"],
                 content=payload["message"]["content"],
             )
-            check_send_webhook_message(request, user_profile, topic, body)
+            check_send_webhook_message(request, user_profile, topic, body, "chat_message")
     else:
         raise UnsupportedWebhookEventType("unknown_event")
 

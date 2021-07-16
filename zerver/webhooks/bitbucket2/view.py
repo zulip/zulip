@@ -53,8 +53,28 @@ PULL_REQUEST_SUPPORTED_ACTIONS = [
     "comment_deleted",
 ]
 
+ALL_EVENT_TYPES = [
+    "change_commit_status",
+    "pull_request_comment_created",
+    "pull_request_updated",
+    "pull_request_unapproved",
+    "push",
+    "pull_request_approved",
+    "pull_request_fulfilled",
+    "issue_created",
+    "issue_commented",
+    "fork",
+    "pull_request_comment_updated",
+    "pull_request_created",
+    "pull_request_rejected",
+    "repo:updated",
+    "issue_updated",
+    "commit_comment",
+    "pull_request_comment_deleted",
+]
 
-@webhook_view("Bitbucket2")
+
+@webhook_view("Bitbucket2", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_bitbucket2_webhook(
     request: HttpRequest,
@@ -85,11 +105,13 @@ def api_bitbucket2_webhook(
 
     if type != "push":
         check_send_webhook_message(
-            request, user_profile, subject, body, unquote_url_parameters=True
+            request, user_profile, subject, body, type, unquote_url_parameters=True
         )
     else:
         for b, s in zip(body, subject):
-            check_send_webhook_message(request, user_profile, s, b, unquote_url_parameters=True)
+            check_send_webhook_message(
+                request, user_profile, s, b, type, unquote_url_parameters=True
+            )
 
     return json_success()
 

@@ -380,8 +380,10 @@ EVENT_HANDLER_MAP: Dict[str, Optional[Callable[..., List[Dict[str, str]]]]] = {
     "pr:reviewer:unapproved": partial(pr_handler, action="unapproved"),
 }
 
+ALL_EVENT_TYPES = list(EVENT_HANDLER_MAP.keys())
 
-@webhook_view("Bitbucket3")
+
+@webhook_view("Bitbucket3", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_bitbucket3_webhook(
     request: HttpRequest,
@@ -406,7 +408,12 @@ def api_bitbucket3_webhook(
         data = handler(payload)
     for element in data:
         check_send_webhook_message(
-            request, user_profile, element["subject"], element["body"], unquote_url_parameters=True
+            request,
+            user_profile,
+            element["subject"],
+            element["body"],
+            eventkey,
+            unquote_url_parameters=True,
         )
 
     return json_success()

@@ -16,8 +16,10 @@ GRAFANA_MESSAGE_TEMPLATE = (
     "{alert_status}[{rule_name}]({rule_url})\n\n{alert_message}{eval_matches}"
 )
 
+ALL_EVENT_TYPES = ["ok", "pending", "alerting", "paused"]
 
-@webhook_view("Grafana")
+
+@webhook_view("Grafana", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_grafana_webhook(
     request: HttpRequest,
@@ -67,6 +69,6 @@ def api_grafana_webhook(
     body = body.strip()
 
     # send the message
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, payload.get("state"))
 
     return json_success()

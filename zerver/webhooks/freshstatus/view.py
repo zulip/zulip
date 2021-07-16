@@ -67,8 +67,16 @@ FRESHSTATUS_SERVICES_ROW_TEMPLATE = "* {service_name}\n"
 FRESHSTATUS_SERVICES_OTHERS_ROW_TEMPLATE = "[and {services_number} more service(s)]"
 FRESHSTATUS_SERVICES_LIMIT = 5
 
+ALL_EVENT_TYPES = [
+    "MAINTENANCE_NOTE_CREATE",
+    "INCIDENT_NOTE_CREATE",
+    "INCIDENT_OPEN",
+    "MAINTENANCE_PLANNED",
+    "INCIDENT_REOPEN",
+]
 
-@webhook_view("Freshstatus")
+
+@webhook_view("Freshstatus", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_freshstatus_webhook(
     request: HttpRequest,
@@ -88,7 +96,9 @@ def api_freshstatus_webhook(
 
         raise JsonableError(_("Invalid payload"))
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(
+        request, user_profile, subject, body, payload["event_data"]["event_type"]
+    )
     return json_success()
 
 

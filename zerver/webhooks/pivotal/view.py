@@ -15,7 +15,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str, str]:
     payload = xml_fromstring(request.body)
 
     def get_text(attrs: List[str]) -> str:
@@ -60,7 +60,7 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
             estimate = f" worth {estimate} story points"
         subject = name
         content = f"{description} ({issue_status} {issue_type}{estimate}):\n\n~~~ quote\n{issue_desc}\n~~~\n\n{more_info}"
-    return subject, content
+    return subject, content, f"{event_type}_v3"
 
 
 UNSUPPORTED_EVENT_TYPES = [
@@ -75,8 +75,18 @@ UNSUPPORTED_EVENT_TYPES = [
     "label_create_activity",
 ]
 
+ALL_EVENT_TYPES = [
+    "story_update_v3",
+    "note_create_v3",
+    "story_create_v3",
+    "story_move_activity_v5",
+    "story_create_activity_v5",
+    "story_update_activity_v5",
+    "comment_create_activity_v5",
+]
 
-def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
+
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str, str]:
     payload = orjson.loads(request.body)
 
     event_type = payload["kind"]
@@ -162,21 +172,21 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
     else:
         raise UnsupportedWebhookEventType(event_type)
 
-    return subject, content
+    return subject, content, f"{event_type}_v5"
 
 
-@webhook_view("Pivotal")
+@webhook_view("Pivotal", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     subject = content = None
     try:
-        subject, content = api_pivotal_webhook_v3(request, user_profile)
+        subject, content, event_type = api_pivotal_webhook_v3(request, user_profile)
     except Exception:
         # Attempt to parse v5 JSON payload
-        subject, content = api_pivotal_webhook_v5(request, user_profile)
+        subject, content, event_type = api_pivotal_webhook_v5(request, user_profile)
 
     if not content:
         raise JsonableError(_("Unable to handle Pivotal payload"))
 
-    check_send_webhook_message(request, user_profile, subject, content)
+    check_send_webhook_message(request, user_profile, subject, content, event_type)
     return json_success()

@@ -127,7 +127,10 @@ def format_release_event(payload: Dict[str, Any], include_title: bool = False) -
     return get_release_event_message(**data)
 
 
-@webhook_view("Gogs")
+ALL_EVENT_TYPES = ["issue_comment", "issues", "create", "pull_request", "push", "release"]
+
+
+@webhook_view("Gogs", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_gogs_webhook(
     request: HttpRequest,
@@ -227,5 +230,5 @@ def gogs_webhook_main(
     else:
         raise UnsupportedWebhookEventType(event)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success()

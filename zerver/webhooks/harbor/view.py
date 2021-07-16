@@ -83,8 +83,10 @@ EVENT_FUNCTION_MAPPER = {
     "scanningCompleted": handle_scanning_completed_event,
 }
 
+ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
-@webhook_view("Harbor")
+
+@webhook_view("Harbor", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_harbor_webhook(
     request: HttpRequest,
@@ -113,5 +115,7 @@ def api_harbor_webhook(
 
     content: str = content_func(payload, user_profile, operator_username)
 
-    check_send_webhook_message(request, user_profile, topic, content, unquote_url_parameters=True)
+    check_send_webhook_message(
+        request, user_profile, topic, content, event, unquote_url_parameters=True
+    )
     return json_success()

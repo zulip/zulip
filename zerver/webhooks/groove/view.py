@@ -79,7 +79,18 @@ def replied_body(payload: Dict[str, Any], actor: str, action: str) -> str:
     return body
 
 
-@webhook_view("Groove")
+EVENTS_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Optional[str]]] = {
+    "ticket_started": ticket_started_body,
+    "ticket_assigned": ticket_assigned_body,
+    "agent_replied": partial(replied_body, actor="agent", action="replied to"),
+    "customer_replied": partial(replied_body, actor="customer", action="replied to"),
+    "note_added": partial(replied_body, actor="agent", action="left a note on"),
+}
+
+ALL_EVENT_TYPES = list(EVENTS_FUNCTION_MAPPER.keys())
+
+
+@webhook_view("Groove", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_groove_webhook(
     request: HttpRequest,
@@ -96,17 +107,9 @@ def api_groove_webhook(
     topic = "notifications"
 
     if body is not None:
-        check_send_webhook_message(request, user_profile, topic, body)
+        check_send_webhook_message(request, user_profile, topic, body, event)
 
     return json_success()
 
-
-EVENTS_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Optional[str]]] = {
-    "ticket_started": ticket_started_body,
-    "ticket_assigned": ticket_assigned_body,
-    "agent_replied": partial(replied_body, actor="agent", action="replied to"),
-    "customer_replied": partial(replied_body, actor="customer", action="replied to"),
-    "note_added": partial(replied_body, actor="agent", action="left a note on"),
-}
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GROOVE_EVENT")

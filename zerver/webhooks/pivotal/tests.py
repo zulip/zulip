@@ -4,6 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class PivotalV3HookTests(WebhookTestCase):
     STREAM_NAME = "pivotal"
     URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
+    WEBHOOK_DIR_NAME = "pivotal"
 
     def test_accepted(self) -> None:
         expected_topic = "My new Feature story"
@@ -94,6 +95,7 @@ class PivotalV3HookTests(WebhookTestCase):
 class PivotalV5HookTests(WebhookTestCase):
     STREAM_NAME = "pivotal"
     URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
+    WEBHOOK_DIR_NAME = "pivotal"
 
     def test_accepted(self) -> None:
         expected_topic = "#63486316: Story of the Year"

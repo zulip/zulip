@@ -86,8 +86,10 @@ GITHUB_URL_TEMPLATES = {
     "user": "https://github.com/{username}",
 }
 
+ALL_EVENT_TYPES = ["build", "tag", "unknown", "branch", "deploy", "pull_request"]
 
-@webhook_view("Semaphore")
+
+@webhook_view("Semaphore", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_semaphore_webhook(
     request: HttpRequest,
@@ -95,7 +97,7 @@ def api_semaphore_webhook(
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
-    content, project_name, branch_name = (
+    content, project_name, branch_name, event = (
         semaphore_classic(payload) if "event" in payload else semaphore_2(payload)
     )
     subject = (
@@ -103,11 +105,11 @@ def api_semaphore_webhook(
         if branch_name
         else project_name
     )
-    check_send_webhook_message(request, user_profile, subject, content)
+    check_send_webhook_message(request, user_profile, subject, content, event)
     return json_success()
 
 
-def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
+def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str, str]:
     # semaphore only gives the last commit, even if there were multiple commits
     # since the last build
     branch_name = payload["branch_name"]
@@ -154,10 +156,10 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
     else:  # should never get here
         content = f"{event}: {result}"
 
-    return content, project_name, branch_name
+    return content, project_name, branch_name, event
 
 
-def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
+def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str], str]:
     repo_url = payload["repository"]["url"]
     project_name = payload["project"]["name"]
     organization_name = payload["organization"]["name"]
@@ -170,6 +172,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         pipeline_result=payload["pipeline"]["result"],
         workflow_url=f"https://{organization_name}.semaphoreci.com/workflows/{workflow_id}",
     )
+    event = payload["revision"]["reference_type"]
 
     if payload["revision"]["reference_type"] == "branch":  # push event
         commit_id = payload["revision"]["commit_sha"]
@@ -215,7 +218,7 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         branch_name = ""
         context.update(event_name=payload["revision"]["reference_type"])
         content = DEFAULT_TEMPLATE.format(**context)
-    return content, project_name, branch_name
+    return content, project_name, branch_name, event
 
 
 def is_github_repo(repo_url: str) -> bool:
