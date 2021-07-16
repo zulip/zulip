@@ -3102,6 +3102,38 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             family_name=name.split(" ")[1],
         )
 
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_registration_auto_signup(self) -> None:
+        """
+        The analogue of the auto_signup test for SAML.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idp_settings_dict = list(oidc_setting_dict.values())[0]
+        idp_settings_dict["auto_signup"] = True
+        with mock.patch.object(GenericOpenIdConnectBackend, "settings_dict", new=idp_settings_dict):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=False,
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                name,
+                self.BACKEND_CLASS.full_name_validated,
+                expect_confirm_registration_page=False,
+            )
+
     def test_social_auth_no_key(self) -> None:
         """
         Requires overriding because client key/secret are configured
