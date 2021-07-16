@@ -10,7 +10,7 @@ import json
 import re
 import shlex
 from textwrap import dedent
-from typing import Any, Dict, List, Mapping, Optional, Pattern, Tuple
+from typing import Any, Dict, List, Mapping, Match, Optional, Pattern, Tuple
 
 import markdown
 from django.conf import settings
@@ -435,44 +435,29 @@ class APIMarkdownExtension(Extension):
         )
 
 
-class APICodeExamplesPreprocessor(Preprocessor):
-    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
+class BasePreprocessor(Preprocessor):
+    def __init__(
+        self, REGEXP: Pattern[str], md: markdown.Markdown, config: Mapping[str, Any]
+    ) -> None:
         super().__init__(md)
         self.api_url = config["api_url"]
+        self.REGEXP = REGEXP
 
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:
             for line in lines:
                 loc = lines.index(line)
-                match = MACRO_REGEXP.search(line)
+                match = self.REGEXP.search(line)
 
                 if match:
-                    language, options = parse_language_and_options(match.group(2))
-                    function = match.group(3)
-                    key = match.group(4)
-                    if self.api_url is None:
-                        raise AssertionError("Cannot render curl API examples without API URL set.")
-                    options["api_url"] = self.api_url
-
-                    if key == "fixture":
-                        text = self.render_fixture(function)
-                    elif key == "example":
-                        path, method = function.rsplit(":", 1)
-                        if language in ADMIN_CONFIG_LANGUAGES and check_requires_administrator(
-                            path, method
-                        ):
-                            text = SUPPORTED_LANGUAGES[language]["render"](
-                                function, admin_config=True
-                            )
-                        else:
-                            text = SUPPORTED_LANGUAGES[language]["render"](function, **options)
+                    text = self.generate_text(match)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
                     # we need to make sure that any preceding or following text
                     # stays the same.
-                    line_split = MACRO_REGEXP.split(line, maxsplit=0)
+                    line_split = self.REGEXP.split(line, maxsplit=0)
                     preceding = line_split[0]
                     following = line_split[-1]
                     text = [preceding, *text, following]
@@ -482,41 +467,47 @@ class APICodeExamplesPreprocessor(Preprocessor):
                 done = True
         return lines
 
-    def render_fixture(self, function: str) -> List[str]:
+    def generate_text(self, match: Match[str]) -> List[str]:
+        function = match.group(2)
+        text = self.render(function)
+        return text
+
+    def render(self, function: str) -> List[str]:
+        raise NotImplementedError("Must be overriden by a child class")
+
+
+class APICodeExamplesPreprocessor(BasePreprocessor):
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
+        super().__init__(MACRO_REGEXP, md, config)
+
+    def generate_text(self, match: Match[str]) -> List[str]:
+        language, options = parse_language_and_options(match.group(2))
+        function = match.group(3)
+        key = match.group(4)
+        if self.api_url is None:
+            raise AssertionError("Cannot render curl API examples without API URL set.")
+        options["api_url"] = self.api_url
+
+        if key == "fixture":
+            text = self.render(function)
+        elif key == "example":
+            path, method = function.rsplit(":", 1)
+            if language in ADMIN_CONFIG_LANGUAGES and check_requires_administrator(path, method):
+                text = SUPPORTED_LANGUAGES[language]["render"](function, admin_config=True)
+            else:
+                text = SUPPORTED_LANGUAGES[language]["render"](function, **options)
+        return text
+
+    def render(self, function: str) -> List[str]:
         path, method = function.rsplit(":", 1)
         return generate_openapi_fixture(path, method)
 
 
-class APIDescriptionPreprocessor(Preprocessor):
+class APIDescriptionPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
-        super().__init__(md)
-        self.api_url = config["api_url"]
+        super().__init__(MACRO_REGEXP_DESC, md, config)
 
-    def run(self, lines: List[str]) -> List[str]:
-        done = False
-        while not done:
-            for line in lines:
-                loc = lines.index(line)
-                match = MACRO_REGEXP_DESC.search(line)
-
-                if match:
-                    function = match.group(2)
-                    text = self.render_description(function)
-                    # The line that contains the directive to include the macro
-                    # may be preceded or followed by text or tags, in that case
-                    # we need to make sure that any preceding or following text
-                    # stays the same.
-                    line_split = MACRO_REGEXP_DESC.split(line, maxsplit=0)
-                    preceding = line_split[0]
-                    following = line_split[-1]
-                    text = [preceding, *text, following]
-                    lines = lines[:loc] + text + lines[loc + 1 :]
-                    break
-            else:
-                done = True
-        return lines
-
-    def render_description(self, function: str) -> List[str]:
+    def render(self, function: str) -> List[str]:
         description: List[str] = []
         path, method = function.rsplit(":", 1)
         description_dict = get_openapi_description(path, method)
@@ -525,36 +516,11 @@ class APIDescriptionPreprocessor(Preprocessor):
         return description
 
 
-class APITitlePreprocessor(Preprocessor):
+class APITitlePreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
-        super().__init__(md)
-        self.api_url = config["api_url"]
+        super().__init__(MACRO_REGEXP_TITLE, md, config)
 
-    def run(self, lines: List[str]) -> List[str]:
-        done = False
-        while not done:
-            for line in lines:
-                loc = lines.index(line)
-                match = MACRO_REGEXP_TITLE.search(line)
-
-                if match:
-                    function = match.group(2)
-                    text = self.render_title(function)
-                    # The line that contains the directive to include the macro
-                    # may be preceded or followed by text or tags, in that case
-                    # we need to make sure that any preceding or following text
-                    # stays the same.
-                    line_split = MACRO_REGEXP_TITLE.split(line, maxsplit=0)
-                    preceding = line_split[0]
-                    following = line_split[-1]
-                    text = [preceding, *text, following]
-                    lines = lines[:loc] + text + lines[loc + 1 :]
-                    break
-            else:
-                done = True
-        return lines
-
-    def render_title(self, function: str) -> List[str]:
+    def render(self, function: str) -> List[str]:
         title: List[str] = []
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
@@ -565,36 +531,11 @@ class APITitlePreprocessor(Preprocessor):
         return title
 
 
-class ResponseDescriptionPreprocessor(Preprocessor):
+class ResponseDescriptionPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
-        super().__init__(md)
-        self.api_url = config["api_url"]
+        super().__init__(MACRO_REGEXP_RESPONSE_DESC, md, config)
 
-    def run(self, lines: List[str]) -> List[str]:
-        done = False
-        while not done:
-            for line in lines:
-                loc = lines.index(line)
-                match = MACRO_REGEXP_RESPONSE_DESC.search(line)
-
-                if match:
-                    function = match.group(2)
-                    text = self.render_responses_description(function)
-                    # The line that contains the directive to include the macro
-                    # may be preceded or followed by text or tags, in that case
-                    # we need to make sure that any preceding or following text
-                    # stays the same.
-                    line_split = MACRO_REGEXP_RESPONSE_DESC.split(line, maxsplit=0)
-                    preceding = line_split[0]
-                    following = line_split[-1]
-                    text = [preceding, *text, following]
-                    lines = lines[:loc] + text + lines[loc + 1 :]
-                    break
-            else:
-                done = True
-        return lines
-
-    def render_responses_description(self, function: str) -> List[str]:
+    def render(self, function: str) -> List[str]:
         description: List[str] = []
         path, method = function.rsplit(":", 1)
         raw_description = get_responses_description(path, method)
@@ -602,36 +543,11 @@ class ResponseDescriptionPreprocessor(Preprocessor):
         return description
 
 
-class ParameterDescriptionPreprocessor(Preprocessor):
+class ParameterDescriptionPreprocessor(BasePreprocessor):
     def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
-        super().__init__(md)
-        self.api_url = config["api_url"]
+        super().__init__(MACRO_REGEXP_PARAMETER_DESC, md, config)
 
-    def run(self, lines: List[str]) -> List[str]:
-        done = False
-        while not done:
-            for line in lines:
-                loc = lines.index(line)
-                match = MACRO_REGEXP_PARAMETER_DESC.search(line)
-
-                if match:
-                    function = match.group(2)
-                    text = self.render_parameters_description(function)
-                    # The line that contains the directive to include the macro
-                    # may be preceded or followed by text or tags, in that case
-                    # we need to make sure that any preceding or following text
-                    # stays the same.
-                    line_split = MACRO_REGEXP_PARAMETER_DESC.split(line, maxsplit=0)
-                    preceding = line_split[0]
-                    following = line_split[-1]
-                    text = [preceding, *text, following]
-                    lines = lines[:loc] + text + lines[loc + 1 :]
-                    break
-            else:
-                done = True
-        return lines
-
-    def render_parameters_description(self, function: str) -> List[str]:
+    def render(self, function: str) -> List[str]:
         description: List[str] = []
         path, method = function.rsplit(":", 1)
         raw_description = get_parameters_description(path, method)
