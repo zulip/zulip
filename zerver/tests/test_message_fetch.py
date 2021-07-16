@@ -20,6 +20,7 @@ from zerver.lib.actions import (
     do_update_message,
 )
 from zerver.lib.avatar import avatar_url
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionData
 from zerver.lib.message import (
     MessageDict,
@@ -29,7 +30,6 @@ from zerver.lib.message import (
     update_first_visible_message_id,
 )
 from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
-from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase

@@ -15,11 +15,11 @@ from zerver.lib.actions import (
     do_update_user_presence,
 )
 from zerver.lib.event_schema import check_restart_event
-from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
+from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, queries_captured, stub_event_queue_user_events
-from zerver.lib.users import get_api_key
+from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
     Realm,
     UserMessage,

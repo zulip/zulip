@@ -7,11 +7,11 @@ from typing import Optional
 
 import orjson
 from django.conf import settings
-from django.core.management.base import CommandParser
+from django.core.management.base import CommandError, CommandParser
 
 from zerver.lib.email_mirror import mirror_email_message
 from zerver.lib.email_mirror_helpers import encode_email_address
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm, get_realm, get_stream
 
 # This command loads an email from a specified file and sends it

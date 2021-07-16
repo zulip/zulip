@@ -18,8 +18,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key_id,
 )
-from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import (
     CustomProfileField,

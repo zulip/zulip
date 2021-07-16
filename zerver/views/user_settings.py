@@ -17,7 +17,7 @@ from confirmation.models import (
     get_object_from_key,
     render_confirmation_key_error,
 )
-from zerver.decorator import REQ, has_request_variables, human_users_only
+from zerver.decorator import human_users_only
 from zerver.lib.actions import (
     check_change_full_name,
     do_change_avatar_fields,
@@ -29,16 +29,16 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     do_start_email_change_process,
     get_available_notification_sounds,
-    validate_email_is_valid,
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,
+    validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.rate_limiter import RateLimited
-from zerver.lib.request import JsonableError
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.upload import upload_avatar_image

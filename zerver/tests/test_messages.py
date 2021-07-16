@@ -3,13 +3,14 @@ from typing import List
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import get_active_presence_idle_user_ids, get_client
+from zerver.lib.actions import get_active_presence_idle_user_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
     UserPresence,
     UserProfile,
     bulk_get_huddle_user_ids,
+    get_client,
     get_huddle_user_ids,
 )
 

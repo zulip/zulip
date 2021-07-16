@@ -1,8 +1,10 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from django.core.management.base import CommandError
+
 from zerver.lib.actions import do_deactivate_user, get_active_bots_owned_by_user
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.sessions import user_sessions
 
 

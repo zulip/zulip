@@ -9,7 +9,7 @@ from django.db import connection
 from django.db.models.query import QuerySet
 from django.template import loader
 from django.urls import reverse
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 
 eastern_tz = pytz.timezone("US/Eastern")
 

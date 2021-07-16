@@ -5,9 +5,8 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
-from zerver.lib.exceptions import StreamAdministratorRequired
+from zerver.lib.exceptions import JsonableError, StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
-from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import (
     DefaultStreamGroup,

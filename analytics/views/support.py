@@ -44,8 +44,6 @@ if settings.BILLING_ENABLED:
         attach_discount_to_realm,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
-        get_current_plan_by_realm,
-        get_customer_by_realm,
         get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
@@ -53,6 +51,7 @@ if settings.BILLING_ENABLED:
         update_sponsorship_status,
         void_all_open_invoices,
     )
+    from corporate.models import get_current_plan_by_realm, get_customer_by_realm
 
 
 def get_plan_name(plan_type: int) -> str:

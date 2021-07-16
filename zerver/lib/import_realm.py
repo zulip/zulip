@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import secrets
 import shutil
+from mimetypes import guess_type
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import orjson
@@ -31,7 +32,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, get_bucket, guess_type, sanitize_name
+from zerver.lib.upload import BadImageError, get_bucket, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,

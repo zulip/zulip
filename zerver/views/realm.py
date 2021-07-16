@@ -18,9 +18,9 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
 )
-from zerver.lib.exceptions import OrganizationOwnerRequired
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id

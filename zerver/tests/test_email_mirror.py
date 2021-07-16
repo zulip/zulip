@@ -18,7 +18,6 @@ from zerver.lib.actions import (
     ensure_stream,
 )
 from zerver.lib.email_mirror import (
-    ZulipEmailForwardError,
     create_missed_message_address,
     filter_footer,
     get_missed_message_token_from_address,
@@ -31,6 +30,7 @@ from zerver.lib.email_mirror import (
     strip_from_subject,
 )
 from zerver.lib.email_mirror_helpers import (
+    ZulipEmailForwardError,
     decode_email_address,
     encode_email_address,
     get_email_gateway_message_string_from_address,

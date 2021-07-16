@@ -3,10 +3,11 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.exceptions import ValidationError
+from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
 
 from zerver.lib.domains import validate_domain
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import RealmDomain, get_realm_domains
 
 

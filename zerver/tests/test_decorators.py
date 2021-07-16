@@ -55,11 +55,11 @@ from zerver.lib.request import (
 from zerver.lib.response import json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import DummyHandler, HostRequestMock
+from zerver.lib.types import Validator
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.lib.validator import (
-    Validator,
     check_bool,
     check_capped_string,
     check_color,

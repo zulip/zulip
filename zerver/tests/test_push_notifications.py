@@ -30,16 +30,15 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     do_update_message_flags,
 )
+from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
-    absolute_avatar_url,
     b64_to_hex,
-    datetime_to_timestamp,
     get_apns_badge_count,
     get_apns_badge_count_future,
     get_apns_context,
-    get_display_recipient,
     get_message_payload_apns,
     get_message_payload_gcm,
     get_mobile_push_content,
@@ -52,18 +51,18 @@ from zerver.lib.push_notifications import (
     send_android_push_notification_to_user,
     send_apple_push_notification,
     send_notifications_to_bouncer,
-    send_to_push_bouncer,
 )
 from zerver.lib.remote_server import (
     PushNotificationBouncerException,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
     send_analytics_to_remote_server,
+    send_to_push_bouncer,
 )
-from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Message,
@@ -75,6 +74,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     get_client,
+    get_display_recipient,
     get_realm,
     get_stream,
     receives_offline_push_notifications,

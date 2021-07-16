@@ -4,7 +4,7 @@ from typing import Any, Callable, Collection, Dict, Iterable, List, Mapping, Opt
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, get_topic_from_message_info
 
 stop_words_list: Optional[List[str]] = None

@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS
@@ -22,11 +22,11 @@ from analytics.views.activity_common import (
     realm_stats_link,
     remote_installation_stats_link,
 )
-from analytics.views.support import get_org_type_display_name, get_plan_name
+from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm, UserActivityInterval, UserProfile
+from zerver.models import Realm, UserActivityInterval, UserProfile, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (

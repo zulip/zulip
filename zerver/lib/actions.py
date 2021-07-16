@@ -40,8 +40,8 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
-from analytics.lib.counts import COUNT_STATS, RealmCount, do_increment_logging_stat
-from analytics.models import StreamCount
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from analytics.models import RealmCount, StreamCount
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
@@ -70,6 +70,7 @@ from zerver.lib.cache import (
     delete_user_profile_caches,
     display_recipient_cache_key,
     flush_user_profile,
+    get_stream_cache_key,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
     user_profile_delivery_email_cache_key,
@@ -239,7 +240,6 @@ from zerver.models import (
     get_realm_playgrounds,
     get_stream,
     get_stream_by_id_in_realm,
-    get_stream_cache_key,
     get_system_bot,
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,

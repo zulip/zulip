@@ -1,8 +1,10 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from django.core.management.base import CommandError
+
 from zerver.lib.actions import do_send_realm_reactivation_email
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):

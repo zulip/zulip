@@ -20,7 +20,6 @@ from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyException,
-    MultiuseInvite,
     confirmation_url,
     create_confirmation_link,
     generate_key,
@@ -47,7 +46,6 @@ from zerver.lib.actions import (
     do_invite_users,
     do_set_realm_property,
     get_default_streams_for_realm,
-    get_stream,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
@@ -88,6 +86,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    MultiuseInvite,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -99,6 +98,7 @@ from zerver.models import (
     UserProfile,
     flush_per_request_caches,
     get_realm,
+    get_stream,
     get_system_bot,
     get_user,
     get_user_by_delivery_email,

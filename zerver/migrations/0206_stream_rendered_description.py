@@ -2,7 +2,7 @@ from django.db import migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.actions import render_stream_description
+from zerver.lib.streams import render_stream_description
 
 
 def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:

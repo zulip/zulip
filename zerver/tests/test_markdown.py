@@ -22,7 +22,7 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.exceptions import JsonableError, MarkdownRenderingException
 from zerver.lib.markdown import (
     MarkdownListPreprocessor,
     MessageRenderingResult,
@@ -47,7 +47,6 @@ from zerver.lib.mention import (
     possible_user_group_mentions,
 )
 from zerver.lib.message import render_markdown
-from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.user_groups import create_user_group

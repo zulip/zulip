@@ -24,7 +24,7 @@ from django.core.signing import BadSignature, TimestampSigner
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 from PIL import ExifTags, Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
 from PIL.Image import DecompressionBombError

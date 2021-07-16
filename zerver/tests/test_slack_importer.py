@@ -12,6 +12,7 @@ from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
 
 from zerver.data_import.import_util import (
+    ZerverFieldsT,
     build_defaultstream,
     build_recipient,
     build_subscription,
@@ -23,7 +24,6 @@ from zerver.data_import.slack import (
     AddedChannelsT,
     AddedMPIMsT,
     DMMembersT,
-    ZerverFieldsT,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     convert_slack_workspace_messages,

@@ -4,9 +4,10 @@ import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import REQ, has_request_variables, webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message

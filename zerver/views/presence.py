@@ -8,8 +8,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only
 from zerver.lib.actions import do_update_user_status, update_user_presence
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
-from zerver.lib.request import REQ, JsonableError, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
