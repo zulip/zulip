@@ -561,10 +561,16 @@ def test_user_not_authorized_error(nonadmin_client: Client) -> None:
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_2")
 
 
+@openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
+    ensure_users([11, 26], ["iago", "newbie"])
 
+    # {code_example|start}
+    # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
-    assert result["subscribers"] == ["iago@zulip.com", "newbie@zulip.com"]
+    print(result)
+    # {code_example|end}
+    assert result["subscribers"] == [11, 26]
 
 
 def get_user_agent(client: Client) -> None:

@@ -2850,6 +2850,29 @@ class SubscriptionAPITest(ZulipTestCase):
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))
 
+    def test_successful_subscriptions_list_subscribers(self) -> None:
+        """
+        Calling /api/v1/users/me/subscriptions should successfully return your subscriptions.
+        """
+        result = self.api_get(
+            self.test_user,
+            "/api/v1/users/me/subscriptions",
+            {"include_subscribers": "true"},
+        )
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertIn("subscriptions", json)
+        for stream in json["subscriptions"]:
+            self.assertIsInstance(stream["name"], str)
+            self.assertIsInstance(stream["color"], str)
+            self.assertIsInstance(stream["invite_only"], bool)
+            # check that the stream name corresponds to an actual
+            # stream; will throw Stream.DoesNotExist if it doesn't
+            get_stream(stream["name"], self.test_realm)
+        list_streams = [stream["name"] for stream in json["subscriptions"]]
+        # also check that this matches the list of your subscriptions
+        self.assertEqual(sorted(list_streams), sorted(self.streams))
+
     def helper_check_subs_before_and_after_add(
         self,
         subscriptions: List[str],
@@ -4531,8 +4554,8 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assert_json_success(result)
         json = result.json()
 
-        self.assertTrue(othello.email in json["subscribers"])
-        self.assertTrue(hamlet.email in json["subscribers"])
+        self.assertTrue(othello.id in json["subscribers"])
+        self.assertTrue(hamlet.id in json["subscribers"])
 
 
 class GetSubscribersTest(ZulipTestCase):
@@ -4561,13 +4584,12 @@ class GetSubscribersTest(ZulipTestCase):
 
         {"msg": "",
          "result": "success",
-         "subscribers": [self.example_email("hamlet"), self.example_email("prospero")]}
+         "subscribers": [hamlet_user.id, prospero_user.id]}
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
         true_subscribers = [
-            user_profile.email
-            for user_profile in self.users_subscribed_to_stream(stream_name, realm)
+            user_profile.id for user_profile in self.users_subscribed_to_stream(stream_name, realm)
         ]
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
@@ -4659,7 +4681,7 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assert_length(sub["subscribers"], len(users_to_subscribe))
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 4)
 
     def test_never_subscribed_streams(self) -> None:
         """
@@ -4888,7 +4910,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["subscribers"], len(users_to_subscribe))
             else:
                 self.assert_length(sub["subscribers"], 0)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 4)
 
     def test_nonsubscriber(self) -> None:
         """
@@ -4946,9 +4968,9 @@ class GetSubscribersTest(ZulipTestCase):
         result_dict = result.json()
         self.assertIn("subscribers", result_dict)
         self.assertIsInstance(result_dict["subscribers"], list)
-        subscribers: List[str] = []
+        subscribers: List[int] = []
         for subscriber in result_dict["subscribers"]:
-            self.assertIsInstance(subscriber, str)
+            self.assertIsInstance(subscriber, int)
             subscribers.append(subscriber)
         self.assertEqual(set(subscribers), set(expected_subscribers))
 

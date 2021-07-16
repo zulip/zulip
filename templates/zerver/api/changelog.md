@@ -11,6 +11,15 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 79**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): The
+  `subscribers` field now returns user IDs if `include_subscribers` is
+  passed. Previously, this endpoint returned user display email
+  addresses in this field.
+* `GET /streams/{stream_id}/members`: This endpoint now returns user
+  IDs. Previously, it returned display email addresses.
+
 **Feature level 78**
 
 * `PATCH /settings`: Added `ignored_parameters_unsupported` field,
