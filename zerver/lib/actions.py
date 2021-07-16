@@ -3650,12 +3650,9 @@ def get_subscribers_query(stream: Stream, requesting_user: Optional[UserProfile]
     return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
 
-def get_subscriber_emails(
-    stream: Stream, requesting_user: Optional[UserProfile] = None
-) -> List[str]:
+def get_subscriber_ids(stream: Stream, requesting_user: Optional[UserProfile] = None) -> List[str]:
     subscriptions_query = get_subscribers_query(stream, requesting_user)
-    subscriptions = subscriptions_query.values("user_profile__email")
-    return [subscription["user_profile__email"] for subscription in subscriptions]
+    return subscriptions_query.values_list("user_profile_id", flat=True)
 
 
 def send_subscription_add_events(
@@ -6630,26 +6627,8 @@ def gather_subscriptions(
         user_profile,
         include_subscribers=include_subscribers,
     )
-
     subscribed = helper_result.subscriptions
     unsubscribed = helper_result.unsubscribed
-
-    if include_subscribers:
-        user_ids = set()
-        for subs in [subscribed, unsubscribed]:
-            for sub in subs:
-                if "subscribers" in sub:
-                    for subscriber in sub["subscribers"]:
-                        user_ids.add(subscriber)
-        email_dict = get_emails_from_user_ids(list(user_ids))
-
-        for subs in [subscribed, unsubscribed]:
-            for sub in subs:
-                if "subscribers" in sub:
-                    sub["subscribers"] = sorted(
-                        email_dict[user_id] for user_id in sub["subscribers"]
-                    )
-
     return (subscribed, unsubscribed)
 
 
