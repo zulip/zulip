@@ -202,17 +202,11 @@ export function hide_message_edit_spinner(row) {
 }
 
 export function show_message_edit_spinner(row) {
-    row.find(".loader").css("display", "inline-block");
+    const using_dark_theme = settings_data.using_dark_theme();
+    loading.show_button_spinner(row.find(".loader"), using_dark_theme);
     row.find(".message_edit_save span").hide();
     row.find(".message_edit_save").addClass("disable-btn");
     row.find(".message_edit_cancel").addClass("disable-btn");
-    if (!settings_data.using_dark_theme()) {
-        row.find("object").on("load", function () {
-            const doc = this.getSVGDocument();
-            const $svg = $(doc).find("svg");
-            $svg.find("rect").css("fill", "#000");
-        });
-    }
 }
 
 export function show_topic_edit_spinner(row) {
