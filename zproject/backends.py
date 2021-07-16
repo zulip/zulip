@@ -259,11 +259,12 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
 
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    request_notes = get_request_notes(request)
+    if not hasattr(request, "_ratelimits_applied"):
+        return False
 
     return any(
         isinstance(r.entity, RateLimitedAuthenticationByUsername)
-        for r in request_notes.ratelimits_applied
+        for r in request._ratelimits_applied
     )
 
 
