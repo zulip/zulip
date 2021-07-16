@@ -172,8 +172,10 @@ RB_MESSAGE_FUNCTIONS = {
     "reply_published": get_reply_published_body,
 }
 
+ALL_EVENT_TYPES = list(RB_MESSAGE_FUNCTIONS.keys())
 
-@webhook_view("ReviewBoard")
+
+@webhook_view("ReviewBoard", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_reviewboard_webhook(
     request: HttpRequest,
@@ -187,7 +189,7 @@ def api_reviewboard_webhook(
     if body_function is not None:
         body = body_function(payload)
         topic = get_review_request_repo_title(payload)
-        check_send_webhook_message(request, user_profile, topic, body)
+        check_send_webhook_message(request, user_profile, topic, body, event_type)
     else:
         raise UnsupportedWebhookEventType(event_type)
 

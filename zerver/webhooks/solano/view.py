@@ -16,8 +16,10 @@ Build update (see [build log]({build_log_url})):
 * **Status**: {status} {emoji}
 """.strip()
 
+ALL_EVENT_TYPES = ["first-fail", "stop", "received"]
 
-@webhook_view("SolanoLabs")
+
+@webhook_view("SolanoLabs", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_solano_webhook(
     request: HttpRequest,
@@ -67,7 +69,7 @@ def api_solano_webhook(
         emoji=emoji,
     )
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success()
 
 

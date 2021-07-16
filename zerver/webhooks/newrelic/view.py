@@ -24,8 +24,10 @@ DEFAULT_TEMPLATE = (
 
 TOPIC_TEMPLATE = """{policy_name} ({incident_id})""".strip()
 
+ALL_EVENT_TYPES = ["closed", "acknowledged", "open"]
 
-@webhook_view("NewRelic")
+
+@webhook_view("NewRelic", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_newrelic_webhook(
     request: HttpRequest,
@@ -73,5 +75,5 @@ def api_newrelic_webhook(
     }
     topic = TOPIC_TEMPLATE.format(**topic_info)
 
-    check_send_webhook_message(request, user_profile, topic, content)
+    check_send_webhook_message(request, user_profile, topic, content, info["status"])
     return json_success()

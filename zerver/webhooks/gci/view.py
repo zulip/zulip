@@ -113,24 +113,6 @@ def get_outoftime_event_body(payload: Dict[str, Any]) -> str:
     )
 
 
-@webhook_view("GoogleCodeIn")
-@has_request_variables
-def api_gci_webhook(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
-) -> HttpResponse:
-    event = get_event(payload)
-    if event is not None:
-        body = get_body_based_on_event(event)(payload)
-        subject = GCI_TOPIC_TEMPLATE.format(
-            student_name=payload["task_claimed_by"],
-        )
-        check_send_webhook_message(request, user_profile, subject, body)
-
-    return json_success()
-
-
 EVENTS_FUNCTION_MAPPER = {
     "abandon": get_abandon_event_body,
     "approve": get_approve_event_body,
@@ -143,6 +125,26 @@ EVENTS_FUNCTION_MAPPER = {
     "submit": get_submit_event_body,
     "unassign": get_unassign_event_body,
 }
+
+ALL_EVENT_TYPES = list(EVENTS_FUNCTION_MAPPER.keys())
+
+
+@webhook_view("GoogleCodeIn", all_event_types=ALL_EVENT_TYPES)
+@has_request_variables
+def api_gci_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
+    event = get_event(payload)
+    if event is not None:
+        body = get_body_based_on_event(event)(payload)
+        subject = GCI_TOPIC_TEMPLATE.format(
+            student_name=payload["task_claimed_by"],
+        )
+        check_send_webhook_message(request, user_profile, subject, body, event)
+
+    return json_success()
 
 
 def get_event(payload: Dict[str, Any]) -> Optional[str]:

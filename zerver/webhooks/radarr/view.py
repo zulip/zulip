@@ -21,8 +21,10 @@ RADARR_MESSAGE_TEMPLATE_MOVIE_IMPORTED_UPGRADE = (
 )
 RADARR_MESSAGE_TEMPLATE_MOVIE_GRABBED = "The movie {movie_title} has been grabbed.".strip()
 
+ALL_EVENT_TYPES = ["Rename", "Test", "Download", "Health", "Grab"]
 
-@webhook_view("Radarr")
+
+@webhook_view("Radarr", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_radarr_webhook(
     request: HttpRequest,
@@ -32,7 +34,7 @@ def api_radarr_webhook(
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, payload["eventType"])
     return json_success()
 
 

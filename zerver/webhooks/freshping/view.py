@@ -16,9 +16,10 @@ FRESHPING_MESSAGE_TEMPLATE_UNREACHABLE = """
 Error code: {http_status_code}.
 """.strip()
 FRESHPING_MESSAGE_TEMPLATE_UP = "{request_url} is back up and no longer unreachable."
+ALL_EVENT_TYPES = ["Reporting Error", "Available"]
 
 
-@webhook_view("Freshping")
+@webhook_view("Freshping", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_freshping_webhook(
     request: HttpRequest,
@@ -29,7 +30,9 @@ def api_freshping_webhook(
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(
+        request, user_profile, subject, body, payload["webhook_event_data"]["check_state_name"]
+    )
     return json_success()
 
 

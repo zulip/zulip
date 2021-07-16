@@ -19,9 +19,15 @@ New blog user registered:
 * **Email**: {email}
 """.strip()
 WP_LOGIN_TEMPLATE = "User {name} logged in."
+ALL_EVENT_TYPES = [
+    "publish_post",
+    "publish_page",
+    "user_register",
+    "wp_login",
+]
 
 
-@webhook_view("WordPress", notify_bot_owner_on_invalid_json=False)
+@webhook_view("WordPress", notify_bot_owner_on_invalid_json=False, all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_wordpress_webhook(
     request: HttpRequest,
@@ -51,5 +57,5 @@ def api_wordpress_webhook(
 
     topic = "WordPress notification"
 
-    check_send_webhook_message(request, user_profile, topic, data)
+    check_send_webhook_message(request, user_profile, topic, data, hook)
     return json_success()

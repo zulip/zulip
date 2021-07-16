@@ -129,12 +129,14 @@ EVENT_FUNCTION_MAPPER = {
     "untag": get_conversation_untagged_body,
 }
 
+ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
+
 
 def get_body_based_on_event(event: str) -> Any:
     return EVENT_FUNCTION_MAPPER[event]
 
 
-@webhook_view("Front")
+@webhook_view("Front", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_front_webhook(
     request: HttpRequest,
@@ -148,6 +150,6 @@ def api_front_webhook(
 
     topic = payload["conversation"]["id"]
     body = get_body_based_on_event(event)(payload)
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, event)
 
     return json_success()

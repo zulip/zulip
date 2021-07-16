@@ -28,15 +28,20 @@ It was down for {alert_friendly_duration}.
 UPTIMEROBOT_MESSAGE_DOWN_TEMPLATE = (
     "{monitor_friendly_name} ({monitor_url}) is DOWN ({alert_details})."
 )
+ALL_EVENT_TYPES = ["up", "down"]
 
 
-@webhook_view("UptimeRobot")
+@webhook_view("UptimeRobot", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_uptimerobot_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
+    if payload["alert_type_friendly_name"] == "Up":
+        event = "up"
+    elif payload["alert_type_friendly_name"] == "Down":
+        event = "down"
 
     try:
         body = get_body_for_http_request(payload)
@@ -50,7 +55,7 @@ def api_uptimerobot_webhook(
 
         raise JsonableError(_("Invalid payload"))
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success()
 
 

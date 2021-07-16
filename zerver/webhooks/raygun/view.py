@@ -10,8 +10,10 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+ALL_EVENT_TYPES = ["error_notification", "error_activity"]
 
-@webhook_view("Raygun")
+
+@webhook_view("Raygun", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_raygun_webhook(
     request: HttpRequest,
@@ -38,7 +40,7 @@ def api_raygun_webhook(
 
     topic = "test"
 
-    check_send_webhook_message(request, user_profile, topic, message)
+    check_send_webhook_message(request, user_profile, topic, message, event)
 
     return json_success()
 

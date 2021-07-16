@@ -26,8 +26,18 @@ MESSAGE_TEMPLATE = "{user_name} {verb} the message [{title}]({url})"
 TODO_LIST_TEMPLATE = "{user_name} {verb} the todo list [{title}]({url})"
 TODO_TEMPLATE = "{user_name} {verb} the todo task [{title}]({url})"
 
+ALL_EVENT_TYPES = [
+    "document",
+    "question_answer",
+    "question",
+    "message",
+    "todolist",
+    "todo",
+    "comment",
+]
 
-@webhook_view("Basecamp")
+
+@webhook_view("Basecamp", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_basecamp_webhook(
     request: HttpRequest,
@@ -42,22 +52,29 @@ def api_basecamp_webhook(
     subject = get_project_name(payload)
     if event.startswith("document_"):
         body = get_document_body(event, payload)
+        event = "document"
     elif event.startswith("question_answer_"):
         body = get_questions_answer_body(event, payload)
+        event = "question_answer"
     elif event.startswith("question_"):
         body = get_questions_body(event, payload)
+        event = "question"
     elif event.startswith("message_"):
         body = get_message_body(event, payload)
+        event = "message"
     elif event.startswith("todolist_"):
         body = get_todo_list_body(event, payload)
+        event = "todolist"
     elif event.startswith("todo_"):
         body = get_todo_body(event, payload)
+        event = "todo"
     elif event.startswith("comment_"):
         body = get_comment_body(event, payload)
+        event = "comment"
     else:
         raise UnsupportedWebhookEventType(event)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success()
 
 

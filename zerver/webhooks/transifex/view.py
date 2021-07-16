@@ -11,8 +11,10 @@ from zerver.lib.validator import check_int
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+All_EVENT_TYPES = ["translated", "review"]
 
-@webhook_view("Transifex", notify_bot_owner_on_invalid_json=False)
+
+@webhook_view("Transifex", notify_bot_owner_on_invalid_json=False, all_event_types=All_EVENT_TYPES)
 @has_request_variables
 def api_transifex_webhook(
     request: HttpRequest,
@@ -25,10 +27,12 @@ def api_transifex_webhook(
 ) -> HttpResponse:
     subject = f"{project} in {language}"
     if translated:
+        event = "translated"
         body = f"Resource {resource} fully translated."
     elif reviewed:
+        event = "review"
         body = f"Resource {resource} fully reviewed."
     else:
         raise UnsupportedWebhookEventType("Unknown Event Type")
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success()
