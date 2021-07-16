@@ -2811,6 +2811,11 @@ class StripeTest(StripeTestCase):
         )
         rows.append(Row(realm, Realm.SELF_HOSTED, None, None, False, False))
 
+        realm, customer, _, _ = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=False, num_invoices=1
+        )
+        rows.append(Row(realm, Realm.SELF_HOSTED, None, None, True, False))
+
         realm, _, plan, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )

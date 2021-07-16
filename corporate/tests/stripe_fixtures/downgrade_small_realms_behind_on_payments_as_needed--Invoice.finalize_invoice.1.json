@@ -20,9 +20,9 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED0003",
+  "customer": "cus_NORMALIZED0002",
   "customer_address": null,
-  "customer_email": "user-0-realm_612438@zulip.com",
+  "customer_email": "user-0-realm_311774@zulip.com",
   "customer_name": null,
   "customer_phone": null,
   "customer_shipping": null,
@@ -39,9 +39,9 @@
   "ending_balance": 0,
   "finalized_at": 1000000000,
   "footer": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001w2De8",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED00000000000000017UyVH",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001w2De8/pdf",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED00000000000000017UyVH/pdf",
   "last_finalization_error": null,
   "lines": {
     "data": [
@@ -67,13 +67,13 @@
           "billing_scheme": "per_unit",
           "created": 1000000000,
           "currency": "usd",
-          "id": "price_1J5YW6D2X8vgpBNGNRpvTb7X",
+          "id": "price_1JFeWTD2X8vgpBNGeBhxIJRV",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_Jj0XEKpg4Z7fzV",
+          "product": "prod_JtRPn38wkV84NL",
           "recurring": null,
           "tiers_mode": null,
           "transform_quantity": null,
@@ -87,7 +87,7 @@
         "tax_amounts": [],
         "tax_rates": [],
         "type": "invoiceitem",
-        "unique_id": "il_1J5YW6D2X8vgpBNGJfmJCwyJ"
+        "unique_id": "il_1JFeWTD2X8vgpBNGsJaYnmWb"
       }
     ],
     "has_more": false,
@@ -102,7 +102,7 @@
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
-  "payment_intent": "pi_1J5YW7D2X8vgpBNG5Yb5dYds",
+  "payment_intent": "pi_1JFeWVD2X8vgpBNGGLOnw5bd",
   "payment_settings": {
     "payment_method_options": null,
     "payment_method_types": null
@@ -111,6 +111,7 @@
   "period_start": 1000000000,
   "post_payment_credit_notes_amount": 0,
   "pre_payment_credit_notes_amount": 0,
+  "quote": null,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": "Zulip Standard",
