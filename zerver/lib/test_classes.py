@@ -98,7 +98,6 @@ from zerver.models import (
     get_user_by_delivery_email,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
-from zerver.tornado import django_api as django_tornado_api
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -1314,24 +1313,22 @@ Output:
         self, lst: List[Mapping[str, Any]], expected_num_events: int
     ) -> Iterator[None]:
         lst.clear()
-        real_event_queue_process_notification = django_tornado_api.process_notification
 
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        django_tornado_api.process_notification = lambda notice: lst.append(notice)
-
-        # Some `send_event` calls need to be executed only after the current transaction
-        # commits (using `on_commit` hooks). Because the transaction in Django tests never
-        # commits (rather, gets rolled back after the test completes), such events would
-        # never be sent in tests, and we would be unable to verify them. Hence, we use
-        # this helper to make sure the `send_event` calls actually run.
-        with self.captureOnCommitCallbacks(execute=True):
-            yield
-
-        django_tornado_api.process_notification = real_event_queue_process_notification
+        with mock.patch(
+            "zerver.tornado.django_api.process_notification", lambda notice: lst.append(notice)
+        ):
+            # Some `send_event` calls need to be executed only after the current transaction
+            # commits (using `on_commit` hooks). Because the transaction in Django tests never
+            # commits (rather, gets rolled back after the test completes), such events would
+            # never be sent in tests, and we would be unable to verify them. Hence, we use
+            # this helper to make sure the `send_event` calls actually run.
+            with self.captureOnCommitCallbacks(execute=True):
+                yield
 
         self.assert_length(lst, expected_num_events)
 
