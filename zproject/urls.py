@@ -629,9 +629,14 @@ i18n_urls = [
     path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path(
-        "for/working-groups-and-communities/",
+        "for/communities/",
         landing_view,
-        {"template_name": "zerver/for-working-groups-and-communities.html"},
+        {"template_name": "zerver/for-communities.html"},
+    ),
+    # We merged this into /for/communities.
+    path(
+        "for/working-groups-and-communities/",
+        RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
     # Terms of Service and privacy pages.

@@ -160,7 +160,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/for/research/", "for researchers")
         self._test("/for/companies/", "in a company")
-        self._test("/for/working-groups-and-communities/", "standards bodies")
+        self._test("/for/communities/", "Zulip for communities")
         self._test("/security/", "TLS encryption")
         self._test("/devlogin/", "Normal users", landing_page=False)
         self._test("/devtools/", "Useful development URLs")
