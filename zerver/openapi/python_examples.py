@@ -574,10 +574,10 @@ def get_user_agent(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/subscriptions:get")
-def list_subscriptions(client: Client) -> None:
+def get_subscriptions(client: Client) -> None:
     # {code_example|start}
     # Get all streams that the user is subscribed to
-    result = client.list_subscriptions()
+    result = client.get_subscriptions()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
@@ -599,7 +599,7 @@ def remove_subscriptions(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions", "delete", "200")
 
     # test it was actually removed
-    result = client.list_subscriptions()
+    result = client.get_subscriptions()
     assert result["result"] == "success"
     streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
     assert len(streams) == 0
@@ -1359,7 +1359,7 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
 
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
-    result = client_with_invalid_key.list_subscriptions()
+    result = client_with_invalid_key.get_subscriptions()
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_0")
 
 
@@ -1506,7 +1506,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
 
     add_subscriptions(client)
     test_add_subscriptions_already_subscribed(client)
-    list_subscriptions(client)
+    get_subscriptions(client)
     stream_id = get_stream_id(client)
     update_stream(client, stream_id)
     get_streams(client)
