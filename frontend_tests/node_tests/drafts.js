@@ -201,8 +201,6 @@ test("remove_old_drafts", () => {
 });
 
 test("format_drafts", ({override, mock_template}) => {
-    override(drafts, "remove_old_drafts", noop);
-
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }

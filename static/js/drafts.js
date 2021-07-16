@@ -389,7 +389,6 @@ export function launch() {
         });
     }
 
-    remove_old_drafts();
     const drafts = format_drafts(draft_model.get());
     render_widgets(drafts);
 
@@ -551,6 +550,8 @@ export function set_initial_element(drafts) {
 }
 
 export function initialize() {
+    remove_old_drafts();
+
     window.addEventListener("beforeunload", () => {
         update_draft();
     });
