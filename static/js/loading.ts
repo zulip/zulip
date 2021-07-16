@@ -70,7 +70,7 @@ export function show_button_spinner(elt: JQuery, using_dark_theme: boolean): voi
     if (!using_dark_theme) {
         elt.attr("src", "/static/images/loader-black.svg");
     } else {
-        elt.attr("src", "/static/images/loader.svg");
+        elt.attr("src", "/static/images/loader-white.svg");
     }
     elt.css("display", "inline-block");
 }
