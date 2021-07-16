@@ -1009,33 +1009,34 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
         realm = customer.realm
 
         # For larger realms, we generally want to talk to the customer
-        # before downgrading; so this logic only applies with 5.
+        # before downgrading or cancelling invoices; so this logic only applies with 5.
         if get_latest_seat_count(realm) >= 5:
             continue
 
-        if get_current_plan_by_customer(customer) is None:
-            continue
+        if get_current_plan_by_customer(customer) is not None:
+            # Only customers with last 2 invoices open should be downgraded.
+            if not customer_has_last_n_invoices_open(customer, 2):
+                continue
 
-        # Only customers with last 2 invoices open should be downgraded.
-        if not customer_has_last_n_invoices_open(customer, 2):
-            continue
+            # We've now decided to downgrade this customer and void all invoices, and the below will execute this.
 
-        # We've now decided to downgrade this customer and void all invoices, and the below will execute this.
-
-        downgrade_now_without_creating_additional_invoices(realm)
-        void_all_open_invoices(realm)
-        context: Dict[str, str] = {
-            "upgrade_url": f"{realm.uri}{reverse('initial_upgrade')}",
-            "realm": realm,
-        }
-        send_email_to_billing_admins_and_realm_owners(
-            "zerver/emails/realm_auto_downgraded",
-            realm,
-            from_name=FromAddress.security_email_from_name(language=realm.default_language),
-            from_address=FromAddress.tokenized_no_reply_address(),
-            language=realm.default_language,
-            context=context,
-        )
+            downgrade_now_without_creating_additional_invoices(realm)
+            void_all_open_invoices(realm)
+            context: Dict[str, str] = {
+                "upgrade_url": f"{realm.uri}{reverse('initial_upgrade')}",
+                "realm": realm,
+            }
+            send_email_to_billing_admins_and_realm_owners(
+                "zerver/emails/realm_auto_downgraded",
+                realm,
+                from_name=FromAddress.security_email_from_name(language=realm.default_language),
+                from_address=FromAddress.tokenized_no_reply_address(),
+                language=realm.default_language,
+                context=context,
+            )
+        else:
+            if customer_has_last_n_invoices_open(customer, 1):
+                void_all_open_invoices(realm)
 
 
 def update_billing_method_of_current_plan(

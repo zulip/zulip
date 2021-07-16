@@ -6,11 +6,11 @@
   "currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "realm_275607 (None)",
+  "description": "realm_667253 (None)",
   "discount": null,
-  "email": "user-0-realm_275607@zulip.com",
-  "id": "cus_NORMALIZED0006",
-  "invoice_prefix": "NORMA06",
+  "email": "user-0-realm_667253@zulip.com",
+  "id": "cus_NORMALIZED0007",
+  "invoice_prefix": "NORMA07",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": null,
@@ -18,8 +18,8 @@
   },
   "livemode": false,
   "metadata": {
-    "realm_id": "6",
-    "realm_str": "realm_275607"
+    "realm_id": "7",
+    "realm_str": "realm_667253"
   },
   "name": null,
   "next_invoice_sequence": 1,
@@ -32,14 +32,14 @@
     "has_more": false,
     "object": "list",
     "total_count": 0,
-    "url": "/v1/customers/cus_NORMALIZED0006/sources"
+    "url": "/v1/customers/cus_NORMALIZED0007/sources"
   },
   "subscriptions": {
     "data": [],
     "has_more": false,
     "object": "list",
     "total_count": 0,
-    "url": "/v1/customers/cus_NORMALIZED0006/subscriptions"
+    "url": "/v1/customers/cus_NORMALIZED0007/subscriptions"
   },
   "tax_exempt": "none",
   "tax_ids": {
@@ -47,7 +47,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 0,
-    "url": "/v1/customers/cus_NORMALIZED0006/tax_ids"
+    "url": "/v1/customers/cus_NORMALIZED0007/tax_ids"
   },
   "tax_info": null,
   "tax_info_verification": null
