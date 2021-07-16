@@ -1031,7 +1031,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits!"
                 )
-            self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
+                self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
