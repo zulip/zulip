@@ -992,6 +992,17 @@ def void_all_open_invoices(realm: Realm) -> int:
     return voided_invoices_count
 
 
+def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
+    if customer.stripe_customer_id is None:
+        return False
+
+    open_invoice_count = 0
+    for invoice in stripe.Invoice.list(customer=customer.stripe_customer_id, limit=n):
+        if invoice.status == "open":
+            open_invoice_count += 1
+    return open_invoice_count == n
+
+
 def downgrade_small_realms_behind_on_payments_as_needed() -> None:
     customers = Customer.objects.all()
     for customer in customers:
@@ -1005,13 +1016,8 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
         if get_current_plan_by_customer(customer) is None:
             continue
 
-        due_invoice_count = 0
-        for invoice in stripe.Invoice.list(customer=customer.stripe_customer_id, limit=2):
-            if invoice.status == "open":
-                due_invoice_count += 1
-
-        # Customers with only 1 overdue invoice are ignored.
-        if due_invoice_count < 2:
+        # Only customers with last 2 invoices open should be downgraded.
+        if not customer_has_last_n_invoices_open(customer, 2):
             continue
 
         # We've now decided to downgrade this customer and void all invoices, and the below will execute this.

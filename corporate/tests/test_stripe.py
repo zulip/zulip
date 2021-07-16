@@ -2784,6 +2784,12 @@ class StripeTest(StripeTestCase):
                 invoices.append(invoice)
             return invoices
 
+        realm_0, _, _ = create_realm(
+            users_to_create=1, create_stripe_customer=False, create_plan=False
+        )
+        # To create local Customer object but no Stripe customer.
+        attach_discount_to_realm(realm_0, Decimal(20), acting_user=None)
+
         realm_1, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False
         )
@@ -2821,6 +2827,9 @@ class StripeTest(StripeTestCase):
 
         with patch("corporate.lib.stripe.void_all_open_invoices") as void_all_open_invoices_mock:
             downgrade_small_realms_behind_on_payments_as_needed()
+
+        realm_0.refresh_from_db()
+        self.assertEqual(realm_0.plan_type, Realm.SELF_HOSTED)
 
         realm_1.refresh_from_db()
         self.assertEqual(realm_1.plan_type, Realm.SELF_HOSTED)
