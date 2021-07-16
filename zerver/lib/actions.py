@@ -67,9 +67,7 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
-    delete_user_profile_caches,
     display_recipient_cache_key,
-    flush_user_profile,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
     user_profile_delivery_email_cache_key,
@@ -796,6 +794,7 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
+@transaction.atomic(durable=True)
 def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -803,6 +802,8 @@ def do_set_realm_property(
     value to update and and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
+    event_time = timezone_now()
+
     assert isinstance(
         value, property_type
     ), f"Cannot update {name}: {value} is not an instance of {property_type}"
@@ -811,15 +812,6 @@ def do_set_realm_property(
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 
-    event = dict(
-        type="realm",
-        op="update",
-        property=name,
-        value=value,
-    )
-    send_event(realm, event, active_user_ids(realm.id))
-
-    event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
@@ -834,6 +826,14 @@ def do_set_realm_property(
         ).decode(),
     )
 
+    event = dict(
+        type="realm",
+        op="update",
+        property=name,
+        value=value,
+    )
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+
     if name == "email_address_visibility":
         if Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, value]:
             # We use real email addresses on UserProfile.email only if
@@ -843,14 +843,18 @@ def do_set_realm_property(
             return
 
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
+
+        # TODO: Design a bulk event for this or force-reload all clients
         for user_profile in user_profiles:
             user_profile.email = get_display_email_address(user_profile)
-            # TODO: Design a bulk event for this or force-reload all clients
-            send_user_email_update_event(user_profile)
-        UserProfile.objects.bulk_update(user_profiles, ["email"])
+            # We need to make sure we bind the event to the
+            # current value of user_profile, no the loop variable.
+            transaction.on_commit(send_user_email_update_event_lambda(user_profile))
 
-        for user_profile in user_profiles:
-            flush_user_profile(sender=UserProfile, instance=user_profile)
+        UserProfile.objects.bulk_update(user_profiles, ["email"])
+        # bulk_update doesn't call Django signals, so normally we'd
+        # need to call flush_user_profile here, but flush_realm from
+        # the realm edit will flush user_profile caches for us.
 
 
 def do_set_realm_authentication_methods(
@@ -1321,8 +1325,13 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
     )
 
 
+def send_user_email_update_event_lambda(user_profile: UserProfile) -> Callable[[], None]:
+    return lambda: send_user_email_update_event(user_profile)
+
+
+@transaction.atomic(durable=True)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
-    delete_user_profile_caches([user_profile])
+    event_time = timezone_now()
 
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():
@@ -1331,25 +1340,6 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     else:
         user_profile.save(update_fields=["delivery_email"])
 
-    # We notify just the target user (and eventually org admins, only
-    # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
-    # about their new delivery email, since that field is private.
-    payload = dict(user_id=user_profile.id, delivery_email=new_email)
-    event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, [user_profile.id])
-
-    if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
-        # If the user is using Gravatar to manage their email address,
-        # their Gravatar just changed, and we need to notify other
-        # clients.
-        notify_avatar_url_change(user_profile)
-
-    if user_profile.email_address_is_realm_public():
-        # Additionally, if we're also changing the publicly visible
-        # email, we send a new_email event as well.
-        send_user_email_update_event(user_profile)
-
-    event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
         acting_user=user_profile,
@@ -1357,6 +1347,27 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
         event_type=RealmAuditLog.USER_EMAIL_CHANGED,
         event_time=event_time,
     )
+
+    def send_delivery_email_change_events() -> None:
+        # We notify just the target user (and eventually org admins, only
+        # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        # about their new delivery email, since that field is private.
+        payload = dict(user_id=user_profile.id, delivery_email=new_email)
+        event = dict(type="realm_user", op="update", person=payload)
+        send_event(user_profile.realm, event, [user_profile.id])
+
+        if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+            # If the user is using Gravatar to manage their email address,
+            # their Gravatar just changed, and we need to notify other
+            # clients.
+            notify_avatar_url_change(user_profile)
+
+        if user_profile.email_address_is_realm_public():
+            # Additionally, if we're also changing the publicly visible
+            # email, we send a new_email event as well.
+            send_user_email_update_event(user_profile)
+
+    transaction.on_commit(lambda: send_delivery_email_change_events())
 
 
 def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> None:
