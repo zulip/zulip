@@ -12,6 +12,7 @@ import * as ui from "./ui";
 class BuddyListConf {
     container_sel = "#user_presences";
     scroll_container_sel = "#buddy_list_wrapper";
+    no_user_display = "#no-user-found";
     item_sel = "li.user_sidebar_entry";
     padding_sel = "#buddy_list_wrapper_padding";
 
@@ -269,6 +270,12 @@ export class BuddyList extends BuddyListConf {
 
         // Add a fudge factor.
         height += 10;
+
+        if (this.keys.length === 0) {
+            $(this.no_user_display).removeClass("no-display");
+        } else {
+            $(this.no_user_display).addClass("no-display");
+        }
 
         while (this.render_count < this.keys.length) {
             const padding_height = $(this.padding_sel).height();
