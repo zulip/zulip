@@ -264,13 +264,10 @@ expected.
 As with other installation methods, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
 help</a> in the <a href="../contributing/chat-zulip-org.html" target="_blank">Zulip development community
 server</a> if you need help.
-   
-[provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
 ## Newer versions of supported platforms
 
-You can use
-[our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+You can use [our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 to set up the Zulip development environment on current versions of
 these platforms reliably and easily, so we no longer maintain manual
 installation instructions for these platforms.
