@@ -7,6 +7,28 @@
 #
 # For details, see requirements/README.md .
 #
+asgiref==3.5.2 \
+    --hash=sha256:1d2880b792ae8757289136f1db2b7b99100ce959b2aa57fd69dab783d05afac4 \
+    --hash=sha256:4a29362a6acebe09bf1d6640db38c1dc3d9217c68e6f9f6204d72667fc19a424
+    # via django
+backports.zoneinfo==0.2.1 \
+    --hash=sha256:17746bd546106fa389c51dbea67c8b7c8f0d14b5526a579ca6ccf5ed72c526cf \
+    --hash=sha256:1b13e654a55cd45672cb54ed12148cd33628f672548f373963b0bff67b217328 \
+    --hash=sha256:1c5742112073a563c81f786e77514969acb58649bcdf6cdf0b4ed31a348d4546 \
+    --hash=sha256:4a0f800587060bf8880f954dbef70de6c11bbe59c673c3d818921f042f9954a6 \
+    --hash=sha256:5c144945a7752ca544b4b78c8c41544cdfaf9786f25fe5ffb10e838e19a27570 \
+    --hash=sha256:7b0a64cda4145548fed9efc10322770f929b944ce5cee6c0dfe0c87bf4c0c8c9 \
+    --hash=sha256:8439c030a11780786a2002261569bdf362264f605dfa4d65090b64b05c9f79a7 \
+    --hash=sha256:8961c0f32cd0336fb8e8ead11a1f8cd99ec07145ec2931122faaac1c8f7fd987 \
+    --hash=sha256:89a48c0d158a3cc3f654da4c2de1ceba85263fafb861b98b59040a5086259722 \
+    --hash=sha256:a76b38c52400b762e48131494ba26be363491ac4f9a04c1b7e92483d169f6582 \
+    --hash=sha256:da6013fd84a690242c310d77ddb8441a559e9cb3d3d59ebac9aca1a57b2e18bc \
+    --hash=sha256:e55b384612d93be96506932a786bbcde5a2db7a9e6a4bb4bffe8b733f5b9036b \
+    --hash=sha256:e81b76cace8eda1fca50e345242ba977f9be6ae3945af8d46326d776b4cf78d1 \
+    --hash=sha256:e8236383a20872c0cdf5a62b554b27538db7fa1bbec52429d8d106effbaeca08 \
+    --hash=sha256:f04e857b59d9d1ccc39ce2da1021d196e47234873820cbeaad210724b1ee28ac \
+    --hash=sha256:fadbfe37f74051d024037f223b8e001611eac868b5c5b06144ef4d8b799862f2
+    # via django
 boto3-stubs[s3,ses,sns,sqs]==1.24.41 \
     --hash=sha256:4579b2d28c5a0cd7d36a36cbdfcc872695f88eeaeadc8092f0b058049e9e08c7 \
     --hash=sha256:8655d64981a7202aeb46a56a893ddcd23f59013894792e0e9a6f5350f7012674
@@ -15,6 +37,20 @@ botocore-stubs==1.27.41 \
     --hash=sha256:16a6c89cd4bb2510251d48503e419d491110e643c94cfb50f8827838170f47e0 \
     --hash=sha256:854e55308a8ca48f024b9225b3127207b0f4ba891df1429d10929a83839cd683
     # via boto3-stubs
+django==4.0.6 \
+    --hash=sha256:a67a793ff6827fd373555537dca0da293a63a316fe34cb7f367f898ccca3c3ae \
+    --hash=sha256:ca54ebedfcbc60d191391efbf02ba68fb52165b8bf6ccd6fe71f098cac1fe59e
+    # via
+    #   django-stubs
+    #   django-stubs-ext
+https://github.com/PIG208/django-stubs/archive/3d71af0ab1a42afee3dd68798fc339901b92617c.zip#egg=django-stubs \
+    --hash=sha256:ce4a09d12a85ae656b9da597695afc36879bd9954344dc0a426c2085c438b247
+    # via -r requirements/mypy.in
+https://github.com/PIG208/django-stubs/archive/3d71af0ab1a42afee3dd68798fc339901b92617c.zip#egg=django-stubs-ext&subdirectory=django_stubs_ext \
+    --hash=sha256:ce4a09d12a85ae656b9da597695afc36879bd9954344dc0a426c2085c438b247
+    # via
+    #   -r requirements/mypy.in
+    #   django-stubs
 greenlet==1.1.2 \
     --hash=sha256:0051c6f1f27cb756ffc0ffbac7d2cd48cb0362ac1736871399a739b2885134d3 \
     --hash=sha256:00e44c8afdbe5467e4f7b5851be223be68adb4272f44696ee71fe46b7036a711 \
@@ -106,6 +142,7 @@ mypy==0.971 \
     --hash=sha256:f2899a3cbd394da157194f913a931edfd4be5f274a88041c9dc2d9cdcb1c315c
     # via
     #   -r requirements/mypy.in
+    #   django-stubs
     #   sqlalchemy
 mypy-boto3-s3==1.24.36.post1 \
     --hash=sha256:30ae59b33c55f8b7b693170f9519ea5b91a2fbf31a73de79cdef57a27d784e5a \
@@ -169,10 +206,16 @@ sqlalchemy2-stubs==0.0.2a24 \
     --hash=sha256:e15c45302eafe196ed516f979ef017135fd619d2c62d02de9a5c5f2e59a600c4 \
     --hash=sha256:f2399251d3d8f00a88659d711a449c855a0d4e977c7a9134e414f1459b9acc11
     # via sqlalchemy
+sqlparse==0.4.2 \
+    --hash=sha256:0c00730c74263a94e5a9919ade150dfc3b19c574389985446148402998287dae \
+    --hash=sha256:48719e356bb8b42991bdbb1e8b83223757b93789c00910a616a071910ca4a64d
+    # via django
 tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
-    # via mypy
+    # via
+    #   django-stubs
+    #   mypy
 types-beautifulsoup4==4.11.4 \
     --hash=sha256:461aead477fa4e110d2e135509f1bee847f3cada404cb6f969eb66d330a792b9 \
     --hash=sha256:50111f84c2a42a0ff890acfa0f3a79f627e2852456ff4df32fd54cf42fd197de
@@ -241,10 +284,16 @@ types-python-dateutil==2.8.19 \
     --hash=sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8 \
     --hash=sha256:bfd3eb39c7253aea4ba23b10f69b017d30b013662bb4be4ab48b20bbd763f309
     # via -r requirements/mypy.in
+types-pytz==2022.1.2 \
+    --hash=sha256:1a8b25c225c5e6bd8468aa9eb45ddd3b337f6716d4072ad0aa4ef1e41478eebc \
+    --hash=sha256:8aa9fd2af9dee5f5bd7221c6804c9addeafa7ebc0008f544d4ace02b066818a4
+    # via django-stubs
 types-pyyaml==6.0.11 \
     --hash=sha256:7f7da2fd11e9bc1e5e9eb3ea1be84f4849747017a59fc2eee0ea34ed1147c2e0 \
     --hash=sha256:8f890028123607379c63550179ddaec4517dc751f4c527a52bb61934bf495989
-    # via -r requirements/mypy.in
+    # via
+    #   -r requirements/mypy.in
+    #   django-stubs
 types-redis==4.3.11 \
     --hash=sha256:83e5633f216c729fb39c5d3f71dd3b0080c651f75b5d4128733878512409c744 \
     --hash=sha256:ba4612407a758353aa4fe5e1e4b804126e1160dbd6797840223958b1b5dda34d
@@ -285,6 +334,8 @@ typing-extensions==4.3.0 \
     # via
     #   boto3-stubs
     #   botocore-stubs
+    #   django-stubs
+    #   django-stubs-ext
     #   mypy
     #   mypy-boto3-s3
     #   mypy-boto3-ses

@@ -467,6 +467,8 @@ django[argon2]==4.0.6 \
     #   django-phonenumber-field
     #   django-scim2
     #   django-sendfile2
+    #   django-stubs
+    #   django-stubs-ext
     #   django-two-factor-auth
 django-auth-ldap==4.1.0 \
     --hash=sha256:68870e7921e84b1a9867e268a9c8a3e573e8a0d95ea08bcf31be178f5826ff36 \
@@ -505,6 +507,15 @@ django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
     # via -r requirements/common.in
+https://github.com/PIG208/django-stubs/archive/3d71af0ab1a42afee3dd68798fc339901b92617c.zip#egg=django-stubs \
+    --hash=sha256:ce4a09d12a85ae656b9da597695afc36879bd9954344dc0a426c2085c438b247
+    # via -r requirements/mypy.in
+https://github.com/PIG208/django-stubs/archive/3d71af0ab1a42afee3dd68798fc339901b92617c.zip#egg=django-stubs-ext&subdirectory=django_stubs_ext \
+    --hash=sha256:ce4a09d12a85ae656b9da597695afc36879bd9954344dc0a426c2085c438b247
+    # via
+    #   -r requirements/common.in
+    #   -r requirements/mypy.in
+    #   django-stubs
 django-two-factor-auth[call,phonenumberslite,sms]==1.14.0 \
     --hash=sha256:b414ef51cc84335e0049e3f98ef89ac15a09187efa381f3acd321651afae95b3 \
     --hash=sha256:d18290f02766f400537b88937df06aa0a2d6d6d37937fbfb84896c4790a9e59b
@@ -1052,6 +1063,7 @@ mypy==0.971 \
     --hash=sha256:f2899a3cbd394da157194f913a931edfd4be5f274a88041c9dc2d9cdcb1c315c
     # via
     #   -r requirements/mypy.in
+    #   django-stubs
     #   sqlalchemy
 mypy-boto3-s3==1.24.36.post1 \
     --hash=sha256:30ae59b33c55f8b7b693170f9519ea5b91a2fbf31a73de79cdef57a27d784e5a \
@@ -2033,6 +2045,7 @@ tomli==2.0.1 \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
     # via
     #   black
+    #   django-stubs
     #   mypy
     #   pep517
 tornado==6.2 \
@@ -2142,10 +2155,16 @@ types-python-dateutil==2.8.19 \
     --hash=sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8 \
     --hash=sha256:bfd3eb39c7253aea4ba23b10f69b017d30b013662bb4be4ab48b20bbd763f309
     # via -r requirements/mypy.in
+types-pytz==2022.1.2 \
+    --hash=sha256:1a8b25c225c5e6bd8468aa9eb45ddd3b337f6716d4072ad0aa4ef1e41478eebc \
+    --hash=sha256:8aa9fd2af9dee5f5bd7221c6804c9addeafa7ebc0008f544d4ace02b066818a4
+    # via django-stubs
 types-pyyaml==6.0.11 \
     --hash=sha256:7f7da2fd11e9bc1e5e9eb3ea1be84f4849747017a59fc2eee0ea34ed1147c2e0 \
     --hash=sha256:8f890028123607379c63550179ddaec4517dc751f4c527a52bb61934bf495989
-    # via -r requirements/mypy.in
+    # via
+    #   -r requirements/mypy.in
+    #   django-stubs
 types-redis==4.3.11 \
     --hash=sha256:83e5633f216c729fb39c5d3f71dd3b0080c651f75b5d4128733878512409c744 \
     --hash=sha256:ba4612407a758353aa4fe5e1e4b804126e1160dbd6797840223958b1b5dda34d
@@ -2188,6 +2207,8 @@ typing-extensions==4.3.0 \
     #   black
     #   boto3-stubs
     #   botocore-stubs
+    #   django-stubs
+    #   django-stubs-ext
     #   libcst
     #   mypy
     #   mypy-boto3-s3

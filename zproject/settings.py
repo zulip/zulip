@@ -15,6 +15,9 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for more information
 #
 ########################################################################
+import django_stubs_ext
+
+django_stubs_ext.monkeypatch()
 
 from .configured_settings import *  # noqa: F401,F403 isort: skip
 from .computed_settings import *  # noqa: F401,F403 isort: skip

@@ -194,3 +194,6 @@ soupsieve
 
 # Circuit-breaking for outgoing services
 circuitbreaker
+
+# Runtime monkeypatching of django-stubs generics
+https://github.com/PIG208/django-stubs/archive/3d71af0ab1a42afee3dd68798fc339901b92617c.zip#egg=django-stubs-ext&subdirectory=django_stubs_ext

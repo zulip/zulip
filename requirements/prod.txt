@@ -304,6 +304,7 @@ django[argon2]==4.0.6 \
     #   django-phonenumber-field
     #   django-scim2
     #   django-sendfile2
+    #   django-stubs-ext
     #   django-two-factor-auth
 django-auth-ldap==4.1.0 \
     --hash=sha256:68870e7921e84b1a9867e268a9c8a3e573e8a0d95ea08bcf31be178f5826ff36 \
@@ -341,6 +342,9 @@ django-sendfile2==0.6.1 \
 django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
+    # via -r requirements/common.in
+https://github.com/PIG208/django-stubs/archive/3d71af0ab1a42afee3dd68798fc339901b92617c.zip#egg=django-stubs-ext&subdirectory=django_stubs_ext \
+    --hash=sha256:ce4a09d12a85ae656b9da597695afc36879bd9954344dc0a426c2085c438b247
     # via -r requirements/common.in
 django-two-factor-auth[call,phonenumberslite,sms]==1.14.0 \
     --hash=sha256:b414ef51cc84335e0049e3f98ef89ac15a09187efa381f3acd321651afae95b3 \
@@ -1385,6 +1389,7 @@ typing-extensions==4.3.0 \
     --hash=sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6
     # via
     #   -r requirements/common.in
+    #   django-stubs-ext
     #   mypy-boto3-s3
     #   mypy-boto3-ses
     #   mypy-boto3-sns
