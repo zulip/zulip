@@ -60,11 +60,11 @@ ignoring the parts about `vagrant` (since you're not using it).
 ## Installing directly on Windows 10 with WSL 2
 
 Zulip's development environment is most easily set up on Windows using
-the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
+the <a href="https://docs.microsoft.com/en-us/windows/wsl/wsl2-about" target="_blank">WSL 2</a>
 installation method described here.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
-[here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+<a href="https://docs.microsoft.com/en-us/windows/wsl/wsl2-install" target="_blank"> here</a>.
 
 1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
    Store.
@@ -129,7 +129,7 @@ installation method described here.
 1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
    you can try running `./tools/provision` again.
 
-1. [Visual Studio Code Remote - WSL](https://code.visualstudio.com/docs/remote/wsl) is
+1. <a href="https://code.visualstudio.com/docs/remote/wsl" target="_blank">Visual Studio Code Remote - WSL</a> is
    recommended for editing files when developing with WSL.
 
 1. You're done!  You can pick up the [documentation on using the
@@ -137,14 +137,14 @@ installation method described here.
    environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
 
-WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
+WSL 2 can be uninstalled by following <a href="https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-" target="_blank">Microsoft's documentation</a>
 
 [uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
 
 ## Using the Vagrant Hyper-V provider on Windows (beta)
 
-You should have [Vagrant](https://www.vagrantup.com/downloads) and
-[Hyper-V][hyper-v] installed on your system. Ensure they both work as
+You should have <a href="https://www.vagrantup.com/downloads" target="_blank">Vagrant</a> and
+<a href="https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v" target="_blank">Hyper-V</a> installed on your system. Ensure they both work as
 expected.
 
 [hyper-v]: https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v
@@ -261,9 +261,9 @@ expected.
 
 2. Be patient the first time you run `./tools/run-dev.py`.
 
-As with other installation methods, please visit [#provision
-help][provision-help] in the [Zulip development community
-server](../contributing/chat-zulip-org.md) if you need help.
+As with other installation methods, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
+help</a> in the <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html" target="_blank">Zulip development community
+server</a> if you need help.
 
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
@@ -280,7 +280,7 @@ Ubuntu that you're using, we'd love to add support for it.  It's
 likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
-[#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
+<a href="https://chat.zulip.org/#narrow/stream/49-development-help" target="_blank">#development help</a>
 on chat.zulip.org, and a core team member can help guide you through
 adding support for the platform.
 
@@ -292,7 +292,7 @@ includes a code editor, debugger, and terminal.
 
 This section documents how to set up the Zulip development environment
 in a Cloud9 workspace.  If you don't have an existing Cloud9 account,
-you can sign up [here](https://aws.amazon.com/cloud9/).
+you can sign up <a href="https://aws.amazon.com/cloud9/" target="_blank">here</a>.
 
 * Create a Workspace, and select the blank template.
 * Resize the workspace to be 1GB of memory and 4GB of disk
@@ -328,8 +328,8 @@ Your development server would be running at
 `https://<workspace-name>-<username>.c9users.io` on port 8080.  You
 dont need to add `:8080` to your URL, since the Cloud9 proxy should
 automatically forward the connection. You might want to visit
-[zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
-[wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on
+<a href="https://github.com/cPhost/zulip-cloud9" target="_blank">zulip-cloud9 repo</a> and it's
+<a href="https://github.com/cPhost/zulip-cloud9/wiki" target="_blank">wiki</a> for more info on
 how to use zulip-cloud9 package.
 
 [zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
