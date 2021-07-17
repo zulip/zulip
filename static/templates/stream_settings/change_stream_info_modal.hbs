@@ -1,34 +1,12 @@
-<div id="change_stream_info_modal" class="modal modal-bg hide fade new-style" tabindex="-1"
-  role="dialog" aria-labelledby="change_stream_info_label" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close close-change-stream-info-modal" data-dismiss="modal" aria-label="{{t 'Close' }}">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <h3 id="change_stream_info_label">
-            {{#tr}}Edit #{stream_name}{{/tr}}
-            <span class="email"></span>
-        </h3>
-    </div>
-    <div class="modal-body">
-        <div class="input-group">
-            <label for="change_stream_name">
-                {{t 'Stream name' }}
-            </label>
-            <input type="text" id="change_stream_name" value="{{ stream_name }}" />
-        </div>
-        <div class="input-group">
-            <label for="change_stream_description">
-                {{t 'Description' }}
-            </label>
-            <textarea id="change_stream_description" maxlength="1000">{{ stream_description }}</textarea>
-        </div>
-    </div>
-
-    <div class="modal-footer">
-        <button class=" button rounded close-change-stream-info-modal" data-dismiss="modal">{{t "Cancel" }}</button>
-        <button class="button rounded btn-danger save-button" id="save_stream_info"
-          tabindex="-1" data-stream-id="{{stream_id}}">
-            {{t "Save changes"}}
-        </button>
-    </div>
+<div>
+    <label for="change_stream_name">
+        {{t 'Stream name' }}
+    </label>
+    <input type="text" id="change_stream_name" value="{{ stream_name }}" />
+</div>
+<div>
+    <label for="change_stream_description">
+        {{t 'Description' }}
+    </label>
+    <textarea id="change_stream_description" maxlength="1000">{{ stream_description }}</textarea>
 </div>
