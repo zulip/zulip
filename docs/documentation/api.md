@@ -65,7 +65,7 @@ want to also read the [Step by step guide](#step-by-step-guide).
    1. [Description](#description)
    2. [Usage examples](#usage-examples)
    3. [Arguments](#parameters)
-   4. [Responses](#displaying-example-payloadsresponses)
+   4. [Responses](#displaying-example-payloads-or-responses)
 2. [Step by step guide](#step-by-step-guide)
 3. [Why a custom system](#why-a-custom-system)
 
@@ -86,7 +86,7 @@ that a typical endpoint's documentation is divided into four sections:
 * The top-level [**Description**](#description)
 * [**Usage examples**](#usage-examples)
 * [**Arguments**](#parameters)
-* [**Responses**](#displaying-example-payloadsresponses)
+* [**Responses**](#displaying-example-payloads-or-responses)
 
 The rest of this guide describes how each of these sections works.
 
@@ -186,7 +186,7 @@ Just as in the usage examples, the `/messages/render` key must match a
 URL definition in `zerver/openapi/zulip.yaml`, and that URL definition
 must have a `post` HTTP method defined.
 
-### Displaying example payloads/responses
+### Displaying example payloads or responses
 
 If you've already followed the steps in the [Usage examples](#usage-examples)
 section, this part should be fairly trivial.
