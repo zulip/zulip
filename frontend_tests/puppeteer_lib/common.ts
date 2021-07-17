@@ -482,8 +482,11 @@ class CommonUtils {
         await this.clear_and_type(page, field_selector, str);
         const entry = await page.waitForXPath(
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
+            {visible: true},
         );
-        await entry!.click();
+        await page.evaluate((entry) => {
+            entry.click();
+        }, entry);
     }
 
     async wait_for_modal_to_close(page: Page): Promise<void> {
