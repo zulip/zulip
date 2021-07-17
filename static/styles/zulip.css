@@ -919,8 +919,6 @@ td.pointer {
         /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
         width: 30px;
         cursor: pointer;
-        font-weight: bold;
-        color: hsl(0, 100%, 50%);
         position: relative;
         vertical-align: middle;
 
@@ -928,6 +926,12 @@ td.pointer {
             display: inline-block;
 
             animation: rotate 1s infinite linear;
+        }
+
+        .failed_message_action {
+            opacity: 1 !important;
+            color: hsl(0, 100%, 50%);
+            font-weight: bold;
         }
     }
 
@@ -957,7 +961,9 @@ td.pointer {
     border: none;
 
     &:hover .message_controls,
-    &:focus-within .message_controls {
+    &:focus-within .message_controls,
+    &:hover .message_failed,
+    &:focus-within .message_failed {
         .empty-star:hover {
             cursor: pointer;
         }
