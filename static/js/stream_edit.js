@@ -4,7 +4,7 @@ import render_change_stream_info_modal from "../templates/change_stream_info_mod
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_description from "../templates/stream_description.hbs";
-import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
+import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
