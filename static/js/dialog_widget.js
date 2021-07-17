@@ -107,14 +107,14 @@ export function launch(conf) {
 
     const submit_button = dialog.find(".dialog_submit_button");
     // Set up handlers.
-    submit_button.on("click", () => {
+    submit_button.on("click", (e) => {
         if (conf.loading_spinner) {
             show_dialog_spinner();
         } else if (conf.close_on_submit) {
             overlays.close_modal("#dialog_widget_modal");
         }
         $("#dialog_error").empty();
-        conf.on_click();
+        conf.on_click(e);
     });
 
     dialog.on("hidden.bs.modal", () => {
