@@ -295,6 +295,14 @@ class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
+    # The base class HttpRequest declares GET and POST as immutable
+    # QueryDict objects. The implementation of HostRequestMock
+    # requires POST to be mutable, and we have some use cases that
+    # modify GET, so GET and POST are both redeclared as mutable.
+
+    GET: QueryDict  # type: ignore[assignment] # See previous comment.
+    POST: QueryDict  # type: ignore[assignment] # See previous comment.
+
     def __init__(
         self,
         post_data: Dict[str, Any] = {},

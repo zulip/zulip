@@ -15,6 +15,13 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for more information
 #
 ########################################################################
+import django_stubs_ext
+
+# Monkey-patch certain types that are declared as generic types
+# generic in django-stubs, but not (yet) as generic types in Django
+# itself. This is necessary to ensure type references like
+# django.db.models.Lookup[int] work correctly at runtime.
+django_stubs_ext.monkeypatch()
 
 from .configured_settings import *  # noqa: F401,F403 isort: skip
 from .computed_settings import *  # noqa: F401,F403 isort: skip
