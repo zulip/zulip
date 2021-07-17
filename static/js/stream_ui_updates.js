@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_subscription_type from "../templates/subscription_type.hbs";
+import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -158,7 +158,7 @@ export function update_stream_subscription_type_text(sub) {
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
     };
-    const html = render_subscription_type(template_data);
+    const html = render_stream_permission_description(template_data);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
