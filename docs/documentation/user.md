@@ -20,8 +20,6 @@ This system is designed to make writing and maintaining such documentation
 highly efficient. We link to the docs extensively from the landing pages and
 in-product, so it's important to keep the docs up to date.
 
-
-
 1. [Editing and testing](#editing-and-testing)
 2. [Writing documentation](#writing-documentation)
     - [User Interface](#user-interface)
