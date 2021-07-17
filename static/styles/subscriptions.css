@@ -1070,17 +1070,11 @@
     }
 }
 
-#change_stream_info_modal {
-    .modal-header h3 {
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
-
-    #change_stream_description {
-        width: 80%;
-        max-width: 500px;
-        box-sizing: border-box;
-    }
+#change_stream_description {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 4px;
+    box-sizing: border-box;
 }
 
 #stream_privacy_modal .modal-body {

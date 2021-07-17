@@ -14,6 +14,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
@@ -794,14 +795,24 @@ export function initialize() {
         const stream_id = get_stream_id(e.target);
         const stream = sub_store.get(stream_id);
         const template_data = {
-            stream_id,
             stream_name: stream.name,
             stream_description: stream.description,
         };
         const change_stream_info_modal = render_change_stream_info_modal(template_data);
-        $("#change_stream_info_modal").remove();
-        $("#subscriptions_table").append(change_stream_info_modal);
-        overlays.open_modal("#change_stream_info_modal");
+        dialog_widget.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Edit #{stream_name}"},
+                {stream_name: stream.name},
+            ),
+            html_body: change_stream_info_modal,
+            id: "change_stream_info_modal",
+            on_click: save_stream_info,
+            post_render: () => {
+                $("#change_stream_info_modal .dialog_submit_button")
+                    .addClass("save-button")
+                    .attr("data-stream-id", stream_id);
+            },
+        });
     });
 
     $("#subscriptions_table").on("keypress", "#change_stream_description", (e) => {
@@ -813,7 +824,7 @@ export function initialize() {
         return true;
     });
 
-    $("#subscriptions_table").on("click", "#save_stream_info", (e) => {
+    function save_stream_info(e) {
         e.preventDefault();
         e.stopPropagation();
         const sub = get_sub_for_target(e.currentTarget);
@@ -834,9 +845,9 @@ export function initialize() {
         }
 
         const status_element = $(".stream_change_property_info");
-        overlays.close_modal("#change_stream_info_modal");
+        dialog_widget.close_modal();
         settings_ui.do_settings_change(channel.patch, url, data, status_element);
-    });
+    }
 
     $("#subscriptions_table").on(
         "click",
