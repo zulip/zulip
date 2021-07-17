@@ -10,7 +10,7 @@ handful of longer guides.
 The feature articles serve a few different purposes:
 * Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
-* Public documentation of our featureset, for someone googling "can zulip do .."
+* Public documentation of our feature set, for someone googling "can zulip do .."
 * Canned responses to support questions; if someone emails a Zulip admin
   asking "how do I change my name", they can reply with a link to the doc.
 * Feature explanations for new Zulip users and admins, especially for
@@ -19,6 +19,21 @@ The feature articles serve a few different purposes:
 This system is designed to make writing and maintaining such documentation
 highly efficient. We link to the docs extensively from the landing pages and
 in-product, so it's important to keep the docs up to date.
+
+
+
+1. [Editing and testing](#editing-and-testing)
+2. [Writing documentation](#writing-documentation)
+    - [User Interface](#user-interface)
+    - [Voice](#voice)
+
+3. [Features](#features)
+    - [Images](#images)
+    - [Icons](#icons)
+    - [Macros](#macros)
+    - [Tips and Warnings](#tips-and-warnings)
+    - [Tab Switcher](#tab-switcher)
+
 
 ## Editing and testing
 
