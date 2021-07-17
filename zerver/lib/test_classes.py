@@ -1403,15 +1403,20 @@ class WebhookTestCase(ZulipTestCase):
         super().setUp()
         self.url = self.build_webhook_url()
 
-        if self.WEBHOOK_DIR_NAME is not None and self.VIEW_FUNCTION_NAME is not None:
+        if self.WEBHOOK_DIR_NAME is not None:
             # If VIEW_FUNCTION_NAME is explicitly specified and
             # WEBHOOK_DIR_NAME is not None, an exception will be
             # raised when a test triggers events that are not
             # explicitly specified via the event_types parameter to
             # the @webhook_view decorator.
-            function = import_string(
-                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.{self.VIEW_FUNCTION_NAME}"
-            )
+            if self.VIEW_FUNCTION_NAME is None:
+                function = import_string(
+                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.api_{self.WEBHOOK_DIR_NAME}_webhook"
+                )
+            else:
+                function = import_string(
+                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.{self.VIEW_FUNCTION_NAME}"
+                )
             all_event_types = None
 
             if hasattr(function, "_all_event_types"):

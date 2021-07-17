@@ -7,6 +7,7 @@ class YoHookTests(WebhookTestCase):
     STREAM_NAME = "yo"
     URL_TEMPLATE = "/api/v1/external/yo?api_key={api_key}"
     WEBHOOK_DIR_NAME = "yo"
+    VIEW_FUNCTION_NAME = "api_yo_app_webhook"
 
     def test_yo_message(self) -> None:
         """
