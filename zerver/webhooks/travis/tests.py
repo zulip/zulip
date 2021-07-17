@@ -13,7 +13,6 @@ Author: josh_mandel
 Build status: Passed :thumbs_up:
 Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
 """.strip()
-    VIEW_FUNCTION_NAME = "api_travis_webhook"
 
     def test_travis_message(self) -> None:
         """

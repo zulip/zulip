@@ -18,7 +18,6 @@ class GitHubWebhookTest(WebhookTestCase):
     STREAM_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "github"
-    VIEW_FUNCTION_NAME = "api_github_webhook"
 
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
