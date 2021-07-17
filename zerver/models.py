@@ -132,7 +132,7 @@ class EmojiInfo(TypedDict):
 
 
 @models.Field.register_lookup
-class AndZero(models.Lookup):
+class AndZero(models.Lookup[int]):
     lookup_name = "andz"
 
     def as_sql(
@@ -144,7 +144,7 @@ class AndZero(models.Lookup):
 
 
 @models.Field.register_lookup
-class AndNonZero(models.Lookup):
+class AndNonZero(models.Lookup[int]):
     lookup_name = "andnz"
 
     def as_sql(
@@ -247,7 +247,7 @@ def clear_supported_auth_backends_cache() -> None:
     supported_backends = None
 
 
-class Realm(models.Model):
+class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -1689,7 +1689,7 @@ class RealmUserDefault(UserBaseSettings):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
+class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
@@ -2160,7 +2160,7 @@ class PasswordTooWeakError(Exception):
     pass
 
 
-class UserGroup(models.Model):
+class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     objects: CTEManager = CTEManager()
     id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=100)
@@ -4450,7 +4450,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         null=True,
         on_delete=CASCADE,
     )
-    event_last_message_id: Optional[int] = models.IntegerField(null=True)
+    event_last_message_id = models.IntegerField(null=True)
 
     def __str__(self) -> str:
         if self.modified_user is not None:
