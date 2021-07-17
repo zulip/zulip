@@ -89,13 +89,12 @@ export function update_charged_amount(prices, schedule) {
 
 export function update_discount_details(organization_type) {
     const discount_details = {
-        open_source: "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
-        research:
-            "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
-        non_profit: "Nonprofits are eligible for an 85%-100% discount.",
-        event: "Events are eligible for fully sponsored (free) Zulip Standard.",
-        education: "Education use is eligible for an 85%-100% discount.",
-        other: "Your organization might be eligible for a discount or sponsorship.",
+        open_source: "Zulip Standard is free for open-source projects.",
+        research: "Zulip Standard is free for academic research.",
+        non_profit: "Non-profits get an 85%+ discount on Zulip Standard.",
+        event: "Zulip Standard is free for academic conferences and hackathons.",
+        education: "Get an 85%+ discount on Zulip Standard for education.",
+        other: "Your organization may be eligible for a discount on Zulip Standard.",
     };
     $("#sponsorship-discount-details").text(discount_details[organization_type]);
 }

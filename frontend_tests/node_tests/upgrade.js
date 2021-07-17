@@ -157,32 +157,32 @@ run_test("initialize", ({override}) => {
     organization_type_change_handler.call({value: "open_source"});
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
+        "Zulip Standard is free for open-source projects.",
     );
     organization_type_change_handler.call({value: "research"});
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
+        "Zulip Standard is free for academic research.",
     );
     organization_type_change_handler.call({value: "event"});
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Events are eligible for fully sponsored (free) Zulip Standard.",
+        "Zulip Standard is free for academic conferences and hackathons.",
     );
     organization_type_change_handler.call({value: "education"});
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Education use is eligible for an 85%-100% discount.",
+        "Get an 85%+ discount on Zulip Standard for education.",
     );
     organization_type_change_handler.call({value: "non_profit"});
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Nonprofits are eligible for an 85%-100% discount.",
+        "Non-profits get an 85%+ discount on Zulip Standard.",
     );
     organization_type_change_handler.call({value: "other"});
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Your organization might be eligible for a discount or sponsorship.",
+        "Your organization may be eligible for a discount on Zulip Standard.",
     );
 });
 
