@@ -25,7 +25,7 @@ Contents:
 environment,** check [troubleshooting and common
 errors](#troubleshooting-and-common-errors). If that doesn't help,
 please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
-help</a> in the <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html">Zulip development community
+help</a> in the <a href="../contributing/chat-zulip-org.html">Zulip development community
 server</a> for real-time help or
 <a href="https://github.com/zulip/zulip/issues" target="_blank">file an issue</a>
 
@@ -45,7 +45,7 @@ an active internet connection throughout the entire installation
 processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
 a proxy to access the internet.)
 
-- **All**: 2GB available RAM, Active broadband internet connection, <a href="https://zulip.readthedocs.io/en/latest/git/setup.html" >GitHub account</a>
+- **All**: 2GB available RAM, Active broadband internet connection, <a href="../git/setup.html" >GitHub account</a>
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 18.04
   - or **Debian**: 10 "buster" or 11 "bullseye"
@@ -306,7 +306,7 @@ does the following:
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test
   database.  We call this process "provisioning", and it is documented
-  in some detail in our <a href="https://zulip.readthedocs.io/en/latest/subsystems/dependencies.html" target="_blank">dependencies documentation</a>.
+  in some detail in our <a href="../subsystems/dependencies.html" target="_blank">dependencies documentation</a>.
 
 You will need an active internet connection during the entire
 process. (See [Specifying a proxy](#specifying-a-proxy) if you need a

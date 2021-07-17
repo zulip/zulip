@@ -262,9 +262,9 @@ expected.
 2. Be patient the first time you run `./tools/run-dev.py`.
 
 As with other installation methods, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
-help</a> in the <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html" target="_blank">Zulip development community
+help</a> in the <a href="../contributing/chat-zulip-org.html" target="_blank">Zulip development community
 server</a> if you need help.
-
+   
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
 ## Newer versions of supported platforms
