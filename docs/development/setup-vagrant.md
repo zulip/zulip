@@ -25,8 +25,8 @@ Contents:
 environment,** check [troubleshooting and common
 errors](#troubleshooting-and-common-errors). If that doesn't help,
 please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
-help</a> in the <a href="../contributing/chat-zulip-org.html">Zulip development community
-server</a> for real-time help or
+help</a> in the [Zulip development community
+server](../contributing/chat-zulip-org.md) for real-time help or
 <a href="https://github.com/zulip/zulip/issues" target="_blank">file an issue</a>
 
 When reporting your issue, please include the following information:
@@ -458,8 +458,8 @@ After provisioning, you'll want to
 
 If you run into any trouble, <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
 help</a> in the
- <a href="../contributing/chat-zulip-org.md" target="_blank">Zulip development community
-server</a> is a great place to ask for
+ [Zulip development community
+server](../contributing/chat-zulip-org.md) is a great place to ask for
 help.
 
 #### Rebuilding the development environment
