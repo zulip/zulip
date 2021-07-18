@@ -73,10 +73,25 @@ export function do_settings_change(
 //   string id of setting.
 // * disable_on_uncheck is boolean, true if sub setting should be disabled
 //   when main setting unchecked.
-export function disable_sub_setting_onchange(is_checked, sub_setting_id, disable_on_uncheck) {
+export function disable_sub_setting_onchange(
+    is_checked,
+    sub_setting_id,
+    disable_on_uncheck,
+    include_label,
+) {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
+        if (include_label) {
+            $(`#${CSS.escape(sub_setting_id)}_label`)
+                .parent()
+                .removeClass("control-label-disabled");
+        }
     } else if ((is_checked && !disable_on_uncheck) || (!is_checked && disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", true);
+        if (include_label) {
+            $(`#${CSS.escape(sub_setting_id)}_label`)
+                .parent()
+                .addClass("control-label-disabled");
+        }
     }
 }
