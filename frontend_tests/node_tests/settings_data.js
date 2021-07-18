@@ -259,3 +259,11 @@ run_test("using_dark_theme", () => {
     page_params.color_scheme = settings_config.color_scheme_values.day.code;
     assert.equal(settings_data.using_dark_theme(), false);
 });
+
+run_test("user_can_invite_others_to_realm_nobody_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_invite_to_realm_policy =
+        settings_config.invite_to_realm_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_invite_others_to_realm(), false);
+});
