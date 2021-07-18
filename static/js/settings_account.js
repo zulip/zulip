@@ -29,7 +29,7 @@ import * as user_profile from "./user_profile";
 let password_quality; // Loaded asynchronously
 
 export function update_email(new_email) {
-    const email_input = $("#email_value");
+    const email_input = $("#change_email");
 
     if (email_input) {
         email_input.text(new_email);
@@ -523,7 +523,7 @@ export function set_up() {
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
             overlays.open_modal("#change_email_modal");
-            const email = $("#email_value").text().trim();
+            const email = $("#change_email").text().trim();
             $(".email_change_container").find("input[name='email']").val(email);
         }
     });
