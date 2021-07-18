@@ -104,6 +104,9 @@ export function get_organization_settings_options() {
     options.common_message_policy_values = get_sorted_options_list(
         settings_config.common_message_policy_values,
     );
+    options.invite_to_realm_policy_values = get_sorted_options_list(
+        settings_config.invite_to_realm_policy_values,
+    );
     return options;
 }
 

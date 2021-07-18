@@ -137,6 +137,12 @@ function user_has_permission(policy_value) {
 }
 
 export function user_can_invite_others_to_realm() {
+    if (
+        page_params.realm_invite_to_realm_policy ===
+        settings_config.invite_to_realm_policy_values.nobody.code
+    ) {
+        return false;
+    }
     return user_has_permission(page_params.realm_invite_to_realm_policy);
 }
 
