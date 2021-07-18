@@ -65,11 +65,11 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
 
 
 @openapi_test_function("/users/me/subscriptions:post")
-def add_subscriptions(client: Client) -> None:
+def subscribe(client: Client) -> None:
 
     # {code_example|start}
     # Subscribe to the stream "new stream"
-    result = client.add_subscriptions(
+    result = client.subscribe(
         streams=[
             {
                 "name": "new stream",
@@ -86,7 +86,7 @@ def add_subscriptions(client: Client) -> None:
     # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
     user_id = 26
-    result = client.add_subscriptions(
+    result = client.subscribe(
         streams=[
             {"name": "new stream", "description": "New stream for testing"},
         ],
@@ -98,7 +98,7 @@ def add_subscriptions(client: Client) -> None:
 
 
 def test_add_subscriptions_already_subscribed(client: Client) -> None:
-    result = client.add_subscriptions(
+    result = client.subscribe(
         streams=[
             {"name": "new stream", "description": "New stream for testing"},
         ],
@@ -109,7 +109,7 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
 
 
 def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> None:
-    client.add_subscriptions(
+    client.subscribe(
         streams=[
             {"name": "private_stream"},
         ],
@@ -122,7 +122,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         request={"is_private": True},
     )
 
-    result = nonadmin_client.add_subscriptions(
+    result = nonadmin_client.subscribe(
         streams=[
             {"name": "private_stream"},
         ],
@@ -131,7 +131,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400_0")
 
-    result = nonadmin_client.add_subscriptions(
+    result = nonadmin_client.subscribe(
         streams=[
             {"name": "private_stream"},
         ],
@@ -187,11 +187,11 @@ def create_user(client: Client) -> None:
 
 
 @openapi_test_function("/users:get")
-def get_members(client: Client) -> None:
+def get_users(client: Client) -> None:
 
     # {code_example|start}
     # Get all users in the realm
-    result = client.get_members()
+    result = client.get_users()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")
@@ -204,7 +204,7 @@ def get_members(client: Client) -> None:
 
     # {code_example|start}
     # You may pass the `client_gravatar` query parameter as follows:
-    result = client.get_members({"client_gravatar": True})
+    result = client.get_users({"client_gravatar": True})
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")
@@ -212,7 +212,7 @@ def get_members(client: Client) -> None:
 
     # {code_example|start}
     # You may pass the `include_custom_profile_fields` query parameter as follows:
-    result = client.get_members({"include_custom_profile_fields": True})
+    result = client.get_users({"include_custom_profile_fields": True})
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")
@@ -238,7 +238,7 @@ def get_user_by_email(client: Client) -> None:
 
 
 @openapi_test_function("/users/{user_id}:get")
-def get_single_user(client: Client) -> None:
+def get_user(client: Client) -> None:
     ensure_users([8], ["cordelia"])
 
     # {code_example|start}
@@ -315,7 +315,7 @@ def get_subscription_status(client: Client) -> None:
 
 
 @openapi_test_function("/realm/linkifiers:get")
-def get_realm_linkifiers(client: Client) -> None:
+def get_linkifiers(client: Client) -> None:
 
     # {code_example|start}
     # Fetch all the filters in this organization
@@ -329,7 +329,7 @@ def get_realm_linkifiers(client: Client) -> None:
 
 
 @openapi_test_function("/realm/profile_fields:get")
-def get_realm_profile_fields(client: Client) -> None:
+def get_custom_profile_fields(client: Client) -> None:
     # {code_example|start}
     # Fetch all the custom profile fields in the user's organization.
     result = client.call_endpoint(
@@ -341,7 +341,7 @@ def get_realm_profile_fields(client: Client) -> None:
 
 
 @openapi_test_function("/realm/profile_fields:patch")
-def reorder_realm_profile_fields(client: Client) -> None:
+def reorder_custom_profile_fields(client: Client) -> None:
     # {code_example|start}
     # Reorder the custom profile fields in the user's organization.
     order = [8, 7, 6, 5, 4, 3, 2, 1]
@@ -353,7 +353,7 @@ def reorder_realm_profile_fields(client: Client) -> None:
 
 
 @openapi_test_function("/realm/profile_fields:post")
-def create_realm_profile_field(client: Client) -> None:
+def create_custom_profile_field(client: Client) -> None:
     # {code_example|start}
     # Create a custom profile field in the user's organization.
     request = {"name": "Phone", "hint": "Contact no.", "field_type": 1}
@@ -365,12 +365,12 @@ def create_realm_profile_field(client: Client) -> None:
 
 
 @openapi_test_function("/realm/filters:post")
-def add_realm_filter(client: Client) -> None:
+def add_linkifier(client: Client) -> None:
 
     # {code_example|start}
     # Add a filter to automatically linkify #<number> to the corresponding
     # issue in Zulip's server repo
-    result = client.add_realm_filter(
+    result = client.add_linkifier(
         "#(?P<id>[0-9]+)", "https://github.com/zulip/zulip/issues/%(id)s"
     )
     # {code_example|end}
@@ -379,7 +379,7 @@ def add_realm_filter(client: Client) -> None:
 
 
 @openapi_test_function("/realm/filters/{filter_id}:patch")
-def update_realm_filter(client: Client) -> None:
+def update_linkifier(client: Client) -> None:
 
     # {code_example|start}
     # Update the linkifier (realm_filter) with ID 1
@@ -398,18 +398,18 @@ def update_realm_filter(client: Client) -> None:
 
 
 @openapi_test_function("/realm/filters/{filter_id}:delete")
-def remove_realm_filter(client: Client) -> None:
+def remove_linkifier(client: Client) -> None:
 
     # {code_example|start}
     # Remove the linkifier (realm_filter) with ID 1
-    result = client.remove_realm_filter(1)
+    result = client.remove_linkifier(1)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
 
 
 @openapi_test_function("/realm/playgrounds:post")
-def add_realm_playground(client: Client) -> None:
+def add_code_playground(client: Client) -> None:
 
     # {code_example|start}
     # Add a realm playground for Python
@@ -425,7 +425,7 @@ def add_realm_playground(client: Client) -> None:
 
 
 @openapi_test_function("/realm/playgrounds/{playground_id}:delete")
-def remove_realm_playground(client: Client) -> None:
+def remove_code_playground(client: Client) -> None:
 
     # {code_example|start}
     # Remove the playground with ID 1
@@ -436,12 +436,12 @@ def remove_realm_playground(client: Client) -> None:
 
 
 @openapi_test_function("/users/me:get")
-def get_profile(client: Client) -> None:
+def get_own_user(client: Client) -> None:
 
     # {code_example|start}
     # Get the profile of the user/bot that requests this endpoint,
     # which is `client` in this case:
-    result = client.get_profile()
+    result = client.get_own_user()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me", "get", "200")
@@ -449,7 +449,7 @@ def get_profile(client: Client) -> None:
 
 @openapi_test_function("/users/me:delete")
 def deactivate_own_user(client: Client, owner_client: Client) -> None:
-    user_id = client.get_profile()["user_id"]
+    user_id = client.get_own_user()["user_id"]
 
     # {code_example|start}
     # Deactivate the account of the current user/bot that requests.
@@ -480,7 +480,7 @@ def get_stream_id(client: Client) -> int:
 
 @openapi_test_function("/streams/{stream_id}:delete")
 def archive_stream(client: Client, stream_id: int) -> None:
-    result = client.add_subscriptions(
+    result = client.subscribe(
         streams=[
             {
                 "name": "stream to be archived",
@@ -574,10 +574,10 @@ def get_user_agent(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/subscriptions:get")
-def list_subscriptions(client: Client) -> None:
+def get_subscriptions(client: Client) -> None:
     # {code_example|start}
     # Get all streams that the user is subscribed to
-    result = client.list_subscriptions()
+    result = client.get_subscriptions()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
@@ -587,11 +587,11 @@ def list_subscriptions(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/subscriptions:delete")
-def remove_subscriptions(client: Client) -> None:
+def unsubscribe(client: Client) -> None:
 
     # {code_example|start}
     # Unsubscribe from the stream "new stream"
-    result = client.remove_subscriptions(
+    result = client.unsubscribe(
         ["new stream"],
     )
     # {code_example|end}
@@ -599,14 +599,14 @@ def remove_subscriptions(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions", "delete", "200")
 
     # test it was actually removed
-    result = client.list_subscriptions()
+    result = client.get_subscriptions()
     assert result["result"] == "success"
     streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
     assert len(streams) == 0
 
     # {code_example|start}
     # Unsubscribe another user from the stream "new stream"
-    result = client.remove_subscriptions(
+    result = client.unsubscribe(
         ["new stream"],
         principals=["newbie@zulip.com"],
     )
@@ -616,7 +616,7 @@ def remove_subscriptions(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/subscriptions/muted_topics:patch")
-def toggle_mute_topic(client: Client) -> None:
+def mute_topic(client: Client) -> None:
 
     # Send a test message
     message = {
@@ -657,7 +657,7 @@ def toggle_mute_topic(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
-def add_user_mute(client: Client) -> None:
+def mute_user(client: Client) -> None:
     ensure_users([10], ["hamlet"])
     # {code_example|start}
     # Mute user with ID 10
@@ -669,7 +669,7 @@ def add_user_mute(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/muted_users/{muted_user_id}:delete")
-def remove_user_mute(client: Client) -> None:
+def unmute_user(client: Client) -> None:
     ensure_users([10], ["hamlet"])
     # {code_example|start}
     # Unmute user with ID 10
@@ -1015,10 +1015,10 @@ def get_message_history(client: Client, message_id: int) -> None:
 
 
 @openapi_test_function("/realm/emoji:get")
-def get_realm_emoji(client: Client) -> None:
+def get_custom_emoji(client: Client) -> None:
 
     # {code_example|start}
-    result = client.get_realm_emoji()
+    result = client.get_custom_emoji()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/emoji", "GET", "200")
@@ -1088,7 +1088,7 @@ def register_queue(client: Client) -> str:
 
 
 @openapi_test_function("/events:delete")
-def deregister_queue(client: Client, queue_id: str) -> None:
+def delete_queue(client: Client, queue_id: str) -> None:
 
     # {code_example|start}
     # Delete a queue (queue_id is the ID of the queue
@@ -1104,7 +1104,7 @@ def deregister_queue(client: Client, queue_id: str) -> None:
 
 
 @openapi_test_function("/events:get")
-def get_queue(client: Client, queue_id: str) -> None:
+def get_events(client: Client, queue_id: str) -> None:
 
     # {code_example|start}
     # If you already have a queue registered and thus, have a queue_id
@@ -1359,7 +1359,7 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
 
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
-    result = client_with_invalid_key.list_subscriptions()
+    result = client_with_invalid_key.get_subscriptions()
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_0")
 
 
@@ -1474,14 +1474,14 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
 def test_users(client: Client, owner_client: Client) -> None:
 
     create_user(client)
-    get_members(client)
-    get_single_user(client)
+    get_users(client)
+    get_user(client)
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
     get_user_by_email(client)
     get_subscription_status(client)
-    get_profile(client)
+    get_own_user(client)
     update_notification_settings(client)
     update_display_settings(client)
     upload_file(client)
@@ -1498,21 +1498,21 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_alert_words(client)
     remove_alert_words(client)
     deactivate_own_user(client, owner_client)
-    add_user_mute(client)
-    remove_user_mute(client)
+    mute_user(client)
+    unmute_user(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
 
-    add_subscriptions(client)
+    subscribe(client)
     test_add_subscriptions_already_subscribed(client)
-    list_subscriptions(client)
+    get_subscriptions(client)
     stream_id = get_stream_id(client)
     update_stream(client, stream_id)
     get_streams(client)
     get_subscribers(client)
-    remove_subscriptions(client)
-    toggle_mute_topic(client)
+    unsubscribe(client)
+    mute_topic(client)
     update_subscription_settings(client)
     update_notification_settings(client)
     get_stream_topics(client, 1)
@@ -1529,25 +1529,25 @@ def test_queues(client: Client) -> None:
     # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth
     # the effort to come up with asynchronous logic for testing those here.
     queue_id = register_queue(client)
-    get_queue(client, queue_id)
-    deregister_queue(client, queue_id)
+    get_events(client, queue_id)
+    delete_queue(client, queue_id)
     register_queue_all_events(client)
 
 
 def test_server_organizations(client: Client) -> None:
 
-    get_realm_linkifiers(client)
-    add_realm_filter(client)
-    update_realm_filter(client)
-    add_realm_playground(client)
+    get_linkifiers(client)
+    add_linkifier(client)
+    update_linkifier(client)
+    add_code_playground(client)
     get_server_settings(client)
-    remove_realm_filter(client)
-    remove_realm_playground(client)
-    get_realm_emoji(client)
+    remove_linkifier(client)
+    remove_code_playground(client)
+    get_custom_emoji(client)
     upload_custom_emoji(client)
-    get_realm_profile_fields(client)
-    reorder_realm_profile_fields(client)
-    create_realm_profile_field(client)
+    get_custom_profile_fields(client)
+    reorder_custom_profile_fields(client)
+    create_custom_profile_field(client)
 
 
 def test_errors(client: Client) -> None:
