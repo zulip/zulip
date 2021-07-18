@@ -1,5 +1,9 @@
 import _ from "lodash";
 
+// TODO: Move the TOPIC_NAME to appropriate
+// message module when it is converted to TS.
+export const TOPIC_NAME = "subject";
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -42,7 +46,10 @@ function lower_same(a, b) {
 
 export const same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
-    return a.stream_id === b.stream_id && lower_same(a.topic, b.topic);
+    return (
+        a.stream_id === b.stream_id &&
+        lower_same(a.topic ?? a[TOPIC_NAME], b.topic ?? b[TOPIC_NAME])
+    );
 };
 
 export function is_pm_recipient(user_id, message) {
@@ -217,19 +224,19 @@ export function get_match_topic(obj) {
 
 export function get_draft_topic(obj) {
     // We will need to support subject for old drafts.
-    return obj.topic || obj.subject || "";
+    return obj.topic || obj[TOPIC_NAME] || "";
 }
 
 export function get_reload_topic(obj) {
     // When we first upgrade to releases that have
     // topic=foo in the code, the user's reload URL
     // may still have subject=foo from the prior version.
-    return obj.topic || obj.subject || "";
+    return obj.topic || obj[TOPIC_NAME] || "";
 }
 
 export function get_edit_event_topic(obj) {
     if (obj.topic === undefined) {
-        return obj.subject;
+        return obj[TOPIC_NAME];
     }
 
     // This code won't be reachable till we fix the
