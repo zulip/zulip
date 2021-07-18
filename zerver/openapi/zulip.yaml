@@ -8859,6 +8859,7 @@ paths:
                           * 2 = Administrators only
                           * 3 = Full members only
                           * 4 = Moderators only
+                          * 6 = Nobody
 
                           **Changes**: New in Zulip 4.0 (feature level 50) replacing the
                           previous `realm_invite_by_admins_only` boolean.

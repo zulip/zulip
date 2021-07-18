@@ -256,6 +256,7 @@ class Realm(models.Model):
     POLICY_FULL_MEMBERS_ONLY = 3
     POLICY_MODERATORS_ONLY = 4
     POLICY_EVERYONE = 5
+    POLICY_NOBODY = 6
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -270,6 +271,14 @@ class Realm(models.Model):
         POLICY_FULL_MEMBERS_ONLY,
         POLICY_MODERATORS_ONLY,
         POLICY_EVERYONE,
+    ]
+
+    INVITE_TO_REALM_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
+        POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_NOBODY,
     ]
 
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
@@ -1743,10 +1752,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ]:
             raise AssertionError("Invalid policy")
 
+        policy_value = getattr(self.realm, policy_name)
+        if policy_value == Realm.POLICY_NOBODY:
+            return False
+
         if self.is_realm_admin:
             return True
 
-        policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_ADMINS_ONLY:
             return False
 
