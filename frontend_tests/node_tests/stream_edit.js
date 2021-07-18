@@ -119,7 +119,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         assert.equal(typeof data.display_value, "string");
         return html;
     });
-    mock_template("subscription_settings.hbs", false, () => "subscription_settings");
+    mock_template("stream_settings/stream_settings.hbs", false, () => "stream_settings");
     mock_template(
         "stream_subscription_request_result.hbs",
         false,
