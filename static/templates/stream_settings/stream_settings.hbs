@@ -19,7 +19,7 @@
         <div class="general_settings stream_section">
             {{#with sub}}
             <div class="stream-header">
-                {{> stream_settings/stream_privacy_icon
+                {{> stream_privacy_icon
                   invite_only=invite_only
                   is_web_public=is_web_public }}
                 <div class="stream-name">
@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="stream-description">
-                {{> stream_settings/stream_description
+                {{> stream_description
                   rendered_description=rendered_description
                   }}
             </div>
@@ -52,7 +52,7 @@
             </div>
             <div class="subscription-type">
                 <div class="subscription-type-text">
-                    {{> stream_settings/stream_permission_description
+                    {{> stream_permission_description
                       stream_post_policy_values=../stream_post_policy_values
                       message_retention_text=../message_retention_text}}
                 </div>
@@ -61,7 +61,7 @@
             <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
                 <h3 class="stream_setting_subsection_title">
                     {{t "Email address" }}
-                    {{> help_link_widget link="/help/message-a-stream-by-email" }}
+                    {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
                 </h3>
                 <div class="stream-email">
                     <span class="email-address">{{sub.email_address}}</span>
@@ -78,7 +78,7 @@
                 <ul class="grey-box">
                     {{#each settings}}
                     <li>
-                        {{> stream_settings/stream_settings_checkbox
+                        {{> stream_settings_checkbox
                           setting_name=name
                           is_checked=is_checked
                           is_muted=(lookup ../sub "is_muted")
@@ -102,7 +102,7 @@
         <div class="subscriber_settings stream_section">
             {{#with sub}}
             <div class="subscription-members-setting">
-                {{> stream_settings/stream_members}}
+                {{> stream_members}}
             </div>
             {{/with}}
         </div>

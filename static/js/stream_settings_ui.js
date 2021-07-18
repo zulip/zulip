@@ -3,8 +3,8 @@ import _ from "lodash";
 import tippy from "tippy.js";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
+import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_subscription from "../templates/subscription.hbs";
-import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
 
@@ -256,7 +256,7 @@ export function add_sub_to_table(sub) {
         ui.get_content_element($(".streams-list")).append(new_row);
     }
 
-    const settings_html = render_subscription_settings(sub);
+    const settings_html = render_stream_settings(sub);
     ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {

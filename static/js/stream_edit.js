@@ -5,8 +5,8 @@ import render_settings_deactivation_stream_modal from "../templates/confirm_dial
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
+import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
-import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
 
 import * as blueslip from "./blueslip";
@@ -526,7 +526,7 @@ export function show_settings_for(node) {
     stream_data.clean_up_description(slim_sub);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
-    const html = render_subscription_settings({
+    const html = render_stream_settings({
         sub,
         settings: stream_settings(sub),
         stream_post_policy_values: stream_data.stream_post_policy_values,
