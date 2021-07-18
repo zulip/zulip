@@ -662,10 +662,12 @@ ul {
 }
 
 #move_topic_modal {
-    /* Ensure that the dropdown can overflow the modal. */
-    overflow: visible;
+    form {
+        margin: 0;
+    }
 
-    .modal-body {
+    /* Ensure that the dropdown can overflow the modal. */
+    .modal__content {
         overflow: visible;
     }
 
@@ -675,8 +677,9 @@ ul {
         border-radius: 1px 4px 4px 1px !important;
     }
 
+    .dropdown-list-widget,
     .stream_header_colorblock {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     #topic_stream_edit_form_error {

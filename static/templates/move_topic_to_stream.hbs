@@ -1,47 +1,32 @@
-<div id="move_topic_modal" class="modal modal-bg hide fade new-style" tabindex="-1" role="dialog" aria-labelledby="move_topic_modal_label" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-        <h3 id="move_topic_modal_label">{{t "Move topic" }} </h3>
+<p>{{#tr}}Move all messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
+<form class="new-style" id="move_topic_form">
+    <div id="topic_stream_edit_form_error" class="alert">
+        <span class="send-status-close">&times;</span>
+        <span class="error-msg"></span>
     </div>
-    <div class="modal-body">
-        <p>{{#tr}}Move all messages in <strong>{topic_name}</strong> to:{{/tr}}</p>
-        <form id="move_topic_form">
-            <div id="topic_stream_edit_form_error" class="alert">
-                <span class="send-status-close">&times;</span>
-                <span class="error-msg"></span>
-            </div>
-            <p>{{t "Select a stream below or change topic name." }}</p>
-            <div class="topic_stream_edit_header">
-                <div class="stream_header_colorblock"></div>
-                <div class="move-topic-dropdown">
-                    {{> settings/dropdown_list_widget
-                      widget_name="select_stream"
-                      list_placeholder=(t 'Filter streams')}}
-                </div>
-                <i class="fa fa-angle-right" aria-hidden="true"></i>
-                <input name="new_topic_name" type="text" class="inline_topic_edit" value="{{topic_name}}" />
-                <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
-                <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
-                <div class="topic_move_breadcrumb_messages new-style">
-                    <label class="checkbox">
-                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
-                        <span></span>
-                        {{t "Send notification to new topic" }}
-                    </label>
-                    <label class="checkbox">
-                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
-                        <span></span>
-                        {{t "Send notification to old topic" }}
-                    </label>
-                </div>
-            </div>
-        </form>
-        <div class="topic_move_spinner"></div>
+    <p>{{t "Select a stream below or change topic name." }}</p>
+    <div class="topic_stream_edit_header">
+        <div class="stream_header_colorblock"></div>
+        <div class="move-topic-dropdown">
+            {{> settings/dropdown_list_widget
+              widget_name="select_stream"
+              list_placeholder=(t 'Filter streams')}}
+        </div>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <input name="new_topic_name" type="text" class="inline_topic_edit" value="{{topic_name}}" />
+        <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
+        <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
+        <div class="topic_move_breadcrumb_messages">
+            <label class="checkbox">
+                <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
+                <span></span>
+                {{t "Send notification to new topic" }}
+            </label>
+            <label class="checkbox">
+                <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
+                <span></span>
+                {{t "Send notification to old topic" }}
+            </label>
+        </div>
     </div>
-    <div class="modal-footer">
-        <button class="button" data-dismiss="modal">{{t "Cancel" }}</button>
-        <button class="button btn-danger rounded" id="do_move_topic_button">
-            {{t "Confirm" }}
-        </button>
-    </div>
-</div>
+</form>
