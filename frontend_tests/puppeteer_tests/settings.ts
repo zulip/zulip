@@ -176,7 +176,7 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot one"});
-    const save_btn_selector = edit_form_selector + " .edit_bot_button";
+    const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
@@ -186,7 +186,7 @@ async function test_edit_bot_form(page: Page): Promise<void> {
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_invalid_edit_bot_form(page: Page): Promise<void> {
@@ -203,7 +203,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
-    const save_btn_selector = edit_form_selector + " .edit_bot_button";
+    const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
@@ -213,14 +213,14 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div.bot_edit_errors"),
         "Name is already in use!",
     );
-    await page.click("button.cancel_bot_button");
+    await page.click("#edit_bot_modal .dialog_cancel_button");
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
     await page.waitForXPath(
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
