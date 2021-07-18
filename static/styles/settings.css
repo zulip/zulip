@@ -871,7 +871,7 @@ input[type="checkbox"] {
 }
 
 .bot_edit_errors {
-    margin: 20px 20px 0;
+    margin: 0;
 }
 
 #bots_lists_navbar .active a {
@@ -882,8 +882,11 @@ input[type="checkbox"] {
     margin-top: 5px;
 }
 
-.edit_bot_form_container {
-    padding: 15px;
+#edit_bot_modal {
+    /* Ensure that the dropdown can overflow the modal. */
+    .modal__content {
+        overflow: visible;
+    }
 }
 
 .edit_bot_form {
