@@ -354,7 +354,7 @@ td .button {
         text-decoration: none;
     }
 
-    .default_language_modal {
+    #user_default_language_modal {
         table {
             width: 90%;
             margin-top: 20px;
