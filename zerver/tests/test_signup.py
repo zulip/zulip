@@ -1328,6 +1328,13 @@ class InviteUserTest(InviteUserBase):
             user_profile.refresh_from_db()
             return user_profile.can_invite_others_to_realm()
 
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        desdemona = self.example_user("desdemona")
+        self.assertFalse(validation_func(desdemona))
+
         self.check_has_permission_policies("invite_to_realm_policy", validation_func)
 
     def test_invite_others_to_realm_setting(self) -> None:
@@ -1336,13 +1343,22 @@ class InviteUserTest(InviteUserBase):
         """
         realm = get_realm("zulip")
         do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        self.login("desdemona")
+        email = "alice-test@zulip.com"
+        email2 = "bob-test@zulip.com"
+        invitee = f"Alice Test <{email}>, {email2}"
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
+        )
+
+        do_set_realm_property(
             realm, "invite_to_realm_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
 
         self.login("shiva")
-        email = "alice-test@zulip.com"
-        email2 = "bob-test@zulip.com"
-        invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
             "Insufficient permission",

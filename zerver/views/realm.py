@@ -53,7 +53,7 @@ def update_realm(
     ),
     invite_required: Optional[bool] = REQ(json_validator=check_bool, default=None),
     invite_to_realm_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
     ),
     name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),

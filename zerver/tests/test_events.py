@@ -2045,7 +2045,7 @@ class RealmPropertyActionTest(BaseAction):
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=[4, 3, 2, 1],
+            invite_to_realm_policy=[6, 4, 3, 2, 1],
             move_messages_between_streams_policy=[4, 3, 2, 1],
         )
 

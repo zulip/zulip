@@ -778,7 +778,7 @@ class RealmAPITest(ZulipTestCase):
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=Realm.COMMON_POLICY_TYPES,
+            invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
         )
 
