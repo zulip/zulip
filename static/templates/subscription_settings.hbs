@@ -78,7 +78,7 @@
                 <ul class="grey-box">
                     {{#each settings}}
                     <li>
-                        {{> stream_settings_checkbox
+                        {{> stream_settings/stream_settings_checkbox
                           setting_name=name
                           is_checked=is_checked
                           is_muted=(lookup ../sub "is_muted")
