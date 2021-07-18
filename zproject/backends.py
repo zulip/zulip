@@ -161,15 +161,6 @@ def saml_auth_enabled(realm: Optional[Realm] = None) -> bool:
     return auth_enabled_helper(["SAML"], realm)
 
 
-def any_social_backend_enabled(realm: Optional[Realm] = None) -> bool:
-    """Used by the login page process to determine whether to show the
-    'OR' for login with Google"""
-    social_backend_names = [
-        social_auth_subclass.auth_backend_name for social_auth_subclass in EXTERNAL_AUTH_METHODS
-    ]
-    return auth_enabled_helper(social_backend_names, realm)
-
-
 def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:
     if ldap_auth_enabled(realm):
         if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:

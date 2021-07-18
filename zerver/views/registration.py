@@ -79,9 +79,9 @@ from zproject.backends import (
     ExternalAuthResult,
     ZulipLDAPAuthBackend,
     ZulipLDAPExceptionNoMatchingLDAPUser,
-    any_social_backend_enabled,
     email_auth_enabled,
     email_belongs_to_ldap,
+    get_external_method_dicts,
     ldap_auth_enabled,
     password_auth_enabled,
 )
@@ -370,8 +370,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 return_data=return_data,
             )
             if user_profile is None:
-                can_use_different_backend = email_auth_enabled(realm) or any_social_backend_enabled(
-                    realm
+                can_use_different_backend = email_auth_enabled(realm) or (
+                    len(get_external_method_dicts(realm)) > 0
                 )
                 if settings.LDAP_APPEND_DOMAIN:
                     # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
