@@ -79,6 +79,7 @@ export function launch(conf) {
     // * focus_submit_on_open: Whether to focus submit button on open.
     // * help_link: A help link in the heading area.
     // * id: Custom id to the container element to modify styles.
+    // * single_footer_button: If true, don't include the "Cancel" button.
 
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
@@ -99,6 +100,7 @@ export function launch(conf) {
         html_submit_button,
         html_body: conf.html_body,
         id: conf.id,
+        single_footer_button: conf.single_footer_button,
     });
     const dialog = $(html);
     $("body").append(dialog);
