@@ -106,8 +106,12 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
     test_files = []
     for file in files:
         file = min(
-            (file_name for file_name in os.listdir(test_dir) if file_name.startswith(file)),
-            default=os.path.join(test_dir, file),
+            (
+                os.path.join(test_dir, file_name)
+                for file_name in os.listdir(test_dir)
+                if file_name.startswith(file)
+            ),
+            default=file,
         )
         test_files.append(os.path.abspath(file))
 
