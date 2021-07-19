@@ -16,7 +16,7 @@ const stream_data = zrequire("stream_data");
 
 // This is the first time we have to deal with page_params.
 // page_params has a lot of important data shared by various
-// modules. Most of the data is irrelevant to out tests.
+// modules. Most of the data is irrelevant to our tests.
 // Use this to explicitly say we are not a special Zephyr
 // realm, since we want to test the "normal" codepath.
 page_params.realm_is_zephyr_mirror_realm = false;
