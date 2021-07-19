@@ -88,15 +88,21 @@ export function update_charged_amount(prices, schedule) {
 }
 
 export function update_discount_details(organization_type) {
+    let discount_notice =
+        "Your organization may be eligible for a discount on Zulip Standard. Generally, use cases where the users are not your employees are eligible for discounts.";
     const discount_details = {
-        open_source: "Zulip Standard is free for open-source projects.",
-        research: "Zulip Standard is free for academic research.",
-        non_profit: "Non-profits get an 85%+ discount on Zulip Standard.",
-        event: "Zulip Standard is free for academic conferences and hackathons.",
-        education: "Get an 85%+ discount on Zulip Standard for education.",
-        other: "Your organization may be eligible for a discount on Zulip Standard.",
+        opensource: "Zulip Cloud Standard is free for open-source projects.",
+        research: "Zulip Cloud Standard is free for academic research.",
+        nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered nonprofits.",
+        event: "Zulip Cloud Standard is free for academic conferences and most nonprofit events.",
+        education: "Zulip Cloud Standard is discounted 85% for education.",
+        education_nonprofit:
+            "Zulip Cloud standard is discounted 90% for education nonprofits with online purchase.",
     };
-    $("#sponsorship-discount-details").text(discount_details[organization_type]);
+    if (discount_details[organization_type]) {
+        discount_notice = discount_details[organization_type];
+    }
+    $("#sponsorship-discount-details").text(discount_notice);
 }
 
 export function show_license_section(license) {

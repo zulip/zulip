@@ -151,38 +151,35 @@ run_test("initialize", ({override}) => {
     assert.equal($("#invoice_annual_price").text(), "64");
     assert.equal($("#invoice_annual_price_per_month").text(), "5.34");
 
-    const organization_type_change_handler = $("select[name=organization-type]").get_on_handler(
-        "change",
-    );
-    organization_type_change_handler.call({value: "open_source"});
+    helpers.update_discount_details("opensource");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Zulip Standard is free for open-source projects.",
+        "Zulip Cloud Standard is free for open-source projects.",
     );
-    organization_type_change_handler.call({value: "research"});
+    helpers.update_discount_details("research");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Zulip Standard is free for academic research.",
+        "Zulip Cloud Standard is free for academic research.",
     );
-    organization_type_change_handler.call({value: "event"});
+    helpers.update_discount_details("event");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Zulip Standard is free for academic conferences and hackathons.",
+        "Zulip Cloud Standard is free for academic conferences and most nonprofit events.",
     );
-    organization_type_change_handler.call({value: "education"});
+    helpers.update_discount_details("education");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Get an 85%+ discount on Zulip Standard for education.",
+        "Zulip Cloud Standard is discounted 85% for education.",
     );
-    organization_type_change_handler.call({value: "non_profit"});
+    helpers.update_discount_details("nonprofit");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Non-profits get an 85%+ discount on Zulip Standard.",
+        "Zulip Cloud Standard is discounted 85%+ for registered nonprofits.",
     );
-    organization_type_change_handler.call({value: "other"});
+    helpers.update_discount_details("other");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Your organization may be eligible for a discount on Zulip Standard.",
+        "Your organization may be eligible for a discount on Zulip Standard. Generally, use cases where the users are not your employees are eligible for discounts.",
     );
 });
 

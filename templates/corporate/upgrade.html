@@ -226,7 +226,7 @@
                                 <select name="organization-type" required style="width: 100%;" required>
                                     {% for org_type in sorted_org_types %}
                                         {% if not org_type.hidden %}
-                                        <option value="{{ org_type.id }}">{{ _(org_type.name) }}</option>
+                                        <option data-string-value="{{ org_type[0] }}" value="{{ org_type[1].id }}">{{ _(org_type[1].name) }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>

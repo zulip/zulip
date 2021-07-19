@@ -225,11 +225,11 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         },
         "sorted_org_types": sorted(
             [
-                org_type
-                for org_type in Realm.ORG_TYPES.values()
-                if not org_type.get("hidden_for_sponsorship")
+                [org_type_name, org_type]
+                for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                if not org_type.get("hidden")
             ],
-            key=lambda d: d["display_order"],
+            key=lambda d: d[1]["display_order"],
         ),
     }
     response = render(request, "corporate/upgrade.html", context=context)
