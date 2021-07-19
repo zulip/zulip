@@ -223,6 +223,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             "monthly_price": 800,
             "percent_off": float(percent_off),
         },
+        "realm_org_type": user.realm.org_type,
         "sorted_org_types": sorted(
             [
                 [org_type_name, org_type]
