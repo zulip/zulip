@@ -605,4 +605,10 @@ a.compose_control_button.hide {
         max-height: none !important;
         flex: 1;
     }
+
+    #preview_message_area {
+        max-height: none;
+        height: 1.5em;
+        flex: 1;
+    }
 }
