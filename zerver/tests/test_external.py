@@ -172,6 +172,17 @@ class RateLimitTests(ZulipTestCase):
             # even in case of failure, to avoid polluting the rules state.
             remove_ratelimit_rule(1, 5, domain="api_by_ip")
 
+    def test_create_realm_rate_limiting(self) -> None:
+        with self.settings(OPEN_REALM_CREATION=True):
+            add_ratelimit_rule(1, 5, domain="create_realm_by_ip")
+            try:
+                RateLimitedIPAddr("127.0.0.1").clear_history()
+                self.do_test_hit_ratelimits(
+                    lambda: self.client_post("/new/", {"email": "new@zulip.com"})
+                )
+            finally:
+                remove_ratelimit_rule(1, 5, domain="create_realm_by_ip")
+
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_hit_ratelimits_as_remote_server(self) -> None:
         add_ratelimit_rule(1, 5, domain="api_by_remote_server")
