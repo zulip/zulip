@@ -1299,6 +1299,8 @@ class UserBaseSettings(models.Model):
 
     ### Notifications settings. ###
 
+    email_notifications_batching_period_seconds: int = models.IntegerField(default=120)
+
     # Stream notifications.
     enable_stream_desktop_notifications: bool = models.BooleanField(default=False)
     enable_stream_email_notifications: bool = models.BooleanField(default=False)
@@ -1350,6 +1352,7 @@ class UserBaseSettings(models.Model):
         enable_digest_emails=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
+        email_notifications_batching_period_seconds=int,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
