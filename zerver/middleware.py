@@ -540,8 +540,9 @@ class RateLimitMiddleware(MiddlewareMixin):
             return response
 
         # Add X-RateLimit-*** headers
-        if hasattr(request, "_ratelimits_applied"):
-            self.set_response_headers(response, request._ratelimits_applied)
+        ratelimits_applied = get_request_notes(request).ratelimits_applied
+        if len(ratelimits_applied) > 0:
+            self.set_response_headers(response, ratelimits_applied)
 
         return response
 
