@@ -4,8 +4,8 @@ import tippy from "tippy.js";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
+import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 import render_subscription from "../templates/subscription.hbs";
-import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
 
 import * as blueslip from "./blueslip";
@@ -620,7 +620,7 @@ export function setup_page(callback) {
                 !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
         };
 
-        const rendered = render_subscription_table_body(template_data);
+        const rendered = render_stream_settings_overlay(template_data);
         $("#subscriptions_table").append(rendered);
 
         render_left_panel_superset();
