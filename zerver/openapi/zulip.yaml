@@ -3358,19 +3358,6 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_to_realm_policy:
-                                      type: integer
-                                      description: |
-                                        Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
-                                        to join the organization:
-
-                                        * 1 = Members only
-                                        * 2 = Administrators only
-                                        * 3 = Full members only
-                                        * 4 = Moderators only
-
-                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
-                                        previous `invite_by_admins_only` boolean.
                                     inline_image_preview:
                                       type: boolean
                                       description: |
