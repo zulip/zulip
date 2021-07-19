@@ -9,7 +9,6 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.utils import capture_internal_exceptions
 
 from version import ZULIP_VERSION
-from zerver.lib.request import get_request_notes
 
 if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
@@ -23,7 +22,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
             return None
     from django.conf import settings
 
-    from zerver.lib.request import get_current_request
+    from zerver.lib.request import get_current_request, get_request_notes
     from zerver.models import get_user_profile_by_id
 
     with capture_internal_exceptions():
