@@ -498,6 +498,8 @@ export function initialize_everything() {
     tippyjs.initialize();
     popover_menus.initialize();
 
+    people.initialize(page_params.user_id, people_params);
+
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
     // expect DOM elements to always exist (As that did before these
@@ -507,12 +509,11 @@ export function initialize_everything() {
     settings.initialize();
     compose.initialize();
     initialize_navbar();
-    realm_logo.rerender();
+    realm_logo.render();
 
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
-    people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
     navbar_alerts.initialize();

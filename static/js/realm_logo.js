@@ -63,7 +63,7 @@ function change_logo_delete_button(logo_source, logo_delete_button, file_input) 
     }
 }
 
-export function rerender() {
+export function render() {
     const file_input = $("#realm-day-logo-upload-widget .image_file_input");
     const night_file_input = $("#realm-night-logo-upload-widget .realm-logo-file-input");
     $("#realm-day-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);

@@ -40,7 +40,7 @@ from zerver.lib.actions import (
     do_send_messages,
     gather_subscriptions,
     get_default_streams_for_realm,
-    get_subscriber_emails,
+    get_subscriber_ids,
     internal_prep_private_message,
     internal_prep_stream_message,
 )
@@ -676,9 +676,9 @@ def get_subscribers_backend(
         stream_id,
         allow_realm_admin=True,
     )
-    subscribers = get_subscriber_emails(stream, user_profile)
+    subscribers = get_subscriber_ids(stream, user_profile)
 
-    return json_success({"subscribers": subscribers})
+    return json_success({"subscribers": list(subscribers)})
 
 
 # By default, lists all streams that the user has access to --

@@ -223,13 +223,14 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             "monthly_price": 800,
             "percent_off": float(percent_off),
         },
+        "realm_org_type": user.realm.org_type,
         "sorted_org_types": sorted(
             [
-                org_type
-                for org_type in Realm.ORG_TYPES.values()
-                if not org_type.get("hidden_for_sponsorship")
+                [org_type_name, org_type]
+                for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                if not org_type.get("hidden")
             ],
-            key=lambda d: d["display_order"],
+            key=lambda d: d[1]["display_order"],
         ),
     }
     response = render(request, "corporate/upgrade.html", context=context)
@@ -280,10 +281,15 @@ def sponsorship(
             )
             sponsorship_request.save()
 
+            org_type = form.cleaned_data["organization_type"]
+            if realm.org_type != org_type:
+                realm.org_type = org_type
+                realm.save(update_fields=["org_type"])
+
         update_sponsorship_status(realm, True, acting_user=user)
         do_make_user_billing_admin(user)
 
-    org_type_display_name = get_org_type_display_name(form.cleaned_data["organization_type"])
+    org_type_display_name = get_org_type_display_name(org_type)
 
     context = {
         "requested_by": requested_by,

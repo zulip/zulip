@@ -70,8 +70,9 @@ export const initialize = () => {
         helpers.update_charged_amount(prices, this.value);
     });
 
-    $("select[name=organization-type]").on("change", function () {
-        helpers.update_discount_details(this.value);
+    $("select[name=organization-type]").on("change", (e) => {
+        const string_value = $(e.currentTarget).find(":selected").attr("data-string-value");
+        helpers.update_discount_details(string_value);
     });
 
     $("#autopay_annual_price").text(helpers.format_money(prices.annual));

@@ -161,4 +161,4 @@ transform how your organization communicates:
 - [Plans and pricing](/plans)
 - [Zulip for companies](/for/companies)
 - [Zulip for open source organizations](/for/open-source)
-- [Zulip for working groups and communities](/for/working-groups-and-communities)
+- [Zulip for communities](/for/communities)

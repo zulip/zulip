@@ -140,21 +140,14 @@ export function initialize() {
                 const edit_button = elem.find("i.edit_content_button");
                 content = edit_button.attr("data-tippy-content");
             }
-            if (content === undefined) {
-                // If content is still undefined it is because content
-                // is specified on inner i tags and is handled by our
-                // general tippy-zulip-tooltip class. So we return
-                // false here to avoid showing an extra empty tooltip
-                // for such cases.
-                return false;
-            }
+
             instance.setContent(content);
             return true;
         },
     });
 
     delegate("body", {
-        target: ".message_time",
+        target: ".message_table .message_time",
         appendTo: () => document.body,
         onShow(instance) {
             const time_elem = $(instance.reference);
