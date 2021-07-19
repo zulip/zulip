@@ -121,7 +121,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     });
     mock_template("stream_settings/stream_settings.hbs", false, () => "stream_settings");
     mock_template(
-        "stream_subscription_request_result.hbs",
+        "stream_settings/stream_subscription_request_result.hbs",
         false,
         () => "stream_subscription_request_result",
     );

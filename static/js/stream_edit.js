@@ -7,7 +7,7 @@ import render_stream_description from "../templates/stream_settings/stream_descr
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_privacy_setting_modal from "../templates/stream_settings/stream_privacy_setting_modal.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
-import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
+import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
