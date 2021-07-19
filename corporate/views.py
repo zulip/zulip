@@ -281,10 +281,15 @@ def sponsorship(
             )
             sponsorship_request.save()
 
+            org_type = form.cleaned_data["organization_type"]
+            if realm.org_type != org_type:
+                realm.org_type = org_type
+                realm.save(update_fields=["org_type"])
+
         update_sponsorship_status(realm, True, acting_user=user)
         do_make_user_billing_admin(user)
 
-    org_type_display_name = get_org_type_display_name(form.cleaned_data["organization_type"])
+    org_type_display_name = get_org_type_display_name(org_type)
 
     context = {
         "requested_by": requested_by,
