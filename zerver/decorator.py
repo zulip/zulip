@@ -860,6 +860,15 @@ def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
     RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
 
 
+def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
+    # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
+    # with the nginx configuration to guarantee this to be *the* correct
+    # IP address to use - without worrying we'll grab the IP of a proxy.
+    ip_addr = request.META["REMOTE_ADDR"]
+    assert ip_addr
+    rate_limit_ip(request, ip_addr, domain=domain)
+
+
 def rate_limit_remote_server(
     request: HttpRequest, remote_server: "RemoteZulipServer", domain: str
 ) -> None:
@@ -891,12 +900,7 @@ def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
             user = request.user
 
             if isinstance(user, AnonymousUser):
-                # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
-                # with the nginx configuration to guarantee this to be *the* correct
-                # IP address to use - without worrying we'll grab the IP of a proxy.
-                ip_addr = request.META["REMOTE_ADDR"]
-                assert ip_addr
-                rate_limit_ip(request, ip_addr, domain="api_by_ip")
+                rate_limit_request_by_ip(request, domain="api_by_ip")
                 return func(request, *args, **kwargs)
             elif settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer):
                 rate_limit_remote_server(request, user, domain="api_by_remote_server")
