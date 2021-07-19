@@ -564,7 +564,6 @@ class MissedMessageWorker(QueueProcessingWorker):
     # The timer is running whenever; we poll at most every TIMER_FREQUENCY
     # seconds, to avoid excessive activity.
     TIMER_FREQUENCY = 5
-    BATCH_DURATION = 120
     timer_event: Optional[Timer] = None
 
     # This lock protects access to all of the data structures declared
@@ -586,7 +585,9 @@ class MissedMessageWorker(QueueProcessingWorker):
             # When we consume an event, check if there are existing pending emails
             # for that user, and if so use the same scheduled timestamp.
             user_profile_id: int = event["user_profile_id"]
-            batch_duration = datetime.timedelta(seconds=self.BATCH_DURATION)
+            user_profile = get_user_profile_by_id(user_profile_id)
+            batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
+            batch_duration = datetime.timedelta(seconds=batch_duration_seconds)
 
             try:
                 pending_email = ScheduledMessageNotificationEmail.objects.filter(

@@ -178,7 +178,13 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue("missedmessage_emails", event)
 
         mmw = MissedMessageWorker()
-        batch_duration = datetime.timedelta(seconds=mmw.BATCH_DURATION)
+        batch_duration = datetime.timedelta(
+            seconds=hamlet.email_notifications_batching_period_seconds
+        )
+        assert (
+            hamlet.email_notifications_batching_period_seconds
+            == othello.email_notifications_batching_period_seconds
+        )
 
         class MockTimer:
             is_running = False
