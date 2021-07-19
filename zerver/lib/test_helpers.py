@@ -310,7 +310,8 @@ class HostRequestMock(HttpRequest):
             self.POST[key] = str(post_data[key])
             self.method = "POST"
 
-        self._tornado_handler = DummyHandler()
+        if tornado_handler is not None:
+            self._tornado_handler = tornado_handler
         self._log_data: Dict[str, Any] = {}
         if meta_data is None:
             self.META = {"PATH_INFO": "test"}
@@ -324,7 +325,6 @@ class HostRequestMock(HttpRequest):
         request_notes_map[self] = ZulipRequestNotes(
             client_name="",
             log_data={},
-            tornado_handler=tornado_handler,
             client=get_client(client_name) if client_name is not None else None,
         )
 

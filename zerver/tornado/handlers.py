@@ -111,12 +111,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         signals.request_started.send(sender=self.__class__)
         request = WSGIRequest(environ)
 
-        # We do the import during runtime to avoid cyclic dependency
-        from zerver.lib.request import get_request_notes
-
         # Provide a way for application code to access this handler
         # given the HttpRequest object.
-        get_request_notes(request).tornado_handler = self
+        request._tornado_handler = self
 
         return request
 

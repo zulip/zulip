@@ -109,9 +109,7 @@ def get_events_backend(
         raise JsonableError(_("User not authorized for this query"))
 
     # Extract the Tornado handler from the request
-    tornado_handler = get_request_notes(request).tornado_handler
-    assert tornado_handler is not None
-    handler: AsyncDjangoHandler = tornado_handler
+    handler: AsyncDjangoHandler = request._tornado_handler
 
     if user_client is None:
         valid_user_client = get_request_notes(request).client

@@ -1482,7 +1482,7 @@ class TestInternalNotifyView(ZulipTestCase):
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, request)
 
-        get_request_notes(request).tornado_handler = DummyHandler()
+        request._tornado_handler = DummyHandler()
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(request))
             self.assertEqual(self.internal_notify(True, request), self.BORING_RESULT)
