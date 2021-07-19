@@ -26,7 +26,7 @@ from confirmation.models import (
     validate_key,
 )
 from zerver.context_processors import get_realm_from_request, login_context
-from zerver.decorator import do_login, require_post
+from zerver.decorator import do_login, rate_limit_request_by_ip, require_post
 from zerver.forms import (
     FindMyTeamForm,
     HomepageForm,
@@ -590,6 +590,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     if request.method == "POST":
         form = RealmCreationForm(request.POST)
         if form.is_valid():
+            rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+
             email = form.cleaned_data["email"]
             activation_url = prepare_activation_url(email, request, realm_creation=True)
             if key_record is not None and key_record.presume_email_valid:
