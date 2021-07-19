@@ -150,6 +150,9 @@ def update_realm(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
 
+    if invite_to_realm_policy is not None and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequired()
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #

@@ -868,6 +868,18 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(realm.allow_message_deleting, True)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
 
+    def test_change_invite_to_realm_policy_by_owners_only(self) -> None:
+        self.login("iago")
+        req = {"invite_to_realm_policy": Realm.POLICY_ADMINS_ONLY}
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login("desdemona")
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
+
 
 class ScrubRealmTest(ZulipTestCase):
     def test_scrub_realm(self) -> None:
