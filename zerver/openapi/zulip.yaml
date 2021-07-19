@@ -8864,13 +8864,6 @@ paths:
                                 message with the message_id as the key.
                               additionalProperties: false
                               properties:
-                                sender_ids:
-                                  type: array
-                                  items:
-                                    type: integer
-                                  description: |
-                                    Array containing the id of the users who have sent recent messages
-                                    on this stream under the given topic which have been unread by the user.
                                 topic:
                                   type: string
                                   description: |

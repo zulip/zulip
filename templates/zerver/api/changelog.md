@@ -11,6 +11,15 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+=======
+**Feature level 90**
+
+* We no longer include `sender_ids` in the `streams` section of
+  `UnreadMessagesResult`, which becomes the `unread_msgs` section of
+  the events that clients fetch when registering events at page
+  load time. (We don't believe this feature has ever been used in
+  a meaningful way.)
+
 **Feature level 89**
 
 * [`GET /events`](/api/get-events): Introduced the `user_settings`

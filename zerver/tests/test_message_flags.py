@@ -645,7 +645,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
         self.assertEqual(
             stream_dict[message_ids["lunch"][0]],
             dict(
-                sender_id=cordelia.id,
                 stream_id=get_stream("social", realm).id,
                 topic="lunch",
             ),
@@ -870,19 +869,16 @@ class GetUnreadMsgsTest(ZulipTestCase):
         unread_pm = result["pms"][0]
         self.assertEqual(unread_pm["sender_id"], sender_id)
         self.assertEqual(unread_pm["unread_message_ids"], [pm1_message_id, pm2_message_id])
-        self.assertTrue("sender_ids" not in unread_pm)
 
         unread_stream = result["streams"][0]
         self.assertEqual(unread_stream["stream_id"], get_stream("Denmark", user_profile.realm).id)
         self.assertEqual(unread_stream["topic"], "muted-topic")
         self.assertEqual(unread_stream["unread_message_ids"], [muted_topic_message_id])
-        self.assertEqual(unread_stream["sender_ids"], [sender_id])
 
         unread_stream = result["streams"][1]
         self.assertEqual(unread_stream["stream_id"], get_stream("Denmark", user_profile.realm).id)
         self.assertEqual(unread_stream["topic"], "test")
         self.assertEqual(unread_stream["unread_message_ids"], [stream_message_id])
-        self.assertEqual(unread_stream["sender_ids"], [sender_id])
 
         unread_stream = result["streams"][2]
         self.assertEqual(
@@ -890,7 +886,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
         )
         self.assertEqual(unread_stream["topic"], "test")
         self.assertEqual(unread_stream["unread_message_ids"], [muted_stream_message_id])
-        self.assertEqual(unread_stream["sender_ids"], [sender_id])
 
         huddle_string = ",".join(
             str(uid) for uid in sorted([sender_id, user_profile.id, othello.id])
@@ -899,7 +894,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
         unread_huddle = result["huddles"][0]
         self.assertEqual(unread_huddle["user_ids_string"], huddle_string)
         self.assertEqual(unread_huddle["unread_message_ids"], [huddle_message_id])
-        self.assertTrue("sender_ids" not in unread_huddle)
 
         self.assertEqual(result["mentions"], [])
 

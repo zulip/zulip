@@ -83,7 +83,6 @@ from zerver.models import (
     get_default_stream_groups,
     get_realm,
     get_stream,
-    get_system_bot,
     get_user,
     get_user_profile_by_id_in_realm,
 )
@@ -279,7 +278,6 @@ class TestCreateStreams(ZulipTestCase):
         self.subscribe(iago, announce_stream.name)
         self.subscribe(hamlet, announce_stream.name)
 
-        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
         self.login_user(iago)
 
         initial_message_count = Message.objects.count()
@@ -336,7 +334,6 @@ class TestCreateStreams(ZulipTestCase):
 
         # According to the code in zerver/views/streams/add_subscriptions_backend
         # the notification stream message is sent first, then the new stream's message.
-        self.assertEqual(hamlet_unread_messages[0]["sender_ids"][0], notification_bot.id)
         self.assertEqual(hamlet_unread_messages[1]["stream_id"], stream_id)
 
         # But it should be marked as read for Iago, the stream creator.
