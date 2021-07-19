@@ -45,6 +45,7 @@ export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         $("#deactivate_realm_button").prop("disabled", true);
         $("#org-message-retention").find("input, select").prop("disabled", true);
+        $("#id_realm_invite_to_realm_policy").prop("disabled", true);
         return;
     }
 
