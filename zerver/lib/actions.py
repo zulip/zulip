@@ -103,7 +103,6 @@ from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
     access_message,
-    aggregate_unread_data,
     get_last_message_id,
     get_raw_unread_data,
     normalize_body,
@@ -5679,7 +5678,39 @@ def do_update_message_flags(
 
     if flag == "read" and operation == "remove":
         raw_unread_data = get_raw_unread_data(user_profile, messages)
-        unread_data = aggregate_unread_data(raw_unread_data)
+        unread_data = {}
+        for pm in raw_unread_data["pm_dict"]:
+            if pm in raw_unread_data["mentions"]:
+                mentioned_flag = True
+            else:
+                mentioned_flag = False
+            unread_data[str(pm)] = {
+                "type": "private",
+                "sender_id": raw_unread_data["pm_dict"][pm]["sender_id"],
+                "mentioned": mentioned_flag,
+            }
+        for stream_message in raw_unread_data["stream_dict"]:
+            if stream_message in raw_unread_data["mentions"]:
+                mentioned_flag = True
+            else:
+                mentioned_flag = False
+            unread_data[str(stream_message)] = {
+                "type": "stream",
+                "stream_id": raw_unread_data["stream_dict"][stream_message]["stream_id"],
+                "sender_id": raw_unread_data["stream_dict"][stream_message]["sender_id"],
+                "topic": raw_unread_data["stream_dict"][stream_message]["topic"],
+                "mentioned": mentioned_flag,
+            }
+        for huddle in raw_unread_data["huddle_dict"]:
+            if stream_message in raw_unread_data["mentions"]:
+                mentioned_flag = True
+            else:
+                mentioned_flag = False
+            unread_data[str(huddle)] = {
+                "type": "huddle",
+                "sender_id_str": raw_unread_data["huddle_dict"][huddle]["user_ids_string"],
+                "mentioned": mentioned_flag,
+            }
         event["messages_by_conversation"] = unread_data
 
     send_event(user_profile.realm, event, [user_profile.id])
