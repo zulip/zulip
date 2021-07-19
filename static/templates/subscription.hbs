@@ -8,12 +8,12 @@
         </svg>
         <div class='sub_unsub_status'></div>
     </div>
-    {{> subscription_setting_icon }}
+    {{> stream_settings/subscription_setting_icon }}
     <div class="sub-info-box">
         <div class="top-bar">
             <div class="stream-name">{{name}}</div>
             <div class="subscriber-count tippy-zulip-tooltip" data-tippy-content="{{t 'Subscriber count' }}">
-                {{> subscription_count}}
+                {{> stream_settings/subscriber_count}}
             </div>
         </div>
         <div class="bottom-bar">
