@@ -147,7 +147,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ".message_time",
+        target: ".message_table .message_time",
         appendTo: () => document.body,
         onShow(instance) {
             const time_elem = $(instance.reference);
