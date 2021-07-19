@@ -69,7 +69,6 @@ class RawReactionRow(TypedDict):
 class RawUnreadStreamDict(TypedDict):
     stream_id: int
     topic: str
-    sender_id: int
 
 
 class RawUnreadPrivateMessageDict(TypedDict):
@@ -871,7 +870,7 @@ def huddle_users(recipient_id: int) -> str:
 
 
 def aggregate_message_dict(
-    input_dict: Dict[int, Any], lookup_fields: List[str], collect_senders: bool
+    input_dict: Dict[int, Any], lookup_fields: List[str]
 ) -> List[Dict[str, Any]]:
     lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
 
@@ -879,21 +878,20 @@ def aggregate_message_dict(
     A concrete example might help explain the inputs here:
 
     input_dict = {
-        1002: dict(stream_id=5, topic='foo', sender_id=40),
-        1003: dict(stream_id=5, topic='foo', sender_id=41),
-        1004: dict(stream_id=6, topic='baz', sender_id=99),
+        1002: dict(stream_id=5, topic='foo'),
+        1003: dict(stream_id=5, topic='foo'),
+        1004: dict(stream_id=6, topic='baz'),
     }
 
     lookup_fields = ['stream_id', 'topic']
 
     The first time through the loop:
-        attribute_dict = dict(stream_id=5, topic='foo', sender_id=40)
-        lookup_dict = (5, 'foo')
+        attribute_dict = dict(stream_id=5, topic='foo')
+        lookup_key = (5, 'foo')
 
     lookup_dict = {
         (5, 'foo'): dict(stream_id=5, topic='foo',
                          unread_message_ids=[1002, 1003],
-                         sender_ids=[40, 41],
                         ),
         ...
     }
@@ -901,7 +899,6 @@ def aggregate_message_dict(
     result = [
         dict(stream_id=5, topic='foo',
              unread_message_ids=[1002, 1003],
-             sender_ids=[40, 41],
             ),
         ...
     ]
@@ -914,19 +911,13 @@ def aggregate_message_dict(
             for f in lookup_fields:
                 obj[f] = attribute_dict[f]
             obj["unread_message_ids"] = []
-            if collect_senders:
-                obj["sender_ids"] = set()
             lookup_dict[lookup_key] = obj
 
         bucket = lookup_dict[lookup_key]
         bucket["unread_message_ids"].append(message_id)
-        if collect_senders:
-            bucket["sender_ids"].add(attribute_dict["sender_id"])
 
     for dct in lookup_dict.values():
         dct["unread_message_ids"].sort()
-        if collect_senders:
-            dct["sender_ids"] = sorted(dct["sender_ids"])
 
     sorted_keys = sorted(lookup_dict.keys())
 
@@ -1073,7 +1064,6 @@ def extract_unread_data_from_um_rows(
             stream_dict[message_id] = dict(
                 stream_id=stream_id,
                 topic=topic,
-                sender_id=sender_id,
             )
             if not is_row_muted(stream_id, recipient_id, topic):
                 unmuted_stream_msgs.add(message_id)
@@ -1137,7 +1127,6 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         lookup_fields=[
             "sender_id",
         ],
-        collect_senders=False,
     )
 
     stream_objects = aggregate_message_dict(
@@ -1146,7 +1135,6 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
             "stream_id",
             "topic",
         ],
-        collect_senders=True,
     )
 
     huddle_objects = aggregate_message_dict(
@@ -1154,7 +1142,6 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         lookup_fields=[
             "user_ids_string",
         ],
-        collect_senders=False,
     )
 
     result: UnreadMessagesResult = dict(
@@ -1187,15 +1174,12 @@ def apply_unread_message_event(
     else:
         raise AssertionError("Invalid message type {}".format(message["type"]))
 
-    sender_id = message["sender_id"]
-
     if message_type == "stream":
         stream_id = message["stream_id"]
         topic = message[TOPIC_NAME]
         state["stream_dict"][message_id] = RawUnreadStreamDict(
             stream_id=stream_id,
             topic=topic,
-            sender_id=sender_id,
         )
 
         if stream_id not in state["muted_stream_ids"]:
