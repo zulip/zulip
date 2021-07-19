@@ -97,7 +97,7 @@ export function update_discount_details(organization_type) {
         event: "Zulip Cloud Standard is free for academic conferences and most nonprofit events.",
         education: "Zulip Cloud Standard is discounted 85% for education.",
         education_nonprofit:
-            "Zulip Cloud standard is discounted 90% for education nonprofits with online purchase.",
+            "Zulip Cloud Standard is discounted 90% for education nonprofits with online purchase.",
     };
     if (discount_details[organization_type]) {
         discount_notice = discount_details[organization_type];
