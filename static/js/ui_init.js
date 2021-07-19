@@ -509,7 +509,7 @@ export function initialize_everything() {
     settings.initialize();
     compose.initialize();
     initialize_navbar();
-    realm_logo.rerender();
+    realm_logo.render();
 
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
