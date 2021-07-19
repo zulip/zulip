@@ -62,7 +62,9 @@ class ZulipRequestNotes:
     error_format: Optional[str] = None
     placeholder_open_graph_description: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
-    tornado_handler: Optional["handlers.AsyncDjangoHandler"] = None
+    # tornado_handler is a weak reference to work around a memory leak
+    # in WeakKeyDictionary (https://bugs.python.org/issue44680).
+    tornado_handler: Optional["weakref.ReferenceType[handlers.AsyncDjangoHandler]"] = None
     processed_parameters: Set[str] = field(default_factory=set)
     ignored_parameters: Set[str] = field(default_factory=set)
 

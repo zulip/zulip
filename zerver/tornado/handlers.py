@@ -1,5 +1,6 @@
 import logging
 import urllib
+import weakref
 from typing import Any, Dict, List
 
 import tornado.web
@@ -116,7 +117,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Provide a way for application code to access this handler
         # given the HttpRequest object.
-        get_request_notes(request).tornado_handler = self
+        get_request_notes(request).tornado_handler = weakref.ref(self)
 
         return request
 
