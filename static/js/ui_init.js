@@ -499,6 +499,7 @@ export function initialize_everything() {
     popover_menus.initialize();
 
     people.initialize(page_params.user_id, people_params);
+    settings_data.initialize(people.get_by_user_id(page_params.user_id).date_joined);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they

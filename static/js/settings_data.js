@@ -1,6 +1,10 @@
 import {page_params} from "./page_params";
-import * as people from "./people";
 import * as settings_config from "./settings_config";
+
+let user_join_date;
+export function initialize(current_user_join_date) {
+    user_join_date = current_user_join_date;
+}
 
 /*
     This is a close cousin of settings_config,
@@ -121,12 +125,10 @@ function user_has_permission(policy_value) {
         return true;
     }
 
-    const person = people.get_by_user_id(page_params.user_id);
-    const current_datetime = new Date(Date.now());
-    const person_date_joined = new Date(person.date_joined);
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
-
-    return days >= page_params.realm_waiting_period_threshold;
+    const current_datetime = new Date();
+    const person_date_joined = new Date(user_join_date);
+    const user_join_days = (current_datetime - person_date_joined) / 1000 / 86400;
+    return user_join_days >= page_params.realm_waiting_period_threshold;
 }
 
 export function user_can_invite_others_to_realm() {
