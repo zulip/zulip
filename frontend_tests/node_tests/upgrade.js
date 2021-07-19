@@ -164,7 +164,7 @@ run_test("initialize", ({override}) => {
     helpers.update_discount_details("event");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Zulip Cloud Standard is free for academic conferences and most nonprofit events.",
+        "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
     );
     helpers.update_discount_details("education");
     assert.equal(
@@ -174,12 +174,12 @@ run_test("initialize", ({override}) => {
     helpers.update_discount_details("nonprofit");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Zulip Cloud Standard is discounted 85%+ for registered nonprofits.",
+        "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
     );
     helpers.update_discount_details("other");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Your organization may be eligible for a discount on Zulip Standard. Generally, use cases where the users are not your employees are eligible for discounts.",
+        "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.",
     );
 });
 
