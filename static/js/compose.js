@@ -175,6 +175,7 @@ export function create_message_object() {
 }
 
 export function clear_compose_box() {
+    $("#stream-message .undo_markdown_preview").trigger("click");
     $("#compose-textarea").val("").trigger("focus");
     compose_validate.check_overflow_text();
     drafts.delete_active_draft();
@@ -258,6 +259,7 @@ export function enter_with_preview_open() {
         finish();
     } else {
         // Otherwise, we return to the compose box and focus it
+        $("#stream-message .markdown_preview").trigger("click");
         $("#compose-textarea").trigger("focus");
     }
 }
