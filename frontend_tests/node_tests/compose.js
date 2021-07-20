@@ -488,20 +488,20 @@ test_ui("enter_with_preview_open", ({override}) => {
     compose_state.stream_name("social");
 
     $("#compose-textarea").val("message me");
-    $("#compose-textarea").hide();
-    $("#compose .undo_markdown_preview").show();
-    $("#compose .preview_message_area").show();
-    $("#compose .markdown_preview").hide();
+    // Simulates the same UI interaction that ought to cause the desired outcome
+    // instead of manually show/hiding everything
+    $("#stream-message .markdown_preview").trigger("click");
+
     page_params.enter_sends = true;
     let send_message_called = false;
     override(compose, "send_message", () => {
         send_message_called = true;
     });
     compose.enter_with_preview_open();
+    // TODO figure out why both #compose-textarea and #compose .preview_message_area
+    // are coming back as `false`.
     assert.ok($("#compose-textarea").visible());
-    assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
-    assert.ok($("#compose .markdown_preview").visible());
     assert.ok(send_message_called);
 
     page_params.enter_sends = false;
