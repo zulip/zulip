@@ -3,7 +3,6 @@ import $ from "jquery";
 import pygments_data from "../generated/pygments_data.json";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
-import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -19,6 +18,7 @@ import * as realm_logo from "./realm_logo";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_config from "./settings_config";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
 import * as stream_settings_data from "./stream_settings_data";
@@ -377,7 +377,7 @@ function set_create_web_public_stream_dropdown_visibility() {
     );
 }
 
-export function populate_realm_domains(realm_domains) {
+export function populate_realm_domains_label(realm_domains) {
     if (!meta.loaded) {
         return;
     }
@@ -390,17 +390,6 @@ export function populate_realm_domains(realm_domains) {
         domains = $t({defaultMessage: "None"});
     }
     $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
-
-    const $realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
-    $realm_domains_table_body.find("tr").remove();
-
-    for (const realm_domain of realm_domains) {
-        $realm_domains_table_body.append(
-            render_settings_admin_realm_domains_list({
-                realm_domain,
-            }),
-        );
-    }
 }
 
 function sort_object_by_key(obj) {
@@ -1070,7 +1059,7 @@ export function build_page() {
     // Initialize all the dropdown list widgets.
     init_dropdown_widgets();
     // Populate realm domains
-    populate_realm_domains(page_params.realm_domains);
+    populate_realm_domains_label(page_params.realm_domains);
 
     // Populate authentication methods table
     populate_auth_methods(page_params.realm_authentication_methods);
@@ -1150,7 +1139,7 @@ export function build_page() {
         if (org_join_restrictions === "only_selected_domain") {
             $node.show();
             if (page_params.realm_domains.length === 0) {
-                overlays.open_modal("#realm_domains_modal");
+                settings_realm_domains.show_realm_domains_modal();
             }
         } else {
             $node.hide();
@@ -1164,106 +1153,9 @@ export function build_page() {
         e.stopPropagation();
     });
 
-    function fade_status_element($elem) {
-        setTimeout(() => {
-            $elem.fadeOut(500);
-        }, 1000);
-    }
-
-    $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
-        const domain = $(this).parents("tr").find(".domain").text();
-        const url = "/json/realm/domains/" + domain;
-        const $realm_domains_info = $(".realm_domains_info");
-
-        channel.del({
-            url,
-            success() {
-                ui_report.success(
-                    $t_html({defaultMessage: "Deleted successfully!"}),
-                    $realm_domains_info,
-                );
-                fade_status_element($realm_domains_info);
-            },
-            error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
-                fade_status_element($realm_domains_info);
-            },
-        });
-    });
-
-    $("#submit-add-realm-domain").on("click", () => {
-        const $realm_domains_info = $(".realm_domains_info");
-        const $widget = $("#add-realm-domain-widget");
-        const domain = $widget.find(".new-realm-domain").val();
-        const allow_subdomains = $widget.find(".new-realm-domain-allow-subdomains").prop("checked");
-        const data = {
-            domain,
-            allow_subdomains: JSON.stringify(allow_subdomains),
-        };
-
-        channel.post({
-            url: "/json/realm/domains",
-            data,
-            success() {
-                $("#add-realm-domain-widget .new-realm-domain").val("");
-                $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop(
-                    "checked",
-                    false,
-                );
-                ui_report.success(
-                    $t_html({defaultMessage: "Added successfully!"}),
-                    $realm_domains_info,
-                );
-                fade_status_element($realm_domains_info);
-            },
-            error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
-                fade_status_element($realm_domains_info);
-            },
-        });
-    });
-
-    $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
+    $("#show_realm_domains_modal").on("click", (e) => {
         e.stopPropagation();
-        const $realm_domains_info = $(".realm_domains_info");
-        const domain = $(this).parents("tr").find(".domain").text();
-        const allow_subdomains = $(this).prop("checked");
-        const url = "/json/realm/domains/" + domain;
-        const data = {
-            allow_subdomains: JSON.stringify(allow_subdomains),
-        };
-
-        channel.patch({
-            url,
-            data,
-            success() {
-                if (allow_subdomains) {
-                    ui_report.success(
-                        $t_html(
-                            {defaultMessage: "Update successful: Subdomains allowed for {domain}"},
-                            {domain},
-                        ),
-                        $realm_domains_info,
-                    );
-                } else {
-                    ui_report.success(
-                        $t_html(
-                            {
-                                defaultMessage:
-                                    "Update successful: Subdomains no longer allowed for {domain}",
-                            },
-                            {domain},
-                        ),
-                        $realm_domains_info,
-                    );
-                }
-                fade_status_element($realm_domains_info);
-            },
-            error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
-                fade_status_element($realm_domains_info);
-            },
-        });
+        settings_realm_domains.show_realm_domains_modal();
     });
 
     function realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button) {
