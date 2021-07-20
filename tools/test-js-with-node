@@ -158,6 +158,7 @@ EXEMPT_FILES = make_set(
         "static/js/settings_panel_menu.js",
         "static/js/settings_playgrounds.js",
         "static/js/settings_profile_fields.js",
+        "static/js/settings_realm_domains.js",
         "static/js/settings_realm_user_settings_defaults.js",
         "static/js/settings_sections.js",
         "static/js/settings_streams.js",

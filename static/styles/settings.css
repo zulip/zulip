@@ -961,6 +961,10 @@ input[type="checkbox"] {
     text-decoration: none;
 }
 
+#realm_domains_table {
+    margin: 0;
+}
+
 #api_key_form,
 #change_password_modal {
     .password-div {
