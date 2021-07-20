@@ -5,9 +5,9 @@ import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
-import render_stream_privacy_setting_modal from "../templates/stream_settings/stream_privacy_setting_modal.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
+import render_stream_types from "../templates/stream_settings/stream_types.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -649,7 +649,7 @@ function change_stream_privacy(e) {
     e.stopPropagation();
 
     const data = {};
-    const stream_id = $(e.target).data("stream-id");
+    const stream_id = $(e.target).closest(".dialog_submit_button").data("stream-id");
     const url = "/json/streams/" + stream_id;
     const status_element = $(".stream_permission_change_info");
     const sub = sub_store.get(stream_id);
@@ -723,8 +723,6 @@ function change_stream_privacy(e) {
         data.message_retention_days = JSON.stringify(message_retention_days);
     }
 
-    overlays.close_modal("#stream_privacy_modal");
-
     if (Object.keys(data).length === 0) {
         return;
     }
@@ -762,8 +760,6 @@ export function initialize() {
         const stream = sub_store.get(stream_id);
 
         const template_data = {
-            stream_id,
-            stream_name: stream.name,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
             stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -779,16 +775,30 @@ export function initialize() {
                 page_params.upgrade_text_for_wide_organization_logo,
             is_stream_edit: true,
         };
-        const change_privacy_modal = render_stream_privacy_setting_modal(template_data);
-        $("#stream_privacy_modal").remove();
-        $("#subscriptions_table").append(change_privacy_modal);
-        set_stream_message_retention_setting_dropdown(stream);
-        overlays.open_modal("#stream_privacy_modal");
+        const change_privacy_modal = render_stream_types(template_data);
+
+        dialog_widget.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Change stream permissions for #{stream_name}"},
+                {stream_name: stream.name},
+            ),
+            html_body: change_privacy_modal,
+            close_on_submit: true,
+            id: "stream_privacy_modal",
+            on_click: change_stream_privacy,
+            post_render: () => {
+                $("#stream_privacy_modal .dialog_submit_button").attr("data-stream-id", stream_id);
+                set_stream_message_retention_setting_dropdown(stream);
+
+                $(".stream_message_retention_setting").on("change", (e) => {
+                    const dropdown_value = e.target.value;
+                    change_stream_message_retention_days_block_display_property(dropdown_value);
+                });
+            },
+        });
         e.preventDefault();
         e.stopPropagation();
     });
-
-    $("#subscriptions_table").on("click", "#change-stream-privacy-button", change_stream_privacy);
 
     $("#subscriptions_table").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
@@ -1009,10 +1019,5 @@ export function initialize() {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             open_edit_panel_for_row(this);
         }
-    });
-
-    $("#subscriptions_table").on("change", ".stream_message_retention_setting", (e) => {
-        const dropdown_value = e.target.value;
-        change_stream_message_retention_days_block_display_property(dropdown_value);
     });
 }
