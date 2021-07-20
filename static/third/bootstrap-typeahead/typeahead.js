@@ -326,7 +326,7 @@
       }
 
       this.$menu
-        .on('click', this.click.bind(this))
+        .on('click', 'li', this.click.bind(this))
         .on('mouseenter', 'li', this.mouseenter.bind(this))
     }
 
@@ -428,6 +428,14 @@
   , click: function (e) {
       e.stopPropagation()
       e.preventDefault()
+      // The original bootstrap code expected `mouseenter` to be called
+      // to set the active element before `select()`.
+      // Since select() selects the element with the active class, if
+      // we trigger a click from JavaScript (or with a mobile touchscreen),
+      // this won't work. So we need to set the active element ourselves,
+      // and the simplest way to do that is to just call the `mouseenter`
+      // handler here.
+      this.mouseenter(e)
       this.select(e)
     }
 
