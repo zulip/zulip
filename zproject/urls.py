@@ -624,6 +624,9 @@ i18n_urls = [
     path("apps/", apps_view),
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
+    path(
+        "developer-community/", landing_view, {"template_name": "zerver/developer-community.html"}
+    ),
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "zerver/history.html"}),
     path("why-zulip/", landing_view, {"template_name": "zerver/why-zulip.html"}),
