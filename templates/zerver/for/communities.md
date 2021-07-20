@@ -24,7 +24,7 @@ facilitating inclusion, and making efficient use of everyone’s time.
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">When we made the switch to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a> a few months ago for chat, never in my wildest dreams did I imagine it was going to become the beating heart of the community, and so quickly. It&#39;s a game changer. 🧑‍💻🗨️👩‍💻</p>&mdash; Dan Allen (@mojavelinux) <a href="https://twitter.com/mojavelinux/status/1409702273400201217?ref_src=twsrc%5Etfw">June 29, 2021</a></blockquote>
 &nbsp;
 
-If you haven’t read [Why Zulip](https://zulip.com/why-zulip), read
+If you haven’t read [Why Zulip](/why-zulip), read
 that first. The challenges with the Slack/Discord/IRC model discussed
 there are even more important for open communities:
 
@@ -89,7 +89,7 @@ Zulip’s topic-based threading model solves these problems:
   them to fully participate in the work of the community.
 - Community leaders can effectively participate in a Zulip community
   without being continuously online. Using Zulip’s [keyboard
-  shortcuts](https://zulip.com/help/keyboard-shortcuts), it’s
+  shortcuts](/help/keyboard-shortcuts), it’s
   extremely efficient to inspect every potentially relevant thread and
   reply wherever one’s feedback is useful, and replying hours after a
   question was asked is still a good experience for community
@@ -117,9 +117,9 @@ managing the community and spending most of their time integrating
 improvements into Zulip.
 
 Many communities that migrated from
-[Slack](https://zulip.com/help/import-from-slack),
-[Mattermost](https://zulip.com/help/import-from-mattermost), or
-[Gitter](https://zulip.com/help/import-from-gitter) to Zulip tell us
+[Slack](/help/import-from-slack),
+[Mattermost](/help/import-from-mattermost), or
+[Gitter](/help/import-from-gitter) to Zulip tell us
 that Zulip helped them manage and grow an inclusive, healthy
 community. We hope Zulip can help your community succeed too!
 

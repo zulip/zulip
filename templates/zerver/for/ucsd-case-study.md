@@ -24,7 +24,7 @@ threaded model (which I find sorely lacking in other chat apps), and
 the TeX integration.”
 
 From Spring 2020 through Spring 2021, the [Zulip
-Standard](https://zulip.com/plans/) plan was free for all educators,
+Standard](/plans/) plan was free for all educators,
 as we did our part to help make the transition to online education a
 little easier. Having set up Zulip Cloud for his three graduate-level
 courses, Kiran felt confident in the communication platform, and was
@@ -56,21 +56,21 @@ the benefits of just a few of Zulip’s features:
 
 
 - **Discussing math**: “The
-  [**TeX**](https://zulip.com/help/format-your-message-using-markdown#latex)
+  [**TeX**](/help/format-your-message-using-markdown#latex)
   made it made it super easy to discuss material from the course using
   proper mathematical notation, and was one of the reasons I chose
   Zulip in the first place.”
 - **Quick pulse-checks**: “[**Emoji
-  reactions**](https://zulip.com/help/emoji-reactions) were a nice way
+  reactions**](/help/emoji-reactions) were a nice way
   to collect RSVPs for office hours or acknowledge typo corrections
   for my lecture notes.”
 - **Hiding answers**:
-  “[**Spoilers**](https://zulip.com/help/format-your-message-using-markdown#spoilers)
+  “[**Spoilers**](/help/format-your-message-using-markdown#spoilers)
   are a great way to answer questions about homework without depriving
   students of a chance to keep thinking about the problem on their
   own.”
 - **Scheduling**: “With [**local
-  times**](https://zulip.com/help/format-your-message-using-markdown#mention-a-time),
+  times**](/help/format-your-message-using-markdown#mention-a-time),
   I could announce office hours or outside lectures without having to
   worry about confusion for students in different time zones.”
 
