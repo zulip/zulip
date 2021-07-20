@@ -7,6 +7,52 @@ up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+### 4.4 -- 2021-06-22
+
+- Added a tool to fix potential database corruption caused by host OS
+  upgrades.
+- Fixed a possible denial-of-service attack in Markdown fenced code
+  block parsing.
+- Smokescreen, if installed, now defaults to only listening on
+  127.0.0.1; this prevents it from being used as an open HTTP proxy if
+  it did not have other firewalls protecting incoming port 4750.
+- Fixed a performance/scalability issue for installations using the S3
+  file uploads backend.
+- Fixed a bug where users could turn other users’ messages they could
+  read into widgets (e.g. polls).
+- Fixed a bug where emoji and avatar image requests were sent through
+  Camo; doing so does not add any security benefit, and broke custom
+  emoji that had been imported from Slack in Zulip 1.8.1 or earlier.
+- Changed to log just a warning, instead of an exception, in the case
+  that the `embed_links` worker cannot fetch previews for all links in
+  a message within the 30-second timeout. Each preview request within
+  a message already has a 15-second timeout.
+- Ensured `psycopg2` is installed before starting
+  `process_fts_updates`; otherwise, it might fail to start several
+  times before the package was installed.
+- Worked around a bug in supervisor where, when using SysV init,
+  `/etc/init.d/supervisor restart` would only have stopped, not
+  restarted, the process.
+- Modified upgrade scripts to better handle failure, and suggest next
+  steps and point to logs.
+- Zulip now hides the “show password” eye icon that IE and Edge
+  browsers place in password inputs; this duplicated the
+  already-present JavaScript-based functionality.
+- Fixed “OR” glitch on login page if SAML authentication is enabled
+  but not configured.
+- The `send_test_email` management command now shows the full SMTP
+  conversation on failure.
+- Provided a `change_password` management command which takes a
+  `--realm` option.
+- Fixed `upgrade-zulip-from-git` crashing in CSS source map generation
+  on 1-CPU systems.
+- Added an `auto_signup` field in SAML configuration to auto-create
+  accounts upon first login attempt by users which are authenticated
+  by SAML.
+- Provided better error messages when `puppet_classes` in `zulip.conf`
+  are mistakenly space-separated instead of comma-separated.
+- Updated translations for many languages.
+
 ### 4.3 -- 2021-06-02
 
 - Fixed exception when upgrading older servers with the
