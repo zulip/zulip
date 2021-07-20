@@ -208,22 +208,26 @@ def normalize_fixture_data(
 ) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
+        ("test", 12),
         ("cus", 14),
-        ("sub", 14),
+        ("prod", 14),
+        ("req", 14),
         ("si", 14),
         ("sli", 14),
-        ("req", 14),
-        ("tok", 24),
-        ("card", 24),
-        ("txn", 24),
-        ("ch", 24),
-        ("in", 24),
-        ("ii", 24),
-        ("test", 12),
-        ("src_client_secret", 24),
-        ("src", 24),
-        ("invst", 26),
+        ("sub", 14),
         ("acct", 16),
+        ("card", 24),
+        ("ch", 24),
+        ("ii", 24),
+        ("il", 24),
+        ("in", 24),
+        ("pi", 24),
+        ("price", 24),
+        ("src", 24),
+        ("src_client_secret", 24),
+        ("tok", 24),
+        ("txn", 24),
+        ("invst", 26),
         ("rcpt", 31),
     ]
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
@@ -559,7 +563,7 @@ class StripeTest(StripeTestCase):
             "amount_due": 0,
             "amount_paid": 0,
             "auto_advance": False,
-            "billing": "charge_automatically",
+            "collection_method": "charge_automatically",
             "charge": None,
             "status": "paid",
             "total": 0,
@@ -711,7 +715,7 @@ class StripeTest(StripeTestCase):
             "amount_paid": 0,
             "attempt_count": 0,
             "auto_advance": True,
-            "billing": "send_invoice",
+            "collection_method": "send_invoice",
             "statement_descriptor": "Zulip Standard",
             "status": "open",
             "total": 8000 * 123,
@@ -960,7 +964,6 @@ class StripeTest(StripeTestCase):
                 "amount_paid": 0,
                 "amount_remaining": 15 * 80 * 100,
                 "auto_advance": True,
-                "billing": "charge_automatically",
                 "collection_method": "charge_automatically",
                 "customer_email": self.example_email("hamlet"),
                 "discount": None,
@@ -1002,7 +1005,6 @@ class StripeTest(StripeTestCase):
             invoice_params = {
                 "amount_due": 5172,
                 "auto_advance": True,
-                "billing": "charge_automatically",
                 "collection_method": "charge_automatically",
                 "customer_email": "hamlet@zulip.com",
             }
@@ -1139,7 +1141,6 @@ class StripeTest(StripeTestCase):
                 "amount_paid": 0,
                 "amount_remaining": 123 * 80 * 100,
                 "auto_advance": True,
-                "billing": "send_invoice",
                 "collection_method": "send_invoice",
                 "customer_email": self.example_email("hamlet"),
                 "discount": None,
@@ -1828,7 +1829,7 @@ class StripeTest(StripeTestCase):
             number_of_sources += 1
         # Verify that we replaced the previous card, rather than adding a new one
         self.assertEqual(number_of_sources, 1)
-        # Ideally we'd also test that we don't pay invoices with billing=='send_invoice'
+        # Ideally we'd also test that we don't pay invoices with collection_method=='send_invoice'
         for stripe_invoice in stripe.Invoice.list(customer=stripe_customer_id):
             self.assertEqual(stripe_invoice.status, "paid")
         self.assertEqual(
@@ -2443,7 +2444,7 @@ class StripeTest(StripeTestCase):
             "amount_paid": 0,
             "attempt_count": 0,
             "auto_advance": True,
-            "billing": "send_invoice",
+            "collection_method": "send_invoice",
             "statement_descriptor": "Zulip Standard",
             "status": "open",
             "total": (8000 * 150 + 8000 * 50),
@@ -2493,7 +2494,7 @@ class StripeTest(StripeTestCase):
             "amount_paid": 0,
             "attempt_count": 0,
             "auto_advance": True,
-            "billing": "send_invoice",
+            "collection_method": "send_invoice",
             "statement_descriptor": "Zulip Standard",
             "status": "open",
             "total": 8000 * 120,
@@ -2691,7 +2692,7 @@ class StripeTest(StripeTestCase):
         )
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
-            billing="send_invoice",
+            collection_method="send_invoice",
             customer=zulip_customer.stripe_customer_id,
             days_until_due=30,
             statement_descriptor="Zulip Standard",
@@ -2709,7 +2710,7 @@ class StripeTest(StripeTestCase):
         )
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
-            billing="send_invoice",
+            collection_method="send_invoice",
             customer=lear_customer.stripe_customer_id,
             days_until_due=30,
             statement_descriptor="Zulip Standard",
@@ -2748,7 +2749,7 @@ class StripeTest(StripeTestCase):
             )
             invoice = stripe.Invoice.create(
                 auto_advance=True,
-                billing="send_invoice",
+                collection_method="send_invoice",
                 customer=customer.stripe_customer_id,
                 days_until_due=DEFAULT_INVOICE_DAYS_UNTIL_DUE,
                 statement_descriptor="Zulip Standard",
@@ -3512,7 +3513,7 @@ class InvoiceTest(StripeTestCase):
         plan.save(update_fields=["fixed_price", "price_per_license"])
         invoice_plan(plan, self.next_year)
         [invoice0, invoice1] = stripe.Invoice.list(customer=plan.customer.stripe_customer_id)
-        self.assertEqual(invoice0.billing, "send_invoice")
+        self.assertEqual(invoice0.collection_method, "send_invoice")
         [item] = invoice0.lines
         line_item_params = {
             "amount": 100,

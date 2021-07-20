@@ -18,7 +18,7 @@ class Customer:
     sources: List[Union[Card, Source]]
     subscriptions: SubscriptionListObject
     coupon: str
-    account_balance: int
+    balance: int
     email: str
     description: str
     discount: Optional[Discount]
@@ -44,7 +44,7 @@ class Invoice:
     id: str
     auto_advance: bool
     amount_due: int
-    billing: str
+    collection_method: str
     billing_reason: str
     default_source: Source
     due_date: int
@@ -60,7 +60,7 @@ class Invoice:
     ) -> Invoice: ...
     @staticmethod
     def list(
-        billing: str = ...,
+        collection_method: str = ...,
         customer: str = ...,
         status: str = ...,
         limit: Optional[int] = ...,
@@ -69,7 +69,7 @@ class Invoice:
     @staticmethod
     def create(
         auto_advance: bool = ...,
-        billing: str = ...,
+        collection_method: str = ...,
         customer: str = ...,
         days_until_due: Optional[int] = ...,
         statement_descriptor: str = ...,
@@ -95,7 +95,7 @@ class Subscription:
     @staticmethod
     def create(
         customer: str = ...,
-        billing: str = ...,
+        collection_method: str = ...,
         days_until_due: Optional[int] = ...,
         items: List[Dict[str, Any]] = ...,
         prorate: bool = ...,

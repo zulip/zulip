@@ -277,7 +277,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
 
 @catch_stripe_errors
 def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
-    return stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
+    return stripe.Customer.retrieve(stripe_customer_id, expand=["default_source", "sources"])
 
 
 @catch_stripe_errors
@@ -337,7 +337,7 @@ def do_replace_payment_source(
     )
     if pay_invoices:
         for stripe_invoice in stripe.Invoice.list(
-            billing="charge_automatically", customer=stripe_customer.id, status="open"
+            collection_method="charge_automatically", customer=stripe_customer.id, status="open"
         ):
             # The user will get either a receipt or a "failed payment" email, but the in-app
             # messaging could be clearer here (e.g. it could explicitly tell the user that there
@@ -642,15 +642,15 @@ def process_initial_upgrade(
         )
 
         if charge_automatically:
-            billing_method = "charge_automatically"
+            collection_method = "charge_automatically"
             days_until_due = None
         else:
-            billing_method = "send_invoice"
+            collection_method = "send_invoice"
             days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
 
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
-            billing=billing_method,
+            collection_method=collection_method,
             customer=customer.stripe_customer_id,
             days_until_due=days_until_due,
             statement_descriptor="Zulip Standard",
@@ -795,14 +795,14 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
 
     if invoice_item_created:
         if plan.charge_automatically:
-            billing_method = "charge_automatically"
+            collection_method = "charge_automatically"
             days_until_due = None
         else:
-            billing_method = "send_invoice"
+            collection_method = "send_invoice"
             days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
         stripe_invoice = stripe.Invoice.create(
             auto_advance=True,
-            billing=billing_method,
+            collection_method=collection_method,
             customer=plan.customer.stripe_customer_id,
             days_until_due=days_until_due,
             statement_descriptor="Zulip Standard",

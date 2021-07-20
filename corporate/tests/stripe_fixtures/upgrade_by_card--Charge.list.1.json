@@ -2,6 +2,7 @@
   "data": [
     {
       "amount": 48000,
+      "amount_captured": 48000,
       "amount_refunded": 0,
       "application": null,
       "application_fee": null,
@@ -20,6 +21,7 @@
         "name": "Ada Starr",
         "phone": null
       },
+      "calculated_statement_descriptor": "STRIPE* ZULIP STANDARD",
       "captured": true,
       "created": 1010000001,
       "currency": "usd",
@@ -27,6 +29,7 @@
       "description": "Upgrade to Zulip Standard, $80.0 x 6",
       "destination": null,
       "dispute": null,
+      "disputed": false,
       "failure_code": null,
       "failure_message": null,
       "fraud_details": {},
@@ -61,7 +64,9 @@
           "exp_year": 2033,
           "fingerprint": "NORMALIZED000001",
           "funding": "credit",
+          "installments": null,
           "last4": "4242",
+          "network": "visa",
           "three_d_secure": null,
           "wallet": null
         },
@@ -71,7 +76,13 @@
       "receipt_number": null,
       "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000001/rcpt_NORMALIZED000000000000000000001",
       "refunded": false,
-      "refunds": {},
+      "refunds": {
+        "data": [],
+        "has_more": false,
+        "object": "list",
+        "total_count": 0,
+        "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
+      },
       "review": null,
       "shipping": null,
       "source": {
