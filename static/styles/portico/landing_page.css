@@ -4089,16 +4089,19 @@ nav {
 }
 
 /* Common button styles */
-.register-now {
+.register-now,
+.register-now:visited {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     font-size: 15px;
     margin: 10px 20px;
     float: left;
     width: 200px;
-    display: block;
     border: 2px solid;
     border-radius: 4px;
     background: none;
-    color: inherit;
+    color: hsl(169, 45%, 43%);
     vertical-align: middle;
     position: relative;
     z-index: 1;
