@@ -23,6 +23,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_sections from "./settings_sections";
 import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
@@ -34,6 +35,8 @@ const section = {
     deactivated: {},
     bots: {},
 };
+
+let events_registered = false;
 
 function compare_a_b(a, b) {
     if (a > b) {
@@ -434,6 +437,7 @@ function confirm_deactivation(row, user_id, status_field) {
         const opts = {
             success_continuation() {
                 update_view_on_deactivate(row);
+                settings_sections.reset_users_section();
             },
             error_continuation() {
                 row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
@@ -501,6 +505,7 @@ function handle_reactivation(tbody, status_field) {
         const opts = {
             success_continuation() {
                 update_view_on_reactivate(row);
+                settings_sections.reset_users_section();
             },
             error_continuation(xhr) {
                 ui_report.generic_row_button_error(xhr, button_elem);
@@ -695,8 +700,11 @@ section.bots.handle_events = () => {
 
 export function set_up_humans() {
     start_data_load();
-    section.active.handle_events();
-    section.deactivated.handle_events();
+    if (!events_registered) {
+        events_registered = true;
+        section.active.handle_events();
+        section.deactivated.handle_events();
+    }
 }
 
 export function set_up_bots() {

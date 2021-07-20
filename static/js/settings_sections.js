@@ -108,3 +108,7 @@ export function reset_sections() {
     settings_muted_users.reset();
     // settings_users doesn't need a reset()
 }
+
+export function reset_users_section() {
+    loaded_groups.delete("org_users");
+}
