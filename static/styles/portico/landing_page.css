@@ -335,7 +335,14 @@ nav {
             }
 
             ul.solutions-options {
-                width: 175px;
+                width: 400px;
+
+                div.dropdown-column {
+                    float: left;
+                    &:first-of-type {
+                        width: 40%;
+                    }
+                }
             }
 
             ul.resources-options {
@@ -3578,7 +3585,8 @@ nav {
             }
 
             .nav-dropdown {
-                ul.resources-options {
+                ul.resources-options,
+                ul.solutions-options {
                     div.dropdown-column {
                         float: none;
 
