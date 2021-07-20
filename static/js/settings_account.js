@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
@@ -289,7 +288,7 @@ export function set_up() {
     add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
 
-    const setup_api_key_modal = _.once(() => {
+    const setup_api_key_modal = () => {
         function request_api_key(data) {
             channel.post({
                 url: "/json/fetch_api_key",
@@ -302,7 +301,9 @@ export function set_up() {
                     // remove it.
                     $("#api_key_status").remove();
                     $("#password_confirmation").hide();
+                    $("#get_api_key_button").hide();
                     $("#show_api_key").show();
+                    $("#api_key_buttons").show();
                 },
                 error(xhr) {
                     ui_report.error(
@@ -311,35 +312,45 @@ export function set_up() {
                         $("#api_key_status").expectOne(),
                     );
                     $("#show_api_key").hide();
-                    $("#api_key_modal").show();
                 },
             });
         }
 
-        $(".account-settings-form").append(render_settings_api_key_modal());
         $("#api_key_value").text("");
         $("#show_api_key").hide();
+        $("#api_key_buttons").hide();
         common.setup_password_visibility_toggle(
             "#get_api_key_password",
             "#get_api_key_password + .password_visibility_toggle",
             {tippy_tooltips: true},
         );
 
+        function do_get_api_key() {
+            $("#api_key_status").hide();
+            const data = {};
+            data.password = $("#get_api_key_password").val();
+            request_api_key(data);
+        }
+
         if (page_params.realm_password_auth_enabled === false) {
             // Skip the password prompt step, since the user doesn't have one.
             request_api_key({});
         } else {
             $("#get_api_key_button").on("click", (e) => {
-                const data = {};
                 e.preventDefault();
                 e.stopPropagation();
-
-                data.password = $("#get_api_key_password").val();
-                request_api_key(data);
+                do_get_api_key();
+            });
+            $("#get_api_key_password").on("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    do_get_api_key();
+                }
             });
         }
 
-        $("#show_api_key").on("click", "button.regenerate_api_key", (e) => {
+        $("#regenerate_api_key").on("click", (e) => {
             channel.post({
                 url: "/json/users/me/api_key/regenerate",
                 success(data) {
@@ -363,17 +374,27 @@ export function set_up() {
             $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
         });
 
-        $("#api_key_modal [data-dismiss=modal]").on("click", () => {
+        $("#api_key_modal [data-micromodal-close]").on("click", () => {
             common.reset_password_toggle_icons(
                 "#get_api_key_password",
                 "#get_api_key_password + .password_visibility_toggle",
             );
         });
-    });
+    };
 
     $("#api_key_button").on("click", (e) => {
+        $("body").append(render_settings_api_key_modal());
         setup_api_key_modal();
-        overlays.open_modal("#api_key_modal");
+        $("#api_key_status").hide();
+        overlays.open_modal("api_key_modal", {
+            autoremove: true,
+            micromodal: true,
+            micromodal_opts: {
+                onShow: () => {
+                    $("#get_api_key_password").trigger("focus");
+                },
+            },
+        });
         e.preventDefault();
         e.stopPropagation();
     });

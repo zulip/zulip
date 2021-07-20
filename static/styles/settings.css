@@ -990,6 +990,15 @@ input[type="checkbox"] {
     }
 }
 
+#api_key_status {
+    margin: 0;
+}
+
+#download_zuliprc {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+}
+
 #api_key_form,
 #change_password_modal {
     .password-div {
@@ -1526,8 +1535,7 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_email_modal .change_email_info,
-    #api_key_modal #api_key_status {
+    #change_email_modal .change_email_info {
         margin-top: 3px;
     }
 }

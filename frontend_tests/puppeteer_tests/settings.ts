@@ -69,7 +69,7 @@ async function test_get_api_key(page: Page): Promise<void> {
 
     const get_api_key_button_selector = "#get_api_key_button";
     await page.waitForSelector(get_api_key_button_selector, {visible: true});
-    await page.waitForFunction(() => $(":focus").attr("id") === "api_key_modal");
+    await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
@@ -89,8 +89,8 @@ async function test_get_api_key(page: Page): Promise<void> {
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc file");
-    await page.click("#api_key_modal .close");
-    await common.wait_for_modal_to_close(page);
+    await page.click("#api_key_modal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
