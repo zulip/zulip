@@ -454,20 +454,11 @@ function show_subscription_settings(sub) {
         },
         filter: {
             element: $(`[data-stream-id='${CSS.escape(stream_id)}'] .search`),
-            predicate(item, value) {
-                const person = item;
+            predicate(person, value) {
+                const matcher = people.build_person_matcher(value);
+                const match = matcher(person);
 
-                if (person) {
-                    if (
-                        person.email.toLocaleLowerCase().includes(value) &&
-                        settings_data.show_email()
-                    ) {
-                        return true;
-                    }
-                    return person.full_name.toLowerCase().includes(value);
-                }
-
-                return false;
+                return match;
             },
         },
         simplebar_container: $(".subscriber_list_container"),
