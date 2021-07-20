@@ -125,6 +125,12 @@ h3 .fa-question-circle-o {
     max-width: 480px;
 }
 
+#change_email_modal {
+    #change_email_container {
+        margin: 0;
+    }
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;
@@ -1536,10 +1542,6 @@ input[type="checkbox"] {
 
     .display-settings-form select {
         width: 245px;
-    }
-
-    #change_email_modal .change_email_info {
-        margin-top: 3px;
     }
 }
 
