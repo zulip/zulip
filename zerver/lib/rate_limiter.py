@@ -111,7 +111,8 @@ class RateLimitedObject(ABC):
 
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user: UserProfile, domain: str = "api_by_user") -> None:
-        self.user = user
+        self.user_id = user.id
+        self.rate_limits = user.rate_limits
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
             backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
@@ -120,13 +121,13 @@ class RateLimitedUser(RateLimitedObject):
         super().__init__(backend=backend)
 
     def key(self) -> str:
-        return f"{type(self).__name__}:{self.user.id}:{self.domain}"
+        return f"{type(self).__name__}:{self.user_id}:{self.domain}"
 
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
-        if self.user.rate_limits != "" and self.domain == "api_by_user":
+        if self.rate_limits != "" and self.domain == "api_by_user":
             result: List[Tuple[int, int]] = []
-            for limit in self.user.rate_limits.split(","):
+            for limit in self.rate_limits.split(","):
                 (seconds, requests) = limit.split(":", 2)
                 result.append((int(seconds), int(requests)))
             return result
