@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    padding: 4px 4px 8px 4px;
 
     .new_message_button {
         margin-left: 4px;
@@ -61,8 +62,6 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
-    transition: background-color 200ms linear;
-    padding: 4px 4px 8px 4px;
     border-left: 1px solid hsl(0, 0%, 93%);
     border-right: 1px solid hsl(0, 0%, 93%);
     height: 100%;
@@ -76,7 +75,7 @@
 
 .message_comp {
     display: none;
-    padding: 10px 10px 8px 5px;
+    background-color: hsl(0, 0%, 93%);
 }
 
 .autocomplete_secondary {
@@ -88,29 +87,38 @@
 }
 
 .compose_table {
-    height: 100%;
-    display: flex;
-    flex-flow: column;
-
-    .stream-selection-header-colorblock {
-        &.message_header_private_message {
-            border-radius: 3px 0 0 3px;
-            border-bottom: 0;
-            background-color: hsl(0, 0%, 27%);
-        }
+    .nav-tabs {
+        margin-bottom: 0;
+        padding: 0 8px 0 9px;
     }
 
-    .right_part {
+    .nav-tabs > li:last-child {
+        margin-right: 36px; /* Makes space for the close and expand buttons */
+    }
+
+    .stream-selection-header-colorblock.message_header_private_message {
+        border-radius: 3px 0 0 3px;
+        border-bottom: 0;
+        background-color: hsl(0, 0%, 27%);
+    }
+
+    .receiving_streams {
         padding: 0;
         display: flex;
-        align-items: center;
-        width: 100%;
+        align-items: stretch;
+        flex: 1 1 auto;
 
         .fa-angle-right {
             font-size: 0.9em;
             -webkit-text-stroke: 0.05em;
             position: relative;
             margin: 0 5px;
+        }
+
+        .stream-info {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
         }
     }
 
@@ -163,13 +171,14 @@
     .messagebox {
         /* normally 5px 14px; pull in the right and bottom a bit */
         cursor: default;
-        padding: 0;
         background: none;
         box-shadow: none;
         border: none;
         height: 100%;
         display: flex;
         flex-flow: column;
+        background-color: hsl(0, 0%, 100%);
+        padding: 4px 9px 16px 9px;
     }
 
     .message_content {
@@ -215,7 +224,8 @@
 
 #compose_top_right {
     position: absolute;
-    right: 0;
+    top: 0;
+    right: 8px;
     float: right;
 
     button {
@@ -231,6 +241,11 @@
 
         &:hover {
             opacity: 1;
+        }
+
+        &.expand_composebox_button,
+        &.collapse_composebox_button {
+            margin-top: -6px;
         }
     }
 }
@@ -324,8 +339,8 @@ div[id^="message-edit-send-status"],
 
     .close {
         position: absolute;
-        right: 8px;
         top: 4px;
+        right: 8px;
         font-size: 17px;
         font-weight: bold;
         color: hsl(0, 0%, 0%);
@@ -337,6 +352,10 @@ div[id^="message-edit-send-status"],
 .compose-notifications-content {
     padding: 4px 22px 4px 22px;
     text-align: center;
+}
+
+.composition-alerts {
+    padding: 4px 14px 0 9px;
 }
 
 .composition-area {
@@ -444,6 +463,7 @@ input.recipient_box {
 #stream-message,
 #private-message {
     display: flex;
+    align-items: center;
 }
 
 #private-message {
