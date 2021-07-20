@@ -60,6 +60,7 @@ const settings_profile_fields = mock_esm("../../static/js/settings_profile_field
 const settings_realm_user_settings_defaults = mock_esm(
     "../../static/js/settings_realm_user_settings_defaults",
 );
+const settings_realm_domains = mock_esm("../../static/js/settings_realm_domains");
 const settings_streams = mock_esm("../../static/js/settings_streams");
 const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
 const settings_users = mock_esm("../../static/js/settings_users");
@@ -616,16 +617,19 @@ run_test("realm_playgrounds", ({override}) => {
 run_test("realm_domains", ({override}) => {
     let event = event_fixtures.realm_domains__add;
     page_params.realm_domains = [];
-    override(settings_org, "populate_realm_domains", noop);
+    override(settings_org, "populate_realm_domains_label", noop);
+    override(settings_realm_domains, "populate_realm_domains_table", noop);
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
-    override(settings_org, "populate_realm_domains", noop);
+    override(settings_org, "populate_realm_domains_label", noop);
+    override(settings_realm_domains, "populate_realm_domains_table", noop);
     event = event_fixtures.realm_domains__change;
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
-    override(settings_org, "populate_realm_domains", noop);
+    override(settings_org, "populate_realm_domains_label", noop);
+    override(settings_realm_domains, "populate_realm_domains_table", noop);
     event = event_fixtures.realm_domains__remove;
     dispatch(event);
     assert_same(page_params.realm_domains, []);

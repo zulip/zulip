@@ -53,6 +53,7 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
@@ -378,7 +379,10 @@ export function dispatch_normal_event(event) {
                 switch (event.op) {
                     case "add":
                         page_params.realm_domains.push(event.realm_domain);
-                        settings_org.populate_realm_domains(page_params.realm_domains);
+                        settings_org.populate_realm_domains_label(page_params.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(
+                            page_params.realm_domains,
+                        );
                         break;
                     case "change":
                         for (i = 0; i < page_params.realm_domains.length; i += 1) {
@@ -388,7 +392,10 @@ export function dispatch_normal_event(event) {
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains(page_params.realm_domains);
+                        settings_org.populate_realm_domains_label(page_params.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(
+                            page_params.realm_domains,
+                        );
                         break;
                     case "remove":
                         for (i = 0; i < page_params.realm_domains.length; i += 1) {
@@ -397,7 +404,10 @@ export function dispatch_normal_event(event) {
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains(page_params.realm_domains);
+                        settings_org.populate_realm_domains_label(page_params.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(
+                            page_params.realm_domains,
+                        );
                         break;
                     default:
                         blueslip.error("Unexpected event type realm_domains/" + event.op);
