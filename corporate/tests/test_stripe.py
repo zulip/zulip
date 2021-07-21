@@ -13,6 +13,7 @@ from typing import (
     Dict,
     List,
     Mapping,
+    NamedTuple,
     Optional,
     Sequence,
     Tuple,
@@ -2784,93 +2785,95 @@ class StripeTest(StripeTestCase):
                 invoices.append(invoice)
             return invoices
 
-        realm_0, _, _ = create_realm(
+        class Row(NamedTuple):
+            realm: Realm
+            expected_plan_type: int
+            plan: Optional[CustomerPlan]
+            expected_plan_status: Optional[int]
+            void_all_open_invoices_mock_called: bool
+            email_expected_to_be_sent: bool
+
+        rows: List[Row] = []
+        realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=False, create_plan=False
         )
         # To create local Customer object but no Stripe customer.
-        attach_discount_to_realm(realm_0, Decimal(20), acting_user=None)
+        attach_discount_to_realm(realm, Decimal(20), acting_user=None)
+        rows.append(Row(realm, Realm.SELF_HOSTED, None, None, False, False))
 
-        realm_1, _, _ = create_realm(
+        realm, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False
         )
+        rows.append(Row(realm, Realm.SELF_HOSTED, None, None, False, False))
 
-        realm_2, _, plan_2 = create_realm(
+        realm, _, plan = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )
-        assert plan_2
+        rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm_3, customer_3, plan_3 = create_realm(
+        realm, customer, plan = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )
-        assert customer_3 and plan_3
-        create_invoices(customer_3, num_invoices=1)
+        assert customer
+        create_invoices(customer, num_invoices=1)
+        rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm_4, customer_4, plan_4 = create_realm(
+        realm, customer, plan = create_realm(
             users_to_create=3, create_stripe_customer=True, create_plan=True
         )
-        assert customer_4 and plan_4
-        create_invoices(customer_4, num_invoices=2)
+        assert customer
+        create_invoices(customer, num_invoices=2)
+        rows.append(Row(realm, Realm.LIMITED, plan, CustomerPlan.ENDED, True, True))
 
-        realm_5, customer_5, plan_5 = create_realm(
+        realm, customer, plan = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )
-        assert customer_5 and plan_5
-        realm_5_invoices = create_invoices(customer_5, num_invoices=2)
-        for invoice in realm_5_invoices:
+        assert customer
+        invoices = create_invoices(customer, num_invoices=2)
+        for invoice in invoices:
             stripe.Invoice.pay(invoice, paid_out_of_band=True)
+        rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm_6, customer_6, plan_6 = create_realm(
+        realm, customer, plan = create_realm(
             users_to_create=20, create_stripe_customer=True, create_plan=True
         )
-        assert customer_6 and plan_6
-        create_invoices(customer_6, num_invoices=2)
+        assert customer
+        create_invoices(customer, num_invoices=2)
+        rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
         with patch("corporate.lib.stripe.void_all_open_invoices") as void_all_open_invoices_mock:
             downgrade_small_realms_behind_on_payments_as_needed()
 
-        realm_0.refresh_from_db()
-        self.assertEqual(realm_0.plan_type, Realm.SELF_HOSTED)
-
-        realm_1.refresh_from_db()
-        self.assertEqual(realm_1.plan_type, Realm.SELF_HOSTED)
-
-        realm_2.refresh_from_db()
-        self.assertEqual(realm_2.plan_type, Realm.STANDARD)
-        plan_2.refresh_from_db()
-        self.assertEqual(plan_2.status, CustomerPlan.ACTIVE)
-
-        realm_3.refresh_from_db()
-        self.assertEqual(realm_3.plan_type, Realm.STANDARD)
-        plan_3.refresh_from_db()
-        self.assertEqual(plan_3.status, CustomerPlan.ACTIVE)
-
-        realm_4.refresh_from_db()
-        self.assertEqual(realm_4.plan_type, Realm.LIMITED)
-        plan_4.refresh_from_db()
-        self.assertEqual(plan_4.status, CustomerPlan.ENDED)
-        void_all_open_invoices_mock.assert_called_once_with(realm_4)
-
-        realm_5.refresh_from_db()
-        self.assertEqual(realm_5.plan_type, Realm.STANDARD)
-        plan_5.refresh_from_db()
-        self.assertEqual(plan_5.status, CustomerPlan.ACTIVE)
-
-        realm_6.refresh_from_db()
-        self.assertEqual(realm_6.plan_type, Realm.STANDARD)
-        plan_6.refresh_from_db()
-        self.assertEqual(plan_6.status, CustomerPlan.ACTIVE)
-
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 1)
-        self.assertIn(
-            f"Your organization, http://{realm_4.string_id}.testserver, has been downgraded",
-            outbox[0].body,
-        )
-        self.assert_length(outbox[0].to, 1)
-        recipient = UserProfile.objects.get(email=outbox[0].to[0])
-        self.assertEqual(recipient.realm, realm_4)
-        self.assertTrue(recipient.is_billing_admin)
+        for row in rows:
+            row.realm.refresh_from_db()
+            self.assertEqual(row.realm.plan_type, row.expected_plan_type)
+            if row.plan is not None:
+                row.plan.refresh_from_db()
+                self.assertEqual(row.plan.status, row.expected_plan_status)
+            if row.void_all_open_invoices_mock_called:
+                void_all_open_invoices_mock.assert_any_call(row.realm)
+            else:
+                try:
+                    void_all_open_invoices_mock.assert_any_call(row.realm)
+                except AssertionError:
+                    pass
+                else:  # nocoverage
+                    raise AssertionError("void_all_open_invoices_mock should not be called")
+
+            email_found = False
+            for email in outbox:
+                recipient = UserProfile.objects.get(email=email.to[0])
+                if recipient.realm == row.realm:
+                    self.assertIn(
+                        f"Your organization, http://{row.realm.string_id}.testserver, has been downgraded",
+                        outbox[0].body,
+                    )
+                    self.assert_length(email.to, 1)
+                    self.assertTrue(recipient.is_billing_admin)
+                    email_found = True
+            self.assertEqual(row.email_expected_to_be_sent, email_found)
 
     def test_update_billing_method_of_current_plan(self) -> None:
         realm = get_realm("zulip")
