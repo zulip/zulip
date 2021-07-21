@@ -94,7 +94,7 @@ export function settings_button_for_sub(sub) {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
     return $(
-        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`,
+        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id)}'] .subscribe-button`,
     );
 }
 
