@@ -91,6 +91,7 @@ class zulip::supervisor {
     exec { 'supervisor-restart':
       refreshonly => true,
       command     => $zulip::common::supervisor_reload,
+      require     => Service[$supervisor_service],
     }
   }
 
