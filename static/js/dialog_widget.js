@@ -78,6 +78,7 @@ export function launch(conf) {
     // * close_on_submit: Whether to close modal on clicking submit.
     // * focus_submit_on_open: Whether to focus submit button on open.
     // * help_link: A help link in the heading area.
+    // * id: Custom id to the container element to modify styles.
 
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
@@ -97,6 +98,7 @@ export function launch(conf) {
         link: conf.help_link,
         html_submit_button,
         html_body: conf.html_body,
+        id: conf.id,
     });
     const dialog = $(html);
     $("body").append(dialog);
