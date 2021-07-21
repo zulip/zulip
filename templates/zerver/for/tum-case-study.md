@@ -24,7 +24,7 @@ important than ever.
 
 “Our default teaching platform is Moodle, which is fine for
 announcements, but does not scale for discussions,” Tobias says. “Our
-university also hosts rocket.chat, but when some colleagues tried it
+university also hosts Rocket.Chat, but when some colleagues tried it
 for a large class, it was a complete mess.” Due to strict European
 regulations, cloud-only solutions like Piazza, Slack and Discord were
 non-starters for data privacy reasons. “I checked Mattermost and

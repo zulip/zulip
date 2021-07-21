@@ -57,7 +57,7 @@ the benefits of just a few of Zulip’s features:
 
 - **Discussing math**: “The
   [**TeX**](/help/format-your-message-using-markdown#latex)
-  made it made it super easy to discuss material from the course using
+  made it super easy to discuss material from the course using
   proper mathematical notation, and was one of the reasons I chose
   Zulip in the first place.”
 - **Quick pulse-checks**: “[**Emoji
@@ -89,5 +89,5 @@ Zulip for the number theory research group at UCSD, where graduate
 students and postdocs can connect to discuss reading courses, social
 events, conferences of interest, etc.”
 
-To learn more, check our our guides on using Zulip for conferences and
-research!
+To learn more, check out our guides on using Zulip for
+[conferences](/for/events) and [research](/for/research)!
