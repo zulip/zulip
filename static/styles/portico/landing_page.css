@@ -4218,58 +4218,14 @@ nav {
             max-width: 800px;
             padding: 30px;
         }
+    }
 
-        .feature-pricing {
-            margin: auto;
-            max-width: 635px;
-        }
-
-        table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        table tr th,
-        table tr td {
-            border-right: 1px solid hsl(0, 0%, 73.3%);
-            border-bottom: 1px solid hsl(0, 0%, 73.3%);
-            padding: 20px;
-            font-weight: 500;
-        }
-        table tr th:first-child,
-        table tr td:first-child {
-            border-left: 1px solid hsl(0, 0%, 73.3%);
-        }
-
-        td:nth-child(2),
-        th:nth-child(2) {
-            font-weight: 600;
-        }
-
-        table tr th {
-            background: hsl(0, 0%, 93.3%);
-            border-top: 1px solid hsl(0, 0%, 73.3%);
-            text-align: left;
-        }
-
-        /* top-left border-radius */
-        table tr:first-child th:first-child {
-            border-top-left-radius: 6px;
-        }
-
-        /* top-right border-radius */
-        table tr:first-child th:last-child {
-            border-top-right-radius: 6px;
-        }
-
-        /* bottom-left border-radius */
-        table tr:last-child td:first-child {
-            border-bottom-left-radius: 6px;
-        }
-
-        /* bottom-right border-radius */
-        table tr:last-child td:last-child {
-            border-bottom-right-radius: 6px;
-        }
+    .price-asterisk {
+        text-align: center;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        font-size: 15px;
+        opacity: 0.8;
     }
 }
 
@@ -4286,5 +4242,66 @@ nav {
 
     .hero-buttons {
         margin: 20px;
+    }
+}
+
+.for-education.pricing-model {
+    .padded-content {
+        padding-bottom: 10px;
+    }
+
+    .pricing-container {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+
+        .pricing-details {
+            color: inherit;
+            font-style: inherit;
+        }
+
+        .price-box {
+            margin: 10px;
+            height: 625px;
+
+            .bottom {
+                height: 275px;
+
+                .standard-register-button {
+                    margin-top: 10px;
+                }
+
+                .free-text {
+                    margin-top: 90px;
+
+                    .pricing-details {
+                        font-size: 34px;
+                    }
+
+                    a {
+                        margin-top: 76px;
+                    }
+                }
+
+                .standard-price-box {
+                    flex-flow: row wrap;
+                    height: 90px;
+                    font-size: 15px;
+
+                    &:first-child {
+                        padding-bottom: 10px;
+                    }
+
+                    p {
+                        padding: 0;
+                        margin: 0 0 -10px 0;
+                        width: 100%;
+                        text-align: center;
+                        font-weight: 550;
+                        color: hsl(169, 46%, 33%);
+                    }
+                }
+            }
+        }
     }
 }
