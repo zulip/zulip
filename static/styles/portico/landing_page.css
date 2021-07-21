@@ -4069,6 +4069,10 @@ nav {
         }
     }
 
+    .topics-image {
+        border: solid 2px hsl(0, 0%, 60%);
+    }
+
     .feature-buttons {
         margin: 0 auto;
     }
