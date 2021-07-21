@@ -36,26 +36,38 @@ run_test("initialize", ({override}) => {
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__(
         "create_ajax_request",
-        (url, form_name, stripe_token, ignored_inputs, redirect_to) => {
+        (url, form_name, stripe_token, ignored_inputs, type, success_callback) => {
             create_ajax_request_form_call_count += 1;
             switch (form_name) {
                 case "autopay":
                     assert.equal(url, "/json/billing/upgrade");
                     assert.equal(stripe_token, "stripe_add_card_token");
-                    assert.equal(ignored_inputs, undefined);
-                    assert.equal(redirect_to, undefined);
+                    assert.deepEqual(ignored_inputs, []);
+                    assert.equal(type, "POST");
+                    window.location.replace = (new_location) => {
+                        assert.equal(new_location, "/billing");
+                    };
+                    success_callback();
                     break;
                 case "invoice":
                     assert.equal(url, "/json/billing/upgrade");
                     assert.equal(stripe_token, undefined);
-                    assert.equal(ignored_inputs, undefined);
-                    assert.equal(redirect_to, undefined);
+                    assert.deepEqual(ignored_inputs, []);
+                    assert.equal(type, "POST");
+                    window.location.replace = (new_location) => {
+                        assert.equal(new_location, "/billing");
+                    };
+                    success_callback();
                     break;
                 case "sponsorship":
                     assert.equal(url, "/json/billing/sponsorship");
                     assert.equal(stripe_token, undefined);
-                    assert.equal(ignored_inputs, undefined);
-                    assert.equal(redirect_to, "/");
+                    assert.deepEqual(ignored_inputs, []);
+                    assert.equal(type, "POST");
+                    window.location.replace = (new_location) => {
+                        assert.equal(new_location, "/");
+                    };
+                    success_callback();
                     break;
                 default:
                     throw new Error("Unhandled case");
@@ -151,38 +163,35 @@ run_test("initialize", ({override}) => {
     assert.equal($("#invoice_annual_price").text(), "64");
     assert.equal($("#invoice_annual_price_per_month").text(), "5.34");
 
-    const organization_type_change_handler = $("select[name=organization-type]").get_on_handler(
-        "change",
-    );
-    organization_type_change_handler.call({value: "open_source"});
+    helpers.update_discount_details("opensource");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Open source projects are eligible for fully sponsored (free) Zulip Standard.",
+        "Zulip Cloud Standard is free for open-source projects.",
     );
-    organization_type_change_handler.call({value: "research"});
+    helpers.update_discount_details("research");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Academic research organizations are eligible for fully sponsored (free) Zulip Standard.",
+        "Zulip Cloud Standard is free for academic research.",
     );
-    organization_type_change_handler.call({value: "event"});
+    helpers.update_discount_details("event");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Events are eligible for fully sponsored (free) Zulip Standard.",
+        "Zulip Cloud Standard is free for academic conferences and most non-profit events.",
     );
-    organization_type_change_handler.call({value: "education"});
+    helpers.update_discount_details("education");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Education use is eligible for an 85%-100% discount.",
+        "Zulip Cloud Standard is discounted 85% for education.",
     );
-    organization_type_change_handler.call({value: "non_profit"});
+    helpers.update_discount_details("nonprofit");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Nonprofits are eligible for an 85%-100% discount.",
+        "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
     );
-    organization_type_change_handler.call({value: "other"});
+    helpers.update_discount_details("other");
     assert.equal(
         $("#sponsorship-discount-details").text(),
-        "Your organization might be eligible for a discount or sponsorship.",
+        "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.",
     );
 });
 

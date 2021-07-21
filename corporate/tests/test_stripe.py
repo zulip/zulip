@@ -653,7 +653,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/billing/", response.url)
 
         # Check /billing has the correct information
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(["Pay annually"], response)
         for substring in [
@@ -792,7 +792,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual("/billing/", response.url)
 
         # Check /billing has the correct information
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(["Pay annually", "Update card"], response)
         for substring in [
@@ -900,7 +900,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(realm.plan_type, Realm.STANDARD)
             self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
 
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
@@ -919,7 +919,7 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
             self.assert_not_in_success_response(["Go to your Zulip organization"], response)
 
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_get("/billing/", {"onboarding": "true"})
                 self.assert_in_success_response(["Go to your Zulip organization"], response)
 
@@ -1101,7 +1101,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(realm.plan_type, Realm.STANDARD)
             self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
 
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_get("/billing/")
             self.assert_not_in_success_response(["Pay annually"], response)
             for substring in [
@@ -1270,7 +1270,7 @@ class StripeTest(StripeTestCase):
 
         # Try again, with a valid card, after they added a few users
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23):
-            with patch("corporate.views.get_latest_seat_count", return_value=23):
+            with patch("corporate.views.upgrade.get_latest_seat_count", return_value=23):
                 self.upgrade()
         customer = Customer.objects.get(realm=get_realm("zulip"))
         # It's impossible to create two Customers, but check that we didn't
@@ -1397,7 +1397,7 @@ class StripeTest(StripeTestCase):
             else:
                 del_args = []
                 upgrade_params["licenses"] = licenses
-            with patch("corporate.views.process_initial_upgrade"):
+            with patch("corporate.views.upgrade.process_initial_upgrade"):
                 response = self.upgrade(
                     invoice=invoice, talk_to_stripe=False, del_args=del_args, **upgrade_params
                 )
@@ -1442,7 +1442,7 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         with patch(
-            "corporate.views.process_initial_upgrade", side_effect=Exception
+            "corporate.views.upgrade.process_initial_upgrade", side_effect=Exception
         ), self.assertLogs("corporate.stripe", "WARNING") as m:
             response = self.upgrade(talk_to_stripe=False)
             self.assertIn("ERROR:corporate.stripe:Uncaught exception in billing", m.output[0])
@@ -1844,7 +1844,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -1858,9 +1858,11 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), None)
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             mock_customer = Mock(email=user.delivery_email, default_source=None)
-            with patch("corporate.views.stripe_get_customer", return_value=mock_customer):
+            with patch(
+                "corporate.views.billing_page.stripe_get_customer", return_value=mock_customer
+            ):
                 response = self.client_get("/billing/")
                 self.assert_in_success_response(
                     [
@@ -1951,7 +1953,7 @@ class StripeTest(StripeTestCase):
         assert new_plan is not None
 
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
@@ -1961,7 +1963,7 @@ class StripeTest(StripeTestCase):
                 self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
             ["be switched from monthly to annual billing on <strong>February 2, 2012"], response
@@ -2137,7 +2139,7 @@ class StripeTest(StripeTestCase):
         new_plan = get_current_plan_by_realm(user.realm)
         assert new_plan is not None
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan",
                     {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE},
@@ -2149,7 +2151,7 @@ class StripeTest(StripeTestCase):
                 self.assert_json_success(response)
         monthly_plan.refresh_from_db()
         self.assertEqual(monthly_plan.status, CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE)
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_get("/billing/")
         self.assert_in_success_response(
             ["be switched from monthly to annual billing on <strong>February 2, 2012"], response
@@ -2238,7 +2240,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2252,7 +2254,7 @@ class StripeTest(StripeTestCase):
             CustomerPlan.objects.first().status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
         )
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
                 self.assertEqual(m.output[0], expected_log)
@@ -2276,7 +2278,7 @@ class StripeTest(StripeTestCase):
             stripe_customer_id = Customer.objects.get(realm=user.realm).id
             new_plan = get_current_plan_by_realm(user.realm)
             assert new_plan is not None
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2314,7 +2316,7 @@ class StripeTest(StripeTestCase):
 
             self.login_user(user)
 
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 self.client_patch("/json/billing/plan", {"status": CustomerPlan.ENDED})
 
             plan.refresh_from_db()
@@ -2347,7 +2349,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(user)
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2399,35 +2401,35 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.upgrade(invoice=True, licenses=100)
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 100})
             self.assert_json_error_contains(
                 result, "Your plan is already on 100 licenses in the current billing period."
             )
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 100})
             self.assert_json_error_contains(
                 result, "Your plan is already scheduled to renew with 100 licenses."
             )
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 50})
             self.assert_json_error_contains(
                 result, "You cannot decrease the licenses in the current billing period."
             )
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 25})
             self.assert_json_error_contains(result, "You must invoice for at least 30 users.")
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 2000})
             self.assert_json_error_contains(
                 result, "Invoices with more than 1000 licenses can't be processed from this page."
             )
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 150})
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year)
@@ -2477,7 +2479,7 @@ class StripeTest(StripeTestCase):
         for key, value in line_item_params.items():
             self.assertEqual(extra_license_item.get(key), value)
 
-        with patch("corporate.views.timezone_now", return_value=self.next_year):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.next_year):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 120})
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year + timedelta(days=365))
@@ -2520,11 +2522,11 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 100})
             self.assert_json_error_contains(result, "Your plan is on automatic license management.")
 
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses_at_next_renewal": 100})
             self.assert_json_error_contains(result, "Your plan is on automatic license management.")
 
@@ -2544,7 +2546,7 @@ class StripeTest(StripeTestCase):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
 
         self.login_user(self.example_user("hamlet"))
-        with patch("corporate.views.timezone_now", return_value=self.now):
+        with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             response = self.client_patch("/json/billing/plan", {})
         self.assert_json_error_contains(response, "Nothing to change")
 
@@ -2554,7 +2556,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 result = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
@@ -2576,7 +2578,7 @@ class StripeTest(StripeTestCase):
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            with patch("corporate.views.timezone_now", return_value=self.now):
+            with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 result = self.client_patch(
                     "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
                 )
@@ -2921,14 +2923,14 @@ class RequiresBillingAccessTest(ZulipTestCase):
     def test_who_can_access_json_endpoints(self) -> None:
         # Billing admins have access
         self.login_user(self.example_user("hamlet"))
-        with patch("corporate.views.do_replace_payment_source") as mocked1:
+        with patch("corporate.views.billing_page.do_replace_payment_source") as mocked1:
             response = self.client_post("/json/billing/sources/change", {"stripe_token": "token"})
         self.assert_json_success(response)
         mocked1.assert_called_once()
 
         # Realm owners have access, even if they are not billing admins
         self.login_user(self.example_user("desdemona"))
-        with patch("corporate.views.do_replace_payment_source") as mocked2:
+        with patch("corporate.views.billing_page.do_replace_payment_source") as mocked2:
             response = self.client_post("/json/billing/sources/change", {"stripe_token": "token"})
         self.assert_json_success(response)
         mocked2.assert_called_once()

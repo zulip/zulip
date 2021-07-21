@@ -65,3 +65,12 @@ export function destroy_indicator(container: JQuery): void {
     container.empty();
     container.css({width: 0, height: 0});
 }
+
+export function show_button_spinner(elt: JQuery, using_dark_theme: boolean): void {
+    if (!using_dark_theme) {
+        elt.attr("src", "/static/images/loader-black.svg");
+    } else {
+        elt.attr("src", "/static/images/loader-white.svg");
+    }
+    elt.css("display", "inline-block");
+}

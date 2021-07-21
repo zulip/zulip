@@ -33,13 +33,23 @@ run_test("initialize", ({override}) => {
     });
 
     let create_ajax_request_called = false;
-    function card_change_ajax(url, form_name, stripe_token, ignored_inputs, redirect_to, method) {
+    function card_change_ajax(
+        url,
+        form_name,
+        stripe_token,
+        ignored_inputs,
+        method,
+        success_callback,
+    ) {
         assert.equal(url, "/json/billing/sources/change");
         assert.equal(form_name, "cardchange");
         assert.equal(stripe_token, "stripe_token");
-        assert.deepEqual(ignored_inputs, undefined);
-        assert.equal(redirect_to, undefined);
-        assert.equal(method, undefined);
+        assert.deepEqual(ignored_inputs, []);
+        assert.equal(method, "POST");
+        window.location.replace = (new_location) => {
+            assert.equal(new_location, "/billing");
+        };
+        success_callback();
         create_ajax_request_called = true;
     }
 
@@ -88,13 +98,23 @@ run_test("initialize", ({override}) => {
     });
 
     create_ajax_request_called = false;
-    function plan_change_ajax(url, form_name, stripe_token, ignored_inputs, redirect_to, method) {
+    function plan_change_ajax(
+        url,
+        form_name,
+        stripe_token,
+        ignored_inputs,
+        method,
+        success_callback,
+    ) {
         assert.equal(url, "/json/billing/plan");
         assert.equal(form_name, "planchange");
         assert.equal(stripe_token, undefined);
-        assert.deepEqual(ignored_inputs, undefined);
-        assert.equal(redirect_to, undefined);
+        assert.deepEqual(ignored_inputs, []);
         assert.equal(method, "PATCH");
+        window.location.replace = (new_location) => {
+            assert.equal(new_location, "/billing");
+        };
+        success_callback();
         create_ajax_request_called = true;
     }
 
@@ -111,15 +131,18 @@ run_test("initialize", ({override}) => {
         form_name,
         stripe_token,
         ignored_inputs,
-        redirect_to,
         method,
+        success_callback,
     ) {
         assert.equal(url, "/json/billing/plan");
         assert.equal(form_name, "licensechange");
         assert.equal(stripe_token, undefined);
         assert.deepEqual(ignored_inputs, ["licenses_at_next_renewal"]);
-        assert.equal(redirect_to, undefined);
         assert.equal(method, "PATCH");
+        window.location.replace = (new_location) => {
+            assert.equal(new_location, "/billing");
+        };
+        success_callback();
         create_ajax_request_called = true;
     }
     with_field(helpers, "create_ajax_request", license_change_ajax, () => {
@@ -181,15 +204,18 @@ run_test("initialize", ({override}) => {
         form_name,
         stripe_token,
         ignored_inputs,
-        redirect_to,
         method,
+        success_callback,
     ) {
         assert.equal(url, "/json/billing/plan");
         assert.equal(form_name, "licensechange");
         assert.equal(stripe_token, undefined);
         assert.deepEqual(ignored_inputs, ["licenses"]);
-        assert.equal(redirect_to, undefined);
         assert.equal(method, "PATCH");
+        window.location.replace = (new_location) => {
+            assert.equal(new_location, "/billing");
+        };
+        success_callback();
         create_ajax_request_called = true;
     }
     with_field(helpers, "create_ajax_request", licenses_at_next_renewal_change_ajax, () => {

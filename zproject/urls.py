@@ -182,11 +182,9 @@ from zerver.views.user_settings import (
     change_enter_sends,
     confirm_email_change,
     delete_avatar_backend,
-    json_change_notify_settings,
     json_change_settings,
     regenerate_api_key,
     set_avatar_backend,
-    update_display_settings_backend,
 )
 from zerver.views.users import (
     add_bot_backend,
@@ -414,8 +412,13 @@ v1_api_and_json_patterns = [
     ),
     # settings -> zerver.views.user_settings
     rest_path("settings", PATCH=json_change_settings),
-    rest_path("settings/display", PATCH=update_display_settings_backend),
-    rest_path("settings/notifications", PATCH=json_change_notify_settings),
+    # These next two are legacy aliases for /settings, from before
+    # we merged the endpoints. They are documented in the `/json/settings`
+    # documentation, rather than having dedicated pages.
+    rest_path("settings/display", PATCH=(json_change_settings, {"intentionally_undocumented"})),
+    rest_path(
+        "settings/notifications", PATCH=(json_change_settings, {"intentionally_undocumented"})
+    ),
     # users/me/alert_words -> zerver.views.alert_words
     rest_path(
         "users/me/alert_words",
@@ -624,14 +627,22 @@ i18n_urls = [
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "zerver/history.html"}),
     path("why-zulip/", landing_view, {"template_name": "zerver/why-zulip.html"}),
+    path("for/education/", landing_view, {"template_name": "zerver/for-education.html"}),
+    path("for/events/", landing_view, {"template_name": "zerver/for-events.html"}),
     path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
+    path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
+    path(
+        "for/communities/",
+        landing_view,
+        {"template_name": "zerver/for-communities.html"},
+    ),
+    # We merged this into /for/communities.
     path(
         "for/working-groups-and-communities/",
-        landing_view,
-        {"template_name": "zerver/for-working-groups-and-communities.html"},
+        RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
     # Terms of Service and privacy pages.

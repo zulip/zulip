@@ -6,7 +6,6 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const people = zrequire("people");
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 
@@ -23,7 +22,6 @@ const isaac = {
     user_id: 30,
     full_name: "Isaac",
 };
-people.add_active_user(isaac);
 
 run_test("email_for_user_settings", () => {
     const email = settings_data.email_for_user_settings;
@@ -151,12 +149,13 @@ function test_policy(label, policy, validation_func) {
 
         page_params[policy] = settings_config.common_policy_values.by_full_members.code;
         page_params.user_id = 30;
-        people.add_active_user(isaac);
         isaac.date_joined = new Date(Date.now());
+        settings_data.initialize(isaac.date_joined);
         page_params.realm_waiting_period_threshold = 10;
         assert.equal(validation_func(), false);
 
         isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+        settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), true);
     });
 }
@@ -215,12 +214,13 @@ function test_message_policy(label, policy, validation_func) {
 
         page_params[policy] = settings_config.common_message_policy_values.by_full_members.code;
         page_params.user_id = 30;
-        people.add_active_user(isaac);
         isaac.date_joined = new Date(Date.now());
         page_params.realm_waiting_period_threshold = 10;
+        settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), false);
 
         isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+        settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), true);
     });
 }

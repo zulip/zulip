@@ -5,6 +5,7 @@ import render_dialog_heading from "../templates/dialog_widget_heading.hbs";
 
 import * as blueslip from "./blueslip";
 import {$t_html} from "./i18n";
+import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as settings_data from "./settings_data";
 
@@ -48,17 +49,11 @@ export function hide_dialog_spinner() {
 }
 
 export function show_dialog_spinner() {
-    $(".dialog_submit_button .loader").css("display", "inline-block");
+    const using_dark_theme = settings_data.using_dark_theme();
+    loading.show_button_spinner($(".dialog_submit_button .loader"), using_dark_theme);
     $(".dialog_submit_button span").hide();
     $(".dialog_submit_button").prop("disabled", true);
     $("#dialog_widget_modal .close-modal-btn").prop("disabled", true);
-    if (!settings_data.using_dark_theme()) {
-        $(".dialog_submit_button object").on("load", function () {
-            const doc = this.getSVGDocument();
-            const $svg = $(doc).find("svg");
-            $svg.find("rect").css("fill", "#000");
-        });
-    }
 }
 
 export function launch(conf) {

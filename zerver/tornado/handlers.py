@@ -1,5 +1,6 @@
 import logging
 import urllib
+import weakref
 from typing import Any, Dict, List
 
 import tornado.web
@@ -116,7 +117,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Provide a way for application code to access this handler
         # given the HttpRequest object.
-        get_request_notes(request).tornado_handler = self
+        get_request_notes(request).tornado_handler = weakref.ref(self)
 
         return request
 
@@ -147,10 +148,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     def get(self, *args: Any, **kwargs: Any) -> None:
         request = self.convert_tornado_request_to_django_request()
+        response = self.get_response(request)
 
         try:
-            response = self.get_response(request)
-
             if hasattr(response, "asynchronous"):
                 # We import async_request_timer_restart during runtime
                 # to avoid cyclic dependency with zerver.lib.request
@@ -164,22 +164,21 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 # consumed by the request when it eventually returns a
                 # response and is logged.
                 async_request_timer_stop(request)
-                return
+            else:
+                # For normal/synchronous requests that don't end up
+                # long-polling, we just need to write the HTTP
+                # response that Django prepared for us via Tornado.
+
+                # Mark this handler ID as finished for Zulip's own tracking.
+                clear_handler_by_id(self.handler_id)
+
+                self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django that we're done processing this request on
             # the Django side; this triggers cleanup work like
             # resetting the urlconf and any cache/database
             # connections.
-            signals.request_finished.send(sender=self.__class__)
-
-        # For normal/synchronous requests that don't end up
-        # long-polling, we fall through to here and just need to write
-        # the HTTP response that Django prepared for us via Tornado.
-
-        # Mark this handler ID as finished for Zulip's own tracking.
-        clear_handler_by_id(self.handler_id)
-
-        self.write_django_response_as_tornado_response(response)
+            response.close()
 
     def head(self, *args: Any, **kwargs: Any) -> None:
         self.get(*args, **kwargs)
@@ -238,10 +237,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # Add to this new HttpRequest logging data from the processing of
         # the original request; we will need these for logging.
         request_notes.log_data = old_request_notes.log_data
+        if request_notes.rate_limit is not None:
+            request_notes.rate_limit = old_request_notes.rate_limit
         if request_notes.requestor_for_logs is not None:
             request_notes.requestor_for_logs = old_request_notes.requestor_for_logs
-        if hasattr(request, "_rate_limit"):
-            request._rate_limit = old_request._rate_limit
         request.user = old_request.user
         request_notes.client = old_request_notes.client
         request_notes.client_name = old_request_notes.client_name
@@ -257,16 +256,12 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             res_type=result_dict["result"], data=result_dict, status=self.get_status()
         )
 
+        response = self.get_response(request)
         try:
-            response = self.get_response(request)
             # Explicitly mark requests as varying by cookie, since the
             # middleware will not have seen a session access
             patch_vary_headers(response, ("Cookie",))
+            self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django we're done processing this request
-            #
-            # TODO: Investigate whether this (and other call points in
-            # this file) should be using response.close() instead.
-            signals.request_finished.send(sender=self.__class__)
-
-        self.write_django_response_as_tornado_response(response)
+            response.close()

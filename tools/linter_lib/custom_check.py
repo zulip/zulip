@@ -672,7 +672,7 @@ html_rules: List["Rule"] = [
             "static/html/5xx.html",
             # exclude_pattern above handles color, but have other issues:
             "static/templates/draft.hbs",
-            "static/templates/subscription.hbs",
+            "static/templates/stream_settings/browse_streams_list_item.hbs",
             "static/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up
@@ -820,7 +820,6 @@ markdown_docs_length_exclude = {
     "templates/zerver/api/get-messages.md",
     # This macro has a long indented URL
     "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
-    "templates/zerver/api/update-notification-settings.md",
     # These two are the same file and have some too-long lines for GitHub badges
     "README.md",
     "docs/overview/readme.md",

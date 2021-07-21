@@ -23,7 +23,6 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, UserProfile, get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
-    any_social_backend_enabled,
     auth_enabled_helper,
     get_external_method_dicts,
     password_auth_enabled,
@@ -198,7 +197,6 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         "realm_description": realm_description,
         "require_email_format_usernames": require_email_format_usernames(realm),
         "password_auth_enabled": password_auth_enabled(realm),
-        "any_social_backend_enabled": any_social_backend_enabled(realm),
         "two_factor_authentication_enabled": settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
     }
 

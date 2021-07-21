@@ -11,14 +11,32 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 80**
+
+* [`PATCH /settings`](/api/update-settings): The
+  `/settings/notifications` and `/settings/display` endpoints were
+  merged into the main `/settings` endpoint; now all personal settings
+  should be edited using that single endpoint. The old URLs are
+  preserved as deprecated aliases for backwards compatibility.
+
+**Feature level 79**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): The
+  `subscribers` field now returns user IDs if `include_subscribers` is
+  passed. Previously, this endpoint returned user display email
+  addresses in this field.
+* `GET /streams/{stream_id}/members`: This endpoint now returns user
+  IDs. Previously, it returned display email addresses.
+
 **Feature level 78**
 
-* `PATCH /settings`: Added `ignored_parameters_unsupported` field,
-  which is a list of parameters that were ignored by the endpoint,
-  to the response object.
+* [`PATCH /settings`](/api/update-settings): Added
+  `ignored_parameters_unsupported` field, which is a list of
+  parameters that were ignored by the endpoint, to the response
+  object.
 
-* `PATCH /settings`: Removed `full_name` and `account_email` fields
-  from the response object.
+* [`PATCH /settings`](/api/update-settings): Removed `full_name` and
+  `account_email` fields from the response object.
 
 **Feature level 77**
 

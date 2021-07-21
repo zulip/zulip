@@ -56,7 +56,7 @@ You might be interested in:
   also recommend reading Zulip for
   [open source](https://zulip.com/for/open-source/), Zulip for
   [companies](https://zulip.com/for/companies/), or Zulip for
-  [working groups and part time communities](https://zulip.com/for/working-groups-and-communities/).
+  [communities](https://zulip.com/for/working-groups-and-communities/).
 
 * **Running a Zulip server**. Use a preconfigured [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip),
   [install Zulip](https://zulip.readthedocs.io/en/stable/production/install.html)

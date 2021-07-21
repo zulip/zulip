@@ -84,7 +84,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
 
     let populated_subs;
 
-    mock_template("subscriptions.hbs", false, (data) => {
+    mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
         populated_subs = data.subscriptions;
     });
 

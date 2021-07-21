@@ -158,12 +158,10 @@ class ChangeSettingsTest(ZulipTestCase):
             #
             # TODO: Make this work more like do_test_realm_update_api
             if notification_setting != "notification_sound":
-                self.check_for_toggle_param_patch(
-                    "/json/settings/notifications", notification_setting
-                )
+                self.check_for_toggle_param_patch("/json/settings", notification_setting)
 
     def test_change_notification_sound(self) -> None:
-        pattern = "/json/settings/notifications"
+        pattern = "/json/settings"
         param = "notification_sound"
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -191,7 +189,7 @@ class ChangeSettingsTest(ZulipTestCase):
             s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
         )
         for display_setting in boolean_settings:
-            self.check_for_toggle_param_patch("/json/settings/display", display_setting)
+            self.check_for_toggle_param_patch("/json/settings", display_setting)
 
     def test_enter_sends_setting(self) -> None:
         self.check_for_toggle_param("/json/users/me/enter-sends", "enter_sends")
@@ -344,7 +342,7 @@ class ChangeSettingsTest(ZulipTestCase):
         else:
             data = {setting_name: orjson.dumps(test_value).decode()}
 
-        result = self.client_patch("/json/settings/display", data)
+        result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         user_profile = self.example_user("hamlet")
         self.assertEqual(getattr(user_profile, setting_name), test_value)
@@ -356,7 +354,7 @@ class ChangeSettingsTest(ZulipTestCase):
         else:
             data = {setting_name: orjson.dumps(invalid_value).decode()}
 
-        result = self.client_patch("/json/settings/display", data)
+        result = self.client_patch("/json/settings", data)
         # the json error for multiple word setting names (ex: default_language)
         # displays as 'Invalid language'. Using setting_name.split('_') to format.
         self.assert_json_error(result, f"Invalid {setting_name}")
@@ -376,7 +374,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")
         data = {"emojiset": emojiset}
-        result = self.client_patch("/json/settings/display", data)
+        result = self.client_patch("/json/settings", data)
         return result
 
     def test_emojiset(self) -> None:
@@ -414,6 +412,35 @@ class ChangeSettingsTest(ZulipTestCase):
         result = orjson.loads(json_result.content)
         self.assertIn("ignored_parameters_unsupported", result)
         self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_setting"])
+
+    def test_changing_setting_using_display_setting_endpoint(self) -> None:
+        """
+        This test is just for adding coverage for `/settings/display` endpoint which is
+        now depreceated.
+        """
+        self.login("hamlet")
+
+        result = self.client_patch(
+            "/json/settings/display", dict(color_scheme=UserProfile.COLOR_SCHEME_NIGHT)
+        )
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.color_scheme, UserProfile.COLOR_SCHEME_NIGHT)
+
+    def test_changing_setting_using_notification_setting_endpoint(self) -> None:
+        """
+        This test is just for adding coverage for `/settings/notifications` endpoint which is
+        now depreceated.
+        """
+        self.login("hamlet")
+
+        result = self.client_patch(
+            "/json/settings/notifications",
+            dict(enable_stream_desktop_notifications=orjson.dumps(True).decode()),
+        )
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.enable_stream_desktop_notifications, True)
 
 
 class UserChangesTest(ZulipTestCase):

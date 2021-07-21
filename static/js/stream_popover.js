@@ -510,7 +510,7 @@ export function register_stream_handlers() {
         const data = {};
         data.starred_message_counts = JSON.stringify(!starred_msg_counts);
         channel.patch({
-            url: "/json/settings/display",
+            url: "/json/settings",
             data,
         });
     });

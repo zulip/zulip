@@ -1,13 +1,13 @@
 import $ from "jquery";
 
-import render_change_stream_info_modal from "../templates/change_stream_info_modal.hbs";
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_stream_description from "../templates/stream_description.hbs";
-import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
-import render_stream_subscription_request_result from "../templates/stream_subscription_request_result.hbs";
-import render_subscription_settings from "../templates/subscription_settings.hbs";
-import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
+import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_stream_description from "../templates/stream_settings/stream_description.hbs";
+import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
+import render_stream_privacy_setting_modal from "../templates/stream_settings/stream_privacy_setting_modal.hbs";
+import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
+import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -454,20 +454,11 @@ function show_subscription_settings(sub) {
         },
         filter: {
             element: $(`[data-stream-id='${CSS.escape(stream_id)}'] .search`),
-            predicate(item, value) {
-                const person = item;
+            predicate(person, value) {
+                const matcher = people.build_person_matcher(value);
+                const match = matcher(person);
 
-                if (person) {
-                    if (
-                        person.email.toLocaleLowerCase().includes(value) &&
-                        settings_data.show_email()
-                    ) {
-                        return true;
-                    }
-                    return person.full_name.toLowerCase().includes(value);
-                }
-
-                return false;
+                return match;
             },
         },
         simplebar_container: $(".subscriber_list_container"),
@@ -526,7 +517,7 @@ export function show_settings_for(node) {
     stream_data.clean_up_description(slim_sub);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
-    const html = render_subscription_settings({
+    const html = render_stream_settings({
         sub,
         settings: stream_settings(sub),
         stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -752,7 +743,7 @@ export function initialize() {
                 page_params.upgrade_text_for_wide_organization_logo,
             is_stream_edit: true,
         };
-        const change_privacy_modal = render_subscription_stream_privacy_modal(template_data);
+        const change_privacy_modal = render_stream_privacy_setting_modal(template_data);
         $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
         set_stream_message_retention_setting_dropdown(stream);

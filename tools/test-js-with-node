@@ -42,6 +42,7 @@ EXEMPT_FILES = {
     "static/js/attachments_ui.js",
     "static/js/avatar.js",
     "static/js/billing/helpers.js",
+    "static/js/billing/upgrade.js",
     "static/js/blueslip.ts",
     "static/js/blueslip_stacktrace.ts",
     "static/js/click_handlers.js",

@@ -87,6 +87,10 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     return render(request, "confirmation/confirm_email_change.html", context=ctx)
 
 
+emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
+default_view_options = ["recent_topics", "all_messages"]
+
+
 @human_users_only
 @has_request_variables
 def json_change_settings(
@@ -96,7 +100,74 @@ def json_change_settings(
     email: str = REQ(default=""),
     old_password: str = REQ(default=""),
     new_password: str = REQ(default=""),
+    twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    color_scheme: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
+    ),
+    translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    default_language: Optional[str] = REQ(default=None),
+    default_view: Optional[str] = REQ(
+        str_validator=check_string_in(default_view_options), default=None
+    ),
+    left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
+    demote_inactive_streams: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
+    ),
+    timezone: Optional[str] = REQ(
+        str_validator=check_string_in(pytz.all_timezones_set), default=None
+    ),
+    enable_stream_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_stream_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_stream_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_stream_audible_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    notification_sound: Optional[str] = REQ(default=None),
+    enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_offline_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_offline_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_login_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_marketing_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    message_content_in_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    pm_content_in_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    desktop_icon_count_display: Optional[int] = REQ(json_validator=check_int, default=None),
+    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
+    # We can't use REQ for this widget because
+    # get_available_language_codes requires provisioning to be
+    # complete.
+    if default_language is not None and default_language not in get_available_language_codes():
+        raise JsonableError(_("Invalid default_language"))
+
+    if (
+        notification_sound is not None
+        and notification_sound not in get_available_notification_sounds()
+        and notification_sound != "none"
+    ):
+        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
+
     if new_password != "":
         return_data: Dict[str, Any] = {}
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
@@ -172,6 +243,23 @@ def json_change_settings(
             # Note that check_change_full_name strips the passed name automatically
             check_change_full_name(user_profile, full_name, user_profile)
 
+    # Loop over user_profile.property_types
+    request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
+    for k, v in list(request_settings.items()):
+        if v is not None and getattr(user_profile, k) != v:
+            do_set_user_display_setting(user_profile, k, v)
+
+    req_vars = {
+        k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types
+    }
+
+    for k, v in list(req_vars.items()):
+        if v is not None and getattr(user_profile, k) != v:
+            do_change_notification_settings(user_profile, k, v, acting_user=user_profile)
+
+    if timezone is not None and user_profile.timezone != timezone:
+        do_set_user_display_setting(user_profile, "timezone", timezone)
+
     # TODO: Do this more generally.
     from zerver.lib.request import get_request_notes
 
@@ -182,120 +270,6 @@ def json_change_settings(
 
     if len(request_notes.ignored_parameters) > 0:
         result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
-
-    return json_success(result)
-
-
-emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
-default_view_options = ["recent_topics", "all_messages"]
-
-
-@human_users_only
-@has_request_variables
-def update_display_settings_backend(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    color_scheme: Optional[int] = REQ(
-        json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
-    ),
-    translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(default=None),
-    default_view: Optional[str] = REQ(
-        str_validator=check_string_in(default_view_options), default=None
-    ),
-    left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
-    demote_inactive_streams: Optional[int] = REQ(
-        json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
-    ),
-    timezone: Optional[str] = REQ(
-        str_validator=check_string_in(pytz.all_timezones_set), default=None
-    ),
-) -> HttpResponse:
-
-    # We can't use REQ for this widget because
-    # get_available_language_codes requires provisioning to be
-    # complete.
-    if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid default_language"))
-
-    request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
-    result: Dict[str, Any] = {}
-    for k, v in list(request_settings.items()):
-        if v is not None and getattr(user_profile, k) != v:
-            do_set_user_display_setting(user_profile, k, v)
-            result[k] = v
-
-    if timezone is not None and user_profile.timezone != timezone:
-        do_set_user_display_setting(user_profile, "timezone", timezone)
-        result["timezone"] = timezone
-
-    return json_success(result)
-
-
-@human_users_only
-@has_request_variables
-def json_change_notify_settings(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    enable_stream_desktop_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_stream_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_stream_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_stream_audible_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    notification_sound: Optional[str] = REQ(default=None),
-    enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_offline_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_offline_push_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_login_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_marketing_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_content_in_email_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    pm_content_in_desktop_notifications: Optional[bool] = REQ(
-        json_validator=check_bool, default=None
-    ),
-    desktop_icon_count_display: Optional[int] = REQ(json_validator=check_int, default=None),
-    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
-) -> HttpResponse:
-    result = {}
-
-    # Stream notification settings.
-
-    if (
-        notification_sound is not None
-        and notification_sound not in get_available_notification_sounds()
-        and notification_sound != "none"
-    ):
-        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
-
-    req_vars = {
-        k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types
-    }
-
-    for k, v in list(req_vars.items()):
-        if v is not None and getattr(user_profile, k) != v:
-            do_change_notification_settings(user_profile, k, v, acting_user=user_profile)
-            result[k] = v
 
     return json_success(result)
 

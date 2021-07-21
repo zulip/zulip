@@ -263,12 +263,12 @@ export function dispatch_normal_event(event) {
                         case "logo":
                             page_params.realm_logo_url = event.data.logo_url;
                             page_params.realm_logo_source = event.data.logo_source;
-                            realm_logo.rerender();
+                            realm_logo.render();
                             break;
                         case "night_logo":
                             page_params.realm_night_logo_url = event.data.night_logo_url;
                             page_params.realm_night_logo_source = event.data.night_logo_source;
-                            realm_logo.rerender();
+                            realm_logo.render();
                             break;
                         default:
                             blueslip.error(
@@ -590,13 +590,13 @@ export function dispatch_normal_event(event) {
                 setTimeout(() => {
                     if (event.setting === settings_config.color_scheme_values.night.code) {
                         night_mode.enable();
-                        realm_logo.rerender();
+                        realm_logo.render();
                     } else if (event.setting === settings_config.color_scheme_values.day.code) {
                         night_mode.disable();
-                        realm_logo.rerender();
+                        realm_logo.render();
                     } else {
                         night_mode.default_preference_checker();
-                        realm_logo.rerender();
+                        realm_logo.render();
                     }
                     $("body").fadeIn(300);
                 }, 300);

@@ -3,10 +3,10 @@ import _ from "lodash";
 import tippy from "tippy.js";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_subscription from "../templates/subscription.hbs";
-import render_subscription_settings from "../templates/subscription_settings.hbs";
-import render_subscription_table_body from "../templates/subscription_table_body.hbs";
-import render_subscriptions from "../templates/subscriptions.hbs";
+import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
+import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
+import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -74,7 +74,7 @@ export function update_left_panel_row(sub) {
 
     blueslip.debug(`Updating row in left panel of stream settings for: ${sub.name}`);
     const setting_sub = stream_settings_data.get_sub_for_settings(sub);
-    const html = render_subscription(setting_sub);
+    const html = render_browse_streams_list_item(setting_sub);
     const new_row = $(html);
 
     // TODO: Clean up this hack when we eliminate `notdisplayed`
@@ -246,7 +246,7 @@ export function add_sub_to_table(sub) {
     }
 
     const setting_sub = stream_settings_data.get_sub_for_settings(sub);
-    const html = render_subscription(setting_sub);
+    const html = render_browse_streams_list_item(setting_sub);
     const new_row = $(html);
 
     if (stream_create.get_name() === sub.name) {
@@ -256,7 +256,7 @@ export function add_sub_to_table(sub) {
         ui.get_content_element($(".streams-list")).append(new_row);
     }
 
-    const settings_html = render_subscription_settings(sub);
+    const settings_html = render_stream_settings(sub);
     ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
@@ -407,7 +407,7 @@ export function render_left_panel_superset() {
             subscriptions: sub_rows,
         };
 
-        return render_subscriptions(template_data);
+        return render_browse_streams_list(template_data);
     });
 
     ui.get_content_element($("#subscriptions_table .streams-list")).html(html);
@@ -620,7 +620,7 @@ export function setup_page(callback) {
                 !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
         };
 
-        const rendered = render_subscription_table_body(template_data);
+        const rendered = render_stream_settings_overlay(template_data);
         $("#subscriptions_table").append(rendered);
 
         render_left_panel_superset();

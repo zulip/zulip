@@ -19,7 +19,6 @@ from zerver.lib.validator import (
 from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
 from zerver.tornado.event_queue import fetch_events, get_client_descriptor, process_notification
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.handlers import AsyncDjangoHandler
 
 
 @internal_notify_view(True)
@@ -111,7 +110,8 @@ def get_events_backend(
     # Extract the Tornado handler from the request
     tornado_handler = get_request_notes(request).tornado_handler
     assert tornado_handler is not None
-    handler: AsyncDjangoHandler = tornado_handler
+    handler = tornado_handler()
+    assert handler is not None
 
     if user_client is None:
         valid_user_client = get_request_notes(request).client

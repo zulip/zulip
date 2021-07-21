@@ -35,13 +35,7 @@ function change_display_setting(data, status_element, success_msg_html, sticky) 
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
-    settings_ui.do_settings_change(
-        channel.patch,
-        "/json/settings/display",
-        data,
-        status_element,
-        opts,
-    );
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element, opts);
 }
 
 export function set_up() {
@@ -153,7 +147,7 @@ export function set_up() {
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
-            url: "/json/settings/display",
+            url: "/json/settings",
             data,
             success() {},
             error(xhr) {

@@ -410,7 +410,7 @@ run_test("realm settings", ({override}) => {
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
 
-    override(realm_logo, "rerender", noop);
+    override(realm_logo, "render", noop);
 
     event = event_fixtures.realm__update_dict__logo;
     dispatch(event);
@@ -708,7 +708,7 @@ run_test("update_display_settings", ({override}) => {
         assert_same(secs, 300);
     };
 
-    override(realm_logo, "rerender", noop);
+    override(realm_logo, "render", noop);
 
     {
         const stub = make_stub();

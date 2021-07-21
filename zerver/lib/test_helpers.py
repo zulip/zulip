@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import time
+import weakref
 from contextlib import contextmanager
 from functools import wraps
 from typing import (
@@ -310,7 +311,6 @@ class HostRequestMock(HttpRequest):
             self.POST[key] = str(post_data[key])
             self.method = "POST"
 
-        self._tornado_handler = DummyHandler()
         self._log_data: Dict[str, Any] = {}
         if meta_data is None:
             self.META = {"PATH_INFO": "test"}
@@ -324,7 +324,7 @@ class HostRequestMock(HttpRequest):
         request_notes_map[self] = ZulipRequestNotes(
             client_name="",
             log_data={},
-            tornado_handler=tornado_handler,
+            tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
             client=get_client(client_name) if client_name is not None else None,
         )
 
@@ -468,6 +468,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "help/configure-missed-message-emails",
             "help/community-topic-edits",
             "help/delete-a-stream",
+            "for/working-groups-and-communities/",
             "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
