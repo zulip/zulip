@@ -587,24 +587,23 @@ class MissedMessageWorker(QueueProcessingWorker):
             user_profile_id: int = event["user_profile_id"]
             batch_duration = datetime.timedelta(seconds=self.BATCH_DURATION)
 
-            with transaction.atomic():
-                try:
-                    pending_email = ScheduledMessageNotificationEmail.objects.filter(
-                        user_profile_id=user_profile_id
-                    )[0]
-                    scheduled_timestamp = pending_email.scheduled_timestamp
-                except IndexError:
-                    scheduled_timestamp = timezone_now() + batch_duration
+            try:
+                pending_email = ScheduledMessageNotificationEmail.objects.filter(
+                    user_profile_id=user_profile_id
+                )[0]
+                scheduled_timestamp = pending_email.scheduled_timestamp
+            except IndexError:
+                scheduled_timestamp = timezone_now() + batch_duration
 
-                entry = ScheduledMessageNotificationEmail(
-                    user_profile_id=user_profile_id,
-                    message_id=event["message_id"],
-                    trigger=event["trigger"],
-                    scheduled_timestamp=scheduled_timestamp,
-                )
-                if "mentioned_user_group_id" in event:
-                    entry.mentioned_user_group_id = event["mentioned_user_group_id"]
-                entry.save()
+            entry = ScheduledMessageNotificationEmail(
+                user_profile_id=user_profile_id,
+                message_id=event["message_id"],
+                trigger=event["trigger"],
+                scheduled_timestamp=scheduled_timestamp,
+            )
+            if "mentioned_user_group_id" in event:
+                entry.mentioned_user_group_id = event["mentioned_user_group_id"]
+            entry.save()
 
             self.ensure_timer()
 
