@@ -40,6 +40,15 @@
         margin-top: 0;
     }
 
+    /* Changing visibility of hr in light-mode */
+
+    hr {
+        height: 2px;
+        background-color: hsl(214, 13%, 89%);
+        color: hsl(214, 13%, 89%);
+        opacity: 1;
+    }
+
     /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
     h1,
     h2,

@@ -379,6 +379,7 @@ on a dark background, and don't change the dark labels dark either. */
     .dropdown .dropdown-menu li.divider,
     .popover hr,
     hr {
+        height: 1px;
         color: hsl(212, 28%, 18%);
         opacity: 0.2;
     }
