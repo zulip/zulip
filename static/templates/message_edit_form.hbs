@@ -18,16 +18,17 @@
                 <i class="fa fa-angle-right" aria-hidden="true" {{#unless is_stream_editable}}style="display:none"{{/unless}}></i>
                 <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
                 <div class="message_edit_breadcrumb_messages"  style='display:none;'>
-                    {{> settings/settings_checkbox
-                      setting_name="send_notification_to_new_thread"
-                      prefix="id_"
-                      is_checked=notify_new_thread
-                      label=(t 'Send notification to new topic')}}
-                    {{> settings/settings_checkbox
-                      setting_name="send_notification_to_old_thread"
-                      prefix="id_"
-                      is_checked=notify_old_thread
-                      label=(t 'Send notification to old topic')}}
+                    <label class="checkbox">
+                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
+                        <span></span>
+                    </label>
+                    <label for="send_notification_to_new_thread">{{t "Send notification to new topic" }}</label>
+                    <div class="break-row"></div> <!-- break -->
+                    <label class="checkbox">
+                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
+                        <span></span>
+                    </label>
+                    <label for="send_notification_to_old_thread">{{t "Send notification to old topic" }}</label>
                 </div>
                 <select class='message_edit_topic_propagate' style='display:none;'>
                     <option selected="selected" value="change_later"> {{t "Change later messages to this topic" }}</option>

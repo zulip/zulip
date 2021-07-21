@@ -2544,11 +2544,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-radius: 1px 4px 4px 1px !important;
     }
 
-    /* Remove the bottom margin from the notification checkboxes */
-    .message_edit_breadcrumb_messages .input-group {
-        margin-bottom: 0;
-    }
-
     .stream_header_colorblock {
         margin-bottom: 20px;
     }
