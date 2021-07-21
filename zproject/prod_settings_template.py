@@ -374,12 +374,8 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
     }
 }
 
-## Controls how Zulip uses the Full Name provided by the IdP at the
-## userinfo endpoint. By default, Zulip prefills that value but lets
-## the user modify it in the registration form. When enabled, Zulip
-## assumes the name is correct, and new users will not be presented
-## with a registration form unless they need to accept Terms of
-## Service (i.e. TERMS_OF_SERVICE=True).
+## For documentation on this setting, see the relevant part of
+## https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
 # SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
 
 ########

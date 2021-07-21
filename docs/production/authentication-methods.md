@@ -709,6 +709,14 @@ using another authentication method. You can configure automatic
 account creation on first login attempt by setting `"auto_signup":
 True` in the IdP configuration dictionary.
 
+The global setting `SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED` controls how
+Zulip uses the Full Name provided by the IdP. By default, Zulip
+prefills that value in the new account creation form, but gives the
+user the opportunity to edit it before submitting. When `True`, Zulip
+assumes the name is correct, and new users will not be presented with
+a registration form unless they need to accept Terms of Service for
+the server (i.e. `TERMS_OF_SERVICE=True`).
+
 ## Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication
