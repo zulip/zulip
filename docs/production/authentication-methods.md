@@ -702,6 +702,13 @@ Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 
+By default, users who attempt to login with OIDC using an email
+address that does not have a current Zulip account will be prompted
+for whether they intend to create a new account or would like to login
+using another authentication method. You can configure automatic
+account creation on first login attempt by setting `"auto_signup":
+True` in the IdP configuration dictionary.
+
 ## Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication
