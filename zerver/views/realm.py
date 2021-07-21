@@ -17,6 +17,7 @@ from zerver.lib.actions import (
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
+    do_set_realm_user_default_setting,
 )
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
@@ -30,10 +31,12 @@ from zerver.lib.validator import (
     check_dict,
     check_int,
     check_int_in,
+    check_settings_values,
+    check_string_in,
     check_string_or_int,
     to_non_negative_int,
 )
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, RealmUserDefault, UserProfile
 
 
 @require_realm_admin
@@ -275,3 +278,100 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
     do_reactivate_realm(realm)
     context = {"realm": realm}
     return render(request, "zerver/realm_reactivation.html", context)
+
+
+emojiset_choices = {emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()}
+default_view_options = ["recent_topics", "all_messages"]
+
+
+@require_realm_admin
+@has_request_variables
+def update_realm_user_settings_defaults(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    color_scheme: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
+    ),
+    translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    default_view: Optional[str] = REQ(
+        str_validator=check_string_in(default_view_options), default=None
+    ),
+    left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
+    demote_inactive_streams: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
+    ),
+    enable_stream_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_stream_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_stream_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_stream_audible_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    notification_sound: Optional[str] = REQ(default=None),
+    enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_offline_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_offline_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_login_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    # enable_marketing_emails is not included here, since we don't at
+    # present allow organizations to customize this. (The user's selection
+    # in the signup form takes precedence over RealmUserDefault).
+    #
+    # We may want to change this model in the future, since some SSO signups
+    # do not offer an opportunity to prompt the user at all during signup.
+    message_content_in_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    pm_content_in_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    desktop_icon_count_display: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
+    ),
+    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    email_notifications_batching_period_seconds: Optional[int] = REQ(
+        json_validator=check_int, default=None
+    ),
+) -> HttpResponse:
+    if notification_sound is not None or email_notifications_batching_period_seconds is not None:
+        check_settings_values(notification_sound, email_notifications_batching_period_seconds)
+
+    realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
+    request_settings = {
+        k: v for k, v in list(locals().items()) if (k in RealmUserDefault.property_types)
+    }
+    for k, v in list(request_settings.items()):
+        if v is not None and getattr(realm_user_default, k) != v:
+            do_set_realm_user_default_setting(realm_user_default, k, v, acting_user=user_profile)
+
+    # TODO: Extract `ignored_parameters_unsupported` to be a common feature of the REQ framework.
+    from zerver.lib.request import RequestNotes
+
+    request_notes = RequestNotes.get_notes(request)
+    for req_var in request.POST:
+        if req_var not in request_notes.processed_parameters:
+            request_notes.ignored_parameters.add(req_var)
+
+    result: Dict[str, Any] = {}
+    if len(request_notes.ignored_parameters) > 0:
+        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
+
+    return json_success(result)

@@ -587,7 +587,7 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
 def check_settings_values(
     notification_sound: Optional[str],
     email_notifications_batching_period_seconds: Optional[int],
-    default_language: Optional[str],
+    default_language: Optional[str] = None,
 ) -> None:
     from zerver.lib.actions import get_available_notification_sounds
     from zerver.lib.i18n import get_available_language_codes

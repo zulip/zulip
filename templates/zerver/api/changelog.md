@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 96**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new endpoint to update default values of user settings in a realm.
+
 **Feature level 95**
 
 * [`POST /register`](/api/register-queue): Added

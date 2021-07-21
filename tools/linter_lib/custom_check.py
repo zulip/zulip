@@ -896,6 +896,7 @@ help_markdown_rules = RuleList(
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",
+            "exclude_pattern": "-realm-",
         },
     ],
     length_exclude=markdown_docs_length_exclude,

@@ -7499,6 +7499,349 @@ paths:
                         description: |
                           The ID for the custom profile field.
                     example: {"result": "success", "msg": "", "id": 9}
+  /realm/user_settings_defaults:
+    patch:
+      operationId: update-realm-user-settings-defaults
+      summary: Update realm-level defaults of user settings.
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Change the the default/initial values of
+        [personal preference settings](/api/update-settings) for new users
+        created in the organization.
+
+        `PATCH {{ api_url }}/v1/realm/user_settings_defaults`
+
+        This feature can be invaluable for customizing Zulip's default
+        settings for notifications or UI to be appropriate for how the
+        organization is using Zulip. (Note that this only supports
+        personal preference settings, like when to send push
+        notifications or what emoji set to use, not profile or
+        identity settings that naturally should be different for each user).
+
+        Note that this endpoint cannot, at present, be used to modify
+        settings for existing users in any way.
+
+        **Changes**: New in Zulip 5.0 (feature level 96).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - left_side_userlist
+                - emojiset
+      parameters:
+        - name: dense_mode
+          in: query
+          description: |
+            This setting has no effect at present.  It is reserved for use in controlling
+            the default font size in Zulip.
+          schema:
+            type: boolean
+          example: true
+        - name: starred_message_counts
+          in: query
+          description: |
+            Whether clients should display the [number of starred
+            messages](/help/star-a-message#display-the-number-of-starred-messages).
+          schema:
+            type: boolean
+          example: true
+        - name: fluid_layout_width
+          in: query
+          description: |
+            Whether to use the [maximum available screen width](/help/enable-full-width-display)
+            for the web app's center panel (message feed, recent topics) on wide screens.
+          schema:
+            type: boolean
+          example: true
+        - name: high_contrast_mode
+          in: query
+          description: |
+            This setting is reserved for use to control variations in Zulip's design
+            to help visually impaired users.
+          schema:
+            type: boolean
+          example: true
+        - name: color_scheme
+          in: query
+          description: |
+            Controls which [color theme](/help/night-mode) to use.
+
+            * 1 - Automatic
+            * 2 - Night mode
+            * 3 - Day mode
+
+            Automatic detection is implementing using the standard `prefers-color-scheme`
+            media query.
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: enable_drafts_synchronization
+          in: query
+          description: |
+            A boolean parameter to control whether synchronizing drafts is enabled for
+            the user. When synchronization is disabled, all drafts stored in the server
+            will be automatically deleted from the server.
+
+            This does not do anything (like sending events) to delete local copies of
+            drafts stored in clients.
+          schema:
+            type: boolean
+          example: true
+        - name: translate_emoticons
+          in: query
+          description: |
+            Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+            in messages the user sends.
+          schema:
+            type: boolean
+          example: true
+        - name: default_view
+          in: query
+          description: |
+            The [default view](/help/change-default-view) used when opening a new
+            Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
+
+            * "recent_topics" - Recent topics view
+            * "all_messages" - All messages view
+          schema:
+            type: string
+          example: all_messages
+        - name: left_side_userlist
+          in: query
+          description: |
+            Whether the users list on left sidebar in narrow windows.
+
+            This feature is not heavily used and is likely to be reworked.
+          schema:
+            type: boolean
+          example: true
+        - name: emojiset
+          in: query
+          description: |
+            The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
+            used to display emoji to the user everything they appear in the UI.
+
+            * "google" - Google modern
+            * "google-blob" - Google classic
+            * "twitter" - Twitter
+            * "text" - Plain text
+          schema:
+            type: string
+          example: "google"
+        - name: demote_inactive_streams
+          in: query
+          description: |
+            Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+
+            * 1 - Automatic
+            * 2 - Always
+            * 3 - Never
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: enable_stream_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for stream messages.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_email_notifications
+          in: query
+          description: |
+            Enable email notifications for stream messages.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_push_notifications
+          in: query
+          description: |
+            Enable mobile notifications for stream messages.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_audible_notifications
+          in: query
+          description: |
+            Enable audible desktop notifications for stream messages.
+          schema:
+            type: boolean
+          example: true
+        - name: notification_sound
+          in: query
+          description: |
+            Notification sound name.
+          schema:
+            type: string
+          example: ding
+        - name: enable_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for private messages and @-mentions.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_sounds
+          in: query
+          description: |
+            Enable audible desktop notifications for private messages and
+            @-mentions.
+          schema:
+            type: boolean
+          example: true
+        - name: email_notifications_batching_period_seconds
+          in: query
+          description: |
+            The duration (in seconds) for which the server should wait to batch
+            email notifications before sending them.
+          schema:
+            type: integer
+          example: 120
+        - name: enable_offline_email_notifications
+          in: query
+          description: |
+            Enable email notifications for private messages and @-mentions received
+            when the user is offline.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_offline_push_notifications
+          in: query
+          description: |
+            Enable mobile notification for private messages and @-mentions received
+            when the user is offline.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_online_push_notifications
+          in: query
+          description: |
+            Enable mobile notification for private messages and @-mentions received
+            when the user is online.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_digest_emails
+          in: query
+          description: |
+            Enable digest emails when the user is away.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_login_emails
+          in: query
+          description: |
+            Enable email notifications for new logins to account.
+          schema:
+            type: boolean
+          example: true
+        - name: message_content_in_email_notifications
+          in: query
+          description: |
+            Include the message's content in email notifications for new messages.
+          schema:
+            type: boolean
+          example: true
+        - name: pm_content_in_desktop_notifications
+          in: query
+          description: |
+            Include content of private messages in desktop notifications.
+          schema:
+            type: boolean
+          example: true
+        - name: wildcard_mentions_notify
+          in: query
+          description: |
+            Whether wildcard mentions (E.g. @**all**) should send notifications
+            like a personal mention.
+          schema:
+            type: boolean
+          example: true
+        - name: desktop_icon_count_display
+          in: query
+          description: |
+            Unread count summary (appears in desktop sidebar and browser tab)
+
+            * 1 - All unreads
+            * 2 - Private messages and mentions
+            * 3 - None
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: realm_name_in_notifications
+          in: query
+          description: |
+            Include organization name in subject of message notification emails.
+          schema:
+            type: boolean
+          example: true
+        - name: presence_enabled
+          in: query
+          description: |
+            Display the presence status to other users when online.
+          schema:
+            type: boolean
+          example: true
+        - name: enter_sends
+          in: query
+          description: |
+            Whether pressing Enter in the compose box sends a message
+            (or saves a message edit).
+          schema:
+            type: boolean
+          example: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported:
+                        type: array
+                        items:
+                          type: string
+                        description: |
+                          This field lists any parameters sent in the request that are not
+                          supported by the endpoint. While this can be expected, e.g. when sending
+                          both current and legacy names for a parameter to a Zulip server of
+                          unknown version, this often indicates a bug in the client
+                          implementation or an attempt to configure a new feature, while
+                          connected to an older Zulip server that does not support the feature.
+                    example:
+                      {
+                        "ignored_parameters_unsupported":
+                          ["desktop_notifications", "demote_streams"],
+                        "msg": "",
+                        "result": "success",
+                      }
+
   /users/me/subscriptions/properties:
     post:
       operationId: update-subscription-settings

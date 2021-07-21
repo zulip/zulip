@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     do_scrub_realm,
     do_send_realm_reactivation_email,
     do_set_realm_property,
+    do_set_realm_user_default_setting,
 )
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
@@ -29,6 +30,7 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    RealmUserDefault,
     ScheduledEmail,
     Stream,
     UserMessage,
@@ -817,6 +819,97 @@ class RealmAPITest(ZulipTestCase):
         for prop in Realm.property_types:
             with self.subTest(property=prop):
                 self.do_test_realm_update_api(prop)
+
+    def update_with_realm_default_api(self, name: str, val: Any) -> None:
+        if not isinstance(val, str):
+            val = orjson.dumps(val).decode()
+        result = self.client_patch("/json/realm/user_settings_defaults", {name: val})
+        self.assert_json_success(result)
+
+    def do_test_realm_default_setting_update_api(self, name: str) -> None:
+        bool_tests: List[bool] = [False, True]
+        test_values: Dict[str, Any] = dict(
+            color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
+            default_view=["recent_topics", "all_messages"],
+            emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
+            demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
+            desktop_icon_count_display=[1, 2, 3],
+            notification_sound=["zulip", "ding"],
+            email_notifications_batching_period_seconds=[120, 300],
+        )
+
+        vals = test_values.get(name)
+        property_type = RealmUserDefault.property_types[name]
+
+        if property_type is bool:
+            vals = bool_tests
+
+        if vals is None:
+            raise AssertionError(f"No test created for {name}")
+
+        realm = get_realm("zulip")
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        do_set_realm_user_default_setting(realm_user_default, name, vals[0], acting_user=None)
+
+        for val in vals[1:]:
+            self.update_with_realm_default_api(name, val)
+            realm_user_default = RealmUserDefault.objects.get(realm=realm)
+            self.assertEqual(getattr(realm_user_default, name), val)
+
+        self.update_with_realm_default_api(name, vals[0])
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(getattr(realm_user_default, name), vals[0])
+
+    def test_update_default_realm_settings(self) -> None:
+        for prop in RealmUserDefault.property_types:
+            # enable_marketing_emails setting is not actually used and thus cannot be updated
+            # using this endpoint. It is included in notification_setting_types only for avoiding
+            # duplicate code. default_language and twenty_four_hour_time are currently present
+            # in Realm table also and thus are updated using '/realm' endpoint, but those
+            # will be removed in future and the settings in RealmUserDefault table will be used.
+            if prop in ["default_language", "twenty_four_hour_time", "enable_marketing_emails"]:
+                continue
+            self.do_test_realm_default_setting_update_api(prop)
+
+    def test_invalid_default_notification_sound_value(self) -> None:
+        result = self.client_patch(
+            "/json/realm/user_settings_defaults", {"notification_sound": "invalid"}
+        )
+        self.assert_json_error(result, "Invalid notification sound 'invalid'")
+
+        result = self.client_patch(
+            "/json/realm/user_settings_defaults", {"notification_sound": "zulip"}
+        )
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.notification_sound, "zulip")
+
+    def test_invalid_email_notifications_batching_period_setting(self) -> None:
+        result = self.client_patch(
+            "/json/realm/user_settings_defaults",
+            {"email_notifications_batching_period_seconds": -1},
+        )
+        self.assert_json_error(result, "Invalid email batching period: -1 seconds")
+
+        result = self.client_patch(
+            "/json/realm/user_settings_defaults",
+            {"email_notifications_batching_period_seconds": 7 * 24 * 60 * 60 + 10},
+        )
+        self.assert_json_error(result, "Invalid email batching period: 604810 seconds")
+
+    def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
+        params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}
+        json_result = self.client_patch("/json/realm/user_settings_defaults", params)
+        self.assert_json_success(json_result)
+
+        realm = get_realm("zulip")
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(realm_user_default.starred_message_counts, False)
+
+        result = orjson.loads(json_result.content)
+        self.assertIn("ignored_parameters_unsupported", result)
+        self.assertEqual(result["ignored_parameters_unsupported"], ["emoji_set"])
 
     def test_update_realm_allow_message_editing(self) -> None:
         """Tests updating the realm property 'allow_message_editing'."""
