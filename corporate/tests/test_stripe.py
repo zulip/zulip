@@ -2735,13 +2735,36 @@ class StripeTest(StripeTestCase):
         for invoice in invoices:
             self.assertEqual(invoice.status, "void")
 
+    def create_invoices(self, customer: Customer, num_invoices: int) -> List[stripe.Invoice]:
+        invoices = []
+        assert customer.stripe_customer_id is not None
+        for _ in range(num_invoices):
+            stripe.InvoiceItem.create(
+                amount=10000,
+                currency="usd",
+                customer=customer.stripe_customer_id,
+                description="Zulip standard",
+                discountable=False,
+            )
+            invoice = stripe.Invoice.create(
+                auto_advance=True,
+                billing="send_invoice",
+                customer=customer.stripe_customer_id,
+                days_until_due=DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+                statement_descriptor="Zulip Standard",
+            )
+            stripe.Invoice.finalize_invoice(invoice)
+            invoices.append(invoice)
+        return invoices
+
     @mock_stripe()
     def test_downgrade_small_realms_behind_on_payments_as_needed(self, *mock: Mock) -> None:
         def create_realm(
             users_to_create: int,
             create_stripe_customer: bool,
             create_plan: bool,
-        ) -> Tuple[Realm, Optional[Customer], Optional[CustomerPlan]]:
+            num_invoices: Optional[int] = None,
+        ) -> Tuple[Realm, Optional[Customer], Optional[CustomerPlan], List[stripe.Invoice]]:
             realm_string_id = "realm_" + str(random.randrange(1, 1000000))
             realm = Realm.objects.create(string_id=realm_string_id)
             users = []
@@ -2761,29 +2784,11 @@ class StripeTest(StripeTestCase):
                 plan, _ = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
                     realm, users_to_create, users_to_create
                 )
-            return realm, customer, plan
-
-        def create_invoices(customer: Customer, num_invoices: int) -> List[stripe.Invoice]:
             invoices = []
-            assert customer.stripe_customer_id is not None
-            for _ in range(num_invoices):
-                stripe.InvoiceItem.create(
-                    amount=10000,
-                    currency="usd",
-                    customer=customer.stripe_customer_id,
-                    description="Zulip standard",
-                    discountable=False,
-                )
-                invoice = stripe.Invoice.create(
-                    auto_advance=True,
-                    billing="send_invoice",
-                    customer=customer.stripe_customer_id,
-                    days_until_due=DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-                    statement_descriptor="Zulip Standard",
-                )
-                stripe.Invoice.finalize_invoice(invoice)
-                invoices.append(invoice)
-            return invoices
+            if num_invoices is not None:
+                assert customer is not None
+                invoices = self.create_invoices(customer, num_invoices)
+            return realm, customer, plan, invoices
 
         class Row(NamedTuple):
             realm: Realm
@@ -2794,51 +2799,43 @@ class StripeTest(StripeTestCase):
             email_expected_to_be_sent: bool
 
         rows: List[Row] = []
-        realm, _, _ = create_realm(
+        realm, _, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=False, create_plan=False
         )
         # To create local Customer object but no Stripe customer.
         attach_discount_to_realm(realm, Decimal(20), acting_user=None)
         rows.append(Row(realm, Realm.SELF_HOSTED, None, None, False, False))
 
-        realm, _, _ = create_realm(
+        realm, _, _, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=False
         )
         rows.append(Row(realm, Realm.SELF_HOSTED, None, None, False, False))
 
-        realm, _, plan = create_realm(
+        realm, _, plan, _ = create_realm(
             users_to_create=1, create_stripe_customer=True, create_plan=True
         )
         rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm, customer, plan = create_realm(
-            users_to_create=1, create_stripe_customer=True, create_plan=True
+        realm, customer, plan, _ = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=True, num_invoices=1
         )
-        assert customer
-        create_invoices(customer, num_invoices=1)
         rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm, customer, plan = create_realm(
-            users_to_create=3, create_stripe_customer=True, create_plan=True
+        realm, customer, plan, _ = create_realm(
+            users_to_create=3, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
-        assert customer
-        create_invoices(customer, num_invoices=2)
         rows.append(Row(realm, Realm.LIMITED, plan, CustomerPlan.ENDED, True, True))
 
-        realm, customer, plan = create_realm(
-            users_to_create=1, create_stripe_customer=True, create_plan=True
+        realm, customer, plan, invoices = create_realm(
+            users_to_create=1, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
-        assert customer
-        invoices = create_invoices(customer, num_invoices=2)
         for invoice in invoices:
             stripe.Invoice.pay(invoice, paid_out_of_band=True)
         rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
-        realm, customer, plan = create_realm(
-            users_to_create=20, create_stripe_customer=True, create_plan=True
+        realm, customer, plan, _ = create_realm(
+            users_to_create=20, create_stripe_customer=True, create_plan=True, num_invoices=2
         )
-        assert customer
-        create_invoices(customer, num_invoices=2)
         rows.append(Row(realm, Realm.STANDARD, plan, CustomerPlan.ACTIVE, False, False))
 
         with patch("corporate.lib.stripe.void_all_open_invoices") as void_all_open_invoices_mock:
