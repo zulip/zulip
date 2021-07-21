@@ -11,6 +11,16 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 95**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_user_settings_defaults` object, containing default values of
+  personal user settings for new users in the realm.
+
+* [`GET /events`](/api/get-events): Added
+  `realm_user_settings_defaults` event type, which is sent when the
+  organization's configured default settings for new users change.
+
 **Feature level 94**
 * [`POST /register`](/api/register-queue): Added
   `demo_organization_scheduled_deletion_date` field to realm data.

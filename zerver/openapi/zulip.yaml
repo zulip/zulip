@@ -3887,6 +3887,45 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to all users in a Zulip organization when the
+                                default settings for new users of the organization
+                                (realm) have changed.
+
+                                **Changes**: New in Zulip 5.0 (feature level 95).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user_settings_defaults
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                property:
+                                  type: string
+                                  description: |
+                                    The name of the property that was changed.
+                                value:
+                                  description: |
+                                    The new value of the property.
+                                  oneOf:
+                                    - type: boolean
+                                    - type: integer
+                                    - type: string
+                              example:
+                                {
+                                  "type": "realm_user_settings_defaults",
+                                  "op": "update",
+                                  "property": "left_side_userlist",
+                                  "value": false,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event containing details of newly created drafts.
                               properties:
                                 id:
@@ -10652,6 +10691,235 @@ paths:
 
                           Since these notifications are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
+                      realm_user_settings_defaults:
+                        type: object
+                        additionalProperties: false
+                        description: |
+                          Present if `realm_user_settings_defaults` is present in `fetch_event_types`.
+
+                          A dictionary containing the default values of settings for new users.
+
+                          **Changes**: New in Zulip 5.0 (feature level 95).
+                        properties:
+                          twenty_four_hour_time:
+                            type: boolean
+                            description: |
+                              Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+                          dense_mode:
+                            type: boolean
+                            description: |
+                              This setting has no effect at present. It is reserved for use in
+                              controlling the default font size in Zulip.
+                          starred_message_counts:
+                            type: boolean
+                            description: |
+                              Whether clients should display the [number of starred
+                              messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          fluid_layout_width:
+                            type: boolean
+                            description: |
+                              Whether to use the [maximum available screen width](/help/enable-full-width-display)
+                              for the web app's center panel (message feed, recent topics) on wide screens.
+                          high_contrast_mode:
+                            type: boolean
+                            description: |
+                              This setting is reserved for use to control variations in Zulip's design
+                              to help visually impaired users.
+                          color_scheme:
+                            type: integer
+                            description: |
+                              Controls which [color theme](/help/night-mode) to use.
+
+                              * 1 - Automatic
+                              * 2 - Night mode
+                              * 3 - Day mode
+
+                              Automatic detection is implementing using the standard `prefers-color-scheme`
+                              media query.
+                          translate_emoticons:
+                            type: boolean
+                            description: |
+                              Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+                              in messages the user sends.
+                          default_language:
+                            type: string
+                            description: |
+                              What [default language](/help/change-your-language) to use for the account.
+
+                              This controls both the Zulip UI as well as email notifications sent to the user.
+
+                              The value needs to be a standard language code that the Zulip server has
+                              translation data for; for example, `"en"` for English or `"de"` for German.
+                          default_view:
+                            type: string
+                            description: |
+                              The [default view](/help/change-default-view) used when opening a new
+                              Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
+
+                              * "recent_topics" - Recent topics view
+                              * "all_messages" - All messages view
+                          left_side_userlist:
+                            type: boolean
+                            description: |
+                              Whether the users list on left sidebar in narrow windows.
+
+                              This feature is not heavily used and is likely to be reworked.
+                          emojiset:
+                            type: string
+                            description: |
+                              The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
+                              used to display emoji to the user everything they appear in the UI.
+
+                              * "google" - Google modern
+                              * "google-blob" - Google classic
+                              * "twitter" - Twitter
+                              * "text" - Plain text
+                          demote_inactive_streams:
+                            type: integer
+                            description: |
+                              Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+
+                              * 1 - Automatic
+                              * 2 - Always
+                              * 3 - Never
+                          enable_stream_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for stream messages.
+                          enable_stream_email_notifications:
+                            type: boolean
+                            description: |
+                              Enable email notifications for stream messages.
+                          enable_stream_push_notifications:
+                            type: boolean
+                            description: |
+                              Enable mobile notifications for stream messages.
+                          enable_stream_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for stream messages.
+                          notification_sound:
+                            type: string
+                            description: |
+                              Notification sound name.
+                          enable_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for private messages and @-mentions.
+                          enable_sounds:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for private messages and
+                              @-mentions.
+                          enable_offline_email_notifications:
+                            type: boolean
+                            description: |
+                              Enable email notifications for private messages and @-mentions received
+                              when the user is offline.
+                          enable_offline_push_notifications:
+                            type: boolean
+                            description: |
+                              Enable mobile notification for private messages and @-mentions received
+                              when the user is offline.
+                          enable_online_push_notifications:
+                            type: boolean
+                            description: |
+                              Enable mobile notification for private messages and @-mentions received
+                              when the user is online.
+                          enable_digest_emails:
+                            type: boolean
+                            description: |
+                              Enable digest emails when the user is away.
+                          enable_marketing_emails:
+                            type: boolean
+                            description: |
+                              Enable marketing emails. Has no function outside Zulip Cloud.
+                          enable_login_emails:
+                            type: boolean
+                            description: |
+                              Enable email notifications for new logins to account.
+                          message_content_in_email_notifications:
+                            type: boolean
+                            description: |
+                              Include the message's content in email notifications for new messages.
+                          pm_content_in_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Include content of private messages in desktop notifications.
+                          wildcard_mentions_notify:
+                            type: boolean
+                            description: |
+                              Whether wildcard mentions (E.g. @**all**) should send notifications
+                              like a personal mention.
+                          desktop_icon_count_display:
+                            type: integer
+                            description: |
+                              Unread count summary (appears in desktop sidebar and browser tab)
+
+                              * 1 - All unreads
+                              * 2 - Private messages and mentions
+                              * 3 - None
+                          realm_name_in_notifications:
+                            type: boolean
+                            description: |
+                              Include organization name in subject of message notification emails.
+                          presence_enabled:
+                            type: boolean
+                            description: |
+                              Display the presence status to other users when online.
+                          enter_sends:
+                            type: boolean
+                            description: |
+                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              in the compose box is enabled.
+                          enable_drafts_synchronization:
+                            type: boolean
+                            description: |
+                              A boolean parameter to control whether synchronizing drafts is enabled for
+                              the user. When synchronization is disabled, all drafts stored in the server
+                              will be automatically deleted from the server.
+
+                              This does not do anything (like sending events) to delete local copies of
+                              drafts stored in clients.
+                          email_notifications_batching_period_seconds:
+                            type: integer
+                            description: |
+                              The duration (in seconds) for which the server should wait to batch
+                              email notifications before sending them.
+                          available_notification_sounds:
+                            type: array
+                            items:
+                              type: string
+                            description: |
+                              Array containing the names of the notification sound options
+                              supported by this Zulip server.  Only relevant to support UI
+                              for configuring notification sounds.
+                          emojiset_choices:
+                            description: |
+                              Array of dictionaries where each dictionary describes an emoji set
+                              supported by this version of the Zulip server.
+
+                              Only relevant to clients with configuration UI for choosing an emoji set;
+                              the currently selected emoji set is available in the `emojiset` key.
+
+                              See [PATCH /settings](/api/update-settings) for details on
+                              the meaning of this setting.
+                            type: array
+                            items:
+                              type: object
+                              description: |
+                                Object describing a emoji set.
+                              additionalProperties: false
+                              properties:
+                                key:
+                                  type: string
+                                  description: |
+                                    The key or the name of the emoji set which will be the value
+                                    of `emojiset` if this emoji set is chosen.
+                                text:
+                                  type: string
+                                  description: |
+                                    The text describing the emoji set.
                       realm_users:
                         type: array
                         description: |

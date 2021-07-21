@@ -58,6 +58,7 @@ from zerver.models import (
     Draft,
     Message,
     Realm,
+    RealmUserDefault,
     Stream,
     UserMessage,
     UserProfile,
@@ -326,6 +327,21 @@ def fetch_initial_state_data(
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date
             )
+
+    if want("realm_user_settings_defaults"):
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        state["realm_user_settings_defaults"] = {}
+        for property_name in RealmUserDefault.property_types:
+            state["realm_user_settings_defaults"][property_name] = getattr(
+                realm_user_default, property_name
+            )
+
+        state["realm_user_settings_defaults"][
+            "emojiset_choices"
+        ] = RealmUserDefault.emojiset_choices()
+        state["realm_user_settings_defaults"][
+            "available_notification_sounds"
+        ] = get_available_notification_sounds()
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -926,6 +942,11 @@ def apply_event(
             # /events) and immediately reloaded into the same
             # deactivation UI. Passing achieves the same result.
             pass
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
+    elif event["type"] == "realm_user_settings_defaults":
+        if event["op"] == "update":
+            state["realm_user_settings_defaults"][event["property"]] = event["value"]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "subscription":

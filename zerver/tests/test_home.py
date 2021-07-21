@@ -170,6 +170,7 @@ class HomeTest(ZulipTestCase):
         "realm_uri",
         "realm_user_group_edit_policy",
         "realm_user_groups",
+        "realm_user_settings_defaults",
         "realm_users",
         "realm_video_chat_provider",
         "realm_waiting_period_threshold",
@@ -238,7 +239,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 43)
+        self.assert_length(queries, 44)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode()
@@ -345,7 +346,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 40)
+            self.assert_length(queries, 41)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -376,7 +377,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 38)
+        self.assert_length(queries2, 39)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode()

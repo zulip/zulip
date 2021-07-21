@@ -1009,6 +1009,44 @@ def do_set_realm_signup_notifications_stream(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def do_set_realm_user_default_setting(
+    realm_user_default: RealmUserDefault,
+    name: str,
+    value: Any,
+    *,
+    acting_user: Optional[UserProfile],
+) -> None:
+    old_value = getattr(realm_user_default, name)
+    realm = realm_user_default.realm
+    event_time = timezone_now()
+
+    with transaction.atomic(savepoint=False):
+        setattr(realm_user_default, name, value)
+        realm_user_default.save(update_fields=[name])
+
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: value,
+                    "property": name,
+                }
+            ).decode(),
+        )
+
+    event = dict(
+        type="realm_user_settings_defaults",
+        op="update",
+        property=name,
+        value=value,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
+
+
 def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to

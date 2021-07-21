@@ -82,6 +82,7 @@ from zerver.lib.actions import (
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
+    do_set_realm_user_default_setting,
     do_set_zoom_token,
     do_unmute_topic,
     do_unmute_user,
@@ -125,6 +126,7 @@ from zerver.lib.event_schema import (
     check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_deactivated,
+    check_realm_default_update,
     check_realm_domains_add,
     check_realm_domains_change,
     check_realm_domains_remove,
@@ -191,6 +193,7 @@ from zerver.models import (
     RealmAuditLog,
     RealmDomain,
     RealmPlayground,
+    RealmUserDefault,
     Service,
     Stream,
     UserGroup,
@@ -2166,6 +2169,76 @@ class RealmPropertyActionTest(BaseAction):
         for prop in Realm.property_types:
             with self.settings(SEND_DIGEST_EMAILS=True):
                 self.do_set_realm_property_test(prop)
+
+    def do_set_realm_user_default_setting_test(self, name: str) -> None:
+        bool_tests: List[bool] = [True, False, True]
+        test_values: Dict[str, Any] = dict(
+            color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
+            default_view=["recent_topics", "all_messages"],
+            emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
+            demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
+            desktop_icon_count_display=[1, 2, 3],
+            notification_sound=["zulip", "ding"],
+            email_notifications_batching_period_seconds=[120, 300],
+        )
+
+        vals = test_values.get(name)
+        property_type = RealmUserDefault.property_types[name]
+
+        if property_type is bool:
+            vals = bool_tests
+
+        if vals is None:
+            raise AssertionError(f"No test created for {name}")
+
+        realm_user_default = RealmUserDefault.objects.get(realm=self.user_profile.realm)
+        now = timezone_now()
+        do_set_realm_user_default_setting(
+            realm_user_default, name, vals[0], acting_user=self.user_profile
+        )
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+            ).count(),
+            1,
+        )
+        for count, val in enumerate(vals[1:]):
+            now = timezone_now()
+            state_change_expected = True
+            events = self.verify_action(
+                lambda: do_set_realm_user_default_setting(
+                    realm_user_default, name, val, acting_user=self.user_profile
+                ),
+                state_change_expected=state_change_expected,
+            )
+
+            old_value = vals[count]
+            self.assertEqual(
+                RealmAuditLog.objects.filter(
+                    realm=self.user_profile.realm,
+                    event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+                    event_time__gte=now,
+                    acting_user=self.user_profile,
+                    extra_data=orjson.dumps(
+                        {
+                            RealmAuditLog.OLD_VALUE: old_value,
+                            RealmAuditLog.NEW_VALUE: val,
+                            "property": name,
+                        }
+                    ).decode(),
+                ).count(),
+                1,
+            )
+            check_realm_default_update("events[0]", events[0], name)
+
+    def test_change_realm_user_default_setting(self) -> None:
+        for prop in RealmUserDefault.property_types:
+            if prop in ["default_language", "twenty_four_hour_time"]:
+                continue
+            self.do_set_realm_user_default_setting_test(prop)
 
 
 class UserDisplayActionTest(BaseAction):
