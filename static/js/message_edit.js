@@ -832,10 +832,10 @@ export function save_message_row_edit(row) {
         const selected_topic_propagation =
             row.find("select.message_edit_topic_propagate").val() || "change_later";
         const send_notification_to_old_thread = row
-            .find("#id_send_notification_to_old_thread")
+            .find(".send_notification_to_old_thread")
             .is(":checked");
         const send_notification_to_new_thread = row
-            .find("#id_send_notification_to_new_thread")
+            .find(".send_notification_to_new_thread")
             .is(":checked");
         request.propagate_mode = selected_topic_propagation;
         request.send_notification_to_old_thread = send_notification_to_old_thread;
