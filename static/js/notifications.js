@@ -7,6 +7,7 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -154,11 +155,18 @@ export function is_window_focused() {
     return window_focused;
 }
 
-export function notify_above_composebox(note, link_class, link_msg_id, link_text) {
+export function notify_above_composebox(
+    note,
+    link_class,
+    above_composebox_narrow_url,
+    link_msg_id,
+    link_text,
+) {
     const notification_html = $(
         render_compose_notification({
             note,
             link_class,
+            above_composebox_narrow_url,
             link_msg_id,
             link_text,
         }),
@@ -600,10 +608,12 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         let reason = get_local_notify_mix_reason(message);
 
+        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
+
         if (!reason) {
             if (need_user_to_scroll) {
                 reason = $t({defaultMessage: "Sent! Scroll down to view your message."});
-                notify_above_composebox(reason, "", null, "");
+                notify_above_composebox(reason, "", above_composebox_narrow_url, null, "");
                 setTimeout(() => {
                     $("#out-of-view-notification").hide();
                 }, 3000);
@@ -621,8 +631,27 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             {message_recipient: get_message_header(message)},
         );
 
-        notify_above_composebox(reason, link_class, link_msg_id, link_text);
+        notify_above_composebox(
+            reason,
+            link_class,
+            above_composebox_narrow_url,
+            link_msg_id,
+            link_text,
+        );
     }
+}
+
+function get_above_composebox_narrow_url(message) {
+    let above_composebox_narrow_url;
+    if (message.type === "stream") {
+        above_composebox_narrow_url = hash_util.by_stream_topic_uri(
+            message.stream_id,
+            message.topic,
+        );
+    } else {
+        above_composebox_narrow_url = message.pm_with_url;
+    }
+    return above_composebox_narrow_url;
 }
 
 // for callback when we have to check with the server if a message should be in
@@ -632,6 +661,7 @@ export function notify_messages_outside_current_search(messages) {
         if (!people.is_current_user(message.sender_email)) {
             continue;
         }
+        const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
         const link_text = $t(
             {defaultMessage: "Narrow to {message_recipient}"},
             {message_recipient: get_message_header(message)},
@@ -639,6 +669,7 @@ export function notify_messages_outside_current_search(messages) {
         notify_above_composebox(
             $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
             "compose_notification_narrow_by_topic",
+            above_composebox_narrow_url,
             message.id,
             link_text,
         );
