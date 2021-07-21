@@ -385,6 +385,10 @@ ul {
             font-weight: inherit;
         }
 
+        .user-profile-stream-list-help {
+            font-size: 18px;
+        }
+
         .stream-search {
             margin-left: auto;
             align-self: center;
