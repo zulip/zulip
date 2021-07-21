@@ -2397,6 +2397,16 @@ class Message(AbstractMessage):
         """
         return self.recipient.type == Recipient.STREAM
 
+    def is_public_stream_message(self) -> bool:
+        """
+        Find out whether the stream to which the message belongs to
+        is public or not.
+        """
+        if self.is_stream_message():
+            stream = Stream.objects.get(recipient=self.recipient)
+            return stream.is_public()
+        return False
+
     def get_realm(self) -> Realm:
         return self.sender.realm
 
