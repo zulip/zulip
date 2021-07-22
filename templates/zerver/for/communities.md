@@ -7,6 +7,8 @@
 >
 > — Nick Bergson-Shilcock, founder and CEO, Recurse Center
 
+## Zulip: Designed with communities in mind
+
 Zulip is designed to help thoughtful people work on difficult problems
 together, whether they work from a shared office or from all over the
 world. Zulip offers an ideal platform for communities of all types,
@@ -24,9 +26,10 @@ facilitating inclusion, and making efficient use of everyone’s time.
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">When we made the switch to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a> a few months ago for chat, never in my wildest dreams did I imagine it was going to become the beating heart of the community, and so quickly. It&#39;s a game changer. 🧑‍💻🗨️👩‍💻</p>&mdash; Dan Allen (@mojavelinux) <a href="https://twitter.com/mojavelinux/status/1409702273400201217?ref_src=twsrc%5Etfw">June 29, 2021</a></blockquote>
 &nbsp;
 
-If you haven’t read [Why Zulip](/why-zulip), read
-that first. The challenges with the Slack/Discord/IRC model discussed
-there are even more important for open communities:
+## Challenges with other communication tools
+
+Problems with the Slack/Discord/IRC model, discussed
+in detail [here](/why-zulip), are even more important for open communities:
 
 
 - Members of open communities may be scattered all over the world and
@@ -74,7 +77,9 @@ many busy individuals can happily participate in.
 
 &nbsp;
 
-Zulip’s topic-based threading model solves these problems:
+## Solution: Zulip’s topic-based threading
+
+Zulip’s topic-based threading model solves the problems described above:
 
 - Community members in any time zone can send messages and expect to
   get a reply and have an effective (potentially asynchronous)
@@ -107,7 +112,11 @@ Zulip’s topic-based threading model solves these problems:
 
 > — Srishti Sethi, Developer Advocate, Wikimedia Foundation
 
-You can see this in action in our own [chat.zulip.org
+&nbsp;
+
+## Try Zulip today!
+
+You can see Zulip in action in our own [chat.zulip.org
 community](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html), which sends
 thousands of messages a week. We often get feedback from contributors
 around the world that they love how responsive Zulip’s project leaders
