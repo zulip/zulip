@@ -7,7 +7,6 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
-import * as common from "./common";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -103,16 +102,6 @@ export function build_page() {
     });
 
     $(".settings-box").html(rendered_settings_tab);
-    common.setup_password_visibility_toggle(
-        "#old_password",
-        "#old_password + .password_visibility_toggle",
-        {tippy_tooltips: true},
-    );
-    common.setup_password_visibility_toggle(
-        "#new_password",
-        "#new_password + .password_visibility_toggle",
-        {tippy_tooltips: true},
-    );
 }
 
 export function launch(section) {

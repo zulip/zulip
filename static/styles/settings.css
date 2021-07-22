@@ -983,6 +983,13 @@ input[type="checkbox"] {
     }
 }
 
+#change_password_modal {
+    .change_password_info,
+    #change_password_container {
+        margin: 0;
+    }
+}
+
 #api_key_form,
 #change_password_modal {
     .password-div {
@@ -994,8 +1001,8 @@ input[type="checkbox"] {
 
         .password_visibility_toggle {
             position: absolute;
-            left: 190px;
-            top: 28px;
+            left: 194px;
+            top: 32px;
             width: 14px;
             opacity: 0.6;
 
@@ -1520,7 +1527,6 @@ input[type="checkbox"] {
     }
 
     #change_email_modal .change_email_info,
-    #change_password_modal .change_password_info,
     #api_key_modal #api_key_status {
         margin-top: 3px;
     }

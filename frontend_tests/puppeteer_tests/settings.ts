@@ -50,22 +50,17 @@ async function test_change_password(page: Page): Promise<void> {
     await page.click('[data-section="account-and-privacy"]');
     await page.click("#change_password");
 
-    const change_password_button_selector = "#change_password_button";
+    const change_password_button_selector = "#change_password_modal .dialog_submit_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
-    // For some strange reason #change_password_modal:focus is not working with Firefox.
-    // The below line is an alternative to that.
-    // TODO: Replace the below line with `await page.waitForSelector("#change_password_modal:focus", {visible: true})`
-    // when the above issue is resolved.
-    await page.waitForFunction(() => document.activeElement!.id === "change_password_modal");
+    await common.wait_for_micromodal_to_open(page);
     await page.type("#old_password", test_credentials.default_user.password);
     test_credentials.default_user.password = "new_password";
     await page.type("#new_password", test_credentials.default_user.password);
     await page.click(change_password_button_selector);
 
     // On success the change password modal gets closed.
-    await page.waitForFunction(() => $("#change_password_modal").attr("aria-hidden") === "true");
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_get_api_key(page: Page): Promise<void> {
