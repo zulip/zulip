@@ -69,7 +69,7 @@ function render_user_stream_list(streams, user) {
                 return item && item.name.toLocaleLowerCase().includes(value);
             },
         },
-        simplebar_container: $("#user-profile-modal .modal-body"),
+        simplebar_container: $("#user-profile-modal .modal__body"),
     });
 }
 
@@ -82,7 +82,7 @@ function render_user_group_list(groups, user) {
         modifier(item) {
             return format_user_group_list_item(item);
         },
-        simplebar_container: $("#user-profile-modal .modal-body"),
+        simplebar_container: $("#user-profile-modal .modal__body"),
     });
 }
 
@@ -134,7 +134,9 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
 }
 
 export function hide_user_profile() {
-    overlays.close_modal("#user-profile-modal");
+    overlays.close_modal("user-profile-modal", {
+        micromodal: true,
+    });
 }
 
 export function show_user_profile(user) {
@@ -163,7 +165,7 @@ export function show_user_profile(user) {
     };
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    $("#user-profile-modal").modal("show");
+    overlays.open_modal("user-profile-modal", {autoremove: true, micromodal: true});
     $(".tabcontent").hide();
     $("#profile-tab").show(); // Show general profile details by default.
     const opts = {

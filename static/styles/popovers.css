@@ -256,8 +256,17 @@ ul {
 }
 
 #user-profile-modal {
-    border-radius: 4px;
-    height: 60vh;
+    .modal__body {
+        box-sizing: border-box;
+        height: 60vh;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .modal__close {
+        float: right;
+        margin: 0;
+    }
 
     #tab-toggle {
         font-weight: initial;
@@ -356,7 +365,7 @@ ul {
         #body {
             padding-bottom: 10px;
             padding-top: 4px;
-            margin: 10px 0;
+            margin-top: 10px;
         }
     }
 
