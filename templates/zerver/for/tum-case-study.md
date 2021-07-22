@@ -1,5 +1,3 @@
-# Case study: Technical University of Munich Department of Informatics
-
 ## How do you teach 1400+ students?
 
 The [Technical University of Munich](https://www.tum.de/en/) (TUM) is
@@ -76,6 +74,10 @@ Since then, Robert has built several Zulip customizations for the
 department, and has had them merged to the upstream project. “I feel
 very welcomed as a new contributor and am glad that I’ve been able to
 contribute a few patches of my own,” Robert says.
+
+Learn more about [Zulip for Education](/for/education).
+Also, check out our guides on using Zulip for
+[conferences](/for/events) and [research](/for/research)!
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
 [chat-zulip-org]: https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html

@@ -4099,6 +4099,7 @@ nav {
 /* Common button styles */
 .register-now,
 .register-now:visited {
+    text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -4319,5 +4320,18 @@ nav {
                 }
             }
         }
+    }
+}
+
+.portico-landing.why-page.case-study-page {
+    .bg-dimmer {
+        background-color: hsl(224, 52%, 12%, 86%);
+    }
+
+    .hero-text {
+        margin: 0 auto;
+        font-size: 25px;
+        font-weight: 500;
+        opacity: 0.8;
     }
 }

@@ -1,5 +1,3 @@
-# Case study: University of California San Diego
-
 ## Making the best of a tough year
 
 [University of California San Diego
@@ -89,5 +87,6 @@ Zulip for the number theory research group at UCSD, where graduate
 students and postdocs can connect to discuss reading courses, social
 events, conferences of interest, etc.”
 
-To learn more, check out our guides on using Zulip for
+Learn more about [Zulip for Education](/for/education).
+Also, check out our guides on using Zulip for
 [conferences](/for/events) and [research](/for/research)!
