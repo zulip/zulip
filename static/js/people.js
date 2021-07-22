@@ -1164,6 +1164,10 @@ export const is_person_active = (user_id) => {
         blueslip.error("No user found.", user_id);
     }
 
+    if (cross_realm_dict.has(user_id)) {
+        return true;
+    }
+
     return active_user_dict.has(user_id);
 };
 

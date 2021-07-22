@@ -47,6 +47,16 @@ people.initialize_current_user(me.user_id);
 people.add_active_user(alice);
 people.add_active_user(bob);
 
+const welcome_bot = {
+    email: "welcome-bot@example.com",
+    user_id: 4,
+    full_name: "Welcome Bot",
+    is_bot: true,
+    // cross realm bots have no owner
+};
+
+people.add_cross_realm_user(welcome_bot);
+
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
     run_test(label, ({override, mock_template}) => {
@@ -214,6 +224,11 @@ test_ui("validate", ({override, mock_template}) => {
     page_params.realm_is_zephyr_mirror_realm = true;
     assert.ok(compose_validate.validate());
     page_params.realm_is_zephyr_mirror_realm = false;
+
+    initialize_pm_pill();
+    add_content_to_compose_box();
+    compose_state.private_message_recipient("welcome-bot@example.com");
+    assert.ok(compose_validate.validate());
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
