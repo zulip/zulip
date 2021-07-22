@@ -115,8 +115,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Base images are built using `tools/ci/Dockerfile.template`.
-          # The comments at the top explain how to build and upload these images.
+          # Docker images are built from 'tools/ci/Dockerfile'; the comments at
+          # the top explain how to build and upload these images.
           - docker_image: zulip/ci:bionic
             name: Bionic production install with custom db name and user
             is_bionic: true
