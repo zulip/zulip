@@ -1030,7 +1030,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             },
         )
         self.assert_json_error_contains(
-            result, "This organization has been deactivated", status_code=401
+            result, "This organization has been deactivated", status_code=404
         )
 
         result = self.api_post(
@@ -1062,7 +1062,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         realm.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(
-            result, "This organization has been deactivated", status_code=401
+            result, "This organization has been deactivated", status_code=404
         )
 
     def test_webhook_deactivated_realm(self) -> None:
@@ -1077,7 +1077,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         data = self.webhook_fixture_data("jira", "created_v2")
         result = self.client_post(url, data, content_type="application/json")
         self.assert_json_error_contains(
-            result, "This organization has been deactivated", status_code=401
+            result, "This organization has been deactivated", status_code=404
         )
 
 
@@ -1641,7 +1641,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         self.assert_json_error_contains(
             self._do_test(user_profile),
             "This organization has been deactivated",
-            status_code=401,
+            status_code=404,
         )
         do_reactivate_realm(user_profile.realm)
 

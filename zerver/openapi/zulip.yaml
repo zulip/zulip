@@ -11900,6 +11900,20 @@ paths:
                             },
                           ],
                       }
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/RealmDeactivatedError"
+                      - description: |
+                          A typical failed json response when the requested realm has been deactivated
+                  - allOf:
+                      - $ref: "#/components/schemas/RealmMovedError"
+                      - description: |
+                          A typical failed json response when the requested realm has been moved to a different hosting
   /settings:
     patch:
       operationId: update-settings
@@ -13323,7 +13337,15 @@ paths:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/UserDeactivatedError"
+        "404":
+          description: |
+            Not Found.
+          content:
+            application/json:
+              schema:
+                oneOf:
                   - $ref: "#/components/schemas/RealmDeactivatedError"
+                  - $ref: "#/components/schemas/RealmMovedError"
         "429":
           description: |
             Rate limit exceeded.
@@ -15156,8 +15178,25 @@ components:
 
             **Changes**: These errors used the HTTP 403 status code
             before Zulip 5.0 (feature level 76).
+            This error returns a 404 status code after Zulip 5.0 (feature level 113).
 
             A typical failed json response for when user's organization is deactivated:
+    RealmMovedError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "REALM_MOVED",
+              "msg": "This organization has been moved to new hosting",
+              "result": "error",
+              "moved_to_url": "http://realm-abc.com:9991",
+            }
+          description: |
+            ## Realm moved
+
+            **Changes**: New in Zulip 5.0 (feature level 113).
+
+            A typical failed json response when the request organization has been moved to a different hosting:
 
   ###################
   # Shared responses

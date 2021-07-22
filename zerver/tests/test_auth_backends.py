@@ -39,6 +39,7 @@ from social_django.strategy import DjangoStrategy
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
     change_user_is_active,
+    do_add_deactivated_redirect,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
@@ -4527,7 +4528,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_error_contains(result, "This organization has been deactivated", 401)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 404)
 
     def test_old_weak_password_after_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -4585,7 +4586,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_error_contains(result, "This organization has been deactivated", 401)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 404)
 
     def test_dev_auth_disabled(self) -> None:
         with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):
@@ -4805,6 +4806,36 @@ class FetchAuthBackends(ZulipTestCase):
             # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
             result = self.client_get("/api/v1/server_settings", subdomain="")
             self.assert_json_error_contains(result, "Subdomain required", 400)
+
+    def test_get_server_settings_with_deactivated_realm(self) -> None:
+        realm = get_realm("zulip")
+        realm_redirect = "test redirect"
+        do_deactivate_realm(realm, acting_user=None)
+        self.assertTrue(realm.deactivated)
+
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT="")
+        data = result.json()
+        self.assertEqual(
+            data,
+            {
+                "result": "error",
+                "msg": "This organization has been deactivated",
+                "code": "REALM_DEACTIVATED",
+            },
+        )
+
+        do_add_deactivated_redirect(realm, realm_redirect)
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT="")
+        data = result.json()
+        self.assertEqual(
+            data,
+            {
+                "result": "error",
+                "msg": "This organization has been moved to new hosting",
+                "code": "REALM_MOVED",
+                "moved_to_url": realm_redirect,
+            },
+        )
 
 
 class TestTwoFactor(ZulipTestCase):
