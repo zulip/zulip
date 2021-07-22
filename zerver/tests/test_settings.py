@@ -135,12 +135,12 @@ class ChangeSettingsTest(ZulipTestCase):
 
     # This is basically a don't-explode test.
     def test_notify_settings(self) -> None:
-        for notification_setting in UserProfile.notification_setting_types:
+        for notification_setting in UserProfile.notification_setting_types.keys():
             # `notification_sound` is a string not a boolean, so this test
             # doesn't work for it.
             #
             # TODO: Make this work more like do_test_realm_update_api
-            if notification_setting != "notification_sound":
+            if UserProfile.notification_setting_types[notification_setting] is bool:
                 self.check_for_toggle_param_patch("/json/settings", notification_setting)
 
     def test_change_notification_sound(self) -> None:
@@ -165,6 +165,30 @@ class ChangeSettingsTest(ZulipTestCase):
         # refetch user_profile object to correctly handle caching
         user_profile = self.example_user("hamlet")
         self.assertEqual(getattr(user_profile, param), "zulip")
+
+    def test_change_email_batching_period(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        # Default is two minutes
+        self.assertEqual(hamlet.email_notifications_batching_period_seconds, 120)
+
+        result = self.client_patch(
+            "/json/settings", {"email_notifications_batching_period_seconds": -1}
+        )
+        self.assert_json_error(result, "Invalid email batching period: -1 seconds")
+
+        result = self.client_patch(
+            "/json/settings", {"email_notifications_batching_period_seconds": 7 * 24 * 60 * 60 + 10}
+        )
+        self.assert_json_error(result, "Invalid email batching period: 604810 seconds")
+
+        result = self.client_patch(
+            "/json/settings", {"email_notifications_batching_period_seconds": 5 * 60}
+        )
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.email_notifications_batching_period_seconds, 300)
 
     def test_toggling_boolean_user_display_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""

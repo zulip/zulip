@@ -8449,6 +8449,14 @@ paths:
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
+                      email_notifications_batching_period_seconds:
+                        type: integer
+                        description: |
+                          Present if `update_global_notifications` is present in `fetch_event_types`.
+
+                          The current value of this global notification setting for the user.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_offline_email_notifications:
                         type: boolean
                         description: |
@@ -10253,6 +10261,16 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_notifications_batching_period_seconds
+          in: query
+          description: |
+            The duration (in seconds) for which the server should wait to batch
+            email notifications before sending them.
+
+            **Changes**: New in Zulip 5.0 (feature level 82)
+          schema:
+            type: integer
+          example: 120
         - name: enable_offline_email_notifications
           in: query
           description: |

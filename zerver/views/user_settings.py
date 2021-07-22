@@ -121,6 +121,9 @@ def json_change_settings(
     timezone: Optional[str] = REQ(
         str_validator=check_string_in(pytz.all_timezones_set), default=None
     ),
+    email_notifications_batching_period_seconds: Optional[int] = REQ(
+        json_validator=check_int, default=None
+    ),
     enable_stream_desktop_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
@@ -168,6 +171,17 @@ def json_change_settings(
         and notification_sound != "none"
     ):
         raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
+
+    if email_notifications_batching_period_seconds is not None and (
+        email_notifications_batching_period_seconds <= 0
+        or email_notifications_batching_period_seconds > 7 * 24 * 60 * 60
+    ):
+        # We set a limit of one week for the batching period
+        raise JsonableError(
+            _("Invalid email batching period: {} seconds").format(
+                email_notifications_batching_period_seconds
+            )
+        )
 
     if new_password != "":
         return_data: Dict[str, Any] = {}

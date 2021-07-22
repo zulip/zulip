@@ -65,6 +65,7 @@ class HomeTest(ZulipTestCase):
         "desktop_icon_count_display",
         "development_environment",
         "email",
+        "email_notifications_batching_period_seconds",
         "emojiset",
         "emojiset_choices",
         "enable_desktop_notifications",

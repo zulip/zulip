@@ -11,6 +11,13 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 82**
+
+* [`PATCH /settings`](/api/update-settings) now accepts a new
+  `email_notifications_batching_period_seconds` field for setting the
+  time duration for which the server will collect email notifications
+  before sending them.
+
 **Feature level 81**
 
 * `POST /users/me/enter-sends` has been removed. The `enter_sends`
