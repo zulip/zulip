@@ -239,6 +239,10 @@ on a dark background, and don't change the dark labels dark either. */
         border-width: 1px;
     }
 
+    .deactivated-pill {
+        background-color: hsl(0, 86%, 14%) !important;
+    }
+
     #search_arrows .pill,
     .pm_recipient .pill-container .pill {
         color: inherit;
