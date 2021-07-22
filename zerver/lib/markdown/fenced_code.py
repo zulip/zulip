@@ -171,10 +171,12 @@ class ZulipBaseHandler:
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: Optional[str] = None,
+        process_contents: bool = False,
     ) -> None:
         self.processor = processor
         self.output = output
         self.fence = fence
+        self.process_contents = process_contents
         self.lines: List[str] = []
 
     def handle_line(self, line: str) -> None:
@@ -187,7 +189,15 @@ class ZulipBaseHandler:
         if self.lines:
             text = "\n".join(self.lines)
             text = self.format_text(text)
-            text = self.processor.placeholder(text)
+
+            # For code blocks, the contents should not receive further
+            # processing.  Whereas with quote and spoiler blocks, we
+            # explicitly want Markdown formatting of the content
+            # inside. This behavior is controlled by the
+            # process_contents configuration flag.
+            if not self.process_contents:
+                text = self.processor.placeholder(text)
+
             processed_lines = text.split("\n")
             self.output.append("")
             self.output.extend(processed_lines)
@@ -294,7 +304,7 @@ class QuoteHandler(ZulipBaseHandler):
         default_language: Optional[str] = None,
     ) -> None:
         self.default_language = default_language
-        super().__init__(processor, output, fence)
+        super().__init__(processor, output, fence, process_contents=True)
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -304,16 +314,8 @@ class QuoteHandler(ZulipBaseHandler):
                 self.processor, self.lines, line, default_language=self.default_language
             )
 
-    def done(self) -> None:
-        text = "\n".join(self.lines)
-        text = self.processor.format_quote(text)
-        # Here we don't use placeholder as we may further
-        # want to process the text inside the quote.
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+    def format_text(self, text: str) -> str:
+        return self.processor.format_quote(text)
 
 
 class SpoilerHandler(ZulipBaseHandler):
@@ -325,7 +327,7 @@ class SpoilerHandler(ZulipBaseHandler):
         spoiler_header: str,
     ) -> None:
         self.spoiler_header = spoiler_header
-        super().__init__(processor, output, fence)
+        super().__init__(processor, output, fence, process_contents=True)
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -333,20 +335,8 @@ class SpoilerHandler(ZulipBaseHandler):
         else:
             check_for_new_fence(self.processor, self.lines, line)
 
-    def done(self) -> None:
-        if len(self.lines) == 0:
-            # No content, do nothing
-            return
-
-        text = "\n".join(self.lines)
-        text = self.processor.format_spoiler(self.spoiler_header, text)
-        # Here we don't use placeholder as we may further
-        # want to process the text inside the spoiler.
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+    def format_text(self, text: str) -> str:
+        return self.processor.format_spoiler(self.spoiler_header, text)
 
 
 class TexHandler(ZulipBaseHandler):
