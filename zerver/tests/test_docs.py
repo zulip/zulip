@@ -390,7 +390,7 @@ class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
         root_domain = ""
         result = self.client_get("/plans/", subdomain=root_domain)
-        self.assert_in_success_response(["Sign up now"], result)
+        self.assert_in_success_response(["Self host Zulip"], result)
         self.assert_not_in_success_response(["/upgrade#sponsorship"], result)
         self.assert_in_success_response(["/accounts/go/?next=/upgrade%23sponsorship"], result)
 
@@ -425,7 +425,7 @@ class PlansPageTest(ZulipTestCase):
         # self.assert_in_success_response(["Sign up now"], result)
 
     def test_CTA_text_by_plan_type(self) -> None:
-        sign_up_now = "Sign up now"
+        sign_up_now = "Create organization"
         buy_standard = "Buy Standard"
         current_plan = "Current plan"
         sponsorship_pending = "Sponsorship pending"
