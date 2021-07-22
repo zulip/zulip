@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import orjson
 from django.conf import settings
+from django.db.utils import IntegrityError
 from django.test import override_settings
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
@@ -286,6 +287,30 @@ class WorkerTest(ZulipTestCase):
 
                     # All batches got processed. Verify that the timer isn't running.
                     self.assertEqual(mmw.timer_event, None)
+
+                # Hacky test coming up! We want to test the try-except block in the consumer which handles
+                # IntegrityErrors raised when the message was deleted before it processed the notification
+                # event.
+                # However, Postgres defers checking ForeignKey constraints to when the current transaction
+                # commits. This poses some difficulties in testing because of Django running tests inside a
+                # transaction which never commits. See https://code.djangoproject.com/ticket/22431 for more
+                # details, but the summary is that IntegrityErrors due to database constraints are raised at
+                # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
+                # raise `IntegrityError` by mocking.
+                def raise_error(**kwargs: Any) -> None:
+                    raise IntegrityError
+
+                fake_client.enqueue("missedmessage_emails", hamlet_event1)
+
+                with patch(
+                    "zerver.models.ScheduledMessageNotificationEmail.objects.create",
+                    side_effect=raise_error,
+                ), self.assertLogs(level="DEBUG") as debug_logs:
+                    mmw.start()
+                    self.assertIn(
+                        "DEBUG:root:ScheduledMessageNotificationEmail row could not be created. The message may have been deleted. Skipping event.",
+                        debug_logs.output,
+                    )
 
         # Check that the frequency of calling maybe_send_batched_emails is correct (5 seconds)
         self.assertEqual(tm.call_args[0][0], 5)

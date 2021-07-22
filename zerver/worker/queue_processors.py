@@ -39,6 +39,7 @@ from django.conf import settings
 from django.core.mail.backends.smtp import EmailBackend
 from django.db import connection, transaction
 from django.db.models import F
+from django.db.utils import IntegrityError
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -595,17 +596,20 @@ class MissedMessageWorker(QueueProcessingWorker):
             except IndexError:
                 scheduled_timestamp = timezone_now() + batch_duration
 
-            entry = ScheduledMessageNotificationEmail(
-                user_profile_id=user_profile_id,
-                message_id=event["message_id"],
-                trigger=event["trigger"],
-                scheduled_timestamp=scheduled_timestamp,
-            )
-            if "mentioned_user_group_id" in event:
-                entry.mentioned_user_group_id = event["mentioned_user_group_id"]
-            entry.save()
+            try:
+                ScheduledMessageNotificationEmail.objects.create(
+                    user_profile_id=user_profile_id,
+                    message_id=event["message_id"],
+                    trigger=event["trigger"],
+                    scheduled_timestamp=scheduled_timestamp,
+                    mentioned_user_group_id=event.get("mentioned_user_group_id"),
+                )
 
-            self.ensure_timer()
+                self.ensure_timer()
+            except IntegrityError:
+                logging.debug(
+                    "ScheduledMessageNotificationEmail row could not be created. The message may have been deleted. Skipping event."
+                )
 
     def ensure_timer(self) -> None:
         # The caller is responsible for ensuring self.lock is held when it calls this.
