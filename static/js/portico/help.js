@@ -144,7 +144,9 @@ if (window.location.pathname === "/help/") {
 // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
 $(".help .sidebar h1, .help .sidebar h2, .help .sidebar h3").removeAttr("id");
 
-// Scroll to anchor link when clicked
+// Scroll to anchor link when clicked. Note that landing-page.js has a
+// similar function; this file and landing-page.js are never included
+// on the same page.
 $(document).on(
     "click",
     ".markdown .content h1, .markdown .content h2, .markdown .content h3",
