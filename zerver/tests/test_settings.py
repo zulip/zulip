@@ -15,23 +15,6 @@ from zerver.models import UserProfile, get_user_profile_by_api_key
 
 
 class ChangeSettingsTest(ZulipTestCase):
-    # DEPRECATED, to be deleted after all uses of check_for_toggle_param
-    # are converted into check_for_toggle_param_patch.
-    def check_for_toggle_param(self, pattern: str, param: str) -> None:
-        self.login("hamlet")
-        user_profile = self.example_user("hamlet")
-        json_result = self.client_post(pattern, {param: orjson.dumps(True).decode()})
-        self.assert_json_success(json_result)
-        # refetch user_profile object to correctly handle caching
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(getattr(user_profile, param), True)
-
-        json_result = self.client_post(pattern, {param: orjson.dumps(False).decode()})
-        self.assert_json_success(json_result)
-        # refetch user_profile object to correctly handle caching
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(getattr(user_profile, param), False)
-
     # TODO: requires method consolidation, right now, there's no alternative
     # for check_for_toggle_param for PATCH.
     def check_for_toggle_param_patch(self, pattern: str, param: str) -> None:
@@ -192,7 +175,7 @@ class ChangeSettingsTest(ZulipTestCase):
             self.check_for_toggle_param_patch("/json/settings", display_setting)
 
     def test_enter_sends_setting(self) -> None:
-        self.check_for_toggle_param("/json/users/me/enter-sends", "enter_sends")
+        self.check_for_toggle_param_patch("/json/settings", "enter_sends")
 
     def test_wrong_old_password(self) -> None:
         self.login("hamlet")

@@ -154,6 +154,7 @@ def json_change_settings(
     desktop_icon_count_display: Optional[int] = REQ(json_validator=check_int, default=None),
     realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     # We can't use REQ for this widget because
     # get_available_language_codes requires provisioning to be
@@ -260,6 +261,9 @@ def json_change_settings(
     if timezone is not None and user_profile.timezone != timezone:
         do_set_user_display_setting(user_profile, "timezone", timezone)
 
+    if enter_sends is not None and user_profile.enter_sends != enter_sends:
+        do_change_enter_sends(user_profile, enter_sends)
+
     # TODO: Do this more generally.
     from zerver.lib.request import get_request_notes
 
@@ -322,14 +326,3 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
         api_key=new_api_key,
     )
     return json_success(json_result)
-
-
-@human_users_only
-@has_request_variables
-def change_enter_sends(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    enter_sends: bool = REQ(json_validator=check_bool),
-) -> HttpResponse:
-    do_change_enter_sends(user_profile, enter_sends)
-    return json_success()

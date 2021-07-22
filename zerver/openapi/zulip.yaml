@@ -10387,6 +10387,17 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: enter_sends
+          in: query
+          description: |
+            Whether pressing Enter in the compose box sends a message
+            (or saves a message edit).
+
+            **Changes**: Before Zulip 5.0 (feature level 81), this setting was managed by
+            the `POST /users/me/enter-sends` endpoint, with the same parameter format.
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success

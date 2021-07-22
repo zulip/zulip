@@ -1093,8 +1093,8 @@ export function initialize() {
         // press Enter to send.
         $("#compose-textarea").trigger("focus");
 
-        return channel.post({
-            url: "/json/users/me/enter-sends",
+        return channel.patch({
+            url: "/json/settings",
             idempotent: true,
             data: {enter_sends: page_params.enter_sends},
         });

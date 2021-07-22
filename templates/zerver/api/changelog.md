@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 81**
+
+* `POST /users/me/enter-sends` has been removed. The `enter_sends`
+  setting is now edited using the normal [`PATCH
+  /settings`](/api/update-settings) endpoint.
+
 **Feature level 80**
 
 * [`PATCH /settings`](/api/update-settings): The

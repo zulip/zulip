@@ -1098,13 +1098,13 @@ test("initialize", ({override, mock_template}) => {
 
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
-    let channel_post_called = false;
-    override(channel, "post", (params) => {
-        assert.equal(params.url, "/json/users/me/enter-sends");
+    let channel_patch_called = false;
+    override(channel, "patch", (params) => {
+        assert.equal(params.url, "/json/settings");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});
 
-        channel_post_called = true;
+        channel_patch_called = true;
     });
     $("#enter_sends").is = () => false;
     $("#enter_sends").trigger("click");
@@ -1128,7 +1128,7 @@ test("initialize", ({override, mock_template}) => {
     assert.ok(stream_typeahead_called);
     assert.ok(subject_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
-    assert.ok(channel_post_called);
+    assert.ok(channel_patch_called);
     assert.ok(compose_textarea_typeahead_called);
 });
 

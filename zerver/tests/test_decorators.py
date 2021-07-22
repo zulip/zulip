@@ -1530,7 +1530,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
         post_endpoints = [
             "/api/v1/users/me/apns_device_token",
             "/api/v1/users/me/android_gcm_reg_id",
-            "/api/v1/users/me/enter-sends",
             "/api/v1/users/me/hotspots",
             "/api/v1/users/me/presence",
             "/api/v1/users/me/tutorial_status",

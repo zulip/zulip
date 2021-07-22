@@ -179,7 +179,6 @@ from zerver.views.user_groups import (
     update_user_group_backend,
 )
 from zerver.views.user_settings import (
-    change_enter_sends,
     confirm_email_change,
     delete_avatar_backend,
     json_change_settings,
@@ -381,14 +380,6 @@ v1_api_and_json_patterns = [
     rest_path("user_groups/<int:user_group_id>/members", POST=update_user_group_backend),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
-    rest_path(
-        "users/me/enter-sends",
-        POST=(
-            change_enter_sends,
-            # This endpoint should be folded into user settings
-            {"intentionally_undocumented"},
-        ),
-    ),
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots
     rest_path(
