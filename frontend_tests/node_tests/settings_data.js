@@ -147,6 +147,13 @@ function test_policy(label, policy, validation_func) {
         page_params.is_guest = false;
         assert.equal(validation_func(), true);
 
+        page_params.is_spectator = true;
+        page_params[policy] = settings_config.common_policy_values.by_members.code;
+        assert.equal(validation_func(), false);
+
+        page_params.is_spectator = false;
+        assert.equal(validation_func(), true);
+
         page_params[policy] = settings_config.common_policy_values.by_full_members.code;
         page_params.user_id = 30;
         isaac.date_joined = new Date(Date.now());

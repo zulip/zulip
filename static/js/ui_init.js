@@ -499,7 +499,18 @@ export function initialize_everything() {
     popover_menus.initialize();
 
     people.initialize(page_params.user_id, people_params);
-    settings_data.initialize(people.get_by_user_id(page_params.user_id).date_joined);
+
+    let date_joined;
+    if (!page_params.is_spectator) {
+        const user = people.get_by_user_id(page_params.user_id);
+        date_joined = user.date_joined;
+    } else {
+        // Spectators don't have an account, so we just prevent their
+        // date_joined is now.
+        date_joined = new Date();
+    }
+
+    settings_data.initialize(date_joined);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
