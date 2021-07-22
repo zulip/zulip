@@ -697,7 +697,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
             # Needs the width cleaned up; display: none is fine
-            "static/templates/settings/account_settings.hbs",
+            "static/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
             "static/templates/user_profile_modal.hbs",
             "static/templates/pm_list_item.hbs",

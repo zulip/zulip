@@ -1400,6 +1400,7 @@ a.dark_background:hover,
     display: inline-block;
     position: relative;
     color: hsl(0, 0%, 73%);
+    bottom: 4px;
 }
 
 div.message_table {

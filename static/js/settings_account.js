@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
+import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
@@ -392,12 +393,38 @@ export function set_up() {
         password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
     }
 
-    clear_password_change();
+    function change_password_post_render() {
+        $("#change_password_modal")
+            .find("[data-micromodal-close]")
+            .on("click", () => {
+                clear_password_change();
+            });
+        common.setup_password_visibility_toggle(
+            "#old_password",
+            "#old_password + .password_visibility_toggle",
+            {tippy_tooltips: true},
+        );
+        common.setup_password_visibility_toggle(
+            "#new_password",
+            "#new_password + .password_visibility_toggle",
+            {tippy_tooltips: true},
+        );
+        clear_password_change();
+    }
 
     $("#change_password").on("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal("#change_password_modal");
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Change password"}),
+            html_body: render_dialog_change_password(),
+            html_submit_button: $t_html({defaultMessage: "Change"}),
+            loading_spinner: true,
+            id: "change_password_modal",
+            form_id: "change_password_container",
+            post_render: change_password_post_render,
+            on_click: do_change_password,
+        });
         $("#pw_change_controls").show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
@@ -407,18 +434,10 @@ export function set_up() {
         }
     });
 
-    $("#change_password_modal")
-        .find("[data-dismiss=modal]")
-        .on("click", () => {
-            clear_password_change();
-        });
-
-    $("#change_password_button").on("click", (e) => {
+    function do_change_password(e) {
         e.preventDefault();
         e.stopPropagation();
-        const change_password_error = $("#change_password_modal")
-            .find(".change_password_info")
-            .expectOne();
+        const change_password_error = $("#change_password_modal").find("#dialog_error");
 
         const data = {
             old_password: $("#old_password").val(),
@@ -446,9 +465,10 @@ export function set_up() {
         const opts = {
             success_continuation() {
                 channel.set_password_change_in_progress(false);
-                overlays.close_modal("#change_password_modal");
+                dialog_widget.close_modal();
             },
             error_continuation() {
+                dialog_widget.hide_dialog_spinner();
                 channel.set_password_change_in_progress(false);
             },
             error_msg_element: change_password_error,
@@ -462,7 +482,7 @@ export function set_up() {
             opts,
         );
         clear_password_change();
-    });
+    }
 
     $("#new_password").on("input", () => {
         const field = $("#new_password");
