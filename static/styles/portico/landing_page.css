@@ -2335,6 +2335,14 @@ nav {
     margin-top: 20px;
 }
 
+.portico-landing.why-page .bg-events {
+    position: relative;
+
+    background-image: url(../../images/landing-page/for-events.jpg);
+    background-size: cover;
+    background-position: center;
+}
+
 .portico-landing.why-page .bg-education {
     position: relative;
 
