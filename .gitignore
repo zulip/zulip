@@ -34,9 +34,6 @@ package-lock.json
 
 /.dmypy.json
 
-# Dockerfiles generated for continuous integration
-/tools/ci/images
-
 # Generated i18n data
 /locale/en
 /locale/language_options.json
