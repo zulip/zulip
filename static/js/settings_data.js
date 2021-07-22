@@ -3,6 +3,7 @@ import * as settings_config from "./settings_config";
 
 let user_join_date;
 export function initialize(current_user_join_date) {
+    // We keep the `user_join_date` undefined if the user is a spectator
     user_join_date = current_user_join_date;
 }
 
@@ -103,6 +104,10 @@ export function user_can_change_logo() {
 function user_has_permission(policy_value) {
     if (page_params.is_admin) {
         return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
     }
 
     if (page_params.is_guest) {
