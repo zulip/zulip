@@ -133,7 +133,9 @@ jobs:
             os: bullseye
 
     name: ${{ matrix.name  }}
-    container: ${{ matrix.docker_image }}
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --init
     runs-on: ubuntu-latest
     needs: production_build
 
