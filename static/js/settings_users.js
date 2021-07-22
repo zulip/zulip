@@ -424,6 +424,7 @@ function confirm_deactivation(row, user_id, status_field) {
     const opts = {
         username: user.full_name,
         email: user.email,
+        message_delete_action: settings_config.deactivate_message_delete_action,
     };
     const html_body = render_settings_deactivation_user_modal(opts);
 
@@ -439,8 +440,16 @@ function confirm_deactivation(row, user_id, status_field) {
                 row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
             },
         };
+        const is_spammer = JSON.stringify($("#mark_as_spammer").prop("checked"));
+        const delete_action = $("#message_delete_action")[0].value;
         const url = "/json/users/" + encodeURIComponent(user_id);
-        settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
+        settings_ui.do_settings_change(
+            channel.del,
+            url,
+            {spammer: is_spammer, message_delete_action: delete_action},
+            status_field,
+            opts,
+        );
     }
 
     confirm_dialog.launch({

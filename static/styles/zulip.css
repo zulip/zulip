@@ -2679,6 +2679,14 @@ select.inline_select_topic_edit {
     }
 }
 
+.deactivate-modal-info-group {
+    margin-top: 5px;
+
+    select {
+        width: max-content;
+    }
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,

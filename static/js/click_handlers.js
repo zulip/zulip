@@ -607,6 +607,16 @@ export function initialize() {
         popovers.hide_all();
     });
 
+    $("body").on("click", "#mark_as_spammer", () => {
+        if ($("#mark_as_spammer").prop("checked")) {
+            $("#delete_action_info_group").show();
+        } else {
+            $("#delete_action_info_group").hide();
+        }
+        const default_option = $("#message_delete_action option:first").val(); // No action
+        $("#message_delete_action").val(default_option);
+    });
+
     // COMPOSE
 
     $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
