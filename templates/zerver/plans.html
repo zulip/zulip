@@ -26,24 +26,26 @@
                             <div class="text-content">
                                 <h2>Free</h2>
                                 <div class="description">
-                                    Try Zulip for an unlimited period of time.
+                                    Best for light use.
                                 </div>
                                 <hr />
                                 <ul class="feature-list">
                                     <li>10,000 messages of search history</li>
                                     <li>File storage up to 5 GB total</li>
-                                    <li>Convenient web service</li>
-                                    <li>No sysadmin work required</li>
+                                    <li><a href="/features">Full-featured</a> team chat service</li>
+                                    <li><a href="/integrations">Hundreds of integrations</a></li>
+                                    <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
+                                    <li><a href="/help/roles-and-permissions">Guest accounts</a></li>
                                 </ul>
                             </div>
                             <div class="bottom">
                                 <div class="text-content">
                                     {% if not realm or realm.plan_type == realm.SELF_HOSTED %}
                                     <div class="pricing-details">
-                                        Free
+                                        Free cloud service
                                     </div>
                                     <a href="/new/" class="button green">
-                                        Sign up now
+                                        Create organization
                                     </a>
                                     {% elif realm.plan_type == realm.LIMITED or sponsorship_pending %}
                                     <div class="pricing-details"></div>
@@ -59,14 +61,14 @@
                             <div class="text-content">
                                 <h2>Standard</h2>
                                 <div class="description">
-                                    Make Zulip your home.
+                                    Your team's collaboration hub.
                                 </div>
                                 <hr />
                                 <ul class="feature-list">
-                                    <li>Full search history</li>
+                                    <li>Unlimited search history</li>
                                     <li>File storage up to 10 GB per user</li>
-                                    <li>Full access to enterprise features
-                                    like guest users and user groups</li>
+                                    <li><a href="/help/message-retention-policy">Message retention policies</a></li>
+                                    <li>Brand Zulip with your logo</li>
                                     <li>Priority commercial support</li>
                                     <li>Funds the Zulip open source project</li>
                                 </ul>
@@ -117,27 +119,31 @@
 
                     <div class="block">
                         <div class="plan-title responsive-title">
-                            Zulip On-Premise
+                            Self host Zulip
                         </div>
 
                         <div class="price-box" tabindex="-1">
                             <div class="text-content">
-                                <h2>Community support</h2>
+                                <h2>Self service</h2>
                                 <div class="description">
-                                    Install your own Zulip server.
+                                    Retain full control over your data.
                                 </div>
                                 <hr />
                                 <ul class="feature-list">
-                                    <li>Easy self-service installation</li>
-                                    <li>Free and open source forever under Apache 2.0 license</li>
-                                    <li>LDAP/Active directory integration</li>
-                                    <li>All Standard/Enterprise features included</li>
+                                    <li>All Zulip Cloud features included</li>
+                                    <li>Friendly community support</li>
+                                    <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML, OIDC, Google, social SSO</a></li>
+                                    <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP/Active Directory sync</a></li>
+                                    <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
+                                    <li>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a>
+                                    and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintenance</a></li>
                                 </ul>
                             </div>
                             <div class="bottom">
                                 <div class="text-content">
-                                    <div class="pricing-details">
-                                        Free and open source forever
+                                    <div class="pricing-details multi-line">
+                                        Zulip is 100% free and open
+                                        source, with no proprietary version. <br />
                                     </div>
                                     <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button green">
                                         Install a Zulip server
@@ -154,17 +160,18 @@
                                 </div>
                                 <hr />
                                 <ul class="feature-list">
-                                    <li>Easy self-service installation</li>
-                                    <li>Support response SLAs</li>
-                                    <li>High availability assistance</li>
-                                    <li>Input into the Zulip roadmap</li>
+                                    <li>All self service features included</li>
+                                    <li>Professional support with SLAs</li>
+                                    <li>High availability</li>
+                                    <li>Incident collaboration</li>
+                                    <li>Advanced compliance</li>
                                     <li>Funds the Zulip open source project</li>
                                 </ul>
                             </div>
                             <div class="bottom">
                                 <div class="text-content">
-                                    <div class="pricing-details">
-                                        Pricing varies with support required
+                                    <div class="pricing-details multi-line">
+                                        Affordable pricing depends on support required.
                                     </div>
                                     <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="no-action button green">
                                         Contact sales

@@ -2867,6 +2867,10 @@ nav {
     color: hsl(0, 0%, 53%);
     font-style: italic;
     text-align: center;
+
+    &.multi-line {
+        padding: 0 0 30px 0;
+    }
 }
 
 .pricing-overlay.pricing-model .info-box .image {
@@ -4226,6 +4230,7 @@ nav {
         padding-top: 0 !important;
         font-size: 15px;
         opacity: 0.8;
+        max-width: 560px !important;
     }
 }
 
