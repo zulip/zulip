@@ -2312,6 +2312,7 @@ class AbstractMessage(models.Model):
 
     class MessageType(models.IntegerChoices):
         NORMAL = 1
+        RESOLVE_TOPIC_NOTIFICATION = 2
 
     type = models.PositiveSmallIntegerField(choices=MessageType.choices, default=MessageType.NORMAL)
 
