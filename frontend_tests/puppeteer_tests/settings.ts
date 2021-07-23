@@ -106,6 +106,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
         payload_url: "http://hostname.example.com/bots/followup",
     });
 
+    await page.waitForSelector("#create_bot_button", {visible: true});
     await page.click("#create_bot_button");
 
     const bot_email = "1-bot@zulip.testserver";
