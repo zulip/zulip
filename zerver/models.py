@@ -2128,7 +2128,7 @@ post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
 
-class MutedTopic(models.Model):
+class UserTopic(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream: Stream = models.ForeignKey(Stream, on_delete=CASCADE)
@@ -2144,8 +2144,16 @@ class MutedTopic(models.Model):
     class Meta:
         unique_together = ("user_profile", "stream", "topic_name")
 
+        # This model was originally called "MutedTopic". We
+        # generalized it to "UserTopic", but have not yet done the
+        # database migration to rename the table and indexes.
+        db_table = "zerver_mutedtopic"
+
     def __str__(self) -> str:
-        return f"<MutedTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
+        return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
+
+
+MutedTopic = UserTopic
 
 
 class MutedUser(models.Model):
