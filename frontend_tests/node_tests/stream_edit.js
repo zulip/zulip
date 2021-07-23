@@ -41,6 +41,7 @@ const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const user_pill = zrequire("user_pill");
 const stream_ui_updates = zrequire("stream_ui_updates");
+const settings_config = zrequire("settings_config");
 
 const jill = {
     email: "jill@zulip.com",
@@ -291,6 +292,12 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     override(stream_ui_updates, "update_toggler_for_sub", noop);
     override(stream_ui_updates, "update_add_subscriptions_elements", noop);
+
+    const {stream_notification_settings, pm_mention_notification_settings} = settings_config;
+    for (const setting of [...stream_notification_settings, ...pm_mention_notification_settings]) {
+        page_params[setting] = true;
+    }
+
     stream_row_handler.call(fake_this, event);
     assert.ok(template_rendered);
     assert.ok(input_typeahead_called);
