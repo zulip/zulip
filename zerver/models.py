@@ -2529,7 +2529,7 @@ class Draft(models.Model):
         }
 
 
-class AbstractReaction(models.Model):
+class AbstractEmoji(models.Model):
     """For emoji reactions to messages (and potentially future reaction types).
 
     Emoji are surprisingly complicated to implement correctly.  For details
@@ -2571,6 +2571,11 @@ class AbstractReaction(models.Model):
     # * For "Zulip extra emoji" (like :zulip:), the filename of the emoji.
     emoji_code: str = models.TextField()
 
+    class Meta:
+        abstract = True
+
+
+class AbstractReaction(AbstractEmoji):
     class Meta:
         abstract = True
         unique_together = (
@@ -3323,13 +3328,17 @@ class UserPresence(models.Model):
         return status_val
 
 
-class UserStatus(models.Model):
+class UserStatus(AbstractEmoji):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.OneToOneField(UserProfile, on_delete=CASCADE)
 
     timestamp: datetime.datetime = models.DateTimeField()
     client: Client = models.ForeignKey(Client, on_delete=CASCADE)
 
+    # Override emoji_name and emoji_code field of (AbstractReaction model) to accept
+    # default value.
+    emoji_name: str = models.TextField(default="")
+    emoji_code: str = models.TextField(default="")
     NORMAL = 0
     AWAY = 1
 
