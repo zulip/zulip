@@ -4189,7 +4189,9 @@ nav {
         text-align: center;
         font-weight: bolder;
         opacity: 0.9;
+    }
 
+    .hero {
         a {
             color: hsl(170, 76%, 64%);
         }
@@ -4337,5 +4339,16 @@ nav {
         font-size: 25px;
         font-weight: 500;
         opacity: 0.8;
+    }
+}
+
+.feature-intro {
+    max-width: 800px;
+    margin: 50px auto 0;
+    padding: 0 4vw 0;
+
+    h1 {
+        font-size: 36px;
+        font-weight: 600;
     }
 }
