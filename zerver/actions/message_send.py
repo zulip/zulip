@@ -1620,6 +1620,7 @@ def check_message(
     email_gateway: bool = False,
     *,
     skip_stream_access_check: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
@@ -1717,6 +1718,7 @@ def check_message(
     message.sender = sender
     message.content = message_content
     message.recipient = recipient
+    message.type = message_type
     message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
@@ -1793,6 +1795,7 @@ def _internal_prep_message(
     content: str,
     *,
     email_gateway: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
@@ -1823,6 +1826,7 @@ def _internal_prep_message(
             content,
             realm=realm,
             email_gateway=email_gateway,
+            message_type=message_type,
             mention_backend=mention_backend,
             limit_unread_user_ids=limit_unread_user_ids,
             disable_external_notifications=disable_external_notifications,
@@ -1847,6 +1851,7 @@ def internal_prep_stream_message(
     content: str,
     *,
     email_gateway: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
     limit_unread_user_ids: Optional[Set[int]] = None,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
@@ -1863,6 +1868,7 @@ def internal_prep_stream_message(
         addressee=addressee,
         content=content,
         email_gateway=email_gateway,
+        message_type=message_type,
         limit_unread_user_ids=limit_unread_user_ids,
         forged=forged,
         forged_timestamp=forged_timestamp,
@@ -1942,6 +1948,7 @@ def internal_send_stream_message(
     content: str,
     *,
     email_gateway: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
     limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[int]:
     message = internal_prep_stream_message(
@@ -1950,6 +1957,7 @@ def internal_send_stream_message(
         topic_name,
         content,
         email_gateway=email_gateway,
+        message_type=message_type,
         limit_unread_user_ids=limit_unread_user_ids,
     )
 
