@@ -40,6 +40,27 @@ class AbstractMessage(models.Model):
     # Important for efficient indexes and sharding in multi-realm servers.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
+    class MessageType(models.IntegerChoices):
+        NORMAL = 1
+        RESOLVE_TOPIC_NOTIFICATION = 2
+
+    # IMPORTANT: message.type is not to be confused with the
+    # "recipient type" ("channel" or "direct"), which is is sometimes
+    # called message_type in the APIs, CountStats or some variable
+    # names. We intend to rename those to recipient_type.
+    #
+    # Type of the message, used to distinguish between "normal"
+    # messages and some special kind of messages, such as notification
+    # messages that may be sent by system bots.
+    type = models.PositiveSmallIntegerField(
+        choices=MessageType.choices,
+        default=MessageType.NORMAL,
+        # Note: db_default is a new feature in Django 5.0, so we don't use
+        # it across the codebase yet. It's useful here to simplify the
+        # associated database migration, so we're making use of it.
+        db_default=MessageType.NORMAL,
+    )
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email
