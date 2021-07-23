@@ -141,7 +141,7 @@ test_ui("create_sidebar_row", ({override, mock_template}) => {
     social.invite_only = true;
     social.color = "#222222";
 
-    mock_template("stream_privacy.hbs", false, (data) => {
+    mock_template("stream_privacy_icon.hbs", false, (data) => {
         assert.equal(data.invite_only, true);
         assert.equal(data.dark_background, "dark_background");
         return "<div>privacy-html";

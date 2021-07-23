@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_stream_privacy from "../templates/stream_privacy.hbs";
+import render_stream_privacy_icon from "../templates/stream_privacy_icon.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 
 import * as blueslip from "./blueslip";
@@ -314,7 +314,7 @@ export function redraw_stream_privacy(sub) {
         dark_background,
     };
 
-    const html = render_stream_privacy(args);
+    const html = render_stream_privacy_icon(args);
     div.html(html);
 }
 
