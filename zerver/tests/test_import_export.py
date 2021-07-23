@@ -43,7 +43,6 @@ from zerver.models import (
     CustomProfileFieldValue,
     Huddle,
     Message,
-    MutedTopic,
     MutedUser,
     Reaction,
     Realm,
@@ -58,6 +57,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_active_streams,
     get_client,
     get_huddle_hash,
@@ -1002,7 +1002,7 @@ class ImportExportTest(ZulipTestCase):
         # test muted topics
         def get_muted_topics(r: Realm) -> Set[str]:
             user_profile_id = get_user_id(r, hamlet_full_name)
-            muted_topics = MutedTopic.objects.filter(user_profile_id=user_profile_id)
+            muted_topics = UserTopic.objects.filter(user_profile_id=user_profile_id)
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
 

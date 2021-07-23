@@ -40,7 +40,6 @@ from zerver.models import (
     DefaultStream,
     Huddle,
     Message,
-    MutedTopic,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -60,6 +59,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_display_recipient,
     get_realm,
     get_system_bot,
@@ -751,7 +751,7 @@ def get_realm_config() -> Config:
 
     Config(
         table="zerver_mutedtopic",
-        model=MutedTopic,
+        model=UserTopic,
         normal_parent=user_profile_config,
         parent_key="user_profile__in",
     )

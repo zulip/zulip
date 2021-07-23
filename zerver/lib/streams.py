@@ -459,7 +459,7 @@ def access_stream_for_unmute_topic_by_name(
     muted in the past (not here, but in the caller).
 
     Long term, we'll probably have folks just pass us in the id of the
-    MutedTopic row to unmute topics.
+    UserTopic row to unmute topics.
     """
     try:
         stream = get_stream(stream_name, user_profile.realm)

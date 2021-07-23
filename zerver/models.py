@@ -2153,9 +2153,6 @@ class UserTopic(models.Model):
         return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
 
 
-MutedTopic = UserTopic
-
-
 class MutedUser(models.Model):
     user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
     muted_user = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)

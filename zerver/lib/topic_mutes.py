@@ -6,13 +6,13 @@ from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
-from zerver.models import MutedTopic, UserProfile, get_stream
+from zerver.models import UserProfile, UserTopic, get_stream
 
 
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
 ) -> List[Tuple[str, str, float]]:
-    query = MutedTopic.objects.filter(user_profile=user_profile)
+    query = UserTopic.objects.filter(user_profile=user_profile)
     # Exclude muted topics that are part of deactivated streams unless
     # explicitly requested.
     if not include_deactivated:
@@ -37,7 +37,7 @@ def set_topic_mutes(
     This is only used in tests.
     """
 
-    MutedTopic.objects.filter(
+    UserTopic.objects.filter(
         user_profile=user_profile,
     ).delete()
 
@@ -65,7 +65,7 @@ def add_topic_mute(
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    MutedTopic.objects.create(
+    UserTopic.objects.create(
         user_profile=user_profile,
         stream_id=stream_id,
         recipient_id=recipient_id,
@@ -75,7 +75,7 @@ def add_topic_mute(
 
 
 def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:
-    row = MutedTopic.objects.get(
+    row = UserTopic.objects.get(
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
@@ -84,7 +84,7 @@ def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str
 
 
 def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
-    is_muted = MutedTopic.objects.filter(
+    is_muted = UserTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
@@ -98,7 +98,7 @@ def exclude_topic_mutes(
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are
     # never filtered from the query in this method.
-    query = MutedTopic.objects.filter(
+    query = UserTopic.objects.filter(
         user_profile=user_profile,
     )
 
@@ -128,7 +128,7 @@ def exclude_topic_mutes(
 
 
 def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
-    rows = MutedTopic.objects.filter(user_profile=user_profile).values(
+    rows = UserTopic.objects.filter(user_profile=user_profile).values(
         "recipient_id",
         "topic_name",
     )

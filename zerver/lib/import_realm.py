@@ -45,7 +45,6 @@ from zerver.models import (
     DefaultStream,
     Huddle,
     Message,
-    MutedTopic,
     MutedUser,
     Reaction,
     Realm,
@@ -66,6 +65,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_huddle_hash,
     get_realm,
     get_system_bot,
@@ -1091,8 +1091,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_mutedtopic", "user_profile", related_table="user_profile")
         re_map_foreign_keys(data, "zerver_mutedtopic", "stream", related_table="stream")
         re_map_foreign_keys(data, "zerver_mutedtopic", "recipient", related_table="recipient")
-        update_model_ids(MutedTopic, data, "mutedtopic")
-        bulk_import_model(data, MutedTopic)
+        update_model_ids(UserTopic, data, "mutedtopic")
+        bulk_import_model(data, UserTopic)
 
     if "zerver_muteduser" in data:
         fix_datetime_fields(data, "zerver_muteduser")
