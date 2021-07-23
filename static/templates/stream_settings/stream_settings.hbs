@@ -19,9 +19,11 @@
         <div class="general_settings stream_section">
             {{#with sub}}
             <div class="stream-header">
-                {{> stream_privacy_icon
-                  invite_only=invite_only
-                  is_web_public=is_web_public }}
+                <div class="large-icon" style="color: {{color}}">
+                    {{> ../stream_privacy
+                      invite_only=invite_only
+                      is_web_public=is_web_public }}
+                </div>
                 <div class="stream-name">
                     <span class="sub-stream-name" title="{{name}}">{{name}}</span>
                 </div>

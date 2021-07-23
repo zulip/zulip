@@ -891,10 +891,13 @@
             margin-right: 5px;
             margin-top: -5px;
             font-size: 1.5em;
+        }
 
-            &.hash::after {
-                top: 1px;
-            }
+        .hashtag::after {
+            top: 1px;
+            position: relative;
+            font-size: 1.09em;
+            font-weight: 800;
         }
 
         .stream_change_property_info {
@@ -953,11 +956,8 @@
         }
     }
 
-    .hash::after {
-        position: relative;
+    .hashtag::after {
         content: "#";
-        font-size: 1.09em;
-        font-weight: 800;
     }
 
     .settings {
