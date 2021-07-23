@@ -18,6 +18,13 @@ run_test("all_notifications", () => {
     page_params.enable_offline_push_notifications = false;
     page_params.enable_offline_email_notifications = true;
 
+    // Check that it throws error if incorrect settings name
+    // is passed. In this case, we articulate that with
+    // wildcard_mentions_notify being undefined, which will be
+    // the case, if a wrong setting_name is passed.
+    assert.throws(settings_config.all_notifications, "Incorrect setting_name passed");
+
+    page_params.wildcard_mentions_notify = false;
     const notifications = settings_config.all_notifications();
 
     assert.deepEqual(notifications.general_settings, [
@@ -45,7 +52,7 @@ run_test("all_notifications", () => {
                     setting_name: "enable_stream_email_notifications",
                 },
                 {
-                    is_checked: undefined,
+                    is_checked: false,
                     is_disabled: false,
                     setting_name: "wildcard_mentions_notify",
                 },

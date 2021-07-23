@@ -67,7 +67,17 @@ export const twenty_four_hour_time_values = {
     },
 };
 
-export const get_all_display_settings = () => ({
+export interface DisplaySettings {
+    settings: {
+        user_display_settings: string[];
+    };
+    render_only: {
+        high_contrast_mode: boolean;
+        dense_mode: boolean;
+    };
+}
+
+export const get_all_display_settings = (): DisplaySettings => ({
     settings: {
         user_display_settings: [
             "dense_mode",
@@ -375,7 +385,8 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-export const stream_notification_settings = [
+type PageParamsItem = keyof typeof page_params;
+export const stream_notification_settings: PageParamsItem[] = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
@@ -383,7 +394,7 @@ export const stream_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-const pm_mention_notification_settings = [
+export const pm_mention_notification_settings: PageParamsItem[] = [
     "enable_desktop_notifications",
     "enable_sounds",
     "enable_offline_push_notifications",
@@ -414,7 +425,15 @@ export const all_notification_settings = other_notification_settings.concat(
     stream_notification_settings,
 );
 
-export function get_notifications_table_row_data(notify_settings) {
+type NotificationSettingCheckbox = {
+    setting_name: string;
+    is_disabled: boolean;
+    is_checked: boolean;
+};
+
+export function get_notifications_table_row_data(
+    notify_settings: PageParamsItem[],
+): NotificationSettingCheckbox[] {
     return general_notifications_table_labels.realm.map((column, index) => {
         const setting_name = notify_settings[index];
         if (setting_name === undefined) {
@@ -424,19 +443,38 @@ export function get_notifications_table_row_data(notify_settings) {
                 is_checked: false,
             };
         }
+
+        const checked = page_params[setting_name];
+        if (typeof checked !== "boolean") {
+            throw new TypeError(`Incorrect setting_name passed: ${setting_name}`);
+        }
+
         const checkbox = {
             setting_name,
             is_disabled: false,
+            is_checked: checked,
         };
         if (column === "mobile") {
             checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
         }
-        checkbox.is_checked = page_params[setting_name];
         return checkbox;
     });
 }
 
-export const all_notifications = () => ({
+export interface AllNotifications {
+    general_settings: {label: string; notification_settings: NotificationSettingCheckbox[]}[];
+    settings: {
+        desktop_notification_settings: string[];
+        mobile_notification_settings: string[];
+        email_notification_settings: string[];
+    };
+    show_push_notifications_tooltip: {
+        push_notifications: boolean;
+        enable_online_push_notifications: boolean;
+    };
+}
+
+export const all_notifications = (): AllNotifications => ({
     general_settings: [
         {
             label: $t({defaultMessage: "Streams"}),
