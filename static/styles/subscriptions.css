@@ -666,7 +666,8 @@
             font-size: 1.1em;
         }
 
-        .fa-lock {
+        .fa-lock,
+        .fa-globe {
             font-size: 1.4em;
         }
 
