@@ -433,7 +433,7 @@ run_test("realm_bot add", ({override}) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -449,7 +449,7 @@ run_test("realm_bot remove", ({override}) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -471,7 +471,7 @@ run_test("realm_bot update", ({override}) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
 
     dispatch(event);
