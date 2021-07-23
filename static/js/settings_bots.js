@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -10,6 +9,7 @@ import render_settings_edit_outgoing_webhook_service from "../templates/settings
 import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import * as copy_button_widget from "./copy_button_widget";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
@@ -38,6 +38,7 @@ const focus_tab = {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
+        initialize_clipboard_event(); // Reinitialize the clipboard copy handlers
         hide_errors();
     },
     inactive_bots_tab() {
@@ -124,6 +125,27 @@ function render_bots() {
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
     }
+}
+
+function initialize_clipboard_event() {
+    $("#active_bots_list")
+        .find("li")
+        .each(function () {
+            copy_button_widget.show({
+                element: $(this).find("button.copy_zuliprc"),
+                placement: "bottom",
+                content: $t({defaultMessage: "Copy zuliprc"}),
+                text: (copy_element) => {
+                    const bot_info = $(copy_element)
+                        .closest(".bot-information-box")
+                        .find(".bot_info");
+                    const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+                    const bot = bot_data.get(bot_id);
+                    const data = generate_zuliprc_content(bot);
+                    return data;
+                },
+            });
+        });
 }
 
 // The reason we debounce this call is very wonky. I just moved it
@@ -345,8 +367,7 @@ export function set_up() {
                     $("#create_bot_button").show();
                     $("#create_interface_type").val(GENERIC_INTERFACE);
                     create_avatar_widget.clear();
-                    $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
-                    $("#bots_lists_navbar .active-bots-tab").addClass("active");
+                    focus_tab.active_bots_tab();
                 },
                 error(xhr) {
                     $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
@@ -558,15 +579,7 @@ export function set_up() {
         $(this).attr("href", generate_zuliprc_uri(bot_id));
     });
 
-    new ClipboardJS("#copy_zuliprc", {
-        text(trigger) {
-            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
-            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
-            const bot = bot_data.get(bot_id);
-            const data = generate_zuliprc_content(bot);
-            return data;
-        },
-    });
+    initialize_clipboard_event();
 
     $("#bots_lists_navbar .add-a-new-bot-tab").on("click", (e) => {
         e.preventDefault();

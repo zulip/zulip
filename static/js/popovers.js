@@ -19,6 +19,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
+import * as copy_button_widget from "./copy_button_widget";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
@@ -94,24 +95,6 @@ $.fn.popover = Object.assign(function (...args) {
     }
 }, old_popover);
 
-function copy_email_handler(e) {
-    const email_el = $(e.trigger.parentElement);
-    const copy_icon = email_el.find("i");
-
-    // only change the parent element's text back to email
-    // and not overwrite the tooltip.
-    const email_textnode = email_el[0].childNodes[2];
-
-    email_el.addClass("email_copied");
-    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
-
-    setTimeout(() => {
-        email_el.removeClass("email_copied");
-        email_textnode.nodeValue = copy_icon.attr("data-clipboard-text");
-    }, 1500);
-    e.clearSelection();
-}
-
 function init_email_clipboard() {
     /*
         This shows (and enables) the copy-text icon for folks
@@ -131,8 +114,13 @@ function init_email_clipboard() {
             */
             if (copy_email_icon[0]) {
                 copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable(copy_email_icon[0]);
-                copy_email_clipboard.on("success", copy_email_handler);
+                copy_button_widget.show({
+                    element: copy_email_icon,
+                    placement: "top",
+                    content: $t({defaultMessage: "Copy email"}),
+                    on_show: () => this._tippy.disable(),
+                    on_hide: () => this._tippy.enable(),
+                });
             }
         }
     });
@@ -262,8 +250,8 @@ function render_user_info_popover(
     });
     popover_element.popover("show");
 
-    init_email_clipboard();
     init_email_tooltip(user);
+    init_email_clipboard();
 
     load_medium_avatar(user, $(".popover-avatar"));
 }

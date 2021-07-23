@@ -1,5 +1,4 @@
 import autosize from "autosize";
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
@@ -11,6 +10,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as copy_button_widget from "./copy_button_widget";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -137,7 +137,11 @@ function generate_multiuse_invite() {
         success(data) {
             const copy_link_html = copy_invite_link(data);
             ui_report.success(copy_link_html, invite_status);
-            new ClipboardJS("#copy_generated_invite_link");
+            copy_button_widget.show({
+                element: $("#copy_generated_invite_link"),
+                placement: "left",
+                content: $t({defaultMessage: "Copy link"}),
+            });
         },
         error(xhr) {
             ui_report.error("", xhr, invite_status);
