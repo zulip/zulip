@@ -546,6 +546,10 @@ div.overlay {
     }
 }
 
+.alert p {
+    margin-bottom: 2.5px;
+}
+
 .white_zulip_icon_without_text {
     display: inline-block;
     background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
