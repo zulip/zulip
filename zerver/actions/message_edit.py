@@ -201,6 +201,7 @@ def maybe_send_resolve_topic_notifications(
             notification_string.format(
                 user=user_mention,
             ),
+            message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
             limit_unread_user_ids=affected_participant_ids,
         )
 
