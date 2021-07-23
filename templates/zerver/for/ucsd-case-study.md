@@ -87,6 +87,9 @@ Zulip for the number theory research group at UCSD, where graduate
 students and postdocs can connect to discuss reading courses, social
 events, conferences of interest, etc.”
 
-Learn more about [Zulip for Education](/for/education).
-Also, check out our guides on using Zulip for
-[conferences](/for/events) and [research](/for/research)!
+---
+
+Learn more about [Zulip for Education](/for/education), and how
+Zulip is being used at the [Technical University of Munich](/case-studies/tum).
+You can also check out our guides on using Zulip for [conferences](/for/events)
+and [research](/for/research)!
