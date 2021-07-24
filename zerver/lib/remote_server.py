@@ -26,7 +26,7 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
-    post_data: Union[bytes, Mapping[str, Union[str, bytes]]],
+    post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
     extra_headers: Mapping[str, str] = {},
 ) -> Dict[str, object]:
     """While it does actually send the notice, this function has a lot of
