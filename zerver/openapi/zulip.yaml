@@ -8830,6 +8830,17 @@ paths:
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
+                      enable_drafts_synchronization:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`.
+
+                          Whether drafts synchronization is enabled for the user.
+
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
+
+                          **Changes**: New in Zulip 5.0 (feature level 87).
                       fluid_layout_width:
                         type: boolean
                         description: |
@@ -10294,6 +10305,20 @@ paths:
                   - 2
                   - 3
               example: 1
+        - name: enable_drafts_synchronization
+          in: query
+          description: |
+            A boolean parameter to control whether synchronizing drafts is enabled for
+            the user. When synchronization is disabled, all drafts stored in the server
+            will be automatically deleted from the server.
+
+            This does not do anything (like sending events) to delete local copies of
+            drafts stored in clients.
+
+            **Changes**: New in Zulip 5.0 (feature level 87).
+          schema:
+            type: boolean
+          example: true
         - name: translate_emoticons
           in: query
           description: |

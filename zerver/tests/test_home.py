@@ -70,6 +70,7 @@ class HomeTest(ZulipTestCase):
         "emojiset_choices",
         "enable_desktop_notifications",
         "enable_digest_emails",
+        "enable_drafts_synchronization",
         "enable_login_emails",
         "enable_marketing_emails",
         "enable_offline_email_notifications",

@@ -123,6 +123,7 @@ def json_change_settings(
     email_notifications_batching_period_seconds: Optional[int] = REQ(
         json_validator=check_int, default=None
     ),
+    enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_stream_desktop_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),

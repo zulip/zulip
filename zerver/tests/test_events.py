@@ -2299,3 +2299,21 @@ class SubscribeActionTest(BaseAction):
             events[0]["streams"][0]["message_retention_days"],
             10,
         )
+
+
+class DraftActionTest(BaseAction):
+    def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
+        do_set_user_display_setting(user_profile, "enable_drafts_synchronization", True)
+
+    def do_disable_drafts_synchronization(self, user_profile: UserProfile) -> None:
+        do_set_user_display_setting(user_profile, "enable_drafts_synchronization", False)
+
+    def test_enable_syncing_drafts(self) -> None:
+        self.do_disable_drafts_synchronization(self.user_profile)
+        action = lambda: self.do_enable_drafts_synchronization(self.user_profile)
+        self.verify_action(action)
+
+    def test_disable_syncing_drafts(self) -> None:
+        self.do_enable_drafts_synchronization(self.user_profile)
+        action = lambda: self.do_disable_drafts_synchronization(self.user_profile)
+        self.verify_action(action)

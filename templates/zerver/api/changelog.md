@@ -11,6 +11,15 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 87**
+
+* [`PATCH /settings`](/api/update-settings): Added a new
+  `enable_drafts_synchronization` setting, which controls whether the
+  syncing drafts between different clients is enabled.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Added new `enable_drafts_synchronization` setting under
+  `update_display_settings`.
+
 **Feature level 86**
 
 * [`GET /events`](/api/get-events): Added `emoji_name`,

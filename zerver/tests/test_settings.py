@@ -11,7 +11,7 @@ from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.users import get_all_api_keys
-from zerver.models import UserProfile, get_user_profile_by_api_key
+from zerver.models import Draft, UserProfile, get_user_profile_by_api_key
 
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -473,3 +473,52 @@ class UserChangesTest(ZulipTestCase):
 
         for api_key in current_api_keys:
             self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+
+
+class UserDraftSettingsTests(ZulipTestCase):
+    def test_enable_drafts_syncing(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.enable_drafts_synchronization = False
+        hamlet.save()
+        payload = {"enable_drafts_synchronization": orjson.dumps(True).decode()}
+        resp = self.api_patch(hamlet, "/api/v1/settings", payload)
+        self.assert_json_success(resp)
+        hamlet = self.example_user("hamlet")
+        self.assertTrue(hamlet.enable_drafts_synchronization)
+
+    def test_disable_drafts_syncing(self) -> None:
+        aaron = self.example_user("aaron")
+        self.assertTrue(aaron.enable_drafts_synchronization)
+
+        initial_count = Draft.objects.count()
+
+        # Create some drafts. These should be deleted once aaron disables
+        # syncing drafts.
+        visible_stream_id = self.get_stream_id(self.get_streams(aaron)[0])
+        draft_dicts = [
+            {
+                "type": "stream",
+                "to": [visible_stream_id],
+                "topic": "thinking out loud",
+                "content": "What if pigs really could fly?",
+                "timestamp": 15954790199,
+            },
+            {
+                "type": "private",
+                "to": [],
+                "topic": "",
+                "content": "What if made it possible to sync drafts in Zulip?",
+                "timestamp": 1595479020,
+            },
+        ]
+        payload = {"drafts": orjson.dumps(draft_dicts).decode()}
+        resp = self.api_post(aaron, "/api/v1/drafts", payload)
+        self.assert_json_success(resp)
+        self.assertEqual(Draft.objects.count() - initial_count, 2)
+
+        payload = {"enable_drafts_synchronization": orjson.dumps(False).decode()}
+        resp = self.api_patch(aaron, "/api/v1/settings", payload)
+        self.assert_json_success(resp)
+        aaron = self.example_user("aaron")
+        self.assertFalse(aaron.enable_drafts_synchronization)
+        self.assertEqual(Draft.objects.count() - initial_count, 0)

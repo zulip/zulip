@@ -197,6 +197,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     DefaultStreamGroup,
+    Draft,
     EmailChangeStatus,
     Message,
     MultiuseInvite,
@@ -5100,6 +5101,13 @@ def do_set_user_display_setting(
             dict(type="realm_user", op="update", person=payload),
             active_user_ids(user_profile.realm_id),
         )
+
+    if setting_name == "enable_drafts_synchronization" and setting_value is False:
+        # Delete all of the drafts from the backend but don't send delete events
+        # for them since all that's happened is that we stopped syncing changes,
+        # not deleted every previously synced draft - to do that use the DELETE
+        # endpoint.
+        Draft.objects.filter(user_profile=user_profile).delete()
 
 
 def lookup_default_stream_groups(
