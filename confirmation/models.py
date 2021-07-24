@@ -66,6 +66,7 @@ def get_object_from_key(
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
+    assert obj is not None
     if activate_object and hasattr(obj, "status"):
         obj.status = getattr(settings, "STATUS_ACTIVE", 1)
         obj.save(update_fields=["status"])

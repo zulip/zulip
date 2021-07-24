@@ -449,6 +449,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
 
     body = construct_zulip_body(message, user_profile.realm)
 
+    assert recipient is not None
     if recipient.type == Recipient.STREAM:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         send_mm_reply_to_stream(user_profile, stream, topic, body)

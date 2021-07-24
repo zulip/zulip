@@ -103,6 +103,7 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
         )
 
     prereg_user = confirmation.content_object
+    assert prereg_user is not None
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
         return render(request, "zerver/confirmation_link_expired_error.html")
 
@@ -130,6 +131,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
     prereg_user = confirmation.content_object
+    assert prereg_user is not None
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
         return render(request, "zerver/confirmation_link_expired_error.html", status=404)
     email = prereg_user.email

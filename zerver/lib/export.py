@@ -1546,7 +1546,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         author = realm_emoji.author
         author_id = None
         if author:
-            author_id = realm_emoji.author.id
+            author_id = author.id
         record = dict(
             realm_id=realm.id,
             author=author_id,
@@ -1959,6 +1959,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
         export_url = None
         deleted_timestamp = None
         failed_timestamp = None
+        acting_user = export.acting_user
 
         if export.extra_data is not None:
             pending = False
@@ -1973,10 +1974,11 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
                     user.realm, export_path
                 )
 
+        assert acting_user is not None
         exports_dict[export.id] = dict(
             id=export.id,
             export_time=export.event_time.timestamp(),
-            acting_user_id=export.acting_user.id,
+            acting_user_id=acting_user.id,
             export_url=export_url,
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,

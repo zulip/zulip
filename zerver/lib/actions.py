@@ -687,6 +687,7 @@ def do_create_user(
             .order_by("id")
             .last()
         )
+        assert realm_creation_audit_log is not None
         realm_creation_audit_log.acting_user = user_profile
         realm_creation_audit_log.save(update_fields=["acting_user"])
 
@@ -1143,6 +1144,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
     # Recipient objects don't get deleted through CASCADE, so we need to handle
     # the user's personal recipient manually. This will also delete all Messages pointing
     # to this recipient (all private messages sent to the user).
+    assert personal_recipient is not None
     personal_recipient.delete()
     replacement_user = create_user(
         force_id=user_id,
@@ -2378,7 +2380,9 @@ def check_add_reaction(
         # vote any old reaction they see in the UI even if that is a
         # deactivated custom emoji, so we just use the emoji name from
         # the existing reaction with no further validation.
-        emoji_name = query.first().emoji_name
+        reaction = query.first()
+        assert reaction is not None
+        emoji_name = reaction.emoji_name
     else:
         # Otherwise, use the name provided in this request, but verify
         # it is valid in the user's realm (e.g. not a deactivated
@@ -6949,6 +6953,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     )
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
+        assert invite is not None
         invites.append(
             dict(
                 invited_by_user_id=invite.referred_by.id,

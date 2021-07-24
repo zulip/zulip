@@ -74,6 +74,7 @@ def get_confirmations(
         days_to_activate = _properties[type].validity_in_days
         expiry_date = confirmation.date_sent + timedelta(days=days_to_activate)
 
+        assert content_object is not None
         if hasattr(content_object, "status"):
             if content_object.status == STATUS_ACTIVE:
                 link_status = "Link has been clicked"

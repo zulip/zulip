@@ -313,9 +313,13 @@ def get_chart_data(
                 _("No analytics data available. Please contact your server administrator.")
             )
         if start is None:
-            start = aggregate_table.objects.filter(server=server).first().end_time
+            first = aggregate_table.objects.filter(server=server).first()
+            assert first is not None
+            start = first.end_time
         if end is None:
-            end = aggregate_table.objects.filter(server=server).last().end_time
+            last = aggregate_table.objects.filter(server=server).last()
+            assert last is not None
+            end = last.end_time
     else:
         # Otherwise, we can use tables on the current server to
         # determine a nice range, and some additional validation.

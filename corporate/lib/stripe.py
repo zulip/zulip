@@ -367,18 +367,22 @@ def make_end_of_cycle_updates_if_needed(
     plan: CustomerPlan, event_time: datetime
 ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
     last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
-    last_renewal = (
-        LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first().event_time
+    last_ledger_renewal = (
+        LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
     )
+    assert last_ledger_renewal is not None
+    last_renewal = last_ledger_renewal.event_time
     next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
-    if next_billing_cycle <= event_time:
+    if next_billing_cycle <= event_time and last_ledger_entry is not None:
+        licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
+        assert licenses_at_next_renewal is not None
         if plan.status == CustomerPlan.ACTIVE:
             return None, LicenseLedger.objects.create(
                 plan=plan,
                 is_renewal=True,
                 event_time=next_billing_cycle,
-                licenses=last_ledger_entry.licenses_at_next_renewal,
-                licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal,
+                licenses=licenses_at_next_renewal,
+                licenses_at_next_renewal=licenses_at_next_renewal,
             )
         if plan.is_free_trial():
             plan.invoiced_through = last_ledger_entry
@@ -390,8 +394,8 @@ def make_end_of_cycle_updates_if_needed(
                 plan=plan,
                 is_renewal=True,
                 event_time=next_billing_cycle,
-                licenses=last_ledger_entry.licenses_at_next_renewal,
-                licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal,
+                licenses=licenses_at_next_renewal,
+                licenses_at_next_renewal=licenses_at_next_renewal,
             )
 
         if plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
@@ -427,8 +431,8 @@ def make_end_of_cycle_updates_if_needed(
                 plan=new_plan,
                 is_renewal=True,
                 event_time=next_billing_cycle,
-                licenses=last_ledger_entry.licenses_at_next_renewal,
-                licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal,
+                licenses=licenses_at_next_renewal,
+                licenses_at_next_renewal=licenses_at_next_renewal,
             )
 
             RealmAuditLog.objects.create(
@@ -748,15 +752,16 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                 }
             description = "Zulip Standard - renewal"
         elif licenses_base is not None and ledger_entry.licenses != licenses_base:
-            assert plan.price_per_license
-            last_renewal = (
+            assert plan.price_per_license and ledger_entry is not None
+            last_ledger_entry_renewal = (
                 LicenseLedger.objects.filter(
                     plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
                 )
                 .order_by("-id")
                 .first()
-                .event_time
             )
+            assert last_ledger_entry_renewal is not None
+            last_renewal = last_ledger_entry_renewal.event_time
             period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
             proration_fraction = (period_end - ledger_entry.event_time) / (
                 period_end - last_renewal

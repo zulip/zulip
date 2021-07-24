@@ -175,6 +175,7 @@ def maybe_send_to_registration(
         )
 
     multiuse_obj: Optional[MultiuseInvite] = None
+    realm: Optional[Realm] = None
     from_multiuse_invite = False
     if multiuse_object_key:
         from_multiuse_invite = True
@@ -183,13 +184,14 @@ def maybe_send_to_registration(
         except ConfirmationKeyException:
             return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
+        assert multiuse_obj is not None
         realm = multiuse_obj.realm
         invited_as = multiuse_obj.invited_as
     else:
         try:
             realm = get_realm(get_subdomain(request))
         except Realm.DoesNotExist:
-            realm = None
+            pass
         invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
 
     form = HomepageForm({"email": email}, realm=realm, from_multiuse_invite=from_multiuse_invite)

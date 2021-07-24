@@ -275,6 +275,7 @@ def send_email(
 def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
+        assert connection is not None
 
     if connection.open():
         # If it's a new connection, no need to no-op to check connectivity
@@ -293,6 +294,7 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
     # closed by the mail server.
     if isinstance(connection, EmailBackend):
         try:
+            assert connection.connection is not None
             status = connection.connection.noop()[0]
         except Exception:
             status = -1

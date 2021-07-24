@@ -3557,7 +3557,7 @@ class InvoiceTest(StripeTestCase):
         stripe_customer_id = plan.customer.stripe_customer_id
         assert stripe_customer_id is not None
         [invoice0, invoice1] = stripe.Invoice.list(customer=stripe_customer_id)
-        self.assertEqual(invoice0.billing, "send_invoice")
+        self.assertEqual(invoice0.collection_method, "send_invoice")
         [item] = invoice0.lines
         line_item_params = {
             "amount": 100,
