@@ -71,14 +71,14 @@ def delete_all_deactivated_user_sessions() -> None:
 
 
 def set_expirable_session_var(
-    session: Session, var_name: str, var_value: Any, expiry_seconds: int
+    session: SessionBase, var_name: str, var_value: Any, expiry_seconds: int
 ) -> None:
     expire_at = datetime_to_timestamp(timezone_now() + timedelta(seconds=expiry_seconds))
     session[var_name] = {"value": var_value, "expire_at": expire_at}
 
 
 def get_expirable_session_var(
-    session: Session, var_name: str, default_value: Any = None, delete: bool = False
+    session: SessionBase, var_name: str, default_value: Any = None, delete: bool = False
 ) -> Any:
     if var_name not in session:
         return default_value
