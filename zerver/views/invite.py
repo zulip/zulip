@@ -103,7 +103,7 @@ def revoke_user_invite(
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
-    if prereg_user.referred_by.realm != user_profile.realm:
+    if prereg_user.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
     if prereg_user.referred_by_id != user_profile.id:
