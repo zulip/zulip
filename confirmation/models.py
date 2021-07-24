@@ -16,8 +16,17 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
+from typing_extensions import Protocol
 
 from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile
+
+
+class HasRealmObject(Protocol):
+    realm: Realm
+
+
+class OptionalHasRealmObject(Protocol):
+    realm: Optional[Realm]
 
 
 class ConfirmationKeyException(Exception):
@@ -74,14 +83,16 @@ def get_object_from_key(
 
 
 def create_confirmation_link(
-    obj: ContentType, confirmation_type: int, url_args: Mapping[str, str] = {}
+    obj: Union[Realm, HasRealmObject, OptionalHasRealmObject],
+    confirmation_type: int,
+    url_args: Mapping[str, str] = {},
 ) -> str:
     key = generate_key()
     realm = None
-    if hasattr(obj, "realm"):
-        realm = obj.realm
-    elif isinstance(obj, Realm):
+    if isinstance(obj, Realm):
         realm = obj
+    elif hasattr(obj, "realm"):
+        realm = obj.realm
 
     Confirmation.objects.create(
         content_object=obj,
