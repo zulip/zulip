@@ -242,7 +242,9 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's display settings
-                                have changed.
+                                have changed with an additional rule that it is only sent to
+                                clients that did not include `user_settings_object` in their
+                                `client_capabilities` when registering the event queue.
 
                                 **Changes**: Deprecated in Zulip 5.0 (feature level 89), replaced by
                                 the `user_settings` event type.
@@ -283,7 +285,10 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's [notification
-                                settings](/api/update-settings) have changed.
+                                settings](/api/update-settings) have changed with an additional
+                                rule that it is only sent to clients that did not include
+                                `user_settings_object` in their `client_capabilities` when
+                                registering the event queue.
 
                                 **Changes**: Deprecated in Zulip 5.0 (feature level 89), replaced by
                                 the `user_settings` event type.
@@ -8260,6 +8265,14 @@ paths:
               New in Zulip 4.0 (feature level 58).  This capability is
               for backwards-compatibility; it will be required in a
               future server release.
+
+            * `user_settings_object`: Boolean for whether the client supports the modern
+              `user_settings` event type. If False, the server will additionally send the
+              legacy `update_display_settings` and `update_global_notifications` event
+              types for backwards-compatibility with clients that predate this API migration.
+
+              New in Zulip 4.0 (feature level 89).  This capability is for
+              backwards-compatibility; it will be removed in a future server release.
           content:
             application/json:
               schema:

@@ -17,6 +17,12 @@ below features are supported.
   `user_settings`.  The previous `update_display_settings`  and
   `update_global_notifications` event types are still supported
   for backwards compatibility, but will be removed in future.
+* [`POST /register`](/api/register-queue): Added the new
+  `user_settings_object` property to supported `client_capabilities`.
+* [`GET /events`](/api/get-events): `update_display_settings` and
+  `update_global_notifications` are sent only when `user_settings_object`
+  is not included in the `client_capabilities` when registering the
+  event queue.
 
 **Feature level 88**
 

@@ -95,6 +95,7 @@ class ClientDescriptor:
         narrow: Collection[Sequence[str]] = [],
         bulk_message_deletion: bool = False,
         stream_typing_notifications: bool = False,
+        user_settings_object: bool = False,
     ) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -117,6 +118,7 @@ class ClientDescriptor:
         self.narrow_filter = build_narrow_filter(narrow)
         self.bulk_message_deletion = bulk_message_deletion
         self.stream_typing_notifications = stream_typing_notifications
+        self.user_settings_object = user_settings_object
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -143,6 +145,7 @@ class ClientDescriptor:
             client_type_name=self.client_type_name,
             bulk_message_deletion=self.bulk_message_deletion,
             stream_typing_notifications=self.stream_typing_notifications,
+            user_settings_object=self.user_settings_object,
         )
 
     def __repr__(self) -> str:
@@ -174,6 +177,7 @@ class ClientDescriptor:
             d.get("narrow", []),
             d.get("bulk_message_deletion", False),
             d.get("stream_typing_notifications", False),
+            d.get("user_settings_object", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -217,6 +221,14 @@ class ClientDescriptor:
             # delivered if the stream_typing_notifications
             # client_capability is enabled, for backwards compatibility.
             return self.stream_typing_notifications
+        if self.user_settings_object and event["type"] in [
+            "update_display_settings",
+            "update_global_notifications",
+        ]:
+            # 'update_display_settings' and 'update_global_notifications'
+            # events are sent only if user_settings_object is False,
+            # otherwise only 'user_settings' event is sent.
+            return False
         return True
 
     # TODO: Refactor so we don't need this function

@@ -241,6 +241,7 @@ class BaseAction(ZulipTestCase):
         num_events: int = 1,
         bulk_message_deletion: bool = True,
         stream_typing_notifications: bool = True,
+        user_settings_object: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -267,6 +268,7 @@ class BaseAction(ZulipTestCase):
                 narrow=[],
                 bulk_message_deletion=bulk_message_deletion,
                 stream_typing_notifications=stream_typing_notifications,
+                user_settings_object=user_settings_object,
             )
         )
 
@@ -2056,6 +2058,31 @@ class NormalActionsTest(BaseAction):
     def test_restart_event(self) -> None:
         with self.assertRaises(RestartEventException):
             self.verify_action(lambda: send_restart_events(immediate=True))
+
+    def test_display_setting_event_not_sent(self) -> None:
+        events = self.verify_action(
+            lambda: do_set_user_display_setting(
+                self.user_profile,
+                "default_view",
+                "all_messages",
+            ),
+            state_change_expected=True,
+            user_settings_object=True,
+        )
+        check_user_settings_update("events[0]", events[0])
+
+    def test_notification_setting_event_not_sent(self) -> None:
+        events = self.verify_action(
+            lambda: do_change_notification_settings(
+                self.user_profile,
+                "enable_sounds",
+                False,
+                acting_user=self.user_profile,
+            ),
+            state_change_expected=True,
+            user_settings_object=True,
+        )
+        check_user_settings_update("events[0]", events[0])
 
 
 class RealmPropertyActionTest(BaseAction):

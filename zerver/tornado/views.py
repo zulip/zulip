@@ -103,6 +103,9 @@ def get_events_backend(
     stream_typing_notifications: bool = REQ(
         default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
+    user_settings_object: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
         raise JsonableError(_("User not authorized for this query"))
@@ -147,6 +150,7 @@ def get_events_backend(
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
+            user_settings_object=user_settings_object,
         )
 
     result = fetch_events(events_query)

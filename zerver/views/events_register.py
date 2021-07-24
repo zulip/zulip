@@ -54,6 +54,7 @@ def events_register_backend(
                 ("bulk_message_deletion", check_bool),
                 ("user_avatar_url_field_optional", check_bool),
                 ("stream_typing_notifications", check_bool),
+                ("user_settings_object", check_bool),
             ],
             value_validator=check_bool,
         ),

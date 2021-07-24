@@ -75,6 +75,7 @@ def request_event_queue(
     narrow: Iterable[Sequence[str]] = [],
     bulk_message_deletion: bool = False,
     stream_typing_notifications: bool = False,
+    user_settings_object: bool = False,
 ) -> Optional[str]:
 
     if not settings.USING_TORNADO:
@@ -95,6 +96,7 @@ def request_event_queue(
         "lifespan_secs": queue_lifespan_secs,
         "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
         "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
+        "user_settings_object": orjson.dumps(user_settings_object),
     }
 
     if event_types is not None:
