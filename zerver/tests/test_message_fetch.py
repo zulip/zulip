@@ -74,7 +74,7 @@ def get_sqlalchemy_query_params(query: ClauseElement) -> Dict[str, object]:
     return comp.params
 
 
-def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> Optional[str]:
+def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> Optional[int]:
     stream = get_stream(stream_name, realm)
     return stream.recipient.id if stream.recipient is not None else None
 

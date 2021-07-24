@@ -1954,8 +1954,9 @@ class NormalActionsTest(BaseAction):
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
         assert audit_log_entry is not None
+        audit_log_entry_id = audit_log_entry.id
         events = self.verify_action(
-            lambda: self.client_delete(f"/json/export/realm/{audit_log_entry.id}"),
+            lambda: self.client_delete(f"/json/export/realm/{audit_log_entry_id}"),
             state_change_expected=False,
             num_events=1,
         )

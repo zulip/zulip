@@ -1248,6 +1248,7 @@ class StripeTest(StripeTestCase):
             )
         # Check that we created a Customer object but no CustomerPlan
         stripe_customer_id = Customer.objects.get(realm=get_realm("zulip")).stripe_customer_id
+        assert stripe_customer_id is not None
         self.assertFalse(CustomerPlan.objects.exists())
         # Check that we created a Customer in stripe, a failed Charge, and no Invoices or Invoice Items
         self.assertTrue(stripe_get_customer(stripe_customer_id))
@@ -1689,7 +1690,9 @@ class StripeTest(StripeTestCase):
         assert customer is not None
         [charge] = stripe.Charge.list(customer=customer.stripe_customer_id)
         self.assertEqual(1200 * self.seat_count, charge.amount)
-        [invoice] = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice] = stripe.Invoice.list(customer=stripe_customer_id)
         self.assertEqual(
             [1200 * self.seat_count, -1200 * self.seat_count],
             [item.amount for item in invoice.lines],
@@ -1707,7 +1710,9 @@ class StripeTest(StripeTestCase):
             )
         [charge, _] = stripe.Charge.list(customer=customer.stripe_customer_id)
         self.assertEqual(6000 * self.seat_count, charge.amount)
-        [invoice, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice, _] = stripe.Invoice.list(customer=stripe_customer_id)
         self.assertEqual(
             [6000 * self.seat_count, -6000 * self.seat_count],
             [item.amount for item in invoice.lines],
@@ -1721,7 +1726,9 @@ class StripeTest(StripeTestCase):
         customer.refresh_from_db()
         self.assertEqual(customer.default_discount, 50)
         invoice_plans_as_needed(self.next_year + timedelta(days=10))
-        [invoice, _, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice, _, _] = stripe.Invoice.list(customer=stripe_customer_id)
         self.assertEqual([4000 * self.seat_count], [item.amount for item in invoice.lines])
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
@@ -1779,6 +1786,7 @@ class StripeTest(StripeTestCase):
         stripe_customer = Customer.objects.first()
         assert stripe_customer is not None
         stripe_customer_id = stripe_customer.stripe_customer_id
+        assert stripe_customer_id is not None
         stripe.InvoiceItem.create(amount=5000, currency="usd", customer=stripe_customer_id)
         stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
         stripe.Invoice.finalize_invoice(stripe_invoice)
@@ -3491,8 +3499,9 @@ class InvoiceTest(StripeTestCase):
         plan = CustomerPlan.objects.first()
         assert plan is not None
         invoice_plan(plan, self.now + timedelta(days=400))
-
-        [invoice0, invoice1] = stripe.Invoice.list(customer=plan.customer.stripe_customer_id)
+        stripe_cutomer_id = plan.customer.stripe_customer_id
+        assert stripe_cutomer_id is not None
+        [invoice0, invoice1] = stripe.Invoice.list(customer=stripe_cutomer_id)
         self.assertIsNotNone(invoice0.status_transitions.finalized_at)
         [item0, item1, item2] = invoice0.lines
         line_item_params = {
@@ -3545,8 +3554,10 @@ class InvoiceTest(StripeTestCase):
         plan.price_per_license = 0
         plan.save(update_fields=["fixed_price", "price_per_license"])
         invoice_plan(plan, self.next_year)
-        [invoice0, invoice1] = stripe.Invoice.list(customer=plan.customer.stripe_customer_id)
-        self.assertEqual(invoice0.collection_method, "send_invoice")
+        stripe_customer_id = plan.customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice0, invoice1] = stripe.Invoice.list(customer=stripe_customer_id)
+        self.assertEqual(invoice0.billing, "send_invoice")
         [item] = invoice0.lines
         line_item_params = {
             "amount": 100,
