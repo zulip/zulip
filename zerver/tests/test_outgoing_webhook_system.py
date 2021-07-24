@@ -39,7 +39,7 @@ def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
 
 
 class DoRestCallTests(ZulipTestCase):
-    def mock_event(self, bot_user: UserProfile) -> Dict[str, Any]:
+    def mock_stream_message_event(self, bot_user: UserProfile) -> Dict[str, Any]:
         return {
             # In the tests there is no active queue processor, so retries don't get processed.
             # Therefore, we need to emulate `retry_event` in the last stage when the maximum
@@ -72,7 +72,7 @@ class DoRestCallTests(ZulipTestCase):
 
     def test_successful_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
@@ -81,7 +81,7 @@ class DoRestCallTests(ZulipTestCase):
         ) as session, expect_send_response as mock_send:
             session.post.return_value = ResponseMock(200, orjson.dumps(dict(content="whatever")))
             with self.assertLogs(level="INFO") as logs:
-                do_rest_call("", mock_event, service_handler)
+                do_rest_call("", mock_stream_message_event, service_handler)
             self.assert_length(logs.output, 1)
             self.assertIn(
                 f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
@@ -94,7 +94,7 @@ class DoRestCallTests(ZulipTestCase):
             with mock.patch.object(handler, "session") as session:
                 session.post.return_value = ResponseMock(200, b"{}")
                 with self.assertLogs(level="INFO") as logs:
-                    do_rest_call("", mock_event, handler)
+                    do_rest_call("", mock_stream_message_event, handler)
                 self.assert_length(logs.output, 1)
                 self.assertIn(
                     f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
@@ -103,14 +103,14 @@ class DoRestCallTests(ZulipTestCase):
 
     def test_retry_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         with mock.patch.object(service_handler, "session") as session, self.assertLogs(
             level="WARNING"
         ) as m:
             session.post.return_value = ResponseMock(500)
-            final_response = do_rest_call("", mock_event, service_handler)
+            final_response = do_rest_call("", mock_stream_message_event, service_handler)
             assert final_response is not None
 
             self.assertEqual(
@@ -131,7 +131,7 @@ The webhook got a response with status code *500*.""",
 
     def test_fail_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
@@ -140,7 +140,7 @@ The webhook got a response with status code *500*.""",
             service_handler, "session"
         ) as session, expect_fail as mock_fail, self.assertLogs(level="WARNING") as m:
             session.post.return_value = ResponseMock(400)
-            final_response = do_rest_call("", mock_event, service_handler)
+            final_response = do_rest_call("", mock_stream_message_event, service_handler)
             assert final_response is not None
 
             self.assertEqual(
@@ -164,14 +164,16 @@ The webhook got a response with status code *400*.""",
 
     def test_headers(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         session = service_handler.session
         with mock.patch.object(session, "send") as mock_send:
             mock_send.return_value = ResponseMock(200, b"{}")
             with self.assertLogs(level="INFO") as logs:
-                final_response = do_rest_call("https://example.com/", mock_event, service_handler)
+                final_response = do_rest_call(
+                    "https://example.com/", mock_stream_message_event, service_handler
+                )
             assert final_response is not None
 
             self.assert_length(logs.output, 1)
@@ -190,14 +192,14 @@ The webhook got a response with status code *400*.""",
 
     def test_error_handling(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
         bot_user_email = self.example_user_map["outgoing_webhook_bot"]
 
         def helper(side_effect: Any, error_text: str) -> None:
             with mock.patch.object(service_handler, "session") as session:
                 session.post.side_effect = side_effect
-                do_rest_call("", mock_event, service_handler)
+                do_rest_call("", mock_stream_message_event, service_handler)
 
             bot_owner_notification = self.get_last_message()
             self.assertIn(error_text, bot_owner_notification.content)
@@ -210,17 +212,17 @@ The webhook got a response with status code *400*.""",
             helper(side_effect=connection_error, error_text="A connection error occurred.")
 
             log_output = [
-                f"INFO:root:Trigger event {mock_event['command']} on {mock_event['service_name']} timed out. Retrying",
-                f"WARNING:root:Maximum retries exceeded for trigger:{bot_user_email} event:{mock_event['command']}",
-                f"INFO:root:Trigger event {mock_event['command']} on {mock_event['service_name']} resulted in a connection error. Retrying",
-                f"WARNING:root:Maximum retries exceeded for trigger:{bot_user_email} event:{mock_event['command']}",
+                f"INFO:root:Trigger event {mock_stream_message_event['command']} on {mock_stream_message_event['service_name']} timed out. Retrying",
+                f"WARNING:root:Maximum retries exceeded for trigger:{bot_user_email} event:{mock_stream_message_event['command']}",
+                f"INFO:root:Trigger event {mock_stream_message_event['command']} on {mock_stream_message_event['service_name']} resulted in a connection error. Retrying",
+                f"WARNING:root:Maximum retries exceeded for trigger:{bot_user_email} event:{mock_stream_message_event['command']}",
             ]
 
             self.assertEqual(i.output, log_output)
 
     def test_request_exception(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         expect_logging_exception = self.assertLogs(level="ERROR")
@@ -232,7 +234,7 @@ The webhook got a response with status code *400*.""",
             service_handler, "session"
         ) as session, expect_logging_exception, expect_fail as mock_fail:
             session.post.side_effect = request_exception_error
-            do_rest_call("", mock_event, service_handler)
+            do_rest_call("", mock_stream_message_event, service_handler)
 
         self.assertTrue(mock_fail.called)
 
@@ -250,7 +252,7 @@ I'm a generic exception :(
 
     def test_jsonable_exception(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         # The "widget_content" key is required to be a string which is
@@ -265,7 +267,9 @@ I'm a generic exception :(
                 requests_mock.POST, "https://example.zulip.com", status=200, json=response
             )
             with expect_logging_info, expect_fail as mock_fail:
-                do_rest_call("https://example.zulip.com", mock_event, service_handler)
+                do_rest_call(
+                    "https://example.zulip.com", mock_stream_message_event, service_handler
+                )
             self.assertTrue(mock_fail.called)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(
@@ -279,7 +283,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
 
     def test_invalid_response_format(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         expect_logging_info = self.assertLogs(level="INFO")
@@ -292,7 +296,9 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
                 requests_mock.POST, "https://example.zulip.com", status=200, json=True
             )
             with expect_logging_info, expect_fail as mock_fail:
-                do_rest_call("https://example.zulip.com", mock_event, service_handler)
+                do_rest_call(
+                    "https://example.zulip.com", mock_stream_message_event, service_handler
+                )
             self.assertTrue(mock_fail.called)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(
@@ -306,7 +312,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
 
     def test_invalid_json_in_response(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
-        mock_event = self.mock_event(bot_user)
+        mock_stream_message_event = self.mock_stream_message_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
         expect_logging_info = self.assertLogs(level="INFO")
@@ -321,7 +327,9 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
                 body="this isn't valid json",
             )
             with expect_logging_info, expect_fail as mock_fail:
-                do_rest_call("https://example.zulip.com", mock_event, service_handler)
+                do_rest_call(
+                    "https://example.zulip.com", mock_stream_message_event, service_handler
+                )
             self.assertTrue(mock_fail.called)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(
