@@ -454,7 +454,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         self.add_mock_response()
         # Send any existing data over, so that we can start the test with a "clean" slate
-        audit_log_max_id = RealmAuditLog.objects.all().order_by("id").last().id
+        audit_log = RealmAuditLog.objects.all().order_by("id").last()
+        assert audit_log is not None
+        audit_log_max_id = audit_log.id
         send_analytics_to_remote_server()
         self.assertTrue(responses.assert_call_count(ANALYTICS_STATUS_URL, 1))
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
@@ -712,6 +714,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         send_analytics_to_remote_server()
         remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
+        assert remote_log_entry is not None
         self.assertEqual(remote_log_entry.server.uuid, self.server_uuid)
         self.assertEqual(remote_log_entry.remote_id, log_entry.id)
         self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)

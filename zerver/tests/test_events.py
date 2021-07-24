@@ -1534,7 +1534,9 @@ class NormalActionsTest(BaseAction):
         )
         check_realm_playgrounds("events[0]", events[0])
 
-        last_id = RealmPlayground.objects.last().id
+        last_realm_playground = RealmPlayground.objects.last()
+        assert last_realm_playground is not None
+        last_id = last_realm_playground.id
         realm_playground = access_playground_by_id(self.user_profile.realm, last_id)
         events = self.verify_action(
             lambda: do_remove_realm_playground(self.user_profile.realm, realm_playground)
@@ -1951,6 +1953,7 @@ class NormalActionsTest(BaseAction):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
+        assert audit_log_entry is not None
         events = self.verify_action(
             lambda: self.client_delete(f"/json/export/realm/{audit_log_entry.id}"),
             state_change_expected=False,

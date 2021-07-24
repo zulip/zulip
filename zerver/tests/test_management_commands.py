@@ -509,6 +509,7 @@ class TestExport(ZulipTestCase):
             content="Outbox emoji for export",
         )
         message = Message.objects.last()
+        assert message is not None
         do_add_reaction(
             self.example_user("iago"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
         )

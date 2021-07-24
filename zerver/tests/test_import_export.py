@@ -622,6 +622,7 @@ class ImportExportTest(ZulipTestCase):
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
+        assert message is not None
         full_data = self._export_realm(realm, consent_message_id=message.id)
         realm_emoji.save()
 
@@ -699,6 +700,7 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # Third huddle is not exported since none of the members gave consent
+        assert huddle_a is not None and huddle_b is not None
         huddle_recipients = Recipient.objects.filter(
             type_id__in=[huddle_a.id, huddle_b.id], type=Recipient.HUDDLE
         )
@@ -806,10 +808,12 @@ class ImportExportTest(ZulipTestCase):
 
         # data to test import of muted topic
         stream = get_stream("Verona", original_realm)
+        recipient = stream.recipient
+        assert recipient is not None
         add_topic_mute(
             user_profile=sample_user,
             stream_id=stream.id,
-            recipient_id=stream.recipient.id,
+            recipient_id=recipient.id,
             topic_name="Verona2",
         )
 

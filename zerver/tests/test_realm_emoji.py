@@ -68,6 +68,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         realm_emoji = RealmEmoji.objects.get(name="my_emoji")
+        assert realm_emoji.author is not None
         self.assertEqual(realm_emoji.author.email, email)
 
         result = self.client_get("/json/realm/emoji")
@@ -99,6 +100,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         realm_emoji = RealmEmoji.objects.get(name="smile")
+        assert realm_emoji is not None and realm_emoji.author is not None
         self.assertEqual(realm_emoji.author.email, email)
 
     def test_realm_emoji_repr(self) -> None:

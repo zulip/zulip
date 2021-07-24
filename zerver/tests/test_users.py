@@ -1388,6 +1388,7 @@ class ActivateTest(ZulipTestCase):
             ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1
         )
         email = ScheduledEmail.objects.all().first()
+        assert email is not None and email.users is not None
         self.assertEqual(email.users.count(), 2)
 
     def test_clear_scheduled_emails_with_multiple_user_ids(self) -> None:
@@ -1455,6 +1456,7 @@ class ActivateTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
+        assert email is not None
         email.users.remove(*to_user_ids)
 
         with self.assertLogs("zulip.send_email", level="INFO") as info_log:
@@ -1497,6 +1499,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         stream = get_stream(stream_name, realm)
         recipient = stream.recipient
+        assert recipient is not None
 
         stream_topic = StreamTopicTarget(
             stream_id=stream.id,

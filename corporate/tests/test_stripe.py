@@ -1215,7 +1215,9 @@ class StripeTest(StripeTestCase):
         # Change the seat count while the user is going through the upgrade flow
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count):
             self.upgrade()
-        stripe_customer_id = Customer.objects.first().stripe_customer_id
+        customer = Customer.objects.first()
+        assert customer is not None
+        stripe_customer_id = customer.stripe_customer_id
         # Check that the Charge used the old quantity, not new_seat_count
         [charge] = stripe.Charge.list(customer=stripe_customer_id)
         self.assertEqual(8000 * self.seat_count, charge.amount)
@@ -1226,8 +1228,10 @@ class StripeTest(StripeTestCase):
             [item.amount for item in stripe_invoice.lines],
         )
         # Check LicenseLedger has the new amount
-        self.assertEqual(LicenseLedger.objects.first().licenses, new_seat_count)
-        self.assertEqual(LicenseLedger.objects.first().licenses_at_next_renewal, new_seat_count)
+        ledger_entry = LicenseLedger.objects.first()
+        assert ledger_entry is not None
+        self.assertEqual(ledger_entry.licenses, new_seat_count)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, new_seat_count)
 
     @mock_stripe()
     def test_upgrade_where_first_card_fails(self, *mocks: Mock) -> None:
@@ -1672,6 +1676,7 @@ class StripeTest(StripeTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = str({"old_discount": None, "new_discount": Decimal("85")})
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.login_user(user)
@@ -1680,6 +1685,7 @@ class StripeTest(StripeTestCase):
         # Check that the customer was charged the discounted amount
         self.upgrade()
         customer = Customer.objects.first()
+        assert customer is not None
         [charge] = stripe.Charge.list(customer=customer.stripe_customer_id)
         self.assertEqual(1200 * self.seat_count, charge.amount)
         [invoice] = stripe.Invoice.list(customer=customer.stripe_customer_id)
@@ -1719,6 +1725,7 @@ class StripeTest(StripeTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = str(
             {"old_discount": Decimal("25.0000"), "new_discount": Decimal("50")}
         )
@@ -1735,6 +1742,7 @@ class StripeTest(StripeTestCase):
         sender = get_system_bot(settings.NOTIFICATION_BOT)
         recipient_id = self.example_user("desdemona").recipient_id
         message = Message.objects.filter(sender=sender.id).first()
+        assert message is not None
         self.assertEqual(message.content, expected_message)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
         self.assertEqual(message.recipient_id, recipient_id)
@@ -1749,6 +1757,7 @@ class StripeTest(StripeTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = {"sponsorship_pending": True}
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
         self.assertEqual(realm_audit_log.acting_user, iago)
@@ -1766,7 +1775,9 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
         self.upgrade()
         # Create an open invoice
-        stripe_customer_id = Customer.objects.first().stripe_customer_id
+        stripe_customer = Customer.objects.first()
+        assert stripe_customer is not None
+        stripe_customer_id = stripe_customer.stripe_customer_id
         stripe.InvoiceItem.create(amount=5000, currency="usd", customer=stripe_customer_id)
         stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
         stripe.Invoice.finalize_invoice(stripe_invoice)
@@ -1899,8 +1910,10 @@ class StripeTest(StripeTestCase):
         # Check that we downgrade properly if the cycle is over
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
             update_license_ledger_if_needed(user.realm, self.next_year)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertEqual(get_realm("zulip").plan_type, Realm.LIMITED)
-        self.assertEqual(CustomerPlan.objects.first().status, CustomerPlan.ENDED)
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
         self.assertEqual(
             LicenseLedger.objects.order_by("-id")
             .values_list("licenses", "licenses_at_next_renewal")
@@ -1920,13 +1933,17 @@ class StripeTest(StripeTestCase):
 
         # Verify that we call invoice_plan once more after cycle end but
         # don't invoice them for users added after the cycle end
-        self.assertIsNotNone(CustomerPlan.objects.first().next_invoice_date)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertIsNotNone(plan.next_invoice_date)
         with patch("stripe.InvoiceItem.create") as mocked:
             invoice_plans_as_needed(self.next_year + timedelta(days=32))
         mocked.assert_not_called()
         mocked.reset_mock()
         # Check that we updated next_invoice_date in invoice_plan
-        self.assertIsNone(CustomerPlan.objects.first().next_invoice_date)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertIsNone(plan.next_invoice_date)
 
         # Check that we don't call invoice_plan after that final call
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=50):
@@ -2251,16 +2268,18 @@ class StripeTest(StripeTestCase):
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
-        self.assertEqual(
-            CustomerPlan.objects.first().status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE
-        )
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch("/json/billing/plan", {"status": CustomerPlan.ACTIVE})
                 expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {stripe_customer_id}, CustomerPlan.id: {new_plan.id}, status: {CustomerPlan.ACTIVE}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
-        self.assertEqual(CustomerPlan.objects.first().status, CustomerPlan.ACTIVE)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
     @patch("stripe.Invoice.create")
     @patch("stripe.Invoice.finalize_invoice")
@@ -2287,10 +2306,12 @@ class StripeTest(StripeTestCase):
             self.assertEqual(m.output[0], expected_log)
 
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertIsNotNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
         invoice_plans_as_needed(self.next_year)
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertIsNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.ENDED)
 
@@ -2312,6 +2333,7 @@ class StripeTest(StripeTestCase):
                 update_license_ledger_if_needed(user.realm, self.now)
 
             last_ledger_entry = LicenseLedger.objects.order_by("id").last()
+            assert last_ledger_entry is not None
             self.assertEqual(last_ledger_entry.licenses, 21)
             self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 21)
 
@@ -2385,12 +2407,14 @@ class StripeTest(StripeTestCase):
         self.assertEqual(CustomerPlan.objects.count(), 2)
 
         current_plan = CustomerPlan.objects.all().order_by("id").last()
+        assert current_plan is not None
         next_invoice_date = add_months(self.next_year, 1)
         self.assertEqual(current_plan.next_invoice_date, next_invoice_date)
         self.assertEqual(get_realm("zulip").plan_type, Realm.STANDARD)
         self.assertEqual(current_plan.status, CustomerPlan.ACTIVE)
 
         old_plan = CustomerPlan.objects.all().order_by("id").first()
+        assert old_plan is not None
         self.assertEqual(old_plan.next_invoice_date, None)
         self.assertEqual(old_plan.status, CustomerPlan.ENDED)
 
@@ -2612,6 +2636,7 @@ class StripeTest(StripeTestCase):
             update_license_ledger_if_needed(user.realm, self.now)
 
         last_ledger_entry = LicenseLedger.objects.order_by("id").last()
+        assert last_ledger_entry is not None
         self.assertEqual(last_ledger_entry.licenses, 20)
         self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 20)
 
@@ -2662,11 +2687,13 @@ class StripeTest(StripeTestCase):
         self.assertEqual(CustomerPlan.objects.count(), 2)
 
         current_plan = CustomerPlan.objects.all().order_by("id").last()
+        assert current_plan is not None
         self.assertEqual(current_plan.next_invoice_date, self.next_month)
         self.assertEqual(get_realm("zulip").plan_type, Realm.STANDARD)
         self.assertEqual(current_plan.status, CustomerPlan.ACTIVE)
 
         old_plan = CustomerPlan.objects.all().order_by("id").first()
+        assert old_plan is not None
         self.assertEqual(old_plan.next_invoice_date, None)
         self.assertEqual(old_plan.status, CustomerPlan.ENDED)
 
@@ -2896,6 +2923,7 @@ class StripeTest(StripeTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
@@ -2906,6 +2934,7 @@ class StripeTest(StripeTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
@@ -3288,6 +3317,7 @@ class LicenseLedgerTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
         self.assertEqual(plan.licenses_at_next_renewal(), self.seat_count)
         # Simple increase
@@ -3417,6 +3447,7 @@ class InvoiceTest(StripeTestCase):
     def test_invoicing_status_is_started(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         plan.invoicing_status = CustomerPlan.STARTED
         plan.save(update_fields=["invoicing_status"])
         with self.assertRaises(NotImplementedError):
@@ -3457,6 +3488,7 @@ class InvoiceTest(StripeTestCase):
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=self.seat_count + 3):
             update_license_ledger_if_needed(get_realm("zulip"), self.now + timedelta(days=500))
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         invoice_plan(plan, self.now + timedelta(days=400))
 
         [invoice0, invoice1] = stripe.Invoice.list(customer=plan.customer.stripe_customer_id)
@@ -3507,6 +3539,7 @@ class InvoiceTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.upgrade(invoice=True)
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         plan.fixed_price = 100
         plan.price_per_license = 0
         plan.save(update_fields=["fixed_price", "price_per_license"])
@@ -3531,17 +3564,20 @@ class InvoiceTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
         # Test this doesn't make any calls to stripe.Invoice or stripe.InvoiceItem
         invoice_plan(plan, self.next_month)
         plan = CustomerPlan.objects.first()
         # Test that we still update next_invoice_date
+        assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
 
     def test_invoice_plans_as_needed(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
         # Test nothing needed to be done
         with patch("corporate.lib.stripe.invoice_plan") as mocked:
@@ -3550,6 +3586,7 @@ class InvoiceTest(StripeTestCase):
         # Test something needing to be done
         invoice_plans_as_needed(self.next_month)
         plan = CustomerPlan.objects.first()
+        assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
 
 

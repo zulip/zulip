@@ -240,6 +240,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self, stat: CountStat, end_time: datetime, state: int = FillState.DONE
     ) -> None:
         fill_state = FillState.objects.filter(property=stat.property).first()
+        assert fill_state is not None
         self.assertEqual(fill_state.end_time, end_time)
         self.assertEqual(fill_state.state, state)
 

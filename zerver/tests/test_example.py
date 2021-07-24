@@ -250,6 +250,7 @@ class TestFullStack(ZulipTestCase):
         # especially if there's risk of similar objects existing
         # (E.g. a message sent to that topic earlier in the test).
         row = UserStatus.objects.last()
+        assert row is not None
         self.assertEqual(row.user_profile_id, cordelia.id)
         self.assertEqual(row.status_text, "on vacation")
 

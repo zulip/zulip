@@ -150,7 +150,9 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             except UserProfile.DoesNotExist:
                 return None
 
-        last_user_id = UserProfile.objects.last().id
+        last_user = UserProfile.objects.last()
+        assert last_user is not None
+        last_user_id = last_user.id
         with queries_captured() as queries:
             result = get_user_function_can_return_none(last_user_id + 1)
 
