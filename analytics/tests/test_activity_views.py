@@ -51,4 +51,4 @@ class ActivityTest(ZulipTestCase):
             result = self.client_get("/user_activity/iago@zulip.com/")
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 5)

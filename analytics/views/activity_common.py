@@ -84,7 +84,9 @@ def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     return mark_safe(stats_link)
 
 
-def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
+def get_user_activity_summary(
+    records: List[QuerySet], is_bot: bool = False
+) -> Dict[str, Dict[str, Any]]:
     #: `Any` used above should be `Union(int, datetime)`.
     #: However current version of `Union` does not work inside other function.
     #: We could use something like:
@@ -106,7 +108,13 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
             )
 
     if records:
-        summary["name"] = records[0].user_profile.full_name
+        user = records[0].user_profile
+        summary["name"] = user.full_name
+        summary["role"] = user.get_role_name()
+
+        if is_bot and user.bot_owner is not None:
+            summary["bot_owner"] = user.bot_owner.full_name
+            summary["bot_owner_email"] = user.bot_owner.delivery_email
 
     for record in records:
         client = record.client.name
