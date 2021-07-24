@@ -2769,6 +2769,10 @@ nav {
 .pricing-model .pricing-container .text-content .standard-price-box {
     display: flex;
     height: 55px;
+
+    .pricing-period {
+        color: hsl(0, 0%, 27%);
+    }
 }
 
 .pricing-model .pricing-container .text-content .price .price-cents {
