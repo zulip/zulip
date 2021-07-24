@@ -111,6 +111,7 @@ test("activate", ({override}) => {
     is_event_handled = false;
     assert.ok(!widgetize.widget_contents.has(opts.message.id));
 
+    message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
@@ -122,6 +123,7 @@ test("activate", ({override}) => {
     is_widget_activated = false;
     is_event_handled = false;
 
+    message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
@@ -133,6 +135,7 @@ test("activate", ({override}) => {
     is_widget_activated = false;
     is_event_handled = false;
 
+    message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(!is_widget_elem_inserted);
