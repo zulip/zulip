@@ -120,11 +120,12 @@ account](/help/configure-authentication-methods), instead of with a
 username and password.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
-### Import from Slack, Mattermost, or Gitter.
+### Import from Slack, Mattermost, Gitter, or Rocket.Chat.
 
 Import your existing organization from [Slack](/help/import-from-slack),
-[Mattermost](/help/import-from-mattermost), or
-[Gitter](/help/import-from-gitter).
+[Mattermost](/help/import-from-mattermost),
+[Gitter](/help/import-from-gitter), or
+[Rocket.Chat](/help/import-from-rocketchat).
 
 ### Collaborate on code and formulas
 

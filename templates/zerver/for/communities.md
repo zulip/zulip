@@ -127,8 +127,9 @@ improvements into Zulip.
 
 Many communities that migrated from
 [Slack](/help/import-from-slack),
-[Mattermost](/help/import-from-mattermost), or
-[Gitter](/help/import-from-gitter) to Zulip tell us
+[Mattermost](/help/import-from-mattermost),
+[Gitter](/help/import-from-gitter), or
+[Rocket.Chat](/help/import-from-rocketchat) to Zulip tell us
 that Zulip helped them manage and grow an inclusive, healthy
 community. We hope Zulip can help your community succeed too!
 

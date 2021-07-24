@@ -880,6 +880,7 @@ help_markdown_rules = RuleList(
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
             "include_only": {"templates/zerver/help/"},
+            "exclude_pattern": "Rocket.Chat",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
