@@ -266,6 +266,9 @@ class SubscriptionInfo:
     never_subscribed: List[Dict[str, Any]]
 
 
+# These are hard to type-check because of the API_FIELDS loops.
+RawStreamDict = Dict[str, Any]
+
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
 
@@ -6441,7 +6444,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 def build_stream_dict_for_sub(
     user: UserProfile,
     sub: Subscription,
-    stream: Stream,
+    raw_stream_dict: RawStreamDict,
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
     # We first construct a dictionary based on the standard Stream
@@ -6449,12 +6452,12 @@ def build_stream_dict_for_sub(
     result = {}
     for field_name in Stream.API_FIELDS:
         if field_name == "id":
-            result["stream_id"] = stream["id"]
+            result["stream_id"] = raw_stream_dict["id"]
             continue
         elif field_name == "date_created":
-            result["date_created"] = datetime_to_timestamp(stream[field_name])
+            result["date_created"] = datetime_to_timestamp(raw_stream_dict[field_name])
             continue
-        result[field_name] = stream[field_name]
+        result[field_name] = raw_stream_dict[field_name]
 
     # Copy Subscription.API_FIELDS.
     for field_name in Subscription.API_FIELDS:
@@ -6468,16 +6471,16 @@ def build_stream_dict_for_sub(
     # updated for the is_announcement_only -> stream_post_policy
     # migration.
     result["is_announcement_only"] = (
-        stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
+        raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
     )
 
     # Add a few computed fields not directly from the data models.
     result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
-        stream["id"], stream["date_created"], recent_traffic
+        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
     )
 
     result["email_address"] = encode_email_address_helper(
-        stream["name"], stream["email_token"], show_sender=True
+        raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True
     )
 
     # Our caller may add a subscribers field.
@@ -6485,26 +6488,26 @@ def build_stream_dict_for_sub(
 
 
 def build_stream_dict_for_never_sub(
-    stream: Stream,
+    raw_stream_dict: RawStreamDict,
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
     result = {}
     for field_name in Stream.API_FIELDS:
         if field_name == "id":
-            result["stream_id"] = stream["id"]
+            result["stream_id"] = raw_stream_dict["id"]
             continue
         elif field_name == "date_created":
-            result["date_created"] = datetime_to_timestamp(stream[field_name])
+            result["date_created"] = datetime_to_timestamp(raw_stream_dict[field_name])
             continue
-        result[field_name] = stream[field_name]
+        result[field_name] = raw_stream_dict[field_name]
 
     result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
-        stream["id"], stream["date_created"], recent_traffic
+        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
     )
 
     # Backwards-compatibility addition of removed field.
     result["is_announcement_only"] = (
-        stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
+        raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
     )
 
     # Our caller may add a subscribers field.
@@ -6520,7 +6523,7 @@ def gather_subscriptions_helper(
     include_subscribers: bool = True,
 ) -> SubscriptionInfo:
     realm = user_profile.realm
-    all_streams = get_active_streams(realm).values(
+    all_streams: QuerySet[RawStreamDict] = get_active_streams(realm).values(
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",
@@ -6530,7 +6533,7 @@ def gather_subscriptions_helper(
         "email_token",
     )
     recip_id_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in all_streams}
-    all_streams_map = {stream["id"]: stream for stream in all_streams}
+    all_streams_map: Dict[int, RawStreamDict] = {stream["id"]: stream for stream in all_streams}
 
     sub_dicts = (
         get_stream_subscriptions_for_user(user_profile)
@@ -6561,12 +6564,12 @@ def gather_subscriptions_helper(
     for sub in sub_dicts:
         stream_id = get_stream_id(sub)
         sub_unsub_stream_ids.add(stream_id)
-        stream = all_streams_map[stream_id]
+        raw_stream_dict = all_streams_map[stream_id]
 
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
             sub=sub,
-            stream=stream,
+            raw_stream_dict=raw_stream_dict,
             recent_traffic=recent_traffic,
         )
 
@@ -6587,11 +6590,11 @@ def gather_subscriptions_helper(
         all_streams_map[stream_id] for stream_id in never_subscribed_stream_ids
     ]
 
-    for stream in never_subscribed_streams:
-        is_public = not stream["invite_only"]
+    for raw_stream_dict in never_subscribed_streams:
+        is_public = not raw_stream_dict["invite_only"]
         if is_public or user_profile.is_realm_admin:
             stream_dict = build_stream_dict_for_never_sub(
-                stream=stream, recent_traffic=recent_traffic
+                raw_stream_dict=raw_stream_dict, recent_traffic=recent_traffic
             )
 
             never_subscribed.append(stream_dict)
