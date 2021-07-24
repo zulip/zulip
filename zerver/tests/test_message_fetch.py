@@ -74,9 +74,9 @@ def get_sqlalchemy_query_params(query: ClauseElement) -> Dict[str, object]:
     return comp.params
 
 
-def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
+def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> Optional[str]:
     stream = get_stream(stream_name, realm)
-    return stream.recipient.id
+    return stream.recipient.id if stream.recipient is not None else None
 
 
 def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
@@ -3277,6 +3277,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_length(queries, 1)
 
         stream = get_stream("Scotland", realm)
+        assert stream.recipient is not None
         recipient_id = stream.recipient.id
         cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf'))"
         self.assertIn(cond, queries[0]["sql"])

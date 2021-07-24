@@ -1179,6 +1179,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(result)
 
         prereg_user = PreregistrationUser.objects.get(email=mirror_user.email)
+        assert prereg_user.referred_by is not None and inviter is not None
         self.assertEqual(
             prereg_user.referred_by.email,
             inviter.email,
@@ -1790,6 +1791,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         obj = Confirmation.objects.get(confirmation_key=find_key_by_email(email))
         prereg_user = obj.content_object
+        assert prereg_user is not None
         prereg_user.email = "invalid.email"
         prereg_user.save()
 
@@ -1930,6 +1932,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = url.split("/")[-1]
 
         conf = Confirmation.objects.filter(confirmation_key=registration_key).first()
+        assert conf is not None
         conf.date_sent -= datetime.timedelta(weeks=3)
         conf.save()
 
@@ -2140,6 +2143,7 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite_two = MultiuseInvite.objects.create(referred_by=othello, realm=realm)
         create_confirmation_link(multiuse_invite_two, Confirmation.MULTIUSE_INVITE)
         confirmation = Confirmation.objects.last()
+        assert confirmation is not None
         confirmation.date_sent = expired_datetime
         confirmation.save()
 
@@ -2432,6 +2436,7 @@ class InvitationsTestCase(InviteUserBase):
 
     def test_accessing_invites_in_another_realm(self) -> None:
         inviter = UserProfile.objects.exclude(realm=get_realm("zulip")).first()
+        assert inviter is not None
         prereg_user = PreregistrationUser.objects.create(
             email="email", referred_by=inviter, realm=inviter.realm
         )
@@ -2460,6 +2465,7 @@ class InvitationsTestCase(InviteUserBase):
         )
         self.assertEqual(result.status_code, 200)
         confirmation = Confirmation.objects.get(confirmation_key=registration_key)
+        assert confirmation.content_object is not None
         prereg_user = confirmation.content_object
         self.assertEqual(prereg_user.status, 0)
 
@@ -3934,6 +3940,7 @@ class UserSignUpTest(InviteUserBase):
                 form.errors["email"][0],
             )
             last_message = Message.objects.last()
+            assert last_message is not None
             self.assertIn(
                 f"A new member ({self.nonreg_email('test')}) was unable to join your organization because all Zulip",
                 last_message.content,
@@ -4735,7 +4742,7 @@ class UserSignUpTest(InviteUserBase):
         stream_name = "Rome"
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
-        default_streams = get_default_streams_for_realm(realm)
+        default_streams = get_default_streams_for_realm(realm.id)
         default_streams_name = [stream.name for stream in default_streams]
         self.assertNotIn(stream_name, default_streams_name)
 
@@ -4818,6 +4825,7 @@ class UserSignUpTest(InviteUserBase):
             key = find_key_by_email(email)
             confirmation = Confirmation.objects.get(confirmation_key=key)
             prereg_user = confirmation.content_object
+            assert prereg_user is not None
             prereg_user.realm_creation = True
             prereg_user.save()
 
@@ -4950,6 +4958,7 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/devtools/register_user/")
         user_profile = UserProfile.objects.all().order_by("id").last()
+        assert user_profile is not None
 
         self.assertEqual(result.status_code, 302)
         self.assertEqual(user_profile.delivery_email, email)
@@ -4971,6 +4980,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], f"http://{string_id}.testserver")
 
         user_profile = UserProfile.objects.all().order_by("id").last()
+        assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
 

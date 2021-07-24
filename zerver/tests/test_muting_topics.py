@@ -25,6 +25,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
+        assert recipient is not None
         add_topic_mute(
             user_profile=user,
             stream_id=stream.id,
@@ -56,6 +57,7 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
+            assert recipient is not None
             add_topic_mute(
                 user_profile=user,
                 stream_id=stream.id,
@@ -123,6 +125,7 @@ class MutedTopicsTests(ZulipTestCase):
         ]
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
+        assert recipient is not None
         for data in payloads:
             add_topic_mute(
                 user_profile=user,
@@ -146,6 +149,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         stream = get_stream("Verona", realm)
         recipient = stream.recipient
+        assert recipient is not None
         add_topic_mute(
             user_profile=user,
             stream_id=stream.id,

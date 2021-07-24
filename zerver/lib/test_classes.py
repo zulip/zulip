@@ -1613,7 +1613,9 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     @property
     def app(self) -> str:
-        return apps.get_containing_app_config(type(self).__module__).name
+        app_config = apps.get_containing_app_config(type(self).__module__)
+        assert app_config is not None
+        return app_config.name
 
     migrate_from: Optional[str] = None
     migrate_to: Optional[str] = None

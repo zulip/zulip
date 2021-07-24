@@ -1310,6 +1310,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         else:
             self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().last()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         if expect_confirm_registration_page:
             self.assert_in_success_response(["do_confirm/" + confirmation_key], result)
@@ -1495,6 +1496,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         multiuse_obj.streams.set(streams)
         create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
         multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
         multiuse_object_key = multiuse_confirmation.confirmation_key
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
@@ -3927,6 +3929,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().first()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         self.assertIn("do_confirm/" + confirmation_key, result.url)
         result = self.client_get(result.url)
@@ -3962,6 +3965,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             result.content.decode("utf-8"),
         )[0]
         confirmation = Confirmation.objects.all().first()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         self.assertIn("do_confirm/" + confirmation_key, url)
         result = self.client_get(url)
@@ -4008,6 +4012,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         multiuse_obj.streams.set(streams)
         create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
         multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
         multiuse_object_key = multiuse_confirmation.confirmation_key
 
         data["multiuse_object_key"] = multiuse_object_key
@@ -4015,6 +4020,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
 
         confirmation = Confirmation.objects.all().last()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         self.assertIn("do_confirm/" + confirmation_key, result.url)
         result = self.client_get(result.url)
@@ -6233,6 +6239,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             )
             self.assertEqual(result.status_code, 302)
             confirmation = Confirmation.objects.all().first()
+            assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result.url)
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)
@@ -6264,6 +6271,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             result = maybe_send_to_registration(request, email, is_signup=True)
             self.assertEqual(result.status_code, 302)
             confirmation = Confirmation.objects.all().first()
+            assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result.url)
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)

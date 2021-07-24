@@ -61,6 +61,7 @@ class RealmExportTest(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
+        assert audit_log_entry is not None
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
@@ -126,6 +127,7 @@ class RealmExportTest(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
+        assert audit_log_entry is not None
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.

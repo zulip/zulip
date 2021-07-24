@@ -602,6 +602,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._verify_archive_data(msg_ids, usermsg_ids)
 
         archive_transaction = ArchiveTransaction.objects.last()
+        assert archive_transaction is not None
         self.assertEqual(archive_transaction.realm, realm)
 
     def test_stream_messages_archiving(self) -> None:

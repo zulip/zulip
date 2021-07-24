@@ -374,6 +374,7 @@ class FixUnreadTests(ZulipTestCase):
         def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
+            assert recipient is not None
 
             add_topic_mute(
                 user_profile=user,
@@ -573,6 +574,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
         recipient = stream.recipient
+        assert recipient is not None
 
         add_topic_mute(
             user_profile=user_profile,

@@ -207,6 +207,7 @@ class RealmTest(ZulipTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED, acting_user=iago
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
         self.assertEqual(realm_audit_log.acting_user, iago)
@@ -283,6 +284,7 @@ class RealmTest(ZulipTestCase):
         self.assertTrue(realm.deactivated)
         create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
         confirmation = Confirmation.objects.last()
+        assert confirmation is not None
         self.assertEqual(confirmation.content_object, realm)
         self.assertEqual(confirmation.realm, realm)
 
@@ -575,6 +577,7 @@ class RealmTest(ZulipTestCase):
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
         ).last()
+        assert realm_audit_log is not None
         expected_extra_data = {"old_value": Realm.SELF_HOSTED, "new_value": Realm.STANDARD}
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
         self.assertEqual(realm_audit_log.acting_user, iago)
