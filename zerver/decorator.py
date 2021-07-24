@@ -176,7 +176,7 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
 
 def process_client(
     request: HttpRequest,
-    user_profile: UserProfile,
+    user: Union[UserProfile, AnonymousUser],
     *,
     is_browser_view: bool = False,
     client_name: Optional[str] = None,
@@ -198,8 +198,8 @@ def process_client(
         client_name = "website"
 
     request_notes.client = get_client(client_name)
-    if not skip_update_user_activity and user_profile.is_authenticated:
-        update_user_activity(request, user_profile, query)
+    if not skip_update_user_activity and user.is_authenticated:
+        update_user_activity(request, user, query)
 
 
 class InvalidZulipServerError(JsonableError):
@@ -466,6 +466,7 @@ def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
 def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+        assert request.user.is_authenticated
         if request.user.is_bot:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)

@@ -143,6 +143,7 @@ def upgrade(
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
     user = request.user
+    assert user.is_authenticated
 
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)

@@ -37,6 +37,8 @@ def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
 
 @zulip_login_required
 def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
+    assert request.user.is_authenticated
+
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():

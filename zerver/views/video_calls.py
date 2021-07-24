@@ -77,6 +77,8 @@ def get_zoom_sid(request: HttpRequest) -> str:
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
+    assert request.user.is_authenticated
+
     oauth = get_zoom_session(request.user)
     authorization_url, state = oauth.authorization_url(
         "https://zoom.us/oauth/authorize",
@@ -109,6 +111,8 @@ def complete_zoom_user_in_realm(
         json_validator=check_dict([("sid", check_string)], value_validator=check_string)
     ),
 ) -> HttpResponse:
+    assert request.user.is_authenticated
+
     if not constant_time_compare(state["sid"], get_zoom_sid(request)):
         raise JsonableError(_("Invalid Zoom session identifier"))
 
@@ -212,6 +216,8 @@ def join_bigbluebutton(
     password: str = REQ(),
     checksum: str = REQ(),
 ) -> HttpResponse:
+    assert request.user.is_authenticated
+
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         raise JsonableError(_("BigBlueButton is not configured."))
     else:

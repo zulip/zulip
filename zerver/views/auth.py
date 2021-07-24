@@ -851,6 +851,8 @@ def api_fetch_api_key(
     if user_profile is None:
         raise AuthenticationFailedError()
 
+    assert user_profile.is_authenticated
+
     # Maybe sending 'user_logged_in' signal is the better approach:
     #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
     # Not doing this only because over here we don't add the user information

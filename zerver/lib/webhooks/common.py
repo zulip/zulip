@@ -164,6 +164,8 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 def validate_extract_webhook_http_header(
     request: HttpRequest, header: str, integration_name: str, fatal: bool = True
 ) -> Optional[str]:
+    assert request.user.is_authenticated
+
     extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
     if extracted_header is None and fatal:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(

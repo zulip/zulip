@@ -64,6 +64,8 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
     user = request.user
+    assert user.is_authenticated
+
     customer = get_customer_by_realm(user.realm)
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,

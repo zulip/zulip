@@ -13,6 +13,7 @@ from zerver.lib.digest import DIGEST_CUTOFF, get_digest_context
 @zulip_login_required
 def digest_page(request: HttpRequest) -> HttpResponse:
     user_profile = request.user
+    assert user_profile.is_authenticated
     cutoff = time.mktime((timezone_now() - timedelta(days=DIGEST_CUTOFF)).timetuple())
 
     context = get_digest_context(user_profile, cutoff)

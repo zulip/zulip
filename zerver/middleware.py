@@ -397,6 +397,8 @@ class LogRequests(MiddlewareMixin):
         request_notes = get_request_notes(request)
         requestor_for_logs = request_notes.requestor_for_logs
         if requestor_for_logs is None:
+            # Note that request.user is a Union[RemoteZulipServer, UserProfile, AnonymousUser],
+            # if it is present.
             if hasattr(request, "user") and hasattr(request.user, "format_requestor_for_logs"):
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:

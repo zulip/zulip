@@ -226,7 +226,7 @@ def send_message_backend(
 
     client = get_request_notes(request).client
     assert client is not None
-    can_forge_sender = request.user.can_forge_sender
+    can_forge_sender = user_profile.can_forge_sender
     if forged and not can_forge_sender:
         raise JsonableError(_("User not authorized for this query"))
 
