@@ -112,7 +112,7 @@ def create_preregistration_user(
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
-) -> HttpResponse:
+) -> PreregistrationUser:
     realm = None
     if not realm_creation:
         try:
