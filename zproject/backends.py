@@ -2345,7 +2345,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         already been store in the session.
         """
         idp_name = self.strategy.session_get("saml_idp_name")
-        return settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
+        assert isinstance(idp_name, str)
+        auto_signup = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
+        assert isinstance(auto_signup, bool)
+        return auto_signup
 
 
 @external_auth_method
@@ -2356,12 +2359,14 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     # Hack: We don't yet support multiple IdPs, but we want this
     # module to import if nothing has been configured yet.
-    settings_dict: Dict[str, Optional[str]] = list(
+    settings_dict: Dict[str, Union[Optional[str], bool]] = list(
         settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [{}]
     )[0]
 
-    display_icon = settings_dict.get("display_icon")
-    display_name = settings_dict.get("display_name", "OIDC")
+    display_icon: Optional[str] = cast(Optional[str], settings_dict.get("display_icon", None))
+    assert isinstance(display_icon, (str, type(None)))
+    display_name: str = cast(str, settings_dict.get("display_name", "OIDC"))
+    assert isinstance(display_name, str)
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
@@ -2371,7 +2376,9 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     def get_key_and_secret(self) -> Tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
+        assert isinstance(client_id, str)
         secret = self.settings_dict.get("secret", "")
+        assert isinstance(secret, str)
         return client_id, secret
 
     @classmethod
@@ -2400,7 +2407,9 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         ]
 
     def should_auto_signup(self) -> bool:
-        return self.settings_dict.get("auto_signup", False)
+        result = self.settings_dict.get("auto_signup", False)
+        assert isinstance(result, bool)
+        return result
 
 
 def validate_otp_params(
