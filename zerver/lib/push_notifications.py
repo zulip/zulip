@@ -419,9 +419,7 @@ def send_notifications_to_bouncer(
 #
 
 
-def num_push_devices_for_user(
-    user_profile: UserProfile, kind: Optional[int] = None
-) -> PushDeviceToken:
+def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int] = None) -> int:
     if kind is None:
         return PushDeviceToken.objects.filter(user=user_profile).count()
     else:
