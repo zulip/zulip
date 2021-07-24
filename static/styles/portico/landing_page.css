@@ -2646,7 +2646,7 @@ nav {
 }
 
 .pricing-model .pricing-container .text-content {
-    margin: 20px;
+    margin: 18px;
 }
 
 .pricing-model .padded-content .text-header .text-content h1 {
@@ -2716,7 +2716,7 @@ nav {
     content: "$";
     position: relative;
     vertical-align: top;
-    top: 4px;
+    top: 7px;
     left: -3px;
 
     font-size: 2rem;
@@ -2731,12 +2731,13 @@ nav {
     font-size: 3.5em;
     font-weight: 600;
     line-height: 0.8;
+    margin-top: 4px;
 }
 
 .pricing-model .pricing-container .bottom .details {
     display: inline-block;
     vertical-align: top;
-    margin-left: 15px;
+    margin-left: 8px;
     margin-top: 4px;
 
     font-size: 0.9em;
@@ -2747,7 +2748,7 @@ nav {
 }
 
 .pricing-model .pricing-container .bottom .button {
-    margin-top: 20px;
+    margin-top: 24px;
     display: block;
     text-align: center;
 
@@ -2877,7 +2878,7 @@ nav {
     text-align: center;
 
     &.multi-line {
-        padding: 0 0 30px 0;
+        padding: 5px 0 25px 0;
     }
 }
 
