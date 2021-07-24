@@ -130,7 +130,7 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_id: int, devices: List[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
+    user_id: int, devices: Sequence[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
 ) -> None:
     if not devices:
         return
@@ -294,7 +294,10 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
-    devices: List[DeviceToken], data: Dict[str, Any], options: Dict[str, Any], remote: bool = False
+    devices: Sequence[DeviceToken],
+    data: Dict[str, Any],
+    options: Dict[str, Any],
+    remote: bool = False,
 ) -> None:
     """
     Send a GCM message to the given devices.
