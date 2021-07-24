@@ -131,12 +131,15 @@ $(() => {
     // Code in this block will be executed when the user is at login page
     // i.e. login.html is rendered.
     if ($("[data-page-id='login-page']").length > 0 && window.location.hash.slice(0, 1) === "#") {
-        /* We append the location.hash to the formaction so that URL can be
-        preserved after user is logged in. See this:
-        https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-        const email_formaction = $("#login_form").attr("action");
-        $("#login_form").attr("action", email_formaction + "/" + window.location.hash);
-        $(".social_login_form input[name='next']").attr("value", "/" + window.location.hash);
+        // All next inputs have the same value when the page is
+        // rendered, so it's OK that this selector gets N elements.
+        const next_value = $("input[name='next']").attr("value");
+
+        // We need to add `window.location.hash` to the `next`
+        // property, since the server doesn't receive URL fragments
+        // (and thus could not have included them when rendering a
+        // redirect to this page).
+        $("input[name='next']").attr("value", next_value + window.location.hash);
     }
 
     $("#send_confirm").validate({
