@@ -268,6 +268,7 @@ class SubscriptionInfo:
 
 # These are hard to type-check because of the API_FIELDS loops.
 RawStreamDict = Dict[str, Any]
+RawSubscriptionDict = Dict[str, Any]
 
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
@@ -6443,7 +6444,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
 def build_stream_dict_for_sub(
     user: UserProfile,
-    sub: Subscription,
+    sub_dict: RawSubscriptionDict,
     raw_stream_dict: RawStreamDict,
     recent_traffic: Dict[int, int],
 ) -> Dict[str, object]:
@@ -6461,7 +6462,7 @@ def build_stream_dict_for_sub(
 
     # Copy Subscription.API_FIELDS.
     for field_name in Subscription.API_FIELDS:
-        result[field_name] = sub[field_name]
+        result[field_name] = sub_dict[field_name]
 
     # Backwards-compatibility for clients that haven't been
     # updated for the in_home_view => is_muted API migration.
@@ -6532,10 +6533,12 @@ def gather_subscriptions_helper(
         # the stream, so doesn't belong in API_FIELDS.
         "email_token",
     )
-    recip_id_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in all_streams}
+    recip_id_to_stream_id: Dict[int, int] = {
+        stream["recipient_id"]: stream["id"] for stream in all_streams
+    }
     all_streams_map: Dict[int, RawStreamDict] = {stream["id"]: stream for stream in all_streams}
 
-    sub_dicts = (
+    sub_dicts_query: Iterable[RawSubscriptionDict] = (
         get_stream_subscriptions_for_user(user_profile)
         .values(
             *Subscription.API_FIELDS,
@@ -6546,12 +6549,16 @@ def gather_subscriptions_helper(
     )
 
     # We only care about subscriptions for active streams.
-    sub_dicts = [sub for sub in sub_dicts if recip_id_to_stream_id.get(sub["recipient_id"])]
+    sub_dicts: List[RawSubscriptionDict] = [
+        sub_dict
+        for sub_dict in sub_dicts_query
+        if recip_id_to_stream_id.get(sub_dict["recipient_id"])
+    ]
 
-    def get_stream_id(sub: Subscription) -> int:
-        return recip_id_to_stream_id[sub["recipient_id"]]
+    def get_stream_id(sub_dict: RawSubscriptionDict) -> int:
+        return recip_id_to_stream_id[sub_dict["recipient_id"]]
 
-    traffic_stream_ids = {get_stream_id(sub) for sub in sub_dicts}
+    traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
     recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
 
     # Okay, now we finally get to populating our main results, which
@@ -6561,20 +6568,20 @@ def gather_subscriptions_helper(
     never_subscribed = []
 
     sub_unsub_stream_ids = set()
-    for sub in sub_dicts:
-        stream_id = get_stream_id(sub)
+    for sub_dict in sub_dicts:
+        stream_id = get_stream_id(sub_dict)
         sub_unsub_stream_ids.add(stream_id)
         raw_stream_dict = all_streams_map[stream_id]
 
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
-            sub=sub,
+            sub_dict=sub_dict,
             raw_stream_dict=raw_stream_dict,
             recent_traffic=recent_traffic,
         )
 
         # is_active is represented in this structure by which list we include it in.
-        is_active = sub["active"]
+        is_active = sub_dict["active"]
         if is_active:
             subscribed.append(stream_dict)
         else:
@@ -6603,7 +6610,9 @@ def gather_subscriptions_helper(
         # The highly optimized bulk_get_subscriber_user_ids wants to know which
         # streams we are subscribed to, for validation purposes, and it uses that
         # info to know if it's allowed to find OTHER subscribers.
-        subscribed_stream_ids = {get_stream_id(sub) for sub in sub_dicts if sub["active"]}
+        subscribed_stream_ids = {
+            get_stream_id(sub_dict) for sub_dict in sub_dicts if sub_dict["active"]
+        }
 
         subscriber_map = bulk_get_subscriber_user_ids(
             all_streams,
@@ -6612,8 +6621,10 @@ def gather_subscriptions_helper(
         )
 
         for lst in [subscribed, unsubscribed, never_subscribed]:
-            for sub in lst:
-                sub["subscribers"] = subscriber_map[sub["stream_id"]]
+            for stream_dict in lst:
+                assert isinstance(stream_dict["stream_id"], int)
+                stream_id = stream_dict["stream_id"]
+                stream_dict["subscribers"] = subscriber_map[stream_id]
 
     return SubscriptionInfo(
         subscriptions=sorted(subscribed, key=lambda x: x["name"]),
