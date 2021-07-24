@@ -24,6 +24,7 @@ from zerver.lib.validator import (
     check_union,
 )
 from zerver.models import Draft, UserProfile
+from zerver.tornado.django_api import send_event
 
 VALID_DRAFT_TYPES: Set[str] = {"", "private", "stream"}
 
@@ -117,6 +118,14 @@ def do_create_drafts(draft_dicts: List[Dict[str, Any]], user_profile: UserProfil
         )
 
     created_draft_objects = Draft.objects.bulk_create(draft_objects)
+
+    event = {
+        "type": "drafts",
+        "op": "add",
+        "drafts": [draft.to_dict() for draft in created_draft_objects],
+    }
+    send_event(user_profile.realm, event, [user_profile.id])
+
     return created_draft_objects
 
 
@@ -135,6 +144,9 @@ def do_edit_draft(draft_id: int, draft_dict: Dict[str, Any], user_profile: UserP
     draft_object.last_edit_time = valid_draft_dict["last_edit_time"]
     draft_object.save()
 
+    event = {"type": "drafts", "op": "update", "draft": draft_object.to_dict()}
+    send_event(user_profile.realm, event, [user_profile.id])
+
 
 def do_delete_draft(draft_id: int, user_profile: UserProfile) -> None:
     """Delete a draft belonging to a particular user."""
@@ -142,4 +154,9 @@ def do_delete_draft(draft_id: int, user_profile: UserProfile) -> None:
         draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)
     except Draft.DoesNotExist:
         raise ResourceNotFoundError(_("Draft does not exist"))
+
+    draft_id = draft_object.id
     draft_object.delete()
+
+    event = {"type": "drafts", "op": "remove", "draft_id": draft_id}
+    send_event(user_profile.realm, event, [user_profile.id])

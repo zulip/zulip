@@ -455,3 +455,8 @@ OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 # Any message content exceeding this limit will be truncated.
 # See: `_internal_prep_message` function in zerver/lib/actions.py.
 MAX_MESSAGE_LENGTH = 10000
+
+# The maximum number of drafts to send in the response to /register.
+# More drafts, should they exist for some crazy reason, could be
+# fetched in a separate request.
+MAX_DRAFTS_IN_REGISTER_RESPONSE = 1000

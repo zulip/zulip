@@ -3818,6 +3818,102 @@ paths:
                                     },
                                   "id": 0,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details of newly created drafts.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - "drafts"
+                                op:
+                                  type: string
+                                  enum:
+                                    - "add"
+                                drafts:
+                                  type: array
+                                  description: |
+                                    An array containing objects for the newly created drafts.
+                                  items:
+                                    $ref: "#/components/schemas/Draft"
+                              example:
+                                {
+                                  "type": "drafts",
+                                  "op": "add",
+                                  "drafts":
+                                    [
+                                      {
+                                        "id": 17,
+                                        "type": "private",
+                                        "to": [6],
+                                        "topic": "",
+                                        "content": "Hello there!",
+                                        "timestamp": 15954790200,
+                                      },
+                                    ],
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details for an edited draft.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - "drafts"
+                                op:
+                                  type: string
+                                  enum:
+                                    - "update"
+                                draft:
+                                  $ref: "#/components/schemas/Draft"
+                              example:
+                                {
+                                  "type": "drafts",
+                                  "op": "update",
+                                  "draft":
+                                    {
+                                      "id": 17,
+                                      "type": "private",
+                                      "to": [6, 7, 8, 9, 10],
+                                      "topic": "",
+                                      "content": "Hello everyone!",
+                                      "timestamp": 15954790200,
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing the id of a deleted draft.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - "drafts"
+                                op:
+                                  type: string
+                                  enum:
+                                    - "remove"
+                                draft_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the draft that was just deleted.
+                              example:
+                                {
+                                  "type": "drafts",
+                                  "op": "update",
+                                  "draft_id": 17,
+                                }
                       queue_id:
                         type: string
                         description: |
@@ -7980,6 +8076,14 @@ paths:
                               type: string
                               description: |
                                 The name of the custom profile field type.
+                      drafts:
+                        type: array
+                        description: |
+                          An array containing draft objects for the user. These drafts are being
+                          stored on the backend for the purpose of syncing across devices. This
+                          array will be empty if `enable_drafts_synchronization` is set to `false`.
+                        items:
+                          $ref: "#/components/schemas/Draft"
                       hotspots:
                         type: array
                         description: |
@@ -8835,7 +8939,8 @@ paths:
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
-                          Whether drafts synchronization is enabled for the user.
+                          Whether drafts synchronization is enabled for the user. If disabled,
+                          clients will receive an error when trying to use the `drafts` endpoints.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -12800,6 +12905,59 @@ components:
           description: |
             Whether the client is capable of showing mobile/push notifications
             to the user.
+    Draft:
+      type: object
+      description: |
+        A dictionary for representing a message draft.
+      properties:
+        id:
+          type: integer
+          description: |
+            The unique ID of the draft. It will only used whenever the drafts are
+            fetched. This field should not be specified when the draft is being
+            created or edited.
+        type:
+          type: string
+          description: |
+            The type of the draft. Either unaddressed (empty string), "stream",
+            or "private" (for PMs and private group messages).
+          enum:
+            - ""
+            - "stream"
+            - "private"
+        to:
+          type: array
+          description: |
+            An array of the tentative target audience IDs. For "stream"
+            messages, this should contain exactly 1 ID, the ID of the
+            target stream. For private messages, this should be an array
+            of target user IDs. For unaddressed drafts this is ignored
+            so it's best to leave it as an empty array.
+          items:
+            type: integer
+        topic:
+          type: string
+          description: |
+            For stream message drafts, the tentative topic name. For private
+            or unaddressed messages this will be ignored and should ideally
+            be an empty string. Should not contain null bytes.
+        content:
+          type: string
+          description: |
+            The body of the draft. Should not contain null bytes.
+        timestamp:
+          type: number
+          description: |
+            A Unix timestamp (seconds only) representing when the draft was
+            last edited. When creating a draft, this key need not be present
+            and it will be filled in automatically by the server.
+          example: 1595479019
+      additionalProperties: false
+      required:
+        - type
+        - to
+        - topic
+        - content
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"

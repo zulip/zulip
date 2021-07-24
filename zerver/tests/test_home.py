@@ -24,6 +24,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.models import (
     DefaultStream,
+    Draft,
     Realm,
     UserActivity,
     UserProfile,
@@ -64,6 +65,7 @@ class HomeTest(ZulipTestCase):
         "dense_mode",
         "desktop_icon_count_display",
         "development_environment",
+        "drafts",
         "email",
         "email_notifications_batching_period_seconds",
         "emojiset",
@@ -271,7 +273,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 42)
+        self.assert_length(queries, 43)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode("utf-8")
@@ -351,7 +353,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 39)
+            self.assert_length(queries, 40)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -382,7 +384,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 37)
+        self.assert_length(queries2, 38)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode("utf-8")
@@ -1041,3 +1043,35 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["default_language"], "es")
+
+    @override_settings(MAX_DRAFTS_IN_REGISTER_RESPONSE=5)
+    def test_limit_drafts(self) -> None:
+        draft_objects = []
+        hamlet = self.example_user("hamlet")
+        base_time = timezone_now()
+
+        step_value = timedelta(seconds=1)
+        # Create 11 drafts.
+        for i in range(0, settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1):
+            draft_objects.append(
+                Draft(
+                    user_profile=hamlet,
+                    recipient=None,
+                    topic="",
+                    content="sample draft",
+                    last_edit_time=base_time + i * step_value,
+                )
+            )
+        Draft.objects.bulk_create(draft_objects)
+
+        # Now fetch the drafts part of the initial state and make sure
+        # that we only got back settings.MAX_DRAFTS_IN_REGISTER_RESPONSE.
+        # No more. Also make sure that the drafts returned are the most
+        # recently edited ones.
+        self.login("hamlet")
+        page_params = self._get_page_params(self._get_home_page())
+        self.assertEqual(page_params["enable_drafts_synchronization"], True)
+        self.assert_length(page_params["drafts"], settings.MAX_DRAFTS_IN_REGISTER_RESPONSE)
+        self.assertEqual(Draft.objects.count(), settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1)
+        for draft in page_params["drafts"]:
+            self.assertNotEqual(draft["timestamp"], base_time)

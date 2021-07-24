@@ -54,6 +54,7 @@ from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
+    Draft,
     Message,
     Realm,
     Stream,
@@ -168,6 +169,17 @@ def fetch_initial_state_data(
             state["max_message_id"] = user_messages[0]["message_id"]
         else:
             state["max_message_id"] = -1
+
+    if want("drafts"):
+        # Note: if a user ever disables synching drafts then all of
+        # their old drafts stored on the server will be deleted and
+        # simply retained in local storage. In which case user_drafts
+        # would just be an empty queryset.
+        user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
+            "-last_edit_time"
+        )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
+        user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
+        state["drafts"] = user_draft_dicts
 
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
@@ -618,6 +630,34 @@ def apply_event(
         # It may be impossible for a heartbeat event to actually reach
         # this code path. But in any case, they're noops.
         pass
+
+    elif event["type"] == "drafts":
+        if event["op"] == "add":
+            state["drafts"].extend(event["drafts"])
+        else:
+            if event["op"] == "update":
+                event_draft_idx = event["draft"]["id"]
+
+                def _draft_update_action(i: int) -> None:
+                    state["drafts"][i] = event["draft"]
+
+            elif event["op"] == "remove":
+                event_draft_idx = event["draft_id"]
+
+                def _draft_update_action(i: int) -> None:
+                    del state["drafts"][i]
+
+            # We have to perform a linear search for the draft that
+            # was either edited or removed since we have a list
+            # ordered by the last edited timestamp and not id.
+            state_draft_idx = None
+            for idx, draft in enumerate(state["drafts"]):
+                if draft["id"] == event_draft_idx:
+                    state_draft_idx = idx
+                    break
+            assert state_draft_idx is not None
+            _draft_update_action(state_draft_idx)
+
     elif event["type"] == "hotspots":
         state["hotspots"] = event["hotspots"]
     elif event["type"] == "custom_profile_fields":
