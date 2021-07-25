@@ -1,5 +1,5 @@
 import time
-from typing import Callable
+from typing import Callable, Optional
 from unittest import mock, skipUnless
 
 import DNS
@@ -134,19 +134,29 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result["X-RateLimit-Remaining"])
         self.assertEqual(limit, newlimit + 1)
 
-    def do_test_hit_ratelimits(self, request_func: Callable[[], HttpResponse]) -> HttpResponse:
+    def do_test_hit_ratelimits(
+        self,
+        request_func: Callable[[], HttpResponse],
+        assert_func: Optional[Callable[[HttpResponse], None]] = None,
+    ) -> HttpResponse:
+        def default_assert_func(result: HttpResponse) -> None:
+            self.assertEqual(result.status_code, 429)
+            json = result.json()
+            self.assertEqual(json.get("result"), "error")
+            self.assertIn("API usage exceeded rate limit", json.get("msg"))
+            self.assertEqual(json.get("retry-after"), 0.5)
+            self.assertTrue("Retry-After" in result)
+            self.assertEqual(result["Retry-After"], "0.5")
+
+        if assert_func is None:
+            assert_func = default_assert_func
+
         start_time = time.time()
         for i in range(6):
             with mock.patch("time.time", return_value=(start_time + i * 0.1)):
                 result = request_func()
 
-        self.assertEqual(result.status_code, 429)
-        json = result.json()
-        self.assertEqual(json.get("result"), "error")
-        self.assertIn("API usage exceeded rate limit", json.get("msg"))
-        self.assertEqual(json.get("retry-after"), 0.5)
-        self.assertTrue("Retry-After" in result)
-        self.assertEqual(result["Retry-After"], "0.5")
+        assert_func(result)
 
         # We simulate waiting a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
@@ -173,12 +183,17 @@ class RateLimitTests(ZulipTestCase):
             remove_ratelimit_rule(1, 5, domain="api_by_ip")
 
     def test_create_realm_rate_limiting(self) -> None:
+        def assert_func(result: HttpResponse) -> None:
+            self.assertEqual(result.status_code, 429)
+            self.assert_in_response("Rate limit exceeded.", result)
+
         with self.settings(OPEN_REALM_CREATION=True):
             add_ratelimit_rule(1, 5, domain="create_realm_by_ip")
             try:
                 RateLimitedIPAddr("127.0.0.1").clear_history()
                 self.do_test_hit_ratelimits(
-                    lambda: self.client_post("/new/", {"email": "new@zulip.com"})
+                    lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
+                    assert_func=assert_func,
                 )
             finally:
                 remove_ratelimit_rule(1, 5, domain="create_realm_by_ip")

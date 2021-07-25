@@ -45,6 +45,7 @@ from zerver.lib.actions import (
     lookup_default_stream_groups,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.exceptions import RateLimited
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
@@ -590,7 +591,16 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     if request.method == "POST":
         form = RealmCreationForm(request.POST)
         if form.is_valid():
-            rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+            try:
+                rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+            except RateLimited as e:
+                assert e.secs_to_freedom is not None
+                return render(
+                    request,
+                    "zerver/rate_limit_exceeded.html",
+                    context={"retry_after": int(e.secs_to_freedom)},
+                    status=429,
+                )
 
             email = form.cleaned_data["email"]
             activation_url = prepare_activation_url(email, request, realm_creation=True)
