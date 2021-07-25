@@ -10451,6 +10451,53 @@ paths:
                         "msg": "",
                         "result": "success",
                       }
+  /streams/{stream_id}/members:
+    get:
+      operationId: get-subscribers
+      summary: Get the subscribers of a stream
+      tags: ["streams"]
+      description: |
+        Get all users subscribed to a stream.
+
+        `Get {{ api_url }}/v1/streams/{stream_id}/members`
+      parameters:
+        - $ref: "#/components/parameters/StreamIdInPath"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      subscribers:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          A list containing the IDs of all active users who are subscribed
+                          to the stream.
+                    example:
+                      {"result": "success", "msg": "", "subscribers": [11, 26]}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the requested stream does not exist,
+                      or where the user does not have permission to access the target stream:
   /streams:
     get:
       operationId: get-streams

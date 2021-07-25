@@ -208,6 +208,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### TODO: These endpoints are a priority to document:
         "/realm/presence",
         "/streams/{stream_id}/members",
+        "/streams/{stream_id}/delete_topic",
         "/users/me/presence",
         "/users/me/alert_words",
         "/users/me/status",
