@@ -22,7 +22,7 @@ threaded model (which I find sorely lacking in other chat apps), and
 the TeX integration.”
 
 From Spring 2020 through Spring 2021, the [Zulip
-Standard](/plans/) plan was free for all educators,
+Standard](/for/education/#feature-pricing) plan was free for all educators,
 as we did our part to help make the transition to online education a
 little easier. Having set up Zulip Cloud for his three graduate-level
 courses, Kiran felt confident in the communication platform, and was
