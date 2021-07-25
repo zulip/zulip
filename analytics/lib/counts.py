@@ -350,7 +350,7 @@ def do_pull_by_sql_query(
     start_time: datetime,
     end_time: datetime,
     query: QueryFn,
-    group_by: Optional[Tuple[models.Model, str]],
+    group_by: Optional[Tuple[Type[models.Model], str]],
 ) -> int:
     if group_by is None:
         subgroup = SQL("NULL")
@@ -386,7 +386,7 @@ def do_pull_by_sql_query(
 def sql_data_collector(
     output_table: Type[BaseCount],
     query: QueryFn,
-    group_by: Optional[Tuple[models.Model, str]],
+    group_by: Optional[Tuple[Type[models.Model], str]],
 ) -> DataCollector:
     def pull_function(
         property: str, start_time: datetime, end_time: datetime, realm: Optional[Realm] = None
