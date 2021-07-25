@@ -21,6 +21,7 @@
 * [Subscribe to a stream](/api/subscribe)
 * [Unsubscribe from a stream](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
+* [Get all subscribers](/api/get-subscribers)
 * [Update subscription settings](/api/update-subscription-settings)
 * [Get all streams](/api/get-streams)
 * [Get stream ID](/api/get-stream-id)

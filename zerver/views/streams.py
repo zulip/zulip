@@ -670,7 +670,7 @@ def send_messages_for_new_subscribers(
 def get_subscribers_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ("stream", converter=to_non_negative_int),
+    stream_id: int = REQ("stream", converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(
         user_profile,
