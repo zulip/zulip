@@ -52,12 +52,26 @@
     h4,
     h5,
     h6 {
-        font-size: 14px;
+        font-size: 1em;
         font-weight: 600;
         line-height: 1.4;
-        margin-top: 0;
-        margin-bottom: 5px;
-        text-decoration: underline;
+        margin-top: 14px;
+        margin-bottom: 2px;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    h2 {
+        font-size: 1.4em;
+    }
+    h3 {
+        font-size: 1.3em;
+    }
+    h4 {
+        font-size: 1.2em;
+    }
+    h5 {
+        font-size: 1.1em;
     }
 
     /* Formatting for blockquotes */
