@@ -10755,6 +10755,54 @@ paths:
                         "result": "error",
                       }
                     description: An example JSON response for when the supplied stream does not exist
+  /streams/{stream_id}/delete_topic:
+    post:
+      operationId: delete-topic
+      summary: Delete a topic
+      tags: ["streams"]
+      description: |
+        Delete all messages in a topic.
+
+        `POST {{ api_url }}/v1/streams/{stream_id}/delete_topic`
+
+        Topics are a field on messages (not an independent
+        data structure), so deleting all the messages in the topic
+        deletes the topic from Zulip.
+      parameters:
+        - $ref: "#/components/parameters/StreamIdInPath"
+        - name: topic_name
+          in: query
+          description: |
+            The name of the topic to delete.
+          schema:
+            type: string
+          example: new coffee machine
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+        "400":
+          description: Error.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization administrator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to delete topics in this organization.
   /typing:
     post:
       operationId: set-typing-status
