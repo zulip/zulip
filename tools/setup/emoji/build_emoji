@@ -328,12 +328,14 @@ def setup_old_emoji_farm(
             pass
 
 
-def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
+def generate_map_files(
+    cache_path: str, emoji_catalog: Dict[str, List[str]], emoji_data: List[Dict[str, Any]]
+) -> None:
     # This function generates the main data file about emoji that are
     # consumed by the web app, mobile apps, Markdown processor, etc.
-    names = emoji_names_for_picker(EMOJI_NAME_MAPS)
-    codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS)
-    name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS)
+    names = emoji_names_for_picker(EMOJI_NAME_MAPS, emoji_data)
+    codepoint_to_name = generate_codepoint_to_name_map(EMOJI_NAME_MAPS, emoji_data)
+    name_to_codepoint = generate_name_to_codepoint_map(EMOJI_NAME_MAPS, emoji_data)
 
     EMOJI_CODES_FILE_PATH = os.path.join(cache_path, "emoji_codes.json")
     with open(EMOJI_CODES_FILE_PATH, "wb") as emoji_codes_file:
@@ -368,7 +370,7 @@ def dump_emojis(cache_path: str) -> None:
     setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
 
     # Generate various map files.
-    generate_map_files(cache_path, emoji_catalog)
+    generate_map_files(cache_path, emoji_catalog, emoji_data)
 
 
 if __name__ == "__main__":
