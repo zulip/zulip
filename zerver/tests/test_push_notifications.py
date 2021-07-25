@@ -8,7 +8,6 @@ import uuid
 from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 from unittest import mock, skipUnless
-from unittest.mock import call
 from urllib import parse
 
 import orjson
@@ -825,11 +824,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as mock_apns, mock.patch(
-            "zerver.lib.push_notifications.logger.info"
-        ) as mock_info, mock.patch(
-            "zerver.lib.push_notifications.logger.warning"
-        ):
+        ) as mock_gcm, self.mock_apns() as mock_apns, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
             apns_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
@@ -845,14 +842,15 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_apns.send_notification.return_value.set_result(result)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
-                mock_info.assert_any_call(
-                    "APNs: Success sending for user %d to device %s", self.user_profile.id, token
+                self.assertIn(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"APNs: Success sending for user {self.user_profile.id} to device {token}",
+                    logger.output,
                 )
             for _, _, token in gcm_devices:
-                mock_info.assert_any_call(
-                    "GCM: Sent %s as %s",
-                    token,
-                    message.id,
+                self.assertIn(
+                    "INFO:zerver.lib.push_notifications:" f"GCM: Sent {token} as {message.id}",
+                    logger.output,
                 )
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
@@ -874,11 +872,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as mock_apns, mock.patch(
-            "zerver.lib.push_notifications.logger.info"
-        ) as mock_info, mock.patch(
-            "zerver.lib.push_notifications.logger.warning"
-        ):
+        ) as mock_gcm, self.mock_apns() as mock_apns, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
             apns_devices = [
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS)
@@ -895,10 +891,10 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_apns.send_notification.return_value.set_result(result)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
-                mock_info.assert_any_call(
-                    "APNs: Removing invalid/expired token %s (%s)",
-                    token,
-                    "Unregistered",
+                self.assertIn(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"APNs: Removing invalid/expired token {token} (Unregistered)",
+                    logger.output,
                 )
             self.assertEqual(
                 RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0
@@ -1217,15 +1213,15 @@ class HandlePushNotificationTest(PushNotificationTest):
         sender = self.example_user("iago")
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {"message_id": message_id}
-        with mock.patch("zerver.lib.push_notifications.logger.error") as mock_logger, mock.patch(
+        with self.assertLogs("zerver.lib.push_notifications", level="ERROR") as logger, mock.patch(
             "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
         ) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
-            mock_logger.assert_called_with(
-                "Could not find UserMessage with message_id %s and user_id %s",
-                message_id,
-                self.user_profile.id,
-                exc_info=True,
+            self.assertEqual(
+                "ERROR:zerver.lib.push_notifications:"
+                f"Could not find UserMessage with message_id {message_id} and user_id {self.user_profile.id}"
+                "\nNoneType: None",  # This is an effect of using `exc_info=True` in the actual logger.
+                logger.output[0],
             )
             mock_push_notifications.assert_called_once()
 
@@ -1338,49 +1334,53 @@ class TestAPNs(PushNotificationTest):
 
     def test_not_configured(self) -> None:
         self.setup_apns_tokens()
-        with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get, mock.patch(
-            "zerver.lib.push_notifications.logger"
-        ) as mock_logging:
+        with mock.patch(
+            "zerver.lib.push_notifications.get_apns_context"
+        ) as mock_get, self.assertLogs("zerver.lib.push_notifications", level="DEBUG") as logger:
             mock_get.return_value = None
             self.send()
-            mock_logging.debug.assert_called_once_with(
+            notification_drop_log = (
+                "DEBUG:zerver.lib.push_notifications:"
                 "APNs: Dropping a notification because nothing configured.  "
                 "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
             )
-            mock_logging.warning.assert_not_called()
+
             from zerver.lib.push_notifications import initialize_push_notifications
 
             initialize_push_notifications()
-            mock_logging.warning.assert_called_once_with(
+            mobile_notifications_not_configured_log = (
+                "WARNING:zerver.lib.push_notifications:"
                 "Mobile push notifications are not configured.\n  "
                 "See https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html"
             )
 
+            self.assertEqual(
+                [notification_drop_log, mobile_notifications_not_configured_log], logger.output
+            )
+
     def test_success(self) -> None:
         self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, mock.patch(
-            "zerver.lib.push_notifications.logger"
-        ) as mock_logging:
+        with self.mock_apns() as mock_apns, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
             result = mock.Mock()
             result.is_successful = True
             mock_apns.send_notification.return_value = asyncio.Future()
             mock_apns.send_notification.return_value.set_result(result)
             self.send()
-            mock_logging.warning.assert_not_called()
             for device in self.devices():
-                mock_logging.info.assert_any_call(
-                    "APNs: Success sending for user %d to device %s",
-                    self.user_profile.id,
-                    device.token,
+                self.assertIn(
+                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
+                    logger.output,
                 )
 
     def test_http_retry(self) -> None:
         import aioapns
 
         self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, mock.patch(
-            "zerver.lib.push_notifications.logger"
-        ) as mock_logging:
+        with self.mock_apns() as mock_apns, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
             exception: asyncio.Future[object] = asyncio.Future()
             exception.set_exception(aioapns.exceptions.ConnectionError())
             result = mock.Mock()
@@ -1391,26 +1391,23 @@ class TestAPNs(PushNotificationTest):
                 [exception], itertools.repeat(future)
             )
             self.send()
-            mock_logging.warning.assert_called_once_with(
-                "APNs: ConnectionError sending for user %d to device %s: %s",
-                self.user_profile.id,
-                self.devices()[0].token,
-                "ConnectionError",
+            self.assertIn(
+                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
+                logger.output,
             )
             for device in self.devices():
-                mock_logging.info.assert_any_call(
-                    "APNs: Success sending for user %d to device %s",
-                    self.user_profile.id,
-                    device.token,
+                self.assertIn(
+                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
+                    logger.output,
                 )
 
     def test_http_retry_closed(self) -> None:
         import aioapns
 
         self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, mock.patch(
-            "zerver.lib.push_notifications.logger"
-        ) as mock_logging:
+        with self.mock_apns() as mock_apns, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
             exception: asyncio.Future[object] = asyncio.Future()
             exception.set_exception(aioapns.exceptions.ConnectionClosed())
             result = mock.Mock()
@@ -1421,39 +1418,40 @@ class TestAPNs(PushNotificationTest):
                 [exception], itertools.repeat(future)
             )
             self.send()
-            mock_logging.warning.assert_called_once_with(
-                "APNs: ConnectionClosed sending for user %d to device %s: %s",
-                self.user_profile.id,
-                self.devices()[0].token,
-                "ConnectionClosed",
+            self.assertIn(
+                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionClosed sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionClosed",
+                logger.output,
             )
             for device in self.devices():
-                mock_logging.info.assert_any_call(
-                    "APNs: Success sending for user %d to device %s",
-                    self.user_profile.id,
-                    device.token,
+                self.assertIn(
+                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
+                    logger.output,
                 )
 
     def test_http_retry_eventually_fails(self) -> None:
         import aioapns
 
         self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, mock.patch(
-            "zerver.lib.push_notifications.logger"
-        ) as mock_logging:
+        with self.mock_apns() as mock_apns, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
             exception: asyncio.Future[object] = asyncio.Future()
             exception.set_exception(aioapns.exceptions.ConnectionError())
             mock_apns.send_notification.side_effect = iter([exception] * 5)
 
             self.send(devices=self.devices()[0:1])
-            self.assertEqual(mock_logging.warning.call_count, 5)
-            mock_logging.warning.assert_called_with(
-                "APNs: Failed to send for user %d to device %s: %s",
-                self.user_profile.id,
-                self.devices()[0].token,
-                "HTTP error, retries exhausted",
+            self.assert_length(
+                [log_record for log_record in logger.records if log_record.levelname == "WARNING"],
+                5,
             )
-            self.assertEqual(mock_logging.info.call_count, 1)
+            self.assertIn(
+                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user {self.user_profile.id} to device {self.devices()[0].token}: HTTP error, retries exhausted",
+                logger.output,
+            )
+            self.assert_length(
+                [log_record for log_record in logger.records if log_record.levelname == "INFO"],
+                1,
+            )
 
     def test_modernize_apns_payload(self) -> None:
         payload = {
@@ -2159,57 +2157,55 @@ class GCMSendTest(PushNotificationTest):
         data.update(kwargs)
         return data
 
-    @mock.patch("zerver.lib.push_notifications.logger.debug")
-    def test_gcm_is_none(self, mock_debug: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
+    def test_gcm_is_none(self, mock_gcm: mock.MagicMock) -> None:
         mock_gcm.__bool__.return_value = False
-        send_android_push_notification_to_user(self.user_profile, {}, {})
-        mock_debug.assert_called_with(
-            "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
-            "and ANDROID_GCM_API_KEY are both unset"
-        )
+        with self.assertLogs("zerver.lib.push_notifications", level="DEBUG") as logger:
+            send_android_push_notification_to_user(self.user_profile, {}, {})
+            self.assertEqual(
+                "DEBUG:zerver.lib.push_notifications:"
+                "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
+                "and ANDROID_GCM_API_KEY are both unset",
+                logger.output[0],
+            )
 
-    @mock.patch("zerver.lib.push_notifications.logger.warning")
-    def test_json_request_raises_ioerror(
-        self, mock_warn: mock.MagicMock, mock_gcm: mock.MagicMock
-    ) -> None:
+    def test_json_request_raises_ioerror(self, mock_gcm: mock.MagicMock) -> None:
         mock_gcm.json_request.side_effect = IOError("error")
-        send_android_push_notification_to_user(self.user_profile, {}, {})
-        mock_warn.assert_called_with("Error while pushing to GCM", exc_info=True)
+        with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
+            send_android_push_notification_to_user(self.user_profile, {}, {})
+            self.assertIn(
+                "WARNING:zerver.lib.push_notifications:Error while pushing to GCM\nTraceback ",
+                logger.output[0],
+            )
 
     @mock.patch("zerver.lib.push_notifications.logger.warning")
-    @mock.patch("zerver.lib.push_notifications.logger.info")
-    def test_success(
-        self, mock_info: mock.MagicMock, mock_warning: mock.MagicMock, mock_gcm: mock.MagicMock
-    ) -> None:
+    def test_success(self, mock_warning: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
         res["success"] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
         mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
-        send_android_push_notification_to_user(self.user_profile, data, {})
-        self.assertEqual(mock_info.call_count, 2)
-        c1 = call("GCM: Sent %s as %s", "1111", 0)
-        c2 = call("GCM: Sent %s as %s", "2222", 1)
-        mock_info.assert_has_calls([c1, c2], any_order=True)
+        with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
+            send_android_push_notification_to_user(self.user_profile, data, {})
+        self.assert_length(logger.output, 2)
+        log_msg1 = f"INFO:zerver.lib.push_notifications:GCM: Sent {1111} as {0}"
+        log_msg2 = f"INFO:zerver.lib.push_notifications:GCM: Sent {2222} as {1}"
+        self.assertEqual([log_msg1, log_msg2], logger.output)
         mock_warning.assert_not_called()
 
-    @mock.patch("zerver.lib.push_notifications.logger.warning")
-    def test_canonical_equal(self, mock_warning: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
+    def test_canonical_equal(self, mock_gcm: mock.MagicMock) -> None:
         res = {}
         res["canonical"] = {1: 1}
         mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
-        send_android_push_notification_to_user(self.user_profile, data, {})
-        mock_warning.assert_called_once_with(
-            "GCM: Got canonical ref but it already matches our ID %s!",
-            1,
+        with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
+            send_android_push_notification_to_user(self.user_profile, data, {})
+        self.assertEqual(
+            f"WARNING:zerver.lib.push_notifications:GCM: Got canonical ref but it already matches our ID {1}!",
+            logger.output[0],
         )
 
-    @mock.patch("zerver.lib.push_notifications.logger.warning")
-    def test_canonical_pushdevice_not_present(
-        self, mock_warning: mock.MagicMock, mock_gcm: mock.MagicMock
-    ) -> None:
+    def test_canonical_pushdevice_not_present(self, mock_gcm: mock.MagicMock) -> None:
         res = {}
         t1 = hex_to_b64("1111")
         t2 = hex_to_b64("3333")
@@ -2224,17 +2220,15 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count("3333"), 0)
 
         data = self.get_gcm_data()
-        send_android_push_notification_to_user(self.user_profile, data, {})
-        msg = "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating."
-        mock_warning.assert_called_once_with(msg, t2, t1)
+        with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
+            send_android_push_notification_to_user(self.user_profile, data, {})
+            msg = f"WARNING:zerver.lib.push_notifications:GCM: Got canonical ref {t2} replacing {t1} but new ID not registered! Updating."
+            self.assertEqual(msg, logger.output[0])
 
         self.assertEqual(get_count("1111"), 0)
         self.assertEqual(get_count("3333"), 1)
 
-    @mock.patch("zerver.lib.push_notifications.logger.info")
-    def test_canonical_pushdevice_different(
-        self, mock_info: mock.MagicMock, mock_gcm: mock.MagicMock
-    ) -> None:
+    def test_canonical_pushdevice_different(self, mock_gcm: mock.MagicMock) -> None:
         res = {}
         old_token = hex_to_b64("1111")
         new_token = hex_to_b64("2222")
@@ -2249,18 +2243,17 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count("2222"), 1)
 
         data = self.get_gcm_data()
-        send_android_push_notification_to_user(self.user_profile, data, {})
-        mock_info.assert_called_once_with(
-            "GCM: Got canonical ref %s, dropping %s",
-            new_token,
-            old_token,
-        )
+        with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
+            send_android_push_notification_to_user(self.user_profile, data, {})
+            self.assertEqual(
+                f"INFO:zerver.lib.push_notifications:GCM: Got canonical ref {new_token}, dropping {old_token}",
+                logger.output[0],
+            )
 
         self.assertEqual(get_count("1111"), 0)
         self.assertEqual(get_count("2222"), 1)
 
-    @mock.patch("zerver.lib.push_notifications.logger.info")
-    def test_not_registered(self, mock_info: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
+    def test_not_registered(self, mock_gcm: mock.MagicMock) -> None:
         res = {}
         token = hex_to_b64("1111")
         res["errors"] = {"NotRegistered": [token]}
@@ -2273,21 +2266,24 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count("1111"), 1)
 
         data = self.get_gcm_data()
-        send_android_push_notification_to_user(self.user_profile, data, {})
-        mock_info.assert_called_once_with("GCM: Removing %s", token)
+        with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
+            send_android_push_notification_to_user(self.user_profile, data, {})
+            self.assertEqual(
+                f"INFO:zerver.lib.push_notifications:GCM: Removing {token}", logger.output[0]
+            )
         self.assertEqual(get_count("1111"), 0)
 
-    @mock.patch("zerver.lib.push_notifications.logger.warning")
-    def test_failure(self, mock_warn: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
+    def test_failure(self, mock_gcm: mock.MagicMock) -> None:
         res = {}
         token = hex_to_b64("1111")
         res["errors"] = {"Failed": [token]}
         mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
-        send_android_push_notification_to_user(self.user_profile, data, {})
-        c1 = call("GCM: Delivery to %s failed: %s", token, "Failed")
-        mock_warn.assert_has_calls([c1], any_order=True)
+        with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
+            send_android_push_notification_to_user(self.user_profile, data, {})
+            msg = f"WARNING:zerver.lib.push_notifications:GCM: Delivery to {token} failed: Failed"
+            self.assertEqual(msg, logger.output[0])
 
 
 class TestClearOnRead(ZulipTestCase):
