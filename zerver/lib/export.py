@@ -321,11 +321,17 @@ def sanity_check_output(data: TableData) -> None:
     # We'll want to make sure we handle it for exports before
     # releasing the new feature, but doing so correctly requires some
     # expertise on this export system.
-    assert ALL_ZULIP_TABLES == all_tables_db
-    assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES)
-    assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES)
-    assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES)
-    assert ANALYTICS_TABLES.issubset(ALL_ZULIP_TABLES)
+    error_message = f"""
+    It appears you've added a new database table, but haven't yet
+    registered it in ALL_ZULIP_TABLES and the related declarations
+    in {__file__} for what to include in data exports.
+    """
+
+    assert ALL_ZULIP_TABLES == all_tables_db, error_message
+    assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES), error_message
+    assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
+    assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
+    assert ANALYTICS_TABLES.issubset(ALL_ZULIP_TABLES), error_message
 
     tables = set(ALL_ZULIP_TABLES)
     tables -= NON_EXPORTED_TABLES
