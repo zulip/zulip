@@ -51,6 +51,7 @@ from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
     Huddle,
@@ -1388,11 +1389,13 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
-        do_revoke_user_invite(PreregistrationUser.objects.filter(realm=user.realm).first())
+        do_revoke_user_invite(
+            assert_is_not_none(PreregistrationUser.objects.filter(realm=user.realm).first())
+        )
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        do_resend_user_invite_email(PreregistrationUser.objects.first())
+        do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:
@@ -1423,7 +1426,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         self.send_stream_message(user1, stream.name)
         self.send_stream_message(user1, stream.name)
-        do_mark_stream_messages_as_read(user2, stream.recipient_id)
+        do_mark_stream_messages_as_read(user2, assert_is_not_none(stream.recipient_id))
         self.assertEqual(
             3,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[

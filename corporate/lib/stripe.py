@@ -5,7 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Callable, Dict, Generator, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, cast
 
 import orjson
 import stripe
@@ -30,6 +30,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_realm_owners
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
 from zproject.config import get_secret
 
@@ -516,7 +517,9 @@ def compute_plan_parameters(
     if automanage_licenses:
         next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
-        period_end = billing_cycle_anchor + timedelta(days=settings.FREE_TRIAL_DAYS)
+        period_end = billing_cycle_anchor + timedelta(
+            days=assert_is_not_none(settings.FREE_TRIAL_DAYS)
+        )
         next_invoice_date = period_end
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
@@ -943,10 +946,12 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
 
 
 def get_realms_to_default_discount_dict() -> Dict[str, Decimal]:
-    realms_to_default_discount = {}
+    realms_to_default_discount: Dict[str, Any] = {}
     customers = Customer.objects.exclude(default_discount=None).exclude(default_discount=0)
     for customer in customers:
-        realms_to_default_discount[customer.realm.string_id] = customer.default_discount
+        realms_to_default_discount[customer.realm.string_id] = assert_is_not_none(
+            customer.default_discount
+        )
     return realms_to_default_discount
 
 

@@ -28,6 +28,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.subdomains import get_subdomain_from_hostname
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
@@ -119,24 +120,24 @@ def support(request: HttpRequest) -> HttpResponse:
         if len(keys) != 2:
             raise JsonableError(_("Invalid parameters"))
 
-        realm_id = request.POST.get("realm_id")
+        realm_id: str = assert_is_not_none(request.POST.get("realm_id"))
         realm = Realm.objects.get(id=realm_id)
 
         if request.POST.get("plan_type", None) is not None:
-            new_plan_type = int(request.POST.get("plan_type"))
+            new_plan_type = int(assert_is_not_none(request.POST.get("plan_type")))
             current_plan_type = realm.plan_type
             do_change_plan_type(realm, new_plan_type, acting_user=request.user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
             context["success_message"] = msg
         elif request.POST.get("discount", None) is not None:
-            new_discount = Decimal(request.POST.get("discount"))
+            new_discount = Decimal(assert_is_not_none(request.POST.get("discount")))
             current_discount = get_discount_for_realm(realm) or 0
             attach_discount_to_realm(realm, new_discount, acting_user=request.user)
             context[
                 "success_message"
             ] = f"Discount of {realm.string_id} changed to {new_discount}% from {current_discount}%."
         elif request.POST.get("new_subdomain", None) is not None:
-            new_subdomain = request.POST.get("new_subdomain")
+            new_subdomain: str = assert_is_not_none(request.POST.get("new_subdomain"))
             old_subdomain = realm.string_id
             try:
                 check_subdomain_available(new_subdomain)
