@@ -31,6 +31,7 @@ from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
 
 DEFAULT_AVATAR_SIZE = 100
@@ -729,7 +730,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
 
 def write_local_file(type: str, path: str, file_data: bytes) -> None:
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "wb") as f:
@@ -737,13 +738,13 @@ def write_local_file(type: str, path: str, file_data: bytes) -> None:
 
 
 def read_local_file(type: str, path: str) -> bytes:
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     with open(file_path, "rb") as f:
         return f.read()
 
 
 def delete_local_file(type: str, path: str) -> bool:
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     if os.path.isfile(file_path):
         # This removes the file but the empty folders still remain.
         os.remove(file_path)
@@ -754,7 +755,7 @@ def delete_local_file(type: str, path: str) -> bool:
 
 
 def get_local_file_path(path_id: str) -> Optional[str]:
-    local_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", path_id)
+    local_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "files", path_id)
     if os.path.isfile(local_path):
         return local_path
     else:
@@ -897,12 +898,16 @@ class LocalUploadBackend(ZulipUploadBackend):
         file_path = user_avatar_path(user_profile)
 
         output_path = os.path.join(
-            settings.LOCAL_UPLOADS_DIR, "avatars", file_path + file_extension
+            assert_is_not_none(settings.LOCAL_UPLOADS_DIR),
+            "avatars",
+            file_path + file_extension,
         )
         if os.path.isfile(output_path):
             return
 
-        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
+        image_path = os.path.join(
+            assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "avatars", file_path + ".original"
+        )
         with open(image_path, "rb") as f:
             image_data = f.read()
         if is_medium:
@@ -942,7 +947,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             secrets.token_urlsafe(18),
             os.path.basename(tarball_path),
         )
-        abs_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", path)
+        abs_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "avatars", path)
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         shutil.copy(tarball_path, abs_path)
         public_url = realm.uri + "/user_avatars/" + path

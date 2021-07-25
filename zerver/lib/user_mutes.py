@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Set
 
 from zerver.lib.cache import cache_with_key, get_muting_users_cache_key
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import MutedUser, UserProfile
 
 
@@ -14,7 +15,7 @@ def get_user_mutes(user_profile: UserProfile) -> List[Dict[str, int]]:
     return [
         {
             "id": row["muted_user_id"],
-            "timestamp": datetime_to_timestamp(row["date_muted"]),
+            "timestamp": datetime_to_timestamp(assert_is_not_none(row["date_muted"])),
         }
         for row in rows
     ]

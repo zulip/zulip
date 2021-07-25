@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
     Realm,
@@ -63,12 +64,14 @@ def filter_by_subscription_history(
                 # check belongs in this inner loop, not the outer loop.
                 break
 
+            event_last_message_id = assert_is_not_none(log_entry.event_last_message_id)
+
             if log_entry.event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
                 # If the event shows the user was unsubscribed after
                 # event_last_message_id, we know they must have been
                 # subscribed immediately before the event.
                 for stream_message in stream_messages:
-                    if stream_message["id"] <= log_entry.event_last_message_id:
+                    if stream_message["id"] <= event_last_message_id:
                         store_user_message_to_insert(stream_message)
                     else:
                         break
@@ -78,12 +81,12 @@ def filter_by_subscription_history(
             ):
                 initial_msg_count = len(stream_messages)
                 for i, stream_message in enumerate(stream_messages):
-                    if stream_message["id"] > log_entry.event_last_message_id:
+                    if stream_message["id"] > event_last_message_id:
                         stream_messages = stream_messages[i:]
                         break
                 final_msg_count = len(stream_messages)
                 if initial_msg_count == final_msg_count:
-                    if stream_messages[-1]["id"] <= log_entry.event_last_message_id:
+                    if stream_messages[-1]["id"] <= event_last_message_id:
                         stream_messages = []
             else:
                 raise AssertionError(f"{log_entry.event_type} is not a subscription event.")
@@ -172,7 +175,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]] = defaultdict(list)
     for log in subscription_logs:
-        all_stream_subscription_logs[log.modified_stream_id].append(log)
+        all_stream_subscription_logs[assert_is_not_none(log.modified_stream_id)].append(log)
 
     recipient_ids = []
     for sub in all_stream_subs:

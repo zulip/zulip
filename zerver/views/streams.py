@@ -71,6 +71,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import Validator
+from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -726,7 +727,9 @@ def get_topics_backend(
     if is_web_public_query:
         realm = get_valid_realm_from_request(request)
         stream = access_web_public_stream(stream_id, realm)
-        result = get_topic_history_for_public_stream(recipient_id=stream.recipient_id)
+        result = get_topic_history_for_public_stream(
+            recipient_id=assert_is_not_none(stream.recipient_id)
+        )
 
     else:
         assert user_profile is not None
@@ -753,7 +756,7 @@ def delete_in_topic(
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
-    messages = messages_for_topic(stream.recipient_id, topic_name)
+    messages = messages_for_topic(assert_is_not_none(stream.recipient_id), topic_name)
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(

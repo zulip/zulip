@@ -90,6 +90,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
     Realm,
@@ -532,7 +533,7 @@ class StripeTest(StripeTestCase):
 
         # Check that we correctly created a Customer object in Stripe
         stripe_customer = stripe_get_customer(
-            Customer.objects.get(realm=user.realm).stripe_customer_id
+            assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
         self.assertEqual(stripe_customer.default_source.id[:5], "card_")
         self.assertTrue(stripe_customer_has_credit_card_as_default_source(stripe_customer))
@@ -642,9 +643,11 @@ class StripeTest(StripeTestCase):
         self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
         self.assertEqual(
             orjson.loads(
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                .values_list("extra_data", flat=True)
-                .first()
+                assert_is_not_none(
+                    RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                    .values_list("extra_data", flat=True)
+                    .first()
+                )
             )["automanage_licenses"],
             True,
         )
@@ -694,7 +697,7 @@ class StripeTest(StripeTestCase):
             self.upgrade(invoice=True)
         # Check that we correctly created a Customer in Stripe
         stripe_customer = stripe_get_customer(
-            Customer.objects.get(realm=user.realm).stripe_customer_id
+            assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
         self.assertFalse(stripe_customer_has_credit_card_as_default_source(stripe_customer))
         # It can take a second for Stripe to attach the source to the customer, and in
@@ -781,9 +784,11 @@ class StripeTest(StripeTestCase):
         self.assertEqual(audit_log_entries[2][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
         self.assertEqual(
             orjson.loads(
-                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                .values_list("extra_data", flat=True)
-                .first()
+                assert_is_not_none(
+                    RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                    .values_list("extra_data", flat=True)
+                    .first()
+                )
             )["automanage_licenses"],
             False,
         )
@@ -834,7 +839,7 @@ class StripeTest(StripeTestCase):
                 self.upgrade()
 
             stripe_customer = stripe_get_customer(
-                Customer.objects.get(realm=user.realm).stripe_customer_id
+                assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
             )
             self.assertEqual(stripe_customer.default_source.id[:5], "card_")
             self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
@@ -894,9 +899,11 @@ class StripeTest(StripeTestCase):
             self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
             self.assertEqual(
                 orjson.loads(
-                    RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                    .values_list("extra_data", flat=True)
-                    .first()
+                    assert_is_not_none(
+                        RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                        .values_list("extra_data", flat=True)
+                        .first()
+                    )
                 )["automanage_licenses"],
                 True,
             )
@@ -1040,7 +1047,7 @@ class StripeTest(StripeTestCase):
                 self.upgrade(invoice=True)
 
             stripe_customer = stripe_get_customer(
-                Customer.objects.get(realm=user.realm).stripe_customer_id
+                assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
             )
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
@@ -1093,9 +1100,11 @@ class StripeTest(StripeTestCase):
             self.assertEqual(audit_log_entries[2][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
             self.assertEqual(
                 orjson.loads(
-                    RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                    .values_list("extra_data", flat=True)
-                    .first()
+                    assert_is_not_none(
+                        RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                        .values_list("extra_data", flat=True)
+                        .first()
+                    )
                 )["automanage_licenses"],
                 False,
             )
@@ -1218,7 +1227,7 @@ class StripeTest(StripeTestCase):
             self.upgrade()
         customer = Customer.objects.first()
         assert customer is not None
-        stripe_customer_id = customer.stripe_customer_id
+        stripe_customer_id: str = assert_is_not_none(customer.stripe_customer_id)
         # Check that the Charge used the old quantity, not new_seat_count
         [charge] = stripe.Charge.list(customer=stripe_customer_id)
         self.assertEqual(8000 * self.seat_count, charge.amount)
@@ -2037,9 +2046,10 @@ class StripeTest(StripeTestCase):
         audit_log = RealmAuditLog.objects.get(
             event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         )
+        extra_data: str = assert_is_not_none(audit_log.extra_data)
         self.assertEqual(audit_log.realm, user.realm)
-        self.assertEqual(orjson.loads(audit_log.extra_data)["monthly_plan_id"], monthly_plan.id)
-        self.assertEqual(orjson.loads(audit_log.extra_data)["annual_plan_id"], annual_plan.id)
+        self.assertEqual(orjson.loads(extra_data)["monthly_plan_id"], monthly_plan.id)
+        self.assertEqual(orjson.loads(extra_data)["annual_plan_id"], annual_plan.id)
 
         invoice_plans_as_needed(self.next_month)
 
@@ -2468,7 +2478,7 @@ class StripeTest(StripeTestCase):
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year)
         stripe_customer = stripe_get_customer(
-            Customer.objects.get(realm=user.realm).stripe_customer_id
+            assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
         [invoice, _] = stripe.Invoice.list(customer=stripe_customer.id)
         invoice_params = {
@@ -2518,7 +2528,7 @@ class StripeTest(StripeTestCase):
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year + timedelta(days=365))
         stripe_customer = stripe_get_customer(
-            Customer.objects.get(realm=user.realm).stripe_customer_id
+            assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
         [invoice, _, _] = stripe.Invoice.list(customer=stripe_customer.id)
         invoice_params = {
@@ -3460,7 +3470,7 @@ class InvoiceTest(StripeTestCase):
         plan.invoicing_status = CustomerPlan.STARTED
         plan.save(update_fields=["invoicing_status"])
         with self.assertRaises(NotImplementedError):
-            invoice_plan(CustomerPlan.objects.first(), self.now)
+            invoice_plan(assert_is_not_none(CustomerPlan.objects.first()), self.now)
 
     def test_invoice_plan_without_stripe_customer(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL)
