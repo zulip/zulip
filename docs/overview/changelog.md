@@ -17,10 +17,13 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
-### 4.4 -- 2021-06-22
+### 4.5 -- 2021-07-25
 
 - Added a tool to fix potential database corruption caused by host OS
-  upgrades.
+  upgrades (was listed in 4.4 release notes, but accidentally omitted).
+
+### 4.4 -- 2021-07-22
+
 - Fixed a possible denial-of-service attack in Markdown fenced code
   block parsing.
 - Smokescreen, if installed, now defaults to only listening on
