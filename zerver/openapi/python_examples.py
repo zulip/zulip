@@ -499,6 +499,23 @@ def archive_stream(client: Client, stream_id: int) -> None:
     assert result["result"] == "success"
 
 
+@openapi_test_function("/streams/{stream_id}/delete_topic:post")
+def delete_topic(client: Client, stream_id: int, topic: str) -> None:
+
+    # {code_example|start}
+    # Delete a topic given its stream_id
+    request = {
+        "topic_name": topic,
+    }
+    result = client.call_endpoint(
+        url=f"/streams/{stream_id}/delete_topic", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/streams/{stream_id}/delete_topic", "post", "200")
+
+    assert result["result"] == "success"
+
+
 @openapi_test_function("/streams:get")
 def get_streams(client: Client) -> None:
 
@@ -1505,6 +1522,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     toggle_mute_topic(client)
     update_subscription_settings(client)
     get_stream_topics(client, 1)
+    delete_topic(client, 1, "test")
     archive_stream(client, stream_id)
 
     test_user_not_authorized_error(nonadmin_client)

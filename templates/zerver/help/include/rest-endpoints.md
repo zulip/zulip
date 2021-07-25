@@ -29,6 +29,7 @@
 * [Archive a stream](/api/archive-stream)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
+* [Delete a topic](/api/delete-topic)
 
 #### Users
 

@@ -751,7 +751,7 @@ def get_topics_backend(
 def delete_in_topic(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ(converter=to_non_negative_int),
+    stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
     topic_name: str = REQ("topic_name"),
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
