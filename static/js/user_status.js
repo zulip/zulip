@@ -1,8 +1,5 @@
-import * as emoji from "../shared/js/emoji";
-
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {page_params} from "./page_params";
 
 const away_user_ids = new Set();
 const user_info = new Map();
@@ -43,44 +40,6 @@ export function revoke_away(user_id) {
         blueslip.error("need ints for user_id");
     }
     away_user_ids.delete(user_id);
-}
-
-// This function will add missing/extra parameters to the emoji info object,
-// that would need by template to render an emoji.
-export function get_emoji_info(emoji_info) {
-    // To call this function you must pass at least an emoji name.
-    if (!emoji_info || !emoji_info.emoji_name) {
-        return {};
-    }
-
-    const status_emoji_info = {...emoji_info};
-
-    status_emoji_info.emoji_alt_code = page_params.emojiset === "text";
-    if (status_emoji_info.emoji_alt_code) {
-        return status_emoji_info;
-    }
-
-    if (emoji.active_realm_emojis.has(emoji_info.emoji_name)) {
-        if (!emoji_info.reaction_type) {
-            if (emoji_info.emoji_name === "zulip") {
-                status_emoji_info.reaction_type = "zulip_extra_emoji";
-            } else {
-                status_emoji_info.reaction_type = "realm_emoji";
-            }
-        }
-        const more_emoji_info = emoji.active_realm_emojis.get(emoji_info.emoji_name);
-        status_emoji_info.emoji_code = emoji_info.emoji_code || more_emoji_info.id;
-        status_emoji_info.url = more_emoji_info.emoji_url;
-    } else {
-        const codepoint = emoji.get_emoji_codepoint(emoji_info.emoji_name);
-        if (codepoint === undefined) {
-            blueslip.warn("Bad emoji name: " + emoji_info.emoji_name);
-            return {};
-        }
-        status_emoji_info.reaction_type = emoji_info.reaction_type || "unicode_emoji";
-        status_emoji_info.emoji_code = emoji_info.emoji_code || codepoint;
-    }
-    return status_emoji_info;
 }
 
 export function is_away(user_id) {
