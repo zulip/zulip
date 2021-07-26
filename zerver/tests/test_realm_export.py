@@ -10,6 +10,7 @@ from analytics.models import RealmCount
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    HostRequestMock,
     create_dummy_file,
     create_s3_buckets,
     stdout_suppressed,
@@ -33,7 +34,7 @@ class RealmExportTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with self.assertRaises(JsonableError):
-            export_realm(self.client_post, user)
+            export_realm(HostRequestMock(), user)
 
     @use_s3_backend
     def test_endpoint_s3(self) -> None:
@@ -195,7 +196,7 @@ class RealmExportTest(ZulipTestCase):
         RealmAuditLog.objects.bulk_create(exports)
 
         with self.assertRaises(JsonableError) as error:
-            export_realm(self.client_post, admin)
+            export_realm(HostRequestMock(), admin)
         self.assertEqual(str(error.exception), "Exceeded rate limit.")
 
     def test_upload_and_message_limit(self) -> None:
