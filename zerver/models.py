@@ -3076,9 +3076,9 @@ def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfil
     return user_profile
 
 
-def get_user_including_cross_realm(email: str, realm: Optional[Realm] = None) -> UserProfile:
+def get_user_including_cross_realm(email: str, realm: Realm) -> UserProfile:
     if is_cross_realm_bot_email(email):
-        return get_system_bot(email)
+        return get_system_bot(email, realm.id)
     assert realm is not None
     return get_user(email, realm)
 
