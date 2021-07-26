@@ -3,7 +3,7 @@ import os
 import random
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 import bmemcached
 import orjson
@@ -870,14 +870,12 @@ class Command(BaseCommand):
                 call_command("populate_analytics_db")
 
         threads = options["threads"]
-        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]] = []
+        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], int]] = []
         for i in range(threads):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append(
-                (count, personals_pairs, options, self.stdout.write, random.randint(0, 10 ** 10))
-            )
+            jobs.append((count, personals_pairs, options, random.randint(0, 10 ** 10)))
 
         for job in jobs:
             generate_and_send_messages(job)
@@ -935,9 +933,9 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(
-    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]
+    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int]
 ) -> int:
-    (tot_messages, personals_pairs, options, output, random_seed) = data
+    (tot_messages, personals_pairs, options, random_seed) = data
     random.seed(random_seed)
 
     with open(
