@@ -234,6 +234,7 @@ class HomeTest(ZulipTestCase):
         "unsubscribed",
         "upgrade_text_for_wide_organization_logo",
         "user_id",
+        "user_settings",
         "user_status",
         "warn_no_email",
         "webpack_public_path",

@@ -1013,6 +1013,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,
+            user_settings=0,
             user_status=1,
             video_calls=0,
             giphy=0,

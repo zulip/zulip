@@ -524,6 +524,20 @@ def fetch_initial_state_data(
             state[notification] = getattr(settings_user, notification)
         state["available_notification_sounds"] = get_available_notification_sounds()
 
+    if want("user_settings"):
+        state["user_settings"] = {}
+
+        for prop in UserProfile.property_types:
+            state["user_settings"][prop] = getattr(settings_user, prop)
+        for notification in UserProfile.notification_setting_types:
+            state["user_settings"][notification] = getattr(settings_user, notification)
+
+        state["user_settings"]["emojiset_choices"] = UserProfile.emojiset_choices()
+        state["user_settings"]["timezone"] = settings_user.timezone
+        state["user_settings"][
+            "available_notification_sounds"
+        ] = get_available_notification_sounds()
+
     if want("user_status"):
         # We require creating an account to access statuses.
         state["user_status"] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
@@ -1112,6 +1126,7 @@ def apply_event(
                 or event["property"] in UserProfile.notification_setting_types
             )
         state[event["property"]] = event["value"]
+        state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass
     elif event["type"] == "user_group":

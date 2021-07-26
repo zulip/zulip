@@ -23,6 +23,8 @@ below features are supported.
   `update_global_notifications` are sent only when `user_settings_object`
   is not included in the `client_capabilities` when registering the
   event queue.
+* [`POST /register`](/api/register-queue): Added `user_settings` field
+  in the response, which is a dictionary containing all the user settings.
 
 **Feature level 88**
 
