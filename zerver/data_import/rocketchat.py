@@ -10,6 +10,8 @@ from django.forms.models import model_to_dict
 from zerver.data_import.import_util import (
     SubscriberHandler,
     ZerverFieldsT,
+    build_huddle,
+    build_huddle_subscriptions,
     build_message,
     build_personal_subscriptions,
     build_realm,
@@ -174,7 +176,7 @@ def convert_channel_data(
     return streams
 
 
-def convert_subscription_data(
+def convert_stream_subscription_data(
     user_id_to_user_map: Dict[str, Dict[str, Any]],
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     zerver_stream: List[ZerverFieldsT],
@@ -209,6 +211,31 @@ def convert_subscription_data(
             # as deactivated.
             stream["deactivated"] = True
         subscriber_handler.set_info(users=users, stream_id=stream["id"])
+
+
+def convert_huddle_data(
+    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
+    huddle_id_mapper: IdMapper,
+    user_id_mapper: IdMapper,
+    subscriber_handler: SubscriberHandler,
+) -> List[ZerverFieldsT]:
+    zerver_huddle: List[ZerverFieldsT] = []
+
+    for rc_huddle_id in huddle_id_to_huddle_map:
+        huddle_id = huddle_id_mapper.get(rc_huddle_id)
+        huddle = build_huddle(huddle_id)
+        zerver_huddle.append(huddle)
+
+        huddle_dict = huddle_id_to_huddle_map[rc_huddle_id]
+        huddle_user_ids = set()
+        for rc_user_id in huddle_dict["uids"]:
+            huddle_user_ids.add(user_id_mapper.get(rc_user_id))
+        subscriber_handler.set_info(
+            users=huddle_user_ids,
+            huddle_id=huddle_id,
+        )
+
+    return zerver_huddle
 
 
 def build_reactions(
@@ -334,8 +361,11 @@ def process_messages(
     user_id_to_recipient_id: Dict[int, int],
     stream_id_mapper: IdMapper,
     stream_id_to_recipient_id: Dict[int, int],
-    direct_id_to_direct_map: Dict[str, Dict[str, Any]],
+    huddle_id_mapper: IdMapper,
+    huddle_id_to_recipient_id: Dict[int, int],
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
+    direct_id_to_direct_map: Dict[str, Dict[str, Any]],
+    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     total_reactions: List[ZerverFieldsT],
     output_dir: str,
 ) -> None:
@@ -373,15 +403,20 @@ def process_messages(
 
         # Add recipient_id and topic to message_dict
         if is_pm_data:
-            direct_channel_id = message["rid"]
-            rc_member_ids = direct_id_to_direct_map[direct_channel_id]["uids"]
-            if rc_sender_id == rc_member_ids[0]:
-                zulip_member_id = user_id_mapper.get(rc_member_ids[1])
-                message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
+            # Message is in a PM or a huddle.
+            rc_channel_id = message["rid"]
+            if rc_channel_id in huddle_id_to_huddle_map:
+                huddle_id = huddle_id_mapper.get(rc_channel_id)
+                message_dict["recipient_id"] = huddle_id_to_recipient_id[huddle_id]
             else:
-                zulip_member_id = user_id_mapper.get(rc_member_ids[0])
-                message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
-            # PMs don't have topics, but topic_name field is required in `build_message`.
+                rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
+                if rc_sender_id == rc_member_ids[0]:
+                    zulip_member_id = user_id_mapper.get(rc_member_ids[1])
+                    message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
+                else:
+                    zulip_member_id = user_id_mapper.get(rc_member_ids[0])
+                    message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
+            # PMs and huddles don't have topics, but topic_name field is required in `build_message`.
             message_dict["topic_name"] = ""
         elif message["rid"] in dsc_id_to_dsc_map:
             # Message is in a discussion
@@ -438,16 +473,19 @@ def process_messages(
 def separate_channel_and_private_messages(
     messages: List[Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
+    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     channel_messages: List[Dict[str, Any]],
     private_messages: List[Dict[str, Any]],
 ) -> None:
-    direct_channels_list = direct_id_to_direct_map.keys()
+    private_channels_list = list(direct_id_to_direct_map.keys()) + list(
+        huddle_id_to_huddle_map.keys()
+    )
     for message in messages:
         if not message.get("rid"):
             # Message does not belong to any channel (might be
             # related to livechat), so ignore all such messages.
             continue
-        if message["rid"] in direct_channels_list:
+        if message["rid"] in private_channels_list:
             private_messages.append(message)
         else:
             channel_messages.append(message)
@@ -456,12 +494,15 @@ def separate_channel_and_private_messages(
 def map_receiver_id_to_recipient_id(
     zerver_recipient: List[ZerverFieldsT],
     stream_id_to_recipient_id: Dict[int, int],
+    huddle_id_to_recipient_id: Dict[int, int],
     user_id_to_recipient_id: Dict[int, int],
 ) -> None:
-    # receiver_id represents stream_id/user_id
+    # receiver_id represents stream_id/huddle_id/user_id
     for recipient in zerver_recipient:
         if recipient["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
+        elif recipient["type"] == Recipient.HUDDLE:
+            huddle_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
         elif recipient["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
@@ -472,12 +513,16 @@ def categorize_channels_and_map_with_id(
     team_id_to_team_map: Dict[str, Dict[str, Any]],
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
+    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
 ) -> None:
     for channel in channel_data:
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
-            direct_id_to_direct_map[channel["_id"]] = channel
+            if len(channel["uids"]) > 2:
+                huddle_id_to_huddle_map[channel["_id"]] = channel
+            else:
+                direct_id_to_direct_map[channel["_id"]] = channel
         else:
             room_id_to_room_map[channel["_id"]] = channel
             if channel.get("teamMain") is True:
@@ -553,6 +598,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     subscriber_handler = SubscriberHandler()
     user_id_mapper = IdMapper()
     stream_id_mapper = IdMapper()
+    huddle_id_mapper = IdMapper()
 
     process_users(
         user_id_to_user_map=user_id_to_user_map,
@@ -566,6 +612,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     team_id_to_team_map: Dict[str, Dict[str, Any]] = {}
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
     direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
+    huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
 
     categorize_channels_and_map_with_id(
         channel_data=rocketchat_data["room"],
@@ -573,6 +620,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         team_id_to_team_map=team_id_to_team_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
+        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
     )
 
     zerver_stream = convert_channel_data(
@@ -583,8 +631,8 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
     realm["zerver_stream"] = zerver_stream
 
-    # Add subscription data to subscriber handler
-    convert_subscription_data(
+    # Add stream subscription data to `subscriber_handler`
+    convert_stream_subscription_data(
         user_id_to_user_map=user_id_to_user_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         zerver_stream=zerver_stream,
@@ -593,11 +641,20 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         subscriber_handler=subscriber_handler,
     )
 
+    zerver_huddle = convert_huddle_data(
+        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        huddle_id_mapper=huddle_id_mapper,
+        user_id_mapper=user_id_mapper,
+        subscriber_handler=subscriber_handler,
+    )
+    realm["zerver_huddle"] = zerver_huddle
+
     all_users = user_handler.get_all_users()
 
     zerver_recipient = build_recipients(
         zerver_userprofile=all_users,
         zerver_stream=zerver_stream,
+        zerver_huddle=zerver_huddle,
     )
     realm["zerver_recipient"] = zerver_recipient
 
@@ -607,11 +664,17 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         zerver_stream=zerver_stream,
     )
 
+    huddle_subscriptions = build_huddle_subscriptions(
+        get_users=subscriber_handler.get_users,
+        zerver_recipient=zerver_recipient,
+        zerver_huddle=zerver_huddle,
+    )
+
     personal_subscriptions = build_personal_subscriptions(
         zerver_recipient=zerver_recipient,
     )
 
-    zerver_subscription = personal_subscriptions + stream_subscriptions
+    zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
     realm["zerver_subscription"] = zerver_subscription
 
     subscriber_map = make_subscriber_map(
@@ -619,11 +682,13 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
 
     stream_id_to_recipient_id: Dict[int, int] = {}
+    huddle_id_to_recipient_id: Dict[int, int] = {}
     user_id_to_recipient_id: Dict[int, int] = {}
 
     map_receiver_id_to_recipient_id(
         zerver_recipient=zerver_recipient,
         stream_id_to_recipient_id=stream_id_to_recipient_id,
+        huddle_id_to_recipient_id=huddle_id_to_recipient_id,
         user_id_to_recipient_id=user_id_to_recipient_id,
     )
 
@@ -633,6 +698,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     separate_channel_and_private_messages(
         messages=rocketchat_data["message"],
         direct_id_to_direct_map=direct_id_to_direct_map,
+        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         channel_messages=channel_messages,
         private_messages=private_messages,
     )
@@ -651,8 +717,11 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_to_recipient_id=user_id_to_recipient_id,
         stream_id_mapper=stream_id_mapper,
         stream_id_to_recipient_id=stream_id_to_recipient_id,
-        direct_id_to_direct_map=direct_id_to_direct_map,
+        huddle_id_mapper=huddle_id_mapper,
+        huddle_id_to_recipient_id=huddle_id_to_recipient_id,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+        direct_id_to_direct_map=direct_id_to_direct_map,
+        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         total_reactions=total_reactions,
         output_dir=output_dir,
     )
@@ -668,8 +737,11 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_to_recipient_id=user_id_to_recipient_id,
         stream_id_mapper=stream_id_mapper,
         stream_id_to_recipient_id=stream_id_to_recipient_id,
-        direct_id_to_direct_map=direct_id_to_direct_map,
+        huddle_id_mapper=huddle_id_mapper,
+        huddle_id_to_recipient_id=huddle_id_to_recipient_id,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+        direct_id_to_direct_map=direct_id_to_direct_map,
+        huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         total_reactions=total_reactions,
         output_dir=output_dir,
     )
