@@ -54,6 +54,7 @@ def render_stats(
     remote: bool = False,
     analytics_ready: bool = True,
 ) -> HttpResponse:
+    assert request.user.is_authenticated
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
@@ -79,6 +80,7 @@ def render_stats(
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
+    assert request.user.is_authenticated
     realm = request.user.realm
     if request.user.is_guest:
         # TODO: Make @zulip_login_required pass the UserProfile so we

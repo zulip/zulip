@@ -301,10 +301,13 @@ def do_increment_logging_stat(
 
     table = stat.data_collector.output_table
     if table == RealmCount:
+        assert isinstance(zerver_object, Realm)
         id_args = {"realm": zerver_object}
     elif table == UserCount:
+        assert isinstance(zerver_object, UserProfile)
         id_args = {"realm": zerver_object.realm, "user": zerver_object}
     else:  # StreamCount
+        assert isinstance(zerver_object, Stream)
         id_args = {"realm": zerver_object.realm, "stream": zerver_object}
 
     if stat.frequency == CountStat.DAY:
