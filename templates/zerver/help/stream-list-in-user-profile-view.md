@@ -1,28 +1,28 @@
 # Stream list in user profile view
 
-**Streams tab** in full profile view of a user shows the list of streams
-that user is currently subscribed to. This list always respects stream
-privacy policies so it may not be complete and items in this list depend
-on the role of user who is viewing the profile.
+The **Streams tab** in the user's profile view shows the list of streams
+that the user is currently subscribed to. This list respects stream privacy
+policies, so it may not be complete, and items shown in this list will
+depend on the user's role who is viewing the profile.
 
 !!! tip ""
-    A user viewing their own profile can always see list of all the
-    streams he/she is subscribed to.
+    When a user is viewing their own profile, he/she will see the list
+    of every subscribed stream.
 
 ### Organization owners and administrators
 
-Organization owners and administrators can always see full list of subscribed
-streams of the target user.
+Organization owners and administrators can always see the complete list of subscribed
+streams of any user.
 
 ### Members
 
-**Public streams:** Members other than guest users can see all the public streams that
-the target user is subscribed to.
+**Public streams:** Members other than guest users can see all the subscribed public
+streams of the target user.
 
-**Private streams:** Members other than guest users can see only those private streams to
-which both target user and user viewing the profile are subscribed.
+**Private streams:** Members other than guest users can only see the subscribed private
+streams shared by both the target user and the user viewing the profile.
 
 ### Guest users
 
-Guest users can only see those streams to which both target user and user viewing profile
-are subscribed.
+Guest users can only see the subscribed streams shared by both the target user and the
+user viewing profile.
