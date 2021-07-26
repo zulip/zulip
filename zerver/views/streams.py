@@ -534,11 +534,32 @@ def add_subscriptions_backend(
     result: Dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
     )
+
+    newly_added_users = []
     for sub_info in subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
         result["subscribed"][subscriber.email].append(stream.name)
         email_to_user_profile[subscriber.email] = subscriber
+
+        # Send notification in private stream for newly added users
+        if stream.invite_only and subscriber != user_profile and not subscriber.is_bot:
+            newly_added_users.append(subscriber.full_name)
+
+    # Send notification in private stream for newly added users
+    if newly_added_users:
+        notifications = []
+        sender = get_system_bot(settings.NOTIFICATION_BOT)
+        if len(newly_added_users) < 3:
+            names = _(" and ".join(newly_added_users))
+        else:
+            names = _("{} people").format(len(newly_added_users))
+        msg = _("{} added {} to {}.").format(user_profile.full_name, names, stream.name)
+        notifications.append(
+            internal_prep_stream_message(sender=sender, stream=stream, topic="hello", content=msg)
+        )
+        do_send_messages(notifications, mark_as_read=[user_profile.id])
+
     for sub_info in already_subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
