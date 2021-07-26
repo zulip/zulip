@@ -40,6 +40,8 @@
 * [Get a user by email](/api/get-user-by-email)
 * [Update a user](/api/update-user)
 * [Create a user](/api/create-user)
+* [Send invites to users](/api/send-invites)
+* [Get user invites](/api/get-invites)
 * [Deactivate a user](/api/deactivate-user)
 * [Reactivate a user](/api/reactivate-user)
 * [Deactivate own user](/api/deactivate-own-user)

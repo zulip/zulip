@@ -314,6 +314,26 @@ def get_subscription_status(client: Client) -> None:
     )
 
 
+@openapi_test_function("/invites:post")
+def send_invites(client: Client) -> None:
+
+    # {code_example|start}
+    # Create the request with email and stream IDs
+    request = {"invitee_emails": "bob-test@zulip.com", "invite_as": 100, "stream_ids": [1]}
+    result = client.call_endpoint(url="/invites", method="POST", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/invites", "post", "200")
+
+
+@openapi_test_function("/invites:get")
+def get_invites(client: Client) -> None:
+
+    # {code_example|start}
+    result = client.call_endpoint(url="/invites", method="GET")
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/invites", "get", "200")
+
+
 @openapi_test_function("/realm/linkifiers:get")
 def get_realm_linkifiers(client: Client) -> None:
 
@@ -1497,6 +1517,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     update_presence(client)
     get_user_presence(client)
     create_user_group(client)
+    send_invites(owner_client)
+    get_invites(client)
     user_group_id = get_user_groups(client)
     update_user_group(client, user_group_id)
     update_user_group_members(client, user_group_id)

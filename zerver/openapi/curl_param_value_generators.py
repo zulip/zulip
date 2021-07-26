@@ -333,3 +333,14 @@ def deactivate_own_user() -> Dict[str, object]:
     # change authentication line to allow test_client to delete itself.
     AUTHENTICATION_LINE[0] = f"{deactivate_test_user.email}:{test_user_api_key}"
     return {}
+
+
+@openapi_param_value_generator(["/invites:post"])
+def send_invites() -> Dict[str, object]:
+    owner_email = "desdemona@zulip.com"
+    owner_client = get_user(owner_email, get_realm("zulip"))
+    test_user_api_key = get_api_key(owner_client)
+    # Since only owner has permission to send invites
+    # change AUTHENTICATION_LINE to owner's
+    AUTHENTICATION_LINE[0] = f"{owner_client.email}:{test_user_api_key}"
+    return {}

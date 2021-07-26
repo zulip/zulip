@@ -11007,7 +11007,288 @@ paths:
                         "result": "error",
                       }
                     description: An example JSON error response for when user sends to multiple streams
+  /invites:
+    get:
+      operationId: get-invites
+      summary: Get user invites
+      tags: ["users"]
+      description: |
+        Fetches all the user invites for the realm when called
+        by the admin of the realm, while for a member of the realm
+        fetches the user invites referred by the user.
 
+        `GET {{ api_url }}/v1/invites`
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      invites:
+                        description: |
+                          An array containing details of the invites that were sent.
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            email:
+                              type: string
+                              description: Email id of the user who was sent the invite.
+                            invited_by_user_id:
+                              type: integer
+                              description: |
+                                ID of the user who sent the invite.
+                            invited:
+                              type: integer
+                              description: |
+                                Timestamp when the invite was sent.
+                            id:
+                              type: integer
+                              description: |
+                                ID of the invited user.
+                            link_url:
+                              type: string
+                              description: |
+                                Link of the invite sent.
+                            invited_as:
+                              type: integer
+                              description: |
+                                Value denoting the role that is given to the user(like MEMBER, MODERATOR, etc.).
+                            is_multiuse:
+                              type: boolean
+                              description: |
+                                Boolean denoting whether the invite is a multiuse invite.
+                    example:
+                      {
+                        "invites":
+                          [
+                            {
+                              "email": "TestOne@zulip.com",
+                              "id": 13,
+                              "invited": 1627414434,
+                              "invited_as": 400,
+                              "invited_by_user_id": 11,
+                              "is_multiuse": False,
+                            },
+                            {
+                              "id": 5,
+                              "invited": 1627414434,
+                              "invited_as": 400,
+                              "invited_by_user_id": 10,
+                              "is_multiuse": True,
+                              "link_url": "http://zulip.testserver/join/ukzxxbhvitsami3klpbzguto/",
+                            },
+                          ],
+                        "msg": "",
+                        "result": "success",
+                      }
+    post:
+      operationId: send-invites
+      summary: Send invites to users
+      tags: ["users"]
+      description: |
+        Send invites to multiple user's email IDs to join as members,
+        to specified streams in the realm.
+
+        `POST {{ api_url }}/v1/invites`
+      parameters:
+        - name: invitee_emails
+          in: query
+          schema:
+            type: string
+          description: |
+            A string containing comma separated email IDs of the users
+            invited.
+          example: bob-test@zulip.com
+        - name: invite_as
+          in: query
+          schema:
+            type: integer
+          description: |
+            Value denoting the role that is given to the user(like MEMBER, MODERATOR, etc.).
+          example: 100
+        - name: stream_ids
+          description: |
+            An array containing the IDs of the streams which the users
+            would be invited to join.
+          in: query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [1, 2]
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/BadInviteError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Some of those addresses are already using Zulip, so we didn't send them an invitation. We did send invitations to everyone else!",
+                            "errors":
+                              [
+                                [
+                                  "emailgateway@zulip.com",
+                                  "Reserved for system bots.",
+                                  False,
+                                ],
+                              ],
+                            "sent_invitations": True,
+                            "license_limit_reached": False,
+                            "code": "INVITATION_FAILED",
+                          }
+                        description: |
+                          A typical failed JSON response for when an invite is sent to an address that already uses Zulip
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Insufficient permission",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the user doesn't have the permissions to send invite
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Not allowed for guest users",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when guest users are not allowed to be invited
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Not allowed for guest users",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the stream ID entered is not valid
+                  - allOf:
+                      - $ref: "#/components/schemas/BadInviteError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "We weren't able to invite anyone.",
+                            "errors":
+                              [
+                                [
+                                  "hAmLeT@zUlIp.com",
+                                  "Already has an account.",
+                                  False,
+                                ],
+                              ],
+                            "sent_invitations": False,
+                            "license_limit_reached": False,
+                            "code": "INVITATION_FAILED",
+                          }
+                        description: |
+                          A typical failed JSON response for when none of the users could be invited
+                  - allOf:
+                      - $ref: "#/components/schemas/BadInviteError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Some of those addresses are already using Zulip, so we didn't send them an invitation. We did send invitations to everyone else!",
+                            "errors":
+                              [
+                                [
+                                  "emailgateway@zulip.com",
+                                  "Reserved for system bots.",
+                                  False,
+                                ],
+                              ],
+                            "sent_invitations": True,
+                            "license_limit_reached": False,
+                            "code": "INVITATION_FAILED",
+                          }
+                        description: |
+                          A typical failed JSON response for when an invite is sent to an address that already uses Zulip
+                  - allOf:
+                      - $ref: "#/components/schemas/BadInviteError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You do not have enough remaining invites for today. Please contact desdemona+admin@zulip.com to have your limit raised. No invitations were sent.",
+                            "errors": [],
+                            "sent_invitations": False,
+                            "license_limit_reached": False,
+                            "code": "INVITATION_FAILED",
+                          }
+                        description: |
+                          A typical failed JSON response for when the invite limit is reached
+                  - allOf:
+                      - $ref: "#/components/schemas/BadInviteError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Some emails did not validate, so we didn't send any invitations.",
+                            "errors":
+                              [
+                                [
+                                  "outsideyourdomain@example.net",
+                                  "Outside your domain.",
+                                  False,
+                                ],
+                              ],
+                            "sent_invitations": False,
+                            "license_limit_reached": False,
+                            "code": "INVITATION_FAILED",
+                          }
+                        description: |
+                          A typical failed JSON response for when invalid emails are entered
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You must specify at least one email address.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when no email address is specified
+                  - allOf:
+                      - $ref: "#/components/schemas/BadInviteError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Your account is too new to send invites for this organization. Ask an organization admin, or a more experienced user.",
+                            "errors": [],
+                            "sent_invitations": False,
+                            "license_limit_reached": False,
+                            "code": "INVITATION_FAILED",
+                          }
+                        description: |
+                          A typical failed JSON response for the account is too new to send invites
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -12858,6 +13139,30 @@ components:
               type: string
               description: |
                 A string that identifies the error.
+    BadInviteError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - additionalProperties: False
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            errors:
+              type: array
+              items:
+                description: |
+                  An array of strings describing the error that occured while sending the invite.
+                type: array
+                items:
+                  type: string
+            sent_invitations:
+              type: boolean
+              description: |
+                A boolean denoting whether any invites were successfully sent.
+            license_limit_reached:
+              type: boolean
+              description: |
+                Boolean describing whether the license limit has been reached.
     BadEventQueueIdError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"

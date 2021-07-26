@@ -231,7 +231,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
         # Administer invitations
-        "/invites",
         "/invites/multiuse",
         "/invites/{prereg_id}",
         "/invites/{prereg_id}/resend",
