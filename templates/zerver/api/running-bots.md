@@ -12,7 +12,7 @@ https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots
 You'll need:
 
 * An account in a Zulip organization
-  (e.g. [chat.zulip.org](https://chat.zulip.org),
+  (e.g. [chat.zulip.org](/developer-community/),
   `<yourSubdomain>.zulipchat.com`, or a Zulip organization on your own
   [development](https://zulip.readthedocs.io/en/latest/development/overview.html) or
   [production](https://zulip.readthedocs.io/en/latest/production/install.html) server).
