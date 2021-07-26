@@ -1989,10 +1989,18 @@ def do_send_messages(
         else:
             user_list = list(user_ids)
 
-        users: List[Dict[str, Union[int, List[str]]]] = []
+        UserData = TypedDict(
+            "UserData",
+            {
+                "id": int,
+                "flags": List[str],
+                "mentioned_user_group_id": Optional[int],
+            },
+        )
+        users: List[UserData] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
-            user_data = dict(id=user_id, flags=flags)
+            user_data: UserData = dict(id=user_id, flags=flags, mentioned_user_group_id=None)
 
             if user_id in send_request.mentioned_user_groups_map:
                 user_data["mentioned_user_group_id"] = send_request.mentioned_user_groups_map[

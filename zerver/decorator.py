@@ -814,14 +814,16 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
     )
 
 
-def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFuncT]:
+def internal_notify_view(
+    is_tornado_view: bool,
+) -> Callable[[ViewFuncT], Callable[..., HttpResponse]]:
     # The typing here could be improved by using the extended Callable types:
     # https://mypy.readthedocs.io/en/stable/additional_features.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
 
-    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
+    def _wrapped_view_func(view_func: ViewFuncT) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @require_post
         @wraps(view_func)

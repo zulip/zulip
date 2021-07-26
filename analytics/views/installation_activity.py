@@ -369,7 +369,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         cursor.close()
 
         def fix_rows(
-            i: int, fixup_func: Union[Callable[[Realm], mark_safe], Callable[[datetime], str]]
+            i: int, fixup_func: Union[Callable[[str], mark_safe], Callable[[datetime], str]]
         ) -> None:
             for row in rows:
                 row[i] = fixup_func(row[i])

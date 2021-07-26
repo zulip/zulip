@@ -62,7 +62,7 @@ def realm_user_summary_table(
         else:
             return ""
 
-    def is_recent(val: Optional[datetime]) -> bool:
+    def is_recent(val: datetime) -> bool:
         age = timezone_now() - val
         return age.total_seconds() < 5 * 60
 

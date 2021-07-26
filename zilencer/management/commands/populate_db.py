@@ -269,7 +269,7 @@ class Command(BaseCommand):
             "data set for the backend tests.",
         )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         # Suppress spammy output from the push notifications logger
         push_notifications_logger.disabled = True
 
