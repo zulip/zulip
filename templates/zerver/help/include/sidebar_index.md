@@ -64,7 +64,7 @@
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
-* [See streams a user is subscribed to](/help/stream-list-in-user-profile-view)
+* [List subscribed streams](/help/stream-list-in-user-profile-view)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
