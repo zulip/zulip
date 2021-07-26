@@ -2,7 +2,7 @@ import base64
 import os
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Sequence, Tuple
 from unittest import mock, skipUnless
 
 import orjson
@@ -132,8 +132,8 @@ class DecoratorTestCase(ZulipTestCase):
         @has_request_variables
         def double(
             request: HttpRequest, x: int = REQ(whence="number", aliases=["x", "n"], converter=int)
-        ) -> int:
-            return x + x
+        ) -> HttpResponse:
+            return json_response(data={"number": x + x})
 
         request = HostRequestMock()
 
@@ -142,13 +142,13 @@ class DecoratorTestCase(ZulipTestCase):
             double(request)
 
         request.POST = dict(number="3")
-        self.assertEqual(double(request), 6)
+        self.assertEqual(orjson.loads(double(request).content).get("number"), 6)
 
         request.POST = dict(x="4")
-        self.assertEqual(double(request), 8)
+        self.assertEqual(orjson.loads(double(request).content).get("number"), 8)
 
         request.POST = dict(n="5")
-        self.assertEqual(double(request), 10)
+        self.assertEqual(orjson.loads(double(request).content).get("number"), 10)
 
         request.POST = dict(number="6", x="7")
         with self.assertRaises(RequestConfusingParmsError) as cm:
@@ -167,8 +167,8 @@ class DecoratorTestCase(ZulipTestCase):
         @has_request_variables
         def get_total(
             request: HttpRequest, numbers: Sequence[int] = REQ(converter=my_converter)
-        ) -> int:
-            return sum(numbers)
+        ) -> HttpResponse:
+            return json_response(data={"number": sum(numbers)})
 
         request = HostRequestMock()
 
@@ -192,14 +192,14 @@ class DecoratorTestCase(ZulipTestCase):
 
         request.POST["numbers"] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
         result = get_total(request)
-        self.assertEqual(result, 21)
+        self.assertEqual(orjson.loads(result.content).get("number"), 21)
 
     def test_REQ_validator(self) -> None:
         @has_request_variables
         def get_total(
             request: HttpRequest, numbers: Sequence[int] = REQ(json_validator=check_list(check_int))
-        ) -> int:
-            return sum(numbers)
+        ) -> HttpResponse:
+            return json_response(data={"number": sum(numbers)})
 
         request = HostRequestMock()
 
@@ -218,14 +218,14 @@ class DecoratorTestCase(ZulipTestCase):
 
         request.POST["numbers"] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
         result = get_total(request)
-        self.assertEqual(result, 21)
+        self.assertEqual(orjson.loads(result.content).get("number"), 21)
 
     def test_REQ_str_validator(self) -> None:
         @has_request_variables
         def get_middle_characters(
             request: HttpRequest, value: str = REQ(str_validator=check_string_fixed_length(5))
-        ) -> str:
-            return value[1:-1]
+        ) -> HttpResponse:
+            return json_response(data={"value": value[1:-1]})
 
         request = HostRequestMock()
 
@@ -239,14 +239,14 @@ class DecoratorTestCase(ZulipTestCase):
 
         request.POST["value"] = "valid"
         result = get_middle_characters(request)
-        self.assertEqual(result, "ali")
+        self.assertEqual(orjson.loads(result.content).get("value"), "ali")
 
     def test_REQ_argument_type(self) -> None:
         @has_request_variables
         def get_payload(
             request: HttpRequest, payload: Dict[str, Any] = REQ(argument_type="body")
-        ) -> Dict[str, Any]:
-            return payload
+        ) -> HttpResponse:
+            return json_response(data={"payload": payload})
 
         request = HostRequestMock()
         request.body = b"notjson"
@@ -255,7 +255,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(str(cm.exception), "Malformed JSON")
 
         request.body = b'{"a": "b"}'
-        self.assertEqual(get_payload(request), {"a": "b"})
+        self.assertEqual(orjson.loads(get_payload(request).content).get("payload"), {"a": "b"})
 
     def logger_output(self, output_string: str, type: str, logger: str) -> str:
         return f"{type.upper()}:zulip.zerver.{logger}:{output_string}"
@@ -549,6 +549,14 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 
 
 class RateLimitTestCase(ZulipTestCase):
+    def get_ratelimited_view(self) -> Callable[..., HttpResponse]:
+        def f(req: Any) -> HttpResponse:
+            return json_response(msg="some value")
+
+        f = rate_limit()(f)
+
+        return f
+
     def errors_disallowed(self) -> Any:
         # Due to what is probably a hack in rate_limit(),
         # some tests will give a false positive (or succeed
@@ -566,16 +574,14 @@ class RateLimitTestCase(ZulipTestCase):
 
         request = HostRequestMock(client_name="internal", user_profile=user, meta_data=META)
 
-        def f(request: Any) -> str:
-            return "some value"
+        f = self.get_ratelimited_view()
 
-        f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
             with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
                 "zerver.decorator.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
-                    self.assertEqual(f(request), "some value")
+                    self.assertEqual(orjson.loads(f(request).content).get("msg"), "some value")
 
         self.assertFalse(rate_limit_ip_mock.called)
         self.assertFalse(rate_limit_user_mock.called)
@@ -586,17 +592,15 @@ class RateLimitTestCase(ZulipTestCase):
 
         req = HostRequestMock(client_name="internal", user_profile=user, meta_data=META)
 
-        def f(req: Any) -> str:
-            return "some value"
+        f = self.get_ratelimited_view()
 
-        f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
             with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
                 "zerver.decorator.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     with self.settings(DEBUG_RATE_LIMITING=True):
-                        self.assertEqual(f(req), "some value")
+                        self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
         self.assertFalse(rate_limit_ip_mock.called)
         self.assertFalse(rate_limit_user_mock.called)
@@ -607,16 +611,14 @@ class RateLimitTestCase(ZulipTestCase):
 
         req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
 
-        def f(req: Any) -> str:
-            return "some value"
+        f = self.get_ratelimited_view()
 
-        f = rate_limit()(f)
         with self.settings(RATE_LIMITING=False):
             with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
                 "zerver.decorator.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
-                    self.assertEqual(f(req), "some value")
+                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
         self.assertFalse(rate_limit_ip_mock.called)
         self.assertFalse(rate_limit_user_mock.called)
@@ -627,14 +629,12 @@ class RateLimitTestCase(ZulipTestCase):
 
         req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
 
-        def f(req: Any) -> str:
-            return "some value"
+        f = self.get_ratelimited_view()
 
-        f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
             with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
                 with self.errors_disallowed():
-                    self.assertEqual(f(req), "some value")
+                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
         self.assertTrue(rate_limit_mock.called)
 
@@ -651,14 +651,12 @@ class RateLimitTestCase(ZulipTestCase):
 
         req = HostRequestMock(client_name="external", user_profile=server, meta_data=META)
 
-        def f(req: Any) -> str:
-            return "some value"
+        f = self.get_ratelimited_view()
 
-        f = rate_limit()(f)
         with self.settings(RATE_LIMITING=True):
             with mock.patch("zerver.decorator.rate_limit_remote_server") as rate_limit_mock:
                 with self.errors_disallowed():
-                    self.assertEqual(f(req), "some value")
+                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
         self.assertTrue(rate_limit_mock.called)
 
@@ -668,15 +666,12 @@ class RateLimitTestCase(ZulipTestCase):
 
         req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
 
-        def f(req: Any) -> str:
-            return "some value"
-
-        f = rate_limit()(f)
+        f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch("zerver.decorator.rate_limit_ip") as rate_limit_mock:
                 with self.errors_disallowed():
-                    self.assertEqual(f(req), "some value")
+                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
         self.assertTrue(rate_limit_mock.called)
 
@@ -1463,7 +1458,7 @@ class TestInternalNotifyView(ZulipTestCase):
     BORING_RESULT = "boring"
 
     def internal_notify(self, is_tornado: bool, req: HttpRequest) -> HttpResponse:
-        boring_view = lambda req: self.BORING_RESULT
+        boring_view = lambda req: json_response(msg=self.BORING_RESULT)
         return internal_notify_view(is_tornado)(boring_view)(req)
 
     def test_valid_internal_requests(self) -> None:
@@ -1476,7 +1471,10 @@ class TestInternalNotifyView(ZulipTestCase):
 
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(request))
-            self.assertEqual(self.internal_notify(False, request), self.BORING_RESULT)
+            self.assertEqual(
+                orjson.loads(self.internal_notify(False, request).content).get("msg"),
+                self.BORING_RESULT,
+            )
             self.assertEqual(get_request_notes(request).requestor_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
@@ -1485,7 +1483,10 @@ class TestInternalNotifyView(ZulipTestCase):
         get_request_notes(request).tornado_handler = DummyHandler()
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(request))
-            self.assertEqual(self.internal_notify(True, request), self.BORING_RESULT)
+            self.assertEqual(
+                orjson.loads(self.internal_notify(True, request).content).get("msg"),
+                self.BORING_RESULT,
+            )
             self.assertEqual(get_request_notes(request).requestor_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
@@ -1850,8 +1851,10 @@ class TestRequireDecorators(ZulipTestCase):
 
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_returns_200_if_request_method_is_head(self) -> None:
-        class HeadRequest:
-            method = "HEAD"
+        class HeadRequest(HostRequestMock):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                super().__init__(*args, **kwargs)
+                self.method = "HEAD"
 
         request = HeadRequest()
 
@@ -1864,8 +1867,10 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
         self.assertNotEqual(orjson.loads(response.content).get("msg"), "from_test_function")
 
     def test_returns_normal_response_if_request_method_is_not_head(self) -> None:
-        class HeadRequest:
-            method = "POST"
+        class HeadRequest(HostRequestMock):
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                super().__init__(*args, **kwargs)
+                self.method = "POST"
 
         request = HeadRequest()
 
