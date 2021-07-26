@@ -1104,7 +1104,9 @@ Output:
         """
         with self.settings(ERROR_BOT=None), mock.patch(
             "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
-        ), mock.patch("zerver.lib.markdown.markdown_logger"):
+        ), self.assertLogs(
+            level="ERROR"
+        ):  # For markdown_logger.exception
             yield
 
     def create_default_device(
