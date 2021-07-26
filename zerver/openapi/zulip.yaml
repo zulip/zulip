@@ -1425,7 +1425,7 @@ paths:
                                 away:
                                   type: boolean
                                   description: |
-                                    Whether the user has marked themself "away".
+                                    Whether the user has marked themself "away" with this status.
                                 status_text:
                                   type: string
                                   description: |
@@ -1433,19 +1433,31 @@ paths:
                                 emoji_name:
                                   type: string
                                   description: |
-                                    The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                    The [emoji name](/api/add-reaction#parameters) for the emoji
+                                    the user selected for their new status.
+
+                                    This will be "" for users who set a status without selecting
+                                    an emoji.
 
                                     **Changes**; New in Zulip 5.0 (feature level 86).
                                 emoji_code:
                                   type: string
                                   description: |
-                                    The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                    The [emoji code](/api/add-reaction#parameters) for the emoji
+                                    the user selected for their new status.
+
+                                    This will be "" for users who set a status without selecting
+                                    an emoji.
 
                                     **Changes**; New in Zulip 5.0 (feature level 86).
                                 reaction_type:
                                   type: string
                                   description: |
-                                    The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                    The [emoji type](/api/add-reaction#parameters) for the emoji
+                                    the user selected for their new status.
+
+                                    This will be "" for users who set a status without selecting
+                                    an emoji.
 
                                     **Changes**; New in Zulip 5.0 (feature level 86).
                                 user_id:
@@ -5854,6 +5866,158 @@ paths:
                     description: |
                       An example JSON error response when attempting to deactivate the only
                       organization owner in an organization
+  /users/me/status:
+    post:
+      operationId: update-status
+      summary: Update your status
+      tags: ["users"]
+      description: |
+        Change your [status](/help/status-and-availability).
+
+        `POST {{ api_url }}/v1/users/me/status`
+
+        A request to this endpoint will only change the parameters passed.
+        For example, passing just `status_text` requests a change in the status
+        text, but will leave the status emoji unchanged.
+
+        Clients that wish to set the user's status to a specific value should
+        pass all supported parameters.
+      parameters:
+        - name: status_text
+          schema:
+            type: string
+          allowEmptyValue: true
+          in: query
+          description: |
+            The text content of the status message. Sending the empty string
+            will clear the user's status.
+
+            **Note**: The limit on the size of the message is 60 characters.
+          example: on vacation
+          required: false
+        - name: away
+          schema:
+            type: boolean
+          in: query
+          description: |
+            Whether the user should be marked as "away".
+          example: true
+          required: false
+        - name: emoji_name
+          schema:
+            type: string
+          allowEmptyValue: true
+          in: query
+          description: |
+            The name for the emoji to associate with this status.
+          example: car
+          required: false
+        - name: emoji_code
+          schema:
+            type: string
+          in: query
+          description: |
+            A unique identifier, defining the specific emoji codepoint requested,
+            within the namespace of the `reaction_type`.
+
+            For example, for `unicode_emoji`, this will be an encoding of the
+            Unicode codepoint; for `realm_emoji`, it'll be the ID of the realm emoji.
+          example: 1f697
+          required: false
+        - name: reaction_type
+          schema:
+            type: string
+          in: query
+          description: |
+            One of the following values:
+
+            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
+              codepoint).
+            * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+              (`emoji_code` will be its ID).
+            * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
+              namespace the `zulip` emoji.
+          example: unicode_emoji
+          required: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client did not pass any new values.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when no changes were requested
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "status_text is too long (limit: 60 characters)",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the
+                          `status_text` message exceeds the limit of
+                          60 characters
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when `emoji_name` is not specified
+                          but `emoji_code` or `reaction_type` is specified
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Emoji 'invalid' does not exist",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the emoji name does not exist
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji name.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the emoji name is invalid
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid custom emoji.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the custom emoji is invalid
   /users/me/{stream_id}/topics:
     get:
       operationId: get-stream-topics
@@ -8409,6 +8573,24 @@ paths:
                               type: string
                               description: |
                                 The text content of the status message.
+                            emoji_name:
+                              type: string
+                              description: |
+                                The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                **Changes**: New in Zulip 5.0 (feature level 86).
+                            emoji_code:
+                              type: string
+                              description: |
+                                The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                **Changes**: New in Zulip 5.0 (feature level 86).
+                            reaction_type:
+                              type: string
+                              description: |
+                                The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                **Changes**: New in Zulip 5.0 (feature level 86).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -12279,7 +12461,7 @@ components:
             within the namespace of the `reaction_type`.
 
             For example, for `unicode_emoji`, this will be an encoding of the
-            Unicode codepoint.
+            Unicode codepoint; for `realm_emoji`, it'll be the ID of the realm emoji.
         emoji_name:
           type: string
           description: |

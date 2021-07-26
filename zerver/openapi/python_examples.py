@@ -186,6 +186,31 @@ def create_user(client: Client) -> None:
     validate_against_openapi_schema(result, "/users", "post", "400")
 
 
+@openapi_test_function("/users/me/status:post")
+def update_status(client: Client) -> None:
+    # {code_example|start}
+    # The request contains the new status and away boolean
+    request = {
+        "status_text": "on vacation",
+        "away": False,
+        "emoji_name": "car",
+        "emoji_code": "1f697",
+        "reaction_type": "unicode_emoji",
+    }
+    result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/status", "post", "200")
+
+    # Test "status_text is too long error"
+    request = {
+        "status_text": "This is a message that exceeds 60 characters, and so should throw an error.",
+        "away": "false",
+    }
+    validate_against_openapi_schema(result, "/users/me/status", "post", "400")
+
+
 @openapi_test_function("/users:get")
 def get_members(client: Client) -> None:
 
@@ -1487,6 +1512,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
+    update_status(client)
     get_user_by_email(client)
     get_subscription_status(client)
     get_profile(client)

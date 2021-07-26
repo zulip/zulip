@@ -39,6 +39,7 @@
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
 * [Update a user](/api/update-user)
+* [Update your status](/api/update-status)
 * [Create a user](/api/create-user)
 * [Deactivate a user](/api/deactivate-user)
 * [Reactivate a user](/api/reactivate-user)
