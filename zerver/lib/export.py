@@ -61,6 +61,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     get_display_recipient,
+    get_realm,
     get_system_bot,
     get_user_profile_by_id,
 )
@@ -898,6 +899,7 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
     if realm.string_id == settings.SYSTEM_BOT_REALM:
         return
 
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     for bot in settings.INTERNAL_BOTS:
         bot_name = bot["var_name"]
         if bot_name not in bot_name_to_default_email:
@@ -905,7 +907,7 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
 
         bot_email = bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
         bot_default_email = bot_name_to_default_email[bot_name]
-        bot_user_id = get_system_bot(bot_email).id
+        bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
         recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
         response["zerver_userprofile_crossrealm"].append(
@@ -1396,7 +1398,10 @@ def export_files_from_s3(
         object_prefix = f"{realm.id}/"
 
     if settings.EMAIL_GATEWAY_BOT is not None:
-        email_gateway_bot: Optional[UserProfile] = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        email_gateway_bot: Optional[UserProfile] = get_system_bot(
+            settings.EMAIL_GATEWAY_BOT, internal_realm.id
+        )
     else:
         email_gateway_bot = None
 
@@ -1467,10 +1472,12 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     records = []
 
     users = list(UserProfile.objects.filter(realm=realm))
+
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     users += [
-        get_system_bot(settings.NOTIFICATION_BOT),
-        get_system_bot(settings.EMAIL_GATEWAY_BOT),
-        get_system_bot(settings.WELCOME_BOT),
+        get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
+        get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
+        get_system_bot(settings.WELCOME_BOT, internal_realm.id),
     ]
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
