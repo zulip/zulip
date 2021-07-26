@@ -43,6 +43,20 @@ any user group they are a part of. Guests cannot modify user groups.
 
 {end_tabs}
 
+### List user groups for a user
+
+You can list the user groups of a user from the full profile modal window.
+
+{start_tabs}
+
+1. Open the user's full profile window.
+
+2. Go to the **User groups** tab.
+
+3. If the user is a member of any user group, a list of user groups is shown.
+
+{end_tabs}
+
 ## Related articles
 
 * [Restrict user group management](/help/restrict-user-group-management)
