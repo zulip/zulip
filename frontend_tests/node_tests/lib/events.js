@@ -691,6 +691,13 @@ exports.fixtures = {
         user: test_user.email,
     },
 
+    update_display_settings__enter_sends: {
+        type: "update_display_settings",
+        setting_name: "enter_sends",
+        setting: true,
+        user: test_user.email,
+    },
+
     update_display_settings__fluid_layout_width: {
         type: "update_display_settings",
         setting_name: "fluid_layout_width",

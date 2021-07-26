@@ -198,9 +198,6 @@ class ChangeSettingsTest(ZulipTestCase):
         for display_setting in boolean_settings:
             self.check_for_toggle_param_patch("/json/settings", display_setting)
 
-    def test_enter_sends_setting(self) -> None:
-        self.check_for_toggle_param_patch("/json/settings", "enter_sends")
-
     def test_wrong_old_password(self) -> None:
         self.login("hamlet")
         result = self.client_patch(

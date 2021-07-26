@@ -24,6 +24,7 @@ const activity = mock_esm("../../static/js/activity");
 const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
 const attachments_ui = mock_esm("../../static/js/attachments_ui");
 const bot_data = mock_esm("../../static/js/bot_data");
+const compose = mock_esm("../../static/js/compose");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
@@ -64,7 +65,6 @@ const ui = mock_esm("../../static/js/ui");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
-mock_esm("../../static/js/compose");
 mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
@@ -788,6 +788,13 @@ run_test("update_display_settings", ({override}) => {
         assert.equal(stub.num_calls, 1);
         assert_same(page_params.demote_inactive_streams, 2);
     }
+
+    override(compose, "toggle_enter_sends_ui", noop);
+
+    event = event_fixtures.update_display_settings__enter_sends;
+    page_params.enter_sends = false;
+    dispatch(event);
+    assert_same(page_params.enter_sends, true);
 });
 
 run_test("update_global_notifications", ({override}) => {

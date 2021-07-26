@@ -502,6 +502,10 @@ def fetch_initial_state_data(
 
     if want("update_display_settings"):
         for prop in UserProfile.property_types:
+            if prop == "enter_sends":
+                # This will be removed when we make the API change to
+                # move this to the update_display_settings event type.
+                continue
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
         state["timezone"] = settings_user.timezone

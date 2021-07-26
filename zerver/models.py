@@ -1351,6 +1351,7 @@ class UserBaseSettings(models.Model):
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,
+        enter_sends=bool,
         fluid_layout_width=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,

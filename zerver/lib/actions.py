@@ -5039,11 +5039,6 @@ def do_change_notification_settings(
     send_event(user_profile.realm, event, [user_profile.id])
 
 
-def do_change_enter_sends(user_profile: UserProfile, enter_sends: bool) -> None:
-    user_profile.enter_sends = enter_sends
-    user_profile.save(update_fields=["enter_sends"])
-
-
 def do_set_user_display_setting(
     user_profile: UserProfile, setting_name: str, setting_value: Union[bool, str, int]
 ) -> None:

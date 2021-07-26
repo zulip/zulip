@@ -21,7 +21,6 @@ from zerver.decorator import human_users_only
 from zerver.lib.actions import (
     check_change_full_name,
     do_change_avatar_fields,
-    do_change_enter_sends,
     do_change_notification_settings,
     do_change_password,
     do_change_user_delivery_email,
@@ -274,9 +273,6 @@ def json_change_settings(
 
     if timezone is not None and user_profile.timezone != timezone:
         do_set_user_display_setting(user_profile, "timezone", timezone)
-
-    if enter_sends is not None and user_profile.enter_sends != enter_sends:
-        do_change_enter_sends(user_profile, enter_sends)
 
     # TODO: Do this more generally.
     from zerver.lib.request import get_request_notes

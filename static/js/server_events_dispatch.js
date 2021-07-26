@@ -627,6 +627,12 @@ export function dispatch_normal_event(event) {
                     message_list.narrowed.rerender();
                 }
             }
+            if (event.setting_name === "enter_sends") {
+                page_params.enter_sends = event.setting;
+                $("#enter_sends").prop("checked", page_params.enter_sends);
+                compose.toggle_enter_sends_ui();
+                break;
+            }
             settings_display.update_page();
             break;
         }
