@@ -207,7 +207,11 @@ class TestGetChartData(ZulipTestCase):
         client2 = Client.objects.create(name="client 2")
         client3 = Client.objects.create(name="client 3")
         client4 = Client.objects.create(name="client 4")
-        self.insert_data(stat, [client4.id, client3.id, client2.id], [client3.id, client1.id])
+        self.insert_data(
+            stat,
+            [str(client4.id), str(client3.id), str(client2.id)],
+            [str(client3.id), str(client1.id)],
+        )
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_client"}
         )

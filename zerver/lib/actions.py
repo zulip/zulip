@@ -466,7 +466,7 @@ def process_new_human_user(
 
     mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
-        streams = prereg_user.streams.all()
+        streams: List[Stream] = list(prereg_user.streams.all())
         acting_user: Optional[UserProfile] = prereg_user.referred_by
     else:
         streams = []
