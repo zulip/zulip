@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 84**
+
+* [`POST /register`](/api/register-queue): The `enter_sends` setting
+  is now sent when `update_display_setting` is present in
+  `fetch_event_types` instead of `realm_user`.
+
 **Feature level 83**
 
 * * [`POST /register`](/api/register-queue): The `cross_realm_bots`

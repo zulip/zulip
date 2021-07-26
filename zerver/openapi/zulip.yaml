@@ -9579,10 +9579,14 @@ paths:
                       enter_sends:
                         type: boolean
                         description: |
-                          Present if `realm_user` is present in `fetch_event_types`.
+                          Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
                           in the compose box is enabled.
+
+                          **Changes**: Prior to Zulip 5.0 (feature level 84) this field was present
+                          in response if 'realm_user' was present in `fetch_event_types`, not
+                          `update_display_settings`.
                       user_id:
                         type: integer
                         description: |

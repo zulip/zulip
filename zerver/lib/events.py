@@ -384,7 +384,6 @@ def fetch_initial_state_data(
         state["is_guest"] = settings_user.is_guest
         state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
-        state["enter_sends"] = settings_user.enter_sends
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
         state["full_name"] = settings_user.full_name
@@ -502,10 +501,6 @@ def fetch_initial_state_data(
 
     if want("update_display_settings"):
         for prop in UserProfile.property_types:
-            if prop == "enter_sends":
-                # This will be removed when we make the API change to
-                # move this to the update_display_settings event type.
-                continue
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
         state["timezone"] = settings_user.timezone
