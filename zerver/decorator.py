@@ -379,7 +379,7 @@ def webhook_view(
 # the subdomain validation happen elsewhere and switch to using the
 # stock Django version.
 def user_passes_test(
-    test_func: Callable[[HttpResponse], bool],
+    test_func: Callable[[HttpRequest], bool],
     login_url: Optional[str] = None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
 ) -> Callable[[ViewFuncT], ViewFuncT]:

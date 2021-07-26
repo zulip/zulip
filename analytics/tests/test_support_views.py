@@ -30,7 +30,7 @@ class TestSupportEndpoint(ZulipTestCase):
         reset_emails_in_zulip_realm()
 
         def assert_user_details_in_html_response(
-            html_response: str, full_name: str, email: str, role: str
+            html_response: HttpResponse, full_name: str, email: str, role: str
         ) -> None:
             self.assert_in_success_response(
                 [

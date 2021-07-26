@@ -167,7 +167,7 @@ def create_default_stream_group(
     group_name: str = REQ(),
     description: str = REQ(),
     stream_names: List[str] = REQ(json_validator=check_list(check_string)),
-) -> None:
+) -> HttpResponse:
     streams = []
     for stream_name in stream_names:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
@@ -184,7 +184,7 @@ def update_default_stream_group_info(
     group_id: int,
     new_group_name: Optional[str] = REQ(default=None),
     new_description: Optional[str] = REQ(default=None),
-) -> None:
+) -> HttpResponse:
     if not new_group_name and not new_description:
         raise JsonableError(_('You must pass "new_description" or "new_group_name".'))
 
@@ -204,7 +204,7 @@ def update_default_stream_group_streams(
     group_id: int,
     op: str = REQ(),
     stream_names: List[str] = REQ(json_validator=check_list(check_string)),
-) -> None:
+) -> HttpResponse:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     streams = []
     for stream_name in stream_names:
@@ -224,7 +224,7 @@ def update_default_stream_group_streams(
 @has_request_variables
 def remove_default_stream_group(
     request: HttpRequest, user_profile: UserProfile, group_id: int
-) -> None:
+) -> HttpResponse:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     do_remove_default_stream_group(user_profile.realm, group)
     return json_success()

@@ -262,17 +262,19 @@ class DecoratorTestCase(ZulipTestCase):
 
     def test_webhook_view(self) -> None:
         @webhook_view("ClientName")
-        def my_webhook(request: HttpRequest, user_profile: UserProfile) -> str:
-            return user_profile.email
+        def my_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            return json_response(msg=user_profile.email)
 
         @webhook_view("ClientName")
-        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_raises_exception(
+            request: HttpRequest, user_profile: UserProfile
+        ) -> HttpResponse:
             raise Exception("raised by webhook function")
 
         @webhook_view("ClientName")
         def my_webhook_raises_exception_unsupported_event(
             request: HttpRequest, user_profile: UserProfile
-        ) -> None:
+        ) -> HttpResponse:
             raise UnsupportedWebhookEventType("test_event")
 
         webhook_bot_email = "webhook-bot@zulip.com"
@@ -367,7 +369,7 @@ class DecoratorTestCase(ZulipTestCase):
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
-                api_result = my_webhook(request)
+                api_result = orjson.loads(my_webhook(request).content).get("msg")
 
         # Verify rate limiting was attempted.
         self.assertTrue(rate_limit_mock.called)
@@ -393,11 +395,11 @@ class DecoratorTestCase(ZulipTestCase):
 class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_rest_api_view(self) -> None:
         @authenticated_rest_api_view(skip_rate_limiting=False)
-        def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+        def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             return json_success()  # nocoverage # mock prevents this from being called
 
         @authenticated_rest_api_view(skip_rate_limiting=True)
-        def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+        def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             return json_success()
 
         request = HostRequestMock(host="zulip.testserver")
@@ -416,11 +418,11 @@ class SkipRateLimitingTest(ZulipTestCase):
 
     def test_authenticated_uploads_api_view(self) -> None:
         @authenticated_uploads_api_view(skip_rate_limiting=False)
-        def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+        def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             return json_success()  # nocoverage # mock prevents this from being called
 
         @authenticated_uploads_api_view(skip_rate_limiting=True)
-        def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+        def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             return json_success()
 
         request = HostRequestMock(host="zulip.testserver")
@@ -438,7 +440,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         self.assertTrue(rate_limit_mock.called)
 
     def test_authenticated_json_view(self) -> None:
-        def my_view(request: HttpRequest, user_profile: UserProfile) -> str:
+        def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             return json_success()
 
         my_rate_limited_view = authenticated_json_view(my_view, skip_rate_limiting=False)
@@ -462,7 +464,9 @@ class SkipRateLimitingTest(ZulipTestCase):
 class DecoratorLoggingTestCase(ZulipTestCase):
     def test_authenticated_rest_api_view_logging(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
-        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_raises_exception(
+            request: HttpRequest, user_profile: UserProfile
+        ) -> HttpResponse:
             raise Exception("raised by webhook function")
 
         webhook_bot_email = "webhook-bot@zulip.com"
@@ -483,7 +487,9 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 
     def test_authenticated_rest_api_view_logging_unsupported_event(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
-        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_raises_exception(
+            request: HttpRequest, user_profile: UserProfile
+        ) -> HttpResponse:
             raise UnsupportedWebhookEventType("test_event")
 
         webhook_bot_email = "webhook-bot@zulip.com"
@@ -511,7 +517,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         @authenticated_rest_api_view()
         def non_webhook_view_raises_exception(
             request: HttpRequest, user_profile: UserProfile
-        ) -> None:
+        ) -> HttpResponse:
             raise Exception("raised by a non-webhook view")
 
         request = HostRequestMock()

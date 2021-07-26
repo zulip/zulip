@@ -646,7 +646,7 @@ def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     return redirect(subdomain_login_uri)
 
 
-def redirect_to_misconfigured_ldap_notice(request: HttpResponse, error_type: int) -> HttpResponse:
+def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int) -> HttpResponse:
     if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
         return config_error(request, "ldap")
     else:
@@ -789,6 +789,7 @@ def login_page(
         # https://github.com/django/django/blob/master/django/template/response.py#L19.
         update_login_page_context(request, template_response.context_data)
 
+    assert isinstance(template_response, HttpResponse)
     return template_response
 
 
@@ -957,12 +958,13 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
-    view_func = DjangoPasswordResetView.as_view(
+    response = DjangoPasswordResetView.as_view(
         template_name="zerver/reset.html",
         form_class=ZulipPasswordResetForm,
         success_url="/accounts/password/reset/done/",
-    )
-    return view_func(request)
+    )(request)
+    assert isinstance(response, HttpResponse)
+    return response
 
 
 @csrf_exempt

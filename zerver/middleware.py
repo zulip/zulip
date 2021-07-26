@@ -2,24 +2,13 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import (
-    Any,
-    AnyStr,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    MutableMapping,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
-from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.http.response import HttpResponseBase
 from django.middleware.common import CommonMiddleware
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
@@ -428,9 +417,7 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
-    def __init__(
-        self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]
-    ) -> None:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         super().__init__(get_response)
         ignore_logger("zerver.middleware.json_error_handler")
 
@@ -498,7 +485,9 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
 
         # This is the same as the default LocaleMiddleware, minus the
         # logic that redirects 404's that lack a prefixed language in

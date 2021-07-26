@@ -53,7 +53,7 @@ def render_stats(
     for_installation: bool = False,
     remote: bool = False,
     analytics_ready: bool = True,
-) -> HttpRequest:
+) -> HttpResponse:
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
