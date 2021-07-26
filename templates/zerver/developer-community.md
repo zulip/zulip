@@ -1,5 +1,3 @@
-# Join the Zulip community
-
 The primary communication forum for the Zulip community is the Zulip
 server hosted at [chat.zulip.org](https://chat.zulip.org/):
 
@@ -25,6 +23,7 @@ developers during daylight hours in North America (roughly between
 15:00 UTC and 1:00 UTC), but the sun never sets on the Zulip
 community. Most questions get a reply within minutes to a few hours.
 
+<br/>
 # Community norms
 
 Zulip is a friendly and welcoming community, and we love meeting new
@@ -74,6 +73,7 @@ feedback.
   is generally no need to @-mention a core contributor unless you need
   their timely attention.
 
+<br/>
 # Where do I send my message?
 
 This section describes popular public streams on chat.zulip.org. Kick
@@ -203,6 +203,7 @@ topic to a different stream](/help/move-content-to-another-stream).
 You can always find the description for the stream you’re reading at
 the top of the Zulip app.
 
+<br/>
 # Anything else to keep in mind?
 
 ## Don’t try to read *everything*
