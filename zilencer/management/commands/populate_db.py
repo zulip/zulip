@@ -118,10 +118,6 @@ def clear_database() -> None:
     Session.objects.all().delete()
 
 
-# Suppress spammy output from the push notifications logger
-push_notifications_logger.disabled = True
-
-
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
     subscriptions_to_add = []
     event_time = timezone_now()
@@ -273,6 +269,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options: Any) -> None:
+        # Suppress spammy output from the push notifications logger
+        push_notifications_logger.disabled = True
+
         if options["percent_huddles"] + options["percent_personals"] > 100:
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
@@ -898,6 +897,8 @@ class Command(BaseCommand):
 
             mark_all_messages_as_read()
             self.stdout.write("Successfully populated test database.\n")
+
+        push_notifications_logger.disabled = False
 
 
 def mark_all_messages_as_read() -> None:
