@@ -97,11 +97,13 @@ def send_initial_pms(user: UserProfile) -> None:
         apps_url="/apps", settings_url="#settings", organization_setup_text=organization_setup_text
     )
 
-    internal_send_private_message(get_system_bot(settings.WELCOME_BOT), user, content)
+    internal_send_private_message(
+        get_system_bot(settings.WELCOME_BOT, user.realm_id), user, content
+    )
 
 
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
-    welcome_bot = get_system_bot(settings.WELCOME_BOT)
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
     human_recipient_id = send_request.message.sender.recipient_id
     if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
         content = (
@@ -119,7 +121,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
 
 @transaction.atomic
 def send_initial_realm_messages(realm: Realm) -> None:
-    welcome_bot = get_system_bot(settings.WELCOME_BOT)
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
