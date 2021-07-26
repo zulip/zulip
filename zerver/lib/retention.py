@@ -53,6 +53,7 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
+    get_realm,
     get_user_including_cross_realm,
 )
 
@@ -223,8 +224,10 @@ def move_expired_personal_and_huddle_messages_to_archive(
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
     # This function will archive appropriate messages and their related objects.
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     cross_realm_bot_ids = [
-        get_user_including_cross_realm(email).id for email in settings.CROSS_REALM_BOT_EMAILS
+        get_user_including_cross_realm(email, internal_realm).id
+        for email in settings.CROSS_REALM_BOT_EMAILS
     ]
     recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
 
