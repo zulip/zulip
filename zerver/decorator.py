@@ -4,7 +4,7 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Callable, Dict, Optional, Sequence, Tuple, TypeVar, Union, cast
+from typing import Callable, Dict, Optional, Sequence, Tuple, TypeVar, Union, cast, overload
 
 import django_otp
 from django.conf import settings
@@ -472,6 +472,24 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+
+
+@overload
+def zulip_login_required(
+    function: ViewFuncT,
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
+    login_url: str = settings.HOME_NOT_LOGGED_IN,
+) -> ViewFuncT:
+    ...
+
+
+@overload
+def zulip_login_required(
+    function: None,
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
+    login_url: str = settings.HOME_NOT_LOGGED_IN,
+) -> Callable[[ViewFuncT], ViewFuncT]:
+    ...
 
 
 # Based on Django 1.8's @login_required
