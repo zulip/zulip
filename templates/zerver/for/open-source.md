@@ -82,7 +82,7 @@ Zulip’s topic-based threading model solves these problems:
   conversation.
 
 You can see this in action in our own
-[chat.zulip.org](https://chat.zulip.org) community, which sends
+[chat.zulip.org](/developer-community/) community, which sends
 thousands of messages a week.  We often get feedback from contributors
 around the world that they love how responsive Zulip’s project leaders
 are in public Zulip conversations.  We are able to achieve this
