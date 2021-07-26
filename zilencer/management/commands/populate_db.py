@@ -9,6 +9,7 @@ import bmemcached
 import orjson
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.core.files.base import File
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
@@ -557,7 +558,7 @@ class Command(BaseCommand):
             # across platforms.
 
             subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
-            profiles: Sequence[UserProfile] = (
+            profiles: Sequence[UserProfile] = list(
                 UserProfile.objects.select_related().filter(is_bot=False).order_by("email")
             )
 
@@ -716,7 +717,7 @@ class Command(BaseCommand):
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            check_add_realm_emoji(zulip_realm, "green_tick", iago, fp)
+            check_add_realm_emoji(zulip_realm, "green_tick", iago, File(fp))
 
         if not options["test_suite"]:
             # Populate users with some bar data
@@ -1018,7 +1019,7 @@ def generate_and_send_messages(
         elif message_type == Recipient.STREAM:
             # Pick a random subscriber to the stream
             message.sender = random.choice(
-                Subscription.objects.filter(recipient=message.recipient)
+                list(Subscription.objects.filter(recipient=message.recipient))
             ).user_profile
             message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data["subject"] = message.subject

@@ -3237,12 +3237,12 @@ class BillingHelpersTest(ZulipTestCase):
     def test_get_realms_to_default_discount_dict(self) -> None:
         Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_1")
         lear_customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_2")
-        lear_customer.default_discount = 30
+        lear_customer.default_discount = Decimal(30)
         lear_customer.save(update_fields=["default_discount"])
         zephyr_customer = Customer.objects.create(
             realm=get_realm("zephyr"), stripe_customer_id="cus_3"
         )
-        zephyr_customer.default_discount = 0
+        zephyr_customer.default_discount = Decimal(0)
         zephyr_customer.save(update_fields=["default_discount"])
 
         self.assertEqual(

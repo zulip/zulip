@@ -110,7 +110,7 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
 
     for record in records:
         client = record.client.name
-        query = record.query
+        query = str(record.query)
 
         update("use", record)
 
