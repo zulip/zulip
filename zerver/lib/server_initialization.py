@@ -38,7 +38,7 @@ def create_internal_realm() -> None:
         bot.save()
 
     # Initialize the email gateway bot as able to forge senders.
-    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
     do_change_can_forge_sender(email_gateway_bot, True)
 
 
