@@ -3084,7 +3084,7 @@ def get_user_including_cross_realm(email: str, realm: Optional[Realm] = None) ->
 
 
 @cache_with_key(bot_profile_cache_key, timeout=3600 * 24 * 7)
-def get_system_bot(email: str) -> UserProfile:
+def get_system_bot(email: str, realm_id: Optional[int] = None) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
 

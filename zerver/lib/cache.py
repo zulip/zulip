@@ -499,7 +499,7 @@ def user_profile_delivery_email_cache_key(delivery_email: str, realm: "Realm") -
     return f"user_profile_by_delivery_email:{make_safe_digest(delivery_email.strip())}:{realm.id}"
 
 
-def bot_profile_cache_key(email: str) -> str:
+def bot_profile_cache_key(email: str, realm_id: Optional[int] = None) -> str:
     return f"bot_profile:{make_safe_digest(email.strip())}"
 
 
