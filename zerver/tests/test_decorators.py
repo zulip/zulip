@@ -135,22 +135,20 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> HttpResponse:
             return json_response(data={"number": x + x})
 
-        request = HostRequestMock()
-
-        request.POST = dict(bogus="5555")
+        request = HostRequestMock(post_data={"bogus": "5555"})
         with self.assertRaises(RequestVariableMissingError):
             double(request)
 
-        request.POST = dict(number="3")
+        request = HostRequestMock(post_data={"number": "3"})
         self.assertEqual(orjson.loads(double(request).content).get("number"), 6)
 
-        request.POST = dict(x="4")
+        request = HostRequestMock(post_data={"x": "4"})
         self.assertEqual(orjson.loads(double(request).content).get("number"), 8)
 
-        request.POST = dict(n="5")
+        request = HostRequestMock(post_data={"n": "5"})
         self.assertEqual(orjson.loads(double(request).content).get("number"), 10)
 
-        request.POST = dict(number="6", x="7")
+        request = HostRequestMock(post_data={"number": "6", "x": "7"})
         with self.assertRaises(RequestConfusingParmsError) as cm:
             double(request)
         self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
