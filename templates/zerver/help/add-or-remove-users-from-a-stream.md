@@ -33,6 +33,8 @@ Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-
 Organization administrators can also unsubscribe *other* users from any stream,
 including streams the admin is not subscribed to.
 
+### From the streams page
+
 {start_tabs}
 
 {relative|stream|all}
@@ -45,13 +47,13 @@ including streams the admin is not subscribed to.
 
 {end_tabs}
 
-## From user profile modal (alternate method)
+### From user profile modal (alternate method)
 
 {start_tabs}
 
-1. Open full profile of user.
+1. Open the user's profile window.
 
-2. Go to streams tab.
+2. Go to the **Streams** tab.
 
 3. Find the stream from which you want to remove the user.
 

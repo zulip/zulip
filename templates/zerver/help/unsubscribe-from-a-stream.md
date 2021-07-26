@@ -26,7 +26,7 @@ You can always unsubscribe from any stream in Zulip.
 
 1. Open your full profile modal.
 
-2. Go to streams tab.
+2. Go to the **Streams** tab.
 
 3. Find the stream you want to unsubscribe from.
 
