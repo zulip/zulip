@@ -487,9 +487,9 @@ class StripeTest(StripeTestCase):
             raise stripe.error.InvalidRequestError("message", "param", "code", json_body={})
 
         with self.assertLogs("corporate.stripe", "ERROR") as error_log:
-            with self.assertRaises(BillingError) as context:
+            with self.assertRaises(BillingError) as billing_context:
                 raise_invalid_request_error()
-            self.assertEqual("other stripe error", context.exception.error_description)
+            self.assertEqual("other stripe error", billing_context.exception.error_description)
             self.assertEqual(
                 error_log.output, ["ERROR:corporate.stripe:Stripe error: None None None None"]
             )
@@ -503,10 +503,10 @@ class StripeTest(StripeTestCase):
             )
 
         with self.assertLogs("corporate.stripe", "INFO") as info_log:
-            with self.assertRaises(StripeCardError) as context:
+            with self.assertRaises(StripeCardError) as card_context:
                 raise_card_error()
-            self.assertIn("not a valid credit card", str(context.exception))
-            self.assertEqual("card error", context.exception.error_description)
+            self.assertIn("not a valid credit card", str(card_context.exception))
+            self.assertEqual("card error", card_context.exception.error_description)
             self.assertEqual(
                 info_log.output, ["INFO:corporate.stripe:Stripe card error: None None None None"]
             )

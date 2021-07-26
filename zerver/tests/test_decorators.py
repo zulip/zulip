@@ -179,14 +179,16 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
 
         request.POST["numbers"] = orjson.dumps("{fun: unfun}").decode()
-        with self.assertRaises(JsonableError) as cm:
+        with self.assertRaises(JsonableError) as jsonable_error_cm:
             get_total(request)
-        self.assertEqual(str(cm.exception), "Bad value for 'numbers': \"{fun: unfun}\"")
+        self.assertEqual(
+            str(jsonable_error_cm.exception), "Bad value for 'numbers': \"{fun: unfun}\""
+        )
 
         request.POST["numbers"] = orjson.dumps([2, 3, 5, 8, 13, 21]).decode()
-        with self.assertRaises(JsonableError) as cm:
+        with self.assertRaises(JsonableError) as jsonable_error_cm:
             get_total(request)
-        self.assertEqual(str(cm.exception), "13 is an unlucky number!")
+        self.assertEqual(str(jsonable_error_cm.exception), "13 is an unlucky number!")
 
         request.POST["numbers"] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
         result = get_total(request)
