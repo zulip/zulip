@@ -1481,6 +1481,14 @@ class Recipient(models.Model):
         return f"<Recipient: {display_recipient} ({self.type_id}, {self.type})>"
 
 
+# Does save the foreign key of a external authentication
+# source to allow the users email to change
+class ExtAuthId(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    ldap: Optional[str] = models.TextField(null=True)
+    saml: Optional[str] = models.TextField(null=True)
+
+
 class UserBaseSettings(models.Model):
     """This abstract class is the container for all preferences/personal
     settings for users that control the behavior of the application.
@@ -1895,6 +1903,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     zoom_token = models.JSONField(default=None, null=True)
 
     objects = UserManager()
+
+    # Contains a external uid of the user to make it able
+    # to sync mails form e.g. LDAP
+    ext_auth_id: Optional[ExtAuthId] = models.OneToOneField(
+        ExtAuthId, on_delete=models.CASCADE, null=True
+    )
+
+    objects: UserManager = UserManager()
 
     ROLE_ID_TO_NAME_MAP = {
         ROLE_REALM_OWNER: gettext_lazy("Organization owner"),

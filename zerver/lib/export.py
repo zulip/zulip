@@ -128,6 +128,7 @@ ALL_ZULIP_TABLES = {
     "zerver_draft",
     "zerver_emailchangestatus",
     "zerver_groupgroupmembership",
+    "zerver_extauthid",
     "zerver_huddle",
     "zerver_message",
     "zerver_missedmessageemailaddress",
