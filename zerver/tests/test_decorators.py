@@ -762,11 +762,11 @@ class ValidatorTestCase(ZulipTestCase):
     def test_to_non_negative_int(self) -> None:
         self.assertEqual(to_non_negative_int("5"), 5)
         with self.assertRaisesRegex(ValueError, "argument is negative"):
-            self.assertEqual(to_non_negative_int("-1"))
+            to_non_negative_int("-1")
         with self.assertRaisesRegex(ValueError, re.escape("5 is too large (max 4)")):
-            self.assertEqual(to_non_negative_int("5", max_int_size=4))
+            to_non_negative_int("5", max_int_size=4)
         with self.assertRaisesRegex(ValueError, re.escape(f"{2**32} is too large (max {2**32-1})")):
-            self.assertEqual(to_non_negative_int(str(2 ** 32)))
+            to_non_negative_int(str(2 ** 32))
 
     def test_to_positive_or_allowed_int(self) -> None:
         self.assertEqual(to_positive_or_allowed_int()("5"), 5)
