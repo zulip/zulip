@@ -475,11 +475,11 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request.body = b"{}"
         request.content_type = "text/plain"
 
-        with mock.patch("zerver.decorator.webhook_logger.exception") as mock_exception:
+        with self.assertLogs("zulip.zerver.webhooks") as logger:
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 my_webhook_raises_exception(request)
 
-        mock_exception.assert_called_with("raised by webhook function", stack_info=True)
+        self.assertIn("raised by webhook function", logger.output[0])
 
     def test_authenticated_rest_api_view_logging_unsupported_event(self) -> None:
         @authenticated_rest_api_view(webhook_client_name="ClientName")
