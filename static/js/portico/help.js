@@ -158,6 +158,8 @@ $(document).on(
 
 $(".hamburger").on("click", () => {
     $(".sidebar").toggleClass("show");
+    $(".sidebar .simplebar-content-wrapper").css("overflow", "hidden scroll");
+    $(".sidebar .simplebar-vertical").css("visibility", "visible");
 });
 
 $(".markdown").on("click", () => {
