@@ -5,11 +5,11 @@ Welcome to the Zulip community!
 ## Community
 
 The
-[Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html)
+[Zulip community server](https://zulip.com/developer-community/)
 is the primary communication forum for the Zulip community. It is a good
 place to start whether you have a question, are a new contributor, are a new
 user, or anything else. Make sure to read the
-[community norms](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html#community-norms)
+[community norms](https://zulip.com/developer-community/#community-norms)
 before posting. The Zulip community is also governed by a
 [code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
@@ -58,7 +58,7 @@ contributor. It's long, but don't worry about doing all the steps perfectly;
 no one gets it right the first time, and there are a lot of people available
 to help.
 * First, make an account on the
-  [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html),
+  [Zulip community server](https://zulip.com/developer-community/),
   paying special attention to the community norms. If you'd like, introduce
   yourself in
   [#new members](https://chat.zulip.org/#narrow/stream/95-new-members), using
@@ -206,7 +206,7 @@ is, the best place to post issues is
 [#issues](https://chat.zulip.org/#narrow/stream/9-issues) (or
 [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) or
 [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop)) on the
-[Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html).
+[Zulip community server](https://zulip.com/developer-community/).
 This allows us to interactively figure out what is going on, let you know if
 a similar issue has already been opened, and collect any other information
 we need. Choose a 2-4 word topic that describes the issue, explain the issue
