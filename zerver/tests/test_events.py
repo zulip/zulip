@@ -161,6 +161,7 @@ from zerver.lib.event_schema import (
     check_user_group_remove,
     check_user_group_remove_members,
     check_user_group_update,
+    check_user_settings_update,
     check_user_status,
 )
 from zerver.lib.events import (
@@ -1430,9 +1431,11 @@ class NormalActionsTest(BaseAction):
                         notification_setting,
                         setting_value,
                         acting_user=self.user_profile,
-                    )
+                    ),
+                    num_events=2,
                 )
-                check_update_global_notifications("events[0]", events[0], setting_value)
+                check_user_settings_update("events[0]", events[0])
+                check_update_global_notifications("events[1]", events[1], setting_value)
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
@@ -1444,8 +1447,10 @@ class NormalActionsTest(BaseAction):
                     ),
                     notification_settings_null=True,
                     state_change_expected=False,
+                    num_events=2,
                 )
-                check_update_global_notifications("events[0]", events[0], setting_value)
+                check_user_settings_update("events[0]", events[0])
+                check_update_global_notifications("events[1]", events[1], setting_value)
 
     def test_change_notification_sound(self) -> None:
         notification_setting = "notification_sound"
@@ -1453,9 +1458,11 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_change_notification_settings(
                 self.user_profile, notification_setting, "ding", acting_user=self.user_profile
-            )
+            ),
+            num_events=2,
         )
-        check_update_global_notifications("events[0]", events[0], "ding")
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], "ding")
 
     def test_change_desktop_icon_count_display(self) -> None:
         notification_setting = "desktop_icon_count_display"
@@ -1463,16 +1470,20 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(
             lambda: do_change_notification_settings(
                 self.user_profile, notification_setting, 2, acting_user=self.user_profile
-            )
+            ),
+            num_events=2,
         )
-        check_update_global_notifications("events[0]", events[0], 2)
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], 2)
 
         events = self.verify_action(
             lambda: do_change_notification_settings(
                 self.user_profile, notification_setting, 1, acting_user=self.user_profile
-            )
+            ),
+            num_events=2,
         )
-        check_update_global_notifications("events[0]", events[0], 1)
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], 1)
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
@@ -2142,7 +2153,7 @@ class UserDisplayActionTest(BaseAction):
             color_scheme=[2, 3, 1],
         )
 
-        num_events = 1
+        num_events = 2
         values = test_changes.get(setting_name)
 
         property_type = UserProfile.property_types[setting_name]
@@ -2161,7 +2172,8 @@ class UserDisplayActionTest(BaseAction):
                 num_events=num_events,
             )
 
-            check_update_display_settings("events[0]", events[0])
+            check_user_settings_update("events[0]", events[0])
+            check_update_display_settings("events[1]", events[1])
 
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
@@ -2169,7 +2181,7 @@ class UserDisplayActionTest(BaseAction):
 
     def test_set_user_timezone(self) -> None:
         values = ["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""]
-        num_events = 2
+        num_events = 3
 
         for value in values:
             events = self.verify_action(
@@ -2177,8 +2189,9 @@ class UserDisplayActionTest(BaseAction):
                 num_events=num_events,
             )
 
-            check_update_display_settings("events[0]", events[0])
-            check_realm_user_update("events[1]", events[1], "timezone")
+            check_user_settings_update("events[0]", events[0])
+            check_update_display_settings("events[1]", events[1])
+            check_realm_user_update("events[2]", events[2], "timezone")
 
 
 class SubscribeActionTest(BaseAction):

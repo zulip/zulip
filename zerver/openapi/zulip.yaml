@@ -243,6 +243,10 @@ paths:
                               description: |
                                 Event sent to a user's clients when that user's display settings
                                 have changed.
+
+                                **Changes**: Deprecated in Zulip 5.0 (feature level 89), replaced by
+                                the `user_settings` event type.
+                              deprecated: true
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -280,6 +284,10 @@ paths:
                               description: |
                                 Event sent to a user's clients when that user's [notification
                                 settings](/api/update-settings) have changed.
+
+                                **Changes**: Deprecated in Zulip 5.0 (feature level 89), replaced by
+                                the `user_settings` event type.
+                              deprecated: true
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -305,6 +313,52 @@ paths:
                                   "type": "update_global_notifications",
                                   "notification_name": "enable_sounds",
                                   "setting": true,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when that user's settings
+                                have changed.
+
+                                **Changes**: New in Zulip 5.0 (feature level 89), replacing the
+                                previous `update_display_settings` and `update_global_notifications`
+                                event types, which are still present for backwards compatibility reasons.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_settings
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                property:
+                                  type: string
+                                  description: |
+                                    Name of the changed setting.
+                                value:
+                                  description: |
+                                    New value of the changed setting.
+                                  oneOf:
+                                    - type: boolean
+                                    - type: integer
+                                    - type: string
+                                language_name:
+                                  description: |
+                                    Present only if the setting to be changed is
+                                    `default_language`. Contains the name of the
+                                    new default language in English.
+                                  type: string
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "user_settings",
+                                  "op": "update",
+                                  "property": "high_contrast_mode",
+                                  "value": false,
                                   "id": 0,
                                 }
                             - type: object

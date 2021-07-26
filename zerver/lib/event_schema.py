@@ -1398,6 +1398,21 @@ update_display_settings_event = event_dict_type(
 )
 _check_update_display_settings = make_checker(update_display_settings_event)
 
+user_settings_update_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("user_settings")),
+        ("op", Equals("update")),
+        ("property", str),
+        ("value", value_type),
+    ],
+    optional_keys=[
+        # force vertical
+        ("language_name", str),
+    ],
+)
+
+_check_user_settings_update = make_checker(user_settings_update_event)
+
 
 def check_update_display_settings(
     var_name: str,
@@ -1418,6 +1433,30 @@ def check_update_display_settings(
     else:
         setting_type = UserProfile.property_types[setting_name]
         assert isinstance(setting, setting_type)
+
+    if setting_name == "default_language":
+        assert "language_name" in event.keys()
+    else:
+        assert "language_name" not in event.keys()
+
+
+def check_user_settings_update(
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
+    _check_user_settings_update(var_name, event)
+    setting_name = event["property"]
+    value = event["value"]
+
+    assert isinstance(setting_name, str)
+    if setting_name == "timezone":
+        assert isinstance(value, str)
+    elif setting_name in UserProfile.property_types:
+        setting_type = UserProfile.property_types[setting_name]
+        assert isinstance(value, setting_type)
+    else:
+        setting_type = UserProfile.notification_setting_types[setting_name]
+        assert isinstance(value, setting_type)
 
     if setting_name == "default_language":
         assert "language_name" in event.keys()

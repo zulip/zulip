@@ -1102,6 +1102,16 @@ def apply_event(
     elif event["type"] == "update_global_notifications":
         assert event["notification_name"] in UserProfile.notification_setting_types
         state[event["notification_name"]] = event["setting"]
+    elif event["type"] == "user_settings":
+        # timezone setting is not included in property_types or
+        # notification_setting_types dicts, because this setting
+        # is not a part of UserBaseSettings class.
+        if event["property"] != "timezone":
+            assert (
+                event["property"] in UserProfile.property_types
+                or event["property"] in UserProfile.notification_setting_types
+            )
+        state[event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass
     elif event["type"] == "user_group":

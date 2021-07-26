@@ -5043,10 +5043,10 @@ def do_change_notification_settings(
 
     user_profile.save(update_fields=[name])
     event = {
-        "type": "update_global_notifications",
-        "user": user_profile.email,
-        "notification_name": name,
-        "setting": value,
+        "type": "user_settings",
+        "op": "update",
+        "property": name,
+        "value": value,
     }
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -5066,6 +5066,16 @@ def do_change_notification_settings(
 
     send_event(user_profile.realm, event, [user_profile.id])
 
+    # This legacy event format is for backwards-compatiblity with
+    # clients that don't support the new user_settings event type.
+    legacy_event = {
+        "type": "update_global_notifications",
+        "user": user_profile.email,
+        "notification_name": name,
+        "setting": value,
+    }
+    send_event(user_profile.realm, legacy_event, [user_profile.id])
+
 
 def do_set_user_display_setting(
     user_profile: UserProfile, setting_name: str, setting_value: Union[bool, str, int]
@@ -5077,7 +5087,22 @@ def do_set_user_display_setting(
         assert isinstance(setting_value, property_type)
     setattr(user_profile, setting_name, setting_value)
     user_profile.save(update_fields=[setting_name])
+
     event = {
+        "type": "user_settings",
+        "op": "update",
+        "property": setting_name,
+        "value": setting_value,
+    }
+    if setting_name == "default_language":
+        assert isinstance(setting_value, str)
+        event["language_name"] = get_language_name(setting_value)
+
+    send_event(user_profile.realm, event, [user_profile.id])
+
+    # This legacy event format is for backwards-compatiblity with
+    # clients that don't support the new user_settings event type.
+    legacy_event = {
         "type": "update_display_settings",
         "user": user_profile.email,
         "setting_name": setting_name,
@@ -5085,9 +5110,9 @@ def do_set_user_display_setting(
     }
     if setting_name == "default_language":
         assert isinstance(setting_value, str)
-        event["language_name"] = get_language_name(setting_value)
+        legacy_event["language_name"] = get_language_name(setting_value)
 
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event(user_profile.realm, legacy_event, [user_profile.id])
 
     # Updates to the timezone display setting are sent to all users
     if setting_name == "timezone":

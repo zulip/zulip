@@ -11,6 +11,13 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 89**
+
+* [`GET /events`](/api/get-events): Introduced new event type
+  `user_settings`.  The previous `update_display_settings`  and
+  `update_global_notifications` event types are still supported
+  for backwards compatibility, but will be removed in future.
+
 **Feature level 88**
 
 * [`POST /register`](/api/register-queue): Added `zulip_merge_base`
