@@ -1207,9 +1207,10 @@ class UserProfileTest(ZulipTestCase):
 
     def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
         realm = get_realm("zulip")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
-        bot = get_system_bot(settings.WELCOME_BOT)
+        bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
 
         # Pass in the ID of a cross-realm bot and a valid realm
         cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, realm)
