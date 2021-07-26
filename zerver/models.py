@@ -3096,7 +3096,16 @@ def get_user_including_cross_realm(email: str, realm: Realm) -> UserProfile:
 
 
 @cache_with_key(bot_profile_cache_key, timeout=3600 * 24 * 7)
-def get_system_bot(email: str, realm_id: Optional[int] = None) -> UserProfile:
+def get_system_bot(email: str, realm_id: int) -> UserProfile:
+    """
+    This function doesn't use the realm_id argument yet, but requires
+    passing it as preparation for adding system bots to each realm instead
+    of having them all in a separate system bot realm.
+    If you're calling this function, use the id of the realm in which the system
+    bot will be after that migration. If the bot is supposed to send a message,
+    the same realm as the one *to* which the message will be sent should be used - because
+    cross-realm messages will be eliminated as part of the migration.
+    """
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
 
