@@ -263,7 +263,7 @@ expected.
 
 As with other installation methods, please visit [#provision
 help][provision-help] in the [Zulip development community
-server](../contributing/chat-zulip-org.md) if you need help.
+server](https://zulip.com/developer-community/) if you need help.
 
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 

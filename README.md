@@ -25,7 +25,7 @@ largest and fastest growing open source group chat project.
 
 Click on the appropriate link below. If nothing seems to apply,
 join us on the
-[Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html)
+[Zulip community server](https://zulip.com/developer-community/)
 and tell us what's up!
 
 You might be interested in:
@@ -52,7 +52,7 @@ You might be interested in:
 
 * **Checking Zulip out**. The best way to see Zulip in action is to drop by
   the
-  [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html). We
+  [Zulip community server](https://zulip.com/developer-community/). We
   also recommend reading Zulip for
   [open source](https://zulip.com/for/open-source/), Zulip for
   [companies](https://zulip.com/for/companies/), or Zulip for

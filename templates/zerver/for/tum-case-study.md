@@ -84,5 +84,5 @@ and [research](/for/research)!
 
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
-[chat-zulip-org]: https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html
+[chat-zulip-org]: /developer-community/
 [zulip-4-blog]: https://blog.zulip.com/2021/05/13/zulip-4-0-released/

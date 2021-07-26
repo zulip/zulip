@@ -8,7 +8,6 @@ Code contribution guide
    version-control
    code-style
    code-reviewing
-   chat-zulip-org
    zulipbot-usage
    accessibility
    bug-reports
