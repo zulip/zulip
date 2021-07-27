@@ -3,9 +3,11 @@ import pathlib
 import subprocess
 import sys
 from datetime import datetime
+from typing import Dict
+from typing import List
 
 
-def add_log(dict, input):
+def add_log(dict: Dict[str, int], input: List[str]) -> None:
     for dataset in input:
         name = dataset.split("\t")[1]
         value = int(dataset.split("\t")[0])
@@ -15,7 +17,7 @@ def add_log(dict, input):
             dict[name] = value
 
 
-def retrieve_log(repo, lower_version, upper_version):
+def retrieve_log(repo: str, lower_version: str, upper_version: str) -> List[str]:
     return subprocess.check_output(
         ["git", "shortlog", "-s", lower_version + ".." + upper_version],
         universal_newlines=True,
@@ -23,7 +25,7 @@ def retrieve_log(repo, lower_version, upper_version):
     ).splitlines()
 
 
-def find_version(time, repo):
+def find_version(time: str, repo: str) -> str:
     versions_list = subprocess.check_output(
         ["git", "tag", "-l"], universal_newlines=True, cwd=find_path(repo)
     ).splitlines()
@@ -38,7 +40,7 @@ def find_version(time, repo):
     return version
 
 
-def find_path(repo):
+def find_path(repo: str) -> str:
     return os.path.dirname(pathlib.Path().resolve()) + "/" + repo
 
 
@@ -57,7 +59,7 @@ upper_time = subprocess.check_output(
     ["git", "log", "-1", "--format=%ai", upper_zulip_version], universal_newlines=True
 ).split()[0]
 
-out_dict = {}
+out_dict: Dict[str, int] = {}
 zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
 add_log(out_dict, zulip)
 for repo_name in [
