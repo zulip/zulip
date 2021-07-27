@@ -134,6 +134,67 @@ DropdownListWidget.prototype.dropdown_toggle_click_handler = function () {
     });
 };
 
+DropdownListWidget.prototype.dropdown_focus_events = function () {
+    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
+    const dropdown_menu = $(`.${CSS.escape(this.widget_name)}_setting .dropdown-menu`);
+
+    const dropdown_elements = () => {
+        const dropdown_list_body = $(
+            `#${CSS.escape(this.container_id)} .dropdown-list-body`,
+        ).expectOne();
+
+        return dropdown_list_body.children().find("a");
+    };
+
+    // Rest of the key handlers are supported by our
+    // bootstrap library.
+    dropdown_menu.on("keydown", (e) => {
+        function trigger_element_focus(element) {
+            e.preventDefault();
+            e.stopPropagation();
+            element.trigger("focus");
+        }
+
+        switch (e.key) {
+            case "ArrowDown": {
+                switch (e.target) {
+                    case dropdown_elements().last()[0]:
+                        trigger_element_focus(search_input);
+                        break;
+                    case search_input[0]:
+                        trigger_element_focus(dropdown_elements().first());
+                        break;
+                }
+
+                break;
+            }
+            case "ArrowUp": {
+                switch (e.target) {
+                    case dropdown_elements().first()[0]:
+                        trigger_element_focus(search_input);
+                        break;
+                    case search_input[0]:
+                        trigger_element_focus(dropdown_elements().last());
+                }
+
+                break;
+            }
+            case "Tab": {
+                switch (e.target) {
+                    case search_input[0]:
+                        trigger_element_focus(dropdown_elements().first());
+                        break;
+                    case dropdown_elements().last()[0]:
+                        trigger_element_focus(search_input);
+                        break;
+                }
+
+                break;
+            }
+        }
+    });
+};
+
 DropdownListWidget.prototype.setup = function () {
     // populate the dropdown
     const dropdown_list_body = $(
@@ -163,21 +224,7 @@ DropdownListWidget.prototype.setup = function () {
         }
     });
 
-    search_input.on("keydown", (e) => {
-        const {key, keyCode, which} = e;
-        const navigation_keys = ["ArrowUp", "ArrowDown", "Escape"];
-        if (!navigation_keys.includes(key)) {
-            return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-
-        // We pass keyCode instead of key here because the outdated
-        // bootstrap library we have at static/third/ still uses the
-        // deprecated keyCode & which properties.
-        const custom_event = new $.Event("keydown.dropdown.data-api", {keyCode, which});
-        dropdown_toggle.trigger(custom_event);
-    });
+    this.dropdown_focus_events();
 
     this.render(this.initial_value);
     this.register_event_handlers();
