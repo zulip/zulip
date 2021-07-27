@@ -3,8 +3,7 @@ import pathlib
 import subprocess
 import sys
 from datetime import datetime
-from typing import Dict
-from typing import List
+from typing import Dict, List
 
 
 def add_log(dict: Dict[str, int], input: List[str]) -> None:
