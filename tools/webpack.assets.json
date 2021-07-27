@@ -5,21 +5,6 @@
         "./static/js/analytics/activity",
         "./static/styles/portico/activity.css"
     ],
-    "archive": [
-        "./static/js/bundles/portico",
-        "./static/js/archive",
-        "./static/js/colorspace",
-        "./static/js/floating_recipient_bar",
-        "./static/js/timerender",
-        "./static/js/templates",
-        "./static/js/stream_color",
-        "./static/js/scroll_bar",
-        "katex/dist/katex.css",
-        "./static/styles/rendered_markdown.css",
-        "./static/styles/zulip.css",
-        "./static/styles/portico/archive.css",
-        "./static/generated/emoji-styles/google-sprite.css"
-    ],
     "billing": [
         "./static/js/bundles/portico",
         "./static/js/portico/landing-page",
