@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-15 16:39+0000\n"
+"POT-Creation-Date: 2021-07-27 23:18+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -1909,9 +1909,9 @@ msgid ""
 "PS: Follow us on <a href=\"https://twitter.com/zulip\" style=\"color:"
 "#46aa8f; text-decoration:underline\">Twitter</a>, star us on <a href="
 "\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-decoration:"
-"underline\">GitHub</a>, or chat with us live on the <a href=\"https://chat."
-"zulip.org\" style=\"color:#46aa8f; text-decoration:underline\">Zulip "
-"community server</a>!"
+"underline\">GitHub</a>, or chat with us live on the <a href=\"https://zulip."
+"com/developer-community/\" style=\"color:#46aa8f; text-decoration:underline"
+"\">Zulip community server</a>!"
 msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
@@ -4827,7 +4827,7 @@ msgstr ""
 msgid "Password auth is disabled in your team."
 msgstr ""
 
-#: zerver/views/auth.py:836 zproject/backends.py:422
+#: zerver/views/auth.py:836 zproject/backends.py:413
 msgid "You need to reset your password."
 msgstr ""
 
@@ -5491,15 +5491,15 @@ msgstr ""
 msgid "Invalid data."
 msgstr ""
 
-#: zproject/backends.py:1931
+#: zproject/backends.py:1922
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:2286
+#: zproject/backends.py:2277
 msgid "Invalid OTP"
 msgstr ""
 
-#: zproject/backends.py:2289
+#: zproject/backends.py:2280
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 

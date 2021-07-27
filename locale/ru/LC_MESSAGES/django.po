@@ -629,7 +629,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"            Узнайте больше об отмечании сообщений <a href=\"/help/star-a-message\">\n"
+"            Узнайте больше о пометке сообщений <a href=\"/help/star-a-message\">\n"
 "            тут</a>.\n"
 "            "
 

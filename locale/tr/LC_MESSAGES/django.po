@@ -8,9 +8,9 @@
 # yusuf <yusuf.aydemir@pisilinux.org>, 2021
 # Onur Temiz <onurmain@gmail.com>, 2021
 # Cihan Alkan <cihanalk@gmail.com>, 2021
-# Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021
 # Oktay Altunergil, 2021
 # Gokdeniz.Kucukali, 2021
+# Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -19,7 +19,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Gokdeniz.Kucukali, 2021\n"
+"Last-Translator: Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021\n"
 "Language-Team: Turkish (https://www.transifex.com/zulip/teams/53893/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -684,11 +684,11 @@ msgstr "Toplantıda"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "Trafikte"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "Hasta"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
@@ -738,7 +738,7 @@ msgstr "Üyeler"
 #: templates/zerver/app/invite_user.html:43
 #: templates/zerver/development/dev_login.html:40
 msgid "Moderators"
-msgstr ""
+msgstr "Moderatörler"
 
 #: templates/zerver/app/invite_user.html:44
 msgid "Organization administrators"
@@ -967,7 +967,7 @@ msgstr "Son konuları görüntüle"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
-msgstr ""
+msgstr "Konuları filtrele"
 
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "Drafts"
@@ -1115,7 +1115,7 @@ msgstr "Organizasyon yönet"
 
 #: templates/zerver/app/navbar.html:83
 msgid "Usage statistics"
-msgstr ""
+msgstr "Kullanım istatistikleri"
 
 #: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
 msgid "Help center"
@@ -1246,7 +1246,7 @@ msgstr "Son sürümü indir."
 
 #: templates/zerver/app/navbar_alerts.html:50
 msgid "This Zulip server is running an old version and should be upgraded."
-msgstr ""
+msgstr "Zulip sunucusu eski versiyonda çalışmaktadır ve güncellenmelidir."
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
@@ -1254,7 +1254,7 @@ msgstr "Daha fazla öğren"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
-msgstr ""
+msgstr "1 Haftalığına esgeç"
 
 #: templates/zerver/app/navbar_alerts.html:64
 #, python-format
@@ -1522,7 +1522,7 @@ msgstr "Linkifiers"
 
 #: templates/zerver/app/settings_overlay.html:143
 msgid "Code playgrounds"
-msgstr ""
+msgstr "Kod oyun alanları"
 
 #: templates/zerver/app/settings_overlay.html:151
 msgid "Custom profile fields"
@@ -2488,7 +2488,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
 #: templates/zerver/emails/custom_email_base.pre.html:15
 msgid "Unsubscribe from marketing emails"
-msgstr ""
+msgstr "Pazarlama emailleri aboneliğinden çık"
 
 #: templates/zerver/emails/digest.subject.txt:1
 #, python-format
@@ -2809,7 +2809,7 @@ msgstr "%(sender_str)s ile Özel Mesajlar"
 
 #: templates/zerver/emails/missed_message.subject.txt:7
 msgid "New messages"
-msgstr ""
+msgstr "Yeni mesajlar"
 
 #: templates/zerver/emails/missed_message.txt:11
 #, python-format
@@ -3096,7 +3096,7 @@ msgstr "Zendesk logo"
 
 #: templates/zerver/hello.html:428
 msgid "Jira logo"
-msgstr ""
+msgstr "Jira logosu"
 
 #: templates/zerver/hello.html:435
 msgid "Sentry logo"
@@ -3590,6 +3590,8 @@ msgid ""
 "                    You've successfully unsubscribed from Zulip %(subscription_type)s emails.\n"
 "                    "
 msgstr ""
+"\n"
+"Zulip %(subscription_type)s email listesinden başarılı bir şekilde çıktınız."
 
 #: templates/zerver/unsubscribe_success.html:21
 #, python-format
@@ -3601,6 +3603,10 @@ msgid ""
 "                    settings</a>.\n"
 "                    "
 msgstr ""
+"\n"
+"Bu değişikliği geri alabilir veya <a href=\"%(realm_uri)s/#settings/notifications\">Zulip bildirim\n"
+"ayarlarından</a> seçeneklerinizi\n"
+"gözden geçirebilirsiniz."
 
 #: templates/zerver/unsupported_browser.html:11
 msgid "Unsupported browser"
@@ -3843,7 +3849,7 @@ msgstr "Bu iletiyi düzenleme izniniz yok"
 
 #: zerver/lib/actions.py:2735
 msgid "Widgets cannot be edited."
-msgstr ""
+msgstr "Araçlar düzenlenemez."
 
 #: zerver/lib/actions.py:2746 zerver/lib/actions.py:2760
 msgid "The time limit for editing this message has passed"
@@ -3860,7 +3866,7 @@ msgstr "Konu boş olamaz"
 
 #: zerver/lib/actions.py:2805
 msgid "Message must be a stream message"
-msgstr ""
+msgstr "Mesaj bir kanal mesajı olmalıdır"
 
 #: zerver/lib/actions.py:2807
 msgid "You don't have permission to move this message"
@@ -3870,7 +3876,7 @@ msgstr "Bu iletiyi taşımak için yetkiniz yok"
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
-msgstr ""
+msgstr "Bu mesajı ilgili kanal erişimi olmadığından taşıyamazsınız"
 
 #: zerver/lib/actions.py:2817
 msgid "Cannot change message content while changing stream"
@@ -4139,7 +4145,7 @@ msgstr "Zulip'i açarak verileri önceden izleyin"
 
 #: zerver/lib/email_notifications.py:505
 msgid "Zulip notifications"
-msgstr ""
+msgstr "Zulip bildirimleri"
 
 #: zerver/lib/email_validation.py:101
 msgid "Invalid address."
@@ -4552,11 +4558,11 @@ msgstr ""
 
 #: zerver/lib/outgoing_webhook.py:293
 msgid "Invalid JSON in response"
-msgstr ""
+msgstr "Geçersiz JSON cevabı"
 
 #: zerver/lib/outgoing_webhook.py:302
 msgid "Invalid response format"
-msgstr ""
+msgstr "Geçersiz cevap formatı"
 
 #: zerver/lib/push_notifications.py:274
 msgid "Invalid GCM option to bouncer: priority {!r}"
@@ -4916,7 +4922,7 @@ msgstr "Dahili sunucu hatası"
 #: zerver/middleware.py:478
 #, python-brace-format
 msgid "CSRF error: {reason}"
-msgstr ""
+msgstr "CSRF hatası: {reason}"
 
 #: zerver/models.py:372
 msgid "stream events"
@@ -4948,7 +4954,7 @@ msgstr "Organizasyon ymeticisi"
 
 #: zerver/models.py:1417
 msgid "Moderator"
-msgstr ""
+msgstr "Moderatör"
 
 #: zerver/models.py:1418
 msgid "Member"
@@ -5083,7 +5089,7 @@ msgstr "Takımınızdaki şifre yetkilendirmesi devre dışı."
 
 #: zerver/views/auth.py:836 zproject/backends.py:422
 msgid "You need to reset your password."
-msgstr ""
+msgstr "Şifrenizi sıfırlamanız gerekiyor."
 
 #: zerver/views/auth.py:842 zerver/views/auth.py:937
 msgid "Your username or password is incorrect."
@@ -5310,7 +5316,7 @@ msgstr "Geçersiz video_chat_provider {}"
 
 #: zerver/views/realm.py:140
 msgid "Invalid giphy_rating {}"
-msgstr ""
+msgstr "Geçersiz giphy_rating {}"
 
 #: zerver/views/realm_domains.py:31
 msgid "Invalid domain: {}"
@@ -5367,7 +5373,7 @@ msgstr "Tam olarak bir simge yüklemeniz gerekir."
 
 #: zerver/views/realm_linkifiers.py:44 zerver/views/realm_linkifiers.py:66
 msgid "Linkifier not found."
-msgstr ""
+msgstr "Linkifier bulunamadı."
 
 #: zerver/views/realm_logo.py:25
 msgid "You must upload exactly one logo."
@@ -5476,7 +5482,7 @@ msgstr "<p>Bu dosyayı görüntülemeye yetkili değilsiniz.</p>"
 
 #: zerver/views/typing.py:31
 msgid "Empty 'to' list"
-msgstr ""
+msgstr "Boş 'kime' listesi"
 
 #: zerver/views/upload.py:95
 msgid "<p>File not found.</p>"
@@ -5663,7 +5669,7 @@ msgstr "Geçersiz Kerberos belleği"
 
 #: zerver/views/zephyr.py:74
 msgid "We were unable to set up mirroring for you"
-msgstr ""
+msgstr "Sizin için aynalamayı ayarlayamayadık"
 
 #: zerver/webhooks/front/view.py:146
 msgid "Unknown webhook request"
