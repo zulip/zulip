@@ -1084,6 +1084,14 @@ nav {
     .faq-box div:last-of-type {
         margin-bottom: 10px;
     }
+
+    .faq-header-link {
+        color: hsl(0, 0%, 0%);
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
 
 .screen {
