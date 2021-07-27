@@ -188,6 +188,10 @@ export function handle_enter(textarea, e) {
     // Fall through to native browser behavior, otherwise.
 }
 
+// nextFocus is set on a keydown event to indicate where we should focus on keyup.
+// We can't focus at the time of keydown because we need to wait for typeahead.
+// And we can't compute where to focus at the time of keyup because only the keydown
+// has reliable information about whether it was a Tab or a Shift+Tab.
 let nextFocus = false;
 
 function handle_keydown(e) {
