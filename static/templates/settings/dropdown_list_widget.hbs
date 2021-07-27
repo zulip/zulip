@@ -15,6 +15,12 @@
             </li>
             <div class="dropdown-list-wrapper" data-simplebar>
                 <span class="dropdown-list-body"></span>
+                {{#if filter_button_text }}
+                <button class="button rounded small sea-green multiselect_btn" tabindex="0">
+                    <i class="fa fa-filter" aria-hidden="true"></i>
+                    {{filter_button_text}}
+                </button>
+                {{/if}}
             </div>
         </ul>
     </span>
