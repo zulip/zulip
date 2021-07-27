@@ -42,6 +42,22 @@ html {
     }
 }
 
+.bottom-text-large {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 500;
+    font-size: 1.2em;
+
+    a {
+        color: hsl(164, 100%, 23%);
+
+        &:hover {
+            text-decoration: none;
+            color: hsl(156, 62%, 61%);
+        }
+    }
+}
+
 .grey {
     color: hsl(0, 0%, 67%);
 }
