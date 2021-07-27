@@ -471,7 +471,7 @@ export function check_overflow_text() {
             $t_html(
                 {
                     defaultMessage:
-                        "Message length should'nt be greatar than {max_length} characters.",
+                        "Message length shouldn't be greater than {max_length} characters.",
                 },
                 {max_length},
             ),

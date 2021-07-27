@@ -478,7 +478,7 @@ test_ui("test_check_overflow_text", () => {
     assert.ok(textarea.hasClass("over_limit"));
     assert.equal(
         $("#compose-error-msg").html(),
-        "translated HTML: Message length should'nt be greatar than 10000 characters.",
+        "translated HTML: Message length shouldn't be greater than 10000 characters.",
     );
     assert.ok(send_button.prop("disabled"));
 
