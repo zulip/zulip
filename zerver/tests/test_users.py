@@ -95,6 +95,14 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(user_profile.is_guest, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
+        user_profile.is_realm_owner = False
+        self.assertEqual(user_profile.is_realm_owner, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        user_profile.is_moderator = False
+        self.assertEqual(user_profile.is_moderator, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
         user_profile.is_realm_admin = False
         self.assertEqual(user_profile.is_realm_admin, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
@@ -109,6 +117,22 @@ class PermissionTest(ZulipTestCase):
 
         user_profile.is_guest = False
         self.assertEqual(user_profile.is_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
+        user_profile.is_realm_owner = True
+        self.assertEqual(user_profile.is_realm_owner, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_OWNER)
+
+        user_profile.is_realm_owner = False
+        self.assertEqual(user_profile.is_realm_owner, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
+        user_profile.is_moderator = True
+        self.assertEqual(user_profile.is_moderator, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MODERATOR)
+
+        user_profile.is_moderator = False
+        self.assertEqual(user_profile.is_moderator, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
 
     def test_get_admin_users(self) -> None:

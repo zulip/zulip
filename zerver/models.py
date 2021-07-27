@@ -1503,6 +1503,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def is_realm_owner(self) -> bool:
         return self.role == UserProfile.ROLE_REALM_OWNER
 
+    @is_realm_owner.setter
+    def is_realm_owner(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_REALM_OWNER
+        elif self.role == UserProfile.ROLE_REALM_OWNER:
+            # We need to be careful to not accidentally change
+            # ROLE_GUEST to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
+
     @property
     def is_guest(self) -> bool:
         return self.role == UserProfile.ROLE_GUEST
@@ -1519,6 +1528,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def is_moderator(self) -> bool:
         return self.role == UserProfile.ROLE_MODERATOR
+
+    @is_moderator.setter
+    def is_moderator(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_MODERATOR
+        elif self.role == UserProfile.ROLE_MODERATOR:
+            # We need to be careful to not accidentally change
+            # ROLE_GUEST to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
 
     @property
     def is_incoming_webhook(self) -> bool:
