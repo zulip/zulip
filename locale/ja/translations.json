@@ -503,7 +503,7 @@
   "Message edit history": "メッセージの編集履歴",
   "Message editing": "メッセージ編集",
   "Message formatting": "メッセージのフォーマット",
-  "Message length shouldn't be greater than {max_length} characters.": "",
+  "Message length should'nt be greatar than {max_length} characters.": "",
   "Message retention": "メッセージの保持",
   "Message retention for stream": "ストリームのメッセージの保持",
   "Message retention period": "メッセージの保持期間",

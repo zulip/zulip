@@ -503,7 +503,7 @@
   "Message edit history": "Editier-Verlauf der Nachricht",
   "Message editing": "Nachricht bearbeiten",
   "Message formatting": "Nachrichtenformatierung",
-  "Message length shouldn't be greater than {max_length} characters.": "",
+  "Message length should'nt be greatar than {max_length} characters.": "",
   "Message retention": "Aufbewahren von Nachrichten",
   "Message retention for stream": "Aufbewahren von Nachrichten für Stream",
   "Message retention period": "Zeitraum für die Aufbewahrung von Nachrichten",

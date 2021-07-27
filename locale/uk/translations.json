@@ -503,7 +503,7 @@
   "Message edit history": "Історія редагування повідомлень",
   "Message editing": "Редагування повідомлення",
   "Message formatting": "Форматування повідомлення",
-  "Message length shouldn't be greater than {max_length} characters.": "",
+  "Message length should'nt be greatar than {max_length} characters.": "",
   "Message retention": "Збереження повідомлень",
   "Message retention for stream": "Збереження повідомлень для каналу",
   "Message retention period": "Період збереження повідомлень",
