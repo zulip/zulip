@@ -7,7 +7,6 @@ import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings_ui from "./settings_ui";
 import * as ui from "./ui";
@@ -69,7 +68,7 @@ function open_linkifier_edit_form(linkifier_id) {
         const opts = {
             success_continuation() {
                 change_linkifier_button.prop("disabled", false);
-                overlays.close_modal("#dialog_widget_modal");
+                dialog_widget.close_modal();
             },
             error_continuation(xhr) {
                 change_linkifier_button.prop("disabled", false);

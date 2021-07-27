@@ -56,6 +56,10 @@ export function show_dialog_spinner() {
     $("#dialog_widget_modal .close-modal-btn").prop("disabled", true);
 }
 
+export function close_modal() {
+    overlays.close_modal("#dialog_widget_modal");
+}
+
 export function launch(conf) {
     const mandatory_fields = [
         // The html_ fields should be safe HTML. If callers
@@ -83,7 +87,7 @@ export function launch(conf) {
     // Close any existing modals--on settings screens you can
     // have multiple buttons that need confirmation.
     if (overlays.is_modal_open()) {
-        overlays.close_modal("#dialog_widget_modal");
+        close_modal();
     }
 
     const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
@@ -111,7 +115,7 @@ export function launch(conf) {
         if (conf.loading_spinner) {
             show_dialog_spinner();
         } else if (conf.close_on_submit) {
-            overlays.close_modal("#dialog_widget_modal");
+            close_modal();
         }
         $("#dialog_error").empty();
         conf.on_click(e);

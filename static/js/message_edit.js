@@ -1019,7 +1019,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                overlays.close_modal("#dialog_widget_modal");
+                dialog_widget.close_modal();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
