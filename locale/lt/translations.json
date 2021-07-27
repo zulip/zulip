@@ -503,7 +503,7 @@
   "Message edit history": "Žinučių redagavimo istorija",
   "Message editing": "",
   "Message formatting": "Žinučių formatavimas",
-  "Message length should'nt be greatar than {max_length} characters.": "",
+  "Message length shouldn't be greater than {max_length} characters.": "",
   "Message retention": "",
   "Message retention for stream": "",
   "Message retention period": "",

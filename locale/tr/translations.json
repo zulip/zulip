@@ -503,7 +503,7 @@
   "Message edit history": "İleti düzenleme tarihçesi",
   "Message editing": "İleti değiştirme",
   "Message formatting": "İleti biçemleme",
-  "Message length should'nt be greatar than {max_length} characters.": "",
+  "Message length shouldn't be greater than {max_length} characters.": "",
   "Message retention": "İleti tutma",
   "Message retention for stream": "Kanal için ileti tutma",
   "Message retention period": "İleti tutma periyodu",

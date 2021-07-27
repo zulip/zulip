@@ -503,7 +503,7 @@
   "Message edit history": "Histórico de edição de mensagem",
   "Message editing": "Edição de mensagem",
   "Message formatting": "Formatação de mensagem",
-  "Message length should'nt be greatar than {max_length} characters.": "",
+  "Message length shouldn't be greater than {max_length} characters.": "",
   "Message retention": "Retenção de mensagens",
   "Message retention for stream": "Retenção de mensagens do canal",
   "Message retention period": "Período de retenção de mensagens",

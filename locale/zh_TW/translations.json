@@ -503,7 +503,7 @@
   "Message edit history": "訊息編輯歷史",
   "Message editing": "訊息編輯",
   "Message formatting": "訊息格式",
-  "Message length should'nt be greatar than {max_length} characters.": "",
+  "Message length shouldn't be greater than {max_length} characters.": "",
   "Message retention": "訊息保留",
   "Message retention for stream": "串流訊息保留",
   "Message retention period": "訊息保留期",

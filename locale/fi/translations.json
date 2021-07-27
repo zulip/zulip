@@ -503,7 +503,7 @@
   "Message edit history": "Viestin muokkaushistoria",
   "Message editing": "Viestin muokkaaminen",
   "Message formatting": "Viestin muotoilu",
-  "Message length should'nt be greatar than {max_length} characters.": "",
+  "Message length shouldn't be greater than {max_length} characters.": "",
   "Message retention": "Viestin säilytys",
   "Message retention for stream": "Viestin säilyminen kanavilla",
   "Message retention period": "Viestin säilymisaika",

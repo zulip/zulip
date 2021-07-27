@@ -503,7 +503,7 @@
   "Message edit history": "메시지 편집 이력",
   "Message editing": "메시지 편집",
   "Message formatting": "메시지 형식",
-  "Message length should'nt be greatar than {max_length} characters.": "",
+  "Message length shouldn't be greater than {max_length} characters.": "",
   "Message retention": "",
   "Message retention for stream": "",
   "Message retention period": "",
