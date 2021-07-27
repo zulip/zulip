@@ -9,7 +9,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -638,17 +638,17 @@ export function init_dropdown_widgets() {
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
-    notifications_stream_widget = dropdown_list_widget({
+    notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_notifications_stream_id",
         value: page_params.realm_notifications_stream_id,
         ...notification_stream_options,
     });
-    signup_notifications_stream_widget = dropdown_list_widget({
+    signup_notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_signup_notifications_stream_id",
         value: page_params.realm_signup_notifications_stream_id,
         ...notification_stream_options,
     });
-    default_code_language_widget = dropdown_list_widget({
+    default_code_language_widget = new DropdownListWidget({
         widget_name: "realm_default_code_block_language",
         data: Object.keys(pygments_data.langs).map((x) => ({
             name: x,

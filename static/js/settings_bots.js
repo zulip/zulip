@@ -10,7 +10,7 @@ import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -440,7 +440,7 @@ export function set_up() {
             default_text: $t({defaultMessage: "No owner"}),
             value: bot.owner_id,
         };
-        const owner_widget = dropdown_list_widget(opts);
+        const owner_widget = new DropdownListWidget(opts);
 
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {

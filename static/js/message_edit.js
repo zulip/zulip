@@ -15,7 +15,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
@@ -441,7 +441,7 @@ function edit_message(row, raw_content) {
     const copy_message = row.find(".copy_message");
 
     if (is_stream_editable) {
-        stream_widget = dropdown_list_widget(opts);
+        stream_widget = new DropdownListWidget(opts);
     }
     stream_bar.decorate(message.stream, stream_header_colorblock, false);
 

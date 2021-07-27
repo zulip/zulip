@@ -12,7 +12,7 @@ const noop = () => {};
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
-const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
+const {DropdownListWidget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");
@@ -38,7 +38,7 @@ run_test("basic_functions", () => {
 
     const {reset_button, $widget} = setup_zjquery_data(opts.widget_name);
 
-    const widget = dropdown_list_widget(opts);
+    const widget = new DropdownListWidget(opts);
 
     assert.equal(widget.value(), "one");
     assert.equal(updated_value, undefined); // We haven't 'updated' the widget yet.
@@ -77,6 +77,6 @@ run_test("no_default_value", () => {
         "dropdown-list-widget: Called without a default value; using null value",
     );
     setup_zjquery_data(opts.widget_name);
-    const widget = dropdown_list_widget(opts);
+    const widget = new DropdownListWidget(opts);
     assert.equal(widget.value(), "null-value");
 });

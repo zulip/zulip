@@ -10,7 +10,7 @@ import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -652,7 +652,7 @@ function handle_bot_form(tbody, status_field) {
             };
             // Note: Rendering this is quite expensive in
             // organizations with 10Ks of users.
-            owner_widget = dropdown_list_widget(opts);
+            owner_widget = new DropdownListWidget(opts);
         }
 
         dialog_widget.launch({

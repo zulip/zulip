@@ -13,7 +13,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as confirm_dialog from "./confirm_dialog";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -379,7 +379,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
 
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
 
-    stream_widget = dropdown_list_widget(opts);
+    stream_widget = new DropdownListWidget(opts);
     stream_header_colorblock = $("#move_topic_modal .topic_stream_edit_header").find(
         ".stream_header_colorblock",
     );
