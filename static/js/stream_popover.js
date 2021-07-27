@@ -439,7 +439,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         }
 
         dialog_widget.show_dialog_spinner();
-        with_first_message_id(
+        message_edit.with_first_message_id(
             current_stream_id,
             old_topic_name,
             (message_id) => {
@@ -692,43 +692,6 @@ export function register_stream_handlers() {
     });
 }
 
-function with_first_message_id(stream_id, topic_name, success_cb, error_cb) {
-    // The API endpoint for editing messages to change their
-    // content, topic, or stream requires a message ID.
-    //
-    // Because we don't have full data in the browser client, it's
-    // possible that we might display a topic in the left sidebar
-    // (and thus expose the UI for moving its topic to another
-    // stream) without having a message ID that is definitely
-    // within the topic.  (The comments in stream_topic_history.js
-    // discuss the tricky issues around message deletion that are
-    // involved here).
-    //
-    // To ensure this option works reliably at a small latency
-    // cost for a rare operation, we just ask the server for the
-    // latest message ID in the topic.
-    const data = {
-        anchor: "newest",
-        num_before: 1,
-        num_after: 0,
-        narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
-            {operator: "topic", operand: topic_name},
-        ]),
-    };
-
-    channel.get({
-        url: "/json/messages",
-        data,
-        idempotent: true,
-        success(data) {
-            const message_id = data.messages[0].id;
-            success_cb(message_id);
-        },
-        error: error_cb,
-    });
-}
-
 export function register_topic_handlers() {
     // Mute the topic
     $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
@@ -801,7 +764,7 @@ export function register_topic_handlers() {
         const topic_row = $(e.currentTarget);
         const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
         const topic_name = topic_row.attr("data-topic-name");
-        with_first_message_id(stream_id, topic_name, (message_id) => {
+        message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
             message_edit.toggle_resolve_topic(message_id, topic_name);
         });
 
