@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire, set_global} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -13,6 +13,14 @@ mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
 
+mock_esm("tippy.js", {
+    default: (arg) => {
+        arg._tippy = {setContent: noop, placement: noop, destroy: noop};
+        return arg._tippy;
+    },
+});
+
+set_global("document", {});
 const {DropdownListWidget, MultiSelectDropdownListWidget} = zrequire("dropdown_list_widget");
 
 // For DropdownListWidget

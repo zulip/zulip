@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 
 import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 
@@ -303,6 +304,9 @@ MultiSelectDropdownListWidget.prototype.render_button_text = function (elem, lim
     const items_selected = this.data_selected.length;
     let text = "";
 
+    // Destroy the tooltip once the button text reloads.
+    this.destroy_tooltip();
+
     if (items_selected === 0) {
         this.render_default_text(elem);
         return;
@@ -311,6 +315,7 @@ MultiSelectDropdownListWidget.prototype.render_button_text = function (elem, lim
         text = data_selected.map((data) => data.name).toString();
     } else {
         text = $t({defaultMessage: "{items_selected} selected"}, {items_selected});
+        this.render_tooltip();
     }
 
     elem.text(text);
@@ -410,6 +415,27 @@ MultiSelectDropdownListWidget.prototype.remove_check_mark = function (element) {
         element.removeClass("checked");
         this.data_selected.splice(index, 1);
     }
+};
+
+// Render the tooltip once the text changes to `n` selected.
+MultiSelectDropdownListWidget.prototype.render_tooltip = function () {
+    const elem = $(`#${CSS.escape(this.container_id)}`);
+    const selected_items = this.data.filter((item) => this.checked_items.includes(item.value));
+
+    tippy(elem[0], {
+        content: selected_items.map((item) => item.name).join(", "),
+        placement: "top",
+    });
+};
+
+MultiSelectDropdownListWidget.prototype.destroy_tooltip = function () {
+    const elem = $(`#${CSS.escape(this.container_id)}`);
+    const tippy_instance = elem[0]._tippy;
+    if (!tippy_instance) {
+        return;
+    }
+
+    tippy_instance.destroy();
 };
 
 MultiSelectDropdownListWidget.prototype.dropdown_focus_events = function () {
