@@ -236,9 +236,6 @@ function handle_keydown(e) {
                 handle_enter($("#compose-textarea"), e);
             }
         } else if (on_stream || on_topic || on_pm) {
-            // Prevent the form from submitting
-            e.preventDefault();
-
             // We are doing the focusing on keyup to not abort the typeahead.
             if (on_stream) {
                 nextFocus = $("#stream_message_recipient_topic");
@@ -259,6 +256,9 @@ function handle_keyup(e) {
     ) {
         nextFocus.trigger("focus");
         nextFocus = false;
+
+        // Prevent the form from submitting
+        e.preventDefault();
     }
 }
 
