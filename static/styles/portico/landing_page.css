@@ -2351,6 +2351,18 @@ nav {
     background-position: center;
 }
 
+.portico-landing.why-page .bg-companies {
+    position: relative;
+
+    background-image: url(../../images/landing-page/education/companies-laptop.jpg);
+    background-size: cover;
+    background-position: center;
+
+    .bg-dimmer {
+        background-color: hsl(224, 52%, 12%, 75%);
+    }
+}
+
 .portico-landing.why-page .bg-pycon {
     position: relative;
 
