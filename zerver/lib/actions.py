@@ -7298,7 +7298,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
     return occupied_streams
 
 
-def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
+def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:  # nocoverage
     query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
     streams = Stream.get_client_data(query)
     return streams

@@ -108,12 +108,7 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
                 print(fn)
         return bad_ids_dict
 
-    bad_ids_list: List[str] = []
-    archive_templates = [fn for fn in templates if "templates/zerver/archive" in fn]
-    templates = [fn for fn in templates if "templates/zerver/archive" not in fn]
-
-    bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
-    bad_ids_list += list(check_for_duplicate_ids(templates).keys())
+    bad_ids_list = list(check_for_duplicate_ids(templates).keys())
 
     if bad_ids_list:
         print("Exiting--please clean up all duplicates before running this again.")

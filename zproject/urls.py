@@ -18,7 +18,6 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
-from zerver.views.archive import archive, get_web_public_topics_backend
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
     api_fetch_api_key,
@@ -590,9 +589,6 @@ i18n_urls = [
     path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation
     path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
-    # Global public streams (Zulip's way of doing archives)
-    path("archive/streams/<int:stream_id>/topics/<topic_name>", archive),
-    path("archive/streams/<int:stream_id>/topics", get_web_public_topics_backend),
     # Login/registration
     path("register/", accounts_home, name="register"),
     path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
