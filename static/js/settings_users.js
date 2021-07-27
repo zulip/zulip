@@ -14,7 +14,6 @@ import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -580,7 +579,7 @@ function handle_human_form(tbody, status_field) {
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
+            dialog_widget.close_modal();
         }
 
         dialog_widget.launch({
@@ -632,7 +631,7 @@ function handle_bot_form(tbody, status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
+            dialog_widget.close_modal();
         }
 
         function get_bot_owner_widget() {
