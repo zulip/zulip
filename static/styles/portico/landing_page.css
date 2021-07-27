@@ -2051,17 +2051,13 @@ nav {
 }
 
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
-    margin: 130px auto 0 auto;
+    margin: 15px auto 130px auto;
     width: 32px;
     height: 30px;
     background-image: url(../../images/landing-page/zulip-octopus.png);
     background-size: cover;
 
     filter: invert(0.9);
-}
-
-.footer.hello {
-    display: block;
 }
 
 .footer.hello li a {

@@ -504,11 +504,17 @@ input.text-error {
 
 /* -- new footer -- */
 .footer {
-    margin: 20px;
+    margin: 0;
     z-index: 100;
-    width: calc(100% - 40px);
+    width: calc(100%);
     text-align: center;
-    font-size: 0.9em;
+    font-size: 16px;
+    background-color: hsl(33, 34%, 96%);
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    justify-content: center;
+    padding-top: 50px;
+    padding-bottom: 50px;
 
     .footer-navigation {
         margin-left: 0;
@@ -519,11 +525,9 @@ input.text-error {
         color: inherit !important;
     }
 
-    section {
-        width: calc(25% - 40px);
+    .footer-section {
         margin: 0 20px;
-        max-width: 150px;
-        display: inline-block;
+        max-width: max-content;
         vertical-align: top;
         text-align: left;
 
@@ -536,7 +540,7 @@ input.text-error {
         }
 
         ul {
-            color: hsl(0, 0%, 67%);
+            color: hsl(0, 0%, 40%);
             list-style-type: none;
             margin-left: 0;
             font-weight: 400;
@@ -1446,13 +1450,10 @@ input.new-organization-button {
 
 @media (width <= 815px) {
     .footer {
-        width: 450px;
+        width: 100%;
         margin-left: auto;
         margin-right: auto;
-
-        section {
-            width: calc(50% - 40px);
-        }
+        grid-template-columns: repeat(2, max-content);
     }
 }
 
@@ -1571,22 +1572,11 @@ input.new-organization-button {
         padding-left: 6px;
         padding-right: 6px;
     }
-}
 
-@media (width <= 475px) {
     .footer {
-        width: auto;
+        grid-template-columns: repeat(1, max-content);
 
-        section {
-            margin: 0 3px;
-            width: calc(50% - 8px);
-        }
-    }
-}
-
-@media (width <= 400px) {
-    .footer {
-        section {
+        .footer-section {
             width: calc(100% - 40px);
             max-width: none;
             text-align: center;

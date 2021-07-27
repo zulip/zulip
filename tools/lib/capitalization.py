@@ -159,6 +159,9 @@ IGNORED_PHRASES = [
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",
+    # Used in our case studies
+    r"Technical University of Munich",
+    r"University of California San Diego",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
