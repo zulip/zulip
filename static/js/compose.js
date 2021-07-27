@@ -124,6 +124,15 @@ export function empty_topic_placeholder() {
     return $t({defaultMessage: "(no topic)"});
 }
 
+export function toggle_enter_sends_ui() {
+    const send_button = $("#compose-send-button");
+    if (page_params.enter_sends) {
+        send_button.fadeOut();
+    } else {
+        send_button.fadeIn();
+    }
+}
+
 export function create_message_object() {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();

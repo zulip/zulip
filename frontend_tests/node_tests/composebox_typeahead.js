@@ -1096,8 +1096,7 @@ test("initialize", ({override, mock_template}) => {
 
     // select_on_focus()
 
-    $("#compose-send-button").fadeOut = noop;
-    $("#compose-send-button").fadeIn = noop;
+    override(compose, "toggle_enter_sends_ui", noop);
     let channel_patch_called = false;
     override(channel, "patch", (params) => {
         assert.equal(params.url, "/json/settings");

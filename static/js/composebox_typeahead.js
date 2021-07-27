@@ -1085,13 +1085,8 @@ export function initialize() {
     $("form#send_message_form").on("keyup", handle_keyup);
 
     $("#enter_sends").on("click", () => {
-        const send_button = $("#compose-send-button");
         page_params.enter_sends = $("#enter_sends").is(":checked");
-        if (page_params.enter_sends) {
-            send_button.fadeOut();
-        } else {
-            send_button.fadeIn();
-        }
+        compose.toggle_enter_sends_ui();
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
