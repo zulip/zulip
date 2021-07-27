@@ -45,7 +45,7 @@
         border-top: 1px solid hsl(0, 0%, 87%);
     }
 
-    /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
+    /* Headings */
     h1,
     h2,
     h3,
@@ -58,19 +58,23 @@
         margin: 14px 0 2px 0;
     }
     h1 {
-        font-size: 1.5em;
-    }
-    h2 {
         font-size: 1.4em;
     }
-    h3 {
+    h2 {
         font-size: 1.3em;
     }
-    h4 {
+    h3 {
         font-size: 1.2em;
     }
-    h5 {
+    h4 {
         font-size: 1.1em;
+    }
+    h5 {
+        text-decoration: underline;
+    }
+    h6 {
+        font-weight: normal;
+        text-decoration: underline;
     }
 
     /* Formatting for blockquotes */
