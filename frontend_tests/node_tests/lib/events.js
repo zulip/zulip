@@ -628,126 +628,6 @@ exports.fixtures = {
         recipients: [typing_person2],
     },
 
-    update_display_settings__color_scheme_automatic: {
-        type: "update_display_settings",
-        setting_name: "color_scheme",
-        setting: 1,
-        user: test_user.email,
-    },
-
-    update_display_settings__color_scheme_dark: {
-        type: "update_display_settings",
-        setting_name: "color_scheme",
-        setting: 2,
-        user: test_user.email,
-    },
-
-    update_display_settings__color_scheme_light: {
-        type: "update_display_settings",
-        setting_name: "color_scheme",
-        setting: 3,
-        user: test_user.email,
-    },
-
-    update_display_settings__default_language: {
-        type: "update_display_settings",
-        setting_name: "default_language",
-        setting: "fr",
-        language_name: "French",
-        user: test_user.email,
-    },
-
-    update_display_settings__default_view_all_messages: {
-        type: "update_display_settings",
-        setting_name: "default_view",
-        setting: "all_messages",
-        user: test_user.email,
-    },
-
-    update_display_settings__default_view_recent_topics: {
-        type: "update_display_settings",
-        setting_name: "default_view",
-        setting: "recent_topics",
-        user: test_user.email,
-    },
-
-    update_display_settings__demote_inactive_streams: {
-        type: "update_display_settings",
-        setting_name: "demote_inactive_streams",
-        setting: 2,
-        user: test_user.email,
-    },
-
-    update_display_settings__dense_mode: {
-        type: "update_display_settings",
-        setting_name: "dense_mode",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__emojiset: {
-        type: "update_display_settings",
-        setting_name: "emojiset",
-        setting: "google",
-        user: test_user.email,
-    },
-
-    update_display_settings__enter_sends: {
-        type: "update_display_settings",
-        setting_name: "enter_sends",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__fluid_layout_width: {
-        type: "update_display_settings",
-        setting_name: "fluid_layout_width",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__high_contrast_mode: {
-        type: "update_display_settings",
-        setting_name: "high_contrast_mode",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__left_side_userlist: {
-        type: "update_display_settings",
-        setting_name: "left_side_userlist",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__starred_message_counts: {
-        type: "update_display_settings",
-        setting_name: "starred_message_counts",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__translate_emoticons: {
-        type: "update_display_settings",
-        setting_name: "translate_emoticons",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_display_settings__twenty_four_hour_time: {
-        type: "update_display_settings",
-        setting_name: "twenty_four_hour_time",
-        setting: true,
-        user: test_user.email,
-    },
-
-    update_global_notifications: {
-        type: "update_global_notifications",
-        notification_name: "enable_stream_audible_notifications",
-        setting: true,
-        user: test_user.email,
-    },
-
     update_message_flags__read: {
         type: "update_message_flags",
         op: "add",
@@ -814,6 +694,126 @@ exports.fixtures = {
             name: "Frontend",
             description: "All Frontend people",
         },
+    },
+
+    user_settings__color_scheme_automatic: {
+        type: "user_settings",
+        op: "update",
+        property: "color_scheme",
+        value: 1,
+    },
+
+    user_settings__color_scheme_dark: {
+        type: "user_settings",
+        op: "update",
+        property: "color_scheme",
+        value: 2,
+    },
+
+    user_settings__color_scheme_light: {
+        type: "user_settings",
+        op: "update",
+        property: "color_scheme",
+        value: 3,
+    },
+
+    user_settings__default_language: {
+        type: "user_settings",
+        op: "update",
+        property: "default_language",
+        value: "fr",
+        language_name: "French",
+    },
+
+    user_settings__default_view_all_messages: {
+        type: "user_settings",
+        op: "update",
+        property: "default_view",
+        value: "all_messages",
+    },
+
+    user_settings__default_view_recent_topics: {
+        type: "user_settings",
+        op: "update",
+        property: "default_view",
+        value: "recent_topics",
+    },
+
+    user_settings__demote_inactive_streams: {
+        type: "user_settings",
+        op: "update",
+        property: "demote_inactive_streams",
+        value: 2,
+    },
+
+    user_settings__dense_mode: {
+        type: "user_settings",
+        op: "update",
+        property: "dense_mode",
+        value: true,
+    },
+
+    user_settings__emojiset: {
+        type: "user_settings",
+        op: "update",
+        property: "emojiset",
+        value: "google",
+    },
+
+    user_settings__enable_stream_audible_notifications: {
+        type: "user_settings",
+        op: "update",
+        property: "enable_stream_audible_notifications",
+        value: true,
+    },
+
+    user_settings__enter_sends: {
+        type: "user_settings",
+        op: "update",
+        property: "enter_sends",
+        value: true,
+    },
+
+    user_settings__fluid_layout_width: {
+        type: "user_settings",
+        op: "update",
+        property: "fluid_layout_width",
+        value: true,
+    },
+
+    user_settings__high_contrast_mode: {
+        type: "user_settings",
+        op: "update",
+        property: "high_contrast_mode",
+        value: true,
+    },
+
+    user_settings__left_side_userlist: {
+        type: "user_settings",
+        op: "update",
+        property: "left_side_userlist",
+        value: true,
+    },
+
+    user_settings__starred_message_counts: {
+        type: "user_settings",
+        op: "update",
+        property: "starred_message_counts",
+        value: true,
+    },
+
+    user_settings__translate_emoticons: {
+        type: "user_settings",
+        op: "update",
+        property: "translate_emoticons",
+        value: true,
+    },
+
+    user_settings__twenty_four_hour_time: {
+        type: "user_settings",
+        op: "update",
+        property: "twenty_four_hour_time",
+        value: true,
     },
 
     user_status__revoke_away: {

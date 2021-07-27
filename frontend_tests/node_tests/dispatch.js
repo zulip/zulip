@@ -646,15 +646,15 @@ run_test("typing", ({override}) => {
     dispatch(event);
 });
 
-run_test("update_display_settings", ({override}) => {
+run_test("user_settings", ({override}) => {
     settings_display.set_default_language_name = () => {};
-    let event = event_fixtures.update_display_settings__default_language;
+    let event = event_fixtures.user_settings__default_language;
     page_params.default_language = "en";
     override(settings_display, "update_page", noop);
     dispatch(event);
     assert_same(page_params.default_language, "fr");
 
-    event = event_fixtures.update_display_settings__left_side_userlist;
+    event = event_fixtures.user_settings__left_side_userlist;
     page_params.left_side_userlist = false;
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
@@ -673,18 +673,18 @@ run_test("update_display_settings", ({override}) => {
     };
 
     override(message_lists.home, "rerender", noop);
-    event = event_fixtures.update_display_settings__twenty_four_hour_time;
+    event = event_fixtures.user_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
     assert_same(called, true);
 
-    event = event_fixtures.update_display_settings__translate_emoticons;
+    event = event_fixtures.user_settings__translate_emoticons;
     page_params.translate_emoticons = false;
     dispatch(event);
     assert_same(page_params.translate_emoticons, true);
 
-    event = event_fixtures.update_display_settings__high_contrast_mode;
+    event = event_fixtures.user_settings__high_contrast_mode;
     page_params.high_contrast_mode = false;
     let toggled = [];
     $("body").toggleClass = (cls) => {
@@ -694,7 +694,7 @@ run_test("update_display_settings", ({override}) => {
     assert_same(page_params.high_contrast_mode, true);
     assert_same(toggled, ["high-contrast"]);
 
-    event = event_fixtures.update_display_settings__dense_mode;
+    event = event_fixtures.user_settings__dense_mode;
     page_params.dense_mode = false;
     toggled = [];
     dispatch(event);
@@ -712,7 +712,7 @@ run_test("update_display_settings", ({override}) => {
 
     {
         const stub = make_stub();
-        event = event_fixtures.update_display_settings__color_scheme_dark;
+        event = event_fixtures.user_settings__color_scheme_dark;
         page_params.color_scheme = 1;
         override(night_mode, "enable", stub.f); // automatically checks if called
         dispatch(event);
@@ -722,7 +722,7 @@ run_test("update_display_settings", ({override}) => {
 
     {
         const stub = make_stub();
-        event = event_fixtures.update_display_settings__color_scheme_light;
+        event = event_fixtures.user_settings__color_scheme_light;
         page_params.color_scheme = 1;
         override(night_mode, "disable", stub.f); // automatically checks if called
         dispatch(event);
@@ -731,14 +731,14 @@ run_test("update_display_settings", ({override}) => {
     }
 
     {
-        event = event_fixtures.update_display_settings__default_view_recent_topics;
+        event = event_fixtures.user_settings__default_view_recent_topics;
         page_params.default_view = "all_messages";
         dispatch(event);
         assert.equal(page_params.default_view, "recent_topics");
     }
 
     {
-        event = event_fixtures.update_display_settings__default_view_all_messages;
+        event = event_fixtures.user_settings__default_view_all_messages;
         page_params.default_view = "recent_topics";
         dispatch(event);
         assert.equal(page_params.default_view, "all_messages");
@@ -746,7 +746,7 @@ run_test("update_display_settings", ({override}) => {
 
     {
         const stub = make_stub();
-        event = event_fixtures.update_display_settings__color_scheme_automatic;
+        event = event_fixtures.user_settings__color_scheme_automatic;
         page_params.color_scheme = 2;
         override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
         dispatch(event);
@@ -756,7 +756,7 @@ run_test("update_display_settings", ({override}) => {
 
     {
         const stub = make_stub();
-        event = event_fixtures.update_display_settings__emojiset;
+        event = event_fixtures.user_settings__emojiset;
         called = false;
         override(settings_display, "report_emojiset_change", stub.f);
         override(activity, "build_user_sidebar", noop);
@@ -768,20 +768,20 @@ run_test("update_display_settings", ({override}) => {
     }
 
     override(starred_messages, "rerender_ui", noop);
-    event = event_fixtures.update_display_settings__starred_message_counts;
+    event = event_fixtures.user_settings__starred_message_counts;
     page_params.starred_message_counts = false;
     dispatch(event);
     assert_same(page_params.starred_message_counts, true);
 
     override(scroll_bar, "set_layout_width", noop);
-    event = event_fixtures.update_display_settings__fluid_layout_width;
+    event = event_fixtures.user_settings__fluid_layout_width;
     page_params.fluid_layout_width = false;
     dispatch(event);
     assert_same(page_params.fluid_layout_width, true);
 
     {
         const stub = make_stub();
-        event = event_fixtures.update_display_settings__demote_inactive_streams;
+        event = event_fixtures.user_settings__demote_inactive_streams;
         override(stream_data, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
         page_params.demote_inactive_streams = 1;
@@ -792,22 +792,22 @@ run_test("update_display_settings", ({override}) => {
 
     override(compose, "toggle_enter_sends_ui", noop);
 
-    event = event_fixtures.update_display_settings__enter_sends;
+    event = event_fixtures.user_settings__enter_sends;
     page_params.enter_sends = false;
     dispatch(event);
     assert_same(page_params.enter_sends, true);
-});
 
-run_test("update_global_notifications", ({override}) => {
-    const event = event_fixtures.update_global_notifications;
-    const stub = make_stub();
-    override(notifications, "handle_global_notification_updates", stub.f);
-    override(settings_notifications, "update_page", noop);
-    dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("name", "setting");
-    assert_same(args.name, event.notification_name);
-    assert_same(args.setting, event.setting);
+    {
+        event = event_fixtures.user_settings__enable_stream_audible_notifications;
+        const stub = make_stub();
+        override(notifications, "handle_global_notification_updates", stub.f);
+        override(settings_notifications, "update_page", noop);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("name", "setting");
+        assert_same(args.name, event.property);
+        assert_same(args.setting, event.value);
+    }
 });
 
 run_test("update_message (read)", ({override}) => {

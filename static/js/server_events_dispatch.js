@@ -539,7 +539,17 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "update_display_settings": {
+        case "user_settings": {
+            if (settings_config.all_notification_settings.includes(event.property)) {
+                notifications.handle_global_notification_updates(event.property, event.value);
+                settings_notifications.update_page();
+                // TODO: This should also do a refresh of the stream_edit UI
+                // if it's currently displayed, possibly reusing some code
+                // from stream_events.js
+                // (E.g. update_stream_push_notifications).
+                break;
+            }
+
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
@@ -555,10 +565,10 @@ export function dispatch_normal_event(event) {
                 "translate_emoticons",
                 "starred_message_counts",
             ];
-            if (user_display_settings.includes(event.setting_name)) {
-                page_params[event.setting_name] = event.setting;
+            if (user_display_settings.includes(event.property)) {
+                page_params[event.property] = event.value;
             }
-            if (event.setting_name === "default_language") {
+            if (event.property === "default_language") {
                 // We additionally need to set the language name.
                 //
                 // Note that this does not change translations at all;
@@ -567,31 +577,31 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
-            if (event.setting_name === "twenty_four_hour_time") {
+            if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
                 message_lists.home.rerender();
                 if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
             }
-            if (event.setting_name === "high_contrast_mode") {
+            if (event.property === "high_contrast_mode") {
                 $("body").toggleClass("high-contrast");
             }
-            if (event.setting_name === "demote_inactive_streams") {
+            if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
                 stream_data.set_filter_out_inactives();
             }
-            if (event.setting_name === "dense_mode") {
+            if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
             }
-            if (event.setting_name === "color_scheme") {
+            if (event.property === "color_scheme") {
                 $("body").fadeOut(300);
                 setTimeout(() => {
-                    if (event.setting === settings_config.color_scheme_values.night.code) {
+                    if (event.value === settings_config.color_scheme_values.night.code) {
                         night_mode.enable();
                         realm_logo.render();
-                    } else if (event.setting === settings_config.color_scheme_values.day.code) {
+                    } else if (event.value === settings_config.color_scheme_values.day.code) {
                         night_mode.disable();
                         realm_logo.render();
                     } else {
@@ -601,24 +611,24 @@ export function dispatch_normal_event(event) {
                     $("body").fadeIn(300);
                 }, 300);
             }
-            if (event.setting_name === "starred_message_counts") {
+            if (event.property === "starred_message_counts") {
                 starred_messages.rerender_ui();
             }
-            if (event.setting_name === "fluid_layout_width") {
+            if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
             }
-            if (event.setting_name === "left_side_userlist") {
+            if (event.property === "left_side_userlist") {
                 // TODO: Make this change the view immediately rather
                 // than requiring a reload or page resize.
             }
-            if (event.setting_name === "default_language") {
+            if (event.property === "default_language") {
                 // TODO: Make this change the view immediately rather than
                 // requiring a reload.  This is likely fairly difficult,
                 // because various i18n strings are rendered by the
                 // server; we may want to instead just trigger a page
                 // reload.
             }
-            if (event.setting_name === "emojiset") {
+            if (event.property === "emojiset") {
                 settings_display.report_emojiset_change();
 
                 // Rerender the whole message list UI
@@ -629,8 +639,8 @@ export function dispatch_normal_event(event) {
                 // Rerender buddy list status emoji
                 activity.build_user_sidebar();
             }
-            if (event.setting_name === "enter_sends") {
-                page_params.enter_sends = event.setting;
+            if (event.property === "enter_sends") {
+                page_params.enter_sends = event.value;
                 $("#enter_sends").prop("checked", page_params.enter_sends);
                 compose.toggle_enter_sends_ui();
                 break;
@@ -638,18 +648,6 @@ export function dispatch_normal_event(event) {
             settings_display.update_page();
             break;
         }
-
-        case "update_global_notifications":
-            notifications.handle_global_notification_updates(
-                event.notification_name,
-                event.setting,
-            );
-            settings_notifications.update_page();
-            // TODO: This should also do a refresh of the stream_edit UI
-            // if it's currently displayed, possibly reusing some code
-            // from stream_events.js
-            // (E.g. update_stream_push_notifications).
-            break;
 
         case "update_message_flags": {
             const new_value = event.op === "add";
