@@ -16,6 +16,7 @@ const ui_util = mock_esm("../../static/js/ui_util");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_validate = zrequire("compose_validate");
+const message_edit = zrequire("message_edit");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -752,4 +753,54 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert.ok(looked_for_existing);
+});
+
+test_ui("test clear_topic_resolved_warning", () => {
+    $("#compose_resolved_topic").show();
+    $("#compose-send-status").show();
+
+    compose_validate.clear_topic_resolved_warning();
+
+    assert.ok(!$("#compose_resolved_topic").visible());
+    assert.ok(!$("#compose-send-status").visible());
+});
+
+test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
+    override(settings_data, "user_can_move_messages_between_streams", () => true);
+
+    mock_template("compose_resolved_topic.hbs", false, (context) => {
+        assert.ok(context.can_move_topic);
+        assert.ok(context.topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX));
+        return "fake-compose_resolved_topic";
+    });
+
+    const sub = {
+        stream_id: 111,
+        name: "random",
+    };
+    stream_data.add_sub(sub);
+
+    // The error message area where it is shown
+    const error_area = $("#compose_resolved_topic");
+    error_area.html("");
+
+    compose_state.set_message_type("stream");
+    compose_state.stream_name("Do not exist");
+    compose_state.topic(message_edit.RESOLVED_TOPIC_PREFIX + "hello");
+
+    // Do not show a warning if stream name does not exist
+    compose_validate.warn_if_topic_resolved();
+    assert.ok(!error_area.visible());
+
+    compose_state.stream_name("random");
+
+    // Show the warning now as stream also exists
+    compose_validate.warn_if_topic_resolved();
+    assert.ok(error_area.visible());
+
+    compose_state.topic("hello");
+
+    // The warning will be cleared now
+    compose_validate.warn_if_topic_resolved();
+    assert.ok(!error_area.visible());
 });
