@@ -17,6 +17,7 @@ import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
+import * as message_edit from "./message_edit";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -95,6 +96,7 @@ function update_fade() {
     }
 
     const msg_type = compose_state.get_message_type();
+    compose_validate.warn_if_topic_resolved();
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
 }
@@ -471,6 +473,27 @@ export function initialize() {
         event.preventDefault();
 
         $("#compose-send-status").hide();
+    });
+
+    $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
+        event.preventDefault();
+
+        const target = $(event.target).parents(".compose_resolved_topic");
+        const stream_name = target.attr("data-stream-name");
+        const topic_name = target.attr("data-topic-name");
+
+        const stream_id = stream_data.get_sub(stream_name).stream_id;
+
+        message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+            message_edit.toggle_resolve_topic(message_id, topic_name);
+            compose_validate.clear_topic_resolved_warning();
+        });
+    });
+
+    $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
+        event.preventDefault();
+
+        compose_validate.clear_topic_resolved_warning();
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {

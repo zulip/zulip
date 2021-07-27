@@ -5,6 +5,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
+import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
@@ -218,6 +219,7 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
+                compose_validate.warn_if_topic_resolved();
                 compose_fade.set_focused_recipient("stream");
             }
 
