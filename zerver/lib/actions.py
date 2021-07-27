@@ -3714,7 +3714,7 @@ def bulk_add_subscriptions(
     realm: Realm,
     streams: Collection[Stream],
     users: Iterable[UserProfile],
-    color_map: Mapping[str, str] = {},
+    color_map: Mapping[Union[int, str], str] = {},
     from_user_creation: bool = False,
     *,
     acting_user: Optional[UserProfile],
@@ -3762,6 +3762,8 @@ def bulk_add_subscriptions(
 
             if stream.name in color_map:
                 color = color_map[stream.name]
+            elif stream.id in color_map:
+                color = color_map[stream.id]
             else:
                 color = pick_color(user_profile, used_colors)
             used_colors.add(color)

@@ -1,9 +1,9 @@
-from typing import Collection, List, Optional, Set, Tuple, Union
+from typing import Any, Collection, Dict, List, Optional, Set, Tuple, Union, cast
 
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from typing_extensions import TypedDict
+from typing_extensions import Literal, TypedDict
 
 from zerver.lib.exceptions import JsonableError, StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
@@ -17,6 +17,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
     active_non_guest_user_ids,
+    bulk_get_streams_by_ids,
     bulk_get_streams_by_names,
     get_realm_stream,
     get_stream,
@@ -42,6 +43,7 @@ class StreamDict(TypedDict, total=False):
     the fields in the Stream model.
     """
 
+    id: int
     name: str
     description: str
     invite_only: bool
@@ -602,6 +604,7 @@ def list_to_streams(
     user_profile: UserProfile,
     autocreate: bool = False,
     admin_access_required: bool = False,
+    stream_selector: Union[Literal["name"], Literal["id"]] = "name",
 ) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -611,24 +614,46 @@ def list_to_streams(
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
 
+    Also, Using stream name and stream id in the same call is not allowed.
+
     @param streams_raw The list of stream dictionaries to process;
       names should already be stripped of whitespace by the caller.
     @param user_profile The user for whom we are retrieving the streams
     @param autocreate Whether we should create streams if they don't already exist
+    @param stream_selector To select stream by stream name or id.
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.
+    stream_set = {stream_dict[stream_selector] for stream_dict in streams_raw}
 
-    stream_set = {stream_dict["name"] for stream_dict in streams_raw}
+    if stream_selector == "name":
+        for stream_name in stream_set:
+            # Stream names should already have been stripped by the
+            # caller, but it makes sense to verify anyway.
+            assert isinstance(stream_name, str) and stream_name == stream_name.strip()
+            check_stream_name(stream_name)
 
-    for stream_name in stream_set:
-        # Stream names should already have been stripped by the
-        # caller, but it makes sense to verify anyway.
-        assert stream_name == stream_name.strip()
-        check_stream_name(stream_name)
+    else:
+        for stream_id in stream_set:
+            assert isinstance(stream_id, int)
+            try:
+                # Verify that stream_id is valid.
+                get_stream_by_id_in_realm(stream_id, user_profile.realm)
+            # Raising error if unknown streami_d is passed.
+            except Stream.DoesNotExist:
+                raise JsonableError(_("No stream with id '{}' found.").format(stream_id))
 
     existing_streams: List[Stream] = []
     missing_stream_dicts: List[StreamDict] = []
-    existing_stream_map = bulk_get_streams_by_names(user_profile.realm, stream_set)
+    existing_stream_map: Union[Dict[int, Any], Dict[str, Any]]
+
+    if stream_selector == "name":
+        existing_stream_map = bulk_get_streams_by_names(
+            user_profile.realm, cast(Set[str], stream_set)
+        )
+    else:
+        existing_stream_map = bulk_get_streams_by_ids(
+            user_profile.realm, cast(Set[int], stream_set)
+        )
 
     if admin_access_required:
         existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
@@ -642,8 +667,14 @@ def list_to_streams(
 
     message_retention_days_not_none = False
     for stream_dict in streams_raw:
-        stream_name = stream_dict["name"]
-        stream = existing_stream_map.get(stream_name.lower())
+        stream_id_or_name = stream_dict[stream_selector]
+
+        if stream_selector == "name":
+            stream_id_or_name = str(stream_id_or_name).lower()
+        # Casting existing_stream_map to Dict[Union[int, str], Any] because mypy get confused when using
+        # dict method on Union[Dict[...], Dict[...]].
+        stream = cast(Dict[Union[int, str], Any], existing_stream_map).get(stream_id_or_name)
+
         if stream is None:
             if stream_dict.get("message_retention_days", None) is not None:
                 message_retention_days_not_none = True
@@ -664,7 +695,9 @@ def list_to_streams(
         elif not autocreate:
             raise JsonableError(
                 _("Stream(s) ({}) do not exist").format(
-                    ", ".join(stream_dict["name"] for stream_dict in missing_stream_dicts),
+                    ", ".join(
+                        str(stream_dict[stream_selector]) for stream_dict in missing_stream_dicts
+                    ),
                 )
             )
         elif message_retention_days_not_none:
@@ -672,14 +705,17 @@ def list_to_streams(
                 raise JsonableError(_("User cannot create stream with this settings."))
             user_profile.realm.ensure_not_on_limited_plan()
 
-        # We already filtered out existing streams, so dup_streams
-        # will normally be an empty list below, but we protect against somebody
-        # else racing to create the same stream.  (This is not an entirely
-        # paranoid approach, since often on Zulip two people will discuss
-        # creating a new stream, and both people eagerly do it.)
-        created_streams, dup_streams = create_streams_if_needed(
-            realm=user_profile.realm, stream_dicts=missing_stream_dicts, acting_user=user_profile
-        )
+        if stream_selector == "name":
+            # We already filtered out existing streams, so dup_streams
+            # will normally be an empty list below, but we protect against somebody
+            # else racing to create the same stream.  (This is not an entirely
+            # paranoid approach, since often on Zulip two people will discuss
+            # creating a new stream, and both people eagerly do it.)
+            created_streams, dup_streams = create_streams_if_needed(
+                realm=user_profile.realm,
+                stream_dicts=missing_stream_dicts,
+                acting_user=user_profile,
+            )
         existing_streams += dup_streams
 
     return existing_streams, created_streams

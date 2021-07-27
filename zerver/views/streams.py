@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from typing_extensions import Literal
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
@@ -77,7 +78,7 @@ from zerver.lib.validator import (
     check_capped_string,
     check_color,
     check_dict,
-    check_dict_only,
+    check_dict_for_add_subscription_schema,
     check_int,
     check_int_in,
     check_list,
@@ -326,8 +327,7 @@ def list_subscriptions_backend(
 
 
 add_subscriptions_schema = check_list(
-    check_dict_only(
-        required_keys=[("name", check_string)],
+    check_dict_for_add_subscription_schema(
         optional_keys=[
             ("color", check_color),
             ("description", check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
@@ -335,15 +335,17 @@ add_subscriptions_schema = check_list(
     ),
 )
 
-remove_subscriptions_schema = check_list(check_string)
+remove_subscriptions_schema = check_list(check_string_or_int)
 
 
 @has_request_variables
 def update_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    delete: Sequence[str] = REQ(json_validator=remove_subscriptions_schema, default=[]),
-    add: Sequence[Mapping[str, str]] = REQ(json_validator=add_subscriptions_schema, default=[]),
+    delete: Sequence[Union[str, int]] = REQ(json_validator=remove_subscriptions_schema, default=[]),
+    add: Sequence[Mapping[str, Union[str, int]]] = REQ(
+        json_validator=add_subscriptions_schema, default=[]
+    ),
 ) -> HttpResponse:
     if not add and not delete:
         raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -381,20 +383,27 @@ check_principals: Validator[Union[List[str], List[int]]] = check_union(
 def remove_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Sequence[str] = REQ("subscriptions", json_validator=remove_subscriptions_schema),
+    streams_raw: Sequence[Union[str, int]] = REQ(
+        "subscriptions", json_validator=remove_subscriptions_schema
+    ),
     principals: Optional[Union[List[str], List[int]]] = REQ(
         json_validator=check_principals, default=None
     ),
 ) -> HttpResponse:
 
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
-
+    is_stream_type_name = streams_raw and isinstance(streams_raw[0], str)
     streams_as_dict: List[StreamDict] = []
-    for stream_name in streams_raw:
-        streams_as_dict.append({"name": stream_name.strip()})
-
+    for stream in streams_raw:
+        if is_stream_type_name:
+            streams_as_dict.append({"name": str(stream).strip()})
+        else:
+            streams_as_dict.append({"id": int(stream)})
     streams, __ = list_to_streams(
-        streams_as_dict, user_profile, admin_access_required=removing_someone_else
+        streams_as_dict,
+        user_profile,
+        admin_access_required=removing_someone_else,
+        stream_selector="name" if is_stream_type_name else "id",
     )
 
     if principals:
@@ -449,7 +458,7 @@ EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 def add_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Sequence[Mapping[str, str]] = REQ(
+    streams_raw: Sequence[Mapping[str, Union[str, int]]] = REQ(
         "subscriptions", json_validator=add_subscriptions_schema
     ),
     invite_only: bool = REQ(json_validator=check_bool, default=False),
@@ -470,19 +479,25 @@ def add_subscriptions_backend(
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
-    color_map = {}
+    color_map: Dict[Union[int, str], str] = {}
+    stream_selector: Union[Literal["name"], Literal["id"]] = (
+        "name" if streams_raw and "name" in streams_raw[0] else "id"
+    )
+
     for stream_dict in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
         if "color" in stream_dict:
-            color_map[stream_dict["name"]] = stream_dict["color"]
+            color_map[stream_dict[stream_selector]] = str(stream_dict["color"])
 
         stream_dict_copy: StreamDict = {}
-        stream_dict_copy["name"] = stream_dict["name"].strip()
+        stream_dict_copy[stream_selector] = stream_dict[stream_selector]
+        if stream_selector == "name":
+            stream_dict_copy[stream_selector] = str(stream_dict[stream_selector]).strip()
 
         # We don't allow newline characters in stream descriptions.
         if "description" in stream_dict:
-            stream_dict_copy["description"] = stream_dict["description"].replace("\n", " ")
+            stream_dict_copy["description"] = str(stream_dict["description"]).replace("\n", " ")
 
         stream_dict_copy["invite_only"] = invite_only
         stream_dict_copy["stream_post_policy"] = stream_post_policy
@@ -496,7 +511,13 @@ def add_subscriptions_backend(
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
-    existing_streams, created_streams = list_to_streams(stream_dicts, user_profile, autocreate=True)
+    existing_streams, created_streams = list_to_streams(
+        stream_dicts,
+        user_profile,
+        # Create streams if only stream name is present.
+        autocreate=True if stream_selector else False,
+        stream_selector=stream_selector,
+    )
     authorized_streams, unauthorized_streams = filter_stream_authorization(
         user_profile, existing_streams
     )
