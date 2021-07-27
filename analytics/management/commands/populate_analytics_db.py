@@ -103,9 +103,11 @@ class Command(BaseCommand):
         ]
         Subscription.objects.bulk_create(subs)
 
+        FixtureData = Mapping[Union[str, int, None], List[int]]
+
         def insert_fixture_data(
             stat: CountStat,
-            fixture_data: Mapping[Union[str, int, None], List[int]],
+            fixture_data: FixtureData,
             table: Type[BaseCount],
         ) -> None:
             end_times = time_range(
@@ -134,11 +136,11 @@ class Command(BaseCommand):
                 )
 
         stat = COUNT_STATS["1day_actives::day"]
-        realm_data: Mapping[Union[str, int, None], List[int]] = {
+        realm_data: FixtureData = {
             None: self.generate_fixture_data(stat, 0.08, 0.02, 3, 0.3, 6, partial_sum=True),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
-        installation_data: Mapping[Union[str, int, None], List[int]] = {
+        installation_data: FixtureData = {
             None: self.generate_fixture_data(stat, 0.8, 0.2, 4, 0.3, 6, partial_sum=True),
         }
         insert_fixture_data(stat, installation_data, InstallationCount)
@@ -188,7 +190,7 @@ class Command(BaseCommand):
         )
 
         stat = COUNT_STATS["messages_sent:is_bot:hour"]
-        user_data: Mapping[Union[str, int, None], List[int]] = {
+        user_data: FixtureData = {
             "false": self.generate_fixture_data(stat, 2, 1, 1.5, 0.6, 8, holiday_rate=0.1),
         }
         insert_fixture_data(stat, user_data, UserCount)
