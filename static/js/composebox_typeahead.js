@@ -216,8 +216,7 @@ function handle_keydown(e) {
                 // which does not make <button>s tab-accessible by default
                 // (even if we were to set tabindex=0).
                 if (!should_enter_send(e)) {
-                    $("#compose-send-button").trigger("focus");
-                    e.preventDefault();
+                    nextFocus = $("#compose-send-button");
                 }
             } else {
                 // Enter
