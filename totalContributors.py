@@ -6,9 +6,6 @@ from datetime import datetime
 from typing import Dict, List
 
 
-isHelpMethod = False
-
-
 def add_log(dict: Dict[str, int], input: List[str]) -> None:
     for dataset in input:
         name = dataset.split("\t")[1]
@@ -46,6 +43,7 @@ def find_path(repo: str) -> str:
     return os.path.dirname(pathlib.Path().resolve()) + "/" + repo
 
 
+isHelpMethod = False
 # extract git version and time
 if len(sys.argv) > 1:
     if sys.argv[1] == "-h" or sys.argv[1] == "--help":  # help method
