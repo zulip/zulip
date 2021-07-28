@@ -6,16 +6,14 @@ import sys
 from datetime import datetime
 from typing import Dict, List
 
-parser = argparse.ArgumentParser(
-    usage="""$ python totalContributors.py 3.0..4.0 | sort -nr""",
-    description="""Above commands gives a reverse sorted list of all contributors between repositories between Zulip Versions 3.0 and 4.0. 
-    Of course, the version numbers specified can be changed. Other bash sort commands can also be used.""",
-    epilog="""This script is used to aggregate the total contributors within all Zulip Repositories within a time frame. 
-    Using the totalContributors.py script requires that all Zulip Repositories are in the same directory.
-""",
-)
+# parser = argparse.ArgumentParser(
+# usage="""$ python totalContributors.py 3.0..4.0 | sort -nr""",
+# description="""Above command gives a reverse sorted list of all contributors between repositories between Zulip Versions 3.0 and 4.0. Of course, the version numbers specified can be changed. Other bash sort commands can also be used.""",
+# epilog="""This script is used to aggregate the total contributors within all Zulip Repositories within a time frame. Using the totalContributors.py script requires that all Zulip Repositories are in the same directory.""")
 
-args = parser.parse_args()
+# args = parser.parse_args()
+
+cont = True
 
 
 def add_log(dict: Dict[str, int], input: List[str]) -> None:
@@ -57,40 +55,46 @@ def find_path(repo: str) -> str:
 
 # extract git version and time
 if len(sys.argv) > 1:
-    lower_zulip_version = sys.argv[1].split("..")[0]
-    upper_zulip_version = sys.argv[1].split("..")[1]
+    if sys.argv[1] == "-h" or sys.argv[1] == "--help":  # help method
+        cont = False
+        print('''\nWhat does this script do?\nIt aggregates the total contributors within all Zulip Repositories within two Zulip Versions. Using it requires that all Zulip Repositories be in the same directory\n''')
+        print('''Using the script:\nMac users can use\n$ python totalContributors.py 3.0..4.0 | sort -nr\nTo receive a reverse sorted list of all contributors between repositories between Zulip Versions 3.0 and 4.0\nOf course, the version numbers specified can be changed. If version numbers are not specified, the script will default to Zulip Version 1.3.0 (oldest) and Zulip Version 4.3 (latest).\nOther bash sort commands besides for | sort -nr can also be used.''')
+    else:
+        lower_zulip_version = sys.argv[1].split("..")[0]
+        upper_zulip_version = sys.argv[1].split("..")[1]
 else:
     lower_zulip_version = "1.3.0"  # first Zulip version
     upper_zulip_version = "4.3"  # latest Zulip version
 
-lower_time = subprocess.check_output(
-    ["git", "log", "-1", "--format=%ai", lower_zulip_version], universal_newlines=True
-).split()[0]
-upper_time = subprocess.check_output(
-    ["git", "log", "-1", "--format=%ai", upper_zulip_version], universal_newlines=True
-).split()[0]
+if cont:
+    lower_time = subprocess.check_output(
+        ["git", "log", "-1", "--format=%ai", lower_zulip_version], universal_newlines=True
+    ).split()[0]
+    upper_time = subprocess.check_output(
+        ["git", "log", "-1", "--format=%ai", upper_zulip_version], universal_newlines=True
+    ).split()[0]
 
-out_dict: Dict[str, int] = {}
-zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
-add_log(out_dict, zulip)
-for repo_name in [
-    "zulip-mobile",
-    "zulip-desktop",
-    "docker-zulip",
-    "python-zulip-api",
-    "zulip-terminal",
-]:
-    lower_repo_version = find_version(lower_time, repo_name)
-    upper_repo_version = find_version(upper_time, repo_name)
-    repo_log = retrieve_log(repo_name, lower_repo_version, upper_repo_version)
-    add_log(out_dict, repo_log)
+    out_dict: Dict[str, int] = {}
+    zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
+    add_log(out_dict, zulip)
+    for repo_name in [
+        "zulip-mobile",
+        "zulip-desktop",
+        "docker-zulip",
+        "python-zulip-api",
+        "zulip-terminal",
+    ]:
+        lower_repo_version = find_version(lower_time, repo_name)
+        upper_repo_version = find_version(upper_time, repo_name)
+        repo_log = retrieve_log(repo_name, lower_repo_version, upper_repo_version)
+        add_log(out_dict, repo_log)
 
-for keys in out_dict:
-    print(str(out_dict[keys]) + "\t" + keys)
+    for keys in out_dict:
+        print(str(out_dict[keys]) + "\t" + keys)
 
-print(
-    "Total contributions across all Zulip repos within Zulip versions "
-    + lower_zulip_version
-    + " and "
-    + upper_zulip_version
-)
+    print(
+        "Total contributions across all Zulip repos within Zulip versions "
+        + lower_zulip_version
+        + " and "
+        + upper_zulip_version
+    )
