@@ -170,7 +170,7 @@ html {
             border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
             &:not(:first-of-type) {
-                margin-top: 20px;
+                margin-top: 0;
             }
 
             &:first-of-type,
@@ -180,6 +180,7 @@ html {
 
             &.home-link {
                 font-size: 1em;
+                margin-top: 20px;
                 margin-bottom: 17px;
 
                 a::before {
