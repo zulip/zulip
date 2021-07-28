@@ -1372,17 +1372,36 @@ class RealmAPITest(ZulipTestCase):
             result, "Bad value for 'message_content_delete_limit_seconds': invalid"
         )
 
-    def test_change_invite_to_realm_policy_by_owners_only(self) -> None:
+    def do_test_changing_settings_by_owners_only(self, setting_name: str) -> None:
+        bool_tests: List[bool] = [False, True]
+        test_values: Dict[str, Any] = dict(
+            invite_to_realm_policy=[Realm.POLICY_MEMBERS_ONLY, Realm.POLICY_ADMINS_ONLY],
+        )
+
+        vals = test_values.get(setting_name)
+        if Realm.property_types[setting_name] is bool:
+            vals = bool_tests
+        assert vals is not None
+
+        self.set_up_db(setting_name, vals[0])
+        value = vals[1]
+
+        if not isinstance(value, str):
+            value = orjson.dumps(value).decode()
+
         self.login("iago")
-        req = {"invite_to_realm_policy": Realm.POLICY_ADMINS_ONLY}
-        result = self.client_patch("/json/realm", req)
+        result = self.client_patch("/json/realm", {setting_name: value})
         self.assert_json_error(result, "Must be an organization owner")
 
         self.login("desdemona")
-        result = self.client_patch("/json/realm", req)
+        result = self.client_patch("/json/realm", {setting_name: value})
         self.assert_json_success(result)
         realm = get_realm("zulip")
-        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(getattr(realm, setting_name), vals[1])
+
+    def test_changing_user_joining_settings_require_owners(self) -> None:
+        self.do_test_changing_settings_by_owners_only("invite_to_realm_policy")
+        self.do_test_changing_settings_by_owners_only("invite_required")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")

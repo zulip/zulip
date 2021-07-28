@@ -177,7 +177,9 @@ def update_realm(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
 
-    if invite_to_realm_policy is not None and not user_profile.is_realm_owner:
+    if (
+        invite_to_realm_policy is not None or invite_required is not None
+    ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
 
     if enable_spectator_access:
