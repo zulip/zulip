@@ -94,6 +94,8 @@ run_test("tr_tag", ({mock_template}) => {
             full_name: "John Doe",
             password_auth_enabled: false,
             avatar_url: "http://example.com",
+        },
+        user_settings: {
             left_side_userlist: false,
             twenty_four_hour_time: false,
             enable_stream_desktop_notifications: false,

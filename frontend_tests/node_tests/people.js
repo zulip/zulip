@@ -10,7 +10,7 @@ const {$t} = require("../zjsunit/i18n");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
@@ -473,17 +473,17 @@ test_people("user_timezone", () => {
         format: "H:mm",
     };
 
-    page_params.twenty_four_hour_time = true;
+    user_settings.twenty_four_hour_time = true;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
     expected_pref.format = "h:mm a";
-    page_params.twenty_four_hour_time = false;
+    user_settings.twenty_four_hour_time = false;
     assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
 
-    page_params.twenty_four_hour_time = true;
+    user_settings.twenty_four_hour_time = true;
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
-    page_params.twenty_four_hour_time = false;
+    user_settings.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 

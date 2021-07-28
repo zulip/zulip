@@ -1,8 +1,8 @@
 import * as hash_util from "./hash_util";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
+import {user_settings} from "./user_settings";
 
 /*
     This config is in a separate file for partly
@@ -44,5 +44,5 @@ export const get_helpers = () => ({
     stream_topic_hash: hash_util.by_stream_topic_uri,
 
     // settings
-    should_translate_emoticons: () => page_params.translate_emoticons,
+    should_translate_emoticons: () => user_settings.translate_emoticons,
 });

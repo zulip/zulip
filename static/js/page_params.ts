@@ -2,15 +2,6 @@ import $ from "jquery";
 
 const t1 = performance.now();
 export const page_params: {
-    color_scheme: number;
-    enable_desktop_notifications: boolean;
-    enable_offline_email_notifications: boolean;
-    enable_offline_push_notifications: boolean;
-    enable_sounds: boolean;
-    enable_stream_audible_notifications: boolean;
-    enable_stream_desktop_notifications: boolean;
-    enable_stream_email_notifications: boolean;
-    enable_stream_push_notifications: boolean;
     language_list: {
         code: string;
         locale: string;
@@ -38,8 +29,6 @@ export const page_params: {
     server_avatar_changes_disabled: boolean;
     server_name_changes_disabled: boolean;
     translation_data: Record<string, string>;
-    twenty_four_hour_time: boolean;
-    wildcard_mentions_notify: boolean;
     zulip_plan_is_not_limited: boolean;
 } = $("#page-params").remove().data("params");
 const t2 = performance.now();

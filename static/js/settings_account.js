@@ -25,6 +25,7 @@ import * as setup from "./setup";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 import * as user_profile from "./user_profile";
+import {user_settings} from "./user_settings";
 
 let password_quality; // Loaded asynchronously
 
@@ -666,7 +667,7 @@ export function set_up() {
 
     avatar.build_user_avatar_widget(upload_avatar);
 
-    $("#user_timezone").val(page_params.timezone);
+    $("#user_timezone").val(user_settings.timezone);
 
     $("#user_timezone").on("change", function (e) {
         e.preventDefault();
@@ -682,7 +683,7 @@ export function set_up() {
         );
     });
 
-    $("#presence_enabled").val(page_params.presence_enabled);
+    $("#presence_enabled").val(user_settings.presence_enabled);
 
     $("#presence_enabled").on("change", (e) => {
         e.preventDefault();

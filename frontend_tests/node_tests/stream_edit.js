@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -295,7 +295,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     const {stream_notification_settings, pm_mention_notification_settings} = settings_config;
     for (const setting of [...stream_notification_settings, ...pm_mention_notification_settings]) {
-        page_params[setting] = true;
+        user_settings[setting] = true;
     }
 
     stream_row_handler.call(fake_this, event);

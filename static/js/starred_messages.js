@@ -2,6 +2,7 @@ import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as stream_popover from "./stream_popover";
 import * as top_left_corner from "./top_left_corner";
+import {user_settings} from "./user_settings";
 
 export const starred_ids = new Set();
 
@@ -74,7 +75,7 @@ export function get_count_in_topic(stream_id, topic) {
 export function rerender_ui() {
     let count = get_count();
 
-    if (!page_params.starred_message_counts) {
+    if (!user_settings.starred_message_counts) {
         // This essentially hides the count
         count = 0;
     }

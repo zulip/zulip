@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 page_params.realm_push_notifications_enabled = false;
 
@@ -43,13 +43,13 @@ function assert_zero_counts(counts) {
 }
 
 function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
-    page_params.desktop_icon_count_display = 1;
+    user_settings.desktop_icon_count_display = 1;
     let notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, home_unread_messages);
-    page_params.desktop_icon_count_display = 2;
+    user_settings.desktop_icon_count_display = 2;
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, expected_notifiable_count);
-    page_params.desktop_icon_count_display = 3;
+    user_settings.desktop_icon_count_display = 3;
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, 0);
 }

@@ -9,7 +9,7 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -308,7 +308,7 @@ test_ui("enter_with_preview_open", ({override}) => {
     $("#compose .undo_markdown_preview").show();
     $("#compose .preview_message_area").show();
     $("#compose .markdown_preview").hide();
-    page_params.enter_sends = true;
+    user_settings.enter_sends = true;
     let send_message_called = false;
     override(compose, "send_message", () => {
         send_message_called = true;
@@ -320,7 +320,7 @@ test_ui("enter_with_preview_open", ({override}) => {
     assert.ok($("#compose .markdown_preview").visible());
     assert.ok(send_message_called);
 
-    page_params.enter_sends = false;
+    user_settings.enter_sends = false;
     $("#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
     assert.ok($("#compose-textarea").is_focused());
@@ -329,7 +329,7 @@ test_ui("enter_with_preview_open", ({override}) => {
     $("#compose-textarea").val("");
     $("#compose .preview_message_area").show();
     $("#enter_sends").prop("checked", true);
-    page_params.enter_sends = true;
+    user_settings.enter_sends = true;
 
     compose.enter_with_preview_open();
 

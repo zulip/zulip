@@ -100,6 +100,8 @@ try {
         require("../../static/js/i18n");
         namespace.mock_esm("../../static/js/page_params", zpage_params);
         require("../../static/js/page_params");
+        namespace.mock_esm("../../static/js/user_settings", zpage_params);
+        require("../../static/js/user_settings");
 
         run_one_module(file);
 

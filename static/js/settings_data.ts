@@ -1,5 +1,6 @@
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
+import {user_settings} from "./user_settings";
 
 let user_join_date: Date;
 export function initialize(current_user_join_date: Date): void {
@@ -75,7 +76,7 @@ export function get_time_preferences(user_timezone: string): {
     timezone: string;
     format: string;
 } {
-    if (page_params.twenty_four_hour_time) {
+    if (user_settings.twenty_four_hour_time) {
         return {
             timezone: user_timezone,
             format: "H:mm",
@@ -192,12 +193,12 @@ export function user_can_edit_topic_of_any_message(): boolean {
 }
 
 export function using_dark_theme(): boolean {
-    if (page_params.color_scheme === settings_config.color_scheme_values.night.code) {
+    if (user_settings.color_scheme === settings_config.color_scheme_values.night.code) {
         return true;
     }
 
     if (
-        page_params.color_scheme === settings_config.color_scheme_values.automatic.code &&
+        user_settings.color_scheme === settings_config.color_scheme_values.automatic.code &&
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches
     ) {

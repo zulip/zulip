@@ -33,7 +33,7 @@
                         <div class="alert-notification timezone-setting-status"></div>
                         <div class="timezone-input">
                             <select name="timezone" id="user_timezone" class>
-                                {{#unless page_params.timezone}}
+                                {{#unless user_settings.timezone}}
                                 <option></option>
                                 {{/unless}}
 

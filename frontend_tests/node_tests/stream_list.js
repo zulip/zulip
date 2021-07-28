@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
@@ -95,7 +95,7 @@ function test_ui(label, f) {
 test_ui("create_sidebar_row", ({override, mock_template}) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
-    page_params.demote_inactive_streams = 1;
+    user_settings.demote_inactive_streams = 1;
     override(unread, "num_unread_for_stream", () => num_unread_for_stream);
 
     stream_data.add_sub(devel);

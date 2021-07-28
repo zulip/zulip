@@ -20,6 +20,7 @@ import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import {user_settings} from "./user_settings";
 
 export let settings_label;
 
@@ -102,7 +103,7 @@ export function build_page() {
         date_joined_text: get_parsed_date_of_joining(),
         page_params,
         enable_sound_select:
-            page_params.enable_sounds || page_params.enable_stream_audible_notifications,
+            user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
         timezones: timezones.timezones,
@@ -122,7 +123,8 @@ export function build_page() {
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.default_language_name,
-        language_list_dbl_col: get_language_list_columns(page_params.default_language),
+        language_list_dbl_col: get_language_list_columns(user_settings.default_language),
+        user_settings,
     });
 
     $(".settings-box").html(rendered_settings_tab);

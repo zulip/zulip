@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
@@ -244,10 +244,10 @@ test_message_policy(
 );
 
 run_test("using_dark_theme", () => {
-    page_params.color_scheme = settings_config.color_scheme_values.night.code;
+    user_settings.color_scheme = settings_config.color_scheme_values.night.code;
     assert.equal(settings_data.using_dark_theme(), true);
 
-    page_params.color_scheme = settings_config.color_scheme_values.automatic.code;
+    user_settings.color_scheme = settings_config.color_scheme_values.automatic.code;
 
     window.matchMedia = (query) => {
         assert.equal(query, "(prefers-color-scheme: dark)");
@@ -261,7 +261,7 @@ run_test("using_dark_theme", () => {
     };
     assert.equal(settings_data.using_dark_theme(), false);
 
-    page_params.color_scheme = settings_config.color_scheme_values.day.code;
+    user_settings.color_scheme = settings_config.color_scheme_values.day.code;
     assert.equal(settings_data.using_dark_theme(), false);
 });
 

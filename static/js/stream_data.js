@@ -8,6 +8,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 const DEFAULT_COLOR = "#c2c2c2";
@@ -160,12 +161,12 @@ clear_subscriptions();
 
 export function set_filter_out_inactives() {
     if (
-        page_params.demote_inactive_streams ===
+        user_settings.demote_inactive_streams ===
         settings_config.demote_inactive_streams_values.automatic.code
     ) {
         filter_out_inactives = num_subscribed_subs() >= 30;
     } else if (
-        page_params.demote_inactive_streams ===
+        user_settings.demote_inactive_streams ===
         settings_config.demote_inactive_streams_values.always.code
     ) {
         filter_out_inactives = true;
@@ -457,9 +458,9 @@ export function receives_notifications(stream_id, notification_name) {
         return sub[notification_name];
     }
     if (notification_name === "wildcard_mentions_notify") {
-        return page_params[notification_name];
+        return user_settings[notification_name];
     }
-    return page_params["enable_stream_" + notification_name];
+    return user_settings["enable_stream_" + notification_name];
 }
 
 export function all_subscribed_streams_are_in_home_view() {
@@ -672,11 +673,11 @@ export function create_sub_from_server_data(attrs) {
         newly_subscribed: false,
         is_muted: false,
         invite_only: false,
-        desktop_notifications: page_params.enable_stream_desktop_notifications,
-        audible_notifications: page_params.enable_stream_audible_notifications,
-        push_notifications: page_params.enable_stream_push_notifications,
-        email_notifications: page_params.enable_stream_email_notifications,
-        wildcard_mentions_notify: page_params.wildcard_mentions_notify,
+        desktop_notifications: user_settings.enable_stream_desktop_notifications,
+        audible_notifications: user_settings.enable_stream_audible_notifications,
+        push_notifications: user_settings.enable_stream_push_notifications,
+        email_notifications: user_settings.enable_stream_email_notifications,
+        wildcard_mentions_notify: user_settings.wildcard_mentions_notify,
         description: "",
         rendered_description: "",
         first_message_id: attrs.first_message_id,

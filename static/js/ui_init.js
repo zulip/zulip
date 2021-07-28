@@ -88,6 +88,7 @@ import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_groups from "./user_groups";
+import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 
@@ -228,15 +229,15 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("spectator-view");
     }
 
-    if (!page_params.left_side_userlist) {
+    if (!user_settings.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
     }
 
-    if (page_params.high_contrast_mode) {
+    if (user_settings.high_contrast_mode) {
         $("body").addClass("high-contrast");
     }
 
-    if (!page_params.dense_mode) {
+    if (!user_settings.dense_mode) {
         $("body").addClass("less_dense_mode");
     } else {
         $("body").addClass("more_dense_mode");
@@ -493,11 +494,13 @@ export function initialize_everything() {
 
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
+    const user_settings_params = pop_fields("user_settings");
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
 
+    initialize_user_settings(user_settings_params);
     people.initialize(page_params.user_id, people_params);
 
     let date_joined;

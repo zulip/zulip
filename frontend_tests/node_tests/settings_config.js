@@ -4,19 +4,19 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
 run_test("all_notifications", () => {
-    page_params.enable_stream_desktop_notifications = false;
-    page_params.enable_stream_audible_notifications = true;
-    page_params.enable_stream_push_notifications = true;
-    page_params.enable_stream_email_notifications = false;
-    page_params.enable_desktop_notifications = false;
-    page_params.enable_sounds = true;
-    page_params.enable_offline_push_notifications = false;
-    page_params.enable_offline_email_notifications = true;
+    user_settings.enable_stream_desktop_notifications = false;
+    user_settings.enable_stream_audible_notifications = true;
+    user_settings.enable_stream_push_notifications = true;
+    user_settings.enable_stream_email_notifications = false;
+    user_settings.enable_desktop_notifications = false;
+    user_settings.enable_sounds = true;
+    user_settings.enable_offline_push_notifications = false;
+    user_settings.enable_offline_email_notifications = true;
 
     // Check that it throws error if incorrect settings name
     // is passed. In this case, we articulate that with
@@ -24,7 +24,7 @@ run_test("all_notifications", () => {
     // the case, if a wrong setting_name is passed.
     assert.throws(settings_config.all_notifications, "Incorrect setting_name passed");
 
-    page_params.wildcard_mentions_notify = false;
+    user_settings.wildcard_mentions_notify = false;
     const notifications = settings_config.all_notifications();
 
     assert.deepEqual(notifications.general_settings, [

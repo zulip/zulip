@@ -6,7 +6,7 @@ const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 let clipboard_args;
 class Clipboard {
@@ -18,7 +18,7 @@ class Clipboard {
 mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../../static/js/realm_playground");
-page_params.emojiset = "apple";
+user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -300,12 +300,12 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template}) => {
     $content.set_find_results("time", $array([$timestamp]));
 
     // We will temporarily change the 24h setting for this test.
-    with_field(page_params, "twenty_four_hour_time", true, () => {
+    with_field(user_settings, "twenty_four_hour_time", true, () => {
         rm.update_elements($content);
         assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40\n');
     });
 
-    with_field(page_params, "twenty_four_hour_time", false, () => {
+    with_field(user_settings, "twenty_four_hour_time", false, () => {
         rm.update_elements($content);
         assert.equal(
             $timestamp.html(),
@@ -342,14 +342,14 @@ run_test("emoji", () => {
         called = true;
     };
     $content.set_find_results(".emoji", $emoji);
-    page_params.emojiset = "text";
+    user_settings.emojiset = "text";
 
     rm.update_elements($content);
 
     assert.ok(called);
 
     // Set page parameters back so that test run order is independent
-    page_params.emojiset = "apple";
+    user_settings.emojiset = "apple";
 });
 
 run_test("spoiler-header", () => {

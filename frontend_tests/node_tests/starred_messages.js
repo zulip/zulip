@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {with_overrides, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");
@@ -95,7 +95,7 @@ run_test("rerender_ui", () => {
         starred_messages.starred_ids.add(id);
     }
 
-    page_params.starred_message_counts = true;
+    user_settings.starred_message_counts = true;
     with_overrides((override) => {
         const stub = make_stub();
         override(stream_popover, "hide_topic_popover", () => {});
@@ -106,7 +106,7 @@ run_test("rerender_ui", () => {
         assert.equal(args.count, 3);
     });
 
-    page_params.starred_message_counts = false;
+    user_settings.starred_message_counts = false;
     with_overrides((override) => {
         const stub = make_stub();
         override(stream_popover, "hide_topic_popover", () => {});

@@ -33,6 +33,7 @@ import * as sub_store from "./sub_store";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
 
@@ -120,7 +121,7 @@ export function empty_topic_placeholder() {
 
 export function toggle_enter_sends_ui() {
     const send_button = $("#compose-send-button");
-    if (page_params.enter_sends) {
+    if (user_settings.enter_sends) {
         send_button.fadeOut();
     } else {
         send_button.fadeIn();
@@ -260,7 +261,7 @@ export function send_message(request = create_message_object()) {
 }
 
 export function enter_with_preview_open() {
-    if (page_params.enter_sends) {
+    if (user_settings.enter_sends) {
         // If enter_sends is enabled, we attempt to send the message
         finish();
     } else {

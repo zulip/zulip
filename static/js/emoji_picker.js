@@ -12,11 +12,11 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as ui from "./ui";
+import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
 
 // Emoji picker is of fixed width and height. Update these
@@ -785,7 +785,10 @@ export function register_click_handlers() {
         e.stopPropagation();
         hide_emoji_popover();
         const emoji_name = $(this).attr("data-emoji-name");
-        let emoji_info = {emoji_name, emoji_alt_code: page_params.emojiset === "text"};
+        let emoji_info = {
+            emoji_name,
+            emoji_alt_code: user_settings.emojiset === "text",
+        };
         if (!emoji_info.emoji_alt_code) {
             emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
         }

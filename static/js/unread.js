@@ -6,6 +6,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 // The unread module tracks the message IDs and locations of the
@@ -509,10 +510,10 @@ export function calculate_notifiable_count(res) {
     let new_message_count = 0;
 
     const only_show_notifiable =
-        page_params.desktop_icon_count_display ===
+        user_settings.desktop_icon_count_display ===
         settings_config.desktop_icon_count_display_values.notifiable.code;
     const no_notifications =
-        page_params.desktop_icon_count_display ===
+        user_settings.desktop_icon_count_display ===
         settings_config.desktop_icon_count_display_values.none.code;
     if (only_show_notifiable) {
         // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE

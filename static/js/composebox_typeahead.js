@@ -27,6 +27,7 @@ import * as timerender from "./timerender";
 import * as typeahead_helper from "./typeahead_helper";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
+import {user_settings} from "./user_settings";
 
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
@@ -137,7 +138,7 @@ export function should_enter_send(e) {
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
     const has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
     let this_enter_sends;
-    if (page_params.enter_sends) {
+    if (user_settings.enter_sends) {
         // With the enter_sends setting, we should send
         // the message unless the user was holding a
         // modifier key.
@@ -1092,7 +1093,7 @@ export function initialize() {
     $("form#send_message_form").on("keyup", handle_keyup);
 
     $("#enter_sends").on("click", () => {
-        page_params.enter_sends = $("#enter_sends").is(":checked");
+        user_settings.enter_sends = $("#enter_sends").is(":checked");
         compose.toggle_enter_sends_ui();
 
         // Refocus in the content box so you can continue typing or
@@ -1102,11 +1103,11 @@ export function initialize() {
         return channel.patch({
             url: "/json/settings",
             idempotent: true,
-            data: {enter_sends: page_params.enter_sends},
+            data: {enter_sends: user_settings.enter_sends},
         });
     });
-    $("#enter_sends").prop("checked", page_params.enter_sends);
-    if (page_params.enter_sends) {
+    $("#enter_sends").prop("checked", user_settings.enter_sends);
+    if (user_settings.enter_sends) {
         $("#compose-send-button").hide();
     }
 

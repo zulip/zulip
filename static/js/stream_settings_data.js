@@ -4,6 +4,7 @@ import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export function get_sub_for_settings(sub) {
@@ -61,7 +62,7 @@ export function get_unmatched_streams_for_notification_settings() {
         for (const notification_name of settings_config.stream_specific_notification_settings) {
             const prepend =
                 notification_name === "wildcard_mentions_notify" ? "" : "enable_stream_";
-            const default_setting = page_params[prepend + notification_name];
+            const default_setting = user_settings[prepend + notification_name];
             const stream_setting = stream_data.receives_notifications(
                 row.stream_id,
                 notification_name,

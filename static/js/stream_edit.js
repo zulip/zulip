@@ -38,6 +38,7 @@ import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export let pill_widget;
@@ -592,9 +593,9 @@ export function stream_setting_changed(e, from_notification_settings) {
     }
     if (is_notification_setting(setting) && sub[setting] === null) {
         if (setting === "wildcard_mentions_notify") {
-            sub[setting] = page_params[setting];
+            sub[setting] = user_settings[setting];
         } else {
-            sub[setting] = page_params["enable_stream_" + setting];
+            sub[setting] = user_settings["enable_stream_" + setting];
         }
     }
     set_stream_property(sub, setting, e.target.checked, status_element);

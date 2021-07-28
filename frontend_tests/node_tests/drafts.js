@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 const ls_container = new Map();
 const noop = () => {};
@@ -33,7 +33,7 @@ mock_esm("../../static/js/stream_data", {
         return "#FFFFFF";
     },
 });
-page_params.twenty_four_hour_time = false;
+user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");

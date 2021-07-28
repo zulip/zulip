@@ -135,7 +135,7 @@ def build_page_params_for_home_page_load(
         "bulk_message_deletion": True,
         "user_avatar_url_field_optional": True,
         "stream_typing_notifications": False,  # Set this to True when frontend support is implemented.
-        "user_settings_object": False, # Set this to True when frontend support is implemented.
+        "user_settings_object": True,
     }
 
     if user_profile is not None:
@@ -176,7 +176,7 @@ def build_page_params_for_home_page_load(
 
     request_language = get_and_set_request_language(
         request,
-        register_ret["default_language"],
+        register_ret["user_settings"]["default_language"],
         translation.get_language_from_path(request.path_info),
     )
 
@@ -234,7 +234,7 @@ def build_page_params_for_home_page_load(
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = max_message_id
-        page_params["enable_desktop_notifications"] = False
+        page_params["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
 

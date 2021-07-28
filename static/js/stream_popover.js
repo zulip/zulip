@@ -32,6 +32,7 @@ import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as unread_ops from "./unread_ops";
+import {user_settings} from "./user_settings";
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
@@ -332,7 +333,7 @@ function build_starred_messages_popover(e) {
     const show_unstar_all_button = starred_messages.get_count() > 0;
     const content = render_starred_messages_sidebar_actions({
         show_unstar_all_button,
-        starred_message_counts: page_params.starred_message_counts,
+        starred_message_counts: user_settings.starred_message_counts,
     });
 
     $(elt).popover({
@@ -506,7 +507,7 @@ export function register_stream_handlers() {
         hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
-        const starred_msg_counts = page_params.starred_message_counts;
+        const starred_msg_counts = user_settings.starred_message_counts;
         const data = {};
         data.starred_message_counts = JSON.stringify(!starred_msg_counts);
         channel.patch({

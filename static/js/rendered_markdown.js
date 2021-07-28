@@ -8,13 +8,13 @@ import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
 import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
+import {user_settings} from "./user_settings";
 
 /*
     rendered_markdown
@@ -236,8 +236,8 @@ export const update_elements = (content) => {
     });
 
     // Display emoji (including realm emoji) as text if
-    // page_params.emojiset is 'text'.
-    if (page_params.emojiset === "text") {
+    // user_settings.emojiset is 'text'.
+    if (user_settings.emojiset === "text") {
         content.find(".emoji").replaceWith(function () {
             const text = $(this).attr("title");
             return ":" + text + ":";

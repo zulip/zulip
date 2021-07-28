@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 // Dependencies
 
@@ -53,10 +53,10 @@ function test(label, f) {
     run_test(label, ({override}) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
-        page_params.enable_desktop_notifications = true;
-        page_params.enable_sounds = true;
-        page_params.wildcard_mentions_notify = true;
-        page_params.notification_sound = "ding";
+        user_settings.enable_desktop_notifications = true;
+        user_settings.enable_sounds = true;
+        user_settings.wildcard_mentions_notify = true;
+        user_settings.notification_sound = "ding";
         f({override});
     });
 }
@@ -165,7 +165,7 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.message_is_notifiable(message), true);
 
     // But not if it's disabled
-    page_params.wildcard_mentions_notify = false;
+    user_settings.wildcard_mentions_notify = false;
     assert.equal(notifications.should_send_desktop_notification(message), false);
     assert.equal(notifications.should_send_audible_notification(message), false);
     assert.equal(notifications.message_is_notifiable(message), true);
@@ -177,7 +177,7 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.message_is_notifiable(message), true);
 
     // Reset state
-    page_params.wildcard_mentions_notify = true;
+    user_settings.wildcard_mentions_notify = true;
     general.wildcard_mentions_notify = null;
 
     // Case 6: If a message is in a muted stream
@@ -251,13 +251,13 @@ test("message_is_notifiable", () => {
         stream_id: general.stream_id,
         topic: "whatever",
     };
-    page_params.notification_sound = "none";
+    user_settings.notification_sound = "none";
     assert.equal(notifications.should_send_desktop_notification(message), true);
     assert.equal(notifications.should_send_audible_notification(message), false);
     assert.equal(notifications.message_is_notifiable(message), true);
 
     // Reset state
-    page_params.notification_sound = "ding";
+    user_settings.notification_sound = "ding";
 
     // If none of the above cases apply
     // (ie: topic is not muted, message does not mention user,

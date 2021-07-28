@@ -24,6 +24,7 @@ import * as settings_toggle from "./settings_toggle";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
+import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
@@ -105,9 +106,9 @@ function show_default_view() {
     //
     // We only allow all_messages and recent_topics
     // to be rendered without a hash.
-    if (page_params.default_view === "recent_topics") {
+    if (user_settings.default_view === "recent_topics") {
         recent_topics_ui.show();
-    } else if (page_params.default_view === "all_messages") {
+    } else if (user_settings.default_view === "all_messages") {
         show_all_message_view();
     } else {
         // NOTE: Setting a hash which is not rendered on
@@ -116,7 +117,7 @@ function show_default_view() {
         // go back in browser history. See
         // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
         // for detailed description of the issue.
-        window.location.hash = page_params.default_view;
+        window.location.hash = user_settings.default_view;
     }
 }
 

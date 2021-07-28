@@ -7,7 +7,7 @@ const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
@@ -30,7 +30,7 @@ const example_realm_linkifiers = [
         id: 3,
     },
 ];
-page_params.translate_emoticons = false;
+user_settings.translate_emoticons = false;
 
 function Image() {
     return {};
@@ -254,7 +254,7 @@ test("marked_shared", () => {
         }
 
         const message = {raw_content: test.input};
-        page_params.translate_emoticons = test.translate_emoticons || false;
+        user_settings.translate_emoticons = test.translate_emoticons || false;
         markdown.apply_markdown(message);
         const output = message.content;
         const error_message = `Failure in test: ${test.name}`;
@@ -571,7 +571,7 @@ test("marked", () => {
 
     for (const test_case of test_cases) {
         // Disable emoji conversion by default.
-        page_params.translate_emoticons = test_case.translate_emoticons || false;
+        user_settings.translate_emoticons = test_case.translate_emoticons || false;
 
         const input = test_case.input;
         const expected = test_case.expected;

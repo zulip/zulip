@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import {media_breakpoints} from "./css_variables";
-import {page_params} from "./page_params";
+import {user_settings} from "./user_settings";
 
 // A few of our width properties in Zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
@@ -84,7 +84,7 @@ export function set_layout_width() {
     // content when reloading a Zulip browser window.  More details
     // are available in the comments on the max-width of 1400px in
     // the .app-main CSS rules.
-    if (page_params.fluid_layout_width) {
+    if (user_settings.fluid_layout_width) {
         $(".header-main").css("max-width", "inherit");
         $(".app .app-main").css("max-width", "inherit");
         $(".fixed-app .app-main").css("max-width", "inherit");

@@ -9,9 +9,9 @@ const {$t} = require("../zjsunit/i18n");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
-page_params.twenty_four_hour_time = true;
+user_settings.twenty_four_hour_time = true;
 
 const timerender = zrequire("timerender");
 
@@ -179,7 +179,7 @@ run_test("get_timestamp_for_flatpickr", () => {
 });
 
 run_test("absolute_time_12_hour", () => {
-    page_params.twenty_four_hour_time = false;
+    user_settings.twenty_four_hour_time = false;
 
     // timestamp with hour > 12, same year
     let timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
@@ -209,7 +209,7 @@ run_test("absolute_time_12_hour", () => {
 });
 
 run_test("absolute_time_24_hour", () => {
-    page_params.twenty_four_hour_time = true;
+    user_settings.twenty_four_hour_time = true;
 
     // timestamp with hour > 12, same year
     let timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
@@ -244,11 +244,11 @@ run_test("get_full_datetime", () => {
     assert.equal(timerender.get_full_datetime(time), expected);
 
     // test 24 hour time setting.
-    page_params.twenty_four_hour_time = true;
+    user_settings.twenty_four_hour_time = true;
     expected = "translated: 5/18/2017 at 21:12:53 UTC";
     assert.equal(timerender.get_full_datetime(time), expected);
 
-    page_params.twenty_four_hour_time = false;
+    user_settings.twenty_four_hour_time = false;
 
     // Test the GMT[+-]x:y logic.
     const previous_env_tz = process.env.TZ;
@@ -316,18 +316,18 @@ run_test("last_seen_status_from_date", () => {
 run_test("set_full_datetime", () => {
     let time = new Date(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
 
-    page_params.twenty_four_hour_time = true;
+    user_settings.twenty_four_hour_time = true;
     let time_str = timerender.stringify_time(time);
     let expected = "07:55";
     assert.equal(time_str, expected);
 
-    page_params.twenty_four_hour_time = false;
+    user_settings.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
     expected = "7:55 AM";
     assert.equal(time_str, expected);
 
     time = new Date(1549979707000); // Tuesday 2/12/2019 13:55:07 PM (UTC+0)
-    page_params.twenty_four_hour_time = false;
+    user_settings.twenty_four_hour_time = false;
     time_str = timerender.stringify_time(time);
     expected = "1:55 PM";
     assert.equal(time_str, expected);

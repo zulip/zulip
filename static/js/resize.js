@@ -7,9 +7,9 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
-import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as ui from "./ui";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 let narrow_window = false;
@@ -206,7 +206,7 @@ export function resize_stream_filters_container(h) {
 export function resize_sidebars() {
     let sidebar;
 
-    if (page_params.left_side_userlist) {
+    if (user_settings.left_side_userlist) {
         const css_narrow_mode = message_viewport.is_narrow();
 
         $("#top_navbar").removeClass("rightside-userlist");

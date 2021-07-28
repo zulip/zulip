@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const timerender = mock_esm("../../static/js/timerender");
 
@@ -551,7 +551,7 @@ test("get_items_for_users", ({override}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
-    page_params.emojiset = "google";
+    user_settings.emojiset = "google";
     const status_emoji_info = {
         emoji_name: "car",
         emoji_code: "1f697",

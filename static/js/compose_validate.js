@@ -17,6 +17,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 let user_acknowledged_all_everyone = false;
@@ -650,7 +651,7 @@ export function validate() {
     if (/^\s*$/.test(message_content)) {
         // Avoid showing an error message when "enter sends" is enabled,
         // as it is more likely that the user has hit "Enter" accidentally.
-        if (!page_params.enter_sends) {
+        if (!user_settings.enter_sends) {
             compose_error.show(
                 $t_html({defaultMessage: "You have nothing to send!"}),
                 $("#compose-textarea"),

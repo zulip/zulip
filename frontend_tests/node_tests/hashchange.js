@@ -6,7 +6,7 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 let window_stub;
 set_global("location", {
@@ -168,7 +168,7 @@ function test_helper({override, change_tab}) {
 
 run_test("hash_interactions", ({override}) => {
     window_stub = $.create("window-stub");
-    page_params.default_view = "recent_topics";
+    user_settings.default_view = "recent_topics";
 
     override(recent_topics_util, "is_visible", () => false);
     const helper = test_helper({override, change_tab: true});

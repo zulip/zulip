@@ -2,7 +2,7 @@ import * as emoji from "../shared/js/emoji";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {page_params} from "./page_params";
+import {user_settings} from "./user_settings";
 
 const away_user_ids = new Set();
 const user_info = new Map();
@@ -80,7 +80,7 @@ export function set_status_emoji(opts) {
         emoji_name: opts.emoji_name,
         emoji_code: opts.emoji_code,
         reaction_type: opts.reaction_type,
-        emoji_alt_code: page_params.emojiset === "text",
+        emoji_alt_code: user_settings.emojiset === "text",
         ...emoji.get_emoji_details_by_name(opts.emoji_name),
     });
 }

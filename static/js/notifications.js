@@ -23,6 +23,7 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
+import {user_settings} from "./user_settings";
 
 const notice_memory = new Map();
 
@@ -91,7 +92,7 @@ export function initialize() {
 }
 
 function update_notification_sound_source() {
-    const notification_sound = page_params.notification_sound;
+    const notification_sound = user_settings.notification_sound;
     const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
     $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
     $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
@@ -233,8 +234,8 @@ export function process_notification(notification) {
 
     if (message.type === "private" || message.type === "test-notification") {
         if (
-            page_params.pm_content_in_desktop_notifications !== undefined &&
-            !page_params.pm_content_in_desktop_notifications
+            user_settings.pm_content_in_desktop_notifications !== undefined &&
+            !user_settings.pm_content_in_desktop_notifications
         ) {
             content = "New private message from " + message.sender_full_name;
         }
@@ -390,7 +391,7 @@ export function should_send_desktop_notification(message) {
 
     // enable_desktop_notifications determines whether we pop up a
     // notification for PMs/mentions/alerts
-    if (!page_params.enable_desktop_notifications) {
+    if (!user_settings.enable_desktop_notifications) {
         return false;
     }
 
@@ -422,7 +423,7 @@ export function should_send_desktop_notification(message) {
 export function should_send_audible_notification(message) {
     // If `None` is selected as the notification sound, never send
     // audible notifications regardless of other configuration.
-    if (page_params.notification_sound === "none") {
+    if (user_settings.notification_sound === "none") {
         return false;
     }
 
@@ -436,7 +437,7 @@ export function should_send_audible_notification(message) {
     }
 
     // enable_sounds determines whether we ding for PMs/mentions/alerts
-    if (!page_params.enable_sounds) {
+    if (!user_settings.enable_sounds) {
         return false;
     }
 
@@ -692,7 +693,7 @@ export function handle_global_notification_updates(notification_name, setting) {
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
     if (settings_config.all_notification_settings.includes(notification_name)) {
-        page_params[notification_name] = setting;
+        user_settings[notification_name] = setting;
     }
 
     if (settings_config.stream_notification_settings.includes(notification_name)) {

@@ -424,7 +424,7 @@ BAD_HTML16 = """
 <div>
   {{> settings_checkbox
   setting_name="realm_name_in_notifications"
-  is_checked=page_params.realm_name_in_notifications
+  is_checked=user_settings.realm_name_in_notifications
   label=settings_label.realm_name_in_notifications}}
 </div>
 """
@@ -433,7 +433,7 @@ GOOD_HTML16 = """
 <div>
     {{> settings_checkbox
       setting_name="realm_name_in_notifications"
-      is_checked=page_params.realm_name_in_notifications
+      is_checked=user_settings.realm_name_in_notifications
       label=settings_label.realm_name_in_notifications}}
 </div>
 """

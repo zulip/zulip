@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -992,7 +992,7 @@ test("initialize", ({override, mock_template}) => {
         compose_textarea_typeahead_called = true;
     };
 
-    page_params.enter_sends = false;
+    user_settings.enter_sends = false;
 
     ct.initialize();
 
@@ -1044,7 +1044,7 @@ test("initialize", ({override, mock_template}) => {
     event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
-    page_params.enter_sends = false;
+    user_settings.enter_sends = false;
     event.metaKey = true;
     let compose_finish_called = false;
     override(compose, "finish", () => {
@@ -1056,7 +1056,7 @@ test("initialize", ({override, mock_template}) => {
     event.metaKey = false;
     event.ctrlKey = true;
     $("form#send_message_form").trigger(event);
-    page_params.enter_sends = true;
+    user_settings.enter_sends = true;
     event.ctrlKey = false;
     event.altKey = true;
     $("form#send_message_form").trigger(event);
@@ -1102,7 +1102,7 @@ test("initialize", ({override, mock_template}) => {
     override(channel, "patch", (params) => {
         assert.equal(params.url, "/json/settings");
         assert.equal(params.idempotent, true);
-        assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});
+        assert.deepEqual(params.data, {enter_sends: user_settings.enter_sends});
 
         channel_patch_called = true;
     });
@@ -1110,7 +1110,7 @@ test("initialize", ({override, mock_template}) => {
     $("#enter_sends").trigger("click");
 
     // Now we re-run both .initialize() and the click handler, this time
-    // with enter_sends: page_params.enter_sends being true
+    // with enter_sends: user_settings.enter_sends being true
     $("#enter_sends").is = () => true;
     $("#enter_sends").trigger("click");
 

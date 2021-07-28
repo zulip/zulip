@@ -41,7 +41,7 @@
             {{#each display_settings.settings.user_display_settings}}
             {{> settings_checkbox
               setting_name=this
-              is_checked=(lookup ../page_params this)
+              is_checked=(lookup ../user_settings this)
               label=(lookup ../settings_label this)
               render_only=(lookup ../display_settings.render_only this)}}
             {{/each}}
@@ -76,7 +76,7 @@
 
             <div class="input-group">
                 <div class="emojiset_choices grey-box">
-                    {{#each page_params.emojiset_choices}}
+                    {{#each user_settings.emojiset_choices}}
                     <label>
                         <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{this.key}}" />
                         <span>{{this.text}}</span>
@@ -97,7 +97,7 @@
 
             {{> settings_checkbox
               setting_name="translate_emoticons"
-              is_checked=page_params.translate_emoticons
+              is_checked=user_settings.translate_emoticons
               label=settings_label.translate_emoticons}}
         </div>
     </form>

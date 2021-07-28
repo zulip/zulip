@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -215,7 +215,7 @@ test("renames", () => {
 test("is_active", () => {
     let sub;
 
-    page_params.demote_inactive_streams =
+    user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.automatic.code;
     stream_data.set_filter_out_inactives();
 
@@ -246,7 +246,7 @@ test("is_active", () => {
 
     assert.ok(stream_data.is_active(sub));
 
-    page_params.demote_inactive_streams =
+    user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.always.code;
     stream_data.set_filter_out_inactives();
 
@@ -274,7 +274,8 @@ test("is_active", () => {
 
     assert.ok(stream_data.is_active(sub));
 
-    page_params.demote_inactive_streams = settings_config.demote_inactive_streams_values.never.code;
+    user_settings.demote_inactive_streams =
+        settings_config.demote_inactive_streams_values.never.code;
     stream_data.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
@@ -503,13 +504,13 @@ test("notifications", () => {
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
-    page_params.enable_stream_desktop_notifications = true;
-    page_params.enable_stream_audible_notifications = true;
+    user_settings.enable_stream_desktop_notifications = true;
+    user_settings.enable_stream_audible_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
-    page_params.enable_stream_desktop_notifications = false;
-    page_params.enable_stream_audible_notifications = false;
+    user_settings.enable_stream_desktop_notifications = false;
+    user_settings.enable_stream_audible_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
@@ -520,38 +521,38 @@ test("notifications", () => {
 
     india.desktop_notifications = false;
     india.audible_notifications = false;
-    page_params.enable_stream_desktop_notifications = true;
-    page_params.enable_stream_audible_notifications = true;
+    user_settings.enable_stream_desktop_notifications = true;
+    user_settings.enable_stream_audible_notifications = true;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
     assert.ok(!stream_data.receives_notifications(india.stream_id, "audible_notifications"));
 
-    page_params.wildcard_mentions_notify = true;
+    user_settings.wildcard_mentions_notify = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
-    page_params.wildcard_mentions_notify = false;
+    user_settings.wildcard_mentions_notify = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
     india.wildcard_mentions_notify = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
-    page_params.wildcard_mentions_notify = true;
+    user_settings.wildcard_mentions_notify = true;
     india.wildcard_mentions_notify = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "wildcard_mentions_notify"));
 
-    page_params.enable_stream_push_notifications = true;
+    user_settings.enable_stream_push_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "push_notifications"));
-    page_params.enable_stream_push_notifications = false;
+    user_settings.enable_stream_push_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
     india.push_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "push_notifications"));
-    page_params.enable_stream_push_notifications = true;
+    user_settings.enable_stream_push_notifications = true;
     india.push_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "push_notifications"));
 
-    page_params.enable_stream_email_notifications = true;
+    user_settings.enable_stream_email_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
-    page_params.enable_stream_email_notifications = false;
+    user_settings.enable_stream_email_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
     india.email_notifications = true;
     assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
-    page_params.enable_stream_email_notifications = true;
+    user_settings.enable_stream_email_notifications = true;
     india.email_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
 
@@ -581,11 +582,11 @@ test("notifications", () => {
     };
     stream_data.add_sub(antarctica);
 
-    page_params.enable_stream_desktop_notifications = true;
-    page_params.enable_stream_audible_notifications = true;
-    page_params.enable_stream_email_notifications = false;
-    page_params.enable_stream_push_notifications = false;
-    page_params.wildcard_mentions_notify = true;
+    user_settings.enable_stream_desktop_notifications = true;
+    user_settings.enable_stream_audible_notifications = true;
+    user_settings.enable_stream_email_notifications = false;
+    user_settings.enable_stream_push_notifications = false;
+    user_settings.wildcard_mentions_notify = true;
 
     india.desktop_notifications = null;
     india.audible_notifications = true;
@@ -770,7 +771,7 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    page_params.demote_inactive_streams = 1;
+    user_settings.demote_inactive_streams = 1;
     page_params.realm_notifications_stream_id = -1;
 
     initialize();
@@ -800,7 +801,7 @@ test("initialize", () => {
 });
 
 test("filter inactives", () => {
-    page_params.demote_inactive_streams =
+    user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.automatic.code;
 
     const params = {};

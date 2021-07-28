@@ -1,5 +1,6 @@
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import {user_settings} from "./user_settings";
 
 /*
     This file contains translations between the integer values used in
@@ -385,7 +386,7 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-type PageParamsItem = keyof typeof page_params;
+type PageParamsItem = keyof typeof user_settings;
 export const stream_notification_settings: PageParamsItem[] = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
@@ -444,7 +445,7 @@ export function get_notifications_table_row_data(
             };
         }
 
-        const checked = page_params[setting_name];
+        const checked = user_settings[setting_name];
         if (typeof checked !== "boolean") {
             throw new TypeError(`Incorrect setting_name passed: ${setting_name}`);
         }

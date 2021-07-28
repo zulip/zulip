@@ -14,7 +14,7 @@ import _ from "lodash";
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n";
-import {page_params} from "./page_params";
+import {user_settings} from "./user_settings";
 
 let next_timerender_id = 0;
 
@@ -206,7 +206,7 @@ export function render_date(time, time_above, today) {
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
 export function render_markdown_timestamp(time) {
-    const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
+    const hourformat = user_settings.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
@@ -277,7 +277,7 @@ export function get_timestamp_for_flatpickr(timestring) {
 }
 
 export function stringify_time(time) {
-    if (page_params.twenty_four_hour_time) {
+    if (user_settings.twenty_four_hour_time) {
         return format(time, "HH:mm");
     }
     return format(time, "h:mm a");
@@ -324,7 +324,7 @@ export const absolute_time = (function () {
     return function (timestamp, today = new Date()) {
         const date = new Date(timestamp);
         const is_older_year = today.getFullYear() - date.getFullYear() > 0;
-        const H_24 = page_params.twenty_four_hour_time;
+        const H_24 = user_settings.twenty_four_hour_time;
         let str = MONTHS[date.getMonth()] + " " + date.getDate();
         // include year if message date is from a previous year
         if (is_older_year) {
@@ -338,7 +338,7 @@ export const absolute_time = (function () {
 export function get_full_datetime(time) {
     const time_options = {timeStyle: "medium"};
 
-    if (page_params.twenty_four_hour_time) {
+    if (user_settings.twenty_four_hour_time) {
         time_options.hourCycle = "h24";
     }
 

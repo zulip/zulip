@@ -5,10 +5,10 @@ import * as emojisets from "./emojisets";
 import {$t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
+import {user_settings} from "./user_settings";
 
 const meta = {
     loaded: false,
@@ -42,15 +42,15 @@ export function set_up() {
     meta.loaded = true;
     $("#display-settings-status").hide();
 
-    $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
+    $("#demote_inactive_streams").val(user_settings.demote_inactive_streams);
 
-    $("#color_scheme").val(page_params.color_scheme);
+    $("#color_scheme").val(user_settings.color_scheme);
 
-    $("#default_view").val(page_params.default_view);
+    $("#default_view").val(user_settings.default_view);
 
-    $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
+    $("#twenty_four_hour_time").val(JSON.stringify(user_settings.twenty_four_hour_time));
 
-    $(`.emojiset_choice[value="${CSS.escape(page_params.emojiset)}"]`).prop("checked", true);
+    $(`.emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`).prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").on("click", () => {
         overlays.close_modal("#default_language_modal");
@@ -139,7 +139,7 @@ export function set_up() {
 
     $(".emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
-        const current_emojiset = page_params.emojiset;
+        const current_emojiset = user_settings.emojiset;
         if (current_emojiset === data.emojiset) {
             return;
         }
@@ -174,11 +174,11 @@ export async function report_emojiset_change() {
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
 
-    await emojisets.select(page_params.emojiset);
+    await emojisets.select(user_settings.emojiset);
 
     if ($("#emoji-settings-status").length) {
         loading.destroy_indicator($("#emojiset_spinner"));
-        $("#emojiset_select").val(page_params.emojiset);
+        $("#emojiset_select").val(user_settings.emojiset);
         ui_report.success(
             $t_html({defaultMessage: "Emojiset changed successfully!"}),
             $("#emoji-settings-status").expectOne(),
@@ -189,18 +189,18 @@ export async function report_emojiset_change() {
 }
 
 export function update_page() {
-    $("#left_side_userlist").prop("checked", page_params.left_side_userlist);
+    $("#left_side_userlist").prop("checked", user_settings.left_side_userlist);
     $("#default_language_name").text(default_language_name);
-    $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
-    $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
-    $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
-    $("#default_view").val(page_params.default_view);
+    $("#translate_emoticons").prop("checked", user_settings.translate_emoticons);
+    $("#twenty_four_hour_time").val(JSON.stringify(user_settings.twenty_four_hour_time));
+    $("#color_scheme").val(JSON.stringify(user_settings.color_scheme));
+    $("#default_view").val(user_settings.default_view);
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
 }
 
 export function initialize() {
-    const language_name = get_language_name(page_params.default_language);
+    const language_name = get_language_name(user_settings.default_language);
     set_default_language_name(language_name);
 }

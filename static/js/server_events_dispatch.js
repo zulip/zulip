@@ -63,6 +63,7 @@ import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
 import * as user_groups from "./user_groups";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
 export function dispatch_normal_event(event) {
@@ -566,7 +567,7 @@ export function dispatch_normal_event(event) {
                 "starred_message_counts",
             ];
             if (user_display_settings.includes(event.property)) {
-                page_params[event.property] = event.value;
+                user_settings[event.property] = event.value;
             }
             if (event.property === "default_language") {
                 // We additionally need to set the language name.
@@ -640,8 +641,8 @@ export function dispatch_normal_event(event) {
                 activity.build_user_sidebar();
             }
             if (event.property === "enter_sends") {
-                page_params.enter_sends = event.value;
-                $("#enter_sends").prop("checked", page_params.enter_sends);
+                user_settings.enter_sends = event.value;
+                $("#enter_sends").prop("checked", user_settings.enter_sends);
                 compose.toggle_enter_sends_ui();
                 break;
             }

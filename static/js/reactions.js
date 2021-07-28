@@ -12,6 +12,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import {user_settings} from "./user_settings";
 
 export const view = {}; // function namespace
 
@@ -325,7 +326,7 @@ view.insert_new_reaction = function (opts) {
     context.count = 1;
     context.label = new_label;
     context.local_id = get_local_reaction_id(opts);
-    context.emoji_alt_code = page_params.emojiset === "text";
+    context.emoji_alt_code = user_settings.emojiset === "text";
 
     if (opts.user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
@@ -519,7 +520,7 @@ export function add_clean_reaction(opts) {
     r.user_ids = opts.user_ids;
     update_user_fields(r);
 
-    r.emoji_alt_code = page_params.emojiset === "text";
+    r.emoji_alt_code = user_settings.emojiset === "text";
 
     if (r.reaction_type !== "unicode_emoji") {
         r.is_realm_emoji = true;

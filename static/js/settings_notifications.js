@@ -5,13 +5,13 @@ import render_stream_specific_notification_row from "../templates/settings/strea
 import * as channel from "./channel";
 import {$t} from "./i18n";
 import * as notifications from "./notifications";
-import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
+import {user_settings} from "./user_settings";
 
 function rerender_ui() {
     const unmatched_streams_table = $("#stream-specific-notify-table");
@@ -50,12 +50,12 @@ function change_notification_setting(setting, value, status_element) {
 }
 
 function update_desktop_icon_count_display() {
-    $("#desktop_icon_count_display").val(page_params.desktop_icon_count_display);
+    $("#desktop_icon_count_display").val(user_settings.desktop_icon_count_display);
     unread_ui.update_unread_counts();
 }
 
 export function set_enable_digest_emails_visibility() {
-    if (page_params.realm_digest_emails_enabled) {
+    if (user_settings.realm_digest_emails_enabled) {
         $("#enable_digest_emails_label").parent().show();
     } else {
         $("#enable_digest_emails_label").parent().hide();
@@ -63,7 +63,7 @@ export function set_enable_digest_emails_visibility() {
 }
 
 export function set_enable_marketing_emails_visibility() {
-    if (page_params.corporate_enabled) {
+    if (user_settings.corporate_enabled) {
         $("#enable_marketing_emails_label").parent().show();
     } else {
         $("#enable_marketing_emails_label").parent().hide();
@@ -96,13 +96,13 @@ export function set_up() {
     });
 
     $("#play_notification_sound").on("click", () => {
-        if (page_params.notification_sound !== "none") {
+        if (user_settings.notification_sound !== "none") {
             $("#notification-sound-audio")[0].play();
         }
     });
 
     const notification_sound_dropdown = $("#notification_sound");
-    notification_sound_dropdown.val(page_params.notification_sound);
+    notification_sound_dropdown.val(user_settings.notification_sound);
 
     $("#enable_sounds, #enable_stream_audible_notifications").on("change", () => {
         if (
@@ -125,7 +125,7 @@ export function update_page() {
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
-            !page_params.realm_push_notifications_enabled
+            !user_settings.realm_push_notifications_enabled
         ) {
             // If push notifications are disabled at the realm level,
             // we should just leave the checkbox always off.
@@ -135,7 +135,7 @@ export function update_page() {
             continue;
         }
 
-        $(`#${CSS.escape(setting)}`).prop("checked", page_params[setting]);
+        $(`#${CSS.escape(setting)}`).prop("checked", user_settings[setting]);
     }
     rerender_ui();
 }

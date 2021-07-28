@@ -43,8 +43,8 @@ function build_emoticon_translations() {
         ....
     ]
 
-        We build up this list of ~12 emoticon translations
-        even if page_params.translate_emoticons is false, since
+        We build up this list of ~12 emoticon translations even
+        if user_settings.translate_emoticons is false, since
         that setting can be flipped via live update events.
         On the other hand, we assume that emoticon_conversions
         won't change until the next reload, which is fine for
