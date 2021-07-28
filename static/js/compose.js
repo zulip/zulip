@@ -2,8 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_compose from "../templates/compose.hbs";
-import render_compose_invite_users from "../templates/compose_invite_users.hbs";
-import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -21,7 +19,6 @@ import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
@@ -29,7 +26,6 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -335,40 +331,6 @@ export function update_email(user_id, new_email) {
     compose_state.private_message_recipient(reply_to);
 }
 
-export function needs_subscribe_warning(user_id, stream_id) {
-    // This returns true if all of these conditions are met:
-    //  * the user is valid
-    //  * the user is not already subscribed to the stream
-    //  * the user has no back-door way to see stream messages
-    //    (i.e. bots on public/private streams)
-    //
-    //  You can think of this as roughly answering "is there an
-    //  actionable way to subscribe the user and do they actually
-    //  need it?".
-    //
-    //  We expect the caller to already have verified that we're
-    //  sending to a valid stream and trying to mention the user.
-
-    const user = people.get_by_user_id(user_id);
-
-    if (!user) {
-        return false;
-    }
-
-    if (user.is_bot) {
-        // Bots may receive messages on public/private streams even if they are
-        // not subscribed.
-        return false;
-    }
-
-    if (stream_data.is_user_subscribed(stream_id, user_id)) {
-        // If our user is already subscribed
-        return false;
-    }
-
-    return true;
-}
-
 function insert_video_call_url(url, target_textarea) {
     const link_text = $t({defaultMessage: "Click to join video call"});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
@@ -431,108 +393,6 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
                 show_preview($t_html({defaultMessage: "Failed to generate preview"}));
             },
         });
-    }
-}
-
-export function warn_if_private_stream_is_linked(linked_stream) {
-    // For PMs, we currently don't warn about links to private
-    // streams, since you are specifically sharing the existence of
-    // the private stream with someone.  One could imagine changing
-    // this policy if user feedback suggested it was useful.
-    if (compose_state.get_message_type() !== "stream") {
-        return;
-    }
-
-    const compose_stream = stream_data.get_sub(compose_state.stream_name());
-    if (compose_stream === undefined) {
-        // We have an invalid stream name, don't warn about this here as
-        // we show an error to the user when they try to send the message.
-        return;
-    }
-
-    // If the stream we're linking to is not invite-only, then it's
-    // public, and there is no need to warn about it, since all
-    // members can already see all the public streams.
-    //
-    // Theoretically, we could still do a warning if there are any
-    // guest users subscribed to the stream we're posting to; we may
-    // change this policy if user feedback suggests it'd be an
-    // improvement.
-    if (!linked_stream.invite_only) {
-        return;
-    }
-
-    // Don't warn if subscribers list of current compose_stream is
-    // a subset of linked_stream's subscribers list, because
-    // everyone will be subscribed to the linked stream and so
-    // knows it exists.  (But always warn Zephyr users, since
-    // we may not know their stream's subscribers.)
-    if (
-        peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id) &&
-        !page_params.realm_is_zephyr_mirror_realm
-    ) {
-        return;
-    }
-
-    const stream_name = linked_stream.name;
-
-    const warning_area = $("#compose_private_stream_alert");
-    const context = {stream_name};
-    const new_row = render_compose_private_stream_alert(context);
-
-    warning_area.append(new_row);
-    warning_area.show();
-}
-
-export function warn_if_mentioning_unsubscribed_user(mentioned) {
-    if (compose_state.get_message_type() !== "stream") {
-        return;
-    }
-
-    // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-    if (page_params.realm_is_zephyr_mirror_realm) {
-        return;
-    }
-
-    const user_id = mentioned.user_id;
-
-    if (mentioned.is_broadcast) {
-        return; // don't check if @all/@everyone/@stream
-    }
-
-    const stream_name = compose_state.stream_name();
-
-    if (!stream_name) {
-        return;
-    }
-
-    const sub = stream_data.get_sub(stream_name);
-
-    if (!sub) {
-        return;
-    }
-
-    if (needs_subscribe_warning(user_id, sub.stream_id)) {
-        const error_area = $("#compose_invite_users");
-        const existing_invites_area = $("#compose_invite_users .compose_invite_user");
-
-        const existing_invites = Array.from($(existing_invites_area), (user_row) =>
-            Number.parseInt($(user_row).data("user-id"), 10),
-        );
-
-        if (!existing_invites.includes(user_id)) {
-            const context = {
-                user_id,
-                stream_id: sub.stream_id,
-                name: mentioned.full_name,
-                can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
-            };
-
-            const new_row = render_compose_invite_users(context);
-            error_area.append(new_row);
-        }
-
-        error_area.show();
     }
 }
 

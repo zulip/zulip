@@ -844,7 +844,7 @@ export function content_typeahead_selected(item, event) {
                 );
                 beginning += mention_text + " ";
                 if (!is_silent) {
-                    compose.warn_if_mentioning_unsubscribed_user(item);
+                    compose_validate.warn_if_mentioning_unsubscribed_user(item);
                 }
             }
             break;
@@ -866,7 +866,7 @@ export function content_typeahead_selected(item, event) {
             } else {
                 beginning += "** ";
             }
-            compose.warn_if_private_stream_is_linked(item);
+            compose_validate.warn_if_private_stream_is_linked(item);
             break;
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including

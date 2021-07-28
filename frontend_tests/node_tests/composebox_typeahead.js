@@ -37,6 +37,7 @@ set_global("document", "document-stub");
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
+const compose_validate = zrequire("compose_validate");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -375,7 +376,7 @@ test("content_typeahead_selected", ({override}) => {
     // mention
     fake_this.completing = "mention";
 
-    override(compose, "warn_if_mentioning_unsubscribed_user", () => {});
+    override(compose_validate, "warn_if_mentioning_unsubscribed_user", () => {});
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
@@ -384,7 +385,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     let warned_for_mention = false;
-    override(compose, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
+    override(compose_validate, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
         assert.equal(mentioned, othello);
         warned_for_mention = true;
     });
@@ -416,7 +417,7 @@ test("content_typeahead_selected", ({override}) => {
 
     fake_this.query = "@back";
     fake_this.token = "back";
-    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     });
     expected_value = "@*Backend* ";
@@ -436,7 +437,7 @@ test("content_typeahead_selected", ({override}) => {
 
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     });
 
@@ -463,7 +464,7 @@ test("content_typeahead_selected", ({override}) => {
 
     fake_this.query = "@_back";
     fake_this.token = "back";
-    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     });
     expected_value = "@_*Backend* ";
@@ -484,7 +485,7 @@ test("content_typeahead_selected", ({override}) => {
     // stream
     fake_this.completing = "stream";
     let warned_for_stream_link = false;
-    override(compose, "warn_if_private_stream_is_linked", (linked_stream) => {
+    override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
         assert.equal(linked_stream, sweden_stream);
         warned_for_stream_link = true;
     });

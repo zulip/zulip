@@ -37,7 +37,6 @@ const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
 const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
-const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const transmit = mock_esm("../../static/js/transmit");
@@ -48,7 +47,6 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
-const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const upload = zrequire("upload");
@@ -415,78 +413,6 @@ test_ui("finish", ({override}) => {
     })();
 });
 
-test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
-    const test_sub = {
-        name: compose_state.stream_name(),
-        stream_id: 99,
-    };
-
-    stream_data.add_sub(test_sub);
-    peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
-
-    let denmark = {
-        stream_id: 100,
-        name: "Denmark",
-    };
-    stream_data.add_sub(denmark);
-
-    peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
-
-    function test_noop_case(invite_only) {
-        compose_state.set_message_type("stream");
-        denmark.invite_only = invite_only;
-        compose.warn_if_private_stream_is_linked(denmark);
-        assert.equal($("#compose_private_stream_alert").visible(), false);
-    }
-
-    test_noop_case(false);
-    // invite_only=true and current compose stream subscribers are a subset
-    // of mentioned_stream subscribers.
-    test_noop_case(true);
-
-    $("#compose_private").hide();
-    compose_state.set_message_type("stream");
-
-    const checks = [
-        (function () {
-            let called;
-            mock_template("compose_private_stream_alert.hbs", false, (context) => {
-                called = true;
-                assert.equal(context.stream_name, "Denmark");
-                return "fake-compose_private_stream_alert-template";
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            $("#compose_private_stream_alert").append = (html) => {
-                called = true;
-                assert.equal(html, "fake-compose_private_stream_alert-template");
-            };
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-    ];
-
-    denmark = {
-        invite_only: true,
-        name: "Denmark",
-        stream_id: 22,
-    };
-    stream_data.add_sub(denmark);
-
-    compose.warn_if_private_stream_is_linked(denmark);
-    assert.equal($("#compose_private_stream_alert").visible(), true);
-
-    for (const f of checks) {
-        f();
-    }
-});
-
 test_ui("initialize", ({override, mock_template}) => {
     override(giphy, "is_giphy_enabled", () => true);
 
@@ -636,164 +562,6 @@ test_ui("trigger_submit_compose_form", ({override}) => {
 
     assert.ok(prevent_default_checked);
     assert.ok(compose_finish_checked);
-});
-
-test_ui("needs_subscribe_warning", () => {
-    const invalid_user_id = 999;
-
-    const test_bot = {
-        full_name: "Test Bot",
-        email: "test-bot@example.com",
-        user_id: 135,
-        is_bot: true,
-    };
-    people.add_active_user(test_bot);
-
-    const sub = {
-        stream_id: 110,
-        name: "stream",
-    };
-
-    stream_data.add_sub(sub);
-    peer_data.set_subscribers(sub.stream_id, [bob.user_id, me.user_id]);
-
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 999");
-    // Test with an invalid user id.
-    assert.equal(compose.needs_subscribe_warning(invalid_user_id, sub.stream_id), false);
-
-    // Test with bot user.
-    assert.equal(compose.needs_subscribe_warning(test_bot.user_id, sub.stream_id), false);
-
-    // Test when user is subscribed to the stream.
-    assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
-
-    peer_data.remove_subscriber(sub.stream_id, bob.user_id);
-    // Test when the user is not subscribed.
-    assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
-});
-
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
-    override(settings_data, "user_can_subscribe_other_users", () => true);
-
-    let mentioned = {
-        email: "foo@bar.com",
-    };
-
-    $("#compose_invite_users .compose_invite_user").length = 0;
-
-    function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
-        const msg_type = is_private ? "private" : "stream";
-        compose_state.set_message_type(msg_type);
-        page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-        mentioned.is_broadcast = is_broadcast;
-        compose.warn_if_mentioning_unsubscribed_user(mentioned);
-        assert.equal($("#compose_invite_users").visible(), false);
-    }
-
-    test_noop_case(true, false, false);
-    test_noop_case(false, true, false);
-    test_noop_case(false, false, true);
-
-    $("#compose_invite_users").hide();
-    compose_state.set_message_type("stream");
-    page_params.realm_is_zephyr_mirror_realm = false;
-
-    // Test with empty stream name in compose box. It should return noop.
-    assert.equal(compose_state.stream_name(), "");
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), false);
-
-    compose_state.stream_name("random");
-    const sub = {
-        stream_id: 111,
-        name: "random",
-    };
-
-    // Test with invalid stream in compose box. It should return noop.
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), false);
-
-    // Test mentioning a user that should gets a warning.
-
-    const checks = [
-        (function () {
-            let called;
-            override(compose, "needs_subscribe_warning", (user_id, stream_id) => {
-                called = true;
-                assert.equal(user_id, 34);
-                assert.equal(stream_id, 111);
-                return true;
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            mock_template("compose_invite_users.hbs", false, (context) => {
-                called = true;
-                assert.equal(context.user_id, 34);
-                assert.equal(context.stream_id, 111);
-                assert.equal(context.name, "Foo Barson");
-                return "fake-compose-invite-user-template";
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            $("#compose_invite_users").append = (html) => {
-                called = true;
-                assert.equal(html, "fake-compose-invite-user-template");
-            };
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-    ];
-
-    mentioned = {
-        email: "foo@bar.com",
-        user_id: 34,
-        full_name: "Foo Barson",
-    };
-
-    stream_data.add_sub(sub);
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), true);
-
-    for (const f of checks) {
-        f();
-    }
-
-    // Simulate that the row was added to the DOM.
-    const warning_row = $("<warning row>");
-
-    let looked_for_existing;
-    warning_row.data = (field) => {
-        if (field === "user-id") {
-            looked_for_existing = true;
-            return "34";
-        }
-        if (field === "stream-id") {
-            return "111";
-        }
-        throw new Error(`Unknown field ${field}`);
-    };
-
-    const previous_users = $("#compose_invite_users .compose_invite_user");
-    previous_users.length = 1;
-    previous_users[0] = warning_row;
-    $("#compose_invite_users").hide();
-
-    // Now try to mention the same person again. The template should
-    // not render.
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), true);
-    assert.ok(looked_for_existing);
 });
 
 test_ui("on_events", ({override}) => {
