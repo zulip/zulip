@@ -4,12 +4,11 @@
         <h3 id="set_user_status_modal_label">{{t "Set status" }} </h3>
     </div>
     <div class="modal-body">
-        <label for="user_status">{{t "Status message" }}</label>
         <div class="user_status_content_wrapper">
-            <div class="status_emoji_wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Click to change' }}" data-tippy-placement="top" aria-label="{{t 'Click to change' }}"  tabindex="0" id="selected_emoji">
+            <div class="status_emoji_wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}"  tabindex="0" id="selected_emoji">
                 {{> status_emoji_selector}}
             </div>
-            <input type="text" class="user_status" maxlength="60"/>
+            <input type="text" class="user_status" placeholder="{{t 'Your status' }}" maxlength="60"/>
             <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
                 <i class="fa fa-remove" aria-hidden="true"></i>
             </button>
