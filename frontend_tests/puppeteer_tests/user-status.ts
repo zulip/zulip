@@ -3,10 +3,11 @@ import type {Page} from "puppeteer";
 import common from "../puppeteer_lib/common";
 
 async function open_set_user_status_modal(page: Page): Promise<void> {
-    const buddy_list_menu_icon = "#user_presences .user-list-sidebar-menu-icon";
-    await page.hover(buddy_list_menu_icon);
-    await page.waitForSelector(buddy_list_menu_icon, {visible: true});
-    await page.click(buddy_list_menu_icon);
+    const buddy_list_me_item = "#user_presences .user_sidebar_entry:first-child";
+    await page.hover(buddy_list_me_item);
+    const menu_icon_selector = buddy_list_me_item + " .user-list-sidebar-menu-icon";
+    await page.waitForSelector(menu_icon_selector, {visible: true});
+    await page.click(menu_icon_selector);
     await page.waitForSelector(".user_popover", {visible: true});
     // We are using evaluate to click because it is very hard to detect if the user info popover has opened.
     await page.evaluate(() =>
