@@ -7,6 +7,10 @@
     flex-direction: column;
     max-height: 100vh;
 
+    #select_filter_widget {
+        margin: 0;
+    }
+
     #recent_topics_table {
         max-width: 100%;
         padding-top: 12px;
@@ -43,14 +47,6 @@
             }
         }
 
-        a {
-            color: hsl(205, 47%, 42%);
-            text-decoration: none;
-            &:hover {
-                color: hsl(214, 40%, 58%);
-            }
-        }
-
         .required-text:empty::after {
             content: attr(data-empty);
             display: block;
@@ -73,6 +69,14 @@
                      + give user some extra space at the bottom so that last
                        topic row is clearly visible. */
             max-height: calc(100vh - 100px);
+
+            a {
+                color: hsl(205, 47%, 42%);
+                text-decoration: none;
+                &:hover {
+                    color: hsl(214, 40%, 58%);
+                }
+            }
         }
 
         .table_fix_head table {
@@ -103,7 +107,7 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 0 10px 0;
+            margin: 0 0 5px 0;
         }
 
         #recent_topics_search {
@@ -117,20 +121,6 @@
 
         #recent_topics_search_clear {
             margin-top: -10px !important;
-        }
-
-        .btn-recent-filters {
-            border-radius: 40px;
-            margin: 0 5px 10px 0;
-
-            &:focus {
-                background-color: hsl(0, 0%, 80%);
-                outline: 0;
-            }
-        }
-
-        .btn-recent-selected {
-            background-color: hsl(0, 11%, 93%);
         }
 
         .unread_count {
@@ -214,6 +204,10 @@
 
         .unread_topic {
             background-color: hsl(0, 0%, 100%);
+        }
+
+        .topic-mentioned {
+            border-left: 4px solid hsl(39, 100%, 50%);
         }
 
         .last_msg_time {

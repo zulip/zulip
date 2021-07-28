@@ -1,6 +1,8 @@
 <div id="recent_topics_filter_buttons" class="btn-group" role="group">
     <div id="recent_filters_group">
-        {{> recent_topics_filters}}
+        {{> settings/multiselect_dropdown_list_widget
+          widget_name="select_filter"
+          list_placeholder=(t 'Select filters')}}
     </div>
     <div class="search_group" role="group">
         <input type="text" id="recent_topics_search" value="{{ search_val }}" placeholder="{{t 'Filter topics (t)' }}" />

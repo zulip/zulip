@@ -532,7 +532,6 @@ body.night-mode {
         background-color: hsla(212, 30%, 22%, 0.6);
     }
 
-    .btn-recent-selected,
     #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
     }

@@ -1,10 +1,10 @@
 import $ from "jquery";
 
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
-import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
 import * as compose_closed_ui from "./compose_closed_ui";
+import {MultiSelectDropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -28,7 +28,7 @@ import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as unread from "./unread";
 
-let topics_widget;
+export let topics_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -183,15 +183,6 @@ function revive_current_focus() {
         return true;
     }
 
-    const filter_button = current_focus_elem.data("filter");
-    if (!filter_button) {
-        set_default_focus();
-    } else {
-        current_focus_elem = $("#recent_topics_filter_buttons").find(
-            `[data-filter='${CSS.escape(filter_button)}']`,
-        );
-        current_focus_elem.trigger("focus");
-    }
     return true;
 }
 
@@ -258,6 +249,16 @@ function format_topic(topic_data) {
     }
     const other_sender_names = displayed_other_names.join("<br/>");
 
+    function is_unread_mention_row() {
+        for (const msg of unread.unread_mentions_counter) {
+            const message = message_store.get(msg);
+            if (message.topic.toLowerCase() === topic.toLowerCase()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     return {
         // stream info
         stream_id,
@@ -270,6 +271,7 @@ function format_topic(topic_data) {
         topic,
         topic_key: get_topic_key(stream_id, topic),
         unread_count,
+        table_unread_mentioned: is_unread_mention_row(),
         last_msg_time,
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
@@ -394,59 +396,46 @@ export function update_topic_unread_count(message) {
     inplace_rerender(topic_key);
 }
 
-export function set_filter(filter) {
-    // This function updates the `filters` variable
-    // after user clicks on one of the filter buttons
-    // based on `btn-recent-selected` class and current
-    // set `filters`.
-
-    // Get the button which was clicked.
-    const filter_elem = $("#recent_topics_filter_buttons").find(
-        `[data-filter="${CSS.escape(filter)}"]`,
-    );
-
-    // If user clicks `All`, we clear all filters.
-    if (filter === "all" && filters.size !== 0) {
-        filters = new Set();
-        // If the button was already selected, remove the filter.
-    } else if (filter_elem.hasClass("btn-recent-selected")) {
-        filters.delete(filter);
-        // If the button was not selected, we add the filter.
-    } else {
+function add_filter_and_redraw(filter) {
+    if (filter) {
         filters.add(filter);
     }
 
+    // Redraw the Recent topic table.
+    topics_widget.hard_redraw();
     save_filters();
 }
 
-function show_selected_filters() {
-    // Add `btn-selected-filter` to the buttons to show
-    // which filters are applied.
-    if (filters.size === 0) {
-        $("#recent_topics_filter_buttons")
-            .find('[data-filter="all"]')
-            .addClass("btn-recent-selected")
-            .attr("aria-checked", "true");
-    } else {
-        for (const filter of filters) {
-            $("#recent_topics_filter_buttons")
-                .find(`[data-filter="${CSS.escape(filter)}"]`)
-                .addClass("btn-recent-selected")
-                .attr("aria-checked", "true");
-        }
+function remove_filter_and_redraw(filter) {
+    if (filter) {
+        filters.delete(filter);
     }
+
+    // Redraw the Recent topic table.
+    topics_widget.hard_redraw();
+    save_filters();
 }
 
-export function update_filters_view() {
-    const rendered_filters = render_recent_topics_filters({
-        filter_participated: filters.has("participated"),
-        filter_unread: filters.has("unread"),
-        filter_muted: filters.has("include_muted"),
-    });
-    $("#recent_filters_group").html(rendered_filters);
-    show_selected_filters();
+function get_mapped_filters() {
+    // Assigns a key to every filter so that object
+    // can be passed while initializing `Multiselect DLW`.
 
-    topics_widget.hard_redraw();
+    const mapped_filters = [
+        {
+            name: $t({defaultMessage: "Include muted"}),
+            value: "include_muted",
+        },
+        {
+            name: $t({defaultMessage: "Unread"}),
+            value: "unread",
+        },
+        {
+            name: $t({defaultMessage: "Participated"}),
+            value: "participated",
+        },
+    ];
+
+    return mapped_filters;
 }
 
 function stream_sort(a, b) {
@@ -529,7 +518,6 @@ export function complete_rerender() {
 
     // Update header
     load_filters();
-    show_selected_filters();
 
     // Show topics list
     const mapped_topic_values = Array.from(get().values()).map((value) => value);
@@ -540,12 +528,24 @@ export function complete_rerender() {
     }
 
     const rendered_body = render_recent_topics_body({
-        filter_participated: filters.has("participated"),
-        filter_unread: filters.has("unread"),
-        filter_muted: filters.has("include_muted"),
         search_val: $("#recent_topics_search").val() || "",
     });
     $("#recent_topics_table").html(rendered_body);
+
+    // Initialize filters
+
+    new MultiSelectDropdownListWidget({
+        widget_name: "select_filter",
+        data: get_mapped_filters(),
+        value: Array.from(filters),
+        on_pill_add: (filter) => {
+            add_filter_and_redraw(filter);
+        },
+        on_pill_remove: (filter) => {
+            remove_filter_and_redraw(filter);
+        },
+    });
+
     const container = $("#recent_topics_table table tbody");
     container.empty();
     topics_widget = ListWidget.create(container, mapped_topic_values, {
@@ -555,7 +555,7 @@ export function complete_rerender() {
             return render_recent_topic_row(format_topic(item));
         },
         filter: {
-            // We use update_filters_view & filters_should_hide_topic to do all the
+            // We use topics_widget.hard_redraw & filters_should_hide_topic to do all the
             // filtering for us, which is called using click_handlers.
             predicate(topic_data) {
                 return !filters_should_hide_topic(topic_data);
@@ -601,10 +601,6 @@ export function show() {
     message_view_header.render_title_area();
 
     complete_rerender();
-}
-
-function filter_buttons() {
-    return $("#recent_filters_group").children();
 }
 
 export function hide() {
@@ -653,6 +649,21 @@ export function change_focused_element($elt, input_key) {
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
+    const dropdown_filter = $("#recent_filters_group .dropdown-toggle");
+
+    function dropdown_pill_items() {
+        const pill_container = $("#recent_filters_group #pill-container");
+        return pill_container.find(".pill");
+    }
+
+    function get_filter_focus_element() {
+        // A helper function that returns either the filter pill
+        // or the dropdown toggle element depending upon their visibility.
+        if (dropdown_pill_items().length > 0) {
+            return dropdown_pill_items().last();
+        }
+        return dropdown_filter;
+    }
 
     if ($elt.attr("id") === "recent_topics_search") {
         // Since the search box a text area, we want the browser to handle
@@ -677,22 +688,22 @@ export function change_focused_element($elt, input_key) {
             case "open_recent_topics":
                 return false;
             case "shift_tab":
-                current_focus_elem = filter_buttons().last();
+                current_focus_elem = get_filter_focus_element();
                 break;
             case "left_arrow":
                 if (start !== 0 || is_selected) {
                     return false;
                 }
-                current_focus_elem = filter_buttons().last();
+                current_focus_elem = get_filter_focus_element();
                 break;
             case "tab":
-                current_focus_elem = filter_buttons().first();
+                current_focus_elem = dropdown_filter;
                 break;
             case "right_arrow":
                 if (end !== text_length || is_selected) {
                     return false;
                 }
-                current_focus_elem = filter_buttons().first();
+                current_focus_elem = dropdown_filter;
                 break;
             case "down_arrow":
                 set_table_focus(row_focus, col_focus);
@@ -714,28 +725,19 @@ export function change_focused_element($elt, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("btn-recent-filters")) {
+    } else if ($elt.hasClass("dropdown-toggle")) {
         switch (input_key) {
             case "click":
                 current_focus_elem = $elt;
                 return true;
-            case "shift_tab":
             case "vim_left":
             case "left_arrow":
-                if (filter_buttons().first()[0] === $elt[0]) {
-                    current_focus_elem = $("#recent_topics_search");
-                } else {
-                    current_focus_elem = $elt.prev();
-                }
+                current_focus_elem = $("#recent_topics_search");
                 break;
             case "tab":
             case "vim_right":
             case "right_arrow":
-                if (filter_buttons().last()[0] === $elt[0]) {
-                    current_focus_elem = $("#recent_topics_search");
-                } else {
-                    current_focus_elem = $elt.next();
-                }
+                current_focus_elem = $("#recent_topics_search");
                 break;
             case "vim_down":
             case "down_arrow":
@@ -808,7 +810,7 @@ export function change_focused_element($elt, input_key) {
     }
     if (current_focus_elem && input_key !== "escape") {
         current_focus_elem.trigger("focus");
-        if (current_focus_elem.hasClass("btn-recent-filters")) {
+        if (current_focus_elem.hasClass("dropdown-toggle")) {
             compose_closed_ui.set_standard_text_for_reply_button();
         }
         return true;

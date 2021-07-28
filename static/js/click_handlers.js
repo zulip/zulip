@@ -377,6 +377,62 @@ export function initialize() {
 
     $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
 
+    $("body").on("keydown", "#recent_filters_group #pill-container .pill", function (e) {
+        const pill_container_items = $("#recent_filters_group #pill-container").find(".pill");
+        const filter_dropdown = $("#recent_filters_group .multiselect-icon");
+
+        if (e.key === "ArrowRight" || e.key === "Tab") {
+            $("#recent_topics_search").trigger("focus");
+        }
+        if (e.key === "Tab" && e.shiftKey) {
+            if (this === pill_container_items.first()[0]) {
+                e.preventDefault();
+                e.stopPropagation();
+                filter_dropdown.trigger("focus");
+                return;
+            }
+            $(this).prev().trigger("focus");
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("body").on("keydown", "#recent_filters_group .dropdown-toggle", function (e) {
+        const supported_keycodes = [27, 40, 74];
+        if (!supported_keycodes.includes(e.keyCode)) {
+            return;
+        }
+
+        switch (e.keyCode) {
+            case 27:
+                recent_topics_ui.change_focused_element($(this), "escape");
+                break;
+
+            case 40:
+                recent_topics_ui.change_focused_element($(this), "down_arrow");
+                break;
+
+            case 74:
+                recent_topics_ui.change_focused_element($(this), "vim_down");
+                break;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("body").on("click", "#recent_filters_group .dropdown-toggle", function () {
+        recent_topics_ui.change_focused_element($(this), "click");
+    });
+
+    $("body").on("keydown", "#recent_filters_group .multiselect-icon", (e) => {
+        if (e.shiftKey && e.key === "Tab") {
+            e.stopPropagation();
+            e.preventDefault();
+            $("#recent_topics_search").trigger("focus");
+        }
+    });
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
@@ -399,13 +455,6 @@ export function initialize() {
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
-    $("body").on("click", ".btn-recent-filters", (e) => {
-        e.stopPropagation();
-        recent_topics_ui.change_focused_element($(e.target), "click");
-        recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
-        recent_topics_ui.update_filters_view();
-    });
-
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
         recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.stream);
@@ -423,7 +472,7 @@ export function initialize() {
         "keyup",
         "#recent_topics_search",
         _.debounce(() => {
-            recent_topics_ui.update_filters_view();
+            recent_topics_ui.topics_widget.hard_redraw();
             // Wait for user to go idle before initiating search.
         }, 300),
     );
@@ -431,7 +480,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_search_clear", (e) => {
         e.stopPropagation();
         $("#recent_topics_search").val("");
-        recent_topics_ui.update_filters_view();
+        recent_topics_ui.topics_widget.hard_redraw();
     });
 
     // RECIPIENT BARS
