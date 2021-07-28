@@ -1402,6 +1402,8 @@ class RealmAPITest(ZulipTestCase):
     def test_changing_user_joining_settings_require_owners(self) -> None:
         self.do_test_changing_settings_by_owners_only("invite_to_realm_policy")
         self.do_test_changing_settings_by_owners_only("invite_required")
+        self.do_test_changing_settings_by_owners_only("emails_restricted_to_domains")
+        self.do_test_changing_settings_by_owners_only("disallow_disposable_email_addresses")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")
