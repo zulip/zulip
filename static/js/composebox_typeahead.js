@@ -216,7 +216,15 @@ function handle_keydown(e) {
                 // which does not make <button>s tab-accessible by default
                 // (even if we were to set tabindex=0).
                 if (!should_enter_send(e)) {
-                    nextFocus = $("#compose-send-button");
+                    // It is important that we do an immediate focus
+                    // even here, rather than setting nextFocus. If
+                    // the user hits Tab and then Enter without first
+                    // releasing Tab, then setting nextFocus here
+                    // could result in focus being moved to the "Send
+                    // button" after sending the message, preventing
+                    // typing a next message!
+                    $("#compose-send-button").trigger("focus");
+                    e.preventDefault();
                 }
             } else {
                 // Enter
