@@ -1,8 +1,8 @@
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 
-let user_join_date;
-export function initialize(current_user_join_date) {
+let user_join_date: Date;
+export function initialize(current_user_join_date: Date): void {
     // We keep the `user_join_date` as the present day's date if the user is a spectator
     user_join_date = current_user_join_date;
 }
@@ -17,7 +17,7 @@ export function initialize(current_user_join_date) {
     about page_params and settings_config details.
 */
 
-function user_can_access_delivery_email() {
+function user_can_access_delivery_email(): boolean {
     // This function checks whether the current user should expect to
     // see .delivery_email fields on user objects that it can access.
     //
@@ -42,7 +42,7 @@ function user_can_access_delivery_email() {
     return false;
 }
 
-export function show_email() {
+export function show_email(): boolean {
     if (
         page_params.realm_email_address_visibility ===
         settings_config.email_address_visibility_values.everyone.code
@@ -52,7 +52,14 @@ export function show_email() {
     return user_can_access_delivery_email();
 }
 
-export function email_for_user_settings(person) {
+// TODO: Move this to people when converting it
+// to TypeScript.
+interface Person {
+    delivery_email: string;
+    email: string;
+}
+
+export function email_for_user_settings(person: Person): string | undefined {
     if (!show_email()) {
         return undefined;
     }
@@ -64,7 +71,10 @@ export function email_for_user_settings(person) {
     return person.email;
 }
 
-export function get_time_preferences(user_timezone) {
+export function get_time_preferences(user_timezone: string): {
+    timezone: string;
+    format: string;
+} {
     if (page_params.twenty_four_hour_time) {
         return {
             timezone: user_timezone,
@@ -77,7 +87,7 @@ export function get_time_preferences(user_timezone) {
     };
 }
 
-export function user_can_change_name() {
+export function user_can_change_name(): boolean {
     if (page_params.is_admin) {
         return true;
     }
@@ -87,7 +97,7 @@ export function user_can_change_name() {
     return true;
 }
 
-export function user_can_change_avatar() {
+export function user_can_change_avatar(): boolean {
     if (page_params.is_admin) {
         return true;
     }
@@ -97,11 +107,11 @@ export function user_can_change_avatar() {
     return true;
 }
 
-export function user_can_change_logo() {
+export function user_can_change_logo(): boolean {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
 }
 
-function user_has_permission(policy_value) {
+function user_has_permission(policy_value: number): boolean {
     if (page_params.is_admin) {
         return true;
     }
@@ -132,11 +142,12 @@ function user_has_permission(policy_value) {
 
     const current_datetime = new Date();
     const person_date_joined = new Date(user_join_date);
-    const user_join_days = (current_datetime - person_date_joined) / 1000 / 86400;
+    const user_join_days =
+        (current_datetime.getTime() - person_date_joined.getTime()) / 1000 / 86400;
     return user_join_days >= page_params.realm_waiting_period_threshold;
 }
 
-export function user_can_invite_others_to_realm() {
+export function user_can_invite_others_to_realm(): boolean {
     if (
         page_params.realm_invite_to_realm_policy ===
         settings_config.invite_to_realm_policy_values.nobody.code
@@ -146,31 +157,31 @@ export function user_can_invite_others_to_realm() {
     return user_has_permission(page_params.realm_invite_to_realm_policy);
 }
 
-export function user_can_subscribe_other_users() {
+export function user_can_subscribe_other_users(): boolean {
     return user_has_permission(page_params.realm_invite_to_stream_policy);
 }
 
-export function user_can_unsubscribe_other_users() {
+export function user_can_unsubscribe_other_users(): boolean {
     return page_params.is_admin;
 }
 
-export function user_can_create_streams() {
+export function user_can_create_streams(): boolean {
     return user_has_permission(page_params.realm_create_stream_policy);
 }
 
-export function user_can_move_messages_between_streams() {
+export function user_can_move_messages_between_streams(): boolean {
     return user_has_permission(page_params.realm_move_messages_between_streams_policy);
 }
 
-export function user_can_edit_user_groups() {
+export function user_can_edit_user_groups(): boolean {
     return user_has_permission(page_params.realm_user_group_edit_policy);
 }
 
-export function user_can_add_custom_emoji() {
+export function user_can_add_custom_emoji(): boolean {
     return user_has_permission(page_params.realm_add_custom_emoji_policy);
 }
 
-export function user_can_edit_topic_of_any_message() {
+export function user_can_edit_topic_of_any_message(): boolean {
     if (
         page_params.realm_edit_topic_policy ===
         settings_config.common_message_policy_values.by_everyone.code
@@ -180,7 +191,7 @@ export function user_can_edit_topic_of_any_message() {
     return user_has_permission(page_params.realm_edit_topic_policy);
 }
 
-export function using_dark_theme() {
+export function using_dark_theme(): boolean {
     if (page_params.color_scheme === settings_config.color_scheme_values.night.code) {
         return true;
     }
