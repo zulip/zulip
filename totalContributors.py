@@ -1,9 +1,21 @@
+import argparse
 import os
 import pathlib
 import subprocess
 import sys
 from datetime import datetime
 from typing import Dict, List
+
+parser = argparse.ArgumentParser(
+    usage="""$ python totalContributors.py 3.0..4.0 | sort -nr""",
+    description="""Above commands gives a reverse sorted list of all contributors between repositories between Zulip Versions 3.0 and 4.0. 
+    Of course, the version numbers specified can be changed. Other bash sort commands can also be used.""",
+    epilog="""This script is used to aggregate the total contributors within all Zulip Repositories within a time frame. 
+    Using the totalContributors.py script requires that all Zulip Repositories are in the same directory.
+""",
+)
+
+args = parser.parse_args()
 
 
 def add_log(dict: Dict[str, int], input: List[str]) -> None:
