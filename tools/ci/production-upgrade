@@ -11,13 +11,12 @@ set -x
 # need to do some preparatory steps. It is a goal to delete these
 # steps.
 
-# Reinstall rabbitmq-server and supervisor.
+# Reinstall rabbitmq-server.
 #
 # * For rabbitmq-server, we likely need to do this to work around the
 # hostname changing on reboot causing RabbitMQ to not boot.
-# * For supervisor, we don't understand why it doesn't start properly.
-sudo apt-get -y purge rabbitmq-server supervisor
-sudo apt-get -y install rabbitmq-server supervisor
+sudo apt-get -y purge rabbitmq-server
+sudo apt-get -y install rabbitmq-server
 
 # Start the postgresql service.
 sudo service postgresql start
@@ -29,20 +28,8 @@ if ! sudo service rabbitmq-server start; then
     sudo service rabbitmq-server start
 fi
 
-# Apply puppet (still on the previous release the container was
-# installed with).  This should leave us with a working copy of Zulip
-# running a previous release.
-sudo /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-
-# Stopping nginx service started by above command.
-#
-# This is a workaround for an unexpected `Unable to stop
-# Service[nginx]` error in the puppet apply step of upgrade otherwise.
-if ! sudo service nginx stop; then
-    echo
-    echo "Stoping nginx failed. Trying again:"
-    sudo service nginx stop
-fi
+# Start the supervisor
+sudo service supervisor start
 
 # Zulip releases before 2.1.8/3.5/4.4 have a bug in their
 # `upgrade-zulip` scripts, resulting in them exiting with status 0
