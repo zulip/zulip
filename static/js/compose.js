@@ -7,7 +7,6 @@ import render_compose_private_stream_alert from "../templates/compose_private_st
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as common from "./common";
 import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
@@ -28,7 +27,6 @@ import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
-import * as rtl from "./rtl";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings_data from "./settings_data";
@@ -337,77 +335,6 @@ export function update_email(user_id, new_email) {
     compose_state.private_message_recipient(reply_to);
 }
 
-export function handle_keydown(event, textarea) {
-    // The event.key property will have uppercase letter if
-    // the "Shift + <key>" combo was used or the Caps Lock
-    // key was on. We turn to key to lowercase so the keybindings
-    // work regardless of whether Caps Lock was on or not.
-    const key = event.key.toLowerCase();
-    const isBold = key === "b";
-    const isItalic = key === "i" && !event.shiftKey;
-    const isLink = key === "l" && event.shiftKey;
-
-    // detect Cmd and Ctrl key
-    const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
-
-    if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
-        const range = textarea.range();
-
-        if (isBold) {
-            // Ctrl + B: Convert selected text to bold text
-            compose_ui.wrap_text_with_markdown(textarea, "**", "**");
-            event.preventDefault();
-
-            if (!range.length) {
-                textarea.caret(textarea.caret() - 2);
-            }
-        }
-
-        if (isItalic) {
-            // Ctrl + I: Convert selected text to italic text
-            compose_ui.wrap_text_with_markdown(textarea, "*", "*");
-            event.preventDefault();
-
-            if (!range.length) {
-                textarea.caret(textarea.caret() - 1);
-            }
-        }
-
-        if (isLink) {
-            // Ctrl + L: Insert a link to selected text
-            compose_ui.wrap_text_with_markdown(textarea, "[", "](url)");
-            event.preventDefault();
-
-            const position = textarea.caret();
-            const txt = textarea[0];
-
-            // Include selected text in between [] parentheses and insert '(url)'
-            // where "url" should be automatically selected.
-            // Position of cursor depends on whether browser supports exec
-            // command or not. So set cursor position accordingly.
-            if (range.length > 0) {
-                if (document.queryCommandEnabled("insertText")) {
-                    txt.selectionStart = position - 4;
-                    txt.selectionEnd = position - 1;
-                } else {
-                    txt.selectionStart = position + range.length + 3;
-                    txt.selectionEnd = position + range.length + 6;
-                }
-            } else {
-                textarea.caret(textarea.caret() - 6);
-            }
-        }
-
-        compose_ui.autosize_textarea(textarea);
-        return;
-    }
-}
-
-export function handle_keyup(event, textarea) {
-    // Set the rtl class if the text has an rtl direction, remove it otherwise
-    rtl.set_rtl_class_for_textarea(textarea);
-}
-
 export function needs_subscribe_warning(user_id, stream_id) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
@@ -630,10 +557,10 @@ export function initialize() {
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
     ).on("change", update_fade);
     $("#compose-textarea").on("keydown", (event) => {
-        handle_keydown(event, $("#compose-textarea").expectOne());
+        compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });
     $("#compose-textarea").on("keyup", (event) => {
-        handle_keyup(event, $("#compose-textarea").expectOne());
+        compose_ui.handle_keyup(event, $("#compose-textarea").expectOne());
     });
 
     $("#compose-textarea").on("input propertychange", () => {

@@ -1,8 +1,10 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import * as common from "./common";
 import {$t} from "./i18n";
 import * as people from "./people";
+import * as rtl from "./rtl";
 import * as user_status from "./user_status";
 
 let full_size_status = false; // true or false
@@ -193,4 +195,75 @@ export function make_compose_box_original_size() {
     $(".collapse_composebox_button").hide();
     $(".expand_composebox_button").show();
     $("#compose-textarea").trigger("focus");
+}
+
+export function handle_keydown(event, textarea) {
+    // The event.key property will have uppercase letter if
+    // the "Shift + <key>" combo was used or the Caps Lock
+    // key was on. We turn to key to lowercase so the keybindings
+    // work regardless of whether Caps Lock was on or not.
+    const key = event.key.toLowerCase();
+    const isBold = key === "b";
+    const isItalic = key === "i" && !event.shiftKey;
+    const isLink = key === "l" && event.shiftKey;
+
+    // detect Cmd and Ctrl key
+    const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
+
+    if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
+        const range = textarea.range();
+
+        if (isBold) {
+            // Ctrl + B: Convert selected text to bold text
+            wrap_text_with_markdown(textarea, "**", "**");
+            event.preventDefault();
+
+            if (!range.length) {
+                textarea.caret(textarea.caret() - 2);
+            }
+        }
+
+        if (isItalic) {
+            // Ctrl + I: Convert selected text to italic text
+            wrap_text_with_markdown(textarea, "*", "*");
+            event.preventDefault();
+
+            if (!range.length) {
+                textarea.caret(textarea.caret() - 1);
+            }
+        }
+
+        if (isLink) {
+            // Ctrl + L: Insert a link to selected text
+            wrap_text_with_markdown(textarea, "[", "](url)");
+            event.preventDefault();
+
+            const position = textarea.caret();
+            const txt = textarea[0];
+
+            // Include selected text in between [] parentheses and insert '(url)'
+            // where "url" should be automatically selected.
+            // Position of cursor depends on whether browser supports exec
+            // command or not. So set cursor position accordingly.
+            if (range.length > 0) {
+                if (document.queryCommandEnabled("insertText")) {
+                    txt.selectionStart = position - 4;
+                    txt.selectionEnd = position - 1;
+                } else {
+                    txt.selectionStart = position + range.length + 3;
+                    txt.selectionEnd = position + range.length + 6;
+                }
+            } else {
+                textarea.caret(textarea.caret() - 6);
+            }
+        }
+
+        autosize_textarea(textarea);
+        return;
+    }
+}
+
+export function handle_keyup(event, textarea) {
+    // Set the rtl class if the text has an rtl direction, remove it otherwise
+    rtl.set_rtl_class_for_textarea(textarea);
 }
