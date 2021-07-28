@@ -416,7 +416,7 @@ li.top_left_recent_topics {
     which also affects it positioning.
 */
 .topic-sidebar-menu-icon {
-    top: 0;
+    top: 2px;
     right: 0;
     font-size: 0.9em;
     text-align: center;
@@ -482,6 +482,7 @@ li.expanded_private_message {
     justify-content: center;
     padding-top: 1px;
     cursor: pointer;
+    align-items: center;
 }
 
 .pm-box {
