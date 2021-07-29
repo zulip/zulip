@@ -82,7 +82,7 @@ from zerver.models import (
     get_user,
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
-    get_user_including_cross_realm,
+    get_user_including_system_bots,
     get_user_profile_by_id_in_realm,
 )
 from zproject.backends import check_password_strength
@@ -229,7 +229,7 @@ def avatar(
     try:
         realm = user_profile.realm
         if is_email:
-            avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
+            avatar_user_profile = get_user_including_system_bots(email_or_id, realm)
         else:
             avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(
                 int(email_or_id), realm

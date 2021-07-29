@@ -3089,7 +3089,7 @@ def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfil
     return user_profile
 
 
-def get_user_including_cross_realm(email: str, realm: Realm) -> UserProfile:
+def get_user_including_system_bots(email: str, realm: Realm) -> UserProfile:
     if is_system_bot_email(email):
         return get_system_bot(email, realm.id)
     return get_user(email, realm)

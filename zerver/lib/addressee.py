@@ -8,7 +8,7 @@ from zerver.models import (
     Stream,
     UserProfile,
     get_user_by_id_in_realm_including_cross_realm,
-    get_user_including_cross_realm,
+    get_user_including_system_bots,
 )
 
 
@@ -16,7 +16,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles: List[UserProfile] = []
     for email in emails:
         try:
-            user_profile = get_user_including_cross_realm(email, realm)
+            user_profile = get_user_including_system_bots(email, realm)
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid email '{}'").format(email))
         user_profiles.append(user_profile)
