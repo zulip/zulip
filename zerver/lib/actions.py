@@ -5524,7 +5524,7 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     event = asdict(
         ReadMessagesEvent(
-            messages=[], # we don't send messages, since the client reloads anyway
+            messages=[],  # we don't send messages, since the client reloads anyway
             all=True,  
         )
     )
