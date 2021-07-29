@@ -2198,10 +2198,10 @@ class UserTopic(models.Model):
     stream: Stream = models.ForeignKey(Stream, on_delete=CASCADE)
     recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
     topic_name: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
-    # The default value for date_muted is a few weeks before tracking
+    # The default value for last_updated is a few weeks before tracking
     # of when topics were muted was first introduced.  It's designed
-    # to be obviously incorrect so that users can tell it's backfilled data.
-    date_muted: datetime.datetime = models.DateTimeField(
+    # to be obviously incorrect so that one can tell it's backfilled data.
+    last_updated: datetime.datetime = models.DateTimeField(
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
@@ -2214,7 +2214,7 @@ class UserTopic(models.Model):
         db_table = "zerver_mutedtopic"
 
     def __str__(self) -> str:
-        return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
+        return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})>"
 
 
 class MutedUser(models.Model):

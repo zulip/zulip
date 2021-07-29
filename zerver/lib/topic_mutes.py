@@ -21,10 +21,10 @@ def get_topic_mutes(
     rows = query.values(
         "stream__name",
         "topic_name",
-        "date_muted",
+        "last_updated",
     )
     return [
-        (row["stream__name"], row["topic_name"], datetime_to_timestamp(row["date_muted"]))
+        (row["stream__name"], row["topic_name"], datetime_to_timestamp(row["last_updated"]))
         for row in rows
     ]
 
@@ -71,7 +71,7 @@ def add_topic_mute(
         stream_id=stream_id,
         recipient_id=recipient_id,
         topic_name=topic_name,
-        date_muted=date_muted,
+        last_updated=date_muted,
     )
 
 
