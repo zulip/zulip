@@ -928,8 +928,16 @@ nav {
 
 /* -- compare css -- */
 .compare {
-    background-color: hsl(163, 22%, 31%);
+    background: linear-gradient(
+        198deg,
+        hsl(170deg 34% 47%),
+        hsl(146deg 31% 60%)
+    );
     color: hsl(0, 0%, 100%);
+
+    .gradients .gradient.white-fade {
+        background: none;
+    }
 
     .text-header .text-content h1 {
         margin-top: 0;
@@ -938,9 +946,13 @@ nav {
     .padded-content {
         width: 900px;
         margin: 0 auto;
+        position: relative; /* To place the content on top of gradients. */
+        z-index: 2;
     }
 
     table {
+        padding: 33px;
+        border: 20px solid transparent;
         width: 100%;
         text-align: left;
         border-collapse: collapse;
@@ -978,11 +990,25 @@ nav {
                 font-weight: normal;
                 color: inherit;
             }
+
+            &:nth-of-type(2),
+            &:nth-of-type(1) {
+                background-color: hsl(222, 24%, 31%);
+            }
         }
+    }
+
+    .gradients {
+        position: static;
     }
 
     tbody tr {
         border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
+
+        td:nth-of-type(1),
+        td:nth-of-type(2) {
+            background: hsl(222, 20%, 40%);
+        }
 
         td {
             padding: 10px 0;
