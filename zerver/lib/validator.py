@@ -29,6 +29,7 @@ for any particular type of object.
 """
 import re
 from datetime import datetime
+from decimal import Decimal
 from typing import (
     Any,
     Callable,
@@ -569,6 +570,10 @@ def to_positive_or_allowed_int(allowed_integer: Optional[int] = None) -> Callabl
         return to_non_negative_int(s)
 
     return converter
+
+
+def to_decimal(s: str) -> Decimal:
+    return Decimal(s)
 
 
 def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]]:
