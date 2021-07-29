@@ -41,7 +41,6 @@ export function open_user_status_modal() {
     const field = input_field();
     field.val(old_status_text);
     field.trigger("select");
-    field.trigger("focus");
     toggle_clear_message_button();
 
     const button = submit_button();
@@ -165,6 +164,11 @@ export function initialize() {
 
     $("body").on("click", "#set_user_status_modal .set_user_status", () => {
         submit_new_status();
+    });
+
+    $("body").on("shown.bs.modal", "#set_user_status_modal", () => {
+        const field = input_field();
+        field.trigger("focus");
     });
 
     $("body").on("keypress", "#set_user_status_modal .user_status", (event) => {
