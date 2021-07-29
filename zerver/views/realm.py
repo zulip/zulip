@@ -187,6 +187,9 @@ def update_realm(
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
 
+    if waiting_period_threshold is not None and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequired()
+
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
 

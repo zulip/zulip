@@ -1376,6 +1376,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests: List[bool] = [False, True]
         test_values: Dict[str, Any] = dict(
             invite_to_realm_policy=[Realm.POLICY_MEMBERS_ONLY, Realm.POLICY_ADMINS_ONLY],
+            waiting_period_threshold=[10, 20],
         )
 
         vals = test_values.get(setting_name)
@@ -1404,6 +1405,7 @@ class RealmAPITest(ZulipTestCase):
         self.do_test_changing_settings_by_owners_only("invite_required")
         self.do_test_changing_settings_by_owners_only("emails_restricted_to_domains")
         self.do_test_changing_settings_by_owners_only("disallow_disposable_email_addresses")
+        self.do_test_changing_settings_by_owners_only("waiting_period_threshold")
 
     def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
         self.login("iago")
