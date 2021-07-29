@@ -34,7 +34,7 @@ from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_int, check_int_in
+from zerver.lib.validator import check_bool, check_int, check_int_in
 from zerver.models import UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -62,7 +62,10 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 
 
 @zulip_login_required
-def billing_home(request: HttpRequest) -> HttpResponse:
+@has_request_variables
+def billing_home(
+    request: HttpRequest, onboarding: bool = REQ(default=False, json_validator=check_bool)
+) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
 
@@ -139,7 +142,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
                 publishable_key=STRIPE_PUBLISHABLE_KEY,
                 stripe_email=stripe_customer.email,
                 CustomerPlan=CustomerPlan,
-                onboarding=request.GET.get("onboarding") is not None,
+                onboarding=onboarding,
             )
 
     return render(request, "corporate/billing.html", context=context)
