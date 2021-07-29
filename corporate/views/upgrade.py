@@ -36,7 +36,7 @@ from zerver.lib.actions import do_make_user_billing_admin
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.validator import check_int, check_string_in
+from zerver.lib.validator import check_bool, check_int, check_string_in
 from zerver.models import Realm, UserProfile, get_org_type_display_name, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -141,7 +141,10 @@ def upgrade(
 
 
 @zulip_login_required
-def initial_upgrade(request: HttpRequest) -> HttpResponse:
+@has_request_variables
+def initial_upgrade(
+    request: HttpRequest, onboarding: bool = REQ(default=False, json_validator=check_bool)
+) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
 
@@ -154,7 +157,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if customer is not None and (
         get_current_plan_by_customer(customer) is not None or customer.sponsorship_pending
     ):
-        if request.GET.get("onboarding") is not None:
+        if onboarding:
             billing_page_url = f"{billing_page_url}?onboarding=true"
         return HttpResponseRedirect(billing_page_url)
 
@@ -178,7 +181,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         "plan": "Zulip Standard",
         "free_trial_days": settings.FREE_TRIAL_DAYS,
-        "onboarding": request.GET.get("onboarding") is not None,
+        "onboarding": onboarding,
         "page_params": {
             "seat_count": seat_count,
             "annual_price": 8000,
