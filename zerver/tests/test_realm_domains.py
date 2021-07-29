@@ -29,17 +29,17 @@ class RealmDomainTest(ZulipTestCase):
         ]
         self.assertEqual(received, expected)
 
-    def test_not_realm_admin(self) -> None:
-        self.login("hamlet")
+    def test_not_realm_owner(self) -> None:
+        self.login("iago")
         result = self.client_post("/json/realm/domains")
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Must be an organization owner")
         result = self.client_patch("/json/realm/domains/15")
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Must be an organization owner")
         result = self.client_delete("/json/realm/domains/15")
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Must be an organization owner")
 
     def test_create_realm_domain(self) -> None:
-        self.login("iago")
+        self.login("desdemona")
         data = {
             "domain": "",
             "allow_subdomains": orjson.dumps(True).decode(),
@@ -65,9 +65,7 @@ class RealmDomainTest(ZulipTestCase):
         mit_user_profile = self.mit_user("sipbtest")
         self.login_user(mit_user_profile)
 
-        do_change_user_role(
-            mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
-        )
+        do_change_user_role(mit_user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         result = self.client_post(
             "/json/realm/domains", info=data, HTTP_HOST=mit_user_profile.realm.host
@@ -75,7 +73,7 @@ class RealmDomainTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_patch_realm_domain(self) -> None:
-        self.login("iago")
+        self.login("desdemona")
         realm = get_realm("zulip")
         RealmDomain.objects.create(realm=realm, domain="acme.com", allow_subdomains=False)
         data = {
@@ -96,7 +94,7 @@ class RealmDomainTest(ZulipTestCase):
         self.assert_json_error(result, "No entry found for domain non-existent.com.")
 
     def test_delete_realm_domain(self) -> None:
-        self.login("iago")
+        self.login("desdemona")
         realm = get_realm("zulip")
         RealmDomain.objects.create(realm=realm, domain="acme.com")
         result = self.client_delete("/json/realm/domains/non-existent.com")
