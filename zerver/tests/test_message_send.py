@@ -2330,10 +2330,8 @@ class TestCrossRealmPMs(ZulipTestCase):
             messages = get_user_messages(to_user)
             self.assertEqual(messages[-1].sender.id, from_user.id)
 
-        def assert_cant_send_outside_realm() -> Any:
-            return self.assertRaisesRegex(
-                JsonableError, "You can't send private messages outside of your organization."
-            )
+        def assert_invalid_user_id() -> Any:
+            return self.assertRaisesRegex(JsonableError, r"Invalid user ID \d+")
 
         @contextmanager
         def assert_cant_send_outside_realm_error_logged() -> Any:
@@ -2386,7 +2384,7 @@ class TestCrossRealmPMs(ZulipTestCase):
             )
 
         # All users can PM cross-realm bots in the zulip.com realm
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_personal_message(user1, notification_bot)
 
         # Verify that internal_send_private_message can also successfully
@@ -2401,7 +2399,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Users can PM cross-realm bots on non-zulip realms.
         # (The support bot represents some theoretical bot that we may
         # create in the future that does not have zulip.com as its realm.)
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_personal_message(user1, support_bot)
 
         # Allow sending PMs to two different cross-realm bots simultaneously.
@@ -2409,32 +2407,32 @@ class TestCrossRealmPMs(ZulipTestCase):
         # already individually send PMs to cross-realm bots, we shouldn't
         # prevent them from sending multiple bots at once.  We may revisit
         # this if it's a nuisance for huddles.)
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [notification_bot, support_bot])
 
         # Prevent old loophole where I could send PMs to other users as long
         # as I copied a cross-realm bot from the same realm.
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [user3, support_bot])
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [user2, notification_bot])
 
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_huddle_message(notification_bot, [user1, user2])
 
         # Users on the different realms cannot PM each other
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_personal_message(user1, user2)
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_personal_message(user1, self.example_user("hamlet"))
 
         # Users on three different realms cannot PM each other
-        with assert_cant_send_outside_realm():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [user2, user3])
 
 

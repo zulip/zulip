@@ -76,7 +76,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_active_streams,
-    get_user_by_id_in_realm_including_cross_realm,
+    get_user_by_id_in_realm,
     get_user_including_system_bots,
 )
 
@@ -374,7 +374,7 @@ class NarrowBuilder:
             if isinstance(operand, str):
                 sender = get_user_including_system_bots(operand, self.realm)
             else:
-                sender = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
+                sender = get_user_by_id_in_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator("unknown user " + str(operand))
 
@@ -478,7 +478,7 @@ class NarrowBuilder:
             if isinstance(operand, str):
                 narrow_profile = get_user_including_system_bots(operand, self.realm)
             else:
-                narrow_profile = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
+                narrow_profile = get_user_by_id_in_realm(operand, self.realm)
         except UserProfile.DoesNotExist:
             raise BadNarrowOperator("unknown user " + str(operand))
 

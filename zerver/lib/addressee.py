@@ -7,7 +7,7 @@ from zerver.models import (
     Realm,
     Stream,
     UserProfile,
-    get_user_by_id_in_realm_including_cross_realm,
+    get_user_by_id_in_realm,
     get_user_including_system_bots,
 )
 
@@ -27,7 +27,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
     user_profiles: List[UserProfile] = []
     for user_id in user_ids:
         try:
-            user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
+            user_profile = get_user_by_id_in_realm(user_id, realm)
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)

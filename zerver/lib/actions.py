@@ -247,7 +247,7 @@ from zerver.models import (
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user_by_delivery_email,
-    get_user_by_id_in_realm_including_cross_realm,
+    get_user_by_id_in_realm,
     get_user_profile_by_id,
     is_system_bot_email,
     linkifiers_for_realm,
@@ -2506,10 +2506,7 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
     user_profiles = []
     for user_id in user_ids:
         try:
-            # We include cross-bot realms as possible recipients,
-            # so that clients can know which huddle conversation
-            # is relevant here.
-            user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, sender.realm)
+            user_profile = get_user_by_id_in_realm(user_id, sender.realm)
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)

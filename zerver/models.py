@@ -3102,11 +3102,13 @@ def get_system_bot(email: str, realm_id: int) -> UserProfile:
     )
 
 
-def get_user_by_id_in_realm_including_cross_realm(
+def get_user_by_id_in_realm(
     uid: int,
     realm: Realm,
 ) -> UserProfile:
     user_profile = get_user_profile_by_id(uid)
+    if user_profile.realm_id != realm.id:
+        raise UserProfile.DoesNotExist()
 
     return user_profile
 
