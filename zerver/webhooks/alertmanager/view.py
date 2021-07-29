@@ -16,9 +16,9 @@ def api_alertmanager_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(argument_type="body"),
+    name_field: str = REQ("name", default="instance"),
+    desc_field: str = REQ("desc", default="alertname"),
 ) -> HttpResponse:
-    name_field = request.GET.get("name", "instance")
-    desc_field = request.GET.get("desc", "alertname")
     topics: Dict[str, Dict[str, List[str]]] = {}
 
     for alert in payload["alerts"]:
