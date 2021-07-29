@@ -4906,7 +4906,7 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
 
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
-    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     internal_send_stream_message(
         sender,
         stream,
