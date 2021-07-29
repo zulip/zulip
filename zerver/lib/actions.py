@@ -4798,6 +4798,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
 
 
 def do_change_stream_description(stream: Stream, new_description: str) -> None:
+    old_description = stream.description
     stream.description = new_description
     stream.rendered_description = render_stream_description(new_description)
     stream.save(update_fields=["description", "rendered_description"])
@@ -4811,7 +4812,21 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
         value=new_description,
         rendered_description=stream.rendered_description,
     )
+
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    internal_send_stream_message(
+        sender,
+        stream,
+        Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
+        _(
+            "Stream description changed from {old_stream_description} to {new_stream_description}."
+        ).format(
+            old_stream_description=f"**{old_description}**",
+            new_stream_description=f"**{new_description}**",
+        ),
+    )
 
 
 def do_change_stream_message_retention_days(
@@ -5391,8 +5406,8 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     event = asdict(
         ReadMessagesEvent(
-            messages=[],  # we don't send messages, since the client reloads anyway
-            all=True,
+            messages=[],
+            all=True,  # we don't send messages, since the client reloads anyway
         )
     )
     event_time = timezone_now()
