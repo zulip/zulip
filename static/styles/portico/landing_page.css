@@ -983,6 +983,7 @@ nav {
         th {
             font-weight: 600;
             padding: 15px 0;
+            font-size: 18px;
 
             color: hsl(0, 0%, 100%);
 
@@ -991,9 +992,21 @@ nav {
                 color: inherit;
             }
 
-            &:nth-of-type(2),
             &:nth-of-type(1) {
+                width: 28%;
                 background-color: hsl(222, 24%, 31%);
+            }
+
+            &:nth-of-type(2) {
+                width: 18%;
+                background-color: hsl(187, 94%, 20%);
+            }
+
+            &:nth-of-type(3),
+            &:nth-of-type(4),
+            &:nth-of-type(5) {
+                width: 18%;
+                background-color: hsl(162, 67%, 34%);
             }
         }
     }
@@ -1005,13 +1018,22 @@ nav {
     tbody tr {
         border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
 
-        td:nth-of-type(1),
-        td:nth-of-type(2) {
-            background: hsl(222, 20%, 40%);
-        }
-
         td {
             padding: 10px 0;
+
+            &:nth-of-type(1) {
+                background-color: hsl(222, 20%, 40%);
+            }
+
+            &:nth-of-type(2) {
+                background-color: hsl(186.9, 90.3%, 28.4%);
+            }
+
+            &:nth-of-type(3),
+            &:nth-of-type(4),
+            &:nth-of-type(5) {
+                background-color: hsl(162, 44%, 49%);
+            }
 
             &.no {
                 text-align: center;
@@ -1061,7 +1083,7 @@ nav {
 
         line-height: 1.2;
 
-        color: hsla(0, 0%, 100%, 0.8);
+        color: hsl(0, 24%, 23%);
 
         a {
             color: hsl(170, 47%, 73%);
