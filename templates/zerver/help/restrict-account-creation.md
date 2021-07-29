@@ -1,6 +1,6 @@
 # Restrict account creation
 
-{!admin-only.md!}
+{!owner-only.md!}
 
 Each Zulip account is associated with an email address. If your organization
 allows multiple authentication methods, it doesn't matter which one is used to
