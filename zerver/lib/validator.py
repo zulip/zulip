@@ -46,6 +46,7 @@ from typing import (
 )
 
 import orjson
+import pytz
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -578,6 +579,25 @@ def to_float(s: str) -> float:
 
 def to_decimal(s: str) -> Decimal:
     return Decimal(s)
+
+
+def to_timezone_or_empty(s: str) -> str:
+    if s in pytz.all_timezones_set:
+        return s
+    else:
+        return ""
+
+
+def to_converted_or_fallback(
+    sub_converter: Callable[[str], ResultT], default: ResultT
+) -> Callable[[str], ResultT]:
+    def converter(s: str) -> ResultT:
+        try:
+            return sub_converter(s)
+        except ValueError:
+            return default
+
+    return converter
 
 
 def check_string_or_int_list(var_name: str, val: object) -> Union[str, List[int]]:
