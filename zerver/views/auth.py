@@ -492,6 +492,9 @@ def oauth_redirect_to_root(
     is_signup: bool = False,
     extra_url_params: Dict[str, str] = {},
     next: Optional[str] = REQ(default=None),
+    multiuse_object_key: str = REQ(default=""),
+    mobile_flow_otp: Optional[str] = REQ(default=None),
+    desktop_flow_otp: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
@@ -507,13 +510,10 @@ def oauth_redirect_to_root(
         "is_signup": "1" if is_signup else "0",
     }
 
-    params["multiuse_object_key"] = request.GET.get("multiuse_object_key", "")
+    params["multiuse_object_key"] = multiuse_object_key
 
     # mobile_flow_otp is a one-time pad provided by the app that we
     # can use to encrypt the API key when passing back to the app.
-    mobile_flow_otp = request.GET.get("mobile_flow_otp")
-    desktop_flow_otp = request.GET.get("desktop_flow_otp")
-
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
     if mobile_flow_otp is not None:
         params["mobile_flow_otp"] = mobile_flow_otp
