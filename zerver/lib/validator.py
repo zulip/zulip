@@ -572,6 +572,10 @@ def to_positive_or_allowed_int(allowed_integer: Optional[int] = None) -> Callabl
     return converter
 
 
+def to_float(s: str) -> float:
+    return float(s)
+
+
 def to_decimal(s: str) -> Decimal:
     return Decimal(s)
 

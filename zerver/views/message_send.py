@@ -23,6 +23,7 @@ from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
+from zerver.lib.validator import to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -197,6 +198,7 @@ def send_message_backend(
     delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
     defer_until: Optional[str] = REQ("deliver_at", default=None, documentation_pending=True),
     tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
+    time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
 
     # If req_to is None, then we default to an
@@ -304,7 +306,7 @@ def send_message_backend(
         topic_name,
         message_content,
         forged=forged,
-        forged_timestamp=request.POST.get("time"),
+        forged_timestamp=time,
         forwarder_user_profile=user_profile,
         realm=realm,
         local_id=local_id,
