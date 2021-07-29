@@ -4,6 +4,7 @@
         <div id="org-join" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
+                <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
                 {{> settings_save_discard_widget section_name="org-join" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
@@ -14,7 +15,6 @@
                       is_checked=realm_invite_required
                       label=admin_settings_label.realm_invite_required}}
                     <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change this setting.' }}"></i>
                     </label>
                     <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
@@ -30,7 +30,7 @@
                     </select>
                     <div class="dependent-block">
                         <p id="allowed_domains_label" class="inline-block"></p>
-                        {{#if is_admin }}
+                        {{#if is_owner }}
                         <a id="show_realm_domains_modal" role="button">{{t "[Configure]" }}</a>
                         {{/if}}
                     </div>
