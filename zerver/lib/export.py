@@ -277,7 +277,7 @@ ANALYTICS_TABLES = {
 DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
-    "zerver_mutedtopic": ["date_muted"],
+    "zerver_mutedtopic": ["last_updated"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
     "zerver_useractivity": ["last_visit"],
