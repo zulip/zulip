@@ -4,10 +4,12 @@ https://docs.mattermost.com/administration/bulk-export.html
 """
 import logging
 import os
+import random
 import re
+import secrets
 import shutil
 import subprocess
-from typing import Any, Callable, Dict, List, Set
+from typing import Any, Callable, Dict, List, Set, Tuple
 
 import orjson
 from django.conf import settings
@@ -17,6 +19,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.import_util import (
     SubscriberHandler,
     ZerverFieldsT,
+    build_attachment,
     build_huddle,
     build_huddle_subscriptions,
     build_message,
@@ -32,9 +35,11 @@ from zerver.data_import.import_util import (
     make_subscriber_map,
     make_user_messages,
 )
-from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
+from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.markdown import IMAGE_EXTENSIONS
+from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
@@ -311,6 +316,80 @@ def get_mentioned_user_ids(raw_message: Dict[str, Any], user_id_mapper: IdMapper
     return user_ids
 
 
+def process_message_attachments(
+    attachments: List[Dict[str, Any]],
+    realm_id: int,
+    message_id: int,
+    user_id: int,
+    user_handler: UserHandler,
+    zerver_attachment: List[ZerverFieldsT],
+    uploads_list: List[ZerverFieldsT],
+    mattermost_data_dir: str,
+    output_dir: str,
+) -> Tuple[str, bool]:
+    has_image = False
+
+    markdown_links = []
+
+    for attachment in attachments:
+        attachment_path = attachment["path"]
+        attachment_full_path = os.path.join(mattermost_data_dir, "data", attachment_path)
+
+        file_name = attachment_path.split("/")[-1]
+        file_ext = f'.{file_name.split(".")[-1]}'
+
+        if file_ext.lower() in IMAGE_EXTENSIONS:
+            has_image = True
+
+        s3_path = "/".join(
+            [
+                str(realm_id),
+                format(random.randint(0, 255), "x"),
+                secrets.token_urlsafe(18),
+                sanitize_name(file_name),
+            ]
+        )
+        content_for_link = f"[{file_name}](/user_uploads/{s3_path})"
+
+        markdown_links.append(content_for_link)
+
+        fileinfo = {
+            "name": file_name,
+            "size": os.path.getsize(attachment_full_path),
+            "created": os.path.getmtime(attachment_full_path),
+        }
+
+        upload = dict(
+            path=s3_path,
+            realm_id=realm_id,
+            content_type=None,
+            user_profile_id=user_id,
+            last_modified=fileinfo["created"],
+            user_profile_email=user_handler.get_user(user_id=user_id)["email"],
+            s3_path=s3_path,
+            size=fileinfo["size"],
+        )
+        uploads_list.append(upload)
+
+        build_attachment(
+            realm_id=realm_id,
+            message_ids={message_id},
+            user_id=user_id,
+            fileinfo=fileinfo,
+            s3_path=s3_path,
+            zerver_attachment=zerver_attachment,
+        )
+
+        # Copy the attachment file to output_dir
+        attachment_out_path = os.path.join(output_dir, "uploads", s3_path)
+        os.makedirs(os.path.dirname(attachment_out_path), exist_ok=True)
+        shutil.copyfile(attachment_full_path, attachment_out_path)
+
+    content = "\n".join(markdown_links)
+
+    return content, has_image
+
+
 def process_raw_message_batch(
     realm_id: int,
     raw_messages: List[Dict[str, Any]],
@@ -322,6 +401,9 @@ def process_raw_message_batch(
     output_dir: str,
     zerver_realmemoji: List[Dict[str, Any]],
     total_reactions: List[Dict[str, Any]],
+    uploads_list: List[ZerverFieldsT],
+    zerver_attachment: List[ZerverFieldsT],
+    mattermost_data_dir: str,
 ) -> None:
     def fix_mentions(content: str, mention_user_ids: Set[int]) -> str:
         for user_id in mention_user_ids:
@@ -384,6 +466,27 @@ def process_raw_message_batch(
 
         rendered_content = None
 
+        has_attachment = False
+        has_image = False
+        has_link = False
+        if "attachments" in raw_message:
+            has_attachment = True
+            has_link = True
+
+            attachment_markdown, has_image = process_message_attachments(
+                attachments=raw_message["attachments"],
+                realm_id=realm_id,
+                message_id=message_id,
+                user_id=sender_user_id,
+                user_handler=user_handler,
+                zerver_attachment=zerver_attachment,
+                uploads_list=uploads_list,
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+            )
+
+            content += attachment_markdown
+
         topic_name = "imported from mattermost"
 
         message = build_message(
@@ -394,7 +497,9 @@ def process_raw_message_batch(
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
-            has_attachment=False,
+            has_image=has_image,
+            has_link=has_link,
+            has_attachment=has_attachment,
         )
         zerver_message.append(message)
         build_reactions(
@@ -435,9 +540,11 @@ def process_posts(
     masking_content: bool,
     user_id_mapper: IdMapper,
     user_handler: UserHandler,
-    username_to_user: Dict[str, Dict[str, Any]],
     zerver_realmemoji: List[Dict[str, Any]],
     total_reactions: List[Dict[str, Any]],
+    uploads_list: List[ZerverFieldsT],
+    zerver_attachment: List[ZerverFieldsT],
+    mattermost_data_dir: str,
 ) -> None:
 
     post_data_list = []
@@ -486,6 +593,10 @@ def process_posts(
                 message_dict["pm_members"] = channel_members
         else:
             raise AssertionError("Post without channel or channel_members key.")
+
+        if post_dict.get("attachments"):
+            message_dict["attachments"] = post_dict["attachments"]
+
         return message_dict
 
     raw_messages = []
@@ -514,6 +625,9 @@ def process_posts(
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
+            uploads_list=uploads_list,
+            zerver_attachment=zerver_attachment,
+            mattermost_data_dir=mattermost_data_dir,
         )
 
     chunk_size = 1000
@@ -538,9 +652,11 @@ def write_message_data(
     huddle_id_mapper: IdMapper,
     user_id_mapper: IdMapper,
     user_handler: UserHandler,
-    username_to_user: Dict[str, Dict[str, Any]],
     zerver_realmemoji: List[Dict[str, Any]],
     total_reactions: List[Dict[str, Any]],
+    uploads_list: List[ZerverFieldsT],
+    zerver_attachment: List[ZerverFieldsT],
+    mattermost_data_dir: str,
 ) -> None:
     stream_id_to_recipient_id = {}
     huddle_id_to_recipient_id = {}
@@ -589,9 +705,11 @@ def write_message_data(
             masking_content=masking_content,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
-            username_to_user=username_to_user,
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
+            uploads_list=uploads_list,
+            zerver_attachment=zerver_attachment,
+            mattermost_data_dir=mattermost_data_dir,
         )
 
 
@@ -857,6 +975,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
 
         total_reactions: List[Dict[str, Any]] = []
+        uploads_list: List[ZerverFieldsT] = []
+        zerver_attachment: List[ZerverFieldsT] = []
+
         write_message_data(
             num_teams=len(mattermost_data["team"]),
             team_name=team_name,
@@ -870,9 +991,11 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             huddle_id_mapper=huddle_id_mapper,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
-            username_to_user=username_to_user,
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
+            uploads_list=uploads_list,
+            zerver_attachment=zerver_attachment,
+            mattermost_data_dir=mattermost_data_dir,
         )
         realm["zerver_reaction"] = total_reactions
         realm["zerver_userprofile"] = user_handler.get_all_users()
@@ -881,11 +1004,10 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         create_converted_data_files(realm, realm_output_dir, "/realm.json")
         # Mattermost currently doesn't support exporting avatars
         create_converted_data_files([], realm_output_dir, "/avatars/records.json")
-        # Mattermost currently doesn't support exporting uploads
-        create_converted_data_files([], realm_output_dir, "/uploads/records.json")
 
-        # Mattermost currently doesn't support exporting attachments
-        attachment: Dict[str, List[Any]] = {"zerver_attachment": []}
+        # Export message attachments
+        attachment: Dict[str, List[Any]] = {"zerver_attachment": zerver_attachment}
+        create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
         create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
 
         logging.info("Start making tarball")

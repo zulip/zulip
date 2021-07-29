@@ -4,8 +4,8 @@ from typing import Any, Callable, Collection, Dict, Iterable, List, Mapping, Opt
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from zerver.lib.request import JsonableError
-from zerver.lib.topic import get_topic_from_message_info
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, get_topic_from_message_info
 
 stop_words_list: Optional[List[str]] = None
 
@@ -92,6 +92,12 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
                     return False
             elif operator == "is" and operand in ["alerted", "mentioned"]:
                 if "mentioned" not in flags:
+                    return False
+            elif operator == "is" and operand == "resolved":
+                if message["type"] != "stream":
+                    return False
+                topic_name = get_topic_from_message_info(message)
+                if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
                     return False
 
         return True

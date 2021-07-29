@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import time
+import weakref
 from contextlib import contextmanager
 from functools import wraps
 from typing import (
@@ -29,8 +30,10 @@ import ldap
 import orjson
 from boto3.resources.base import ServiceResource
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.db.migrations.state import StateApps
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http.request import QueryDict
 from django.test import override_settings
 from django.urls import URLResolver
 from moto import mock_s3
@@ -42,6 +45,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.request import ZulipRequestNotes, request_notes_map
 from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
 from zerver.models import (
     Client,
@@ -56,6 +60,7 @@ from zerver.models import (
 )
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
 from zerver.worker import queue_processors
+from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
@@ -280,40 +285,56 @@ class DummyHandler(AsyncDjangoHandler):
         allocate_handler_id(self)
 
 
-class HostRequestMock:
+class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
     def __init__(
         self,
         post_data: Dict[str, Any] = {},
-        user_profile: Optional[UserProfile] = None,
+        user_profile: Optional[Union[UserProfile, AnonymousUser, RemoteZulipServer]] = None,
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
+        meta_data: Optional[Dict[str, Any]] = None,
+        tornado_handler: Optional[AsyncDjangoHandler] = DummyHandler(),
     ) -> None:
         self.host = host
-        self.GET: Dict[str, Any] = {}
+        self.GET = QueryDict(mutable=True)
         self.method = ""
-        if client_name is not None:
-            self.client = get_client(client_name)
 
         # Convert any integer parameters passed into strings, even
         # though of course the HTTP API would do so.  Ideally, we'd
         # get rid of this abstraction entirely and just use the HTTP
         # API directly, but while it exists, we need this code
-        self.POST: Dict[str, Any] = {}
+        self.POST = QueryDict(mutable=True)
         for key in post_data:
             self.POST[key] = str(post_data[key])
             self.method = "POST"
 
-        self._tornado_handler = DummyHandler()
         self._log_data: Dict[str, Any] = {}
-        self.META = {"PATH_INFO": "test"}
+        if meta_data is None:
+            self.META = {"PATH_INFO": "test"}
+        else:
+            self.META = meta_data
         self.path = ""
         self.user = user_profile
-        self.body = ""
+        self._body = b""
         self.content_type = ""
-        self.client_name = ""
+
+        request_notes_map[self] = ZulipRequestNotes(
+            client_name="",
+            log_data={},
+            tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
+            client=get_client(client_name) if client_name is not None else None,
+        )
+
+    @property
+    def body(self) -> bytes:
+        return super().body
+
+    @body.setter
+    def body(self, val: bytes) -> None:
+        self._body = val
 
     def get_host(self) -> str:
         return self.host
@@ -447,6 +468,8 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "help/configure-missed-message-emails",
             "help/community-topic-edits",
             "help/delete-a-stream",
+            "for/working-groups-and-communities/",
+            "help/only-allow-admins-to-add-emoji",
             "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
@@ -524,7 +547,7 @@ def use_db_models(
         Huddle = apps.get_model("zerver", "Huddle")
         Message = apps.get_model("zerver", "Message")
         MultiuseInvite = apps.get_model("zerver", "MultiuseInvite")
-        MutedTopic = apps.get_model("zerver", "MutedTopic")
+        UserTopic = apps.get_model("zerver", "UserTopic")
         PreregistrationUser = apps.get_model("zerver", "PreregistrationUser")
         PushDeviceToken = apps.get_model("zerver", "PushDeviceToken")
         Reaction = apps.get_model("zerver", "Reaction")
@@ -568,7 +591,7 @@ def use_db_models(
             Huddle=Huddle,
             Message=Message,
             MultiuseInvite=MultiuseInvite,
-            MutedTopic=MutedTopic,
+            UserTopic=UserTopic,
             PreregistrationUser=PreregistrationUser,
             PushDeviceToken=PushDeviceToken,
             Reaction=Reaction,

@@ -3,8 +3,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.actions import check_send_stream_message
-from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
 ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: `{text}`"
@@ -24,7 +25,7 @@ def api_slack_webhook(
 ) -> HttpRequest:
 
     if channels_map_to_topics not in list(VALID_OPTIONS.values()):
-        return json_error(_("Error: channels_map_to_topics parameter other than 0 or 1"))
+        raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
 
     if channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
         subject = f"channel: {channel_name}"
@@ -33,5 +34,7 @@ def api_slack_webhook(
         subject = _("Message from Slack")
 
     content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
-    check_send_stream_message(user_profile, request.client, stream, subject, content)
+    client = get_request_notes(request).client
+    assert client is not None
+    check_send_stream_message(user_profile, client, stream, subject, content)
     return json_success()

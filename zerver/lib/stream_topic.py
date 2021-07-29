@@ -1,6 +1,6 @@
 from typing import Set
 
-from zerver.models import MutedTopic
+from zerver.models import UserTopic
 
 
 class StreamTopicTarget:
@@ -16,7 +16,7 @@ class StreamTopicTarget:
         self.topic_name = topic_name
 
     def user_ids_muting_topic(self) -> Set[int]:
-        query = MutedTopic.objects.filter(
+        query = UserTopic.objects.filter(
             stream_id=self.stream_id,
             topic_name__iexact=self.topic_name,
         ).values(

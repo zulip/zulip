@@ -54,15 +54,6 @@ test("feature_check", ({override}) => {
     assert.ok(!upload_button.hasClass("notdisplayed"));
 });
 
-test("make_upload_absolute", () => {
-    let uri = "/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
-    const expected_uri = "https://foo.com/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
-    assert.equal(upload.make_upload_absolute(uri), expected_uri);
-
-    uri = "https://foo.com/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/alappuzha.png";
-    assert.equal(upload.make_upload_absolute(uri), uri);
-});
-
 test("get_item", () => {
     assert.equal(upload.get_item("textarea", {mode: "compose"}), $("#compose-textarea"));
     assert.equal(
@@ -532,7 +523,7 @@ test("uppy_events", ({override}) => {
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
-            "[copenhagen.png](https://foo.com/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
+            "[copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
         assert.equal(textarea, $("#compose-textarea"));
     });

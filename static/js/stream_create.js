@@ -15,7 +15,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 
 let created_stream;
@@ -260,7 +260,7 @@ function create_stream() {
 export function new_stream_clicked(stream_name) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
-    subs.show_subs_pane.create_stream();
+    stream_settings_ui.show_subs_pane.create_stream();
     $(".stream-row.active").removeClass("active");
 
     if (stream_name !== "") {
@@ -314,8 +314,6 @@ export function show_new_stream_modal() {
         html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
     });
 
-    create_handlers_for_users(add_people_container);
-
     // Make the options default to the same each time:
     // public, "announce stream" on.
     $("#make-invite-only input:radio[value=public]").prop("checked", true);
@@ -333,7 +331,7 @@ export function show_new_stream_modal() {
     clear_error_display();
 }
 
-export function create_handlers_for_users(container) {
+function create_handlers_for_users(container) {
     // container should be $('#people_to_add')...see caller to verify
     function update_checked_state_for_users(value, users) {
         // Update the all_users backing data structure for
@@ -394,7 +392,7 @@ export function create_handlers_for_users(container) {
         $("#copy-from-stream-expand-collapse .toggle").toggleClass("fa-caret-right fa-caret-down");
     });
 
-    $("#stream-checkboxes label.checkbox").on("change", (e) => {
+    container.on("change", "#stream-checkboxes label.checkbox", (e) => {
         e.preventDefault();
         const elem = $(e.target).closest("[data-stream-id]");
         const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
@@ -405,6 +403,11 @@ export function create_handlers_for_users(container) {
 }
 
 export function set_up_handlers() {
+    // Sets up all the event handlers concerning the `People to add`
+    // section in Create stream UI.
+    const people_to_add_holder = $("#people_to_add").expectOne();
+    create_handlers_for_users(people_to_add_holder);
+
     const container = $("#stream-creation").expectOne();
 
     container.on("change", "#make-invite-only input", update_announce_stream_state);
@@ -441,7 +444,6 @@ export function set_up_handlers() {
                 parent: modal_parent,
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
                 html_body,
-                html_yes_button: $t_html({defaultMessage: "Confirm"}),
                 on_click: () => {
                     create_stream();
                 },

@@ -217,7 +217,8 @@ on a dark background, and don't change the dark labels dark either. */
     textarea,
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
-    .pill-container {
+    .pill-container,
+    .user_status_content_wrapper {
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: hsla(0, 0%, 0%, 0.6);
         color: inherit;
@@ -237,6 +238,10 @@ on a dark background, and don't change the dark labels dark either. */
     .pill-container {
         border-style: solid;
         border-width: 1px;
+    }
+
+    .deactivated-pill {
+        background-color: hsl(0, 86%, 14%) !important;
     }
 
     #search_arrows .pill,
@@ -403,6 +408,8 @@ on a dark background, and don't change the dark labels dark either. */
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    .expand_composebox_button,
+    .collapse_composebox_button,
     #message_edit_tooltip,
     .clear_search_button,
     .clear_search_button:focus,
@@ -423,6 +430,8 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 80%);
     }
 
+    .expand_composebox_button:hover,
+    .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
     #message_view_header .search_icon:hover,
@@ -1029,14 +1038,6 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid 1px solid hsl(144, 45%, 62%);
     }
 
-    .email_tooltip {
-        background-color: hsl(211, 16%, 30%);
-    }
-
-    .email_tooltip::after {
-        border-bottom-color: hsl(211, 16%, 30%) !important;
-    }
-
     #bots_lists_navbar .active a {
         color: hsl(0, 0%, 87%);
         background-color: hsl(212, 28%, 18%);
@@ -1062,16 +1063,6 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .small_square_button {
-        &.small_square_check {
-            background-color: hsl(166, 35%, 52%);
-            color: hsl(0, 0%, 90%);
-
-            &:hover {
-                background-color: hsl(156, 30%, 45%);
-                color: hsl(0, 0%, 95%);
-            }
-        }
-
         &.small_square_x {
             background-color: hsl(0, 0%, 95%);
             color: hsl(0, 0%, 42%);

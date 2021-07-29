@@ -260,7 +260,6 @@ Database monitoring:
 
 Standard server monitoring:
 
-* `check_website_response.sh`: Basic HTTP check.
 * `check_debian_packages`: Checks whether the system is behind on `apt
   upgrade`.
 

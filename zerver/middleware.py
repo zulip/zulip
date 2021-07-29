@@ -2,24 +2,13 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import (
-    Any,
-    AnyStr,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    MutableMapping,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
-from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.http.response import HttpResponseBase
 from django.middleware.common import CommonMiddleware
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
@@ -38,8 +27,8 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import set_request, unset_request
-from zerver.lib.response import json_error, json_response_from_error, json_unauthorized
+from zerver.lib.request import get_request_notes, set_request, unset_request
+from zerver.lib.response import json_response, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
@@ -61,7 +50,9 @@ def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
 
 
 def async_request_timer_stop(request: HttpRequest) -> None:
-    record_request_stop_data(request._log_data)
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    record_request_stop_data(log_data)
 
 
 def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
@@ -75,11 +66,13 @@ def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
 
 
 def async_request_timer_restart(request: HttpRequest) -> None:
-    if "time_restarted" in request._log_data:
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    if "time_restarted" in log_data:
         # Don't destroy data when being called from
         # finish_current_handler
         return
-    record_request_restart_data(request._log_data)
+    record_request_restart_data(log_data)
 
 
 def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
@@ -337,23 +330,29 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
+        request_notes = get_request_notes(request)
 
-        if hasattr(request, "_log_data"):
+        if request_notes.log_data is not None:
             # Sanity check to ensure this is being called from the
             # Tornado code path that returns responses asynchronously.
-            assert getattr(request, "saved_response", False)
+            assert request_notes.saved_response is not None
 
-            # Avoid re-initializing request._log_data if it's already there.
+            # Avoid re-initializing request_notes.log_data if it's already there.
             return
 
-        request.client_name, request.client_version = parse_client(request)
-        request._log_data = {}
-        record_request_start_data(request._log_data)
+        request_notes.client_name, request_notes.client_version = parse_client(request)
+        request_notes.log_data = {}
+        record_request_start_data(request_notes.log_data)
 
     def process_view(
-        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+        self,
+        request: HttpRequest,
+        view_func: ViewFuncT,
+        args: List[str],
+        kwargs: Dict[str, Any],
     ) -> None:
-        if hasattr(request, "saved_response"):
+        request_notes = get_request_notes(request)
+        if request_notes.saved_response is not None:
             # The below logging adjustments are unnecessary (because
             # we've already imported everything) and incorrect
             # (because they'll overwrite data from pre-long-poll
@@ -364,10 +363,13 @@ class LogRequests(MiddlewareMixin):
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
         # importing modules on the first start)
-        request._log_data["startup_time_delta"] = time.time() - request._log_data["time_started"]
+        assert request_notes.log_data is not None
+        request_notes.log_data["startup_time_delta"] = (
+            time.time() - request_notes.log_data["time_started"]
+        )
         # And then completely reset our tracking to only cover work
         # done as part of this request
-        record_request_start_data(request._log_data)
+        record_request_start_data(request_notes.log_data)
 
     def process_response(
         self, request: HttpRequest, response: StreamingHttpResponse
@@ -381,17 +383,15 @@ class LogRequests(MiddlewareMixin):
         remote_ip = request.META["REMOTE_ADDR"]
 
         # Get the requestor's identifier and client, if available.
-        try:
-            requestor_for_logs = request._requestor_for_logs
-        except Exception:
+        request_notes = get_request_notes(request)
+        requestor_for_logs = request_notes.requestor_for_logs
+        if requestor_for_logs is None:
+            # Note that request.user is a Union[RemoteZulipServer, UserProfile, AnonymousUser],
+            # if it is present.
             if hasattr(request, "user") and hasattr(request.user, "format_requestor_for_logs"):
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
                 requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
-        try:
-            client = request.client.name
-        except Exception:
-            client = request.client_name
 
         if response.streaming:
             content_iter = response.streaming_content
@@ -400,14 +400,15 @@ class LogRequests(MiddlewareMixin):
             content = response.content
             content_iter = None
 
+        assert request_notes.client_name is not None and request_notes.log_data is not None
         write_log_line(
-            request._log_data,
+            request_notes.log_data,
             request.path,
             request.method,
             remote_ip,
             requestor_for_logs,
-            client,
-            client_version=request.client_version,
+            request_notes.client_name,
+            client_version=request_notes.client_version,
             status_code=response.status_code,
             error_content=content,
             error_content_iter=content_iter,
@@ -416,9 +417,7 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
-    def __init__(
-        self, get_response: Callable[[Any, WSGIRequest], Union[HttpResponse, BaseException]]
-    ) -> None:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         super().__init__(get_response)
         ignore_logger("zerver.middleware.json_error_handler")
 
@@ -444,11 +443,11 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
-        if request.error_format == "JSON":
+        if get_request_notes(request).error_format == "JSON":
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
             json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
-            return json_error(_("Internal server error"), status=500)
+            return json_response(res_type="error", msg=_("Internal server error"), status=500)
         return None
 
 
@@ -460,9 +459,9 @@ class TagRequests(MiddlewareMixin):
 
     def process_request(self, request: HttpRequest) -> None:
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
-            request.error_format = "JSON"
+            get_request_notes(request).error_format = "JSON"
         else:
-            request.error_format = "HTML"
+            get_request_notes(request).error_format = "HTML"
 
 
 class CsrfFailureError(JsonableError):
@@ -479,14 +478,16 @@ class CsrfFailureError(JsonableError):
 
 
 def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
-    if request.error_format == "JSON":
+    if get_request_notes(request).error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
 
         # This is the same as the default LocaleMiddleware, minus the
         # logic that redirects 404's that lack a prefixed language in
@@ -502,9 +503,10 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
         # An additional responsibility of our override of this middleware is to save the user's language
         # preference in a cookie. That determination is made by code handling the request
-        # and saved in the _set_language flag so that it can be used here.
-        if hasattr(request, "_set_language"):
-            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request._set_language)
+        # and saved in the set_language flag so that it can be used here.
+        set_language = get_request_notes(request).set_language
+        if set_language is not None:
+            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, set_language)
 
         return response
 
@@ -529,8 +531,9 @@ class RateLimitMiddleware(MiddlewareMixin):
             return response
 
         # Add X-RateLimit-*** headers
-        if hasattr(request, "_ratelimits_applied"):
-            self.set_response_headers(response, request._ratelimits_applied)
+        ratelimits_applied = get_request_notes(request).ratelimits_applied
+        if len(ratelimits_applied) > 0:
+            self.set_response_headers(response, ratelimits_applied)
 
         return response
 
@@ -561,10 +564,12 @@ class HostDomainMiddleware(MiddlewareMixin):
 
         subdomain = get_subdomain(request)
         if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+            request_notes = get_request_notes(request)
             try:
-                request.realm = get_realm(subdomain)
+                request_notes.realm = get_realm(subdomain)
             except Realm.DoesNotExist:
                 return render(request, "zerver/invalid_realm.html", status=404)
+            request_notes.has_fetched_realm = True
         return None
 
 
@@ -596,8 +601,12 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
 
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
+    placeholder_open_graph_description = get_request_notes(
+        request
+    ).placeholder_open_graph_description
+    assert placeholder_open_graph_description is not None
     return content.replace(
-        request.placeholder_open_graph_description.encode("utf-8"),
+        placeholder_open_graph_description.encode("utf-8"),
         first_paragraph_text.encode("utf-8"),
     )
 
@@ -607,7 +616,7 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
         self, request: HttpRequest, response: StreamingHttpResponse
     ) -> StreamingHttpResponse:
 
-        if getattr(request, "placeholder_open_graph_description", None) is not None:
+        if get_request_notes(request).placeholder_open_graph_description is not None:
             assert not response.streaming
             response.content = alter_content(request, response.content)
         return response

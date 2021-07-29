@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type, TypeVar
 
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 T = TypeVar("T", bound="AbstractEnum")
@@ -52,6 +53,9 @@ class ErrorCode(AbstractEnum):
     RATE_LIMIT_HIT = ()
     USER_DEACTIVATED = ()
     REALM_DEACTIVATED = ()
+    PASSWORD_AUTH_DISABLED = ()
+    PASSWORD_RESET_REQUIRED = ()
+    AUTHENTICATION_FAILED = ()
 
 
 class JsonableError(Exception):
@@ -273,28 +277,49 @@ class StreamAdministratorRequired(JsonableError):
         return _("Must be an organization or stream administrator")
 
 
-class UserDeactivatedError(JsonableError):
-    code: ErrorCode = ErrorCode.USER_DEACTIVATED
-    http_status_code = 403
+class AuthenticationFailedError(JsonableError):
+    # Generic class for authentication failures
+    code: ErrorCode = ErrorCode.AUTHENTICATION_FAILED
+    http_status_code = 401
 
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Your username or password is incorrect")
+
+
+class UserDeactivatedError(AuthenticationFailedError):
+    code: ErrorCode = ErrorCode.USER_DEACTIVATED
 
     @staticmethod
     def msg_format() -> str:
         return _("Account is deactivated")
 
 
-class RealmDeactivatedError(JsonableError):
+class RealmDeactivatedError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
-    http_status_code = 403
-
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def msg_format() -> str:
         return _("This organization has been deactivated")
+
+
+class PasswordAuthDisabledError(AuthenticationFailedError):
+    code: ErrorCode = ErrorCode.PASSWORD_AUTH_DISABLED
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Password authentication is disabled in this organization")
+
+
+class PasswordResetRequiredError(AuthenticationFailedError):
+    code: ErrorCode = ErrorCode.PASSWORD_RESET_REQUIRED
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Your password has been disabled and needs to be reset")
 
 
 class MarkdownRenderingException(Exception):
@@ -375,3 +400,29 @@ class InvitationError(JsonableError):
         self.errors: List[Tuple[str, str, bool]] = errors
         self.sent_invitations: bool = sent_invitations
         self.license_limit_reached: bool = license_limit_reached
+
+
+class AccessDeniedError(JsonableError):
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Access denied")
+
+
+class ResourceNotFoundError(JsonableError):
+    http_status_code = 404
+
+
+class ValidationFailureError(JsonableError):
+    # This class translations a Django ValidationError into a
+    # Zulip-style JsonableError, sending back just the first error for
+    # consistency of API.
+    data_fields = ["errors"]
+
+    def __init__(self, error: ValidationError) -> None:
+        super().__init__(error.messages[0])
+        self.errors = dict(error)

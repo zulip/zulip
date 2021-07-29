@@ -1,13 +1,16 @@
 import time
-from unittest import mock
+from typing import Callable, Optional
+from unittest import mock, skipUnless
 
 import DNS
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.forms import email_is_not_mit_mailing_list
 from zerver.lib.rate_limiter import (
+    RateLimitedIPAddr,
     RateLimitedUser,
     RateLimiterLockingException,
     add_ratelimit_rule,
@@ -15,7 +18,10 @@ from zerver.lib.rate_limiter import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.models import UserProfile
+from zerver.models import PushDeviceToken, UserProfile
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RateLimitedRemoteZulipServer, RemoteZulipServer
 
 
 class MITNameTest(ZulipTestCase):
@@ -99,6 +105,16 @@ class RateLimitTests(ZulipTestCase):
             },
         )
 
+    def send_unauthed_api_request(self) -> HttpResponse:
+        result = self.client_get("/json/messages")
+        # We're not making a correct request here, but rate-limiting is supposed
+        # to happen before the request fails due to not being correctly made. Thus
+        # we expect either an 400 error if the request is allowed by the rate limiter,
+        # or 429 if we're above the limit. We don't expect to see other status codes here,
+        # so we assert for safety.
+        self.assertIn(result.status_code, [400, 429])
+        return result
+
     def test_headers(self) -> None:
         user = self.example_user("hamlet")
         RateLimitedUser(user).clear_history()
@@ -118,30 +134,101 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result["X-RateLimit-Remaining"])
         self.assertEqual(limit, newlimit + 1)
 
-    def test_hit_ratelimits(self) -> None:
-        user = self.example_user("cordelia")
-        RateLimitedUser(user).clear_history()
+    def do_test_hit_ratelimits(
+        self,
+        request_func: Callable[[], HttpResponse],
+        assert_func: Optional[Callable[[HttpResponse], None]] = None,
+    ) -> HttpResponse:
+        def default_assert_func(result: HttpResponse) -> None:
+            self.assertEqual(result.status_code, 429)
+            json = result.json()
+            self.assertEqual(json.get("result"), "error")
+            self.assertIn("API usage exceeded rate limit", json.get("msg"))
+            self.assertEqual(json.get("retry-after"), 0.5)
+            self.assertTrue("Retry-After" in result)
+            self.assertEqual(result["Retry-After"], "0.5")
+
+        if assert_func is None:
+            assert_func = default_assert_func
 
         start_time = time.time()
         for i in range(6):
             with mock.patch("time.time", return_value=(start_time + i * 0.1)):
-                result = self.send_api_message(user, f"some stuff {i}")
+                result = request_func()
 
-        self.assertEqual(result.status_code, 429)
-        json = result.json()
-        self.assertEqual(json.get("result"), "error")
-        self.assertIn("API usage exceeded rate limit", json.get("msg"))
-        self.assertEqual(json.get("retry-after"), 0.5)
-        self.assertTrue("Retry-After" in result)
-        self.assertEqual(result["Retry-After"], "0.5")
+        assert_func(result)
 
-        # We actually wait a second here, rather than force-clearing our history,
+        # We simulate waiting a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
         with mock.patch("time.time", return_value=(start_time + 1.01)):
-            result = self.send_api_message(user, "Good message")
+            result = request_func()
 
-            self.assert_json_success(result)
+            self.assertNotEqual(result, 429)
+
+    def test_hit_ratelimits_as_user(self) -> None:
+        user = self.example_user("cordelia")
+        RateLimitedUser(user).clear_history()
+
+        self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
+
+    def test_hit_ratelimits_as_ip(self) -> None:
+        add_ratelimit_rule(1, 5, domain="api_by_ip")
+        try:
+            RateLimitedIPAddr("127.0.0.1").clear_history()
+            self.do_test_hit_ratelimits(self.send_unauthed_api_request)
+        finally:
+            # We need this in a finally block to ensure the test cleans up after itself
+            # even in case of failure, to avoid polluting the rules state.
+            remove_ratelimit_rule(1, 5, domain="api_by_ip")
+
+    def test_create_realm_rate_limiting(self) -> None:
+        def assert_func(result: HttpResponse) -> None:
+            self.assertEqual(result.status_code, 429)
+            self.assert_in_response("Rate limit exceeded.", result)
+
+        with self.settings(OPEN_REALM_CREATION=True):
+            add_ratelimit_rule(1, 5, domain="create_realm_by_ip")
+            try:
+                RateLimitedIPAddr("127.0.0.1").clear_history()
+                self.do_test_hit_ratelimits(
+                    lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
+                    assert_func=assert_func,
+                )
+            finally:
+                remove_ratelimit_rule(1, 5, domain="create_realm_by_ip")
+
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+    def test_hit_ratelimits_as_remote_server(self) -> None:
+        add_ratelimit_rule(1, 5, domain="api_by_remote_server")
+        server_uuid = "1234-abcd"
+        server = RemoteZulipServer(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+        server.save()
+
+        endpoint = "/api/v1/remotes/push/register"
+        payload = {"user_id": 10, "token": "111222", "token_kind": PushDeviceToken.GCM}
+        try:
+            # Remote servers can only make requests to the root subdomain.
+            original_default_subdomain = self.DEFAULT_SUBDOMAIN
+            self.DEFAULT_SUBDOMAIN = ""
+
+            RateLimitedRemoteZulipServer(server).clear_history()
+            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as m:
+                self.do_test_hit_ratelimits(lambda: self.uuid_post(server_uuid, endpoint, payload))
+            self.assertEqual(
+                m.output,
+                [
+                    "WARNING:zerver.lib.rate_limiter:Remote server <RemoteZulipServer demo.example.com 1234-abcd> exceeded rate limits on domain api_by_remote_server"
+                ],
+            )
+        finally:
+            self.DEFAULT_SUBDOMAIN = original_default_subdomain
+            remove_ratelimit_rule(1, 5, domain="api_by_remote_server")
 
     def test_hit_ratelimiterlockingexception(self) -> None:
         user = self.example_user("cordelia")

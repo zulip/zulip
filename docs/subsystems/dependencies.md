@@ -118,6 +118,12 @@ extension, used by our [full-text search](full-text-search.md).
 
 ## Python packages
 
+Zulip uses the version of Python itself provided by the host OS for
+the Zulip server.  We currently support Python 3.6 and newer, with
+Ubuntu Bionic being the platform requiring 3.6 support. The comments
+in `.github/workflows/zulip-ci.yml` document the Python versions used
+by each supported platform.
+
 We manage Python packages via the Python-standard `requirements.txt`
 system and virtualenvs, but there’s a number of interesting details
 about how Zulip makes this system work well for us that are worth
@@ -192,7 +198,7 @@ highlighting.  The system is largely managed by the code in
 * **Mypy type checker**.  Because we're using mypy in a strict mode,
   when you add use of a new Python dependency, you usually need to
   either adds stubs to the `stubs/` directory for the library, or edit
-  `mypy.ini` in the root of the Zulip project to configure
+  `pyproject.toml` in the root of the Zulip project to configure
   `ignore_missing_imports` for the new library.  See
   [our mypy docs][mypy-docs] for more details.
 

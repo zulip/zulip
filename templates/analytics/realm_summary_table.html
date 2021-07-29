@@ -25,6 +25,7 @@
             <th>Created (green if ≤12wk)</th>
             {% if billing_enabled %}
             <th>Plan type</th>
+            <th>Org type</th>
             <th>ARR</th>
             <th>Rate (%)</th>
             {% endif %}
@@ -58,7 +59,13 @@
             <td>
                 {{ row.plan_type_string }}
             </td>
+            {% endif %}
 
+            <td>
+                {{ row.org_type_string }}
+            </td>
+
+            {% if billing_enabled %}
             <td class="number">
                 {% if row.arr %}
                 {{ row.arr }}

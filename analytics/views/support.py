@@ -25,10 +25,18 @@ from zerver.lib.actions import (
     do_scrub_realm,
     do_send_realm_reactivation_email,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.response import json_error
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserProfile, get_realm
+from zerver.lib.utils import assert_is_not_none
+from zerver.models import (
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    UserProfile,
+    get_org_type_display_name,
+    get_realm,
+)
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
@@ -37,8 +45,6 @@ if settings.BILLING_ENABLED:
         attach_discount_to_realm,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
-        get_current_plan_by_realm,
-        get_customer_by_realm,
         get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
@@ -46,6 +52,7 @@ if settings.BILLING_ENABLED:
         update_sponsorship_status,
         void_all_open_invoices,
     )
+    from corporate.models import get_current_plan_by_realm, get_customer_by_realm
 
 
 def get_plan_name(plan_type: int) -> str:
@@ -68,6 +75,7 @@ def get_confirmations(
         days_to_activate = _properties[type].validity_in_days
         expiry_date = confirmation.date_sent + timedelta(days=days_to_activate)
 
+        assert content_object is not None
         if hasattr(content_object, "status"):
             if content_object.status == STATUS_ACTIVE:
                 link_status = "Link has been clicked"
@@ -110,33 +118,35 @@ def support(request: HttpRequest) -> HttpResponse:
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
         if len(keys) != 2:
-            return json_error(_("Invalid parameters"))
+            raise JsonableError(_("Invalid parameters"))
 
-        realm_id = request.POST.get("realm_id")
+        realm_id: str = assert_is_not_none(request.POST.get("realm_id"))
         realm = Realm.objects.get(id=realm_id)
 
+        acting_user = request.user
+        assert isinstance(acting_user, UserProfile)
         if request.POST.get("plan_type", None) is not None:
-            new_plan_type = int(request.POST.get("plan_type"))
+            new_plan_type = int(assert_is_not_none(request.POST.get("plan_type")))
             current_plan_type = realm.plan_type
-            do_change_plan_type(realm, new_plan_type, acting_user=request.user)
+            do_change_plan_type(realm, new_plan_type, acting_user=acting_user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
             context["success_message"] = msg
         elif request.POST.get("discount", None) is not None:
-            new_discount = Decimal(request.POST.get("discount"))
+            new_discount = Decimal(assert_is_not_none(request.POST.get("discount")))
             current_discount = get_discount_for_realm(realm) or 0
-            attach_discount_to_realm(realm, new_discount, acting_user=request.user)
+            attach_discount_to_realm(realm, new_discount, acting_user=acting_user)
             context[
                 "success_message"
             ] = f"Discount of {realm.string_id} changed to {new_discount}% from {current_discount}%."
         elif request.POST.get("new_subdomain", None) is not None:
-            new_subdomain = request.POST.get("new_subdomain")
+            new_subdomain: str = assert_is_not_none(request.POST.get("new_subdomain"))
             old_subdomain = realm.string_id
             try:
                 check_subdomain_available(new_subdomain)
             except ValidationError as error:
                 context["error_message"] = error.message
             else:
-                do_change_realm_subdomain(realm, new_subdomain, acting_user=request.user)
+                do_change_realm_subdomain(realm, new_subdomain, acting_user=acting_user)
                 request.session[
                     "success_message"
                 ] = f"Subdomain changed from {old_subdomain} to {new_subdomain}"
@@ -146,25 +156,25 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("status", None) is not None:
             status = request.POST.get("status")
             if status == "active":
-                do_send_realm_reactivation_email(realm, acting_user=request.user)
+                do_send_realm_reactivation_email(realm, acting_user=acting_user)
                 context[
                     "success_message"
                 ] = f"Realm reactivation email sent to admins of {realm.string_id}."
             elif status == "deactivated":
-                do_deactivate_realm(realm, acting_user=request.user)
+                do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif request.POST.get("billing_method", None) is not None:
             billing_method = request.POST.get("billing_method")
             if billing_method == "send_invoice":
                 update_billing_method_of_current_plan(
-                    realm, charge_automatically=False, acting_user=request.user
+                    realm, charge_automatically=False, acting_user=acting_user
                 )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to pay by invoice."
             elif billing_method == "charge_automatically":
                 update_billing_method_of_current_plan(
-                    realm, charge_automatically=True, acting_user=request.user
+                    realm, charge_automatically=True, acting_user=acting_user
                 )
                 context[
                     "success_message"
@@ -172,14 +182,14 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("sponsorship_pending", None) is not None:
             sponsorship_pending = request.POST.get("sponsorship_pending")
             if sponsorship_pending == "true":
-                update_sponsorship_status(realm, True, acting_user=request.user)
+                update_sponsorship_status(realm, True, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
             elif sponsorship_pending == "false":
-                update_sponsorship_status(realm, False, acting_user=request.user)
+                update_sponsorship_status(realm, False, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif request.POST.get("approve_sponsorship") is not None:
             if request.POST.get("approve_sponsorship") == "approve_sponsorship":
-                approve_sponsorship(realm, acting_user=request.user)
+                approve_sponsorship(realm, acting_user=acting_user)
                 context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif request.POST.get("downgrade_method", None) is not None:
             downgrade_method = request.POST.get("downgrade_method")
@@ -201,7 +211,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
         elif request.POST.get("scrub_realm", None) is not None:
             if request.POST.get("scrub_realm") == "scrub_realm":
-                do_scrub_realm(realm, acting_user=request.user)
+                do_scrub_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} scrubbed."
 
     query = request.GET.get("q", None)
@@ -284,6 +294,7 @@ def support(request: HttpRequest) -> HttpResponse:
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
     context["get_discount_for_realm"] = get_discount_for_realm
+    context["get_org_type_display_name"] = get_org_type_display_name
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     return render(request, "analytics/support.html", context=context)

@@ -11,7 +11,7 @@ You can also upload a custom profile picture to Zulip.
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|profile}
 
 2. Under **Profile picture**, click **Upload new profile picture** and choose an image to upload.
 
@@ -21,7 +21,7 @@ You can also upload a custom profile picture to Zulip.
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|profile}
 
 2. Under **Profile picture**, click on the **(X)** icon in the top
 right corner of the profile picture.

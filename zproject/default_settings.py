@@ -288,10 +288,6 @@ EMAIL_BACKEND: Optional[str] = None
 # Set in settings.py when email isn't configured.
 WARN_NO_EMAIL = False
 
-# Whether to keep extra frontend stack trace data.
-# TODO: Investigate whether this should be removed and set one way or other.
-SAVE_FRONTEND_STACKTRACES = False
-
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.
@@ -403,8 +399,6 @@ LOG_API_EVENT_TYPES = False
 # the server.
 # TODO: Replace this with a smarter "run on only one server" system.
 STAGING = False
-# Configuration option for our email/Zulip error reporting.
-STAGING_ERROR_NOTIFICATIONS = False
 
 # How long to wait before presence should treat a user as offline.
 # TODO: Figure out why this is different from the corresponding

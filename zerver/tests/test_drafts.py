@@ -54,6 +54,14 @@ class DraftCreationTests(ZulipTestCase):
         # conditions.
         self.assertEqual(Draft.objects.count(), 0)
 
+    def test_require_enable_drafts_synchronization(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.enable_drafts_synchronization = False
+        hamlet.save()
+        payload = {"drafts": "[]"}
+        resp = self.api_post(hamlet, "/api/v1/drafts", payload)
+        self.assert_json_error(resp, "User has disabled synchronizing drafts.")
+
     def test_create_one_stream_draft_properly(self) -> None:
         hamlet = self.example_user("hamlet")
         visible_stream_name = self.get_streams(hamlet)[0]
@@ -301,6 +309,13 @@ class DraftCreationTests(ZulipTestCase):
 
 
 class DraftEditTests(ZulipTestCase):
+    def test_require_enable_drafts_synchronization(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.enable_drafts_synchronization = False
+        hamlet.save()
+        resp = self.api_patch(hamlet, "/api/v1/drafts/1", {"draft": {}})
+        self.assert_json_error(resp, "User has disabled synchronizing drafts.")
+
     def test_edit_draft_successfully(self) -> None:
         hamlet = self.example_user("hamlet")
         visible_streams = self.get_streams(hamlet)
@@ -405,6 +420,13 @@ class DraftEditTests(ZulipTestCase):
 
 
 class DraftDeleteTests(ZulipTestCase):
+    def test_require_enable_drafts_synchronization(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.enable_drafts_synchronization = False
+        hamlet.save()
+        resp = self.api_delete(hamlet, "/api/v1/drafts/1")
+        self.assert_json_error(resp, "User has disabled synchronizing drafts.")
+
     def test_delete_draft_successfully(self) -> None:
         hamlet = self.example_user("hamlet")
         visible_streams = self.get_streams(hamlet)
@@ -488,6 +510,13 @@ class DraftDeleteTests(ZulipTestCase):
 
 
 class DraftFetchTest(ZulipTestCase):
+    def test_require_enable_drafts_synchronization(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.enable_drafts_synchronization = False
+        hamlet.save()
+        resp = self.api_get(hamlet, "/api/v1/drafts")
+        self.assert_json_error(resp, "User has disabled synchronizing drafts.")
+
     def test_fetch_drafts(self) -> None:
         self.assertEqual(Draft.objects.count(), 0)
 

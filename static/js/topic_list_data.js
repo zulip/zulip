@@ -1,5 +1,6 @@
 import * as hash_util from "./hash_util";
-import * as muting from "./muting";
+import * as message_edit from "./message_edit";
+import * as muted_topics from "./muted_topics";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
 import * as topic_list from "./topic_list";
@@ -30,7 +31,13 @@ export function get_list_info(stream_id, zoomed) {
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
-        const is_topic_muted = muting.is_topic_muted(stream_id, topic_name);
+        const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
+        const resolved = topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX);
+        let topic_display_name = topic_name;
+
+        if (resolved) {
+            topic_display_name = topic_display_name.replace(message_edit.RESOLVED_TOPIC_PREFIX, "");
+        }
 
         if (!zoomed) {
             function should_show_topic(topics_selected) {
@@ -91,11 +98,14 @@ export function get_list_info(stream_id, zoomed) {
 
         const topic_info = {
             topic_name,
+            topic_display_name,
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
             is_active_topic,
             url: hash_util.by_stream_topic_uri(stream_id, topic_name),
+            resolved,
+            resolved_topic_prefix: message_edit.RESOLVED_TOPIC_PREFIX,
         };
 
         items.push(topic_info);

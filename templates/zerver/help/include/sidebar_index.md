@@ -3,6 +3,7 @@
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Streams and topics](/help/about-streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
+* [Using Zulip via email](/help/using-zulip-via-email)
 
 # Using Zulip
 
@@ -115,6 +116,7 @@
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
+* [Import from Rocket.Chat](/help/import-from-rocketchat)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Export your organization](/help/export-your-organization)
@@ -129,7 +131,7 @@
 * [Restrict user group management](/help/restrict-user-group-management)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Restrict profile picture changes](/help/restrict-profile-picture-changes)
-* [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
+* [Change who can add custom emoji](/help/configure-who-can-add-custom-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)

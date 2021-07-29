@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Optional
 
 import sentry_sdk
 from django.utils.translation import override as override_language
-from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -10,8 +9,6 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.utils import capture_internal_exceptions
 
 from version import ZULIP_VERSION
-
-from .config import PRODUCTION
 
 if TYPE_CHECKING:
     from sentry_sdk._types import Event, Hint
@@ -25,7 +22,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
             return None
     from django.conf import settings
 
-    from zerver.lib.request import get_current_request
+    from zerver.lib.request import get_current_request, get_request_notes
     from zerver.models import get_user_profile_by_id
 
     with capture_internal_exceptions():
@@ -50,25 +47,25 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
 
         request = get_current_request()
         if request:
-            if hasattr(request, "client"):
-                event["tags"]["client"] = request.client.name
-            if hasattr(request, "realm"):
-                event["tags"].setdefault("realm", request.realm.string_id)
+            request_notes = get_request_notes(request)
+            if request_notes.client is not None:
+                event["tags"]["client"] = request_notes.client.name
+            if request_notes.realm is not None:
+                event["tags"].setdefault("realm", request_notes.realm.string_id)
     return event
 
 
-def setup_sentry(dsn: Optional[str], *integrations: Integration) -> None:
+def setup_sentry(dsn: Optional[str], environment: str) -> None:
     if not dsn:
         return
     sentry_sdk.init(
         dsn=dsn,
-        environment="production" if PRODUCTION else "development",
+        environment=environment,
         release=ZULIP_VERSION,
         integrations=[
             DjangoIntegration(),
             RedisIntegration(),
             SqlalchemyIntegration(),
-            *integrations,
         ],
         before_send=add_context,
         # Because we strip the email/username from the Sentry data

@@ -8,7 +8,6 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import (
     check_schedule_message,
     check_send_message,
@@ -18,8 +17,10 @@ from zerver.lib.actions import (
     extract_private_recipients,
     extract_stream_indicator,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import render_markdown
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
 from zerver.lib.zcommand import process_zcommands
@@ -51,13 +52,16 @@ def create_mirrored_message_users(
         for email in recipients:
             referenced_users.add(email.lower())
 
-    if request.client.name == "zephyr_mirror":
+    client = get_request_notes(request).client
+    assert client is not None
+
+    if client.name == "zephyr_mirror":
         user_check = same_realm_zephyr_user
         fullname_function = compute_mit_user_fullname
-    elif request.client.name == "irc_mirror":
+    elif client.name == "irc_mirror":
         user_check = same_realm_irc_user
         fullname_function = compute_irc_user_fullname
-    elif request.client.name in ("jabber_mirror", "JabberMirror"):
+    elif client.name in ("jabber_mirror", "JabberMirror"):
         user_check = same_realm_jabber_user
         fullname_function = compute_jabber_user_fullname
     else:
@@ -151,7 +155,7 @@ def handle_deferred_message(
     try:
         deliver_at = dateparser(defer_until)
     except ValueError:
-        return json_error(_("Invalid time format"))
+        raise JsonableError(_("Invalid time format"))
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
@@ -160,7 +164,7 @@ def handle_deferred_message(
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():
-        return json_error(_("Time must be in the future."))
+        raise JsonableError(_("Time must be in the future."))
 
     check_schedule_message(
         sender,
@@ -220,16 +224,17 @@ def send_message_backend(
     # `yes` to accepting `true` like all of our normal booleans.
     forged = forged_str is not None and forged_str in ["yes", "true"]
 
-    client = request.client
-    can_forge_sender = request.user.can_forge_sender
+    client = get_request_notes(request).client
+    assert client is not None
+    can_forge_sender = user_profile.can_forge_sender
     if forged and not can_forge_sender:
-        return json_error(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized for this query"))
 
     realm = None
     if realm_str and realm_str != user_profile.realm.string_id:
         # The realm_str parameter does nothing, because it has to match
         # the user's realm - but we keep it around for backward compatibility.
-        return json_error(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized for this query"))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -246,14 +251,14 @@ def send_message_backend(
         # `create_mirrored_message_users` below, which checks the
         # same-realm constraint.
         if "sender" not in request.POST:
-            return json_error(_("Missing sender"))
+            raise JsonableError(_("Missing sender"))
         if message_type_name != "private" and not can_forge_sender:
-            return json_error(_("User not authorized for this query"))
+            raise JsonableError(_("User not authorized for this query"))
 
         # For now, mirroring only works with recipient emails, not for
         # recipient user IDs.
         if not all(isinstance(to_item, str) for to_item in message_to):
-            return json_error(_("Mirroring not allowed with recipient user IDs"))
+            raise JsonableError(_("Mirroring not allowed with recipient user IDs"))
 
         # We need this manual cast so that mypy doesn't complain about
         # create_mirrored_message_users not being able to accept a Sequence[int]
@@ -263,18 +268,18 @@ def send_message_backend(
         try:
             mirror_sender = create_mirrored_message_users(request, user_profile, message_to)
         except InvalidMirrorInput:
-            return json_error(_("Invalid mirrored message"))
+            raise JsonableError(_("Invalid mirrored message"))
 
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
-            return json_error(_("Zephyr mirroring is not allowed in this organization"))
+            raise JsonableError(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
         if "sender" in request.POST:
-            return json_error(_("Invalid mirrored message"))
+            raise JsonableError(_("Invalid mirrored message"))
         sender = user_profile
 
     if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is None:
-        return json_error(_("Missing deliver_at in a request for delayed message delivery"))
+        raise JsonableError(_("Missing deliver_at in a request for delayed message delivery"))
 
     if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is not None:
         return handle_deferred_message(
@@ -323,7 +328,9 @@ def render_message_backend(
     message = Message()
     message.sender = user_profile
     message.content = content
-    message.sending_client = request.client
+    client = get_request_notes(request).client
+    assert client is not None
+    message.sending_client = client
 
     rendering_result = render_markdown(message, content, realm=user_profile.realm)
     return json_success({"rendered": rendering_result.rendered_content})

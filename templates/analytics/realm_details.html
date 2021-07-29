@@ -4,6 +4,8 @@
 <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
 <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
 <b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
+{% set org_type_display_name = get_org_type_display_name(realm.org_type) %}
+<b>Organization type</b>: {{ org_type_display_name }}<br />
 {% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
 <b>Owners</b>: {{ owner_emails_string }}
 {% if owner_emails_string %}

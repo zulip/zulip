@@ -9,11 +9,14 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const noop = () => {};
+
 set_global("document", {
     execCommand() {
         return false;
     },
 });
+set_global("navigator", {});
 
 mock_esm("../../static/js/message_lists", {
     current: {},
@@ -291,12 +294,12 @@ run_test("quote_and_reply", ({override}) => {
     };
 
     $("#compose-textarea").caret = function (arg) {
-        if (arg === 0) {
-            textarea_caret_pos = 0;
-            return this;
-        }
         if (arg === undefined) {
             return textarea_caret_pos;
+        }
+        if (typeof arg === "number") {
+            textarea_caret_pos = arg;
+            return this;
         }
         if (typeof arg !== "string") {
             console.info(arg);
@@ -327,15 +330,314 @@ run_test("quote_and_reply", ({override}) => {
         return content;
     }
 
+    function reset_test_state() {
+        // Reset `raw_content` property of `selected_message`.
+        delete selected_message.raw_content;
+
+        // Reset compose-box state.
+        textarea_val = "";
+        textarea_caret_pos = 0;
+        $("#compose-textarea").trigger("blur");
+    }
+
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
     compose_actions.quote_and_reply();
-    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%hello there");
+    assert.equal(get_compose_content_with_caret(), "hello \n[Quoting…]\n%there");
 
     success_function({
         raw_content: "Testing caret position",
     });
     assert.equal(
         get_compose_content_with_caret(),
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\nhello there%",
+        "hello \ntranslated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\n%there",
     );
+
+    reset_test_state();
+
+    // If the caret is initially positioned at 0, it should not
+    // add a newline before the quoted message.
+    set_compose_content_with_caret("%hello there");
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%hello there");
+
+    success_function({
+        raw_content: "Testing with caret initially positioned at 0.",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with caret initially positioned at 0.\n```\n%hello there",
+    );
+
+    override(compose_actions, "respond_to_message", () => {
+        // Reset compose state to replicate the re-opening of compose-box.
+        textarea_val = "";
+        textarea_caret_pos = 0;
+        $("#compose-textarea").trigger("focus");
+    });
+
+    reset_test_state();
+
+    // If the compose-box is close, or open with no content while
+    // quoting a message, the quoted message should be placed
+    // at the beginning of compose-box.
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%");
+
+    success_function({
+        raw_content: "Testing with compose-box closed initially.",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box closed initially.\n```\n%",
+    );
+
+    reset_test_state();
+
+    // If the compose-box is already open while quoting a message,
+    // but contains content like `\n\n  \n` (only whitespaces and
+    // newlines), the compose-box should re-open and thus the quoted
+    // message should start from the beginning of compose-box.
+    set_compose_content_with_caret("  \n\n \n %");
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%");
+
+    success_function({
+        raw_content: "Testing with compose-box containing whitespaces and newlines only.",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box containing whitespaces and newlines only.\n```\n%",
+    );
+});
+
+run_test("set_compose_box_top", () => {
+    $(".header").set_height(40);
+
+    const padding_bottom = 10;
+    $(".header").css = (arg) => {
+        assert.equal(arg, "paddingBottom");
+        return padding_bottom;
+    };
+
+    let compose_top = "";
+    $("#compose").css = (arg, val) => {
+        assert.equal(arg, "top");
+        compose_top = val;
+    };
+
+    $("#navbar_alerts_wrapper").set_height(0);
+    compose_ui.set_compose_box_top(true);
+    assert.equal(compose_top, "50px");
+
+    $("#navbar_alerts_wrapper").set_height(45);
+    compose_ui.set_compose_box_top(true);
+    assert.equal(compose_top, "95px");
+
+    compose_ui.set_compose_box_top(false);
+    assert.equal(compose_top, "");
+});
+
+run_test("test_compose_height_changes", ({override}) => {
+    let autosize_destroyed = false;
+    override(autosize, "destroy", () => {
+        autosize_destroyed = true;
+    });
+
+    let compose_box_top_set = false;
+    override(compose_ui, "set_compose_box_top", (set_top) => {
+        compose_box_top_set = set_top;
+    });
+
+    compose_ui.make_compose_box_full_size();
+    assert.ok($("#compose").hasClass("compose-fullscreen"));
+    assert.ok(compose_ui.is_full_size());
+    assert.ok(autosize_destroyed);
+    assert.ok(compose_box_top_set);
+
+    compose_ui.make_compose_box_original_size();
+    assert.ok(!$("#compose").hasClass("compose-fullscreen"));
+    assert.ok(!compose_ui.is_full_size());
+    assert.ok(!compose_box_top_set);
+});
+
+run_test("markdown_shortcuts", ({override}) => {
+    let queryCommandEnabled = true;
+    const event = {
+        key: "b",
+        target: {
+            id: "compose-textarea",
+        },
+        stopPropagation: noop,
+        preventDefault: noop,
+    };
+    let input_text = "";
+    let range_start = 0;
+    let range_length = 0;
+    let compose_value = $("#compose_textarea").val();
+    let selected_word = "";
+
+    override(document, "queryCommandEnabled", () => queryCommandEnabled);
+
+    override(document, "execCommand", (cmd, bool, markdown) => {
+        const compose_textarea = $("#compose-textarea");
+        const value = compose_textarea.val();
+        $("#compose-textarea").val(
+            value.slice(0, compose_textarea.range().start) +
+                markdown +
+                value.slice(compose_textarea.range().end),
+        );
+    });
+
+    $("#compose-textarea")[0] = {};
+    $("#compose-textarea").range = () => ({
+        start: range_start,
+        end: range_start + range_length,
+        length: range_length,
+        range: noop,
+        text: $("#compose-textarea")
+            .val()
+            .slice(range_start, range_length + range_start),
+    });
+    $("#compose-textarea").caret = noop;
+
+    function test_i_typed(isCtrl, isCmd) {
+        // Test 'i' is typed correctly.
+        $("#compose-textarea").val("i");
+        event.key = "i";
+        event.metaKey = isCmd;
+        event.ctrlKey = isCtrl;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal("i", $("#compose-textarea").val());
+    }
+
+    function all_markdown_test(isCtrl, isCmd) {
+        input_text = "Any text.";
+        $("#compose-textarea").val(input_text);
+        compose_value = $("#compose-textarea").val();
+        // Select "text" word in compose box.
+        selected_word = "text";
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+
+        // Test bold:
+        // Mac env = Cmd+b
+        // Windows/Linux = Ctrl+b
+        event.key = "b";
+        event.ctrlKey = isCtrl;
+        event.metaKey = isCmd;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal("Any **text**.", $("#compose-textarea").val());
+        // Test if no text is selected.
+        range_start = 0;
+        // Change cursor to first position.
+        range_length = 0;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal("****Any **text**.", $("#compose-textarea").val());
+
+        // Test italic:
+        // Mac = Cmd+I
+        // Windows/Linux = Ctrl+I
+        // We use event.key = "I" to emulate user using Caps Lock key.
+        $("#compose-textarea").val(input_text);
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+        event.key = "I";
+        event.shiftKey = false;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal("Any *text*.", $("#compose-textarea").val());
+        // Test if no text is selected.
+        range_length = 0;
+        // Change cursor to first position.
+        range_start = 0;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal("**Any *text*.", $("#compose-textarea").val());
+
+        // Test link insertion:
+        // Mac = Cmd+Shift+L
+        // Windows/Linux = Ctrl+Shift+L
+        $("#compose-textarea").val(input_text);
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+        event.key = "l";
+        event.shiftKey = true;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal("Any [text](url).", $("#compose-textarea").val());
+        // Test if exec command is not enabled in browser.
+        queryCommandEnabled = false;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+    }
+
+    // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
+    // Mac and Linux/Windows environments.  So in short, this tests
+    // that e.g. Cmd+B should be ignored on Linux/Windows and Ctrl+B
+    // should be ignored on Mac.
+    function os_specific_markdown_test(isCtrl, isCmd) {
+        input_text = "Any text.";
+        $("#compose-textarea").val(input_text);
+        compose_value = $("#compose-textarea").val();
+        selected_word = "text";
+        range_start = compose_value.search(selected_word);
+        range_length = selected_word.length;
+        event.metaKey = isCmd;
+        event.ctrlKey = isCtrl;
+
+        event.key = "b";
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal(input_text, $("#compose-textarea").val());
+
+        event.key = "i";
+        event.shiftKey = false;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal(input_text, $("#compose-textarea").val());
+
+        event.key = "l";
+        event.shiftKey = true;
+        compose_ui.handle_keydown(event, $("#compose-textarea"));
+        assert.equal(input_text, $("#compose-textarea").val());
+    }
+
+    // These keyboard shortcuts differ as to what key one should use
+    // on MacOS vs. other platforms: Cmd (Mac) vs. Ctrl (non-Mac).
+
+    // Default (Linux/Windows) userAgent tests:
+    navigator.platform = "";
+
+    test_i_typed(false, false);
+    // Check all the Ctrl + Markdown shortcuts work correctly
+    all_markdown_test(true, false);
+    // The Cmd + Markdown shortcuts should do nothing on Linux/Windows
+    os_specific_markdown_test(false, true);
+
+    // Setting following platform to test in mac env
+    navigator.platform = "MacIntel";
+
+    // Mac userAgent tests:
+    test_i_typed(false, false);
+    // The Ctrl + Markdown shortcuts should do nothing on mac
+    os_specific_markdown_test(true, false);
+    // Check all the Cmd + Markdown shortcuts work correctly
+    all_markdown_test(false, true);
+
+    // Reset userAgent
+    navigator.userAgent = "";
+});
+
+run_test("right-to-left", () => {
+    const textarea = $("#compose-textarea");
+
+    const event = {
+        key: "A",
+    };
+
+    assert.equal(textarea.hasClass("rtl"), false);
+
+    textarea.val("```quote\nمرحبا");
+    compose_ui.handle_keyup(event, $("#compose-textarea"));
+
+    assert.equal(textarea.hasClass("rtl"), true);
+
+    textarea.val("```quote foo");
+    compose_ui.handle_keyup(event, textarea);
+
+    assert.equal(textarea.hasClass("rtl"), false);
 });

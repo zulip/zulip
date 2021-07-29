@@ -20,7 +20,6 @@ from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyException,
-    MultiuseInvite,
     confirmation_url,
     create_confirmation_link,
     generate_key,
@@ -47,7 +46,6 @@ from zerver.lib.actions import (
     do_invite_users,
     do_set_realm_property,
     get_default_streams_for_realm,
-    get_stream,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
@@ -88,6 +86,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     DefaultStream,
     Message,
+    MultiuseInvite,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -99,6 +98,7 @@ from zerver.models import (
     UserProfile,
     flush_per_request_caches,
     get_realm,
+    get_stream,
     get_system_bot,
     get_user,
     get_user_by_delivery_email,
@@ -306,7 +306,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             .exclude(message_id=race_message_id)
             .order_by("-message_id")[ONBOARDING_UNREAD_MESSAGES : ONBOARDING_UNREAD_MESSAGES + 1]
         )
-        self.assertTrue(len(older_messages) > 0)
+        self.assertGreater(len(older_messages), 0)
         for msg in older_messages:
             self.assertTrue(msg.flags.read.is_set)
 
@@ -774,13 +774,13 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 73)
+        self.assert_length(queries, 89)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assert_length(cache_tries, 16)
+        self.assert_length(cache_tries, 21)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1179,6 +1179,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(result)
 
         prereg_user = PreregistrationUser.objects.get(email=mirror_user.email)
+        assert prereg_user.referred_by is not None and inviter is not None
         self.assertEqual(
             prereg_user.referred_by.email,
             inviter.email,
@@ -1327,6 +1328,13 @@ class InviteUserTest(InviteUserBase):
             user_profile.refresh_from_db()
             return user_profile.can_invite_others_to_realm()
 
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        desdemona = self.example_user("desdemona")
+        self.assertFalse(validation_func(desdemona))
+
         self.check_has_permission_policies("invite_to_realm_policy", validation_func)
 
     def test_invite_others_to_realm_setting(self) -> None:
@@ -1335,13 +1343,22 @@ class InviteUserTest(InviteUserBase):
         """
         realm = get_realm("zulip")
         do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        self.login("desdemona")
+        email = "alice-test@zulip.com"
+        email2 = "bob-test@zulip.com"
+        invitee = f"Alice Test <{email}>, {email2}"
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
+        )
+
+        do_set_realm_property(
             realm, "invite_to_realm_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
 
         self.login("shiva")
-        email = "alice-test@zulip.com"
-        email2 = "bob-test@zulip.com"
-        invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
             "Insufficient permission",
@@ -1456,24 +1473,29 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(public_msg_id in invitee_msg_ids)
         self.assertFalse(secret_msg_id in invitee_msg_ids)
         self.assertFalse(invitee_profile.is_realm_admin)
-        # Test that exactly 2 new Zulip messages were sent, both notifications.
-        last_3_messages = list(reversed(list(Message.objects.all().order_by("-id")[0:3])))
-        first_msg = last_3_messages[0]
-        self.assertEqual(first_msg.id, secret_msg_id)
 
-        # The first, from notification-bot to the user who invited the new user.
-        second_msg = last_3_messages[1]
-        self.assertEqual(second_msg.sender.email, "notification-bot@zulip.com")
+        invitee_msg, signups_stream_msg, inviter_msg, secret_msg = Message.objects.all().order_by(
+            "-id"
+        )[0:4]
+
+        self.assertEqual(secret_msg.id, secret_msg_id)
+
+        self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
-            second_msg.content.startswith(
+            inviter_msg.content.startswith(
                 f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
             )
         )
 
-        # The second, from welcome-bot to the user who was invited.
-        third_msg = last_3_messages[2]
-        self.assertEqual(third_msg.sender.email, "welcome-bot@zulip.com")
-        self.assertTrue(third_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertEqual(signups_stream_msg.sender.email, "notification-bot@zulip.com")
+        self.assertTrue(
+            signups_stream_msg.content.startswith(
+                f"@_**alice_zulip.com|{invitee_profile.id}** just signed up",
+            )
+        )
+
+        self.assertEqual(invitee_msg.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(invitee_msg.content.startswith("Hello, and welcome to Zulip!"))
 
     def test_multi_user_invite(self) -> None:
         """
@@ -1785,6 +1807,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         obj = Confirmation.objects.get(confirmation_key=find_key_by_email(email))
         prereg_user = obj.content_object
+        assert prereg_user is not None
         prereg_user.email = "invalid.email"
         prereg_user.save()
 
@@ -1925,6 +1948,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = url.split("/")[-1]
 
         conf = Confirmation.objects.filter(confirmation_key=registration_key).first()
+        assert conf is not None
         conf.date_sent -= datetime.timedelta(weeks=3)
         conf.save()
 
@@ -2135,6 +2159,7 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite_two = MultiuseInvite.objects.create(referred_by=othello, realm=realm)
         create_confirmation_link(multiuse_invite_two, Confirmation.MULTIUSE_INVITE)
         confirmation = Confirmation.objects.last()
+        assert confirmation is not None
         confirmation.date_sent = expired_datetime
         confirmation.save()
 
@@ -2427,6 +2452,7 @@ class InvitationsTestCase(InviteUserBase):
 
     def test_accessing_invites_in_another_realm(self) -> None:
         inviter = UserProfile.objects.exclude(realm=get_realm("zulip")).first()
+        assert inviter is not None
         prereg_user = PreregistrationUser.objects.create(
             email="email", referred_by=inviter, realm=inviter.realm
         )
@@ -2455,6 +2481,7 @@ class InvitationsTestCase(InviteUserBase):
         )
         self.assertEqual(result.status_code, 200)
         confirmation = Confirmation.objects.get(confirmation_key=registration_key)
+        assert confirmation.content_object is not None
         prereg_user = confirmation.content_object
         self.assertEqual(prereg_user.status, 0)
 
@@ -2823,7 +2850,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def check_able_to_create_realm(self, email: str, password: str = "test") -> None:
-        notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
 
         string_id = "zuliptest"
@@ -2864,7 +2892,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(user.role, UserProfile.ROLE_REALM_OWNER)
 
         # Check defaults
-        self.assertEqual(realm.org_type, Realm.CORPORATE)
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["business"]["id"])
         self.assertEqual(realm.emails_restricted_to_domains, False)
         self.assertEqual(realm.invite_required, True)
 
@@ -3611,7 +3639,13 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 200)
 
         default_streams = []
-        for stream_name in ["venice", "verona"]:
+
+        existing_default_streams = DefaultStream.objects.filter(realm=realm)
+        self.assert_length(existing_default_streams, 1)
+        self.assertEqual(existing_default_streams[0].stream.name, "Verona")
+        default_streams.append(existing_default_streams[0].stream)
+
+        for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)
             do_add_default_stream(stream)
             default_streams.append(stream)
@@ -3686,6 +3720,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
+        DefaultStream.objects.filter(realm=realm).delete()
         default_streams = []
         for stream_name in ["venice", "verona"]:
             stream = get_stream(stream_name, realm)
@@ -3811,7 +3846,7 @@ class UserSignUpTest(InviteUserBase):
         with open(lear_path_id, "rb") as f:
             lear_avatar_bits = f.read()
 
-        self.assertTrue(len(zulip_avatar_bits) > 500)
+        self.assertGreater(len(zulip_avatar_bits), 500)
         self.assertEqual(zulip_avatar_bits, lear_avatar_bits)
 
     def test_signup_invalid_subdomain(self) -> None:
@@ -3922,6 +3957,7 @@ class UserSignUpTest(InviteUserBase):
                 form.errors["email"][0],
             )
             last_message = Message.objects.last()
+            assert last_message is not None
             self.assertIn(
                 f"A new member ({self.nonreg_email('test')}) was unable to join your organization because all Zulip",
                 last_message.content,
@@ -4723,7 +4759,7 @@ class UserSignUpTest(InviteUserBase):
         stream_name = "Rome"
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
-        default_streams = get_default_streams_for_realm(realm)
+        default_streams = get_default_streams_for_realm(realm.id)
         default_streams_name = [stream.name for stream in default_streams]
         self.assertNotIn(stream_name, default_streams_name)
 
@@ -4806,6 +4842,7 @@ class UserSignUpTest(InviteUserBase):
             key = find_key_by_email(email)
             confirmation = Confirmation.objects.get(confirmation_key=key)
             prereg_user = confirmation.content_object
+            assert prereg_user is not None
             prereg_user.realm_creation = True
             prereg_user.save()
 
@@ -4938,6 +4975,7 @@ class UserSignUpTest(InviteUserBase):
 
         result = self.client_post("/devtools/register_user/")
         user_profile = UserProfile.objects.all().order_by("id").last()
+        assert user_profile is not None
 
         self.assertEqual(result.status_code, 302)
         self.assertEqual(user_profile.delivery_email, email)
@@ -4959,6 +4997,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], f"http://{string_id}.testserver")
 
         user_profile = UserProfile.objects.all().order_by("id").last()
+        assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
 

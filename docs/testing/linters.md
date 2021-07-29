@@ -1,5 +1,11 @@
 # Linters
 
+A linter is a program that runs on the source code of software and
+reports potentially problematic code to the user. Linters help enforce
+coding guidelines, from minor details like whitespace formatting or
+capitalization patterns for strings to preventing problematic coding
+patterns that can lead to security bugs.
+
 ## Overview
 
 Zulip does extensive linting of much of its source code, including
@@ -85,7 +91,7 @@ extreme cases, but often it can be a simple matter of writing your code
 in a slightly different style to appease the linter.  If you have
 problems getting something to lint, you can submit an unfinished PR
 and ask the reviewer to help you work through the lint problem, or you
-can find other people in the [Zulip Community](../contributing/chat-zulip-org.md)
+can find other people in the [Zulip Community](https://zulip.com/developer-community/)
 to help you.
 
 Also, bear in mind that 100% of the lint code is open source, so if you

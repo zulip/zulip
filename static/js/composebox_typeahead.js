@@ -12,9 +12,10 @@ import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
@@ -187,6 +188,10 @@ export function handle_enter(textarea, e) {
     // Fall through to native browser behavior, otherwise.
 }
 
+// nextFocus is set on a keydown event to indicate where we should focus on keyup.
+// We can't focus at the time of keydown because we need to wait for typeahead.
+// And we can't compute where to focus at the time of keyup because only the keydown
+// has reliable information about whether it was a Tab or a Shift+Tab.
 let nextFocus = false;
 
 function handle_keydown(e) {
@@ -211,6 +216,13 @@ function handle_keydown(e) {
                 // which does not make <button>s tab-accessible by default
                 // (even if we were to set tabindex=0).
                 if (!should_enter_send(e)) {
+                    // It is important that we do an immediate focus
+                    // even here, rather than setting nextFocus. If
+                    // the user hits Tab and then Enter without first
+                    // releasing Tab, then setting nextFocus here
+                    // could result in focus being moved to the "Send
+                    // button" after sending the message, preventing
+                    // typing a next message!
                     $("#compose-send-button").trigger("focus");
                     e.preventDefault();
                 }
@@ -218,7 +230,10 @@ function handle_keydown(e) {
                 // Enter
                 if (should_enter_send(e)) {
                     e.preventDefault();
-                    if (!$("#compose-send-button").prop("disabled")) {
+                    if (
+                        compose_validate.warn_for_text_overflow_when_tries_to_send() &&
+                        !$("#compose-send-button").prop("disabled")
+                    ) {
                         $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }
@@ -228,9 +243,6 @@ function handle_keydown(e) {
                 handle_enter($("#compose-textarea"), e);
             }
         } else if (on_stream || on_topic || on_pm) {
-            // Prevent the form from submitting
-            e.preventDefault();
-
             // We are doing the focusing on keyup to not abort the typeahead.
             if (on_stream) {
                 nextFocus = $("#stream_message_recipient_topic");
@@ -251,6 +263,9 @@ function handle_keyup(e) {
     ) {
         nextFocus.trigger("focus");
         nextFocus = false;
+
+        // Prevent the form from submitting
+        e.preventDefault();
     }
 }
 
@@ -354,7 +369,7 @@ function filter_mention_name(current_token) {
     } else if (current_token.startsWith("*")) {
         current_token = current_token.slice(1);
     }
-    if (current_token.length < 1 || current_token.lastIndexOf("*") !== -1) {
+    if (current_token.lastIndexOf("*") !== -1) {
         return false;
     }
 
@@ -409,10 +424,6 @@ export const slash_commands = [
         name: "poll",
     },
     {
-        text: $t({defaultMessage: "/settings (Load settings menu)"}),
-        name: "settings",
-    },
-    {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
     },
@@ -447,7 +458,7 @@ export function get_person_suggestions(query, opts) {
             persons = all_persons;
         }
         // Exclude muted users from typeaheads.
-        persons = muting.filter_muted_users(persons);
+        persons = muted_users.filter_muted_users(persons);
 
         if (opts.want_broadcast) {
             persons = persons.concat(broadcast_mentions());
@@ -648,7 +659,7 @@ export function get_candidates(query) {
             current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
-        if (!current_token) {
+        if (!current_token && typeof current_token === "boolean") {
             this.completing = null;
             return false;
         }
@@ -833,7 +844,7 @@ export function content_typeahead_selected(item, event) {
                 );
                 beginning += mention_text + " ";
                 if (!is_silent) {
-                    compose.warn_if_mentioning_unsubscribed_user(item);
+                    compose_validate.warn_if_mentioning_unsubscribed_user(item);
                 }
             }
             break;
@@ -855,7 +866,7 @@ export function content_typeahead_selected(item, event) {
             } else {
                 beginning += "** ";
             }
-            compose.warn_if_private_stream_is_linked(item);
+            compose_validate.warn_if_private_stream_is_linked(item);
             break;
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
@@ -990,6 +1001,28 @@ export function compose_trigger_selection(event) {
     return false;
 }
 
+export function initialize_topic_edit_typeahead(form_field, stream_name, dropup) {
+    const options = {
+        fixed: true,
+        dropup,
+        highlighter(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+        sorter(items) {
+            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(this.query)) {
+                sorted.unshift(this.query);
+            }
+            return sorted;
+        },
+        source() {
+            return topics_seen_for(stream_name);
+        },
+        items: 5,
+    };
+    form_field.typeahead(options);
+}
+
 function get_header_html() {
     let tip_text = "";
     switch (this.completing) {
@@ -1059,20 +1092,15 @@ export function initialize() {
     $("form#send_message_form").on("keyup", handle_keyup);
 
     $("#enter_sends").on("click", () => {
-        const send_button = $("#compose-send-button");
         page_params.enter_sends = $("#enter_sends").is(":checked");
-        if (page_params.enter_sends) {
-            send_button.fadeOut();
-        } else {
-            send_button.fadeIn();
-        }
+        compose.toggle_enter_sends_ui();
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
         $("#compose-textarea").trigger("focus");
 
-        return channel.post({
-            url: "/json/users/me/enter-sends",
+        return channel.patch({
+            url: "/json/settings",
             idempotent: true,
             data: {enter_sends: page_params.enter_sends},
         });

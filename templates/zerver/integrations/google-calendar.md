@@ -16,10 +16,10 @@ your reminders directly in your Zulip feed.
     instructions on the
     [Google website](https://developers.google.com/api-client-library/python/start/installation).
 
-1.  Then go to your **Zulip Settings** by clicking on the cog in the top
-    right corner, and then clicking on **Settings**.
+1.  In Zulip, go to your click on the cog in the top right corner, and
+    then clicking on **Personal settings**.
 
-1.  Click on the tab that’s labeled **Your bots** and click on
+1.  Click on the tab that’s labeled **Account & privacy** and click on
     **Show/change your API key**. Enter your password if prompted, and
     download the `zuliprc` file. Save this file as `.zuliprc` to your `~/`
     directory.

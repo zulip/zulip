@@ -17,12 +17,12 @@ from version import (
 from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.request import get_request_notes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, UserProfile, get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
-    any_social_backend_enabled,
     auth_enabled_helper,
     get_external_method_dicts,
     password_auth_enabled,
@@ -50,19 +50,22 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
+    request_notes = get_request_notes(request)
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
-    if not hasattr(request, "realm"):
-        # We cache the realm object from this function on the request,
+    if not request_notes.has_fetched_realm:
+        # We cache the realm object from this function on the request data,
         # so that functions that call get_realm_from_request don't
         # need to do duplicate queries on the same realm while
         # processing a single request.
         subdomain = get_subdomain(request)
+        request_notes = get_request_notes(request)
         try:
-            request.realm = get_realm(subdomain)
+            request_notes.realm = get_realm(subdomain)
         except Realm.DoesNotExist:
-            request.realm = None
-    return request.realm
+            request_notes.realm = None
+        request_notes.has_fetched_realm = True
+    return request_notes.realm
 
 
 def get_valid_realm_from_request(request: HttpRequest) -> Realm:
@@ -166,7 +169,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,
-        "platform": request.client_name,
+        "platform": get_request_notes(request).client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
         "default_page_params": default_page_params,
@@ -194,7 +197,6 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
         "realm_description": realm_description,
         "require_email_format_usernames": require_email_format_usernames(realm),
         "password_auth_enabled": password_auth_enabled(realm),
-        "any_social_backend_enabled": any_social_backend_enabled(realm),
         "two_factor_authentication_enabled": settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
     }
 

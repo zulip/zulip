@@ -8,16 +8,16 @@ import sys
 from typing import Any, Callable, Generator, List, Sequence
 from urllib.parse import urlunparse
 
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
 # check for the venv
-from lib import sanity_check
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
 from tornado import gen, httpclient, httputil, web
 from tornado.ioloop import IOLoop
-
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
@@ -89,8 +89,6 @@ else:
 
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
-
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from scripts.lib.zulip_tools import CYAN, ENDC, FAIL
 

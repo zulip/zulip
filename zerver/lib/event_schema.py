@@ -230,8 +230,6 @@ delete_message_event = event_dict_type(
         ("message_ids", ListType(int)),
         ("stream_id", int),
         ("topic", str),
-        ("recipient_id", int),
-        ("sender_id", int),
     ],
 )
 _check_delete_message = make_checker(delete_message_event)
@@ -253,7 +251,7 @@ def check_delete_message(
     if message_type == "stream":
         keys |= {"stream_id", "topic"}
     elif message_type == "private":
-        keys |= {"recipient_id", "sender_id"}
+        pass
     else:
         raise AssertionError("unexpected message_type")
 
@@ -286,6 +284,23 @@ def check_has_zoom_token(
 ) -> None:
     _check_has_zoom_token(var_name, event)
     assert event["value"] == value
+
+
+heartbeat_event = event_dict_type(
+    required_keys=[
+        # force vertical
+        ("type", Equals("heartbeat")),
+    ]
+)
+_check_hearbeat = make_checker(heartbeat_event)
+
+
+def check_heartbeat(
+    # force vertical
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
+    _check_hearbeat(var_name, event)
 
 
 _hotspot = DictType(
@@ -1397,8 +1412,11 @@ def check_update_display_settings(
     setting = event["setting"]
 
     assert isinstance(setting_name, str)
-    setting_type = UserProfile.property_types[setting_name]
-    assert isinstance(setting, setting_type)
+    if setting_name == "timezone":
+        assert isinstance(setting, str)
+    else:
+        setting_type = UserProfile.property_types[setting_name]
+        assert isinstance(setting, setting_type)
 
     if setting_name == "default_language":
         assert "language_name" in event.keys()
@@ -1635,6 +1653,9 @@ user_status_event = event_dict_type(
         # force vertical
         ("away", bool),
         ("status_text", str),
+        ("emoji_name", str),
+        ("emoji_code", str),
+        ("reaction_type", str),
     ],
 )
 _check_user_status = make_checker(user_status_event)

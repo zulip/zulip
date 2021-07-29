@@ -8,7 +8,7 @@ const {run_test} = require("../zjsunit/test");
 const pm_conversations = zrequire("pm_conversations");
 pm_conversations.recent = {};
 
-const muting = zrequire("muting");
+const muted_topics = zrequire("muted_topics");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -104,7 +104,7 @@ run_test("topics", ({override}) => {
         [devel_stream_id, muted_stream_id].includes(stream_id),
     );
 
-    override(muting, "is_topic_muted", (stream_name, topic) => topic === "muted");
+    override(muted_topics, "is_topic_muted", (stream_name, topic) => topic === "muted");
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {

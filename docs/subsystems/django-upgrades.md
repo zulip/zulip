@@ -32,3 +32,5 @@ new major versions of Django.  Here are the steps:
     Django upstream.
   * Our `FilteredManagementUtility` in `manage.py`, which forks the
     management command discovery code.
+  * `zerver/management/commands/change_password.py` is forked from the
+    upstream `changepassword.py`.

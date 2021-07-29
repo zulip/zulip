@@ -62,7 +62,8 @@ h3 .fa-question-circle-o {
             text-align: left;
         }
     }
-    #account-settings {
+    #account-settings,
+    #profile-field-settings {
         .grid {
             label {
                 min-width: 120px;
@@ -108,8 +109,7 @@ h3 .fa-question-circle-o {
 }
 
 #change_password_modal,
-#change_email_modal,
-#change_full_name_modal {
+#change_email_modal {
     max-width: 480px;
 }
 
@@ -255,6 +255,7 @@ td .button {
     .table-sticky-headers th {
         position: sticky;
         top: 0;
+        z-index: 1;
     }
 
     .table-striped {
@@ -587,12 +588,17 @@ input[type="checkbox"] {
     }
 }
 
-#account-settings {
-    .custom-profile-fields-form .custom_user_field label {
+#profile-settings {
+    .custom-profile-fields-form .custom_user_field label,
+    .full-name-change-form label,
+    .timezone-setting-form label {
         min-width: fit-content;
     }
 
-    .alert-notification.custom-field-status {
+    .alert-notification.custom-field-status,
+    .alert-notification.full-name-status,
+    .alert-notification.timezone-setting-status,
+    .alert-notification.presence-setting-status {
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
@@ -1511,7 +1517,6 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_full_name_modal .change_full_name_info,
     #change_email_modal .change_email_info,
     #change_password_modal .change_password_info,
     #api_key_modal #api_key_status {
@@ -1519,7 +1524,7 @@ input[type="checkbox"] {
     }
 }
 
-#account-settings,
+#profile-settings,
 #edit-user-form {
     .user-role button {
         cursor: default;
@@ -1544,8 +1549,15 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     background-color: hsl(0, 0%, 100%);
 }
 
-#confirm_dialog_modal {
+/* Dialog widgets should be centered, which this roughly achieves. */
+#dialog_widget_modal {
     top: calc(50% - 120px);
+}
+
+/* In the settings overlay, we need slightly different CSS for alignment. */
+#settings_overlay_container #dialog_widget_modal {
+    top: 50%;
+    vertical-align: center;
 }
 
 /* These have enough space for "Admins and full members" in German. */
@@ -1554,7 +1566,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #id_realm_create_stream_policy,
 #id_realm_invite_to_stream_policy,
 #id_realm_private_message_policy,
-#id_realm_add_emoji_by_admins_only,
+#id_realm_add_custom_emoji_policy,
 #id_realm_user_group_edit_policy,
 #id_realm_email_address_visibility,
 #id_realm_wildcard_mention_policy,
@@ -1573,7 +1585,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     margin-top: 10px;
 }
 
-.confirm_dialog_yes_button .loader {
+.dialog_submit_button .loader {
     display: none;
     vertical-align: top;
     position: relative;
@@ -1587,15 +1599,24 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     button {
         margin: 0 5px;
         &.dropdown-toggle {
-            /* Matches bootstrap hardcoded 30px height for select elements,
-               which we want to match the size of. */
-            height: 30px;
-            padding: 0;
+            /* Match settings for select elements. */
+            padding: 4px 6px;
+
+            span {
+                line-height: 20px;
+                height: 1.4em;
+            }
         }
 
         &:disabled i {
             display: none;
         }
+    }
+
+    button.multiselect_btn {
+        /* Matches the dropdown input margin so as to keep it aligned */
+        margin-left: 9px;
+        margin-top: 4px;
     }
 
     a.dropdown_list_reset_button {
@@ -1920,11 +1941,6 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         width: calc(100% - 10px);
         max-height: unset;
     }
-}
-
-#edit-fields-modal-status {
-    margin-top: 6px;
-    margin-bottom: 8px;
 }
 
 #edit-linkifier-form {

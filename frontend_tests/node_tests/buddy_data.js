@@ -12,7 +12,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 const timerender = mock_esm("../../static/js/timerender");
 
 const compose_fade_helper = zrequire("compose_fade_helper");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -105,7 +105,7 @@ function test(label, f) {
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         f({override});
     });
 }
@@ -388,7 +388,7 @@ test("simple search", () => {
 
 test("muted users excluded from search", () => {
     people.add_active_user(selma);
-    muting.add_muted_user(selma.user_id);
+    muted_users.add_muted_user(selma.user_id);
 
     let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(user_ids.includes(selma.user_id), false);
@@ -396,7 +396,7 @@ test("muted users excluded from search", () => {
     assert.deepEqual(user_ids, []);
     assert.ok(!buddy_data.matches_filter("sel", selma.user_id));
 
-    muting.remove_muted_user(selma.user_id);
+    muted_users.remove_muted_user(selma.user_id);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
     assert.deepEqual(user_ids, [selma.user_id]);
     assert.ok(buddy_data.matches_filter("sel", selma.user_id));
@@ -547,10 +547,17 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", () => {
+test("get_items_for_users", ({override}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
+    page_params.emojiset = "google";
+    const status_emoji_info = {
+        emoji_name: "car",
+        emoji_code: "1f697",
+        reaction_type: "unicode_emoji",
+    };
+    override(user_status, "get_status_emoji", () => status_emoji_info);
 
     const user_ids = [me.user_id, alice.user_id, fred.user_id];
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
@@ -561,6 +568,7 @@ test("get_items_for_users", () => {
             my_user_status: "translated: (you)",
             name: "Human Myself",
             num_unread: 0,
+            status_emoji_info,
             user_circle_class: "user_circle_green",
             user_circle_status: "translated: Active",
             user_id: 1001,
@@ -572,6 +580,7 @@ test("get_items_for_users", () => {
             my_user_status: undefined,
             name: "Alice Smith",
             num_unread: 0,
+            status_emoji_info,
             user_circle_class: "user_circle_empty_line",
             user_circle_status: "translated: Unavailable",
             user_id: 1002,
@@ -583,6 +592,7 @@ test("get_items_for_users", () => {
             my_user_status: undefined,
             name: "Fred Flintstone",
             num_unread: 0,
+            status_emoji_info,
             user_circle_class: "user_circle_empty",
             user_circle_status: "translated: Offline",
             user_id: 1003,

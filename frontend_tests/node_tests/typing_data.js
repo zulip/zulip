@@ -5,13 +5,13 @@ const {strict: assert} = require("assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const typing_data = zrequire("typing_data");
 
 function test(label, f) {
     run_test(label, ({override}) => {
         typing_data.clear_for_testing();
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         f({override});
     });
 }
@@ -70,7 +70,7 @@ test("muted_typists_excluded", () => {
     assert.deepEqual(typing_data.get_all_typists(), [5, 10]);
 
     // Mute a user, and test that the get_* functions exclude that user.
-    muting.add_muted_user(10);
+    muted_users.add_muted_user(10);
     assert.deepEqual(typing_data.get_group_typists([5, 10, 15]), [5]);
     assert.deepEqual(typing_data.get_all_typists(), [5]);
 });

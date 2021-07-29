@@ -21,11 +21,12 @@ from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
 from requests_oauthlib import OAuth2Session
 
-from zerver.decorator import REQ, has_request_variables, zulip_login_required
+from zerver.decorator import zulip_login_required
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url, add_query_to_redirect_url
 from zerver.lib.validator import check_dict, check_string
@@ -76,6 +77,8 @@ def get_zoom_sid(request: HttpRequest) -> str:
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
+    assert request.user.is_authenticated
+
     oauth = get_zoom_session(request.user)
     authorization_url, state = oauth.authorization_url(
         "https://zoom.us/oauth/authorize",
@@ -108,6 +111,8 @@ def complete_zoom_user_in_realm(
         json_validator=check_dict([("sid", check_string)], value_validator=check_string)
     ),
 ) -> HttpResponse:
+    assert request.user.is_authenticated
+
     if not constant_time_compare(state["sid"], get_zoom_sid(request)):
         raise JsonableError(_("Invalid Zoom session identifier"))
 
@@ -211,8 +216,10 @@ def join_bigbluebutton(
     password: str = REQ(),
     checksum: str = REQ(),
 ) -> HttpResponse:
+    assert request.user.is_authenticated
+
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
-        return json_error(_("Big Blue Button is not configured."))
+        raise JsonableError(_("BigBlueButton is not configured."))
     else:
         try:
             response = requests.get(
@@ -230,14 +237,14 @@ def join_bigbluebutton(
             )
             response.raise_for_status()
         except requests.RequestException:
-            return json_error(_("Error connecting to the Big Blue Button server."))
+            raise JsonableError(_("Error connecting to the BigBlueButton server."))
 
         payload = ElementTree.fromstring(response.text)
         if payload.find("messageKey").text == "checksumError":
-            return json_error(_("Error authenticating to the Big Blue Button server."))
+            raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
         if payload.find("returncode").text != "SUCCESS":
-            return json_error(_("Big Blue Button server returned an unexpected error."))
+            raise JsonableError(_("BigBlueButton server returned an unexpected error."))
 
         join_params = urlencode(  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
             {

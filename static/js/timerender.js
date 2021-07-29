@@ -11,6 +11,8 @@ import {
 import $ from "jquery";
 import _ from "lodash";
 
+import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
+
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
@@ -18,6 +20,30 @@ let next_timerender_id = 0;
 
 export function clear_for_testing() {
     next_timerender_id = 0;
+}
+
+// Exported for tests only.
+export function get_tz_with_UTC_offset(time) {
+    const tz_offset = format(time, "xxx");
+    let timezone = new Intl.DateTimeFormat(undefined, {timeZoneName: "short"})
+        .formatToParts(time)
+        .find(({type}) => type === "timeZoneName").value;
+
+    if (timezone === "UTC") {
+        return "UTC";
+    }
+
+    // When user's locale doesn't match their timezone (eg. en_US for IST),
+    // we get `timezone` in the format of'GMT+x:y. We don't want to
+    // show that along with (UTC+x:y)
+    timezone = /GMT[+-][\d:]*/.test(timezone) ? "" : timezone;
+
+    const tz_UTC_offset = `(UTC${tz_offset})`;
+
+    if (timezone) {
+        return timezone + " " + tz_UTC_offset;
+    }
+    return tz_UTC_offset;
 }
 
 // Given a Date object 'time', returns an object:
@@ -179,13 +205,16 @@ export function render_date(time, time_above, today) {
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function render_markdown_timestamp(time, text) {
+export function render_markdown_timestamp(time) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
-    const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
+
+    const tz_offset_str = get_tz_with_UTC_offset(time);
+    const tooltip_html_content = render_markdown_time_tooltip({tz_offset_str});
+
     return {
         text: timestring,
-        title: titlestring,
+        tooltip_content: tooltip_html_content,
     };
 }
 
@@ -307,21 +336,18 @@ export const absolute_time = (function () {
 })();
 
 export function get_full_datetime(time) {
-    const date_string_options = {weekday: "long", month: "long", day: "numeric"};
-    const time_string_options = {timeStyle: "full"};
+    const time_options = {timeStyle: "medium"};
 
     if (page_params.twenty_four_hour_time) {
-        time_string_options.hourCycle = "h24";
+        time_options.hourCycle = "h24";
     }
 
-    const current_date = new Date();
-    if (time.getFullYear() !== current_date.getFullYear()) {
-        // Show year only if not current year.
-        date_string_options.year = "numeric";
-    }
+    const date_string = time.toLocaleDateString();
+    let time_string = time.toLocaleTimeString(undefined, time_options);
 
-    return {
-        date: time.toLocaleDateString(page_params.request_language, date_string_options),
-        time: time.toLocaleTimeString(page_params.request_language, time_string_options),
-    };
+    const tz_offset_str = get_tz_with_UTC_offset(time);
+
+    time_string = time_string + " " + tz_offset_str;
+
+    return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
 }

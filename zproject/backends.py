@@ -67,10 +67,11 @@ from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
-from zerver.lib.request import JsonableError
+from zerver.lib.request import get_request_notes
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
@@ -158,15 +159,6 @@ def apple_auth_enabled(realm: Optional[Realm] = None) -> bool:
 
 def saml_auth_enabled(realm: Optional[Realm] = None) -> bool:
     return auth_enabled_helper(["SAML"], realm)
-
-
-def any_social_backend_enabled(realm: Optional[Realm] = None) -> bool:
-    """Used by the login page process to determine whether to show the
-    'OR' for login with Google"""
-    social_backend_names = [
-        social_auth_subclass.auth_backend_name for social_auth_subclass in EXTERNAL_AUTH_METHODS
-    ]
-    return auth_enabled_helper(social_backend_names, realm)
 
 
 def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:
@@ -259,12 +251,11 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
 
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    if not hasattr(request, "_ratelimits_applied"):
-        return False
+    request_notes = get_request_notes(request)
 
     return any(
         isinstance(r.entity, RateLimitedAuthenticationByUsername)
-        for r in request._ratelimits_applied
+        for r in request_notes.ratelimits_applied
     )
 
 
@@ -279,7 +270,9 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
 
     request = args[1]
     username = kwargs["username"]
-    if not hasattr(request, "client") or not client_is_exempt_from_rate_limiting(request):
+    if get_request_notes(request).client is None or not client_is_exempt_from_rate_limiting(
+        request
+    ):
         # Django cycles through enabled authentication backends until one succeeds,
         # or all of them fail. If multiple backends are tried like this, we only want
         # to execute rate_limit_authentication_* once, on the first attempt:
@@ -1303,11 +1296,23 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
         ]
 
 
-def redirect_deactivated_user_to_login() -> HttpResponseRedirect:
+def redirect_to_signup(realm: Realm) -> HttpResponseRedirect:
+    signup_url = reverse("register")
+    redirect_url = realm.uri + signup_url
+    return HttpResponseRedirect(redirect_url)
+
+
+def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
+    login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
+    redirect_url = realm.uri + login_url
+    return HttpResponseRedirect(redirect_url)
+
+
+def redirect_deactivated_user_to_login(realm: Realm) -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = login_url + "?is_deactivated=true"
+    redirect_url = realm.uri + login_url + "?is_deactivated=true"
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1430,11 +1435,16 @@ def social_associate_user_helper(
     full_name = kwargs["details"].get("fullname")
     first_name = kwargs["details"].get("first_name")
     last_name = kwargs["details"].get("last_name")
-    if all(name is None for name in [full_name, first_name, last_name]) and backend.name != "apple":
-        # Apple authentication provides the user's name only the very first time a user tries to log in.
+    if all(name is None for name in [full_name, first_name, last_name]) and backend.name not in [
+        "apple",
+        "saml",
+    ]:
+        # (1) Apple authentication provides the user's name only the very first time a user tries to log in.
         # So if the user aborts login or otherwise is doing this the second time,
-        # we won't have any name data. So, this case is handled with the code below
-        # setting full name to empty string.
+        # we won't have any name data.
+        # (2) Some IdPs may not send any name value if the user doesn't have them set in the IdP's directory.
+        #
+        # The name will just default to the empty string in the code below.
 
         # We need custom code here for any social auth backends
         # that don't provide name details feature.
@@ -1510,18 +1520,19 @@ def social_auth_finish(
         # form on.
         return HttpResponseRedirect(reverse("find_account"))
 
+    realm = Realm.objects.get(id=return_data["realm_id"])
     if inactive_user:
         backend.logger.info(
             "Failed login attempt for deactivated account: %s@%s",
             return_data["inactive_user_id"],
             return_data["realm_string_id"],
         )
-        return redirect_deactivated_user_to_login()
+        return redirect_deactivated_user_to_login(realm)
 
     if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
-        return None
+        return redirect_to_login(realm)
 
     if invalid_email:
         # In case of invalid email, we will end up on registration page.
@@ -1530,11 +1541,11 @@ def social_auth_finish(
             "%s got invalid email argument.",
             backend.auth_backend_name,
         )
-        return None
+        return redirect_to_signup(realm)
 
     if auth_failed_reason:
         backend.logger.info(auth_failed_reason)
-        return None
+        return redirect_to_login(realm)
 
     # Structurally, all the cases where we don't have an authenticated
     # email for the user should be handled above; this assertion helps
@@ -1547,7 +1558,6 @@ def social_auth_finish(
     email_address = return_data["validated_email"]
     full_name = return_data["full_name"]
     redirect_to = strategy.session_get("next")
-    realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get("multiuse_object_key", "")
 
     mobile_flow_otp = strategy.session_get("mobile_flow_otp")
@@ -1555,7 +1565,7 @@ def social_auth_finish(
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
     if user_profile is None or user_profile.is_mirror_dummy:
-        is_signup = strategy.session_get("is_signup") == "1"
+        is_signup = strategy.session_get("is_signup") == "1" or backend.should_auto_signup()
     else:
         is_signup = False
 
@@ -1669,6 +1679,9 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
             # interesting enough that we should log a warning.
             self.logger.warning(str(e))
             return None
+
+    def should_auto_signup(self) -> bool:
+        return False
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
@@ -2266,6 +2279,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 if param in self.standard_relay_params:
                     self.strategy.session_set(param, value)
 
+            # We want the IdP name to be accessible from the social pipeline.
+            self.strategy.session_set("saml_idp_name", idp_name)
+
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
@@ -2334,6 +2350,18 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return result
 
+    def should_auto_signup(self) -> bool:
+        """
+        This function is meant to be called in the social pipeline or later,
+        as it requires (validated) information about the IdP name to have
+        already been store in the session.
+        """
+        idp_name = self.strategy.session_get("saml_idp_name")
+        assert isinstance(idp_name, str)
+        auto_signup = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
+        assert isinstance(auto_signup, bool)
+        return auto_signup
+
 
 @external_auth_method
 class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
@@ -2343,10 +2371,14 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     # Hack: We don't yet support multiple IdPs, but we want this
     # module to import if nothing has been configured yet.
-    settings_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [{}])[0]
+    settings_dict: Dict[str, Union[Optional[str], bool]] = list(
+        settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [{}]
+    )[0]
 
-    display_icon = settings_dict.get("display_icon")
-    display_name = settings_dict.get("display_name", "OIDC")
+    display_icon: Optional[str] = cast(Optional[str], settings_dict.get("display_icon", None))
+    assert isinstance(display_icon, (str, type(None)))
+    display_name: str = cast(str, settings_dict.get("display_name", "OIDC"))
+    assert isinstance(display_name, str)
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
@@ -2356,7 +2388,9 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     def get_key_and_secret(self) -> Tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
+        assert isinstance(client_id, str)
         secret = self.settings_dict.get("secret", "")
+        assert isinstance(secret, str)
         return client_id, secret
 
     @classmethod
@@ -2383,6 +2417,11 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
                 signup_url=reverse("signup-social", args=(cls.name,)),
             )
         ]
+
+    def should_auto_signup(self) -> bool:
+        result = self.settings_dict.get("auto_signup", False)
+        assert isinstance(result, bool)
+        return result
 
 
 def validate_otp_params(

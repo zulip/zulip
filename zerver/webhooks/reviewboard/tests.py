@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class ReviewBoardHookTests(WebhookTestCase):
     STREAM_NAME = "reviewboard"
     URL_TEMPLATE = "/api/v1/external/reviewboard?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "reviewboard"
+    WEBHOOK_DIR_NAME = "reviewboard"
 
     def test_review_request_published(self) -> None:
         expected_topic = "Scheduler"

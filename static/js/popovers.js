@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import {add, formatISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
-import {hideAll} from "tippy.js";
+import tippy, {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
@@ -28,8 +28,10 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as muting from "./muting";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics from "./muted_topics";
+import * as muted_topics_ui from "./muted_topics_ui";
+import * as muted_users from "./muted_users";
+import * as muted_users_ui from "./muted_users_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
@@ -136,6 +138,24 @@ function init_email_clipboard() {
     });
 }
 
+function init_email_tooltip(user) {
+    /*
+        This displays the email tooltip for folks
+        who have names that would overflow past the right
+        edge of our user mention popup.
+    */
+
+    $(".user_popover_email").each(function () {
+        if (this.clientWidth < this.scrollWidth) {
+            tippy(this, {
+                placement: "bottom",
+                content: people.get_visible_email(user),
+                interactive: true,
+            });
+        }
+    });
+}
+
 function load_medium_avatar(user, elt) {
     const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
     const user_avatar_url = new URL(avatar_path, window.location.href);
@@ -184,7 +204,9 @@ function render_user_info_popover(
     }
 
     const muting_allowed = !is_me && !user.is_bot;
-    const is_muted = muting.is_user_muted(user.user_id);
+    const is_muted = muted_users.is_user_muted(user.user_id);
+    const status_text = user_status.get_status_text(user.user_id);
+    const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
     const args = {
         can_revoke_away,
@@ -208,15 +230,17 @@ function render_user_info_popover(
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
-        status_text: user_status.get_status_text(user.user_id),
+        status_content_available: Boolean(status_text || status_emoji_info),
+        status_text,
+        status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
     };
 
     if (user.is_bot) {
-        const is_cross_realm_bot = user.is_cross_realm_bot;
+        const is_system_bot = user.is_system_bot;
         const bot_owner_id = user.bot_owner_id;
-        if (is_cross_realm_bot) {
-            args.is_cross_realm_bot = is_cross_realm_bot;
+        if (is_system_bot) {
+            args.is_system_bot = is_system_bot;
         } else if (bot_owner_id) {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
@@ -243,6 +267,8 @@ function render_user_info_popover(
     popover_element.popover("show");
 
     init_email_clipboard();
+    init_email_tooltip(user);
+
     load_medium_avatar(user, $(".popover-avatar"));
 }
 
@@ -400,12 +426,15 @@ export function toggle_actions_popover(element, id) {
 
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
     message_lists.current.select_id(id);
+    const not_spectator = !page_params.is_spectator;
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         const message = message_lists.current.get(id);
         const message_container = message_lists.current.view.message_containers.get(message.id);
         const should_display_hide_option =
-            muting.is_user_muted(message.sender_id) && !message_container.is_hidden;
+            muted_users.is_user_muted(message.sender_id) &&
+            !message_container.is_hidden &&
+            not_spectator;
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
@@ -421,9 +450,12 @@ export function toggle_actions_popover(element, id) {
         }
         const topic = message.topic;
         const can_mute_topic =
-            message.stream && topic && !muting.is_topic_muted(message.stream_id, topic);
+            message.stream &&
+            topic &&
+            !muted_topics.is_topic_muted(message.stream_id, topic) &&
+            not_spectator;
         const can_unmute_topic =
-            message.stream && topic && muting.is_topic_muted(message.stream_id, topic);
+            message.stream && topic && muted_topics.is_topic_muted(message.stream_id, topic);
 
         const should_display_edit_history_option =
             message.edit_history &&
@@ -432,25 +464,32 @@ export function toggle_actions_popover(element, id) {
                     entry.prev_content !== undefined ||
                     util.get_edit_event_prev_topic(entry) !== undefined,
             ) &&
-            page_params.realm_allow_edit_history;
+            page_params.realm_allow_edit_history &&
+            not_spectator;
 
         // Disabling this for /me messages is a temporary workaround
         // for the fact that we don't have a styling for how that
         // should look.  See also condense.js.
         const should_display_collapse =
-            !message.locally_echoed && !message.is_me_message && !message.collapsed;
+            !message.locally_echoed &&
+            !message.is_me_message &&
+            !message.collapsed &&
+            not_spectator;
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
         const should_display_edit_and_view_source =
-            message.content !== "<p>(deleted)</p>" ||
-            editability === message_edit.editability_types.FULL ||
-            editability === message_edit.editability_types.TOPIC_ONLY;
-        const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>";
+            (message.content !== "<p>(deleted)</p>" ||
+                editability === message_edit.editability_types.FULL ||
+                editability === message_edit.editability_types.TOPIC_ONLY) &&
+            not_spectator;
+        const should_display_quote_and_reply =
+            message.content !== "<p>(deleted)</p>" && not_spectator;
 
         const conversation_time_uri = hash_util.by_conversation_and_time_uri(message);
 
-        const should_display_delete_option = message_edit.get_deletability(message);
+        const should_display_delete_option =
+            message_edit.get_deletability(message) && not_spectator;
         const args = {
             message_id: message.id,
             historical: message.historical,
@@ -897,6 +936,8 @@ export function register_click_handlers() {
         user_status.server_update({
             user_id: me,
             status_text: "",
+            emoji_name: "",
+            emoji_code: "",
             success() {
                 $(".info_popover_actions #status_message").html("");
             },
@@ -944,14 +985,14 @@ export function register_click_handlers() {
         hide_user_sidebar_popover();
         e.stopPropagation();
         e.preventDefault();
-        muting_ui.confirm_mute_user(user_id);
+        muted_users_ui.confirm_mute_user(user_id);
     });
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-unmute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_message_info_popover();
         hide_user_sidebar_popover();
-        muting_ui.unmute_user(user_id);
+        muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -994,16 +1035,6 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = target.data("popover");
-    });
-
-    $("body").on("mouseenter", ".user_popover_email", function () {
-        const tooltip_holder = $(this).find("div");
-
-        if (this.offsetWidth < this.scrollWidth) {
-            tooltip_holder.addClass("display-tooltip");
-        } else {
-            tooltip_holder.removeClass("display-tooltip");
-        }
     });
 
     $("body").on("click", ".respond_button", (e) => {
@@ -1150,7 +1181,7 @@ export function register_click_handlers() {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         hide_actions_popover();
-        muting_ui.mute_topic(stream_id, topic);
+        muted_topics_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1160,7 +1191,7 @@ export function register_click_handlers() {
         const topic = $(e.currentTarget).attr("data-msg-topic");
 
         hide_actions_popover();
-        muting_ui.unmute_topic(stream_id, topic);
+        muted_topics_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1173,11 +1204,10 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    clipboard_enable(".copy_link");
-
-    $("body").on("click", ".copy_link", function (e) {
+    clipboard_enable(".copy_link").on("success", (e) => {
         hide_actions_popover();
-        const message_id = $(this).attr("data-message-id");
+        // e.trigger returns the DOM element triggering the copy action
+        const message_id = e.trigger.getAttribute("data-message-id");
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text($t({defaultMessage: "Copied!"}))
@@ -1190,9 +1220,6 @@ export function register_click_handlers() {
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").trigger("blur");
         }, 0);
-
-        e.stopPropagation();
-        e.preventDefault();
     });
 
     clipboard_enable(".copy_mention_syntax");

@@ -275,6 +275,7 @@ def send_email(
 def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
+        assert connection is not None
 
     if connection.open():
         # If it's a new connection, no need to no-op to check connectivity
@@ -293,6 +294,7 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
     # closed by the mail server.
     if isinstance(connection, EmailBackend):
         try:
+            assert connection.connection is not None
             status = connection.connection.noop()[0]
         except Exception:
             status = -1
@@ -373,6 +375,24 @@ def send_email_to_admins(
     send_email(
         template_prefix,
         to_user_ids=admin_user_ids,
+        from_name=from_name,
+        from_address=from_address,
+        language=language,
+        context=context,
+    )
+
+
+def send_email_to_billing_admins_and_realm_owners(
+    template_prefix: str,
+    realm: Realm,
+    from_name: Optional[str] = None,
+    from_address: Optional[str] = None,
+    language: Optional[str] = None,
+    context: Dict[str, Any] = {},
+) -> None:
+    send_email(
+        template_prefix,
+        to_user_ids=[user.id for user in realm.get_human_billing_admin_and_realm_owner_users()],
         from_name=from_name,
         from_address=from_address,
         language=language,

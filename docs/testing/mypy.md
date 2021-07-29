@@ -98,14 +98,14 @@ basically the equivalent of C header files defining the types used in
 these Python APIs.
 
 For other third-party modules that we call from Zulip, one either
-needs to add an `ignore_missing_imports` entry in `mypy.ini` in the
+needs to add an `ignore_missing_imports` entry in `pyproject.toml` in the
 root of the project, letting `mypy` know that it's third-party code,
 or add type stubs to the `stubs/` directory, which has type stubs that
 mypy can use to type-check calls into that third-party module.
 
 It's easy to add new stubs!  Just read the docs, look at some of
 existing examples to see how they work, and remember to remove the
-`ignore_missing_imports` entry in `mypy.ini` when you add them.
+`ignore_missing_imports` entry in `pyproject.toml` when you add them.
 
 For any third-party modules that don't have stubs, `mypy` treats
 everything in the third-party module as an `Any`, which is the right

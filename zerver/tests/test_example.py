@@ -1,6 +1,9 @@
+import datetime
 from typing import Any, List, Mapping
+from unittest import mock
 
 import orjson
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import do_change_can_create_users, do_change_user_role
 from zerver.lib.exceptions import JsonableError
@@ -247,6 +250,7 @@ class TestFullStack(ZulipTestCase):
         # especially if there's risk of similar objects existing
         # (E.g. a message sent to that topic earlier in the test).
         row = UserStatus.objects.last()
+        assert row is not None
         self.assertEqual(row.user_profile_id, cordelia.id)
         self.assertEqual(row.status_text, "on vacation")
 
@@ -418,3 +422,95 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
             # assert_in_success_response() is another helper that is commonly used to ensure
             # we are on the right page by verifying a string exists in the page's content.
             self.assert_in_success_response(["All the emails sent in the Zulip"], result)
+
+
+class TestMocking(ZulipTestCase):
+    # Mocking, primarily used in testing, is a technique that allows you to
+    # replace methods or objects with fake entities.
+    #
+    # Mocking is generally used in situations where
+    # we want to avoid running original code for reasons
+    # like skipping HTTP requests, saving execution time etc.
+    #
+    # Learn more about mocking in-depth at:
+    # https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html#testing-with-mocks
+    #
+    # The following test demonstrates a simple use case
+    # where mocking is helpful in saving test-run time.
+    def test_edit_message(self) -> None:
+        """
+        Verify if the time limit imposed on message editing is working correctly.
+        """
+        iago = self.example_user("iago")
+        self.login("iago")
+
+        # Set limit to edit message content.
+        MESSAGE_CONTENT_EDIT_LIMIT = 5 * 60  # 5 minutes
+        result = self.client_patch(
+            "/json/realm",
+            {
+                "allow_message_editing": "true",
+                "message_content_edit_limit_seconds": MESSAGE_CONTENT_EDIT_LIMIT,
+            },
+        )
+        self.assert_json_success(result)
+
+        sent_message_id = self.send_stream_message(
+            iago,
+            "Scotland",
+            topic_name="lunch",
+            content="I want pizza!",
+        )
+        message_sent_time = timezone_now()
+
+        # Verify message sent.
+        message = most_recent_message(iago)
+        self.assertEqual(message.id, sent_message_id)
+        self.assertEqual(message.content, "I want pizza!")
+
+        # Edit message content now. This should work as we're editing
+        # it immediately after sending i.e., before the limit exceeds.
+        result = self.client_patch(
+            f"/json/messages/{sent_message_id}", {"content": "I want burger!"}
+        )
+        self.assert_json_success(result)
+        message = most_recent_message(iago)
+        self.assertEqual(message.id, sent_message_id)
+        self.assertEqual(message.content, "I want burger!")
+
+        # Now that we tested message editing works within the limit,
+        # we want to verify it doesn't work beyond the limit.
+        #
+        # To do that we'll have to wait for the time limit to pass which is
+        # 5 minutes here. Easy, use time.sleep() but mind that it slows down the
+        # test to a great extent which isn't good. This is when mocking comes to rescue.
+        # We can check what the original code does to determine whether the time limit
+        # exceeded and mock that here such that the code runs as if the time limit
+        # exceeded without actually waiting for that long!
+        #
+        # In this case, it is timezone_now, an alias to django.utils.timezone.now,
+        # to which the difference with message-sent-time is checked. So, we want
+        # that timezone_now() call to return `datetime` object representing time
+        # that is beyond the limit.
+        #
+        # Notice how mock.patch() is used here to do exactly the above mentioned.
+        # mock.patch() here makes any calls to `timezone_now` in `zerver.lib.actions`
+        # to return the value passed to `return_value` in the its context.
+        # You can also use mock.patch() as a decorator depending on the
+        # requirements. Read more at the documentaion link provided above.
+
+        time_beyond_edit_limit = message_sent_time + datetime.timedelta(
+            seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100
+        )  # There's a buffer time applied to the limit, hence the extra 100s.
+
+        with mock.patch(
+            "zerver.lib.actions.timezone_now",
+            return_value=time_beyond_edit_limit,
+        ):
+            result = self.client_patch(
+                f"/json/messages/{sent_message_id}", {"content": "I actually want pizza."}
+            )
+            self.assert_json_error(result, msg="The time limit for editing this message has passed")
+            message = most_recent_message(iago)
+            self.assertEqual(message.id, sent_message_id)
+            self.assertEqual(message.content, "I want burger!")

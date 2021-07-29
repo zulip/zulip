@@ -1,7 +1,9 @@
+import {parseISO} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 
 import timezones from "../generated/timezones.json";
+import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
@@ -86,11 +88,18 @@ function setup_settings_label() {
     };
 }
 
+function get_parsed_date_of_joining() {
+    const user_date_joined = people.get_by_user_id(page_params.user_id, false).date_joined;
+    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+    return dateFormat.format(parseISO(user_date_joined));
+}
+
 export function build_page() {
     setup_settings_label();
 
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
+        date_joined_text: get_parsed_date_of_joining(),
         page_params,
         enable_sound_select:
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
@@ -140,6 +149,13 @@ export function launch(section) {
 }
 
 export function set_settings_header(key) {
+    const selected_tab_key = $("#settings_page .tab-switcher .selected").data("tab-key");
+    let header_prefix = $t_html({defaultMessage: "Personal settings"});
+    if (selected_tab_key === "organization") {
+        header_prefix = $t_html({defaultMessage: "Organization settings"});
+    }
+    $(".settings-header h1 .header-prefix").text(header_prefix);
+
     const header_text = $(
         `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
     ).text();
@@ -153,4 +169,16 @@ export function set_settings_header(key) {
                 " sidebar list. Please add it.",
         );
     }
+}
+
+export function initialize() {
+    const rendered_settings_overlay = render_settings_overlay({
+        is_owner: page_params.is_owner,
+        is_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
+        show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
+        show_emoji_settings_lock:
+            !page_params.is_admin && page_params.realm_add_emoji_by_admins_only,
+    });
+    $("#settings_overlay_container").append(rendered_settings_overlay);
 }

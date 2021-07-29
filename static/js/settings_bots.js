@@ -1,6 +1,5 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import _ from "lodash";
 
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/settings/edit_bot.hbs";
@@ -11,7 +10,7 @@ import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -85,7 +84,7 @@ export function type_id_to_string(type_id) {
     return page_params.bot_types.find((bot_type) => bot_type.type_id === type_id).name;
 }
 
-function render_bots() {
+export function render_bots() {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
 
@@ -110,30 +109,7 @@ function render_bots() {
         focus_tab.add_a_new_bot_tab();
         return;
     }
-
-    if ($("#bots_lists_navbar .add-a-new-bot-tab").hasClass("active")) {
-        $("#add-a-new-bot-form").show();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").hide();
-    } else if ($("#bots_lists_navbar .active-bots-tab").hasClass("active")) {
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").show();
-        $("#inactive_bots_list").hide();
-    } else {
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").show();
-    }
 }
-
-// The reason we debounce this call is very wonky. I just moved it
-// from bot_data.js as part of breaking dependencies. Basically, it
-// allows the server response to win the race against events.
-// TODO: Organize the code so that we clear loading spinners and
-//       switch tabs within the UI when the event comes in.
-export const eventually_render_bots = _.debounce(() => {
-    render_bots();
-}, 50);
 
 export function generate_zuliprc_uri(bot_id) {
     const bot = bot_data.get(bot_id);
@@ -267,6 +243,9 @@ export function set_up() {
         );
     });
 
+    // This needs to come before render_bots() in case the user
+    // has no active bots
+    focus_tab.active_bots_tab();
     render_bots();
 
     $.validator.addMethod(
@@ -345,8 +324,7 @@ export function set_up() {
                     $("#create_bot_button").show();
                     $("#create_interface_type").val(GENERIC_INTERFACE);
                     create_avatar_widget.clear();
-                    $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
-                    $("#bots_lists_navbar .active-bots-tab").addClass("active");
+                    focus_tab.active_bots_tab();
                 },
                 error(xhr) {
                     $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
@@ -462,7 +440,7 @@ export function set_up() {
             default_text: $t({defaultMessage: "No owner"}),
             value: bot.owner_id,
         };
-        const owner_widget = dropdown_list_widget(opts);
+        const owner_widget = new DropdownListWidget(opts);
 
         const service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {

@@ -130,8 +130,7 @@ js_rules = RuleList(
                 "static/js/portico",
                 "static/js/lightbox.js",
                 "static/js/ui_report.ts",
-                "static/js/confirm_dialog.js",
-                "static/js/edit_fields_modal.js",
+                "static/js/dialog_widget.js",
                 "frontend_tests/",
             },
             "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.",
@@ -278,6 +277,16 @@ python_rules = RuleList(
             "bad_lines": ["assertEqual(len(data), 2)"],
         },
         {
+            "pattern": "assertTrue[(]len[(][^ ]*[)]",
+            "description": "Use assert_length or assertGreater helper instead of assertTrue(len(..) ..).",
+            "good_lines": ["assert_length(data, 2)", "assertGreater(len(data), 2)"],
+            "bad_lines": [
+                "assertTrue(len(data) == 2)",
+                "assertTrue(len(data) >= 2)",
+                "assertTrue(len(data) > 2)",
+            ],
+        },
+        {
             "pattern": r"#\s*type:\s*ignore(?!\[[^][]+\] +# +\S)",
             "exclude": {"tools/tests", "zerver/lib/test_runner.py", "zerver/tests"},
             "description": '"type: ignore" should always end with "# type: ignore[code] # explanation for why"',
@@ -318,18 +327,6 @@ python_rules = RuleList(
             "description": "Use json_success() to return nothing",
             "good_lines": ["return json_success()"],
             "bad_lines": ["return json_success({})"],
-        },
-        {
-            "pattern": r"\Wjson_error\(_\(?\w+\)",
-            "exclude": {"zerver/tests", "zerver/views/development/"},
-            "description": "Argument to json_error should be a literal string enclosed by _()",
-            "good_lines": ['return json_error(_("string"))'],
-            "bad_lines": ["return json_error(_variable)", "return json_error(_(variable))"],
-        },
-        {
-            "pattern": r"""\Wjson_error\(['"].+[),]$""",
-            "exclude": {"zerver/tests"},
-            "description": "Argument to json_error should a literal string enclosed by _()",
         },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
@@ -675,7 +672,7 @@ html_rules: List["Rule"] = [
             "static/html/5xx.html",
             # exclude_pattern above handles color, but have other issues:
             "static/templates/draft.hbs",
-            "static/templates/subscription.hbs",
+            "static/templates/stream_settings/browse_streams_list_item.hbs",
             "static/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up
@@ -687,8 +684,6 @@ html_rules: List["Rule"] = [
             # Social backend logos are dynamically loaded
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
-            # Probably just needs to be changed to display: none so the exclude works
-            "templates/zerver/app/navbar.html",
             # Needs the width cleaned up; display: none is fine
             "static/templates/settings/account_settings.hbs",
             # background image property is dynamically generated
@@ -697,7 +692,6 @@ html_rules: List["Rule"] = [
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
             "templates/zerver/billing_nav.html",
-            "templates/zerver/app/home.html",
             "templates/zerver/features.html",
             "templates/zerver/portico-header.html",
             "templates/corporate/billing.html",
@@ -826,7 +820,6 @@ markdown_docs_length_exclude = {
     "templates/zerver/api/get-messages.md",
     # This macro has a long indented URL
     "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
-    "templates/zerver/api/update-notification-settings.md",
     # These two are the same file and have some too-long lines for GitHub badges
     "README.md",
     "docs/overview/readme.md",
@@ -887,6 +880,7 @@ help_markdown_rules = RuleList(
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
             "include_only": {"templates/zerver/help/"},
+            "exclude_pattern": "Rocket.Chat",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",

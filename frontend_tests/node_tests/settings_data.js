@@ -6,7 +6,6 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const people = zrequire("people");
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 
@@ -23,7 +22,6 @@ const isaac = {
     user_id: 30,
     full_name: "Isaac",
 };
-people.add_active_user(isaac);
 
 run_test("email_for_user_settings", () => {
     const email = settings_data.email_for_user_settings;
@@ -149,14 +147,22 @@ function test_policy(label, policy, validation_func) {
         page_params.is_guest = false;
         assert.equal(validation_func(), true);
 
+        page_params.is_spectator = true;
+        page_params[policy] = settings_config.common_policy_values.by_members.code;
+        assert.equal(validation_func(), false);
+
+        page_params.is_spectator = false;
+        assert.equal(validation_func(), true);
+
         page_params[policy] = settings_config.common_policy_values.by_full_members.code;
         page_params.user_id = 30;
-        people.add_active_user(isaac);
         isaac.date_joined = new Date(Date.now());
+        settings_data.initialize(isaac.date_joined);
         page_params.realm_waiting_period_threshold = 10;
         assert.equal(validation_func(), false);
 
         isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+        settings_data.initialize(isaac.date_joined);
         assert.equal(validation_func(), true);
     });
 }
@@ -181,46 +187,88 @@ test_policy(
     "realm_move_messages_between_streams_policy",
     settings_data.user_can_move_messages_between_streams,
 );
+test_policy(
+    "user_can_edit_user_groups",
+    "realm_user_group_edit_policy",
+    settings_data.user_can_edit_user_groups,
+);
+test_policy(
+    "user_can_add_custom_emoji",
+    "realm_add_custom_emoji_policy",
+    settings_data.user_can_add_custom_emoji,
+);
 
-run_test("user_can_edit_topic_of_any_message", () => {
-    const can_edit_topic_of_any_message = settings_data.user_can_edit_topic_of_any_message;
+function test_message_policy(label, policy, validation_func) {
+    run_test(label, () => {
+        page_params.is_admin = true;
+        page_params[policy] = settings_config.common_message_policy_values.by_admins_only.code;
+        assert.equal(validation_func(), true);
 
+        page_params.is_admin = false;
+        page_params.is_moderator = true;
+        assert.equal(validation_func(), false);
+
+        page_params[policy] = settings_config.common_message_policy_values.by_moderators_only.code;
+        assert.equal(validation_func(), true);
+
+        page_params.is_moderator = false;
+        assert.equal(validation_func(), false);
+
+        page_params.is_guest = true;
+        page_params[policy] = settings_config.common_message_policy_values.by_everyone.code;
+        assert.equal(validation_func(), true);
+
+        page_params[policy] = settings_config.common_message_policy_values.by_members.code;
+        assert.equal(validation_func(), false);
+
+        page_params.is_guest = false;
+        assert.equal(validation_func(), true);
+
+        page_params[policy] = settings_config.common_message_policy_values.by_full_members.code;
+        page_params.user_id = 30;
+        isaac.date_joined = new Date(Date.now());
+        page_params.realm_waiting_period_threshold = 10;
+        settings_data.initialize(isaac.date_joined);
+        assert.equal(validation_func(), false);
+
+        isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+        settings_data.initialize(isaac.date_joined);
+        assert.equal(validation_func(), true);
+    });
+}
+
+test_message_policy(
+    "user_can_edit_topic_of_any_message",
+    "realm_edit_topic_policy",
+    settings_data.user_can_edit_topic_of_any_message,
+);
+
+run_test("using_dark_theme", () => {
+    page_params.color_scheme = settings_config.color_scheme_values.night.code;
+    assert.equal(settings_data.using_dark_theme(), true);
+
+    page_params.color_scheme = settings_config.color_scheme_values.automatic.code;
+
+    window.matchMedia = (query) => {
+        assert.equal(query, "(prefers-color-scheme: dark)");
+        return {matches: true};
+    };
+    assert.equal(settings_data.using_dark_theme(), true);
+
+    window.matchMedia = (query) => {
+        assert.equal(query, "(prefers-color-scheme: dark)");
+        return {matches: false};
+    };
+    assert.equal(settings_data.using_dark_theme(), false);
+
+    page_params.color_scheme = settings_config.color_scheme_values.day.code;
+    assert.equal(settings_data.using_dark_theme(), false);
+});
+
+run_test("user_can_invite_others_to_realm_nobody_case", () => {
     page_params.is_admin = true;
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_admins_only.code;
-    assert.equal(can_edit_topic_of_any_message(), true);
-
-    page_params.is_admin = false;
-    page_params.is_moderator = true;
-    assert.equal(can_edit_topic_of_any_message(), false);
-
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_moderators_only.code;
-    assert.equal(can_edit_topic_of_any_message(), true);
-
-    page_params.is_moderator = false;
-    assert.equal(can_edit_topic_of_any_message(), false);
-
-    page_params.is_guest = true;
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_everyone.code;
-    assert.equal(can_edit_topic_of_any_message(), true);
-
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_members.code;
-    assert.equal(can_edit_topic_of_any_message(), false);
-
     page_params.is_guest = false;
-    assert.equal(can_edit_topic_of_any_message(), true);
-
-    page_params.realm_edit_topic_policy =
-        settings_config.common_message_policy_values.by_full_members.code;
-    page_params.user_id = 30;
-    people.add_active_user(isaac);
-    isaac.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-    assert.equal(can_edit_topic_of_any_message(), false);
-
-    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-    assert.equal(can_edit_topic_of_any_message(), true);
+    page_params.realm_invite_to_realm_policy =
+        settings_config.invite_to_realm_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_invite_others_to_realm(), false);
 });

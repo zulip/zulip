@@ -14,7 +14,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const visibility = settings_config.email_address_visibility_values;
@@ -58,7 +58,7 @@ function initialize() {
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
     set_email_visibility(admins_only);
-    muting.set_muted_users([]);
+    muted_users.set_muted_users([]);
 }
 
 function test_people(label, f) {
@@ -417,7 +417,7 @@ test_people("get_recipients", () => {
     assert.equal(people.get_recipients("30"), "Me Myself");
     assert.equal(people.get_recipients("30,32"), "Isaac Newton");
 
-    muting.add_muted_user(304);
+    muted_users.add_muted_user(304);
     assert.equal(people.get_recipients("304,32"), "Isaac Newton, translated: Muted user");
 });
 
@@ -445,7 +445,7 @@ test_people("get_display_full_names", () => {
     // to take care of such cases and do the appropriate.
     assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
 
-    muting.add_muted_user(charles.user_id);
+    muted_users.add_muted_user(charles.user_id);
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "translated: Muted user"]);
 });
@@ -707,7 +707,7 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
-    muting.add_muted_user(30);
+    muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [
         {
             avatar_url_small: "/avatar/30&s=50",

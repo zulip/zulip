@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# check for the venv
-from lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 import argparse
 import contextlib
 import glob
@@ -15,6 +10,15 @@ import sys
 import tempfile
 from typing import Iterator, List
 from unittest import mock
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
 
 import django
 import orjson
@@ -185,10 +189,6 @@ class ZulipInternetBlockedError(Exception):
 
 
 def main() -> None:
-    TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(os.path.dirname(TOOLS_DIR))
-    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-
     default_parallel = os.cpu_count()
 
     # Remove proxy settings for running backend tests

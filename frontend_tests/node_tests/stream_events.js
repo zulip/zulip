@@ -15,7 +15,7 @@ const message_util = mock_esm("../../static/js/message_util");
 const stream_color = mock_esm("../../static/js/stream_color");
 const stream_list = mock_esm("../../static/js/stream_list");
 const stream_muting = mock_esm("../../static/js/stream_muting");
-const subs = mock_esm("../../static/js/subs", {
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui", {
     update_settings_for_subscribed: noop,
 });
 
@@ -166,7 +166,7 @@ test("update_property", ({override}) => {
     // Test name change
     {
         const stub = make_stub();
-        override(subs, "update_stream_name", stub.f);
+        override(stream_settings_ui, "update_stream_name", stub.f);
         stream_events.update_property(stream_id, "name", "the frontend");
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
@@ -177,7 +177,7 @@ test("update_property", ({override}) => {
     // Test description change
     {
         const stub = make_stub();
-        override(subs, "update_stream_description", stub.f);
+        override(stream_settings_ui, "update_stream_description", stub.f);
         stream_events.update_property(stream_id, "description", "we write code", {
             rendered_description: "we write code",
         });
@@ -202,7 +202,7 @@ test("update_property", ({override}) => {
     // Test stream privacy change event
     {
         const stub = make_stub();
-        override(subs, "update_stream_privacy", stub.f);
+        override(stream_settings_ui, "update_stream_privacy", stub.f);
         stream_events.update_property(stream_id, "invite_only", true, {
             history_public_to_subscribers: true,
         });
@@ -218,7 +218,7 @@ test("update_property", ({override}) => {
     // Test stream stream_post_policy change event
     {
         const stub = make_stub();
-        override(subs, "update_stream_post_policy", stub.f);
+        override(stream_settings_ui, "update_stream_post_policy", stub.f);
         stream_events.update_property(
             stream_id,
             "stream_post_policy",
@@ -233,7 +233,7 @@ test("update_property", ({override}) => {
     // Test stream message_retention_days change event
     {
         const stub = make_stub();
-        override(subs, "update_message_retention_setting", stub.f);
+        override(stream_settings_ui, "update_message_retention_setting", stub.f);
         stream_events.update_property(stream_id, "message_retention_days", 20);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
@@ -316,7 +316,7 @@ test("marked_subscribed (color)", ({override}) => {
     // narrow state is undefined
     {
         const stub = make_stub();
-        override(subs, "set_color", stub.f);
+        override(stream_settings_ui, "set_color", stub.f);
         blueslip.expect("warn", "Frontend needed to pick a color in mark_subscribed");
         stream_events.mark_subscribed(sub, [], undefined);
         assert.equal(stub.num_calls, 1);
@@ -338,7 +338,7 @@ test("marked_subscribed (emails)", ({override}) => {
     override(stream_list, "add_sidebar_row", noop);
 
     const subs_stub = make_stub();
-    override(subs, "update_settings_for_subscribed", subs_stub.f);
+    override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
 
     assert.ok(!stream_data.is_subscribed(sub.name));
 
@@ -358,7 +358,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
 
     const stub = make_stub();
 
-    override(subs, "update_settings_for_unsubscribed", stub.f);
+    override(stream_settings_ui, "update_settings_for_unsubscribed", stub.f);
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_data, "unsubscribe_myself", noop);
 
@@ -376,7 +376,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     const message_view_header_stub = make_stub();
     override(message_view_header, "render_title_area", message_view_header_stub.f);
     override(stream_data, "unsubscribe_myself", noop);
-    override(subs, "update_settings_for_unsubscribed", noop);
+    override(stream_settings_ui, "update_settings_for_unsubscribed", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
 
@@ -390,7 +390,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
 test("remove_deactivated_user_from_all_streams", () => {
     stream_data.add_sub(dev_help);
     const subs_stub = make_stub();
-    subs.update_subscribers_ui = subs_stub.f;
+    stream_settings_ui.update_subscribers_ui = subs_stub.f;
 
     // assert starting state
     assert.ok(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));

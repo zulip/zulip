@@ -122,6 +122,11 @@ def has_api_key_format(key: str) -> bool:
     return bool(re.fullmatch(r"([A-Za-z0-9]){32}", key))
 
 
+def assert_is_not_none(value: Optional[T]) -> T:
+    assert value is not None
+    return value
+
+
 def query_chunker(
     queries: List[Any],
     id_collector: Optional[Set[int]] = None,

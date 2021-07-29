@@ -15,7 +15,7 @@ bot's API key can impersonate the bot, so be careful with it!
 
 Anyone with your API key can impersonate you, so be doubly careful with it.
 
-{settings_tab|your-account}
+{settings_tab|account-and-privacy}
 
 1. Under **API key**, click **Show/change your API key**.
 

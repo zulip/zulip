@@ -7,7 +7,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class ClubhouseWebhookTest(WebhookTestCase):
     STREAM_NAME = "clubhouse"
     URL_TEMPLATE = "/api/v1/external/clubhouse?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "clubhouse"
+    WEBHOOK_DIR_NAME = "clubhouse"
 
     def test_story_create(self) -> None:
         expected_message = "New story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) of type **feature** was created."
@@ -232,6 +232,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="Story1", url="https://app.clubhouse.io/pig208/story/17"
                 ),
+                "pull-request_create",
             ),
             call(
                 request,
@@ -240,6 +241,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="Story2", url="https://app.clubhouse.io/pig208/story/18"
                 ),
+                "pull-request_create",
             ),
         ]
         self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
@@ -271,6 +273,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="new1", url="https://app.clubhouse.io/pig208/story/26"
                 ),
+                "pull-request_comment",
             ),
             call(
                 request,
@@ -279,6 +282,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="new2", url="https://app.clubhouse.io/pig208/story/27"
                 ),
+                "pull-request_comment",
             ),
         ]
         self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
@@ -306,6 +310,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="asd4", url="https://app.clubhouse.io/pig208/story/17"
                 ),
+                "story_update_batch",
             ),
             call(
                 request,
@@ -314,6 +319,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="new1", url="https://app.clubhouse.io/pig208/story/26"
                 ),
+                "story_update_batch",
             ),
             call(
                 request,
@@ -322,6 +328,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 expected_message.format(
                     name="new2", url="https://app.clubhouse.io/pig208/story/27"
                 ),
+                "story_update_batch",
             ),
         ]
         self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
@@ -364,6 +371,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
                 user_profile,
                 expected_message[0],
                 expected_message[1],
+                "story_update_batch",
             )
             for expected_message in expected_messages
         ]

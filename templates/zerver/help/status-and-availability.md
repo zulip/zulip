@@ -19,7 +19,7 @@ teammates know when you were last active.
 
 1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
 
-1. Click **Set a status message**.
+1. Click **Set a status**.
 
 1. Set a status messages and click **Save**.
 
@@ -77,10 +77,9 @@ the UI will be frozen as the time you enabled this setting.
 
 {start_tabs}
 
-{settings_tab|notifications}
+{settings_tab|account-and-privacy}
 
-1. Under **Other notification settings**, in the **Presence**
-   subsection, toggle **Display my availability to other users**.
+1. Under **Privacy**, toggle **Display my availability to other users**.
 
 {end_tabs}
 

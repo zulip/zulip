@@ -29,10 +29,14 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
-from zerver.lib.exceptions import CannotDeactivateLastUserError, OrganizationOwnerRequired
+from zerver.lib.exceptions import (
+    CannotDeactivateLastUserError,
+    JsonableError,
+    OrganizationOwnerRequired,
+)
 from zerver.lib.integrations import EMBEDDED_BOTS
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import Validator
 from zerver.lib.upload import upload_avatar_image
@@ -96,7 +100,7 @@ def deactivate_user_backend(
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
     if check_last_owner(target):
-        return json_error(_("Cannot deactivate the only organization owner"))
+        raise JsonableError(_("Cannot deactivate the only organization owner"))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 
@@ -182,7 +186,7 @@ def update_user_backend(
             raise OrganizationOwnerRequired()
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
-            return json_error(
+            raise JsonableError(
                 _("The owner permission cannot be removed from the only organization owner.")
             )
         do_change_user_role(target, role, acting_user=user_profile)
@@ -278,11 +282,11 @@ def patch_bot_backend(
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
         except UserProfile.DoesNotExist:
-            return json_error(_("Failed to change owner, no such user"))
+            raise JsonableError(_("Failed to change owner, no such user"))
         if not owner.is_active:
-            return json_error(_("Failed to change owner, user is deactivated"))
+            raise JsonableError(_("Failed to change owner, user is deactivated"))
         if owner.is_bot:
-            return json_error(_("Failed to change owner, bots can't own other bots"))
+            raise JsonableError(_("Failed to change owner, bots can't own other bots"))
 
         previous_owner = bot.bot_owner
         if previous_owner != owner:
@@ -321,7 +325,7 @@ def patch_bot_backend(
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
     else:
-        return json_error(_("You may only upload one file at a time"))
+        raise JsonableError(_("You may only upload one file at a time"))
 
     json_result = dict(
         full_name=bot.full_name,
@@ -384,7 +388,7 @@ def add_bot_backend(
     try:
         email = f"{short_name}@{user_profile.realm.get_bot_domain()}"
     except InvalidFakeEmailDomain:
-        return json_error(
+        raise JsonableError(
             _(
                 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
                 "Please contact your server administrator."
@@ -394,16 +398,16 @@ def add_bot_backend(
 
     if bot_type == UserProfile.EMBEDDED_BOT:
         if not settings.EMBEDDED_BOTS_ENABLED:
-            return json_error(_("Embedded bots are not enabled."))
+            raise JsonableError(_("Embedded bots are not enabled."))
         if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
-            return json_error(_("Invalid embedded bot name."))
+            raise JsonableError(_("Invalid embedded bot name."))
 
     if not form.is_valid():
         # We validate client-side as well
-        return json_error(_("Bad name or username"))
+        raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        return json_error(_("Username already in use"))
+        raise JsonableError(_("Username already in use"))
     except UserProfile.DoesNotExist:
         pass
 
@@ -419,7 +423,7 @@ def add_bot_backend(
     if len(request.FILES) == 0:
         avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
     elif len(request.FILES) != 1:
-        return json_error(_("You may only upload one file at a time"))
+        raise JsonableError(_("You may only upload one file at a time"))
     else:
         avatar_source = UserProfile.AVATAR_FROM_USER
 
@@ -569,12 +573,12 @@ def create_user_backend(
     full_name_raw: str = REQ("full_name"),
 ) -> HttpResponse:
     if not user_profile.can_create_users:
-        return json_error(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized for this query"))
 
     full_name = check_full_name(full_name_raw)
     form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():
-        return json_error(_("Bad name or username"))
+        raise JsonableError(_("Bad name or username"))
 
     # Check that the new user's email address belongs to the admin's realm
     # (Since this is an admin API, we don't require the user to have been
@@ -583,24 +587,24 @@ def create_user_backend(
     try:
         email_allowed_for_realm(email, user_profile.realm)
     except DomainNotAllowedForRealmError:
-        return json_error(
+        raise JsonableError(
             _("Email '{email}' not allowed in this organization").format(
                 email=email,
             )
         )
     except DisposableEmailError:
-        return json_error(_("Disposable email addresses are not allowed in this organization"))
+        raise JsonableError(_("Disposable email addresses are not allowed in this organization"))
     except EmailContainsPlusError:
-        return json_error(_("Email addresses containing + are not allowed."))
+        raise JsonableError(_("Email addresses containing + are not allowed."))
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        return json_error(_("Email '{}' already in use").format(email))
+        raise JsonableError(_("Email '{}' already in use").format(email))
     except UserProfile.DoesNotExist:
         pass
 
     if not check_password_strength(password):
-        return json_error(PASSWORD_TOO_WEAK_ERROR)
+        raise JsonableError(PASSWORD_TOO_WEAK_ERROR)
 
     target_user = do_create_user(email, password, realm, full_name, acting_user=user_profile)
     return json_success({"user_id": target_user.id})

@@ -17,4 +17,11 @@ run_test("compose_error_test", () => {
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.ok(!$("#sending-indicator").visible());
     assert.ok($("#compose-textarea").is_focused());
+
+    $("#compose-send-status").fadeOut = (prop) => {
+        assert.equal(prop, 500);
+        return "none";
+    };
+
+    compose_error.hide();
 });

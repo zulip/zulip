@@ -14,9 +14,9 @@ from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
+from zerver.lib.request import get_request_notes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.portico import hello_view
@@ -37,6 +37,8 @@ def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
 
 @zulip_login_required
 def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
+    assert request.user.is_authenticated
+
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
@@ -190,9 +192,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
         needs_tutorial=needs_tutorial,
     )
 
-    show_invites, show_add_streams = compute_show_invites_and_add_streams(user_profile)
-
-    request._log_data["extra"] = "[{}]".format(queue_id)
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = "[{}]".format(queue_id)
 
     csp_nonce = secrets.token_hex(24)
 
@@ -205,15 +207,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "user_profile": user_profile,
             "page_params": page_params,
             "csp_nonce": csp_nonce,
-            "search_pills_enabled": settings.SEARCH_PILLS_ENABLED,
-            "show_invites": show_invites,
-            "show_add_streams": show_add_streams,
-            "is_owner": user_permission_info.is_realm_owner,
-            "is_admin": user_permission_info.is_realm_admin,
-            "is_guest": user_permission_info.is_guest,
             "color_scheme": user_permission_info.color_scheme,
-            "embedded": narrow_stream is not None,
-            "max_file_upload_size_mib": settings.MAX_FILE_UPLOAD_SIZE,
         },
     )
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

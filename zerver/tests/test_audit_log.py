@@ -9,7 +9,7 @@ from analytics.models import StreamCount
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    do_activate_user,
+    do_activate_mirror_dummy_user,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -70,10 +70,10 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = do_create_user("email", "password", realm, "full_name", acting_user=None)
         do_deactivate_user(user, acting_user=user)
-        do_activate_user(user, acting_user=user)
+        do_activate_mirror_dummy_user(user, acting_user=user)
         do_deactivate_user(user, acting_user=user)
         do_reactivate_user(user, acting_user=user)
-        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 5)
+        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 6)
         event_types = list(
             RealmAuditLog.objects.filter(
                 realm=realm,
@@ -231,7 +231,7 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_bot_owner(self) -> None:
         now = timezone_now()
         admin = self.example_user("iago")
-        bot = self.notification_bot()
+        bot = self.notification_bot(admin.realm)
         bot_owner = self.example_user("hamlet")
         do_change_bot_owner(bot, bot_owner, admin)
         self.assertEqual(
@@ -288,8 +288,10 @@ class TestRealmAuditLog(ZulipTestCase):
             modified_user=user,
             modified_stream=stream,
         )
+        modified_stream = subscription_creation_logs[0].modified_stream
+        assert modified_stream is not None
         self.assertEqual(subscription_creation_logs.count(), 1)
-        self.assertEqual(subscription_creation_logs[0].modified_stream.id, stream.id)
+        self.assertEqual(modified_stream.id, stream.id)
         self.assertEqual(subscription_creation_logs[0].modified_user, user)
 
         bulk_remove_subscriptions([user], [stream], get_client("website"), acting_user=acting_user)
@@ -300,8 +302,10 @@ class TestRealmAuditLog(ZulipTestCase):
             modified_user=user,
             modified_stream=stream,
         )
+        modified_stream = subscription_deactivation_logs[0].modified_stream
+        assert modified_stream is not None
         self.assertEqual(subscription_deactivation_logs.count(), 1)
-        self.assertEqual(subscription_deactivation_logs[0].modified_stream.id, stream.id)
+        self.assertEqual(modified_stream.id, stream.id)
         self.assertEqual(subscription_deactivation_logs[0].modified_user, user)
 
     def test_realm_activation(self) -> None:
@@ -495,11 +499,11 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=user,
             event_time__gte=test_start,
         )
+        audit_log = audit_entries.first()
+        assert audit_log is not None
         self.assert_length(audit_entries, 1)
         self.assertEqual(icon_source, realm.icon_source)
-        self.assertEqual(
-            audit_entries.first().extra_data, "{'icon_source': 'G', 'icon_version': 2}"
-        )
+        self.assertEqual(audit_log.extra_data, "{'icon_source': 'G', 'icon_version': 2}")
 
     def test_change_subscription_property(self) -> None:
         user = self.example_user("hamlet")

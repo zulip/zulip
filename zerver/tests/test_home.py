@@ -8,6 +8,7 @@ import orjson
 import pytz
 from django.conf import settings
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
@@ -20,8 +21,7 @@ from zerver.lib.home import (
 )
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
-from zerver.lib.users import compute_show_invites_and_add_streams
+from zerver.lib.test_helpers import get_user_messages, queries_captured
 from zerver.models import (
     DefaultStream,
     Realm,
@@ -65,6 +65,7 @@ class HomeTest(ZulipTestCase):
         "desktop_icon_count_display",
         "development_environment",
         "email",
+        "email_notifications_batching_period_seconds",
         "emojiset",
         "emojiset_choices",
         "enable_desktop_notifications",
@@ -128,7 +129,7 @@ class HomeTest(ZulipTestCase):
         "promote_sponsoring_zulip",
         "prompt_for_invites",
         "queue_id",
-        "realm_add_emoji_by_admins_only",
+        "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
         "realm_allow_message_deleting",
         "realm_allow_message_editing",
@@ -203,7 +204,6 @@ class HomeTest(ZulipTestCase):
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
         "request_language",
-        "save_stacktraces",
         "search_pills_enabled",
         "server_avatar_changes_disabled",
         "server_generation",
@@ -214,7 +214,6 @@ class HomeTest(ZulipTestCase):
         "server_timestamp",
         "settings_send_digest_emails",
         "show_billing",
-        "show_invites",
         "show_plans",
         "show_webathena",
         "starred_message_counts",
@@ -246,9 +245,7 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "start the conversation",
-            "Keyboard shortcuts",
             "Loading...",
-            "Filter streams",
             # Verify that the app styles get included
             "app-stubentry.js",
             "data-params",
@@ -273,7 +270,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 40)
+        self.assert_length(queries, 42)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode("utf-8")
@@ -353,7 +350,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 37)
+            self.assert_length(queries, 39)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -384,7 +381,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 35)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode("utf-8")
@@ -396,12 +393,6 @@ class HomeTest(ZulipTestCase):
         ):
             result = self.client_get("/", dict(**kwargs))
         return result
-
-    def assertInHomePage(self, string: str) -> bool:
-        return self.assertIn(string, self._get_home_page().content.decode("utf-8"))
-
-    def assertNotInHomePage(self, string: str) -> bool:
-        return self.assertNotIn(string, self._get_home_page().content.decode("utf-8"))
 
     def _sanity_check(self, result: HttpResponse) -> None:
         """
@@ -579,7 +570,7 @@ class HomeTest(ZulipTestCase):
 
         for field in buckets:
             users = page_params[field]
-            self.assertTrue(len(users) >= 3, field)
+            self.assertGreaterEqual(len(users), 3, field)
             for rec in users:
                 self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                 if field == "realm_bots":
@@ -614,9 +605,10 @@ class HomeTest(ZulipTestCase):
             del cross_bot["avatar_url"]
             del cross_bot["date_joined"]
 
-        notification_bot = self.notification_bot()
-        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-        welcome_bot = get_system_bot(settings.WELCOME_BOT)
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_notification_bot = self.notification_bot(admin_realm)
+        cross_realm_email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, admin_realm.id)
+        cross_realm_welcome_bot = get_system_bot(settings.WELCOME_BOT, admin_realm.id)
 
         by_email = lambda d: d["email"]
 
@@ -625,51 +617,51 @@ class HomeTest(ZulipTestCase):
             sorted(
                 [
                     dict(
-                        avatar_version=email_gateway_bot.avatar_version,
+                        avatar_version=cross_realm_email_gateway_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
-                        email=email_gateway_bot.email,
-                        user_id=email_gateway_bot.id,
-                        full_name=email_gateway_bot.full_name,
+                        email=cross_realm_email_gateway_bot.email,
+                        user_id=cross_realm_email_gateway_bot.id,
+                        full_name=cross_realm_email_gateway_bot.full_name,
                         is_active=True,
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
                         is_billing_admin=False,
-                        role=email_gateway_bot.role,
-                        is_cross_realm_bot=True,
+                        role=cross_realm_email_gateway_bot.role,
+                        is_system_bot=True,
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=notification_bot.avatar_version,
+                        avatar_version=cross_realm_notification_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
-                        email=notification_bot.email,
-                        user_id=notification_bot.id,
-                        full_name=notification_bot.full_name,
+                        email=cross_realm_notification_bot.email,
+                        user_id=cross_realm_notification_bot.id,
+                        full_name=cross_realm_notification_bot.full_name,
                         is_active=True,
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
                         is_billing_admin=False,
-                        role=notification_bot.role,
-                        is_cross_realm_bot=True,
+                        role=cross_realm_notification_bot.role,
+                        is_system_bot=True,
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=welcome_bot.avatar_version,
+                        avatar_version=cross_realm_welcome_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
-                        email=welcome_bot.email,
-                        user_id=welcome_bot.id,
-                        full_name=welcome_bot.full_name,
+                        email=cross_realm_welcome_bot.email,
+                        user_id=cross_realm_welcome_bot.id,
+                        full_name=cross_realm_welcome_bot.full_name,
                         is_active=True,
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
                         is_billing_admin=False,
-                        role=welcome_bot.role,
-                        is_cross_realm_bot=True,
+                        role=cross_realm_welcome_bot.role,
+                        is_system_bot=True,
                         is_guest=False,
                     ),
                 ],
@@ -687,33 +679,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["max_message_id"], -1)
-
-    def test_invites_by_admins_only(self) -> None:
-        user_profile = self.example_user("hamlet")
-
-        realm = user_profile.realm
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        realm.save()
-
-        self.login_user(user_profile)
-        self.assertFalse(user_profile.is_realm_admin)
-        self.assertNotInHomePage("Invite more users")
-
-        user_profile.role = UserProfile.ROLE_REALM_ADMINISTRATOR
-        user_profile.save()
-        self.assertInHomePage("Invite more users")
-
-    def test_show_invites_for_guest_users(self) -> None:
-        user_profile = self.example_user("polonius")
-
-        realm = user_profile.realm
-        realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
-        realm.save()
-
-        self.login_user(user_profile)
-        self.assertFalse(user_profile.is_realm_admin)
-        self.assertEqual(get_realm("zulip").invite_to_realm_policy, Realm.POLICY_MEMBERS_ONLY)
-        self.assertNotInHomePage("Invite more users")
 
     def test_get_billing_info(self) -> None:
         user = self.example_user("desdemona")
@@ -1075,37 +1040,3 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["default_language"], "es")
-
-    def test_compute_show_invites_and_add_streams_admin(self) -> None:
-        user = self.example_user("iago")
-
-        realm = user.realm
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        realm.save()
-
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
-        self.assertEqual(show_invites, True)
-        self.assertEqual(show_add_streams, True)
-
-    def test_compute_show_invites_and_add_streams_require_admin(self) -> None:
-        user = self.example_user("hamlet")
-
-        realm = user.realm
-        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
-        realm.save()
-
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
-        self.assertEqual(show_invites, False)
-        self.assertEqual(show_add_streams, True)
-
-    def test_compute_show_invites_and_add_streams_guest(self) -> None:
-        user = self.example_user("polonius")
-
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
-        self.assertEqual(show_invites, False)
-        self.assertEqual(show_add_streams, False)
-
-    def test_compute_show_invites_and_add_streams_unauthenticated(self) -> None:
-        show_invites, show_add_streams = compute_show_invites_and_add_streams(None)
-        self.assertEqual(show_invites, False)
-        self.assertEqual(show_add_streams, False)

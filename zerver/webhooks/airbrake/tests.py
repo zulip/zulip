@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class AirbrakeHookTests(WebhookTestCase):
     STREAM_NAME = "airbrake"
     URL_TEMPLATE = "/api/v1/external/airbrake?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "airbrake"
+    WEBHOOK_DIR_NAME = "airbrake"
 
     def test_airbrake_error_message(self) -> None:
         expected_topic = "ZulipIntegrationTest"

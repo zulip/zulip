@@ -14,7 +14,8 @@ from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
-from analytics.lib.counts import COUNT_STATS, RealmCount
+from analytics.lib.counts import COUNT_STATS
+from analytics.models import RealmCount
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
     cache_with_key,
@@ -22,15 +23,11 @@ from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
-from zerver.lib.display_recipient import (
-    DisplayRecipientT,
-    UserDisplayRecipient,
-    bulk_fetch_display_recipients,
-)
+from zerver.lib.display_recipient import bulk_fetch_display_recipients
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
-from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
     get_subscribed_stream_recipient_ids_for_user,
@@ -39,6 +36,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -68,10 +66,24 @@ class RawReactionRow(TypedDict):
     user_profile_id: int
 
 
+class RawUnreadStreamDict(TypedDict):
+    stream_id: int
+    topic: str
+    sender_id: int
+
+
+class RawUnreadPrivateMessageDict(TypedDict):
+    sender_id: int
+
+
+class RawUnreadHuddleDict(TypedDict):
+    user_ids_string: str
+
+
 class RawUnreadMessagesResult(TypedDict):
-    pm_dict: Dict[int, Any]
-    stream_dict: Dict[int, Any]
-    huddle_dict: Dict[int, Any]
+    pm_dict: Dict[int, RawUnreadPrivateMessageDict]
+    stream_dict: Dict[int, RawUnreadStreamDict]
+    huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
     muted_stream_ids: List[int]
     unmuted_stream_msgs: Set[int]
@@ -96,8 +108,11 @@ class SendMessageRequest:
     sender_queue_id: Optional[str]
     realm: Realm
     mention_data: MentionData
+    mentioned_user_groups_map: Dict[int, int]
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
+    pm_mention_push_disabled_user_ids: Set[int]
+    pm_mention_email_disabled_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
@@ -127,7 +142,7 @@ def truncate_content(content: str, max_length: int, truncation_message: str) -> 
 
 
 def normalize_body(body: str) -> str:
-    body = body.rstrip()
+    body = body.rstrip().lstrip("\n")
     if len(body) == 0:
         raise JsonableError(_("Message must not be empty"))
     if "\x00" in body:
@@ -856,7 +871,7 @@ def huddle_users(recipient_id: int) -> str:
 
 
 def aggregate_message_dict(
-    input_dict: Dict[int, Dict[str, Any]], lookup_fields: List[str], collect_senders: bool
+    input_dict: Dict[int, Any], lookup_fields: List[str], collect_senders: bool
 ) -> List[Dict[str, Any]]:
     lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
 
@@ -998,10 +1013,10 @@ def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
 
-    pm_dict: Dict[int, Any] = {}
-    stream_dict: Dict[int, Any] = {}
+    pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
+    stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
-    huddle_dict: Dict[int, Any] = {}
+    huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
     mentions: Set[int] = set()
     total_unreads = 0
 
@@ -1177,12 +1192,11 @@ def apply_unread_message_event(
     if message_type == "stream":
         stream_id = message["stream_id"]
         topic = message[TOPIC_NAME]
-        new_row = dict(
+        state["stream_dict"][message_id] = RawUnreadStreamDict(
             stream_id=stream_id,
             topic=topic,
             sender_id=sender_id,
         )
-        state["stream_dict"][message_id] = new_row
 
         if stream_id not in state["muted_stream_ids"]:
             # This next check hits the database.
@@ -1196,20 +1210,19 @@ def apply_unread_message_event(
             other_id = user_profile.id
 
         # The `sender_id` field here is misnamed.
-        new_row = dict(
+        state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
             sender_id=other_id,
         )
-        state["pm_dict"][message_id] = new_row
 
     else:
         display_recipient = message["display_recipient"]
         user_ids = [obj["id"] for obj in display_recipient]
         user_ids = sorted(user_ids)
         user_ids_string = ",".join(str(uid) for uid in user_ids)
-        new_row = dict(
+
+        state["huddle_dict"][message_id] = RawUnreadHuddleDict(
             user_ids_string=user_ids_string,
         )
-        state["huddle_dict"][message_id] = new_row
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)

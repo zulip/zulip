@@ -3,12 +3,13 @@ import os
 import random
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 import bmemcached
 import orjson
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.core.files.base import File
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
@@ -22,6 +23,7 @@ from zerver.lib.actions import (
     build_message_send_dict,
     check_add_realm_emoji,
     do_change_user_role,
+    do_create_realm,
     do_send_messages,
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -115,10 +117,6 @@ def clear_database() -> None:
     ]:
         model.objects.all().delete()
     Session.objects.all().delete()
-
-
-# Suppress spammy output from the push notifications logger
-push_notifications_logger.disabled = True
 
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
@@ -271,7 +269,10 @@ class Command(BaseCommand):
             "data set for the backend tests.",
         )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
+        # Suppress spammy output from the push notifications logger
+        push_notifications_logger.disabled = True
+
         if options["percent_huddles"] + options["percent_personals"] > 100:
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
@@ -302,7 +303,7 @@ class Command(BaseCommand):
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             create_internal_realm()
-            zulip_realm = Realm.objects.create(
+            zulip_realm = do_create_realm(
                 string_id="zulip",
                 name="Zulip Dev",
                 emails_restricted_to_domains=False,
@@ -310,40 +311,33 @@ class Command(BaseCommand):
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
-                org_type=Realm.CORPORATE,
-            )
-            RealmAuditLog.objects.create(
-                realm=zulip_realm,
-                event_type=RealmAuditLog.REALM_CREATED,
-                event_time=zulip_realm.date_created,
+                plan_type=Realm.SELF_HOSTED,
+                org_type=Realm.ORG_TYPES["business"]["id"],
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
+            assert zulip_realm.notifications_stream is not None
+            zulip_realm.notifications_stream.name = "Verona"
+            zulip_realm.notifications_stream.description = "A city in Italy"
+            zulip_realm.notifications_stream.save(update_fields=["name", "description"])
+
             if options["test_suite"]:
-                mit_realm = Realm.objects.create(
+                mit_realm = do_create_realm(
                     string_id="zephyr",
                     name="MIT",
                     emails_restricted_to_domains=True,
                     invite_required=False,
-                    org_type=Realm.CORPORATE,
-                )
-                RealmAuditLog.objects.create(
-                    realm=mit_realm,
-                    event_type=RealmAuditLog.REALM_CREATED,
-                    event_time=mit_realm.date_created,
+                    plan_type=Realm.SELF_HOSTED,
+                    org_type=Realm.ORG_TYPES["business"]["id"],
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
-                lear_realm = Realm.objects.create(
+                lear_realm = do_create_realm(
                     string_id="lear",
                     name="Lear & Co.",
                     emails_restricted_to_domains=False,
                     invite_required=False,
-                    org_type=Realm.CORPORATE,
-                )
-                RealmAuditLog.objects.create(
-                    realm=lear_realm,
-                    event_type=RealmAuditLog.REALM_CREATED,
-                    event_time=lear_realm.date_created,
+                    plan_type=Realm.SELF_HOSTED,
+                    org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 
                 # Default to allowing all members to send mentions in
@@ -534,9 +528,17 @@ class Command(BaseCommand):
             create_if_missing_realm_internal_bots()
 
             # Create public streams.
-            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+            signups_stream = Realm.INITIAL_PRIVATE_STREAM_NAME
+
+            stream_list = [
+                "Verona",
+                "Denmark",
+                "Scotland",
+                "Venice",
+                "Rome",
+                signups_stream,
+            ]
             stream_dict: Dict[str, Dict[str, Any]] = {
-                "Verona": {"description": "A city in Italy"},
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
@@ -556,7 +558,7 @@ class Command(BaseCommand):
             # across platforms.
 
             subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
-            profiles: Sequence[UserProfile] = (
+            profiles: Sequence[UserProfile] = list(
                 UserProfile.objects.select_related().filter(is_bot=False).order_by("email")
             )
 
@@ -564,13 +566,23 @@ class Command(BaseCommand):
                 subscriptions_map = {
                     "AARON@zulip.com": ["Verona"],
                     "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": ["Verona", "Denmark"],
-                    "iago@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "hamlet@zulip.com": ["Verona", "Denmark", signups_stream],
+                    "iago@zulip.com": [
+                        "Verona",
+                        "Denmark",
+                        "Scotland",
+                        signups_stream,
+                    ],
                     "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
                     "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
                     "ZOE@zulip.com": ["Verona", "Denmark", "Scotland", "Venice", "Rome"],
                     "polonius@zulip.com": ["Verona"],
-                    "desdemona@zulip.com": ["Verona", "Denmark", "Venice"],
+                    "desdemona@zulip.com": [
+                        "Verona",
+                        "Denmark",
+                        "Venice",
+                        signups_stream,
+                    ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
                 }
 
@@ -580,7 +592,7 @@ class Command(BaseCommand):
                         raise Exception(f"Subscriptions not listed for user {email}")
 
                     for stream_name in subscriptions_map[email]:
-                        stream = Stream.objects.get(name=stream_name)
+                        stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                         subscriptions_list.append((profile, r))
             else:
@@ -705,7 +717,7 @@ class Command(BaseCommand):
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            check_add_realm_emoji(zulip_realm, "green_tick", iago, fp)
+            check_add_realm_emoji(zulip_realm, "green_tick", iago, File(fp))
 
         if not options["test_suite"]:
             # Populate users with some bar data
@@ -858,14 +870,12 @@ class Command(BaseCommand):
                 call_command("populate_analytics_db")
 
         threads = options["threads"]
-        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]] = []
+        jobs: List[Tuple[int, List[List[int]], Dict[str, Any], int]] = []
         for i in range(threads):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append(
-                (count, personals_pairs, options, self.stdout.write, random.randint(0, 10 ** 10))
-            )
+            jobs.append((count, personals_pairs, options, random.randint(0, 10 ** 10)))
 
         for job in jobs:
             generate_and_send_messages(job)
@@ -886,6 +896,8 @@ class Command(BaseCommand):
 
             mark_all_messages_as_read()
             self.stdout.write("Successfully populated test database.\n")
+
+        push_notifications_logger.disabled = False
 
 
 def mark_all_messages_as_read() -> None:
@@ -921,9 +933,9 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(
-    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]
+    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int]
 ) -> int:
-    (tot_messages, personals_pairs, options, output, random_seed) = data
+    (tot_messages, personals_pairs, options, random_seed) = data
     random.seed(random_seed)
 
     with open(
@@ -1005,7 +1017,7 @@ def generate_and_send_messages(
         elif message_type == Recipient.STREAM:
             # Pick a random subscriber to the stream
             message.sender = random.choice(
-                Subscription.objects.filter(recipient=message.recipient)
+                list(Subscription.objects.filter(recipient=message.recipient))
             ).user_profile
             message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data["subject"] = message.subject

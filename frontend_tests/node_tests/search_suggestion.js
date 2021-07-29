@@ -109,6 +109,7 @@ test("basic_get_suggestions_for_spectator", ({override}) => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
+        "is:resolved",
         "has:link",
         "has:image",
         "has:attachment",
@@ -389,6 +390,7 @@ test("empty_query_suggestions", ({override}) => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
+        "is:resolved",
         "sender:myself@zulip.com",
         "stream:devel",
         "stream:office",
@@ -407,6 +409,7 @@ test("empty_query_suggestions", ({override}) => {
     assert.equal(describe("is:mentioned"), "@-mentions");
     assert.equal(describe("is:alerted"), "Alerted messages");
     assert.equal(describe("is:unread"), "Unread messages");
+    assert.equal(describe("is:resolved"), "Topics marked as resolved");
     assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
     assert.equal(describe("has:link"), "Messages with one or more link");
     assert.equal(describe("has:image"), "Messages with one or more image");
@@ -482,6 +485,7 @@ test("check_is_suggestions", ({override}) => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
+        "is:resolved",
         "sender:alice@zulip.com",
         "pm-with:alice@zulip.com",
         "group-pm-with:alice@zulip.com",
@@ -498,10 +502,19 @@ test("check_is_suggestions", ({override}) => {
     assert.equal(describe("is:mentioned"), "@-mentions");
     assert.equal(describe("is:alerted"), "Alerted messages");
     assert.equal(describe("is:unread"), "Unread messages");
+    assert.equal(describe("is:resolved"), "Topics marked as resolved");
 
     query = "-i";
     suggestions = get_suggestions("", query);
-    expected = ["-i", "-is:private", "-is:starred", "-is:mentioned", "-is:alerted", "-is:unread"];
+    expected = [
+        "-i",
+        "-is:private",
+        "-is:starred",
+        "-is:mentioned",
+        "-is:alerted",
+        "-is:unread",
+        "-is:resolved",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     assert.equal(describe("-is:private"), "Exclude private messages");
@@ -509,6 +522,7 @@ test("check_is_suggestions", ({override}) => {
     assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
     assert.equal(describe("-is:alerted"), "Exclude alerted messages");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
+    assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
 
     query = "";
     suggestions = get_suggestions("", query);
@@ -520,6 +534,7 @@ test("check_is_suggestions", ({override}) => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
+        "is:resolved",
         "sender:myself@zulip.com",
         "stream:devel",
         "stream:office",
@@ -537,6 +552,7 @@ test("check_is_suggestions", ({override}) => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
+        "is:resolved",
         "sender:myself@zulip.com",
         "has:link",
         "has:image",
@@ -548,7 +564,14 @@ test("check_is_suggestions", ({override}) => {
 
     query = "is:";
     suggestions = get_suggestions("", query);
-    expected = ["is:private", "is:starred", "is:mentioned", "is:alerted", "is:unread"];
+    expected = [
+        "is:private",
+        "is:starred",
+        "is:mentioned",
+        "is:alerted",
+        "is:unread",
+        "is:resolved",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";

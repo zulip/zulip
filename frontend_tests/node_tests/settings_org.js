@@ -165,7 +165,7 @@ function test_submit_settings_form(override, submit_form) {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_email_address_visibility:
             settings_config.email_address_visibility_values.admins_only.code,
-        realm_add_emoji_by_admins_only: true,
+        realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
@@ -210,9 +210,10 @@ function test_submit_settings_form(override, submit_form) {
     create_stream_policy_elem.attr("id", "id_realm_create_stream_policy");
     create_stream_policy_elem.data = () => "number";
 
-    const add_emoji_by_admins_only_elem = $("#id_realm_add_emoji_by_admins_only");
-    add_emoji_by_admins_only_elem.val("by_anyone");
-    add_emoji_by_admins_only_elem.attr("id", "id_realm_add_emoji_by_admins_only");
+    const add_custom_emoji_policy_elem = $("#id_realm_add_custom_emoji_policy");
+    add_custom_emoji_policy_elem.val("1");
+    add_custom_emoji_policy_elem.attr("id", "id_realm_add_custom_emoji_policy");
+    add_custom_emoji_policy_elem.data = () => "number";
 
     const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
     bot_creation_policy_elem.val("1");
@@ -233,7 +234,7 @@ function test_submit_settings_form(override, submit_form) {
     subsection_elem.set_find_results(".prop-element", [
         bot_creation_policy_elem,
         email_address_visibility_elem,
-        add_emoji_by_admins_only_elem,
+        add_custom_emoji_policy_elem,
         create_stream_policy_elem,
         invite_to_stream_policy_elem,
     ]);
@@ -246,7 +247,7 @@ function test_submit_settings_form(override, submit_form) {
         bot_creation_policy: 1,
         invite_to_stream_policy: 1,
         email_address_visibility: 1,
-        add_emoji_by_admins_only: false,
+        add_custom_emoji_policy: 1,
         create_stream_policy: 2,
     };
     assert.deepEqual(data, expected_value);
@@ -656,7 +657,7 @@ test("set_up", ({override, mock_template}) => {
         },
         big_blue_button: {
             id: 4,
-            name: "Big Blue Button",
+            name: "BigBlueButton",
         },
     };
 
@@ -866,23 +867,19 @@ test("misc", ({override}) => {
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok(!$("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok($("#user-avatar-upload-widget .image_upload_button").is(":visible"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
     page_params.realm_avatar_changes_disabled = false;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
     page_params.realm_avatar_changes_disabled = true;
     page_params.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
-    assert.ok($("#user-avatar-upload-widget .image_upload_button").prop("disabled"));
-    assert.ok($("#user-avatar-upload-widget .image-delete-button .button").prop("disabled"));
+    assert.ok(!$("#user-avatar-upload-widget .image_upload_button").is(":visible"));
 
     // If organization admin, these UI elements are never disabled.
     page_params.is_admin = true;

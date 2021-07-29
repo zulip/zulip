@@ -3,9 +3,10 @@ from typing import List, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import check_send_typing_notification, do_send_stream_typing_notification
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
 from zerver.lib.validator import check_int, check_list, check_string_in
 from zerver.models import UserProfile
@@ -28,14 +29,14 @@ def send_notification_backend(
     to_length = len(notification_to)
 
     if to_length == 0:
-        return json_error(_("Empty 'to' list"))
+        raise JsonableError(_("Empty 'to' list"))
 
     if message_type == "stream":
         if to_length > 1:
-            return json_error(_("Cannot send to multiple streams"))
+            raise JsonableError(_("Cannot send to multiple streams"))
 
         if topic is None:
-            return json_error(_("Missing topic"))
+            raise JsonableError(_("Missing topic"))
 
         stream_id = notification_to[0]
         # Verify that the user has access to the stream and has

@@ -1,5 +1,8 @@
+from typing import List, Union
+
 from django.conf.urls import include
 from django.urls import path
+from django.urls.resolvers import URLPattern, URLResolver
 
 from analytics.views.installation_activity import get_installation_activity
 from analytics.views.realm_activity import get_realm_activity
@@ -19,7 +22,7 @@ from analytics.views.support import support
 from analytics.views.user_activity import get_user_activity
 from zerver.lib.rest import rest_path
 
-i18n_urlpatterns = [
+i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
     # Server admin (user_profile.is_staff) visible stats pages
     path("activity", get_installation_activity),
     path("activity/support", support, name="support"),

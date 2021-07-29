@@ -41,7 +41,7 @@ security:
 paths:
   /fetch_api_key:
     post:
-      operationId: fetch_api_key
+      operationId: fetch-api-key
       summary: Fetch an API key (production)
       tags: ["authentication"]
       description: |
@@ -101,7 +101,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /dev_fetch_api_key:
     post:
-      operationId: dev_fetch_api_key
+      operationId: dev-fetch-api-key
       summary: Fetch an API key (development only)
       tags: ["authentication"]
       description: |
@@ -137,7 +137,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /events:
     get:
-      operationId: get_events
+      operationId: get-events
       summary: Get events from an event queue
       tags: ["real_time_events"]
       description: |
@@ -165,6 +165,7 @@ paths:
         `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
         [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
         endpoint and a queue would be registered in the absence of a `queue_id`.
+      x-python-examples-extra-imports: ["sys"]
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
@@ -278,7 +279,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's [notification
-                                settings](/api/update-notification-settings) have changed.
+                                settings](/api/update-settings) have changed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1424,11 +1425,41 @@ paths:
                                 away:
                                   type: boolean
                                   description: |
-                                    Whether the user has marked themself "away".
+                                    Whether the user has marked themself "away" with this status.
                                 status_text:
                                   type: string
                                   description: |
                                     The text content of the status message.
+                                emoji_name:
+                                  type: string
+                                  description: |
+                                    The [emoji name](/api/add-reaction#parameters) for the emoji
+                                    the user selected for their new status.
+
+                                    This will be "" for users who set a status without selecting
+                                    an emoji.
+
+                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                emoji_code:
+                                  type: string
+                                  description: |
+                                    The [emoji code](/api/add-reaction#parameters) for the emoji
+                                    the user selected for their new status.
+
+                                    This will be "" for users who set a status without selecting
+                                    an emoji.
+
+                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                reaction_type:
+                                  type: string
+                                  description: |
+                                    The [emoji type](/api/add-reaction#parameters) for the emoji
+                                    the user selected for their new status.
+
+                                    This will be "" for users who set a status without selecting
+                                    an emoji.
+
+                                    **Changes**; New in Zulip 5.0 (feature level 86).
                                 user_id:
                                   type: integer
                                   description: |
@@ -1439,6 +1470,9 @@ paths:
                                   "user_id": 10,
                                   "away": true,
                                   "status_text": "out to lunch",
+                                  "emoji_name": "car",
+                                  "emoji_code": "1f697",
+                                  "reaction_type": "unicode_emoji",
                                   "id": 0,
                                 }
                             - type: object
@@ -1659,6 +1693,10 @@ paths:
                               description: |
                                 Event sent when a message has been deleted.
                                 Sent to all users who received the message.
+
+                                **Changes**: Before Zulip 5.0 (feature level 77), events
+                                for private messages contained additional `sender_id` and
+                                `recipient_id` fields.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1692,18 +1730,6 @@ paths:
                                   enum:
                                     - private
                                     - stream
-                                recipient_id:
-                                  type: integer
-                                  description: |
-                                    Only present for private messages.
-
-                                    The ID of the user (or group of users) who received the private message.
-                                sender_id:
-                                  type: integer
-                                  description: |
-                                    Only present for private messages.
-
-                                    The ID of the user who sent the private message.
                                 stream_id:
                                   type: integer
                                   description: |
@@ -1719,8 +1745,6 @@ paths:
                               example:
                                 {
                                   "type": "delete_message",
-                                  "recipient_id": 10,
-                                  "sender_id": 8,
                                   "message_type": "private",
                                   "message_id": 37,
                                   "id": 0,
@@ -1803,6 +1827,24 @@ paths:
                                     ],
                                   "id": 0,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Heartbeat events are sent by the server to avoid
+                                longpolling connections being affected by networks that
+                                kill idle HTTP connections.
+
+                                Clients do not need to do anything to process these
+                                events, beyond the common `last_event_id` accounting.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - heartbeat
+                              example: {"type": "heartbeat", "id": 0}
                             - type: object
                               additionalProperties: false
                               description: |
@@ -3262,20 +3304,11 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
                                   properties:
-                                    add_emoji_by_admins_only:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization is configured to only allow administrators
-                                        to upload new custom emoji.
                                     allow_edit_history:
                                       type: boolean
                                       description: |
                                         Whether this organization is configured to allow users to access
                                         [message edit history](/help/view-a-messages-edit-history).
-                                    allow_message_deleting:
-                                      type: boolean
-                                      description: |
-                                        Whether messages can be deleted in this Zulip organization.
                                     bot_creation_policy:
                                       type: integer
                                       description: |
@@ -3358,19 +3391,6 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_to_realm_policy:
-                                      type: integer
-                                      description: |
-                                        Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
-                                        to join the organization:
-
-                                        * 1 = Members only
-                                        * 2 = Administrators only
-                                        * 3 = Full members only
-                                        * 4 = Moderators only
-
-                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
-                                        previous `invite_by_admins_only` boolean.
                                     inline_image_preview:
                                       type: boolean
                                       description: |
@@ -3459,6 +3479,8 @@ paths:
 
                                         * 1 = All members can create and edit user groups
                                         * 2 = Only organization administrators can create and edit user groups
+                                        * 3 = Only full members can create and edit user groups
+                                        * 4 = Only organization administrators and moderators can create and edit user groups
                                     default_code_block_language:
                                       type: string
                                       nullable: true
@@ -3878,7 +3900,7 @@ paths:
 
                       The following is the error response in such case
     delete:
-      operationId: delete_queue
+      operationId: delete-queue
       summary: Delete an event queue
       tags: ["real_time_events"]
       description: |
@@ -3908,7 +3930,7 @@ paths:
                       associated queue has already been deleted
   /get_stream_id:
     get:
-      operationId: get_stream_id
+      operationId: get-stream-id
       summary: Get stream ID
       tags: ["streams"]
       description: |
@@ -3958,7 +3980,7 @@ paths:
                     description: An example JSON response for when the supplied stream does not exist
   /mark_all_as_read:
     post:
-      operationId: mark_all_as_read
+      operationId: mark-all-as-read
       summary: Mark all messages as read
       tags: ["messages"]
       description: |
@@ -3976,7 +3998,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /mark_stream_as_read:
     post:
-      operationId: mark_stream_as_read
+      operationId: mark-stream-as-read
       summary: Mark messages in a stream as read
       tags: ["messages"]
       description: |
@@ -4001,7 +4023,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /mark_topic_as_read:
     post:
-      operationId: mark_topic_as_read
+      operationId: mark-topic-as-read
       summary: Mark messages in a topic as read
       tags: ["messages"]
       description: |
@@ -4034,7 +4056,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /attachments:
     get:
-      operationId: get_attachments
+      operationId: get-attachments
       summary: Get attachments
       tags: ["users"]
       description: |
@@ -4089,7 +4111,7 @@ paths:
                       }
   /messages:
     get:
-      operationId: get_messages
+      operationId: get-messages
       summary: Get messages
       tags: ["messages"]
       description: |
@@ -4345,7 +4367,7 @@ paths:
                           ],
                       }
     post:
-      operationId: send_message
+      operationId: send-message
       summary: Send a message
       tags: ["messages"]
       description: |
@@ -4469,7 +4491,7 @@ paths:
                           that does not exist
   /messages/{message_id}/history:
     get:
-      operationId: get_message_history
+      operationId: get-message-history
       summary: Get a message's edit history
       tags: ["messages"]
       description: |
@@ -4590,7 +4612,7 @@ paths:
                   - description: An example JSON response for when the specified message does not exist
   /messages/flags:
     post:
-      operationId: update_message_flags
+      operationId: update-message-flags
       summary: Update personal message flags
       tags: ["messages"]
       description: |
@@ -4730,7 +4752,7 @@ paths:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
   /messages/render:
     post:
-      operationId: render_message
+      operationId: render-message
       summary: Render message
       tags: ["messages"]
       description: |
@@ -4764,7 +4786,7 @@ paths:
                       }
   /messages/{message_id}/reactions:
     post:
-      operationId: add_reaction
+      operationId: add-reaction
       summary: Add an emoji reaction
       tags: ["messages"]
       description: |
@@ -4815,7 +4837,7 @@ paths:
                     description: An example JSON error response for when the emoji code is invalid
 
     delete:
-      operationId: remove_reaction
+      operationId: remove-reaction
       summary: Remove an emoji reaction
       tags: ["messages"]
       description: |
@@ -4865,7 +4887,7 @@ paths:
                     description: An example JSON error response for when the emoji code is invalid
   /messages/matches_narrow:
     get:
-      operationId: check_messages_match_narrow
+      operationId: check-messages-match-narrow
       summary: Check if messages match a narrow
       tags: ["messages"]
       description: |
@@ -4963,7 +4985,7 @@ paths:
                       }
   /messages/{message_id}:
     get:
-      operationId: get_raw_message
+      operationId: get-raw-message
       summary: Get a message's raw Markdown
       tags: ["messages"]
       description: |
@@ -5012,7 +5034,7 @@ paths:
                       is not visible to the user making the query (e.g. it was a PM between other
                       two users)
     patch:
-      operationId: update_message
+      operationId: update-message
       summary: Edit a message
       tags: ["messages"]
       description: |
@@ -5143,7 +5165,7 @@ paths:
                       A typical JSON response for when one doesn't have the permission to
                       edit a particular message
     delete:
-      operationId: delete_message
+      operationId: delete-message
       summary: Delete a message
       tags: ["messages"]
       description: |
@@ -5190,7 +5212,7 @@ paths:
                           }
   /user_uploads:
     post:
-      operationId: upload_file
+      operationId: upload-file
       summary: Upload a file
       tags: ["messages"]
       description: |
@@ -5253,7 +5275,7 @@ paths:
                       }
   /user_uploads/{realm_id_str}/{filename}:
     get:
-      operationId: get_file_temporary_url
+      operationId: get-file-temporary-url
       summary: Get public temporary URL
       tags: ["messages"]
       description: |
@@ -5302,7 +5324,7 @@ paths:
 
   /users:
     get:
-      operationId: get_users
+      operationId: get-users
       summary: Get all users
       tags: ["users"]
       description: |
@@ -5429,7 +5451,7 @@ paths:
                           ],
                       }
     post:
-      operationId: create_user
+      operationId: create-user
       summary: Create a user
       tags: ["users"]
       description: |
@@ -5501,7 +5523,7 @@ paths:
                       email address already exists in the realm
   /users/{user_id}/reactivate:
     post:
-      operationId: reactivate_user
+      operationId: reactivate-user
       summary: Reactivate a user
       tags: ["users"]
       x-requires-administrator: true
@@ -5526,7 +5548,7 @@ paths:
 
   /users/{user_id_or_email}/presence:
     get:
-      operationId: get_user_presence
+      operationId: get-user-presence
       summary: Get user presence
       tags: ["users"]
       description: |
@@ -5615,7 +5637,7 @@ paths:
                       }
   /users/me:
     get:
-      operationId: get_own_user
+      operationId: get-own-user
       summary: Get own user
       tags: ["users"]
       description: |
@@ -5809,7 +5831,7 @@ paths:
                           },
                       }
     delete:
-      operationId: deactivate_own_user
+      operationId: deactivate-own-user
       summary: Deactivate own user
       tags: ["users"]
       description: |
@@ -5844,9 +5866,161 @@ paths:
                     description: |
                       An example JSON error response when attempting to deactivate the only
                       organization owner in an organization
+  /users/me/status:
+    post:
+      operationId: update-status
+      summary: Update your status
+      tags: ["users"]
+      description: |
+        Change your [status](/help/status-and-availability).
+
+        `POST {{ api_url }}/v1/users/me/status`
+
+        A request to this endpoint will only change the parameters passed.
+        For example, passing just `status_text` requests a change in the status
+        text, but will leave the status emoji unchanged.
+
+        Clients that wish to set the user's status to a specific value should
+        pass all supported parameters.
+      parameters:
+        - name: status_text
+          schema:
+            type: string
+          allowEmptyValue: true
+          in: query
+          description: |
+            The text content of the status message. Sending the empty string
+            will clear the user's status.
+
+            **Note**: The limit on the size of the message is 60 characters.
+          example: on vacation
+          required: false
+        - name: away
+          schema:
+            type: boolean
+          in: query
+          description: |
+            Whether the user should be marked as "away".
+          example: true
+          required: false
+        - name: emoji_name
+          schema:
+            type: string
+          allowEmptyValue: true
+          in: query
+          description: |
+            The name for the emoji to associate with this status.
+          example: car
+          required: false
+        - name: emoji_code
+          schema:
+            type: string
+          in: query
+          description: |
+            A unique identifier, defining the specific emoji codepoint requested,
+            within the namespace of the `reaction_type`.
+
+            For example, for `unicode_emoji`, this will be an encoding of the
+            Unicode codepoint; for `realm_emoji`, it'll be the ID of the realm emoji.
+          example: 1f697
+          required: false
+        - name: reaction_type
+          schema:
+            type: string
+          in: query
+          description: |
+            One of the following values:
+
+            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
+              codepoint).
+            * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+              (`emoji_code` will be its ID).
+            * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
+              namespace the `zulip` emoji.
+          example: unicode_emoji
+          required: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client did not pass any new values.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when no changes were requested
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "status_text is too long (limit: 60 characters)",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the
+                          `status_text` message exceeds the limit of
+                          60 characters
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when `emoji_name` is not specified
+                          but `emoji_code` or `reaction_type` is specified
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Emoji 'invalid' does not exist",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the emoji name does not exist
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid emoji name.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the emoji name is invalid
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid custom emoji.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when the custom emoji is invalid
   /users/me/{stream_id}/topics:
     get:
-      operationId: get_stream_topics
+      operationId: get-stream-topics
       summary: Get topics in a stream
       tags: ["streams"]
       description: |
@@ -5913,7 +6087,7 @@ paths:
                       of a non-existing stream (or also a private stream they don't have access to)
   /users/me/subscriptions:
     get:
-      operationId: get_subscriptions
+      operationId: get-subscriptions
       summary: Get subscribed streams
       tags: ["streams"]
       description: |
@@ -6142,7 +6316,7 @@ paths:
                           A typical response for when the requesting user does not have access to
                           a private stream and `authorization_errors_fatal` is `False`
     patch:
-      operationId: update_subscriptions
+      operationId: update-subscriptions
       summary: Update subscriptions
       tags: ["streams"]
       description: |
@@ -6341,7 +6515,7 @@ paths:
                   - description: A typical failed JSON response for when the target stream does not exist
   /users/me/subscriptions/muted_topics:
     patch:
-      operationId: mute_topic
+      operationId: mute-topic
       summary: Topic muting
       tags: ["streams"]
       description: |
@@ -6425,7 +6599,7 @@ paths:
                           topic that had not been previously muted
   /users/me/muted_users/{muted_user_id}:
     post:
-      operationId: mute_user
+      operationId: mute-user
       summary: Mute a user
       tags: ["users"]
       description: |
@@ -6491,7 +6665,7 @@ paths:
                           {"msg": "User already muted", "result": "error"}
                         description: An example JSON response for when the user is already muted
     delete:
-      operationId: unmute_user
+      operationId: unmute-user
       summary: Unmute a user
       tags: ["users"]
       description: |
@@ -6529,7 +6703,7 @@ paths:
 
   /users/{user_id}/subscriptions/{stream_id}:
     get:
-      operationId: get_subscription_status
+      operationId: get-subscription-status
       summary: Get subscription status
       tags: ["streams"]
       description: |
@@ -6563,7 +6737,7 @@ paths:
                       {"msg": "", "result": "success", "is_subscribed": false}
   /realm/emoji/{emoji_name}:
     post:
-      operationId: upload_custom_emoji
+      operationId: upload-custom-emoji
       summary: Upload custom emoji
       tags: ["server_and_organizations"]
       description: |
@@ -6619,7 +6793,7 @@ paths:
 
   /realm/emoji:
     get:
-      operationId: get_custom_emoji
+      operationId: get-custom-emoji
       summary: Get all custom emoji
       tags: ["server_and_organizations"]
       description: |
@@ -6664,7 +6838,7 @@ paths:
                       }
   /realm/profile_fields:
     get:
-      operationId: get_custom_profile_fields
+      operationId: get-custom-profile-fields
       summary: Get all custom profile fields
       tags: ["server_and_organizations"]
       description: |
@@ -6765,7 +6939,7 @@ paths:
                           ],
                       }
     patch:
-      operationId: reorder_custom_profile_fields
+      operationId: reorder-custom-profile-fields
       summary: Reorder custom profile fields
       tags: ["server_and_organizations"]
       description: |
@@ -6803,7 +6977,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - $ref: "#/components/schemas/SuccessDescription"
     post:
-      operationId: create_custom_profile_field
+      operationId: create-custom-profile-field
       summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
@@ -6887,7 +7061,7 @@ paths:
                     example: {"result": "success", "msg": "", "id": 9}
   /users/me/subscriptions/properties:
     post:
-      operationId: update_subscription_settings
+      operationId: update-subscription-settings
       summary: Update subscription settings
       tags: ["streams"]
       description: |
@@ -7024,7 +7198,7 @@ paths:
                       }
   /users/{email}:
     get:
-      operationId: get_user_by_email
+      operationId: get-user-by-email
       summary: Get a user by email
       tags: ["users"]
       description: |
@@ -7128,7 +7302,7 @@ paths:
                       }
   /users/{user_id}:
     get:
-      operationId: get_user
+      operationId: get-user
       summary: Get a user
       tags: ["users"]
       description: |
@@ -7217,7 +7391,7 @@ paths:
                           },
                       }
     patch:
-      operationId: update_user
+      operationId: update-user
       summary: Update a user
       tags: ["users"]
       x-requires-administrator: true
@@ -7298,7 +7472,7 @@ paths:
                     description: A typical unsuccessful JSON response
 
     delete:
-      operationId: deactivate_user
+      operationId: deactivate-user
       summary: Deactivate a user
       tags: ["users"]
       x-requires-administrator: true
@@ -7337,7 +7511,7 @@ paths:
                       organization owner in an organization
   /realm/linkifiers:
     get:
-      operationId: get_linkifiers
+      operationId: get-linkifiers
       summary: Get linkifiers
       tags: ["server_and_organizations"]
       description: |
@@ -7400,7 +7574,7 @@ paths:
                       }
   /realm/filters:
     post:
-      operationId: add_linkifier
+      operationId: add-linkifier
       summary: Add a linkifier
       tags: ["server_and_organizations"]
       description: |
@@ -7432,7 +7606,7 @@ paths:
                     example: {"id": 42, "result": "success", "msg": ""}
   /realm/filters/{filter_id}:
     delete:
-      operationId: remove_linkifier
+      operationId: remove-linkifier
       summary: Remove a linkifier
       tags: ["server_and_organizations"]
       description: |
@@ -7460,7 +7634,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - $ref: "#/components/schemas/SuccessDescription"
     patch:
-      operationId: update_linkifier
+      operationId: update-linkifier
       summary: Update a linkifier
       tags: ["server_and_organizations"]
       description: |
@@ -7493,7 +7667,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /realm/playgrounds:
     post:
-      operationId: add_code_playground
+      operationId: add-code-playground
       summary: Add a code playground
       tags: ["server_and_organizations"]
       description: |
@@ -7551,7 +7725,7 @@ paths:
                     example: {"id": 1, "result": "success", "msg": ""}
   /realm/playgrounds/{playground_id}:
     delete:
-      operationId: remove_code_playground
+      operationId: remove-code-playground
       summary: Remove a code playground
       tags: ["server_and_organizations"]
       description: |
@@ -7581,7 +7755,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
   /register:
     post:
-      operationId: register_queue
+      operationId: register-queue
       summary: Register an event queue
       tags: ["real_time_events"]
       description: |
@@ -8371,12 +8545,19 @@ paths:
                           error messages when a search returns limited results because
                           a stop word in the query was ignored.
                       user_status:
-                        type: object
+                        allOf:
+                          - $ref: "#/components/schemas/EmojiBase"
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
                           A dictionary which contains the [status](/help/status-and-availability)
                           of all users in the Zulip organization who have set a status.
+
+                          **Changes**: The emoji parameters are new in Zulip 5.0 (feature level 86).
+                          Previously, Zulip did not support emoji associated with statuses.
+
+                          A status that does not have an emoji associated with it is encoded
+                          with `emoji_name=""`.
                         additionalProperties:
                           description: |
                             `{user_id}`: Object containing the status details of a user
@@ -8392,6 +8573,24 @@ paths:
                               type: string
                               description: |
                                 The text content of the status message.
+                            emoji_name:
+                              type: string
+                              description: |
+                                The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                **Changes**: New in Zulip 5.0 (feature level 86).
+                            emoji_code:
+                              type: string
+                              description: |
+                                The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                **Changes**: New in Zulip 5.0 (feature level 86).
+                            reaction_type:
+                              type: string
+                              description: |
+                                The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                                **Changes**: New in Zulip 5.0 (feature level 86).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -8421,152 +8620,160 @@ paths:
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_digest_emails:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_login_emails:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_marketing_emails:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
+                      email_notifications_batching_period_seconds:
+                        type: integer
+                        description: |
+                          Present if `update_global_notifications` is present in `fetch_event_types`.
+
+                          The current value of this global notification setting for the user.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_offline_email_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_offline_push_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_online_push_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_sounds:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_desktop_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_email_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_push_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       enable_stream_audible_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       wildcard_mentions_notify:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       message_content_in_email_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       notification_sound:
                         type: string
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       pm_content_in_desktop_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       desktop_icon_count_display:
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       realm_name_in_notifications:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       presence_enabled:
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`.
 
                           The current value of this global notification setting for the user.
-                          See [update-notification-settings](/api/update-notification-settings)
-                          for details on notification settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       available_notification_sounds:
                         type: array
                         items:
@@ -8584,8 +8791,8 @@ paths:
 
                           The color scheme selected by the user.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       default_language:
                         type: string
                         description: |
@@ -8593,8 +8800,8 @@ paths:
 
                           The default language chosen by the user.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       demote_inactive_streams:
                         type: integer
                         description: |
@@ -8602,8 +8809,8 @@ paths:
 
                           Whether the user has chosen to demote inactive streams.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       dense_mode:
                         type: boolean
                         description: |
@@ -8612,8 +8819,8 @@ paths:
                           Whether the user has switched on dense mode.  Dense mode is an experimental
                           feature that is only available in development environments.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       emojiset:
                         type: string
                         description: |
@@ -8621,8 +8828,8 @@ paths:
 
                           The name of the emojiset that the user has chosen.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       fluid_layout_width:
                         type: boolean
                         description: |
@@ -8630,8 +8837,8 @@ paths:
 
                           Whether the user has chosen for the layout width to be fluid.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       default_view:
                         type: string
                         description: |
@@ -8642,8 +8849,8 @@ paths:
 
                           Currently supported values are `all_messages` and `recent_topics`.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       high_contrast_mode:
                         type: boolean
                         description: |
@@ -8651,8 +8858,8 @@ paths:
 
                           Whether has switched on high contrast mode.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       left_side_userlist:
                         type: boolean
                         description: |
@@ -8662,8 +8869,8 @@ paths:
                           on the left side of the screen (for desktop app and web app) in narrow
                           windows.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       starred_message_counts:
                         type: boolean
                         description: |
@@ -8672,8 +8879,8 @@ paths:
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       timezone:
                         type: string
                         description: |
@@ -8682,8 +8889,8 @@ paths:
                           The timezone configured for the user.  This is used primarily to display
                           the user's timezone to other users.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       translate_emoticons:
                         type: boolean
                         description: |
@@ -8692,8 +8899,8 @@ paths:
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       twenty_four_hour_time:
                         type: boolean
                         description: |
@@ -8702,8 +8909,8 @@ paths:
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                       emojiset_choices:
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
@@ -8714,8 +8921,8 @@ paths:
                           Only relevant to clients with configuration UI for choosing an emojiset;
                           the currently selected emojiset is available in the `emojiset` key.
 
-                          See [PATCH /settings/display](/api/update-display-settings)
-                          for api details on display settings.
+                          See [PATCH /settings](/api/update-settings) for details on
+                          the meaning of this setting.
                         type: array
                         items:
                           type: object
@@ -8732,13 +8939,21 @@ paths:
                               type: string
                               description: |
                                 The text describing the emojiset.
-                      realm_add_emoji_by_admins_only:
-                        type: boolean
+                      realm_add_custom_emoji_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether the organization is configured to only allow administrators
-                          to upload new custom emoji.
+                          The policy for which users can upload new custom emoji in this
+                          organization.
+
+                          * 1 = Members only
+                          * 2 = Administrators only
+                          * 3 = Full members only
+                          * 4 = Moderators only
+
+                          **Changes**: New in Zulip 5.0 (feature level 85) replacing the
+                          previous `realm_add_emoji_by_admins_only` boolean.
                       realm_allow_edit_history:
                         type: boolean
                         description: |
@@ -8862,6 +9077,7 @@ paths:
                           * 2 = Administrators only
                           * 3 = Full members only
                           * 4 = Moderators only
+                          * 6 = Nobody
 
                           **Changes**: New in Zulip 4.0 (feature level 50) replacing the
                           previous `realm_invite_by_admins_only` boolean.
@@ -9004,6 +9220,8 @@ paths:
 
                           * 1 = All members can create and edit user groups
                           * 2 = Only organization administrators can create and edit user groups
+                          * 3 = Only full members can create and edit user groups.
+                          * 4 = Only organization administrators and moderators can create and edit user groups.
                       realm_default_code_block_language:
                         type: string
                         nullable: true
@@ -9579,10 +9797,14 @@ paths:
                       enter_sends:
                         type: boolean
                         description: |
-                          Present if `realm_user` is present in `fetch_event_types`.
+                          Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
                           in the compose box is enabled.
+
+                          **Changes**: Prior to Zulip 5.0 (feature level 84) this field was present
+                          in response if 'realm_user' was present in `fetch_event_types`, not
+                          `update_display_settings`.
                       user_id:
                         type: integer
                         description: |
@@ -9644,10 +9866,15 @@ paths:
                                 date_joined: {}
                                 delivery_email: {}
                                 profile_data: {}
-                                is_cross_realm_bot:
+                                is_system_bot:
                                   type: boolean
                                   description: |
-                                    Whether the user is a cross realm bot.
+                                    Whether the user is a system bot.  System bots are special
+                                    bot user accounts that are managed by the system, rather than
+                                    the organization's administrators.
+
+                                    **Changes**: This field was called `is_cross_realm_bot`
+                                    before Zulip 5.0 (feature level 83).
                     example:
                       {
                         "last_event_id": -1,
@@ -9670,7 +9897,7 @@ paths:
                       }
   /server_settings:
     get:
-      operationId: get_server_settings
+      operationId: get-server-settings
       summary: Get server settings
       tags: ["server_and_organizations"]
       x-response-description: |
@@ -9922,263 +10149,32 @@ paths:
                             },
                           ],
                       }
-  /settings/notifications:
+  /settings:
     patch:
-      operationId: update_notification_settings
-      summary: Update notification settings
+      operationId: update-settings
+      summary: Update settings
       tags: ["users"]
       description: |
-        This endpoint is used to edit the user's global notification settings.
-        See [this endpoint](/api/update-subscription-settings) for
-        per-stream notification settings.
+        This endpoint is used to edit the current user's settings.
 
-        `PATCH {{ api_url }}/v1/settings/notifications`
-      x-curl-examples-parameters:
-        oneOf:
-          - type: include
-            parameters:
-              enum:
-                - enable_offline_push_notifications
-                - enable_online_push_notifications
-      parameters:
-        - name: enable_stream_desktop_notifications
-          in: query
-          description: |
-            Enable visual desktop notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_stream_email_notifications
-          in: query
-          description: |
-            Enable email notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_stream_push_notifications
-          in: query
-          description: |
-            Enable mobile notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_stream_audible_notifications
-          in: query
-          description: |
-            Enable audible desktop notifications for stream messages.
-          schema:
-            type: boolean
-          example: true
-        - name: notification_sound
-          in: query
-          description: |
-            Notification sound name.
+        `PATCH {{ api_url }}/v1/settings`
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 63).
-          schema:
-            type: string
-          example: ding
-        - name: enable_desktop_notifications
-          in: query
-          description: |
-            Enable visual desktop notifications for private messages and @-mentions.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_sounds
-          in: query
-          description: |
-            Enable audible desktop notifications for private messages and
-            @-mentions.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_offline_email_notifications
-          in: query
-          description: |
-            Enable email notifications for private messages and @-mentions received
-            when the user is offline.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_offline_push_notifications
-          in: query
-          description: |
-            Enable mobile notification for private messages and @-mentions received
-            when the user is offline.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_online_push_notifications
-          in: query
-          description: |
-            Enable mobile notification for private messages and @-mentions received
-            when the user is online.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_digest_emails
-          in: query
-          description: |
-            Enable digest emails when the user is away.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_marketing_emails
-          in: query
-          description: |
-            Enable marketing emails. Has no function outside Zulip Cloud.
-          schema:
-            type: boolean
-          example: true
-        - name: enable_login_emails
-          in: query
-          description: |
-            Enable email notifications for new logins to account.
-          schema:
-            type: boolean
-          example: true
-        - name: message_content_in_email_notifications
-          in: query
-          description: |
-            Include the message's content in email notifications for new messages.
-          schema:
-            type: boolean
-          example: true
-        - name: pm_content_in_desktop_notifications
-          in: query
-          description: |
-            Include content of private messages in desktop notifications.
-          schema:
-            type: boolean
-          example: true
-        - name: wildcard_mentions_notify
-          in: query
-          description: |
-            Whether wildcard mentions (E.g. @**all**) should send notifications
-            like a personal mention.
-          schema:
-            type: boolean
-          example: true
-        - name: desktop_icon_count_display
-          in: query
-          description: |
-            Unread count summary (appears in desktop sidebar and browser tab)
+        **Changes**: Prior to Zulip 5.0 (feature level 80), this
+        endpoint only supported the `full_name`, `email`,
+        `old_password`, and `new_password` parameters. Notification
+        settings were managed by `PATCH /settings/notifications`, and
+        all other settings by `PATCH /settings/display`. The feature level
+        80 migration to merge these endpoints did not change how request
+        parameters are encoded. Note, however, that it did change the
+        handling of any invalid parameters present in a request to change
+        notification or display settings, since the merged endpoint uses
+        the new response format that was introduced for `/settings` in
+        Zulip 5.0 (feature level 78).
 
-            * 1 - All unreads
-            * 2 - Private messages and mentions
-            * 3 - None
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
-        - name: realm_name_in_notifications
-          in: query
-          description: |
-            Include organization name in subject of message notification emails.
-          schema:
-            type: boolean
-          example: true
-        - name: presence_enabled
-          in: query
-          description: |
-            Display the presence status to other users when online.
-          schema:
-            type: boolean
-          example: true
-      x-response-description: |
-        The server will return the settings that have been changed after the request,
-        with their new value. Please note that this doesn't necessarily mean that it
-        will return all the settings passed as parameters in the request, but only
-        those ones that were different than the already existing setting.
-      responses:
-        "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      enable_desktop_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_desktop_notifications`, if it was changed in
-                          this request.
-                      enable_digest_emails:
-                        type: boolean
-                        description: |
-                          The setting for `enable_digest_emails`, if it was changed in this
-                          request.
-                      enable_marketing_emails:
-                        type: boolean
-                        description: |
-                          The setting for `enable_marketing_emails`, if it was changed in this
-                          request.
-                      enable_offline_email_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_offline_email_notifications`, if it was changed
-                          in this request.
-                      enable_offline_push_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_offline_push_notifications`, if it was changed
-                          in this request.
-                      enable_online_push_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_online_push_notifications`, if it was changed in
-                          this request.
-                      enable_sounds:
-                        type: boolean
-                        description: |
-                          The setting for `enable_sounds`, if it was changed in this request.
-                      enable_stream_email_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_stream_email_notifications`, if it was changed
-                          in this request.
-                      enable_stream_push_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_stream_push_notifications`, if it was changed in
-                          this request.
-                      enable_stream_audible_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `enable_stream_audible_notifications`, if it was changed
-                          in this request.
-                      message_content_in_email_notifications:
-                        type: boolean
-                        description: |
-                          The setting for `message_content_in_email_notifications`, if it was
-                          changed in this request.
-                    example:
-                      {
-                        "enable_offline_push_notifications": true,
-                        "enable_online_push_notifications": true,
-                        "msg": "",
-                        "result": "success",
-                      }
-  /settings/display:
-    patch:
-      operationId: update_display_settings
-      summary: Update display settings
-      tags: ["users"]
-      description: |
-        This endpoint is used to edit the current user's user interface settings.
-
-        `PATCH {{ api_url }}/v1/settings/display`
+        The `/settings/display` and `/settings/notifications`
+        endpoints are now deprecated aliases for this endpoint for
+        backwards-compatibility, and will be removed once clients have
+        migrated to use this endpoint.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -10186,18 +10182,48 @@ paths:
               enum:
                 - left_side_userlist
                 - emojiset
-      x-response-description: |
-        #### Return values
-
-        The server will return the settings that have been changed after the request,
-        with their new value. Please note that this doesn't necessarily mean that it
-        will return all the settings passed as parameters in the request, but only
-        those ones that were different from the already existing setting.
       parameters:
+        - name: full_name
+          in: query
+          description: |
+            A new display name for the user.
+          schema:
+            type: string
+          example: NewName
+        - name: email
+          in: query
+          description: |
+            Asks the server to initiate a confirmation sequence to change the user's email
+            address to the indicated value. The user will need to demonstrate control of the
+            new email address by clicking a confirmation link sent to that address.
+          schema:
+            type: string
+          example: newname@example.com
+        - name: old_password
+          in: query
+          description: |
+            The user's old Zulip password (or LDAP password, if LDAP authentication is in use).
+
+            Required only when sending the `new_password` parameter.
+          schema:
+            type: string
+          example: old12345
+        - name: new_password
+          in: query
+          description: |
+            The user's new Zulip password (or LDAP password, if LDAP authentication is in use).
+
+            The `old_password` parameter must be included in the request.
+          schema:
+            type: string
+          example: new12345
         - name: twenty_four_hour_time
           in: query
           description: |
             Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10206,6 +10232,9 @@ paths:
           description: |
             This setting has no effect at present.  It is reserved for use in controlling
             the default font size in Zulip.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10214,6 +10243,9 @@ paths:
           description: |
             Whether clients should display the [number of starred
             messages](/help/star-a-message#display-the-number-of-starred-messages).
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10222,6 +10254,9 @@ paths:
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
             for the web app's center panel (message feed, recent topics) on wide screens.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10230,6 +10265,9 @@ paths:
           description: |
             This setting is reserved for use to control variations in Zulip's design
             to help visually impaired users.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10244,6 +10282,9 @@ paths:
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           content:
             application/json:
               schema:
@@ -10258,6 +10299,9 @@ paths:
           description: |
             Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
             in messages the user sends.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10271,7 +10315,10 @@ paths:
             The value needs to be a standard language code that the Zulip server has
             translation data for; for example, `"en"` for English or `"de"` for German.
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 63).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 63).
           schema:
             type: string
           example: en
@@ -10284,7 +10331,10 @@ paths:
             * "recent_topics" - Recent topics view
             * "all_messages" - All messages view
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: all_messages
@@ -10294,6 +10344,9 @@ paths:
             Whether the users list on left sidebar in narrow windows.
 
             This feature is not heavily used and is likely to be reworked.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           schema:
             type: boolean
           example: true
@@ -10308,7 +10361,10 @@ paths:
             * "twitter" - Twitter
             * "text" - Plain text
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: "google"
@@ -10320,6 +10376,9 @@ paths:
             * 1 - Automatic
             * 2 - Always
             * 3 - Never
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
           content:
             application/json:
               schema:
@@ -10337,10 +10396,241 @@ paths:
             Timezone values supported by the server are served at
             [/static/generated/timezones.json](/static/generated/timezones.json).
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/display` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: "Asia/Kolkata"
+        - name: enable_stream_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_email_notifications
+          in: query
+          description: |
+            Enable email notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_push_notifications
+          in: query
+          description: |
+            Enable mobile notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_stream_audible_notifications
+          in: query
+          description: |
+            Enable audible desktop notifications for stream messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: notification_sound
+          in: query
+          description: |
+            Notification sound name.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+
+            Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 63).
+          schema:
+            type: string
+          example: ding
+        - name: enable_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for private messages and @-mentions.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_sounds
+          in: query
+          description: |
+            Enable audible desktop notifications for private messages and
+            @-mentions.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: email_notifications_batching_period_seconds
+          in: query
+          description: |
+            The duration (in seconds) for which the server should wait to batch
+            email notifications before sending them.
+
+            **Changes**: New in Zulip 5.0 (feature level 82)
+          schema:
+            type: integer
+          example: 120
+        - name: enable_offline_email_notifications
+          in: query
+          description: |
+            Enable email notifications for private messages and @-mentions received
+            when the user is offline.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_offline_push_notifications
+          in: query
+          description: |
+            Enable mobile notification for private messages and @-mentions received
+            when the user is offline.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_online_push_notifications
+          in: query
+          description: |
+            Enable mobile notification for private messages and @-mentions received
+            when the user is online.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_digest_emails
+          in: query
+          description: |
+            Enable digest emails when the user is away.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_marketing_emails
+          in: query
+          description: |
+            Enable marketing emails. Has no function outside Zulip Cloud.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_login_emails
+          in: query
+          description: |
+            Enable email notifications for new logins to account.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: message_content_in_email_notifications
+          in: query
+          description: |
+            Include the message's content in email notifications for new messages.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: pm_content_in_desktop_notifications
+          in: query
+          description: |
+            Include content of private messages in desktop notifications.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: wildcard_mentions_notify
+          in: query
+          description: |
+            Whether wildcard mentions (E.g. @**all**) should send notifications
+            like a personal mention.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: desktop_icon_count_display
+          in: query
+          description: |
+            Unread count summary (appears in desktop sidebar and browser tab)
+
+            * 1 - All unreads
+            * 2 - Private messages and mentions
+            * 3 - None
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: realm_name_in_notifications
+          in: query
+          description: |
+            Include organization name in subject of message notification emails.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: presence_enabled
+          in: query
+          description: |
+            Display the presence status to other users when online.
+
+            **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
+            the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enter_sends
+          in: query
+          description: |
+            Whether pressing Enter in the compose box sends a message
+            (or saves a message edit).
+
+            **Changes**: Before Zulip 5.0 (feature level 81), this setting was managed by
+            the `POST /users/me/enter-sends` endpoint, with the same parameter format.
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -10354,75 +10644,85 @@ paths:
                     properties:
                       result: {}
                       msg: {}
-                      twenty_four_hour_time:
-                        type: boolean
+                      ignored_parameters_unsupported:
+                        type: array
+                        items:
+                          type: string
                         description: |
-                          The setting for `twenty_four_hour_time`, if it was changed in this request.
-                      dense_mode:
-                        type: boolean
-                        description: |
-                          The setting for `dense_mode`, if it was changed in this request.
-                          This setting is however reserved for future, and can not be
-                          modified in production environment.
-                      starred_message_counts:
-                        type: boolean
-                        description: |
-                          The setting for `starred_message_counts`, if it was changed
-                          in this request.
-                      fluid_layout_width:
-                        type: boolean
-                        description: |
-                          The setting for `fluid_layout_width`, if it was changed
-                          in this request.
-                      high_contrast_mode:
-                        type: boolean
-                        description: |
-                          The setting for `high_contrast_mode`, if it was changed in
-                          this request.
-                          This setting is however reserved for future, and can not be
-                          modified in production environment.
-                      color_scheme:
-                        type: integer
-                        description: |
-                          The numerical key corresponding to new `color_scheme` if it was changed in this request.
-                      translate_emoticons:
-                        type: boolean
-                        description: |
-                          The setting for `translate_emoticons`, if it was changed in this request.
-                      default_language:
-                        type: string
-                        description: |
-                          The language code corresponding to new `default_language` if it was changed in this request.
-                      default_view:
-                        type: string
-                        description: |
-                          The new setting for `default_view`, if it was changed in this request.
-                      left_side_userlist:
-                        type: boolean
-                        description: |
-                          The setting for `left_side_userlist`, if it was changed in this request.
-                      emojiset:
-                        type: string
-                        description: |
-                          The string identifier corresponding to new `emojiset` if it was changed in this request.
-                      demote_inactive_streams:
-                        type: integer
-                        description: |
-                          The numerical key corresponding to new `demote_inactive_streams` setting if it was changed in this request.
-                      timezone:
-                        type: string
-                        description: |
-                          The setting for `timezone`, if it was changed in this request.
+                          This field lists any parameters sent in the request that are not
+                          supported by the endpoint. While this can be expected, e.g. when sending
+                          both current and legacy names for a parameter to a Zulip server of
+                          unknown version, this often indicates a bug in the client
+                          implementation or an attempt to configure a new feature, while
+                          connected to an older Zulip server that does not support the feature.
+
+                          **Changes**: New in Zulip 5.0 (feature level 78). Previously,
+                          the `/settings` endpoint indicated which parameters it had
+                          processed by including in the response object `"key": value`
+                          entries for values successfully changed by the request.
+
+                          The `/settings/notifications` and `/settings/display` endpoints
+                          also had this behavior before they became aliases of `/settings`
+                          in Zulip 5.0 (feature level 80).
+
+                          Before those changes, request parameters that were not supported
+                          or were unchanged were silently ignored.
                     example:
                       {
-                        "emojiset": "google",
-                        "left_side_userlist": true,
+                        "ignored_parameters_unsupported": ["name", "password"],
                         "msg": "",
                         "result": "success",
                       }
+  /streams/{stream_id}/members:
+    get:
+      operationId: get-subscribers
+      summary: Get the subscribers of a stream
+      tags: ["streams"]
+      description: |
+        Get all users subscribed to a stream.
+
+        `Get {{ api_url }}/v1/streams/{stream_id}/members`
+      parameters:
+        - $ref: "#/components/parameters/StreamIdInPath"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      subscribers:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          A list containing the IDs of all active users who are subscribed
+                          to the stream.
+                    example:
+                      {"result": "success", "msg": "", "subscribers": [11, 26]}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the requested stream does not exist,
+                      or where the user does not have permission to access the target stream:
   /streams:
     get:
-      operationId: get_streams
+      operationId: get-streams
       summary: Get all streams
       tags: ["streams"]
       description: |
@@ -10596,7 +10896,7 @@ paths:
                       administrator)
   /streams/{stream_id}:
     delete:
-      operationId: archive_stream
+      operationId: archive-stream
       summary: Archive a stream
       tags: ["streams"]
       description: |
@@ -10630,7 +10930,7 @@ paths:
                       }
                     description: An example JSON response for when the supplied stream does not exist
     patch:
-      operationId: update_stream
+      operationId: update-stream
       summary: Update a stream
       tags: ["streams"]
       description: |
@@ -10724,9 +11024,57 @@ paths:
                         "result": "error",
                       }
                     description: An example JSON response for when the supplied stream does not exist
+  /streams/{stream_id}/delete_topic:
+    post:
+      operationId: delete-topic
+      summary: Delete a topic
+      tags: ["streams"]
+      description: |
+        Delete all messages in a topic.
+
+        `POST {{ api_url }}/v1/streams/{stream_id}/delete_topic`
+
+        Topics are a field on messages (not an independent
+        data structure), so deleting all the messages in the topic
+        deletes the topic from Zulip.
+      parameters:
+        - $ref: "#/components/parameters/StreamIdInPath"
+        - name: topic_name
+          in: query
+          description: |
+            The name of the topic to delete.
+          schema:
+            type: string
+          example: new coffee machine
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+        "400":
+          description: Error.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Must be an organization administrator",
+                        "code": "UNAUTHORIZED_PRINCIPAL",
+                      }
+                    description: |
+                      Error when the user does not have permission
+                      to delete topics in this organization.
   /typing:
     post:
-      operationId: set_typing_status
+      operationId: set-typing-status
       summary: Set "typing" status
       tags: ["users"]
       description: |
@@ -10844,7 +11192,7 @@ paths:
 
   /user_groups/create:
     post:
-      operationId: create_user_group
+      operationId: create-user-group
       summary: Create a user group
       tags: ["users"]
       description: |
@@ -10907,7 +11255,7 @@ paths:
                     description: An example JSON error response for when the one of the users does not exist
   /user_groups/{user_group_id}/members:
     post:
-      operationId: update_user_group_members
+      operationId: update-user-group-members
       summary: Update user group members
       tags: ["users"]
       description: |
@@ -10951,7 +11299,7 @@ paths:
           $ref: "#/components/responses/SimpleSuccess"
   /user_groups/{user_group_id}:
     patch:
-      operationId: update_user_group
+      operationId: update-user-group
       summary: Update a user group
       tags: ["users"]
       description: |
@@ -10995,7 +11343,7 @@ paths:
                       }
                     description: An example JSON response when the user group ID is invalid
     delete:
-      operationId: remove_user_group
+      operationId: remove-user-group
       summary: Delete a user group
       tags: ["users"]
       description: |
@@ -11032,7 +11380,7 @@ paths:
 
   /user_groups:
     get:
-      operationId: get_user_groups
+      operationId: get-user-groups
       summary: Get user groups
       tags: ["users"]
       description: |
@@ -11120,7 +11468,7 @@ paths:
           description: Success
   /rest-error-handling:
     post:
-      operationId: rest_error_handling
+      operationId: rest-error-handling
       summary: Error handling
       tags: ["real_time_events"]
       description: |
@@ -11136,18 +11484,26 @@ paths:
                   - $ref: "#/components/schemas/InvalidApiKeyError"
                   - $ref: "#/components/schemas/MissingArgumentError"
                   - $ref: "#/components/schemas/UserNotAuthorizedError"
-        "403":
+        "401":
           description: |
-            Forbidden
+            Unauthorized.
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/UserDeactivatedError"
                   - $ref: "#/components/schemas/RealmDeactivatedError"
+        "429":
+          description: |
+            Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/RateLimitedError"
   /zulip-outgoing-webhook:
     post:
-      operationId: zulip_outgoing_webhooks
+      operationId: zulip-outgoing-webhooks
       summary: Outgoing webhooks
       tags: ["webhooks"]
       description: |
@@ -11162,7 +11518,9 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                description: VERIFY
+                description: |
+                  This is an example of the JSON payload that the Zulip server will `POST`
+                  to your server
                 properties:
                   bot_email:
                     type: string
@@ -11252,11 +11610,11 @@ paths:
   /calls/bigbluebutton/create:
     get:
       tags: ["streams"]
-      operationId: create_big_blue_button_video_call
-      summary: Create Big Blue Button video call
+      operationId: create-big-blue-button-video-call
+      summary: Create BigBlueButton video call
       description: |
-        Create a video call URL for a Big Blue Button video call.
-        Requires Big Blue Button to be configured on the Zulip server.
+        Create a video call URL for a BigBlueButton video call.
+        Requires BigBlueButton to be configured on the Zulip server.
       responses:
         "200":
           description: Success.
@@ -11272,7 +11630,7 @@ paths:
                       msg: {}
                       url:
                         description: |
-                          The URL for the Big Blue Button video call.
+                          The URL for the BigBlueButton video call.
                         type: string
                         example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
                     example:
@@ -12093,7 +12451,7 @@ components:
             reaction_type: {}
             user_id: {}
             user: {}
-    EmojiReactionBase:
+    EmojiBase:
       type: object
       properties:
         emoji_code:
@@ -12103,7 +12461,7 @@ components:
             within the namespace of the `reaction_type`.
 
             For example, for `unicode_emoji`, this will be an encoding of the
-            Unicode codepoint.
+            Unicode codepoint; for `realm_emoji`, it'll be the ID of the realm emoji.
         emoji_name:
           type: string
           description: |
@@ -12119,42 +12477,47 @@ components:
               (`emoji_code` will be its ID).
             * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
               namespace the `zulip` emoji.
-        user_id:
-          type: integer
-          description: |
-            The ID of the user who added the reaction.
-
-            **Changes**: New in Zulip 3.0 (feature level 2). The `user`
-            object is deprecated and will be removed in the future.
-        user:
-          type: object
-          additionalProperties: false
-          deprecated: true
-          description: |
-            Dictionary with data on the user who added the reaction, including
-            the user ID as the `id` field.  **Note**: In the [events
-            API](/api/get-events), this `user` dictionary
-            confusing had the user ID in a field called `user_id`
-            instead.  We recommend ignoring fields other than the user
-            ID.  **Deprecated** and to be removed in a future release
-            once core clients have migrated to use the `user_id` field.
-          properties:
-            id:
+    EmojiReactionBase:
+      allOf:
+        - $ref: "#/components/schemas/EmojiBase"
+        - properties:
+            user_id:
               type: integer
               description: |
-                ID of the user.
-            email:
-              type: string
-              description: |
-                Email of the user.
-            full_name:
-              type: string
-              description: |
-                Full name of the user.
-            is_mirror_dummy:
-              type: boolean
+                The ID of the user who added the reaction.
+
+                **Changes**: New in Zulip 3.0 (feature level 2). The `user`
+                object is deprecated and will be removed in the future.
+            user:
+              type: object
+              additionalProperties: false
+              deprecated: true
               description: |
                 Whether the user is a mirror dummy.
+                Dictionary with data on the user who added the reaction, including
+                the user ID as the `id` field.  **Note**: In the [events
+                API](/api/get-events), this `user` dictionary
+                confusing had the user ID in a field called `user_id`
+                instead.  We recommend ignoring fields other than the user
+                ID.  **Deprecated** and to be removed in a future release
+                once core clients have migrated to use the `user_id` field.
+              properties:
+                id:
+                  type: integer
+                  description: |
+                    ID of the user.
+                email:
+                  type: string
+                  description: |
+                    Email of the user.
+                full_name:
+                  type: string
+                  description: |
+                    Full name of the user.
+                is_mirror_dummy:
+                  type: boolean
+                  description: |
+                    Whether the user is a mirror dummy.
     Messages:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
@@ -12776,10 +13139,19 @@ components:
       allOf:
         - $ref: "#/components/schemas/JsonError"
         - example: {"msg": "Invalid API key", "result": "error"}
+          description: |
+            ## Invalid API key
+
+            A typical failed JSON response for when the API key is invalid
     MissingArgumentError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          description: |
+            ## Missing request parameter(s)
+
+            A typical failed JSON response for when a required request parameter
+            is not supplied
           properties:
             result: {}
             msg: {}
@@ -12804,6 +13176,11 @@ components:
               "msg": "User not authorized for this query",
               "result": "error",
             }
+          description: |
+            ## User not authorized for query
+
+            A typical failed JSON response for when the user is not authorized for
+            a query
     UserDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12813,6 +13190,27 @@ components:
               "msg": "Account is deactivated",
               "result": "error",
             }
+          description: |
+            ## User account deactivated
+
+            **Changes**: These errors used the HTTP 403 status code
+              before Zulip 5.0 (feature level 76).
+
+            A typical failed json response for when user's account is deactivated
+    RateLimitedError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "RATE_LIMIT_HIT",
+              "msg": "API usage exceeded rate limit",
+              "result": "error",
+              "retry-after": 28.706807374954224,
+            }
+          description: |
+            ## Rate limit exceeded
+
+            A typical failed JSON response for when a rate limit is exceeded:
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -12822,6 +13220,13 @@ components:
               "msg": "This organization is deactivated",
               "result": "error",
             }
+          description: |
+            ## Realm deactivated
+
+            **Changes**: These errors used the HTTP 403 status code
+              before Zulip 5.0 (feature level 76).
+
+            A typical failed json response for when user's organization is deactivated
 
   ###################
   # Shared responses

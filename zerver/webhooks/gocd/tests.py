@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class GocdHookTests(WebhookTestCase):
     STREAM_NAME = "gocd"
     URL_TEMPLATE = "/api/v1/external/gocd?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "gocd"
+    WEBHOOK_DIR_NAME = "gocd"
     TOPIC = "https://github.com/gocd/gocd"
 
     def test_gocd_message(self) -> None:

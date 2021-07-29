@@ -14,30 +14,10 @@ export function random_int(min, max) {
 //   array[i] < value
 // for some i and false otherwise.
 //
-// Usage: lower_bound(array, value, [less])
-//        lower_bound(array, first, last, value, [less])
-export function lower_bound(array, arg1, arg2, arg3, arg4) {
-    let first;
-    let last;
-    let value;
-    let less;
-    if (arg3 === undefined) {
-        first = 0;
-        last = array.length;
-        value = arg1;
-        less = arg2;
-    } else {
-        first = arg1;
-        last = arg2;
-        value = arg3;
-        less = arg4;
-    }
-
-    if (less === undefined) {
-        less = function (a, b) {
-            return a < b;
-        };
-    }
+// Usage: lower_bound(array, value, less)
+export function lower_bound(array, value, less) {
+    let first = 0;
+    const last = array.length;
 
     let len = last - first;
     let middle;
@@ -78,21 +58,16 @@ export const same_recipient = function util_same_recipient(a, b) {
     if (a === undefined || b === undefined) {
         return false;
     }
-    if (a.type !== b.type) {
-        return false;
+
+    if (a.type === "private" && b.type === "private") {
+        if (a.to_user_ids === undefined) {
+            return false;
+        }
+        return a.to_user_ids === b.to_user_ids;
+    } else if (a.type === "stream" && b.type === "stream") {
+        return same_stream_and_topic(a, b);
     }
 
-    switch (a.type) {
-        case "private":
-            if (a.to_user_ids === undefined) {
-                return false;
-            }
-            return a.to_user_ids === b.to_user_ids;
-        case "stream":
-            return same_stream_and_topic(a, b);
-    }
-
-    // should never get here
     return false;
 };
 
@@ -108,11 +83,12 @@ export function normalize_recipients(recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = recipients.split(",").map((s) => s.trim());
-    recipients = recipients.map((s) => s.toLowerCase());
-    recipients = recipients.filter((s) => s.length > 0);
-    recipients.sort();
-    return recipients.join(",");
+    return recipients
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0)
+        .sort()
+        .join(",");
 }
 
 // Avoid URI decode errors by removing characters from the end
@@ -173,12 +149,12 @@ export const array_compare = function util_array_compare(a, b) {
  * You must supply a option to the constructor called compute_value
  * which should be a function that computes the uncached value.
  */
-const unassigned_value_sentinel = {};
+const unassigned_value_sentinel = Symbol("unassigned_value_sentinel");
 export class CachedValue {
     _value = unassigned_value_sentinel;
 
     constructor(opts) {
-        Object.assign(this, opts);
+        this.compute_value = opts.compute_value;
     }
 
     get() {
@@ -353,4 +329,11 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
     );
 
     return filtered_items;
+}
+
+export function get_time_from_date_muted(date_muted) {
+    if (date_muted === undefined) {
+        return Date.now();
+    }
+    return date_muted * 1000;
 }

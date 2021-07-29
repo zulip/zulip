@@ -27,7 +27,6 @@ from two_factor.views import LoginView as BaseTwoFactorLoginView
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyException,
-    MultiuseInvite,
     create_confirmation_link,
     get_object_from_key,
 )
@@ -41,12 +40,21 @@ from zerver.forms import (
     OurAuthenticationForm,
     ZulipPasswordResetForm,
 )
+from zerver.lib.exceptions import (
+    AuthenticationFailedError,
+    InvalidSubdomainError,
+    JsonableError,
+    PasswordAuthDisabledError,
+    PasswordResetRequiredError,
+    RealmDeactivatedError,
+    UserDeactivatedError,
+)
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
@@ -56,6 +64,7 @@ from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
 from zerver.models import (
+    MultiuseInvite,
     PreregistrationUser,
     Realm,
     UserProfile,
@@ -103,7 +112,7 @@ def create_preregistration_user(
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
-) -> HttpResponse:
+) -> PreregistrationUser:
     realm = None
     if not realm_creation:
         try:
@@ -166,6 +175,7 @@ def maybe_send_to_registration(
         )
 
     multiuse_obj: Optional[MultiuseInvite] = None
+    realm: Optional[Realm] = None
     from_multiuse_invite = False
     if multiuse_object_key:
         from_multiuse_invite = True
@@ -174,13 +184,14 @@ def maybe_send_to_registration(
         except ConfirmationKeyException:
             return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
+        assert multiuse_obj is not None
         realm = multiuse_obj.realm
         invited_as = multiuse_obj.invited_as
     else:
         try:
             realm = get_realm(get_subdomain(request))
         except Realm.DoesNotExist:
-            realm = None
+            pass
         invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
 
     form = HomepageForm({"email": email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
@@ -346,7 +357,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     return response
 
@@ -635,7 +646,7 @@ def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     return redirect(subdomain_login_uri)
 
 
-def redirect_to_misconfigured_ldap_notice(request: HttpResponse, error_type: int) -> HttpResponse:
+def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int) -> HttpResponse:
     if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
         return config_error(request, "ldap")
     else:
@@ -778,6 +789,7 @@ def login_page(
         # https://github.com/django/django/blob/master/django/template/response.py#L19.
         update_login_page_context(request, template_response.context_data)
 
+    assert isinstance(template_response, HttpResponse)
     return template_response
 
 
@@ -822,7 +834,7 @@ def api_fetch_api_key(
 
     realm = get_realm_from_request(request)
     if realm is None:
-        return json_error(_("Invalid subdomain"))
+        raise InvalidSubdomainError()
 
     if not ldap_auth_enabled(realm=realm):
         # In case we don't authenticate against LDAP, check for a valid
@@ -832,33 +844,17 @@ def api_fetch_api_key(
         request=request, username=username, password=password, realm=realm, return_data=return_data
     )
     if return_data.get("inactive_user"):
-        return json_error(
-            _("Your account has been disabled."), data={"reason": "user disable"}, status=403
-        )
+        raise UserDeactivatedError()
     if return_data.get("inactive_realm"):
-        return json_error(
-            _("This organization has been deactivated."),
-            data={"reason": "realm deactivated"},
-            status=403,
-        )
+        raise RealmDeactivatedError()
     if return_data.get("password_auth_disabled"):
-        return json_error(
-            _("Password auth is disabled in your team."),
-            data={"reason": "password auth disabled"},
-            status=403,
-        )
+        raise PasswordAuthDisabledError()
     if return_data.get("password_reset_needed"):
-        return json_error(
-            _("You need to reset your password."),
-            data={"reason": "password reset needed"},
-            status=403,
-        )
+        raise PasswordResetRequiredError()
     if user_profile is None:
-        return json_error(
-            _("Your username or password is incorrect."),
-            data={"reason": "incorrect_creds"},
-            status=403,
-        )
+        raise AuthenticationFailedError()
+
+    assert user_profile.is_authenticated
 
     # Maybe sending 'user_logged_in' signal is the better approach:
     #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
@@ -869,7 +865,7 @@ def api_fetch_api_key(
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
@@ -945,12 +941,12 @@ def json_fetch_api_key(
 ) -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm is None:
-        return json_error(_("Invalid subdomain"))
+        raise JsonableError(_("Invalid subdomain"))
     if password_auth_enabled(user_profile.realm):
         if not authenticate(
             request=request, username=user_profile.delivery_email, password=password, realm=realm
         ):
-            return json_error(_("Your username or password is incorrect."))
+            raise JsonableError(_("Your username or password is incorrect."))
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
@@ -962,12 +958,13 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
-    view_func = DjangoPasswordResetView.as_view(
+    response = DjangoPasswordResetView.as_view(
         template_name="zerver/reset.html",
         form_class=ZulipPasswordResetForm,
         success_url="/accounts/password/reset/done/",
-    )
-    return view_func(request)
+    )(request)
+    assert isinstance(response, HttpResponse)
+    return response
 
 
 @csrf_exempt

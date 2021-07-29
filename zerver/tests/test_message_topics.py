@@ -1,8 +1,8 @@
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_change_stream_invite_only, get_client
+from zerver.lib.actions import do_change_stream_invite_only
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserMessage, get_realm, get_stream
+from zerver.models import Message, UserMessage, get_client, get_realm, get_stream
 
 
 class TopicHistoryTest(ZulipTestCase):

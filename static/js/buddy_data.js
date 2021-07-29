@@ -2,7 +2,7 @@ import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -176,6 +176,8 @@ export function info_for(user_id) {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
     const my_user_status = get_my_user_status(user_id);
+
+    const status_emoji_info = user_status.get_status_emoji(user_id);
     const user_circle_status = status_description(user_id);
 
     return {
@@ -183,6 +185,7 @@ export function info_for(user_id) {
         name: person.full_name,
         user_id,
         my_user_status,
+        status_emoji_info,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
@@ -326,7 +329,7 @@ function filter_user_ids(user_filter_text, user_ids) {
             return false;
         }
 
-        if (muting.is_user_muted(user_id)) {
+        if (muted_users.is_user_muted(user_id)) {
             // Muted users are hidden from the right sidebar entirely.
             return false;
         }

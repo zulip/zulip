@@ -9,7 +9,9 @@ class zulip::common {
       $supervisor_conf_file = '/etc/supervisor/supervisord.conf'
       $supervisor_service = 'supervisor'
       $supervisor_start = '/etc/init.d/supervisor start'
-      $supervisor_reload = '/etc/init.d/supervisor restart'
+      # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
+      # "restart" is actually "stop" under sysvinit
+      $supervisor_reload = '/etc/init.d/supervisor restart && (/etc/init.d/supervisor start || /bin/true) && /etc/init.d/supervisor status'
     }
     'redhat': {
       $nagios_plugins = 'nagios-plugins'

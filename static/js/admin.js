@@ -10,7 +10,6 @@ import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import * as settings_emoji from "./settings_emoji";
 import * as settings_org from "./settings_org";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
@@ -73,12 +72,11 @@ export function build_page() {
         realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
-        USER_GROUP_EDIT_POLICY_MEMBERS: 1,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
-        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
-        can_add_emojis: settings_emoji.can_add_emoji(),
+        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
+        can_add_emojis: settings_data.user_can_add_custom_emoji(),
         realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
             "realm_message_content_edit_limit_seconds",
         ),
@@ -122,6 +120,8 @@ export function build_page() {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
         realm_invite_required: page_params.realm_invite_required,
+        can_edit_user_groups: settings_data.user_can_edit_user_groups(),
+        policy_values: settings_config.common_policy_values,
         ...settings_org.get_organization_settings_options(),
     };
 

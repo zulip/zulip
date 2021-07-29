@@ -9,7 +9,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -45,6 +45,7 @@ export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         $("#deactivate_realm_button").prop("disabled", true);
         $("#org-message-retention").find("input, select").prop("disabled", true);
+        $("#id_realm_invite_to_realm_policy").prop("disabled", true);
         return;
     }
 
@@ -95,9 +96,6 @@ export function get_sorted_options_list(option_values_object) {
 export function get_organization_settings_options() {
     const options = {};
     options.common_policy_values = get_sorted_options_list(settings_config.common_policy_values);
-    options.user_group_edit_policy_values = get_sorted_options_list(
-        settings_config.user_group_edit_policy_values,
-    );
     options.private_message_policy_values = get_sorted_options_list(
         settings_config.private_message_policy_values,
     );
@@ -106,6 +104,9 @@ export function get_organization_settings_options() {
     );
     options.common_message_policy_values = get_sorted_options_list(
         settings_config.common_message_policy_values,
+    );
+    options.invite_to_realm_policy_values = get_sorted_options_list(
+        settings_config.invite_to_realm_policy_values,
     );
     return options;
 }
@@ -135,13 +136,6 @@ function get_property_value(property_name) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === "realm_add_emoji_by_admins_only") {
-        if (page_params.realm_add_emoji_by_admins_only) {
-            return "by_admins_only";
-        }
-        return "by_anyone";
     }
 
     if (property_name === "realm_msg_edit_limit_setting") {
@@ -206,7 +200,7 @@ const simple_dropdown_properties = [
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_private_message_policy",
-    "realm_add_emoji_by_admins_only",
+    "realm_add_custom_emoji_policy",
     "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
@@ -644,17 +638,17 @@ export function init_dropdown_widgets() {
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
-    notifications_stream_widget = dropdown_list_widget({
+    notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_notifications_stream_id",
         value: page_params.realm_notifications_stream_id,
         ...notification_stream_options,
     });
-    signup_notifications_stream_widget = dropdown_list_widget({
+    signup_notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_signup_notifications_stream_id",
         value: page_params.realm_signup_notifications_stream_id,
         ...notification_stream_options,
     });
-    default_code_language_widget = dropdown_list_widget({
+    default_code_language_widget = new DropdownListWidget({
         widget_name: "realm_default_code_block_language",
         data: Object.keys(pygments_data.langs).map((x) => ({
             name: x,
@@ -774,22 +768,30 @@ export function build_page() {
                         ).seconds;
                 }
                 const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
-                if (delete_limit_setting_value === "never") {
-                    data.allow_message_deleting = false;
-                } else if (delete_limit_setting_value === "custom_limit") {
-                    data.message_content_delete_limit_seconds = parse_time_limit(
-                        $("#id_realm_message_content_delete_limit_minutes"),
-                    );
-                    // Disable deleting if the parsed time limit is 0 seconds
-                    data.allow_message_deleting = Boolean(
-                        data.message_content_delete_limit_seconds,
-                    );
-                } else {
-                    data.allow_message_deleting = true;
-                    data.message_content_delete_limit_seconds =
-                        settings_config.msg_delete_limit_dropdown_values.get(
-                            delete_limit_setting_value,
-                        ).seconds;
+                switch (delete_limit_setting_value) {
+                    case "never": {
+                        data.allow_message_deleting = false;
+
+                        break;
+                    }
+                    case "custom_limit": {
+                        data.message_content_delete_limit_seconds = parse_time_limit(
+                            $("#id_realm_message_content_delete_limit_minutes"),
+                        );
+                        // Disable deleting if the parsed time limit is 0 seconds
+                        data.allow_message_deleting = Boolean(
+                            data.message_content_delete_limit_seconds,
+                        );
+
+                        break;
+                    }
+                    default: {
+                        data.allow_message_deleting = true;
+                        data.message_content_delete_limit_seconds =
+                            settings_config.msg_delete_limit_dropdown_values.get(
+                                delete_limit_setting_value,
+                            ).seconds;
+                    }
                 }
                 break;
             }
@@ -820,18 +822,6 @@ export function build_page() {
                 const code_block_language_value = default_code_language_widget.value();
                 // No need to JSON-encode, since this value is already a string.
                 data.default_code_block_language = code_block_language_value;
-                break;
-            }
-            case "other_permissions": {
-                const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
-                switch (add_emoji_permission) {
-                    case "by_admins_only":
-                        data.add_emoji_by_admins_only = true;
-                        break;
-                    case "by_anyone":
-                        data.add_emoji_by_admins_only = false;
-                        break;
-                }
                 break;
             }
             case "org_join": {
@@ -1166,7 +1156,6 @@ export function build_page() {
             html_heading: $t_html({defaultMessage: "Deactivate organization"}),
             help_link: "/help/deactivate-your-organization",
             html_body,
-            html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_deactivate_realm,
             fade: true,
         });

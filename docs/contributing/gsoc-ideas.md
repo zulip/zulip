@@ -81,7 +81,7 @@ tasks that are great for first-time contributors. Use
 to get your Zulip development environment set up and to find your first issue. If you have any
 trouble, please speak up in
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
-[the Zulip development community server](../contributing/chat-zulip-org.md)
+[the Zulip development community server](https://zulip.com/developer-community/)
 (use your name as the topic).
 
 ## Application tips, and how to be a strong candidate
@@ -127,7 +127,7 @@ application deadline.
 We are more interested in candidates if we see them submitting good
 contributions to Zulip projects, helping other applicants on GitHub
 and on
-[chat.zulip.org](../contributing/chat-zulip-org.md),
+[chat.zulip.org](https://zulip.com/developer-community/),
 learning from our suggestions,
 [trying to solve their own obstacles and then asking well-formed
 questions](https://blogs.akamai.com/2013/10/you-must-try-and-then-you-must-ask.html),
@@ -171,7 +171,7 @@ part on who is a good fit for the needs of each student as well as
 technical expertise as well as who has available time during the
 summer.  You can reach us via
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on [the Zulip
-development community server](../contributing/chat-zulip-org.md),
+development community server](https://zulip.com/developer-community/),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship.  That means you should

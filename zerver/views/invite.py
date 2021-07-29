@@ -13,9 +13,9 @@ from zerver.lib.actions import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.lib.exceptions import OrganizationOwnerRequired
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import check_int, check_list
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
@@ -44,7 +44,7 @@ def invite_users_backend(
         # be handled by the decorator above.
         raise JsonableError(_("Insufficient permission"))
     if invite_as not in PreregistrationUser.INVITE_AS.values():
-        return json_error(_("Must be invited as an valid type of user"))
+        raise JsonableError(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)
     if (
         invite_as
@@ -54,11 +54,11 @@ def invite_users_backend(
         ]
         and not user_profile.is_realm_admin
     ):
-        return json_error(_("Must be an organization administrator"))
+        raise JsonableError(_("Must be an organization administrator"))
     if not invitee_emails_raw:
-        return json_error(_("You must specify at least one email address."))
+        raise JsonableError(_("You must specify at least one email address."))
     if not stream_ids:
-        return json_error(_("You must specify at least one stream for invitees to join."))
+        raise JsonableError(_("You must specify at least one stream for invitees to join."))
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
@@ -67,7 +67,7 @@ def invite_users_backend(
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
-            return json_error(
+            raise JsonableError(
                 _("Stream does not exist with id: {}. No invites were sent.").format(stream_id)
             )
         streams.append(stream)
@@ -103,7 +103,7 @@ def revoke_user_invite(
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
-    if prereg_user.referred_by.realm != user_profile.realm:
+    if prereg_user.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
     if prereg_user.referred_by_id != user_profile.id:
@@ -174,7 +174,7 @@ def generate_multiuse_invite_backend(
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
-            return json_error(_("Invalid stream id {}. No invites were sent.").format(stream_id))
+            raise JsonableError(_("Invalid stream id {}. No invites were sent.").format(stream_id))
         streams.append(stream)
 
     invite_link = do_create_multiuse_invite_link(user_profile, invite_as, streams)

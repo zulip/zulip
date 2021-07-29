@@ -24,13 +24,14 @@ from django.core.signing import BadSignature, TimestampSigner
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 from PIL import ExifTags, Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
 from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
 
 DEFAULT_AVATAR_SIZE = 100
@@ -387,9 +388,9 @@ class S3UploadBackend(ZulipUploadBackend):
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
         self._boto_client = None
-        self.public_upload_url_pattern = self.construct_public_upload_url_pattern()
+        self.public_upload_url_base = self.construct_public_upload_url_base()
 
-    def construct_public_upload_url_pattern(self) -> str:
+    def construct_public_upload_url_base(self) -> str:
         # Return the pattern for public URL for a key in the S3 Avatar bucket.
         # For Amazon S3 itself, this will return the following:
         #     f"https://{self.avatar_bucket.name}.{network_location}/{key}"
@@ -415,19 +416,19 @@ class S3UploadBackend(ZulipUploadBackend):
             },
             ExpiresIn=0,
         )
-        parsed = urllib.parse.urlparse(foo_url)
-        base_path = os.path.dirname(parsed.path)
+        split_url = urllib.parse.urlsplit(foo_url)
+        assert split_url.path.endswith(f"/{DUMMY_KEY}")
 
-        url_pattern = urllib.parse.urlunparse(
-            parsed._replace(path=os.path.join(base_path, "{key}"))
+        return urllib.parse.urlunsplit(
+            (split_url.scheme, split_url.netloc, split_url.path[: -len(DUMMY_KEY)], "", "")
         )
-        return url_pattern
 
     def get_public_upload_url(
         self,
         key: str,
     ) -> str:
-        return self.public_upload_url_pattern.format(key=key)
+        assert not key.startswith("/")
+        return urllib.parse.urljoin(self.public_upload_url_base, key)
 
     def get_boto_client(self) -> botocore.client.BaseClient:
         """
@@ -458,12 +459,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return True
 
     def get_public_upload_root_url(self) -> str:
-        # boto requires a key name, so we can't just pass "" here;
-        # trim the offending character back off from the URL we get
-        # back.
-        u = urllib.parse.urlsplit(self.get_public_upload_url("a"))
-        assert u.path.endswith("/a")
-        return urllib.parse.urlunsplit((u.scheme, u.netloc, u.path[:-1], "", ""))
+        return self.public_upload_url_base
 
     def upload_message_file(
         self,
@@ -734,7 +730,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
 
 def write_local_file(type: str, path: str, file_data: bytes) -> None:
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "wb") as f:
@@ -742,13 +738,13 @@ def write_local_file(type: str, path: str, file_data: bytes) -> None:
 
 
 def read_local_file(type: str, path: str) -> bytes:
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     with open(file_path, "rb") as f:
         return f.read()
 
 
 def delete_local_file(type: str, path: str) -> bool:
-    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     if os.path.isfile(file_path):
         # This removes the file but the empty folders still remain.
         os.remove(file_path)
@@ -759,7 +755,7 @@ def delete_local_file(type: str, path: str) -> bool:
 
 
 def get_local_file_path(path_id: str) -> Optional[str]:
-    local_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", path_id)
+    local_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "files", path_id)
     if os.path.isfile(local_path):
         return local_path
     else:
@@ -902,12 +898,16 @@ class LocalUploadBackend(ZulipUploadBackend):
         file_path = user_avatar_path(user_profile)
 
         output_path = os.path.join(
-            settings.LOCAL_UPLOADS_DIR, "avatars", file_path + file_extension
+            assert_is_not_none(settings.LOCAL_UPLOADS_DIR),
+            "avatars",
+            file_path + file_extension,
         )
         if os.path.isfile(output_path):
             return
 
-        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
+        image_path = os.path.join(
+            assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "avatars", file_path + ".original"
+        )
         with open(image_path, "rb") as f:
             image_data = f.read()
         if is_medium:
@@ -947,7 +947,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             secrets.token_urlsafe(18),
             os.path.basename(tarball_path),
         )
-        abs_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", path)
+        abs_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), "avatars", path)
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         shutil.copy(tarball_path, abs_path)
         public_url = realm.uri + "/user_avatars/" + path

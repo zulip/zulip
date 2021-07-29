@@ -13,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-27 07:07+0000\n"
-"PO-Revision-Date: 2021-05-27 07:08+0000\n"
-"Last-Translator: s s <sshiuan2+transifex.com@gmail.com>\n"
+"POT-Creation-Date: 2021-07-15 15:59+0000\n"
+"PO-Revision-Date: 2021-07-15 16:00+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/zulip/zulip/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,126 +23,181 @@ msgstr ""
 "Language: zh_TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: analytics/views.py:140 zerver/decorator.py:538 zerver/decorator.py:550
+#: analytics/views/stats.py:86 zerver/decorator.py:552 zerver/decorator.py:564
 msgid "Not allowed for guest users"
 msgstr "訪客不允許"
 
-#: analytics/views.py:184
+#: analytics/views/stats.py:130
 msgid "Invalid organization"
 msgstr "無效的組織"
 
-#: analytics/views.py:315
+#: analytics/views/stats.py:261
 msgid "Public streams"
 msgstr "公開串流"
 
-#: analytics/views.py:316
+#: analytics/views/stats.py:262
 msgid "Private streams"
 msgstr "私人串流"
 
-#: analytics/views.py:317 templates/zerver/app/left_sidebar.html:17
-#: templates/zerver/app/left_sidebar.html:23
+#: analytics/views/stats.py:263
 msgid "Private messages"
 msgstr "私人訊息"
 
-#: analytics/views.py:318
+#: analytics/views/stats.py:264
 msgid "Group private messages"
 msgstr "群組私人訊息"
 
-#: analytics/views.py:339
+#: analytics/views/stats.py:285
 msgid "Unknown chart name: {}"
 msgstr "未知的 chart 名稱：{}"
 
-#: analytics/views.py:349
+#: analytics/views/stats.py:295
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
 msgstr "開始時間晚於結束時間。開始時間：{start}、結束時間：{end}"
 
-#: analytics/views.py:367 analytics/views.py:398
+#: analytics/views/stats.py:313 analytics/views/stats.py:344
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "沒有分析資料。請聯繫您的伺服器管理員。"
 
-#: analytics/views.py:1275
+#: analytics/views/support.py:113
 msgid "Invalid parameters"
 msgstr "無效參數"
 
-#: corporate/lib/stripe.py:83
+#: corporate/lib/registration.py:29
+#, python-brace-format
+msgid ""
+"Your organization has no Zulip licenses remaining and can no longer accept "
+"new users. Please [increase the number of licenses]({billing_page_link}) or "
+"[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
+"users to join."
+msgstr ""
+
+#: corporate/lib/registration.py:36
+#, python-brace-format
+msgid ""
+"Your organization has only one Zulip license remaining. You can [increase "
+"the number of licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow more than one user to "
+"join."
+msgstr ""
+
+#: corporate/lib/registration.py:41
+#, python-brace-format
+msgid ""
+"Your organization has only two Zulip licenses remaining. You can [increase "
+"the number of licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow more than two users to "
+"join."
+msgstr ""
+
+#: corporate/lib/registration.py:46
+#, python-brace-format
+msgid ""
+"Your organization has only three Zulip licenses remaining. You can [increase"
+" the number of licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow more than three users to "
+"join."
+msgstr ""
+
+#: corporate/lib/registration.py:57
+#, python-brace-format
+msgid ""
+"A new member ({email}) was unable to join your organization because all "
+"Zulip licenses are in use. Please [increase the number of "
+"licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow new members to join."
+msgstr ""
+
+#: corporate/lib/registration.py:101
+msgid "All Zulip licenses for this organization are currently in use."
+msgstr ""
+
+#: corporate/lib/registration.py:104
+#, python-brace-format
+msgid ""
+"Your organization does not have enough unused Zulip licenses to invite "
+"{num_invites} users."
+msgstr ""
+
+#: corporate/lib/stripe.py:86
 msgid "You must invoice for at least {} users."
 msgstr "您必須 invoice for 至少 {} 使用者。"
 
-#: corporate/lib/stripe.py:88
+#: corporate/lib/stripe.py:91
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
 msgstr ""
 
-#: corporate/lib/stripe.py:195
+#: corporate/lib/stripe.py:203
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "付款失敗，請聯絡 {email}"
 
-#: corporate/lib/stripe.py:196
+#: corporate/lib/stripe.py:204
 msgid "Something went wrong. Please reload the page."
 msgstr "發生錯誤。請重新更新頁面。"
 
-#: corporate/lib/stripe.py:259
+#: corporate/lib/stripe.py:271
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "發生錯誤。請稍待數秒後再試一次。"
 
-#: corporate/lib/stripe.py:846
+#: corporate/lib/stripe.py:889
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! "
 "{emoji}.\n"
 msgstr "貴組織申請贊助伺服器代管已通過！{emoji}.\n"
 
-#: corporate/views.py:96
+#: corporate/views.py:100
 msgid "No payment method on file"
 msgstr "沒有付款方式的紀錄"
 
-#: corporate/views.py:99
+#: corporate/views.py:103
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr "{brand} 的末四碼為 {last4}"
 
-#: corporate/views.py:107
+#: corporate/views.py:111
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr "未知的付款方式。請聯繫 {email}."
 
-#: corporate/views.py:375
+#: corporate/views.py:378
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
 msgstr ""
 
-#: corporate/views.py:379
+#: corporate/views.py:382
 msgid "Unable to update the plan. The plan has ended."
 msgstr ""
 
-#: corporate/views.py:402 corporate/views.py:430
+#: corporate/views.py:405 corporate/views.py:428
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
 
-#: corporate/views.py:408
+#: corporate/views.py:411
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-#: corporate/views.py:413
+#: corporate/views.py:416
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 
-#: corporate/views.py:436
+#: corporate/views.py:434
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
 
-#: corporate/views.py:452
+#: corporate/views.py:447
 msgid "Nothing to change."
 msgstr ""
 
@@ -185,7 +240,6 @@ msgid "Humans"
 msgstr "人"
 
 #: templates/analytics/stats.html:37
-#: templates/zerver/app/settings_overlay.html:119
 msgid "Bots"
 msgstr "機器人"
 
@@ -231,7 +285,6 @@ msgid "Total users"
 msgstr "使用者總數"
 
 #: templates/analytics/stats.html:73
-#: templates/zerver/app/settings_overlay.html:101
 msgid "Users"
 msgstr "使用者"
 
@@ -301,24 +354,11 @@ msgid ""
 "encountering this page, it's probably our fault. We're sorry."
 msgstr "請確認您正確地將連結複製貼上於瀏覽器上。若您仍看見此頁面，可能是我們的問題，很抱歉。"
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:140
+#: templates/corporate/billing.html:21
 msgid "Billing"
 msgstr "帳單"
 
 #: templates/corporate/billing.html:231
-#: templates/zerver/app/about-zulip.html:3
-#: templates/zerver/app/delete_message.html:3
-#: templates/zerver/app/deprecation_notice.html:5
-#: templates/zerver/app/invite_user.html:5
-#: templates/zerver/app/lightbox_overlay.html:7
-#: templates/zerver/app/message_history.html:4
-#: templates/zerver/app/message_history.html:12
-#: templates/zerver/app/navbar_alerts.html:18
-#: templates/zerver/app/navbar_alerts.html:27
-#: templates/zerver/app/navbar_alerts.html:37
-#: templates/zerver/app/navbar_alerts.html:46
-#: templates/zerver/app/navbar_alerts.html:60
-#: templates/zerver/app/navbar_alerts.html:73
 msgid "Close"
 msgstr "關閉"
 
@@ -427,8 +467,8 @@ msgid "You need an invitation to join this organization."
 msgstr "您需要邀請才能加入此組織"
 
 #: templates/zerver/accounts_home.html:68 templates/zerver/footer.html:40
-#: templates/zerver/login.html:129 templates/zerver/portico-header.html:37
-#: templates/zerver/register.html:239
+#: templates/zerver/login.html:129 templates/zerver/portico-header.html:40
+#: templates/zerver/register.html:240
 msgid "Sign up"
 msgstr "註冊"
 
@@ -458,1038 +498,174 @@ msgstr "還是沒收到 email？我們可以<a href=\"#\" id=\"resend_email_link
 msgid "Just in case, take a look at your Spam folder."
 msgstr "請確認一下您的垃圾信件夾。"
 
-#: templates/zerver/app/about-zulip.html:6 templates/zerver/billing_nav.html:4
-#: templates/zerver/development/integrations_dev_panel.html:15
-#: templates/zerver/emails/compiled/followup_day2.html:28
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:17
-#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
-#: templates/zerver/portico-header.html:8
-msgid "Zulip"
-msgstr "Zulip"
-
-#: templates/zerver/app/delete_message.html:5
-msgid "Delete message"
-msgstr "刪除訊息"
-
-#: templates/zerver/app/delete_message.html:13
-msgid "Are you sure you want to permanently delete this message?"
-msgstr "您確認要徹底刪除這則訊息嗎？"
-
-#: templates/zerver/app/delete_message.html:14
-msgid "Deleting a message removes it for everyone."
-msgstr "刪除訊息後所有人都會看不到該訊息。"
-
-#: templates/zerver/app/delete_message.html:19
-#: templates/zerver/app/index.html:167
-#: templates/zerver/app/invite_user.html:58
-msgid "Cancel"
-msgstr "取消"
-
-#: templates/zerver/app/delete_message.html:20
-msgid "Confirm"
-msgstr "確認"
-
-#: templates/zerver/app/deprecation_notice.html:6
-msgid "Deprecation notice"
-msgstr "棄用通知"
-
-#: templates/zerver/app/deprecation_notice.html:14
-msgid "Got it"
-msgstr "知道了"
-
-#: templates/zerver/app/home.html:13
-msgid ""
-"\n"
-"            Some older messages are unavailable.\n"
-"            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organization</a>\n"
-"            to access your full message history.\n"
-"            "
-msgstr ""
-
-#: templates/zerver/app/home.html:23
-msgid ""
-"\n"
-"            End of results from your\n"
-"            <a href=\"/help/search-for-messages#searching-shared-history\"\n"
-"              target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n"
-"            Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
-"            "
-msgstr "\n            您的<a href=\"/help/search-for-messages#searching-shared-history\"\n              target=\"_blank\" rel=\"noopener noreferrer\">歷史</a>搜尋結果結尾\n            考慮<a class=\"search-shared-history\" href=\"\">搜尋所有公開串流</a>。\n            "
-
-#: templates/zerver/app/home.html:33
-msgid "Nothing's been sent here yet!"
-msgstr "尚未發送出任何東西！"
-
-#: templates/zerver/app/home.html:36
-msgid ""
-"\n"
-"            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
-"            start the conversation</a>?\n"
-"            "
-msgstr "\n            何不<a href=\"#\" class=\"empty_feed_compose_stream\">\n            開始對談</a>？\n            "
-
-#: templates/zerver/app/home.html:43
-msgid "You have no private messages yet!"
-msgstr "您沒有私人訊息！"
-
-#: templates/zerver/app/home.html:46 templates/zerver/app/home.html:56
-#: templates/zerver/app/home.html:76 templates/zerver/app/home.html:86
-msgid ""
-"\n"
-"            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
-"            start the conversation</a>?\n"
-"            "
-msgstr "\n            何不<a href=\"#\" class=\"empty_feed_compose_private\">\n            開始對談</a>？\n            "
-
-#: templates/zerver/app/home.html:53
-msgid "You have no private messages with this person yet!"
-msgstr "您跟該人尚未有私人訊息！"
-
-#: templates/zerver/app/home.html:63
-msgid "You have not sent any private messages to yourself yet!"
-msgstr "您從未發送出私人訊息給自己"
-
-#: templates/zerver/app/home.html:66
-msgid ""
-"\n"
-"            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
-"            start a conversation with yourself</a>?\n"
-"            "
-msgstr "\n            何不<a href=\"#\" class=\"empty_feed_compose_private\">\n            開始一個跟自己的對談</a>？\n            "
-
-#: templates/zerver/app/home.html:73
-msgid "You have no group private messages with this person yet!"
-msgstr "您跟該人尚未有群組私人訊息！"
-
-#: templates/zerver/app/home.html:83
-msgid "You have no private messages with these people yet!"
-msgstr "您跟這些人尚未有私人訊息！"
-
-#: templates/zerver/app/home.html:93
-msgid "You haven't received any messages sent by this user yet!"
-msgstr "您尚未收到由此使用者發送出的訊息！"
-
-#: templates/zerver/app/home.html:96
-msgid "This user does not exist!"
-msgstr "此使用者不存在！"
-
-#: templates/zerver/app/home.html:99
-msgid "One or more of these users do not exist!"
-msgstr "這些使用者中有不存在的"
-
-#: templates/zerver/app/home.html:102
-msgid ""
-"You aren't subscribed to this stream and nobody has talked about that yet!"
-msgstr "您未訂閱此串流，尚未有人談到此串流！"
-
-#: templates/zerver/app/home.html:105
-msgid "Subscribe"
-msgstr "訂閱"
-
-#: templates/zerver/app/home.html:110
-msgid "This stream does not exist or is private."
-msgstr "這串流不存在或是私人。"
-
-#: templates/zerver/app/home.html:113
-msgid "You haven't starred anything yet!"
-msgstr "您尚未標星東西！"
-
-#: templates/zerver/app/home.html:116
-msgid ""
-"\n"
-"            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
-"            here</a>.\n"
-"            "
-msgstr "\n            學習更多關於標星訊息 <a href=\"/help/star-a-message\">\n            於此</a>。\n            "
-
-#: templates/zerver/app/home.html:123
-msgid "You have no unread messages!"
-msgstr "您沒有未讀訊息！"
-
-#: templates/zerver/app/home.html:126
-msgid "You haven't been mentioned yet!"
-msgstr "您尚未被提及！"
-
-#: templates/zerver/app/home.html:129
-msgid ""
-"\n"
-"            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
-"            here</a>.\n"
-"            "
-msgstr "\n            從 <a href=\"/help/mention-a-user-or-group\">\n            此</a>了解更多提及的資訊。\n            "
-
-#: templates/zerver/app/home.html:136
-msgid "No search results"
-msgstr "無搜尋結果"
-
-#: templates/zerver/app/home.html:139 templates/zerver/app/home.html:141
-msgid "Messages"
-msgstr "訊息"
-
-#: templates/zerver/app/index.html:33
+#: templates/zerver/app/index.html:60
 msgid "Loading..."
 msgstr "載入中..."
 
-#: templates/zerver/app/index.html:34
+#: templates/zerver/app/index.html:63
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a id"
 "=\"reload-lnk\">reload</a> the page."
 msgstr "若此訊息沒有自動消失，請稍待幾秒後再 <a id=\"reload-lnk\">重新整理</a> 本頁面。"
 
-#: templates/zerver/app/index.html:67
+#: templates/zerver/app/index.html:98
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
 msgstr "<strong class=\"message\">無法連接至\n            Zulip。</strong> 更新或許延遲了。"
 
-#: templates/zerver/app/index.html:68
+#: templates/zerver/app/index.html:99
 msgid "Retrying soon..."
 msgstr "快速重試中..."
 
-#: templates/zerver/app/index.html:68
+#: templates/zerver/app/index.html:99
 msgid "Try now."
 msgstr "立即重試。"
 
-#: templates/zerver/app/index.html:147
-msgid "Set a status"
-msgstr "設定狀態"
-
-#: templates/zerver/app/index.html:153
-msgid "Status message"
-msgstr ""
-
-#: templates/zerver/app/index.html:160
-msgid "In a meeting"
-msgstr ""
-
-#: templates/zerver/app/index.html:161
-msgid "Commuting"
-msgstr ""
-
-#: templates/zerver/app/index.html:162
-msgid "Out sick"
-msgstr ""
-
-#: templates/zerver/app/index.html:163
-msgid "Vacationing"
-msgstr ""
-
-#: templates/zerver/app/index.html:164
-msgid "Working remotely"
-msgstr ""
-
-#: templates/zerver/app/index.html:169
-msgid "Save"
-msgstr "儲存"
-
-#: templates/zerver/app/invite_user.html:6
-msgid "Invite users to Zulip"
-msgstr "邀請使用者至 Zulip"
-
-#: templates/zerver/app/invite_user.html:15
-msgid "Emails (one on each line or comma-separated)"
-msgstr "Emails（一行一個或是用 , 分隔）"
-
-#: templates/zerver/app/invite_user.html:17
-msgid "One or more email addresses..."
-msgstr "一個或多個 email 地址..."
-
-#: templates/zerver/app/invite_user.html:20
-msgid "or"
-msgstr "或"
-
-#: templates/zerver/app/invite_user.html:20
-#: templates/zerver/app/invite_user.html:26
-msgid "Generate invite link"
-msgstr "生成邀請連結"
-
-#: templates/zerver/app/invite_user.html:33
-msgid "User(s) join as"
-msgstr "使用者(s) join as"
-
-#: templates/zerver/app/invite_user.html:40
-msgid "Guests"
-msgstr "訪客"
-
-#: templates/zerver/app/invite_user.html:41
-msgid "Members"
-msgstr "成員"
-
-#: templates/zerver/app/invite_user.html:43
-#: templates/zerver/development/dev_login.html:40
-msgid "Moderators"
-msgstr ""
-
-#: templates/zerver/app/invite_user.html:44
-msgid "Organization administrators"
-msgstr "組織管理者"
-
-#: templates/zerver/app/invite_user.html:47
-msgid "Organization owners"
-msgstr "組織所有者"
-
-#: templates/zerver/app/invite_user.html:53
-msgid "Streams they should join"
-msgstr "他們應該加入的串流"
-
-#: templates/zerver/app/invite_user.html:60
-msgid "Inviting..."
-msgstr "邀請中..."
-
-#: templates/zerver/app/invite_user.html:60
-msgid "Invite"
-msgstr "邀請"
-
-#: templates/zerver/app/keyboard_shortcuts.html:2
-#: templates/zerver/app/navbar.html:95
-#: templates/zerver/app/right_sidebar.html:24
-msgid "Keyboard shortcuts"
-msgstr "鍵盤快捷鍵"
-
-#: templates/zerver/app/keyboard_shortcuts.html:8
-msgid "The basics"
-msgstr "基礎"
-
-#: templates/zerver/app/keyboard_shortcuts.html:12
-#: templates/zerver/app/keyboard_shortcuts.html:114
-msgid "Reply to message"
-msgstr "回覆訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:16
-#: templates/zerver/app/keyboard_shortcuts.html:126
-msgid "New stream message"
-msgstr "新串流訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:20
-#: templates/zerver/app/keyboard_shortcuts.html:130
-msgid "New private message"
-msgstr "新私人訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:24
-#: templates/zerver/app/keyboard_shortcuts.html:146
-msgid "Cancel compose"
-msgstr "取消編寫"
-
-#: templates/zerver/app/keyboard_shortcuts.html:28
-#: templates/zerver/app/keyboard_shortcuts.html:264
-msgid "View drafts"
-msgstr "觀看草稿"
-
-#: templates/zerver/app/keyboard_shortcuts.html:32
-#: templates/zerver/app/keyboard_shortcuts.html:85
-msgid "Next message"
-msgstr "下一則訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:36
-#: templates/zerver/app/keyboard_shortcuts.html:97
-msgid "Last message"
-msgstr "最後訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:40
-msgid "Next unread topic"
-msgstr "下一個未讀主題"
-
-#: templates/zerver/app/keyboard_shortcuts.html:44
-msgid "Next unread private message"
-msgstr "下一則未讀私人訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:48
-#: templates/zerver/app/keyboard_shortcuts.html:69
-msgid "Initiate a search"
-msgstr "起始一個搜尋"
-
-#: templates/zerver/app/keyboard_shortcuts.html:52
-#: templates/zerver/app/keyboard_shortcuts.html:297
-msgid "Show keyboard shortcuts"
-msgstr "顯示鍵盤快捷鍵"
-
-#: templates/zerver/app/keyboard_shortcuts.html:56
-msgid "Go to default view"
-msgstr "前往預設介面"
-
-#: templates/zerver/app/keyboard_shortcuts.html:65
-msgid "Navigation"
-msgstr "導覽"
-
-#: templates/zerver/app/keyboard_shortcuts.html:73
-#: templates/zerver/app/left_sidebar.html:62
-#: templates/zerver/app/left_sidebar.html:64
-#: templates/zerver/app/left_sidebar.html:66
-msgid "Filter streams"
-msgstr "篩選串流"
-
-#: templates/zerver/app/keyboard_shortcuts.html:77
-#: templates/zerver/app/right_sidebar.html:9
-msgid "Search people"
-msgstr "搜尋人"
-
-#: templates/zerver/app/keyboard_shortcuts.html:81
-msgid "Previous message"
-msgstr "之前的訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:89
-msgid "Scroll up"
-msgstr "向上捲動"
-
-#: templates/zerver/app/keyboard_shortcuts.html:93
-msgid "Scroll down"
-msgstr "向下捲動"
-
-#: templates/zerver/app/keyboard_shortcuts.html:101
-msgid "First message"
-msgstr "第一則訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:110
-msgid "Composing messages"
-msgstr "編寫訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:118
-msgid "Reply to author"
-msgstr "回覆作者"
-
-#: templates/zerver/app/keyboard_shortcuts.html:122
-msgid "Quote and reply to message"
-msgstr "引用與回覆訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:134
-msgid "Compose a reply @-mentioning author"
-msgstr "編寫一個回覆 @-mentioning 作者"
-
-#: templates/zerver/app/keyboard_shortcuts.html:138
-msgid "Send message"
-msgstr "發送訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:142
-msgid "Insert new line"
-msgstr "插入新的一行"
-
-#: templates/zerver/app/keyboard_shortcuts.html:155
-msgid "Narrowing"
-msgstr "縮小範圍中"
-
-#: templates/zerver/app/keyboard_shortcuts.html:159
-msgid "Narrow to stream"
-msgstr "縮小範圍至串流"
-
-#: templates/zerver/app/keyboard_shortcuts.html:163
-msgid "Narrow to topic or PM conversation"
-msgstr "縮小範圍至主題或私訊對談"
-
-#: templates/zerver/app/keyboard_shortcuts.html:167
-msgid "Narrow to all private messages"
-msgstr "縮小範圍至所有私人訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:171
-msgid "Narrow to next unread topic"
-msgstr "縮小範圍至下一未讀主題"
-
-#: templates/zerver/app/keyboard_shortcuts.html:175
-msgid "Narrow to next unread private message"
-msgstr "縮小範圍至下一未讀私人訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:179
-msgid "Cycle between stream narrows"
-msgstr "Cycle between 串流 narrows"
-
-#: templates/zerver/app/keyboard_shortcuts.html:183
-msgid "Narrow to all unmuted messages"
-msgstr "縮小範圍至所有未靜音訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:187
-msgid "Narrow to current compose box recipient"
-msgstr "縮小範圍至現在 compose box recipient"
-
-#: templates/zerver/app/keyboard_shortcuts.html:196
-msgid "Message actions"
-msgstr "訊息動作"
-
-#: templates/zerver/app/keyboard_shortcuts.html:200
-msgid "Edit your last message"
-msgstr "編輯您最後一則訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:204
-msgid "Show message sender's profile"
-msgstr "顯示訊息發送人 profile"
-
-#: templates/zerver/app/keyboard_shortcuts.html:208
-msgid "Show images in thread"
-msgstr "在串中顯示圖"
-
-#: templates/zerver/app/keyboard_shortcuts.html:212
-msgid "Edit selected message"
-msgstr "編輯已選定的訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:216
-msgid "Star selected message"
-msgstr "標星已選擇的訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:221
-msgid "React to selected message with"
-msgstr ""
-
-#: templates/zerver/app/keyboard_shortcuts.html:230
-msgid "Collapse/show selected message"
-msgstr "折疊/顯示 已選擇的訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:234
-msgid "Toggle topic mute"
-msgstr "切換主題靜音"
-
-#: templates/zerver/app/keyboard_shortcuts.html:243
-#: templates/zerver/app/left_sidebar.html:51
-#: templates/zerver/app/left_sidebar.html:57
-msgid "Recent topics"
-msgstr "最近的主題"
-
-#: templates/zerver/app/keyboard_shortcuts.html:247
-msgid "View recent topics"
-msgstr "觀看最近的主題"
-
-#: templates/zerver/app/keyboard_shortcuts.html:251
-msgid "Filter topics"
-msgstr "篩選主題"
-
-#: templates/zerver/app/keyboard_shortcuts.html:260
-msgid "Drafts"
-msgstr "草稿"
-
-#: templates/zerver/app/keyboard_shortcuts.html:268
-msgid "Edit selected draft"
-msgstr "編輯已選定的草稿"
-
-#: templates/zerver/app/keyboard_shortcuts.html:272
-msgid "Delete selected draft"
-msgstr "刪除已選定的草稿"
-
-#: templates/zerver/app/keyboard_shortcuts.html:281
-msgid "Menus"
-msgstr "選單"
-
-#: templates/zerver/app/keyboard_shortcuts.html:285
-msgid "Toggle the gear menu"
-msgstr "切換 gear 選單"
-
-#: templates/zerver/app/keyboard_shortcuts.html:289
-msgid "Open message menu"
-msgstr "打開訊息選單"
-
-#: templates/zerver/app/keyboard_shortcuts.html:293
-msgid "Open reactions menu"
-msgstr "打開反應選單"
-
-#: templates/zerver/app/keyboard_shortcuts.html:306
-msgid "Streams settings"
-msgstr "串流設定"
-
-#: templates/zerver/app/keyboard_shortcuts.html:310
-msgid "Scroll through streams"
-msgstr "捲動串流"
-
-#: templates/zerver/app/keyboard_shortcuts.html:314
-msgid "Switch between tabs"
-msgstr "在 tabs 之間切換"
-
-#: templates/zerver/app/keyboard_shortcuts.html:318
-msgid "View stream messages"
-msgstr "觀看串流訊息"
-
-#: templates/zerver/app/keyboard_shortcuts.html:322
-msgid "Subscribe to/unsubscribe from selected stream"
-msgstr "訂閱 / 取消訂閱 已選定的串流"
-
-#: templates/zerver/app/keyboard_shortcuts.html:326
-msgid "Create new stream"
-msgstr "新建串流"
-
-#: templates/zerver/app/keyboard_shortcuts.html:332
-msgid "Detailed keyboard shortcuts documentation"
-msgstr "詳細的快速鍵文件"
-
-#: templates/zerver/app/left_sidebar.html:5
-#: templates/zerver/app/left_sidebar.html:11
-msgid "All messages"
-msgstr "所有訊息"
-
-#: templates/zerver/app/left_sidebar.html:36
-msgid "Mentions"
-msgstr "提到"
-
-#: templates/zerver/app/left_sidebar.html:46
-msgid "Starred messages"
-msgstr "標星訊息"
-
-#: templates/zerver/app/left_sidebar.html:62
-msgid "STREAMS"
-msgstr "串流"
-
-#: templates/zerver/app/left_sidebar.html:63
-msgid "Subscribe, add, or configure streams"
-msgstr "訂閱、新增、或設定串流"
-
-#: templates/zerver/app/left_sidebar.html:73
-msgid "Back to streams"
-msgstr "返回頻道"
-
-#: templates/zerver/app/left_sidebar.html:80
-msgid "Subscribe to more streams"
-msgstr "訂閱更多頻道"
-
-#: templates/zerver/app/lightbox_overlay.html:10
-msgid "Pan &amp; Zoom"
-msgstr "平移＆縮放ˋ"
-
-#: templates/zerver/app/lightbox_overlay.html:11
-msgid "Disabled"
-msgstr "禁用"
-
-#: templates/zerver/app/lightbox_overlay.html:11
-msgid "Enabled"
-msgstr "啟用"
-
-#: templates/zerver/app/lightbox_overlay.html:13
-msgid "Open"
-msgstr "打開"
-
-#: templates/zerver/app/lightbox_overlay.html:14
-msgid "Download"
-msgstr "下載"
-
-#: templates/zerver/app/message_history.html:5
-msgid "Message edit history"
-msgstr "訊息編輯歷史"
-
-#: templates/zerver/app/navbar.html:10
-msgid "Stream list"
-msgstr "串流清單"
-
-#: templates/zerver/app/navbar.html:23 templates/zerver/app/navbar.html:24
-#: templates/zerver/app/navbar.html:34 templates/zerver/app/navbar.html:35
-msgid "Search"
-msgstr "搜尋"
-
-#: templates/zerver/app/navbar.html:25 templates/zerver/app/navbar.html:36
-msgid "Exit search"
-msgstr "退出搜尋"
-
-#: templates/zerver/app/navbar.html:45
-msgid "User list"
-msgstr "使用者清單"
-
-#: templates/zerver/app/navbar.html:53
-msgid "Menu"
-msgstr "選單"
-
-#: templates/zerver/app/navbar.html:65
-msgid "Manage streams"
-msgstr "管理串流"
-
-#: templates/zerver/app/navbar.html:70
-#: templates/zerver/app/settings_overlay.html:4
-#: templates/zerver/app/settings_overlay.html:177 zerver/lib/hotspots.py:32
-msgid "Settings"
-msgstr "設定"
-
-#: templates/zerver/app/navbar.html:76
-msgid "Manage organization"
-msgstr "管理組織"
-
-#: templates/zerver/app/navbar.html:83
-msgid "Usage statistics"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
-msgid "Help center"
-msgstr "幫助中心"
-
-#: templates/zerver/app/navbar.html:100
-msgid "Message formatting"
-msgstr "訊息格式"
-
-#: templates/zerver/app/navbar.html:105
-#: templates/zerver/app/search_operators.html:2
-msgid "Search operators"
-msgstr "搜尋操作"
-
-#: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:3
-msgid "About Zulip"
-msgstr "關於 Zulip"
-
-#: templates/zerver/app/navbar.html:117
-msgid "Contact support"
-msgstr "聯繫支援"
-
-#: templates/zerver/app/navbar.html:124
-msgid "Desktop & mobile apps"
-msgstr "桌面 & 行動應用"
-
-#: templates/zerver/app/navbar.html:129 templates/zerver/footer.html:50
-msgid "Integrations"
-msgstr "整合"
-
-#: templates/zerver/app/navbar.html:134
-msgid "API documentation"
-msgstr "API 文檔"
-
-#: templates/zerver/app/navbar.html:147
-msgid "Support Zulip"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:154
-msgid "Plans and pricing"
-msgstr "方案與費率"
-
-#: templates/zerver/app/navbar.html:162
-msgid "Invite users"
-msgstr "邀請使用者"
-
-#: templates/zerver/app/navbar.html:168
-msgid ""
-"Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
-"Webathena"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:170
-msgid "Link with Webathena"
-msgstr ""
-
-#: templates/zerver/app/navbar.html:176
-msgid "Log out"
-msgstr "登出"
-
-#: templates/zerver/app/navbar_alerts.html:4
-msgid ""
-"Zulip needs your permission to\n"
-"            <a class=\"request-desktop-notifications alert-link\" role=\"button\" tabindex=0>enable desktop notifications.</a>\n"
-"            "
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:9
-msgid ""
-"We strongly recommend enabling desktop notifications. They help Zulip keep "
-"your team connected."
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:11
-msgid "Enable notifications"
-msgstr "啟用通知"
-
-#: templates/zerver/app/navbar_alerts.html:13
-msgid "Ask me later"
-msgstr "稍後詢問我"
-
-#: templates/zerver/app/navbar_alerts.html:15
-msgid "Never ask on this computer"
-msgstr "此電腦不再詢問"
-
-#: templates/zerver/app/navbar_alerts.html:22
-msgid ""
-"Zulip needs to send email to confirm users' addresses and send "
-"notifications."
-msgstr "Zulip 需要發送 email 以確認使用者的地址跟發送通知。"
-
-#: templates/zerver/app/navbar_alerts.html:24
-msgid "See how to configure email."
-msgstr "E-mail設定展示"
-
-#: templates/zerver/app/navbar_alerts.html:31
-#, python-format
+#: templates/zerver/app/index.html:164 templates/zerver/app/index.html:166
+msgid "Messages"
+msgstr "訊息"
+
+#: templates/zerver/app/message_feed_errors.html:4
 msgid ""
 "\n"
-"            Complete the\n"
-"            <a class=\"alert-link\" href=\"%(profile_link)s\">organization profile</a>\n"
-"            to brand and explain the purpose of this Zulip organization.\n"
-"            "
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:41
-msgid ""
-"You are using an old version of the Zulip desktop app with known security "
-"bugs."
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:43
-msgid "Download the latest version."
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:50
-msgid "This Zulip server is running an old version and should be upgraded."
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:53
-msgid "Learn more"
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:56
-msgid "Dismiss for a week"
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:64
-#, python-format
-msgid ""
-"\n"
-"            Welcome back!  You have <span class=\"bankruptcy_unread_count\">%(count)s</span> unread messages.  Do you want to mark them all as read?\n"
-"            "
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:68
-msgid "Yes, please!"
-msgstr "好的，請"
-
-#: templates/zerver/app/navbar_alerts.html:70
-msgid "No, I'll catch up."
-msgstr ""
-
-#: templates/zerver/app/navbar_alerts.html:76
-msgid ""
-"\n"
-"        Marking all messages as read…\n"
+"        Some older messages are unavailable.\n"
+"        <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organization</a>\n"
+"        to access your full message history.\n"
 "        "
 msgstr ""
 
-#: templates/zerver/app/right_sidebar.html:5
-#: templates/zerver/app/right_sidebar.html:6
-msgid "Filter users"
-msgstr "篩選使用者"
-
-#: templates/zerver/app/right_sidebar.html:5
-msgid "USERS"
-msgstr "使用者"
-
-#: templates/zerver/app/right_sidebar.html:21
-msgid "Invite more users"
-msgstr "邀請更多使用者"
-
-#: templates/zerver/app/search_operators.html:7
-msgid "Operator"
-msgstr "操作"
-
-#: templates/zerver/app/search_operators.html:8
-msgid "Effect"
-msgstr "效果"
-
-#: templates/zerver/app/search_operators.html:13
-msgid "Narrow to messages on stream"
-msgstr "縮小範圍至某串流的訊息"
-
-#: templates/zerver/app/search_operators.html:17
-msgid "Narrow to messages with topic"
-msgstr "縮小範圍至某主題的訊息"
-
-#: templates/zerver/app/search_operators.html:21
-msgid "Narrow to private messages with"
-msgstr "縮小範圍至與某人的私人訊息"
-
-#: templates/zerver/app/search_operators.html:25
-msgid "Narrow to group private messages with"
-msgstr "縮小範圍至某群組的私人訊息"
-
-#: templates/zerver/app/search_operators.html:29
-msgid "Narrow to messages sent by"
-msgstr "縮小範圍至某人已發送的訊息"
-
-#: templates/zerver/app/search_operators.html:33
-msgid "Narrow to messages sent by you."
-msgstr "縮小範圍至您已發送的訊息"
-
-#: templates/zerver/app/search_operators.html:37
-msgid "Center the view around message ID"
-msgstr ""
-
-#: templates/zerver/app/search_operators.html:41
-msgid "Narrow to just message ID"
-msgstr "縮小範圍至訊息 ID"
-
-#: templates/zerver/app/search_operators.html:45
-msgid "Search all public streams in the organization."
-msgstr "搜尋此組織的所有公開串流"
-
-#: templates/zerver/app/search_operators.html:49
-msgid "Narrow to messages with alert words."
-msgstr "縮小範圍至含警示詞的訊息"
-
-#: templates/zerver/app/search_operators.html:53
-msgid "Narrow to messages that mention you."
-msgstr "縮小範圍至有提到您的訊息"
-
-#: templates/zerver/app/search_operators.html:57
-msgid "Narrow to private messages."
-msgstr "縮小範圍至私人訊息"
-
-#: templates/zerver/app/search_operators.html:61
-msgid "Narrow to starred messages."
-msgstr "縮小範圍至有標星的訊息"
-
-#: templates/zerver/app/search_operators.html:65
-msgid "Narrow to unread messages."
-msgstr "縮小範圍至未讀訊息"
-
-#: templates/zerver/app/search_operators.html:69
-msgid "Narrow to messages containing links."
-msgstr "縮小範圍至含網址連結的訊息"
-
-#: templates/zerver/app/search_operators.html:73
-msgid "Narrow to messages containing images."
-msgstr "縮小範圍至含圖的訊息"
-
-#: templates/zerver/app/search_operators.html:77
-msgid "Narrow to messages containing uploads."
-msgstr "縮小範圍至含上傳的訊息"
-
-#: templates/zerver/app/search_operators.html:81
-msgid ""
-"Search for <span class=\"operator_value\"> keyword </span> in the topic or "
-"message content "
-msgstr "搜尋主題或是訊息內容的<span class=\"operator_value\"> 關鍵詞 </span>"
-
-#: templates/zerver/app/search_operators.html:85
-msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
-msgstr "排除含有主題 <span class=\"operator_value\">topic</span> 的訊息"
-
-#: templates/zerver/app/search_operators.html:89
-msgid ""
-"You can use any combination of these search\n"
-"        operators in a single query. For example:"
-msgstr ""
-
-#: templates/zerver/app/search_operators.html:92
-msgid "streamname"
-msgstr "串流名稱"
-
-#: templates/zerver/app/search_operators.html:93
-msgid "user@example.com"
-msgstr ""
-
-#: templates/zerver/app/search_operators.html:94
-msgid "keyword"
-msgstr "關鍵詞"
-
-#: templates/zerver/app/search_operators.html:106
-#, python-format
+#: templates/zerver/app/message_feed_errors.html:14
 msgid ""
 "\n"
-"            That query would search for messages sent by\n"
-"            <span class=\"operator_value\">%(placeholder_email)s</span>\n"
-"            to stream\n"
-"            <span class=\"operator_value\">%(placeholder_stream)s</span>\n"
-"            containing the keyword\n"
-"            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
-"            "
-msgstr "\n            此查詢已發送訊息由\n            <span class=\"operator_value\">%(placeholder_email)s</span>\n            至串流\n            <span class=\"operator_value\">%(placeholder_stream)s</span>\n            包含關鍵詞\n            <span class=\"operator_value\">%(placeholder_keyword)s</span>。\n            "
-
-#: templates/zerver/app/search_operators.html:116
-msgid "Detailed search operators documentation"
+"        End of results from your\n"
+"        <a href=\"/help/search-for-messages#searching-shared-history\"\n"
+"          target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n"
+"        Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
+"        "
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:16
-#: templates/zerver/register.html:91
-msgid "Your account"
-msgstr "您的帳號"
+#: templates/zerver/app/message_feed_errors.html:23
+msgid "Nothing's been sent here yet!"
+msgstr "尚未發送出任何東西！"
 
-#: templates/zerver/app/settings_overlay.html:20
-msgid "Display settings"
-msgstr "顯示設定"
-
-#: templates/zerver/app/settings_overlay.html:24
-msgid "Notifications"
-msgstr "通知"
-
-#: templates/zerver/app/settings_overlay.html:29
-msgid "Your bots"
-msgstr "您的機器人"
-
-#: templates/zerver/app/settings_overlay.html:34
-msgid "Alert words"
-msgstr "警示詞"
-
-#: templates/zerver/app/settings_overlay.html:39
-msgid "Uploaded files"
-msgstr "已上傳的檔案"
-
-#: templates/zerver/app/settings_overlay.html:44
-msgid "Muted topics"
-msgstr "已靜音的主題"
-
-#: templates/zerver/app/settings_overlay.html:48
-msgid "Muted users"
+#: templates/zerver/app/message_feed_errors.html:26
+msgid ""
+"\n"
+"        Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"        start the conversation</a>?\n"
+"        "
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:55
-msgid "Organization profile"
-msgstr "組織 profile"
+#: templates/zerver/app/message_feed_errors.html:33
+msgid "You have no private messages yet!"
+msgstr "您沒有私人訊息！"
 
-#: templates/zerver/app/settings_overlay.html:57
-#: templates/zerver/app/settings_overlay.html:64
-#: templates/zerver/app/settings_overlay.html:71
-#: templates/zerver/app/settings_overlay.html:81
-#: templates/zerver/app/settings_overlay.html:103
-#: templates/zerver/app/settings_overlay.html:112
-#: templates/zerver/app/settings_overlay.html:121
-#: templates/zerver/app/settings_overlay.html:130
-#: templates/zerver/app/settings_overlay.html:138
-#: templates/zerver/app/settings_overlay.html:145
-msgid "Only organization administrators can edit these settings."
-msgstr "只有組織管理者能編輯這些設定。"
-
-#: templates/zerver/app/settings_overlay.html:62
-msgid "Organization settings"
-msgstr "組織設定"
-
-#: templates/zerver/app/settings_overlay.html:69
-msgid "Organization permissions"
-msgstr "組織權限"
-
-#: templates/zerver/app/settings_overlay.html:76 zerver/models.py:2374
-msgid "Custom emoji"
-msgstr "自定義表情符號"
-
-#: templates/zerver/app/settings_overlay.html:78
-msgid "Guest users cannot edit custom emoji."
-msgstr "訪客無法編輯自定義表情符號。"
-
-#: templates/zerver/app/settings_overlay.html:88
-msgid "User groups"
-msgstr "使用者群組"
-
-#: templates/zerver/app/settings_overlay.html:93
-msgid "Authentication methods"
-msgstr "驗證方法"
-
-#: templates/zerver/app/settings_overlay.html:95
-msgid "Only organization owners can edit these settings."
-msgstr "只有組織所有者可以編輯這些設定。"
-
-#: templates/zerver/app/settings_overlay.html:110
-msgid "Deactivated users"
-msgstr "停用使用者"
-
-#: templates/zerver/app/settings_overlay.html:128
-msgid "Default streams"
-msgstr "預設串流"
-
-#: templates/zerver/app/settings_overlay.html:136
-msgid "Linkifiers"
+#: templates/zerver/app/message_feed_errors.html:36
+#: templates/zerver/app/message_feed_errors.html:46
+#: templates/zerver/app/message_feed_errors.html:66
+#: templates/zerver/app/message_feed_errors.html:76
+msgid ""
+"\n"
+"        Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"        start the conversation</a>?\n"
+"        "
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:143
-msgid "Code playgrounds"
+#: templates/zerver/app/message_feed_errors.html:43
+msgid "You have no private messages with this person yet!"
+msgstr "您跟該人尚未有私人訊息！"
+
+#: templates/zerver/app/message_feed_errors.html:53
+msgid "You have not sent any private messages to yourself yet!"
+msgstr "您從未發送出私人訊息給自己"
+
+#: templates/zerver/app/message_feed_errors.html:56
+msgid ""
+"\n"
+"        Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"        start a conversation with yourself</a>?\n"
+"        "
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:151
-msgid "Custom profile fields"
-msgstr "自定義 profile 欄位"
+#: templates/zerver/app/message_feed_errors.html:63
+msgid "You have no group private messages with this person yet!"
+msgstr "您跟該人尚未有群組私人訊息！"
 
-#: templates/zerver/app/settings_overlay.html:157
-msgid "Invitations"
-msgstr "邀請"
+#: templates/zerver/app/message_feed_errors.html:73
+msgid "You have no private messages with these people yet!"
+msgstr "您跟這些人尚未有私人訊息！"
 
-#: templates/zerver/app/settings_overlay.html:163
-msgid "Data exports"
-msgstr "資料輸出"
+#: templates/zerver/app/message_feed_errors.html:83
+msgid "You haven't received any messages sent by this user yet!"
+msgstr "您尚未收到由此使用者發送出的訊息！"
 
-#: templates/zerver/app/settings_overlay.html:169
-msgid "Show more"
-msgstr "顯示更多"
+#: templates/zerver/app/message_feed_errors.html:86
+msgid "This user does not exist!"
+msgstr "此使用者不存在！"
+
+#: templates/zerver/app/message_feed_errors.html:89
+msgid "One or more of these users do not exist!"
+msgstr "這些使用者中有不存在的"
+
+#: templates/zerver/app/message_feed_errors.html:92
+msgid ""
+"You aren't subscribed to this stream and nobody has talked about that yet!"
+msgstr "您未訂閱此串流，尚未有人談到此串流！"
+
+#: templates/zerver/app/message_feed_errors.html:95
+msgid "Subscribe"
+msgstr "訂閱"
+
+#: templates/zerver/app/message_feed_errors.html:100
+msgid "This stream does not exist or is private."
+msgstr "這串流不存在或是私人。"
+
+#: templates/zerver/app/message_feed_errors.html:103
+msgid "You haven't starred anything yet!"
+msgstr "您尚未標星東西！"
+
+#: templates/zerver/app/message_feed_errors.html:106
+msgid ""
+"\n"
+"        Learn more about starring messages <a href=\"/help/star-a-message\">\n"
+"        here</a>.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:113
+msgid "You have no unread messages!"
+msgstr "您沒有未讀訊息！"
+
+#: templates/zerver/app/message_feed_errors.html:116
+msgid "You haven't been mentioned yet!"
+msgstr "您尚未被提及！"
+
+#: templates/zerver/app/message_feed_errors.html:119
+msgid ""
+"\n"
+"        Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
+"        here</a>.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:126
+msgid "No search results"
+msgstr "無搜尋結果"
+
+#: templates/zerver/app/message_feed_errors.html:130
+msgid "No topics are marked as resolved."
+msgstr ""
+
+#: templates/zerver/billing_nav.html:4
+#: templates/zerver/development/integrations_dev_panel.html:15
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:17
+#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
+#: templates/zerver/portico-header.html:9
+msgid "Zulip"
+msgstr "Zulip"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -1527,8 +703,8 @@ msgstr "無效的註冊連結或已過期"
 #: templates/zerver/confirmation_link_expired_error.html:9
 #: templates/zerver/footer.html:35
 #: templates/zerver/log_into_subdomain_token_invalid.html:9
-#: templates/zerver/login.html:103 templates/zerver/portico-header.html:27
-#: templates/zerver/portico-header.html:33
+#: templates/zerver/login.html:103 templates/zerver/portico-header.html:30
+#: templates/zerver/portico-header.html:36
 msgid "Log in"
 msgstr "登入"
 
@@ -1624,6 +800,10 @@ msgstr "所有者"
 msgid "Administrators"
 msgstr "管理者"
 
+#: templates/zerver/development/dev_login.html:40
+msgid "Moderators"
+msgstr ""
+
 #: templates/zerver/development/dev_login.html:49
 msgid "Guest users"
 msgstr "訪客"
@@ -1665,30 +845,44 @@ msgid ""
 "%(support_email)s."
 msgstr ""
 
-#: templates/zerver/emails/compiled/confirm_registration.html:10
-#: templates/zerver/emails/confirm_registration.source.html:9
-#: templates/zerver/emails/confirm_registration.txt:1
-msgid "You recently signed up for Zulip. Awesome!"
-msgstr "您近期註冊了 Zulip。非常好！"
+#: templates/zerver/emails/compiled/confirm_registration.html:11
+#: templates/zerver/emails/confirm_registration.source.html:10
+#: templates/zerver/emails/confirm_registration.txt:2
+msgid "You have requested a new Zulip organization. Awesome!"
+msgstr ""
 
 #: templates/zerver/emails/compiled/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.source.html:12
+#: templates/zerver/emails/confirm_registration.txt:4
+msgid "You recently signed up for Zulip. Awesome!"
+msgstr "您近期註冊了 Zulip。非常好！"
+
+#: templates/zerver/emails/compiled/confirm_registration.html:18
+#: templates/zerver/emails/confirm_registration.source.html:17
+#: templates/zerver/emails/confirm_registration.txt:8
+msgid ""
+"Click the button below to create the organization and register your account."
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:20
+#: templates/zerver/emails/confirm_registration.source.html:19
+#: templates/zerver/emails/confirm_registration.txt:10
 msgid "Click the button below to complete registration."
 msgstr "點擊以下按鈕以完成註冊。"
 
-#: templates/zerver/emails/compiled/confirm_registration.html:14
+#: templates/zerver/emails/compiled/confirm_registration.html:22
 #: templates/zerver/emails/compiled/invitation.html:17
 #: templates/zerver/emails/compiled/invitation_reminder.html:15
-#: templates/zerver/emails/confirm_registration.source.html:13
+#: templates/zerver/emails/confirm_registration.source.html:21
 #: templates/zerver/emails/invitation.source.html:16
 #: templates/zerver/emails/invitation_reminder.source.html:14
 msgid "Complete registration"
 msgstr "完成註冊"
 
-#: templates/zerver/emails/compiled/confirm_registration.html:16
+#: templates/zerver/emails/compiled/confirm_registration.html:24
 #: templates/zerver/emails/compiled/invitation.html:20
 #: templates/zerver/emails/compiled/realm_reactivation.html:20
-#: templates/zerver/emails/confirm_registration.source.html:15
+#: templates/zerver/emails/confirm_registration.source.html:23
 #: templates/zerver/emails/invitation.source.html:19
 #: templates/zerver/emails/realm_reactivation.source.html:19
 #: templates/zerver/emails/realm_reactivation.txt:13
@@ -2040,22 +1234,31 @@ msgid ""
 " email notifications</a>."
 msgstr ""
 
-#: templates/zerver/emails/compiled/missed_message.html:30
-#: templates/zerver/emails/missed_message.source.html:29
-#: templates/zerver/emails/missed_message.txt:25
+#: templates/zerver/emails/compiled/missed_message.html:31
+#: templates/zerver/emails/missed_message.source.html:30
+#: templates/zerver/emails/missed_message.txt:26
+#, python-format
+msgid ""
+"You are receiving this because @%(mentioned_user_group_name)s was mentioned "
+"in %(realm_name)s."
+msgstr ""
+
+#: templates/zerver/emails/compiled/missed_message.html:33
+#: templates/zerver/emails/missed_message.source.html:32
+#: templates/zerver/emails/missed_message.txt:28
 #, python-format
 msgid "You are receiving this because you were mentioned in %(realm_name)s."
 msgstr ""
 
-#: templates/zerver/emails/compiled/missed_message.html:32
-#: templates/zerver/emails/missed_message.source.html:31
-#: templates/zerver/emails/missed_message.txt:27
+#: templates/zerver/emails/compiled/missed_message.html:36
+#: templates/zerver/emails/missed_message.source.html:35
+#: templates/zerver/emails/missed_message.txt:31
 msgid ""
 "You are receiving this because you have email notifications enabled for this"
 " stream."
 msgstr "您收到此訊息，因為您開啟了該串流的 email 通知"
 
-#: templates/zerver/emails/compiled/missed_message.html:35
+#: templates/zerver/emails/compiled/missed_message.html:39
 #, python-format
 msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\" style=\"color:#15c;"
@@ -2064,7 +1267,7 @@ msgid ""
 "decoration:underline\">manage email preferences</a>."
 msgstr "直接回覆此 email，<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">在 Zulip 觀看</a>，或是<a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">管理 email 偏好</a>."
 
-#: templates/zerver/emails/compiled/missed_message.html:37
+#: templates/zerver/emails/compiled/missed_message.html:41
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
@@ -2073,7 +1276,7 @@ msgid ""
 "decoration:underline\">manage email preferences</a>."
 msgstr "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">在 Zulip 回覆或觀看</a>，或是<a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">管理 email 偏好</a>。"
 
-#: templates/zerver/emails/compiled/missed_message.html:39
+#: templates/zerver/emails/compiled/missed_message.html:43
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
@@ -2082,7 +1285,7 @@ msgid ""
 "preferences</a>."
 msgstr "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">在 Zulip 回覆</a>，或<a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">管理 email 偏好</a>。"
 
-#: templates/zerver/emails/compiled/missed_message.html:41
+#: templates/zerver/emails/compiled/missed_message.html:45
 #, python-format
 msgid ""
 "\n"
@@ -2240,6 +1443,34 @@ msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
 msgstr ""
 
+#: templates/zerver/emails/compiled/realm_auto_downgraded.html:8
+#: templates/zerver/emails/realm_auto_downgraded.source.html:8
+#, python-format
+msgid ""
+"\n"
+"    Your organization, %(organization_name_with_link)s, has been downgraded to the Zulip Cloud\n"
+"    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_auto_downgraded.html:15
+#: templates/zerver/emails/realm_auto_downgraded.source.html:15
+#, python-format
+msgid ""
+"\n"
+"    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_auto_downgraded.html:22
+#: templates/zerver/emails/realm_auto_downgraded.source.html:22
+#, python-format
+msgid ""
+"\n"
+"    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
+"    "
+msgstr ""
+
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
@@ -2285,15 +1516,15 @@ msgid ""
 "<%(support_email)s>."
 msgstr ""
 
-#: templates/zerver/emails/confirm_registration.subject.txt:1
+#: templates/zerver/emails/confirm_registration.subject.txt:2
+msgid "Create your Zulip organization"
+msgstr ""
+
+#: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
 msgstr ""
 
-#: templates/zerver/emails/confirm_registration.txt:3
-msgid "Click the link below to complete registration."
-msgstr ""
-
-#: templates/zerver/emails/confirm_registration.txt:6
+#: templates/zerver/emails/confirm_registration.txt:14
 #: templates/zerver/emails/invitation.txt:8
 #, python-format
 msgid ""
@@ -2540,28 +1771,28 @@ msgid ""
 "content appearing in email notifications</a>."
 msgstr ""
 
-#: templates/zerver/emails/missed_message.source.html:34
+#: templates/zerver/emails/missed_message.source.html:38
 #, python-format
 msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr "直接回覆此 email，<a href=\"%(narrow_url)s\">在 Zulip 觀看</a>，或<a href=\"%(notif_url)s\">管理 email 偏好</a>。"
 
-#: templates/zerver/emails/missed_message.source.html:36
+#: templates/zerver/emails/missed_message.source.html:40
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr "<a href=\"%(narrow_url)s\">在 Zulip 觀看</a>，或<a href=\"%(notif_url)s\">管理 email 偏好</a>。"
 
-#: templates/zerver/emails/missed_message.source.html:38
+#: templates/zerver/emails/missed_message.source.html:42
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr "<a href=\"%(narrow_url)s\">在 Zulip 回覆</a>，或<a href=\"%(notif_url)s\">管理 email 偏好</a>。"
 
-#: templates/zerver/emails/missed_message.source.html:40
+#: templates/zerver/emails/missed_message.source.html:44
 #, python-format
 msgid ""
 "\n"
@@ -2599,26 +1830,26 @@ msgid ""
 "See %(alert_notif_url)s for more details.\n"
 msgstr ""
 
-#: templates/zerver/emails/missed_message.txt:31
+#: templates/zerver/emails/missed_message.txt:35
 msgid "Reply to this email directly, or view it in Zulip:"
 msgstr ""
 
-#: templates/zerver/emails/missed_message.txt:35
+#: templates/zerver/emails/missed_message.txt:39
 msgid "View or reply in Zulip:"
 msgstr "在Zulip查看或回覆："
 
-#: templates/zerver/emails/missed_message.txt:39
+#: templates/zerver/emails/missed_message.txt:43
 msgid "Reply in Zulip:"
 msgstr "在Zulip上回覆："
 
-#: templates/zerver/emails/missed_message.txt:43
+#: templates/zerver/emails/missed_message.txt:47
 msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
 msgstr "\n請勿回覆此email。Zulip伺服器並不接收email。幫助文章：\n"
 
-#: templates/zerver/emails/missed_message.txt:50
+#: templates/zerver/emails/missed_message.txt:54
 msgid "Manage email preferences: "
 msgstr "管理 email 偏好："
 
@@ -2704,6 +1935,10 @@ msgstr "Email 地址"
 msgid "Find accounts"
 msgstr "查詢帳號"
 
+#: templates/zerver/footer.html:3
+msgid "About Zulip"
+msgstr "關於 Zulip"
+
 #: templates/zerver/footer.html:5
 msgid "Home"
 msgstr "家"
@@ -2736,6 +1971,10 @@ msgstr "幫助 &amp; 社群"
 msgid "Community chat"
 msgstr "社群聊天"
 
+#: templates/zerver/footer.html:16
+msgid "Help center"
+msgstr "幫助中心"
+
 #: templates/zerver/footer.html:20
 msgid "Support"
 msgstr "支援"
@@ -2767,6 +2006,10 @@ msgstr "應用 &amp; 整合"
 #: templates/zerver/footer.html:49
 msgid "Desktop &amp; mobile apps"
 msgstr "桌面 &amp; 行動應用"
+
+#: templates/zerver/footer.html:50
+msgid "Integrations"
+msgstr "整合"
 
 #: templates/zerver/for-companies.html:18
 msgid "The best chat for workplaces."
@@ -2814,7 +2057,7 @@ msgstr "每週二晚上在 Zulip 滿足需求的主題 - compose box"
 msgid "The Tuesday night catering topic in Slack"
 msgstr "每週二晚上在 Slack 滿足需求的主題"
 
-#: templates/zerver/hello.html:127 templates/zerver/hello.html:538
+#: templates/zerver/hello.html:127 templates/zerver/hello.html:537
 msgid "See plans and pricing"
 msgstr ""
 
@@ -2826,39 +2069,39 @@ msgstr ""
 msgid "Next"
 msgstr "下一個"
 
-#: templates/zerver/hello.html:400
+#: templates/zerver/hello.html:399
 msgid "Travis logo"
 msgstr "Travis 標誌圖"
 
-#: templates/zerver/hello.html:407
+#: templates/zerver/hello.html:406
 msgid "GitHub logo"
 msgstr "GitHub 標誌"
 
-#: templates/zerver/hello.html:414
+#: templates/zerver/hello.html:413
 msgid "Heroku logo"
 msgstr "Heroku 標誌圖"
 
-#: templates/zerver/hello.html:421
+#: templates/zerver/hello.html:420
 msgid "Zendesk logo"
 msgstr "Zendesk 標誌圖"
 
-#: templates/zerver/hello.html:428
+#: templates/zerver/hello.html:427
 msgid "Jira logo"
 msgstr "Jira 標誌"
 
-#: templates/zerver/hello.html:435
+#: templates/zerver/hello.html:434
 msgid "Sentry logo"
 msgstr "Sentry 標誌圖"
 
-#: templates/zerver/hello.html:442
+#: templates/zerver/hello.html:441
 msgid "Pagerduty logo"
 msgstr "Pagerduty 標誌圖"
 
-#: templates/zerver/hello.html:544
+#: templates/zerver/hello.html:543
 msgid "Log in now"
 msgstr "立即登入"
 
-#: templates/zerver/hello.html:548
+#: templates/zerver/hello.html:547
 msgid "Sign up now"
 msgstr "立即註冊"
 
@@ -2895,46 +2138,45 @@ msgstr ""
 msgid ""
 "\n"
 "                        And hundreds more through\n"
-"                        <a href=\"/integrations/doc/hubot\">Hubot</a>,\n"
-"                        <a href=\"/integrations/doc/zapier\">Zapier</a>,\n"
+"                        <a href=\"/integrations/doc/zapier\">Zapier</a>\n"
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
 msgstr ""
 
-#: templates/zerver/integrations/index.html:41
+#: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
 msgstr ""
 
-#: templates/zerver/integrations/index.html:48
+#: templates/zerver/integrations/index.html:47
 msgid "Filter by category"
 msgstr "篩選 by category"
 
-#: templates/zerver/integrations/index.html:62
-#: templates/zerver/integrations/index.html:89
+#: templates/zerver/integrations/index.html:61
+#: templates/zerver/integrations/index.html:88
 msgid "Custom integrations"
 msgstr ""
 
-#: templates/zerver/integrations/index.html:64
-#: templates/zerver/integrations/index.html:91
+#: templates/zerver/integrations/index.html:63
+#: templates/zerver/integrations/index.html:90
 msgid "Incoming webhooks"
 msgstr ""
 
-#: templates/zerver/integrations/index.html:67
-#: templates/zerver/integrations/index.html:94 zerver/lib/integrations.py:49
+#: templates/zerver/integrations/index.html:66
+#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:49
 msgid "Interactive bots"
 msgstr ""
 
-#: templates/zerver/integrations/index.html:70
-#: templates/zerver/integrations/index.html:97
+#: templates/zerver/integrations/index.html:69
+#: templates/zerver/integrations/index.html:96
 msgid "REST API"
 msgstr "REST API"
 
-#: templates/zerver/integrations/index.html:77
+#: templates/zerver/integrations/index.html:76
 msgid "Categories"
 msgstr "類別"
 
-#: templates/zerver/integrations/index.html:79
+#: templates/zerver/integrations/index.html:78
 msgid "All"
 msgstr "全部"
 
@@ -3029,6 +2271,18 @@ msgstr "忘記您的密碼？"
 #: templates/zerver/login.html:138
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
+msgstr ""
+
+#: templates/zerver/no_spare_licenses.html:7
+msgid "This organization cannot accept new members right now."
+msgstr ""
+
+#: templates/zerver/no_spare_licenses.html:10
+msgid ""
+"\n"
+"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
+"    invited you and ask them to increase the number of licenses, then try again.\n"
+"    "
 msgstr ""
 
 #: templates/zerver/portico-header-dropdown.html:3
@@ -3131,6 +2385,10 @@ msgstr "使用 %(external_host)s"
 #: templates/zerver/register.html:83
 msgid "The URL users will use to access the new organization."
 msgstr ""
+
+#: templates/zerver/register.html:91
+msgid "Your account"
+msgstr "您的帳號"
 
 #: templates/zerver/register.html:110
 msgid "Import settings from existing Zulip account"
@@ -3319,395 +2577,427 @@ msgid ""
 "    "
 msgstr ""
 
-#: zerver/decorator.py:161
+#: zerver/decorator.py:170
 msgid "Must be a billing administrator or an organization owner"
 msgstr ""
 
-#: zerver/decorator.py:232
+#: zerver/decorator.py:244
 msgid "Invalid subdomain for push notifications bouncer"
 msgstr "無效的推送通知 bouncer 子域名"
 
-#: zerver/decorator.py:241
+#: zerver/decorator.py:253
 msgid "This API is not available to incoming webhook bots."
 msgstr ""
 
-#: zerver/decorator.py:268
+#: zerver/decorator.py:280
 msgid "Account is not associated with this subdomain"
 msgstr "帳號沒被關聯至此子域名"
 
-#: zerver/decorator.py:455 zerver/decorator.py:552
+#: zerver/decorator.py:469 zerver/decorator.py:566
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:526
+#: zerver/decorator.py:540
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:627
+#: zerver/decorator.py:579 zerver/lib/streams.py:664
+#: zerver/lib/user_groups.py:19 zerver/lib/users.py:240
+#: zerver/lib/users.py:269 zerver/views/invite.py:45
+#: zerver/views/streams.py:519
+msgid "Insufficient permission"
+msgstr ""
+
+#: zerver/decorator.py:637
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:630
+#: zerver/decorator.py:640
 msgid "Invalid authorization header for basic auth"
 msgstr "無效的 authorization header for basic auth"
 
-#: zerver/decorator.py:632
+#: zerver/decorator.py:642
 msgid "Missing authorization header for basic auth"
 msgstr "basic auth 缺少 authorization header"
 
-#: zerver/decorator.py:735
+#: zerver/decorator.py:745
 msgid "Webhook bots can only access webhooks"
 msgstr "Webhook 機器人只能存取 webhooks"
 
-#: zerver/decorator.py:801
-msgid "Access denied"
-msgstr "存取已拒絕"
-
-#: zerver/forms.py:84
+#: zerver/forms.py:88
 msgid "Subdomain needs to have length 3 or greater."
 msgstr "子域名需要長度至少為 3"
 
-#: zerver/forms.py:85
+#: zerver/forms.py:89
 msgid "Subdomain cannot start or end with a '-'."
 msgstr "子域名不能開頭或結尾有 '-'。"
 
-#: zerver/forms.py:86
+#: zerver/forms.py:90
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "子域名只能是英文字母、數字、'-'。"
 
-#: zerver/forms.py:87
+#: zerver/forms.py:91
 msgid "Subdomain unavailable. Please choose a different one."
 msgstr "子域名不可用。請選擇另一個"
 
-#: zerver/forms.py:178
+#: zerver/forms.py:182
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr "您嘗試加入的組織使用的 {email} 不存在。"
 
-#: zerver/forms.py:186
+#: zerver/forms.py:190
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr ""
 
-#: zerver/forms.py:197
+#: zerver/forms.py:201
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr "您的 email 地址 {email}，並不在此組織允許註冊的域名範圍內。"
 
-#: zerver/forms.py:202 zerver/forms.py:216 zerver/lib/email_validation.py:108
+#: zerver/forms.py:206 zerver/forms.py:231 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
 msgstr "請使用您真正的 email 地址。"
 
-#: zerver/forms.py:205
+#: zerver/forms.py:209
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr ""
 
-#: zerver/forms.py:226
+#: zerver/forms.py:221
+msgid ""
+"New members cannot join this organization because all Zulip licenses are in "
+"use. Please contact the person who invited you and ask them to increase the "
+"number of licenses, then try again."
+msgstr ""
+
+#: zerver/forms.py:241
 msgid "New password"
 msgstr "新密碼"
 
-#: zerver/forms.py:233
+#: zerver/forms.py:248
 msgid "New password confirmation"
 msgstr "確認新密碼"
 
-#: zerver/forms.py:449
+#: zerver/forms.py:464
 msgid "Token"
 msgstr ""
 
-#: zerver/forms.py:469
+#: zerver/forms.py:484
 msgid "Add up to 10 comma-separated email addresses."
 msgstr ""
 
-#: zerver/forms.py:474
+#: zerver/forms.py:489
 msgid "Please enter at most 10 emails."
 msgstr "請輸入至少 10 個 emails。"
 
-#: zerver/forms.py:487
+#: zerver/forms.py:502
 msgid "We couldn't find that Zulip organization."
 msgstr ""
 
-#: zerver/lib/actions.py:348
+#: zerver/lib/actions.py:350
 msgid "signups"
 msgstr "註冊"
 
-#: zerver/lib/actions.py:364 zerver/lib/actions.py:376
+#: zerver/lib/actions.py:366 zerver/lib/actions.py:388
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} 已在 Zulip 註冊。（總數：{user_count}）"
 
-#: zerver/lib/actions.py:487
+#: zerver/lib/actions.py:499
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} 已同意您的邀請並加入了 Zulip！"
 
-#: zerver/lib/actions.py:1417
+#: zerver/lib/actions.py:1443
 msgid "Unable to render message"
 msgstr "無法渲染訊息"
 
-#: zerver/lib/actions.py:2238 zerver/lib/actions.py:2268
+#: zerver/lib/actions.py:2217
+msgid "You cannot attach a submessage to this message."
+msgstr ""
+
+#: zerver/lib/actions.py:2354
 msgid "Reaction already exists."
 msgstr ""
 
-#: zerver/lib/actions.py:2371 zerver/lib/addressee.py:32
+#: zerver/lib/actions.py:2462 zerver/lib/addressee.py:32
 msgid "Invalid user ID {}"
 msgstr "無效的使用者 ID {}"
 
-#: zerver/lib/actions.py:2440 zerver/lib/actions.py:7060
+#: zerver/lib/actions.py:2531 zerver/lib/actions.py:7313
 #: zerver/lib/streams.py:238 zerver/lib/streams.py:246
-#: zerver/tornado/views.py:105 zerver/views/events_register.py:73
-#: zerver/views/message_send.py:226 zerver/views/message_send.py:232
-#: zerver/views/message_send.py:251 zerver/views/users.py:572
+#: zerver/tornado/views.py:109 zerver/views/events_register.py:74
+#: zerver/views/message_send.py:232 zerver/views/message_send.py:238
+#: zerver/views/message_send.py:257 zerver/views/users.py:572
 msgid "User not authorized for this query"
 msgstr "使用者此查詢未授權"
 
-#: zerver/lib/actions.py:2477
+#: zerver/lib/actions.py:2568
 #, python-brace-format
 msgid "'{email}' is no longer using Zulip."
 msgstr "'{email}' 沒再使用 Zulip。"
 
-#: zerver/lib/actions.py:2484
+#: zerver/lib/actions.py:2575
 msgid "You can't send private messages outside of your organization."
 msgstr "您不能發送您組織之外的私人訊息"
 
-#: zerver/lib/actions.py:2550
+#: zerver/lib/actions.py:2641
 msgid "Expected exactly one stream"
 msgstr "預期至少一個串流"
 
-#: zerver/lib/actions.py:2561
+#: zerver/lib/actions.py:2652
 msgid "Invalid data type for stream"
 msgstr "無效的串流資料類型"
 
-#: zerver/lib/actions.py:2577 zerver/lib/actions.py:2587
+#: zerver/lib/actions.py:2668 zerver/lib/actions.py:2678
 msgid "Invalid data type for recipients"
 msgstr "無效的 recipients 資料類型"
 
-#: zerver/lib/actions.py:2595 zerver/lib/actions.py:2603
+#: zerver/lib/actions.py:2686 zerver/lib/actions.py:2694
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "接收者清單可包含 emails 或是使用者 IDs，但不能兩個同時存在。"
 
-#: zerver/lib/actions.py:2701
+#: zerver/lib/actions.py:2806
 msgid "Reminders can only be set for streams."
 msgstr "Reminders can only be set for 串流。"
 
-#: zerver/lib/actions.py:2722
-msgid "Your organization has turned off message editing"
-msgstr "您的組織關閉了訊息編輯"
-
-#: zerver/lib/actions.py:2725
-msgid "Invalid propagate_mode without topic edit"
-msgstr "無效的非主題編輯 propagate_mode"
-
-#: zerver/lib/actions.py:2745
-msgid "You don't have permission to edit this message"
-msgstr "您沒有權限編輯此訊息"
-
-#: zerver/lib/actions.py:2749
-msgid "Widgets cannot be edited."
-msgstr ""
-
-#: zerver/lib/actions.py:2760 zerver/lib/actions.py:2774
-msgid "The time limit for editing this message has passed"
-msgstr "可編輯此訊息的時間已過"
-
-#: zerver/lib/actions.py:2777
+#: zerver/lib/actions.py:2822
 msgid "Nothing to change"
 msgstr ""
 
-#: zerver/lib/actions.py:2781 zerver/lib/addressee.py:41
-#: zerver/webhooks/ifttt/view.py:26 zerver/webhooks/zapier/view.py:38
-msgid "Topic can't be empty"
-msgstr "主題不可為空"
-
-#: zerver/lib/actions.py:2819
-msgid "Message must be a stream message"
+#: zerver/lib/actions.py:2826
+msgid "Private messages cannot be moved to streams."
 msgstr ""
 
-#: zerver/lib/actions.py:2821
-msgid "You don't have permission to move this message"
-msgstr "您沒有權限移動此訊息"
-
-#: zerver/lib/actions.py:2827
-msgid ""
-"You don't have permission to move this message due to missing access to its "
-"stream"
+#: zerver/lib/actions.py:2828
+msgid "Private messages cannot have topics."
 msgstr ""
 
 #: zerver/lib/actions.py:2831
+msgid "Invalid propagate_mode without topic edit"
+msgstr "無效的非主題編輯 propagate_mode"
+
+#: zerver/lib/actions.py:2834 zerver/lib/addressee.py:41
+#: zerver/webhooks/ifttt/view.py:27 zerver/webhooks/zapier/view.py:39
+msgid "Topic can't be empty"
+msgstr "主題不可為空"
+
+#: zerver/lib/actions.py:2837
 msgid "Cannot change message content while changing stream"
 msgstr "當改變串流時，無法修改訊息內容"
 
-#: zerver/lib/actions.py:2868
+#: zerver/lib/actions.py:2841
+msgid "Widgets cannot be edited."
+msgstr ""
+
+#: zerver/lib/actions.py:2894
+msgid "Your organization has turned off message editing"
+msgstr "您的組織關閉了訊息編輯"
+
+#: zerver/lib/actions.py:2913
+msgid "You don't have permission to edit this message"
+msgstr "您沒有權限編輯此訊息"
+
+#: zerver/lib/actions.py:2924
+msgid "The time limit for editing this message has passed"
+msgstr "可編輯此訊息的時間已過"
+
+#: zerver/lib/actions.py:2939
+msgid "The time limit for editing this message's topic has passed"
+msgstr ""
+
+#: zerver/lib/actions.py:2976
+msgid "You don't have permission to move this message"
+msgstr "您沒有權限移動此訊息"
+
+#: zerver/lib/actions.py:2982
+msgid ""
+"You don't have permission to move this message due to missing access to its "
+"stream"
+msgstr "您沒有權限移動此訊息因為您沒有存取該頻道的權限"
+
+#: zerver/lib/actions.py:3020
 msgid "Invalid default stream group name '{}'"
 msgstr "無效的預設串流群組名稱 '{}'"
 
-#: zerver/lib/actions.py:2871
+#: zerver/lib/actions.py:3023
 msgid "Default stream group name too long (limit: {} characters)"
 msgstr "預設串流群組名稱過長（限制：{} 字元）"
 
-#: zerver/lib/actions.py:2878
+#: zerver/lib/actions.py:3030
 msgid "Default stream group name '{}' contains NULL (0x00) characters."
 msgstr "預設串流群組名稱 '{}' 含有 NULL (0x00) 字元。"
 
-#: zerver/lib/actions.py:2944
+#: zerver/lib/actions.py:3096
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "您的機器人 {bot_identity} 嘗試發送訊息至串流 ID {stream_id}，但無串流是該 ID。"
 
-#: zerver/lib/actions.py:2950
+#: zerver/lib/actions.py:3102
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "您的機器人 {bot_identity} 嘗試發送訊息至串流 {stream_name}，但該串流不存在。點擊 [此處]({new_stream_link}) 以新建他。"
 
-#: zerver/lib/actions.py:2958
+#: zerver/lib/actions.py:3110
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "您的機器人 {bot_identity} 嘗試發送訊息至串流 {stream_name}。該串流存在，但沒有訂閱者。"
 
-#: zerver/lib/actions.py:3005
+#: zerver/lib/actions.py:3157
 msgid "Private messages are disabled in this organization."
 msgstr "此組織禁用私人訊息"
 
-#: zerver/lib/actions.py:3131
+#: zerver/lib/actions.py:3283
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/lib/actions.py:3137
+#: zerver/lib/actions.py:3289
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr ""
 
-#: zerver/lib/actions.py:3155
+#: zerver/lib/actions.py:3307
 msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr ""
+msgstr "您沒有權限在這個使用"
 
-#: zerver/lib/actions.py:3408
+#: zerver/lib/actions.py:3560
 msgid "Subscriber data is not available for this stream"
 msgstr "此串流訂閱者資料不可用"
 
-#: zerver/lib/actions.py:3415
+#: zerver/lib/actions.py:3567
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "無法取得該私人串流的訂閱者"
 
-#: zerver/lib/actions.py:4672
+#: zerver/lib/actions.py:4833
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr "{user_name} 重新命名串流 {old_stream_name} 變成 {new_stream_name}."
 
-#: zerver/lib/actions.py:4778
+#: zerver/lib/actions.py:4954
 msgid "Signups enabled"
 msgstr "註冊已啟用"
 
-#: zerver/lib/actions.py:4892
+#: zerver/lib/actions.py:5071
 msgid "Invalid default stream group {}"
 msgstr "無效的預設串流群組 {}"
 
-#: zerver/lib/actions.py:4938 zerver/lib/actions.py:4965
+#: zerver/lib/actions.py:5117 zerver/lib/actions.py:5144
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
 msgstr "'{stream_name}' 是預設串流，不能被加到 '{group_name}'"
 
-#: zerver/lib/actions.py:4949
+#: zerver/lib/actions.py:5128
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
 msgstr "預設串流群組 '{group_name}' 已存在"
 
-#: zerver/lib/actions.py:4971
+#: zerver/lib/actions.py:5150
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
 msgstr "串流 '{stream_name}' 已經存在於預設串流群組 '{group_name}'"
 
-#: zerver/lib/actions.py:4987
+#: zerver/lib/actions.py:5166
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
 msgstr "串流 '{stream_name}' 不存在於預設串流群組 '{group_name}'"
 
-#: zerver/lib/actions.py:5001
+#: zerver/lib/actions.py:5180
 msgid "This default stream group is already named '{}'"
 msgstr "此預設串流群組已被更名為 '{}'"
 
-#: zerver/lib/actions.py:5005
+#: zerver/lib/actions.py:5184
 msgid "Default stream group '{}' already exists"
 msgstr "預設串流群組 '{}' 已存在"
 
-#: zerver/lib/actions.py:5444
+#: zerver/lib/actions.py:5630
 msgid "Invalid flag: '{}'"
 msgstr "無效的 flag: '{}'"
 
-#: zerver/lib/actions.py:5446
+#: zerver/lib/actions.py:5632
 msgid "Flag not editable: '{}'"
 msgstr "Flag 不可編輯：'{}'"
 
-#: zerver/lib/actions.py:5448
+#: zerver/lib/actions.py:5634
 msgid "Invalid message flag operation: '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:5462 zerver/lib/actions.py:5464
-#: zerver/lib/message.py:671 zerver/lib/message.py:677
+#: zerver/lib/actions.py:5648 zerver/lib/actions.py:5650
+#: zerver/lib/message.py:706 zerver/lib/message.py:712
 msgid "Invalid message(s)"
 msgstr "無效的訊息(s)"
 
-#: zerver/lib/actions.py:6036
+#: zerver/lib/actions.py:5718
+#, python-brace-format
+msgid "{user} has marked this topic as resolved."
+msgstr ""
+
+#: zerver/lib/actions.py:5722
+#, python-brace-format
+msgid "{user} has marked this topic as unresolved."
+msgstr ""
+
+#: zerver/lib/actions.py:6280
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
 msgstr "此主題已被 {user} 移動至 {new_location} "
 
-#: zerver/lib/actions.py:6041
+#: zerver/lib/actions.py:6285
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
 msgstr "此主題已被 {user} 從 {old_location} 移動至此"
 
-#: zerver/lib/actions.py:6532
+#: zerver/lib/actions.py:6776
 #, python-brace-format
 msgid ""
 "You do not have enough remaining invites for today. Please contact {email} "
 "to have your limit raised. No invitations were sent."
 msgstr ""
 
-#: zerver/lib/actions.py:6583
+#: zerver/lib/actions.py:6832
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr "您的帳號太新，以至於不能發送此組織的邀請。詢問組織管理者，或是更有經驗的使用者。"
 
-#: zerver/lib/actions.py:6623
+#: zerver/lib/actions.py:6872
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "部份 emails 尚未驗證，所以我們沒有送出邀請。"
 
-#: zerver/lib/actions.py:6631
+#: zerver/lib/actions.py:6880
 msgid "We weren't able to invite anyone."
 msgstr ""
 
-#: zerver/lib/actions.py:6662
+#: zerver/lib/actions.py:6915
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "部份地址已經在 Zulip 使用，所以我們沒送出邀請。除此之外其他部份都已送出！"
 
-#: zerver/lib/actions.py:7279
+#: zerver/lib/actions.py:7534
 msgid "Invalid order mapping."
 msgstr "無效的順序映射"
 
-#: zerver/lib/actions.py:7345 zerver/lib/users.py:344
+#: zerver/lib/actions.py:7609 zerver/lib/users.py:344
 #: zerver/views/custom_profile_fields.py:137
 #: zerver/views/custom_profile_fields.py:157
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr "找不到欄位 id {id}。"
 
-#: zerver/lib/actions.py:7371 zerver/lib/actions.py:7384
+#: zerver/lib/actions.py:7635 zerver/lib/actions.py:7648
 msgid "User group '{}' already exists."
 msgstr "使用者群組 '{}' 已存在。"
 
@@ -3716,11 +3006,11 @@ msgid "Invalid email '{}'"
 msgstr "無效的 email '{}'"
 
 #: zerver/lib/addressee.py:69 zerver/lib/addressee.py:137
-#: zerver/views/typing.py:38
+#: zerver/views/typing.py:39
 msgid "Missing topic"
 msgstr "缺少主題"
 
-#: zerver/lib/addressee.py:122 zerver/views/typing.py:35
+#: zerver/lib/addressee.py:122 zerver/views/typing.py:36
 msgid "Cannot send to multiple streams"
 msgstr "無法發送至多個串流"
 
@@ -3777,11 +3067,11 @@ msgstr "子域名不能開頭或結尾有 '-'。"
 msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr "域名只能是英文字母、數字、'.' 和 '-'。"
 
-#: zerver/lib/email_notifications.py:132 zerver/lib/email_notifications.py:160
+#: zerver/lib/email_notifications.py:134 zerver/lib/email_notifications.py:162
 msgid "Open Zulip to see the spoiler content"
 msgstr ""
 
-#: zerver/lib/email_notifications.py:505
+#: zerver/lib/email_notifications.py:545
 msgid "Zulip notifications"
 msgstr ""
 
@@ -3814,7 +3104,7 @@ msgstr "已有帳號"
 msgid "Account has been deactivated."
 msgstr "帳號已被停用"
 
-#: zerver/lib/emoji.py:58 zerver/views/realm_emoji.py:52
+#: zerver/lib/emoji.py:58 zerver/views/realm_emoji.py:61
 msgid "Emoji '{}' does not exist"
 msgstr "表情符號 '{}' 不存在"
 
@@ -3846,7 +3136,7 @@ msgstr "無效的表情符號類型。"
 msgid "Must be an organization administrator or emoji author"
 msgstr "必須是組織管理者或表情符號作者"
 
-#: zerver/lib/emoji.py:117 zerver/models.py:842
+#: zerver/lib/emoji.py:117 zerver/models.py:846
 msgid "Invalid characters in emoji name"
 msgstr "表情符號名稱中有無效的字元"
 
@@ -3854,96 +3144,111 @@ msgstr "表情符號名稱中有無效的字元"
 msgid "Emoji name is missing"
 msgstr "缺少表情符號名稱"
 
-#: zerver/lib/error_notify.py:202
+#: zerver/lib/error_notify.py:203
 msgid "Invalid type parameter"
 msgstr "無效的類型參數"
 
-#: zerver/lib/events.py:1177
+#: zerver/lib/events.py:1182
 msgid "Could not allocate event queue"
 msgstr ""
 
-#: zerver/lib/exceptions.py:157
+#: zerver/lib/exceptions.py:161
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr "串流 '{stream}' 不存在"
 
-#: zerver/lib/exceptions.py:169
+#: zerver/lib/exceptions.py:173
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
 msgstr "串流 ID '{stream_id}' 不存在"
 
-#: zerver/lib/exceptions.py:178
+#: zerver/lib/exceptions.py:182
 msgid "organization owner"
 msgstr "組織所有者"
 
-#: zerver/lib/exceptions.py:178
+#: zerver/lib/exceptions.py:182
 msgid "user"
 msgstr "使用者"
 
-#: zerver/lib/exceptions.py:182
+#: zerver/lib/exceptions.py:186
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr "無法停用唯一的 {entity}。"
 
-#: zerver/lib/exceptions.py:194
+#: zerver/lib/exceptions.py:198
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr ""
 
-#: zerver/lib/exceptions.py:206
+#: zerver/lib/exceptions.py:210
 msgid "API usage exceeded rate limit"
 msgstr ""
 
-#: zerver/lib/exceptions.py:229 zerver/lib/request.py:325
+#: zerver/lib/exceptions.py:233 zerver/lib/request.py:374
 #: zerver/webhooks/slack_incoming/view.py:35
 msgid "Malformed JSON"
 msgstr ""
 
-#: zerver/lib/exceptions.py:240
+#: zerver/lib/exceptions.py:244
 msgid "Must be an organization member"
 msgstr ""
 
-#: zerver/lib/exceptions.py:251 zerver/views/invite.py:57
+#: zerver/lib/exceptions.py:255 zerver/views/invite.py:57
 #: zerver/views/invite.py:112 zerver/views/invite.py:156
 msgid "Must be an organization administrator"
 msgstr ""
 
-#: zerver/lib/exceptions.py:262
+#: zerver/lib/exceptions.py:266
 msgid "Must be an organization owner"
 msgstr "必須是組織所有者"
 
-#: zerver/lib/exceptions.py:273
+#: zerver/lib/exceptions.py:277
 msgid "Must be an organization or stream administrator"
+msgstr "必須是組織或是頻道管理者"
+
+#: zerver/lib/exceptions.py:290
+msgid "Your username or password is incorrect"
 msgstr ""
 
-#: zerver/lib/exceptions.py:285
+#: zerver/lib/exceptions.py:298
 msgid "Account is deactivated"
 msgstr "帳號被停用"
 
-#: zerver/lib/exceptions.py:297
+#: zerver/lib/exceptions.py:306
 msgid "This organization has been deactivated"
 msgstr "此組織已被停用"
 
-#: zerver/lib/exceptions.py:313
+#: zerver/lib/exceptions.py:314
+msgid "Password authentication is disabled in this organization"
+msgstr ""
+
+#: zerver/lib/exceptions.py:322
+msgid "Your password has been disabled and needs to be reset"
+msgstr ""
+
+#: zerver/lib/exceptions.py:338
 msgid "Invalid API key"
 msgstr "無效的 API key"
 
-#: zerver/lib/exceptions.py:319
+#: zerver/lib/exceptions.py:344
 msgid "Malformed API key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:332
+#: zerver/lib/exceptions.py:357
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook"
 msgstr ""
 
-#: zerver/lib/exceptions.py:355 zerver/views/auth.py:620
-#: zerver/views/auth.py:819 zerver/views/auth.py:880 zerver/views/auth.py:942
-#: zerver/views/development/dev_login.py:106
+#: zerver/lib/exceptions.py:380 zerver/views/auth.py:634
+#: zerver/views/auth.py:876 zerver/views/auth.py:938
 msgid "Invalid subdomain"
 msgstr "無效的子域名"
+
+#: zerver/lib/exceptions.py:413
+msgid "Access denied"
+msgstr "存取已拒絕"
 
 #: zerver/lib/external_accounts.py:49
 msgid "Custom external account must define URL pattern"
@@ -3980,6 +3285,10 @@ msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
 msgstr "每條訊息都有主題。主題可以持續對談並容易跟進，且當您離線時也容易回覆。"
+
+#: zerver/lib/hotspots.py:32
+msgid "Settings"
+msgstr "設定"
 
 #: zerver/lib/hotspots.py:34
 msgid "Go to Settings to configure your notifications and display settings."
@@ -4051,11 +3360,11 @@ msgstr ""
 msgid "Version control"
 msgstr "版本控制"
 
-#: zerver/lib/message.py:129
+#: zerver/lib/message.py:147
 msgid "Message must not be empty"
 msgstr "訊息不能為空"
 
-#: zerver/lib/message.py:131
+#: zerver/lib/message.py:149
 msgid "Message must not contain null bytes"
 msgstr "訊息不可包含 null bytes"
 
@@ -4063,108 +3372,108 @@ msgstr "訊息不可包含 null bytes"
 msgid "Operator {} not supported."
 msgstr ""
 
-#: zerver/lib/onboarding.py:68
+#: zerver/lib/onboarding.py:69
 #, python-brace-format
 msgid ""
 "[Read the guide]({help_url}) for getting your organization started with "
 "Zulip"
 msgstr "[閱讀指南]({help_url})：如何開始您的 Zulip 組織"
 
-#: zerver/lib/onboarding.py:73
+#: zerver/lib/onboarding.py:74
 msgid "Hello, and welcome to Zulip!"
 msgstr "嗨，歡迎來到 Zulip！"
 
-#: zerver/lib/onboarding.py:75
+#: zerver/lib/onboarding.py:76
 msgid "This is a private message from me, Welcome Bot."
 msgstr "這是一則由我發送的私人訊息，歡迎機器人。"
 
-#: zerver/lib/onboarding.py:77
+#: zerver/lib/onboarding.py:78
 msgid "Here are some tips to get you started:"
 msgstr ""
 
-#: zerver/lib/onboarding.py:79
+#: zerver/lib/onboarding.py:80
 #, python-brace-format
 msgid "Download our [Desktop and mobile apps]({apps_url})"
 msgstr "下載我們的[桌面和手機版應用程式]({apps_url})"
 
-#: zerver/lib/onboarding.py:81
+#: zerver/lib/onboarding.py:82
 #, python-brace-format
 msgid ""
 "Customize your account and notifications on your [Settings "
 "page]({settings_url})"
 msgstr "可在[設定頁面]({settings_url})自定義您的帳號跟通知"
 
-#: zerver/lib/onboarding.py:83
+#: zerver/lib/onboarding.py:84
 msgid "Type `?` to check out Zulip's keyboard shortcuts"
 msgstr "輸入 `?` 以查看 Zulip 的鍵盤快捷鍵"
 
-#: zerver/lib/onboarding.py:85
+#: zerver/lib/onboarding.py:86
 msgid "The most important shortcut is `r` to reply."
 msgstr ""
 
-#: zerver/lib/onboarding.py:87
+#: zerver/lib/onboarding.py:88
 msgid "Practice sending a few messages by replying to this conversation."
 msgstr "回覆此對談，嘗試發送訊息。"
 
-#: zerver/lib/onboarding.py:90
+#: zerver/lib/onboarding.py:91
 msgid ""
 "If you're not into keyboards, that's okay too; clicking anywhere on this "
 "message will also do the trick!"
 msgstr ""
 
-#: zerver/lib/onboarding.py:107
+#: zerver/lib/onboarding.py:108
 msgid "Congratulations on your first reply!"
 msgstr ""
 
-#: zerver/lib/onboarding.py:112
+#: zerver/lib/onboarding.py:113
 msgid ""
 "Feel free to continue using this space to practice your new messaging "
 "skills. Or, try clicking on some of the stream names to your left!"
 msgstr "Feel free to continue using this space to practice your new messaging skills. Or, try clicking on some of the 串流名稱 to your left!"
 
-#: zerver/lib/onboarding.py:125
+#: zerver/lib/onboarding.py:127
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
 msgstr "這是私人串流，可以由串流名稱旁的鎖定圖示看出來。"
 
-#: zerver/lib/onboarding.py:127
+#: zerver/lib/onboarding.py:129
 msgid "Private streams are only visible to stream members."
 msgstr "私人串流只有該串流成員可見"
 
-#: zerver/lib/onboarding.py:131
+#: zerver/lib/onboarding.py:133
 #, python-brace-format
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
 msgstr "管理此串流，至 [串流設定]({stream_settings_url}) 點擊 `{initial_private_stream_name}`。"
 
-#: zerver/lib/onboarding.py:141
+#: zerver/lib/onboarding.py:143
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
 msgstr "這是一則訊息在串流 #**{default_notification_stream_name}** 與主題 `topic demonstration`."
 
-#: zerver/lib/onboarding.py:147
+#: zerver/lib/onboarding.py:149
 msgid "Topics are a lightweight tool to keep conversations organized."
 msgstr "主題是一個輕量化的工具，可以持續有系統的對談。"
 
-#: zerver/lib/onboarding.py:149
+#: zerver/lib/onboarding.py:151
 #, python-brace-format
 msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
 msgstr "您可在[串流跟主題]({about_topics_help_url})學習更多有關於主題的事項。"
 
-#: zerver/lib/onboarding.py:154
+#: zerver/lib/onboarding.py:156
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
 msgstr "者是一則訊息在串流 #**{default_notification_stream_name}** 與主題 `swimming turtles`."
 
-#: zerver/lib/onboarding.py:163
+#: zerver/lib/onboarding.py:165
 #, python-brace-format
 msgid ""
 "[Start a new topic]({start_topic_help_url}) any time you're not replying to "
@@ -4179,25 +3488,36 @@ msgstr ""
 msgid "Invalid response format"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:274
+#: zerver/lib/push_notifications.py:277
 msgid "Invalid GCM option to bouncer: priority {!r}"
 msgstr "無效的 GCM option to bouncer: priority {!r}"
 
-#: zerver/lib/push_notifications.py:284
+#: zerver/lib/push_notifications.py:287
 msgid "Invalid GCM options to bouncer: {}"
 msgstr "無效的 GCM options to bouncer: {}"
 
 #. error
-#: zerver/lib/push_notifications.py:484 zilencer/views.py:150
+#: zerver/lib/push_notifications.py:487 zilencer/views.py:150
 msgid "Token does not exist"
 msgstr "Token 不存在"
 
-#: zerver/lib/push_notifications.py:702
+#: zerver/lib/push_notifications.py:649
+msgid ""
+"This organization has disabled including message content in mobile push "
+"notifications"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:734
+#, python-brace-format
+msgid "{full_name} mentioned @{user_group_name}:"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:738
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} 提到你："
 
-#: zerver/lib/push_notifications.py:704
+#: zerver/lib/push_notifications.py:740
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} 提到所有人："
@@ -4206,22 +3526,22 @@ msgstr "{full_name} 提到所有人："
 msgid "Push notifications bouncer error: {}"
 msgstr ""
 
-#: zerver/lib/request.py:39
+#: zerver/lib/request.py:88
 #, python-brace-format
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "不能從 '{var_name1}' 和 '{var_name2}' 之中決定參數"
 
-#: zerver/lib/request.py:51
+#: zerver/lib/request.py:100
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "缺少 '{var_name}' 參數"
 
-#: zerver/lib/request.py:64
+#: zerver/lib/request.py:113
 #, python-brace-format
 msgid "Bad value for '{var_name}': {bad_value}"
 msgstr ""
 
-#: zerver/lib/request.py:374
+#: zerver/lib/request.py:423
 msgid "Argument \"{}\" is not valid JSON."
 msgstr ""
 
@@ -4284,11 +3604,6 @@ msgstr "無效的串流 id"
 msgid "Stream name '{}' is already taken."
 msgstr "串流名稱 '{}' 已存在。"
 
-#: zerver/lib/streams.py:664 zerver/lib/users.py:240 zerver/lib/users.py:269
-#: zerver/views/invite.py:45 zerver/views/streams.py:517
-msgid "Insufficient permission"
-msgstr ""
-
 #: zerver/lib/streams.py:667
 msgid "Stream(s) ({}) do not exist"
 msgstr "串流(s) ({}) 不存在"
@@ -4309,17 +3624,11 @@ msgstr ""
 msgid "Image size exceeds limit."
 msgstr "圖檔超過限制大小"
 
-#: zerver/lib/upload.py:342
+#: zerver/lib/upload.py:345
 msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 
-#: zerver/lib/user_groups.py:14
-msgid ""
-"Only group members and organization administrators can administer this "
-"group."
-msgstr ""
-
-#: zerver/lib/user_groups.py:18
+#: zerver/lib/user_groups.py:21
 msgid "Invalid user group"
 msgstr "無效的使用者群組"
 
@@ -4371,7 +3680,7 @@ msgstr "無效的機器人類型"
 msgid "Invalid interface type"
 msgstr "無效的介面類型"
 
-#: zerver/lib/users.py:223 zerver/lib/users.py:228 zerver/models.py:3465
+#: zerver/lib/users.py:223 zerver/lib/users.py:228 zerver/models.py:3582
 msgid "Invalid user ID: {}"
 msgstr "無效的使用者 ID：{}"
 
@@ -4388,135 +3697,145 @@ msgstr "無此使用者"
 msgid "User is deactivated"
 msgstr "使用者已停用"
 
-#: zerver/lib/validator.py:57 zerver/lib/validator.py:119
+#: zerver/lib/validator.py:60 zerver/lib/validator.py:122
 #, python-brace-format
 msgid "{var_name} is not a string"
 msgstr "{var_name} 不是個字串"
 
-#: zerver/lib/validator.py:64
+#: zerver/lib/validator.py:67
 #, python-brace-format
 msgid "{item} cannot be blank."
 msgstr "{item} 不能是空白。"
 
-#: zerver/lib/validator.py:72 zerver/lib/validator.py:138
+#: zerver/lib/validator.py:75 zerver/lib/validator.py:141
 #, python-brace-format
 msgid "Invalid {var_name}"
 msgstr "無效的 {var_name}"
 
-#: zerver/lib/validator.py:87
+#: zerver/lib/validator.py:90
 #, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} characters)"
 msgstr "{var_name} 過長（限制：{max_length} 字元）"
 
-#: zerver/lib/validator.py:102
+#: zerver/lib/validator.py:105
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
 msgstr "{var_name} 是不正確的長度 {length}; 應為 {target_length}"
 
-#: zerver/lib/validator.py:122 zerver/lib/validator.py:124
+#: zerver/lib/validator.py:125 zerver/lib/validator.py:127
 #, python-brace-format
 msgid "{var_name} is not a date"
 msgstr "{var_name} 不是 date"
 
-#: zerver/lib/validator.py:130
+#: zerver/lib/validator.py:133
 #, python-brace-format
 msgid "{var_name} is not an integer"
 msgstr "{var_name} 不是 integer"
 
-#: zerver/lib/validator.py:146
+#: zerver/lib/validator.py:152
+#, python-brace-format
+msgid "{var_name} is too small"
+msgstr ""
+
+#: zerver/lib/validator.py:154
+#, python-brace-format
+msgid "{var_name} is too large"
+msgstr ""
+
+#: zerver/lib/validator.py:162
 #, python-brace-format
 msgid "{var_name} is not a float"
 msgstr "{var_name} 不是 float"
 
-#: zerver/lib/validator.py:152
+#: zerver/lib/validator.py:168
 #, python-brace-format
 msgid "{var_name} is not a boolean"
 msgstr "{var_name} 不是 boolean"
 
-#: zerver/lib/validator.py:162
+#: zerver/lib/validator.py:178
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
 msgstr "{var_name} 不是有效的 hex color code"
 
-#: zerver/lib/validator.py:182
+#: zerver/lib/validator.py:198
 #, python-brace-format
 msgid "{var_name} is not a list"
 msgstr "{var_name} 不是 list"
 
-#: zerver/lib/validator.py:186
+#: zerver/lib/validator.py:202
 #, python-brace-format
 msgid "{container} should have exactly {length} items"
 msgstr "{container} 應有 {length} items"
 
-#: zerver/lib/validator.py:205
+#: zerver/lib/validator.py:221
 #, python-brace-format
 msgid "{var_name} is not a tuple"
 msgstr "{var_name} 不是 tuple"
 
-#: zerver/lib/validator.py:210
+#: zerver/lib/validator.py:226
 #, python-brace-format
 msgid "{var_name} should have exactly {desired_len} items"
 msgstr "{var_name} 應有 {desired_len} items"
 
-#: zerver/lib/validator.py:256
+#: zerver/lib/validator.py:272
 #, python-brace-format
 msgid "{var_name} is not a dict"
 msgstr "{var_name} 不是 dict"
 
-#: zerver/lib/validator.py:264
+#: zerver/lib/validator.py:280
 #, python-brace-format
 msgid "{key_name} key is missing from {var_name}"
 msgstr "在 {var_name} 裡缺少 key {key_name}"
 
-#: zerver/lib/validator.py:289
+#: zerver/lib/validator.py:305
 msgid "Unexpected arguments: {}"
 msgstr "非預期的參數：{}"
 
-#: zerver/lib/validator.py:322
+#: zerver/lib/validator.py:338
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr "{var_name} 不是 allowed_type"
 
-#: zerver/lib/validator.py:331
+#: zerver/lib/validator.py:347
 #, python-brace-format
 msgid "{variable} != {expected_value} ({value} is wrong)"
 msgstr "{variable} != {expected_value} ({value} 是錯的)"
 
-#: zerver/lib/validator.py:358
+#: zerver/lib/validator.py:374
 #, python-brace-format
 msgid "{var_name} is not a URL"
 msgstr "{var_name} 不是 URL"
 
-#: zerver/lib/validator.py:365
+#: zerver/lib/validator.py:381
 msgid "Malformed URL pattern."
 msgstr ""
 
-#: zerver/lib/validator.py:386
+#: zerver/lib/validator.py:402
 #, python-brace-format
 msgid "'{item}' cannot be blank."
 msgstr "'{item}' 不能是空白。"
 
-#: zerver/lib/validator.py:402
+#: zerver/lib/validator.py:418
 #, python-brace-format
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr "'{value}' 對於 '{field_name}' 不是有效的選擇。"
 
-#: zerver/lib/validator.py:486
+#: zerver/lib/validator.py:580
 #, python-brace-format
 msgid "{var_name} is not a string or an integer list"
 msgstr "{var_name} 不是 string 或 integer list"
 
-#: zerver/lib/validator.py:496
+#: zerver/lib/validator.py:590
 #, python-brace-format
 msgid "{var_name} is not a string or integer"
 msgstr "{var_name} 不是 string 或 integer"
 
-#: zerver/lib/webhooks/common.py:69
+#: zerver/lib/webhooks/common.py:72
 #, python-brace-format
 msgid "Missing the HTTP event header '{header}'"
 msgstr "缺少 HTTP event header '{header}'"
 
-#: zerver/lib/webhooks/common.py:196
+#: zerver/lib/webhooks/common.py:228
 msgid "The {} webhook expects time in milliseconds."
 msgstr ""
 
@@ -4528,96 +3847,112 @@ msgstr ""
 msgid "No such command: {}"
 msgstr ""
 
-#: zerver/middleware.py:451
+#: zerver/middleware.py:461
 msgid "Internal server error"
 msgstr ""
 
-#: zerver/middleware.py:478
+#: zerver/middleware.py:488
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr ""
 
-#: zerver/models.py:374
+#: zerver/models.py:378
 msgid "stream events"
 msgstr "串流事件"
 
-#: zerver/models.py:408
+#: zerver/models.py:412
 msgid "Available on Zulip Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:912
+#: zerver/models.py:916
 msgid "Invalid linkifier pattern.  Valid characters are {}."
 msgstr ""
 
-#: zerver/models.py:930
+#: zerver/models.py:936
 msgid "Invalid URL format string."
 msgstr "無效的 URL 格式。"
 
-#: zerver/models.py:1037 zerver/views/realm_playgrounds.py:24
+#: zerver/models.py:978
+#, python-format
+msgid ""
+"Group %(name)r in URL format string is not present in linkifier pattern."
+msgstr ""
+
+#: zerver/models.py:990
+#, python-format
+msgid ""
+"Group %(name)r in linkifier pattern is not present in URL format string."
+msgstr ""
+
+#: zerver/models.py:1085 zerver/views/realm_playgrounds.py:25
 msgid "Invalid characters in pygments language"
 msgstr ""
 
-#: zerver/models.py:1417
+#: zerver/models.py:1492
 msgid "Organization owner"
 msgstr ""
 
-#: zerver/models.py:1418
+#: zerver/models.py:1493
 msgid "Organization administrator"
 msgstr ""
 
-#: zerver/models.py:1419
+#: zerver/models.py:1494
 msgid "Moderator"
 msgstr ""
 
-#: zerver/models.py:1420
+#: zerver/models.py:1495
 msgid "Member"
 msgstr "成員"
 
-#: zerver/models.py:1421
+#: zerver/models.py:1496
 msgid "Guest"
 msgstr "訪客"
 
-#: zerver/models.py:2373
+#: zerver/models.py:2454
 msgid "Unicode emoji"
 msgstr "Unicode 表情符號"
 
-#: zerver/models.py:2375
+#: zerver/models.py:2455
+msgid "Custom emoji"
+msgstr "自定義表情符號"
+
+#: zerver/models.py:2456
 msgid "Zulip extra emoji"
 msgstr "Zulip 額外的表情符號"
 
-#: zerver/models.py:3469
+#: zerver/models.py:3586
 msgid "User with ID {} is deactivated"
 msgstr ""
 
-#: zerver/models.py:3472
+#: zerver/models.py:3589
 msgid "User with ID {} is a bot"
 msgstr ""
 
-#: zerver/models.py:3505
+#: zerver/models.py:3622
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:3508
+#: zerver/models.py:3625
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:3520
+#: zerver/models.py:3637
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:3521
+#: zerver/models.py:3638
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:3522
+#: zerver/models.py:3639
 msgid "Date picker"
 msgstr "日期選擇器"
 
-#: zerver/models.py:3523
+#: zerver/models.py:3640
 msgid "Link"
 msgstr "連結"
 
-#: zerver/models.py:3526
+#: zerver/models.py:3643
 msgid "External account"
 msgstr ""
 
@@ -4633,24 +3968,24 @@ msgstr "未知的作業系統"
 msgid "An unknown browser"
 msgstr "未知的瀏覽器"
 
-#: zerver/tornado/event_queue.py:632
+#: zerver/tornado/event_queue.py:639
 msgid "Missing 'queue_id' argument"
 msgstr "缺少 'queue_id' 參數"
 
-#: zerver/tornado/event_queue.py:635
+#: zerver/tornado/event_queue.py:642
 msgid "Missing 'last_event_id' argument"
 msgstr "缺少 'last_event_id' 參數"
 
-#: zerver/tornado/event_queue.py:638
+#: zerver/tornado/event_queue.py:645
 msgid "You are not authorized to get events from this queue"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:644
+#: zerver/tornado/event_queue.py:651
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:654
+#: zerver/tornado/event_queue.py:661
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr ""
@@ -4660,59 +3995,43 @@ msgstr ""
 msgid "Bad event queue id: {queue_id}"
 msgstr ""
 
-#: zerver/tornado/views.py:37
+#: zerver/tornado/views.py:39
 msgid "You are not authorized to access this queue"
 msgstr ""
 
-#: zerver/views/auth.py:436
+#: zerver/views/auth.py:448
 msgid "Auth key for this subdomain not found."
 msgstr "找不到此子域名的 Auth key。"
 
-#: zerver/views/auth.py:443
+#: zerver/views/auth.py:455
 msgid "No JSON web token passed in request"
 msgstr ""
 
-#: zerver/views/auth.py:445
+#: zerver/views/auth.py:457
 msgid "Bad JSON web token"
 msgstr ""
 
-#: zerver/views/auth.py:449
+#: zerver/views/auth.py:461
 msgid "No user specified in JSON web token claims"
 msgstr "無使用者 specified in JSON web token claims"
 
-#: zerver/views/auth.py:452
+#: zerver/views/auth.py:464
 msgid "No organization specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:459
+#: zerver/views/auth.py:471
 msgid "Wrong subdomain"
 msgstr "錯誤的子域名"
 
-#: zerver/views/auth.py:830 zerver/views/development/dev_login.py:117
-msgid "Your account has been disabled."
-msgstr ""
-
-#: zerver/views/auth.py:834 zerver/views/development/dev_login.py:111
-msgid "This organization has been deactivated."
-msgstr "此組織已被停用。"
-
-#: zerver/views/auth.py:840
-msgid "Password auth is disabled in your team."
-msgstr ""
-
-#: zerver/views/auth.py:846 zproject/backends.py:422
-msgid "You need to reset your password."
-msgstr ""
-
-#: zerver/views/auth.py:852 zerver/views/auth.py:947
-msgid "Your username or password is incorrect."
-msgstr "您的使用者名稱或密碼錯誤。"
-
-#: zerver/views/auth.py:886
+#: zerver/views/auth.py:882
 msgid "Subdomain required"
 msgstr "需要子域名"
 
-#: zerver/views/compatibility.py:81
+#: zerver/views/auth.py:943
+msgid "Your username or password is incorrect."
+msgstr "您的使用者名稱或密碼錯誤。"
+
+#: zerver/views/compatibility.py:18
 msgid "User-Agent header missing from request"
 msgstr "該請求缺少 User-Agent header"
 
@@ -4737,17 +4056,13 @@ msgstr ""
 msgid "Default custom field cannot be updated."
 msgstr "預設自定義欄位不能被更新。"
 
-#: zerver/views/development/dev_login.py:84
+#: zerver/views/development/dev_login.py:90
 msgid "Endpoint not available in production."
 msgstr ""
 
-#: zerver/views/development/dev_login.py:86
+#: zerver/views/development/dev_login.py:92
 msgid "DevAuthBackend not enabled."
 msgstr ""
-
-#: zerver/views/development/dev_login.py:121
-msgid "This user is not registered."
-msgstr "此使用者未註冊。"
 
 #: zerver/views/drafts.py:60
 msgid "Timestamp must not be negative."
@@ -4765,7 +4080,7 @@ msgstr ""
 msgid "Draft does not exist"
 msgstr ""
 
-#: zerver/views/hotspots.py:18
+#: zerver/views/hotspots.py:19
 msgid "Unknown hotspot: {}"
 msgstr "未知的 hotspot: {}"
 
@@ -4795,88 +4110,88 @@ msgstr ""
 msgid "Invalid stream id {}. No invites were sent."
 msgstr "無效的串流 id {}。邀請未發送。"
 
-#: zerver/views/message_edit.py:77
+#: zerver/views/message_edit.py:78
 msgid "Message edit history is disabled in this organization"
 msgstr "此組織禁用訊息編輯歷史"
 
-#: zerver/views/message_edit.py:131 zerver/views/message_edit.py:134
+#: zerver/views/message_edit.py:134 zerver/views/message_edit.py:137
 msgid "You don't have permission to delete this message"
 msgstr ""
 
-#: zerver/views/message_edit.py:142
+#: zerver/views/message_edit.py:145
 msgid "The time limit for deleting this message has passed"
 msgstr ""
 
-#: zerver/views/message_edit.py:157
+#: zerver/views/message_edit.py:165
 msgid "Message already deleted"
 msgstr ""
 
-#: zerver/views/message_fetch.py:90
+#: zerver/views/message_fetch.py:97
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
 msgstr "無效的範圍操作：{desc}"
 
-#: zerver/views/message_fetch.py:910
+#: zerver/views/message_fetch.py:920
 msgid "Missing 'anchor' argument."
 msgstr "缺少 'anchor' 參數."
 
-#: zerver/views/message_fetch.py:930
+#: zerver/views/message_fetch.py:940
 msgid "Invalid anchor"
 msgstr "無效的錨點"
 
-#: zerver/views/message_fetch.py:950
+#: zerver/views/message_fetch.py:960
 msgid "Too many messages requested (maximum {})."
 msgstr ""
 
-#: zerver/views/message_flags.py:88
+#: zerver/views/message_flags.py:97
 msgid "No such topic '{}'"
 msgstr "沒有主題 '{}'"
 
-#: zerver/views/message_send.py:154
+#: zerver/views/message_send.py:159
 msgid "Invalid time format"
 msgstr "無效的時間格式"
 
-#: zerver/views/message_send.py:163
+#: zerver/views/message_send.py:168
 msgid "Time must be in the future."
 msgstr ""
 
-#: zerver/views/message_send.py:249
+#: zerver/views/message_send.py:255
 msgid "Missing sender"
 msgstr "缺少發送者"
 
-#: zerver/views/message_send.py:256
+#: zerver/views/message_send.py:262
 msgid "Mirroring not allowed with recipient user IDs"
 msgstr "Mirroring not allowed with recipient 使用者 IDs"
 
-#: zerver/views/message_send.py:266 zerver/views/message_send.py:273
+#: zerver/views/message_send.py:272 zerver/views/message_send.py:279
 msgid "Invalid mirrored message"
 msgstr "無效的鏡像訊息"
 
-#: zerver/views/message_send.py:269
+#: zerver/views/message_send.py:275
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr ""
 
-#: zerver/views/message_send.py:277
+#: zerver/views/message_send.py:283
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr "在延遲訊息交付的請求中缺少 deliver_at"
 
-#: zerver/views/muting.py:39
+#: zerver/views/muting.py:40
 msgid "Topic already muted"
 msgstr "主題已靜音"
 
-#: zerver/views/muting.py:48
+#: zerver/views/muting.py:49
 msgid "Topic is not muted"
 msgstr "主題已沒靜音"
 
-#: zerver/views/muting.py:94
+#: zerver/views/muting.py:95
 msgid "Cannot mute self"
 msgstr ""
 
-#: zerver/views/muting.py:100
+#: zerver/views/muting.py:103
 msgid "User already muted"
 msgstr ""
 
-#: zerver/views/muting.py:113
+#: zerver/views/muting.py:118
 msgid "User is not muted"
 msgstr ""
 
@@ -4893,7 +4208,7 @@ msgstr ""
 msgid "Client did not pass any new values."
 msgstr ""
 
-#: zerver/views/presence.py:100
+#: zerver/views/presence.py:102
 msgid "Invalid status: {}"
 msgstr "無效的 status: {}"
 
@@ -4905,209 +4220,213 @@ msgstr "空或長度無效的 token"
 msgid "Invalid APNS token"
 msgstr "無效的 APNS token"
 
-#: zerver/views/reactions.py:44
+#: zerver/views/reactions.py:49
 msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
 msgstr "以下參數至少必須存在一個：emoji_name, emoji_code"
 
-#: zerver/views/reactions.py:63
+#: zerver/views/reactions.py:68
 msgid "Reaction doesn't exist."
 msgstr ""
 
-#: zerver/views/realm.py:127
+#: zerver/views/realm.py:129
 msgid "Invalid language '{}'"
 msgstr "無效的 language '{}'"
 
-#: zerver/views/realm.py:132
+#: zerver/views/realm.py:134
 msgid "At least one authentication method must be enabled."
 msgstr ""
 
-#: zerver/views/realm.py:136
+#: zerver/views/realm.py:138
 msgid "Invalid video_chat_provider {}"
 msgstr "無效的 video_chat_provider {}"
 
-#: zerver/views/realm.py:140
+#: zerver/views/realm.py:142
 msgid "Invalid giphy_rating {}"
 msgstr ""
 
-#: zerver/views/realm_domains.py:31
+#: zerver/views/realm_domains.py:32
 msgid "Invalid domain: {}"
 msgstr "無效的域名：{}"
 
-#: zerver/views/realm_domains.py:34
+#: zerver/views/realm_domains.py:35
 #, python-brace-format
 msgid "The domain {domain} is already a part of your organization."
 msgstr "該域名 {domain} 已經是您組織的一部分。"
 
-#: zerver/views/realm_domains.py:52 zerver/views/realm_domains.py:65
+#: zerver/views/realm_domains.py:53 zerver/views/realm_domains.py:66
 #, python-brace-format
 msgid "No entry found for domain {domain}."
 msgstr "找不到域名 {domain} 的進入點。"
 
-#: zerver/views/realm_emoji.py:31
+#: zerver/views/realm_emoji.py:37
 msgid "A custom emoji with this name already exists."
 msgstr "自定義表情符號名稱已存在。"
 
-#: zerver/views/realm_emoji.py:33
+#: zerver/views/realm_emoji.py:39
 msgid "You must upload exactly one file."
 msgstr ""
 
-#: zerver/views/realm_emoji.py:37 zerver/views/realm_icon.py:24
-#: zerver/views/realm_logo.py:29 zerver/views/upload.py:124
-#: zerver/views/user_settings.py:302
+#: zerver/views/realm_emoji.py:42
+msgid "Only administrators can override built-in emoji."
+msgstr ""
+
+#: zerver/views/realm_emoji.py:46 zerver/views/realm_icon.py:25
+#: zerver/views/realm_logo.py:30 zerver/views/upload.py:125
+#: zerver/views/user_settings.py:303
 msgid "Uploaded file is larger than the allowed limit of {} MiB"
 msgstr ""
 
-#: zerver/views/realm_emoji.py:44
+#: zerver/views/realm_emoji.py:53
 msgid "Image file upload failed."
 msgstr ""
 
-#: zerver/views/realm_export.py:39
+#: zerver/views/realm_export.py:40
 msgid "Exceeded rate limit."
 msgstr ""
 
-#: zerver/views/realm_export.py:52
+#: zerver/views/realm_export.py:53
 #, python-brace-format
 msgid "Please request a manual export from {email}."
 msgstr ""
 
-#: zerver/views/realm_export.py:90
+#: zerver/views/realm_export.py:91
 msgid "Invalid data export ID"
 msgstr "無效的資料輸出 ID"
 
-#: zerver/views/realm_export.py:94
+#: zerver/views/realm_export.py:95
 msgid "Export already deleted"
 msgstr ""
 
-#: zerver/views/realm_icon.py:19
+#: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."
 msgstr "您必須上傳至少一個圖示"
 
-#: zerver/views/realm_linkifiers.py:44 zerver/views/realm_linkifiers.py:66
+#: zerver/views/realm_linkifiers.py:45 zerver/views/realm_linkifiers.py:67
 msgid "Linkifier not found."
 msgstr ""
 
-#: zerver/views/realm_logo.py:25
+#: zerver/views/realm_logo.py:26
 msgid "You must upload exactly one logo."
 msgstr "您必須上傳至少一個標誌圖"
 
-#: zerver/views/realm_playgrounds.py:32
+#: zerver/views/realm_playgrounds.py:33
 msgid "Invalid playground"
 msgstr ""
 
-#: zerver/views/registration.py:558
+#: zerver/views/registration.py:571
 msgid "The organization creation link has expired or is not valid."
 msgstr ""
 
-#: zerver/views/registration.py:566
+#: zerver/views/registration.py:579
 msgid "New organization creation disabled"
 msgstr "創立新組織已禁用"
 
-#: zerver/views/streams.py:104
+#: zerver/views/streams.py:109
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr "使用者未被授權進行查詢 on behalf of '{principal}'"
 
-#: zerver/views/streams.py:151
+#: zerver/views/streams.py:156
 msgid "Private streams cannot be made default."
 msgstr ""
 
-#: zerver/views/streams.py:183
+#: zerver/views/streams.py:188
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "您必須傳 \"new_description\" 或 \"new_group_name\"."
 
-#: zerver/views/streams.py:213
+#: zerver/views/streams.py:218
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr "無效的 \"op\" 值。指定為 \"add\" 或 \"remove\"。"
 
-#: zerver/views/streams.py:281
+#: zerver/views/streams.py:286
 msgid "Stream already has that name!"
 msgstr "串流已經是該名稱！"
 
-#: zerver/views/streams.py:304
+#: zerver/views/streams.py:309
 msgid "Default streams cannot be made private."
 msgstr ""
 
-#: zerver/views/streams.py:343 zerver/views/user_groups.py:96
+#: zerver/views/streams.py:348 zerver/views/user_groups.py:96
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
-#: zerver/views/streams.py:425
+#: zerver/views/streams.py:427
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
 msgstr "{user_full_name} 已為您訂閱串流 {stream_name}."
 
-#: zerver/views/streams.py:431
+#: zerver/views/streams.py:433
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
 msgstr "{user_full_name} 已為您訂閱串流："
 
-#: zerver/views/streams.py:502
+#: zerver/views/streams.py:504
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
 msgstr "無法存取串流 ({stream_name})."
 
-#: zerver/views/streams.py:512
+#: zerver/views/streams.py:514
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr "你只能邀請 Zephyr mirroring 使用者至私人串流。"
 
-#: zerver/views/streams.py:626
+#: zerver/views/streams.py:628
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
 msgstr "{user_name} 已創建串流：{stream_str}."
 
-#: zerver/views/streams.py:628
+#: zerver/views/streams.py:630
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
 msgstr "{user_name} 已創建一個新串流 {stream_str}."
 
-#: zerver/views/streams.py:629
+#: zerver/views/streams.py:631
 msgid "new streams"
 msgstr "新串流"
 
-#: zerver/views/streams.py:656
+#: zerver/views/streams.py:658
 #, python-brace-format
 msgid "Stream created by {user_name}."
 msgstr "{user_name} 已創建串流"
 
-#: zerver/views/streams.py:865
+#: zerver/views/streams.py:870
 msgid "Unknown subscription property: {}"
 msgstr "未知的子敘述屬性：{}"
 
-#: zerver/views/streams.py:869
+#: zerver/views/streams.py:874
 msgid "Not subscribed to stream id {}"
 msgstr "未訂閱串流 id {}"
 
-#: zerver/views/submessage.py:26
+#: zerver/views/submessage.py:38
 msgid "Invalid json for submessage"
 msgstr "無效的子訊息 json"
 
-#: zerver/views/thumbnail.py:32 zerver/views/upload.py:97
+#: zerver/views/thumbnail.py:32 zerver/views/upload.py:98
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr ""
 
-#: zerver/views/typing.py:31
+#: zerver/views/typing.py:32
 msgid "Empty 'to' list"
 msgstr ""
 
-#: zerver/views/upload.py:95
+#: zerver/views/upload.py:96
 msgid "<p>File not found.</p>"
 msgstr "<p>找不到檔案。</p>"
 
-#: zerver/views/upload.py:107
+#: zerver/views/upload.py:108
 msgid "Invalid token"
 msgstr "無效的 token"
 
-#: zerver/views/upload.py:109
+#: zerver/views/upload.py:110
 msgid "Invalid filename"
 msgstr "無效的 filename"
 
-#: zerver/views/upload.py:116
+#: zerver/views/upload.py:117
 msgid "You must specify a file to upload"
 msgstr "您上傳必須指定一個檔案"
 
-#: zerver/views/upload.py:118 zerver/views/users.py:324
+#: zerver/views/upload.py:119 zerver/views/users.py:324
 #: zerver/views/users.py:422
 msgid "You may only upload one file at a time"
 msgstr "你單次只可以上傳一個檔案"
@@ -5129,43 +4448,39 @@ msgstr "沒有成員 '{}' 在此使用者群組"
 msgid "Avatar changes are disabled in this organization."
 msgstr ""
 
-#: zerver/views/user_settings.py:63 zerver/views/user_settings.py:149
+#: zerver/views/user_settings.py:63 zerver/views/user_settings.py:146
 msgid "Email address changes are disabled in this organization."
 msgstr "此組織修改 Email 地址已禁用"
 
-#: zerver/views/user_settings.py:101
-msgid "Please fill out all fields."
-msgstr ""
-
-#: zerver/views/user_settings.py:106
+#: zerver/views/user_settings.py:103
 msgid "Your Zulip password is managed in LDAP"
 msgstr ""
 
-#: zerver/views/user_settings.py:116
+#: zerver/views/user_settings.py:113
 msgid "Wrong password!"
 msgstr "密碼錯誤！"
 
-#: zerver/views/user_settings.py:121
+#: zerver/views/user_settings.py:118
 msgid "You're making too many attempts! Try again in {} seconds."
 msgstr ""
 
-#: zerver/views/user_settings.py:127
+#: zerver/views/user_settings.py:124
 msgid "New password is too weak!"
 msgstr ""
 
-#: zerver/views/user_settings.py:168
+#: zerver/views/user_settings.py:165
 msgid "Check your email for a confirmation link. "
 msgstr ""
 
-#: zerver/views/user_settings.py:218
+#: zerver/views/user_settings.py:215
 msgid "Invalid default_language"
 msgstr "無效的 default_language"
 
-#: zerver/views/user_settings.py:278
+#: zerver/views/user_settings.py:279
 msgid "Invalid notification sound '{}'"
 msgstr "無效的通知音效 '{}'"
 
-#: zerver/views/user_settings.py:294
+#: zerver/views/user_settings.py:295
 msgid "You must upload exactly one avatar."
 msgstr "您上傳必須指定一個 avatar。"
 
@@ -5242,54 +4557,59 @@ msgid "Failed to create Zoom call"
 msgstr "新建 Zoom 通話失敗"
 
 #: zerver/views/video_calls.py:215
-msgid "Big Blue Button is not configured."
+msgid "BigBlueButton is not configured."
 msgstr ""
 
 #: zerver/views/video_calls.py:233
-msgid "Error connecting to the Big Blue Button server."
+msgid "Error connecting to the BigBlueButton server."
 msgstr ""
 
 #: zerver/views/video_calls.py:237
-msgid "Error authenticating to the Big Blue Button server."
+msgid "Error authenticating to the BigBlueButton server."
 msgstr ""
 
 #: zerver/views/video_calls.py:240
-msgid "Big Blue Button server returned an unexpected error."
+msgid "BigBlueButton server returned an unexpected error."
 msgstr ""
 
-#: zerver/views/zephyr.py:35
+#: zerver/views/zephyr.py:36
 msgid "Could not find Kerberos credential"
 msgstr ""
 
-#: zerver/views/zephyr.py:37
+#: zerver/views/zephyr.py:38
 msgid "Webathena login not enabled"
 msgstr "未啟用 Webathena 登入"
 
-#: zerver/views/zephyr.py:58
+#: zerver/views/zephyr.py:59
 msgid "Invalid Kerberos cache"
 msgstr "無效的 Kerberos cache"
 
-#: zerver/views/zephyr.py:74
+#: zerver/views/zephyr.py:75
 msgid "We were unable to set up mirroring for you"
 msgstr ""
 
-#: zerver/webhooks/front/view.py:146
+#: zerver/webhooks/freshstatus/view.py:88
+#: zerver/webhooks/uptimerobot/view.py:50 zerver/webhooks/zabbix/view.py:49
+msgid "Invalid payload"
+msgstr "無效的 payload"
+
+#: zerver/webhooks/front/view.py:147
 msgid "Unknown webhook request"
 msgstr "未知的 webhook 請求"
 
-#: zerver/webhooks/ifttt/view.py:29 zerver/webhooks/zapier/view.py:41
+#: zerver/webhooks/ifttt/view.py:30 zerver/webhooks/zapier/view.py:42
 msgid "Content can't be empty"
 msgstr "內容不能為空"
 
-#: zerver/webhooks/librato/view.py:172
+#: zerver/webhooks/librato/view.py:173
 msgid "Malformed JSON input"
 msgstr ""
 
-#: zerver/webhooks/newrelic/view.py:49
+#: zerver/webhooks/newrelic/view.py:50
 msgid "The newrelic webhook requires timestamp in milliseconds"
 msgstr ""
 
-#: zerver/webhooks/newrelic/view.py:66
+#: zerver/webhooks/newrelic/view.py:67
 msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
@@ -5298,23 +4618,19 @@ msgstr ""
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 
-#: zerver/webhooks/slack/view.py:27
+#: zerver/webhooks/slack/view.py:28
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
 msgstr "錯誤：channels_map_to_topics 參數必須是 0 或 1"
 
-#: zerver/webhooks/slack/view.py:33
+#: zerver/webhooks/slack/view.py:34
 msgid "Message from Slack"
 msgstr "來自 Slack 的訊息"
 
-#: zerver/webhooks/uptimerobot/view.py:49 zerver/webhooks/zabbix/view.py:48
-msgid "Invalid payload"
-msgstr "無效的 payload"
-
-#: zerver/webhooks/wordpress/view.py:49
+#: zerver/webhooks/wordpress/view.py:50
 msgid "Unknown WordPress webhook action: {}"
 msgstr "未知的 WordPress webhook action: {}"
 
-#: zerver/worker/queue_processors.py:915
+#: zerver/worker/queue_processors.py:985
 #, python-brace-format
 msgid ""
 "Your data export is complete and has been uploaded here:\n"
@@ -5348,14 +4664,18 @@ msgstr ""
 msgid "Invalid data."
 msgstr "無效的資料。"
 
-#: zproject/backends.py:1928
+#: zproject/backends.py:424
+msgid "You need to reset your password."
+msgstr ""
+
+#: zproject/backends.py:1985
 msgid "Missing id_token parameter"
 msgstr "缺少 id_token 參數"
 
-#: zproject/backends.py:2271
+#: zproject/backends.py:2414
 msgid "Invalid OTP"
 msgstr "無效的 OTP"
 
-#: zproject/backends.py:2274
+#: zproject/backends.py:2417
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "無法同時使用 mobile_flow_otp 和 desktop_flow_otp。"

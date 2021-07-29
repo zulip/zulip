@@ -170,7 +170,7 @@ html {
             border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
             &:not(:first-of-type) {
-                margin-top: 20px;
+                margin-top: 0;
             }
 
             &:first-of-type,
@@ -180,6 +180,7 @@ html {
 
             &.home-link {
                 font-size: 1em;
+                margin-top: 20px;
                 margin-bottom: 17px;
 
                 a::before {
@@ -556,11 +557,18 @@ input.text-error {
             vertical-align: -5px;
         }
 
+        a,
+        a:focus,
+        a:hover {
+            text-decoration: none;
+            color: hsl(0, 0%, 20%);
+        }
+
         .light {
             font-size: 1.2rem;
             font-weight: 400;
             color: hsl(0, 0%, 20%);
-            opacity: 0.5;
+            opacity: 0.7;
         }
     }
 
@@ -582,7 +590,7 @@ input.text-error {
             right: 0;
             margin: 10px 0 0 0;
             list-style-type: none;
-            width: 200px;
+            width: 300px;
             background-color: hsl(0, 0%, 100%);
             padding: 5px 0;
             border-radius: 4px;
@@ -629,6 +637,16 @@ input.text-error {
                 a i {
                     margin-right: 5px;
                 }
+
+                &.nav-header {
+                    background-color: transparent;
+                    cursor: default;
+                }
+            }
+
+            &.dropdown-list {
+                margin-top: 3px;
+                margin-right: 3px;
             }
         }
 

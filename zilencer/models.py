@@ -1,8 +1,12 @@
 import datetime
+from typing import List, Tuple
 
+from django.conf import settings
 from django.db import models
 
 from analytics.models import BaseCount
+from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.rate_limiter import rules as rate_limiter_rules
 from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
 
 
@@ -87,3 +91,24 @@ class RemoteRealmCount(BaseCount):
 
     def __str__(self) -> str:
         return f"{self.server} {self.realm_id} {self.property} {self.subgroup} {self.value}"
+
+
+class RateLimitedRemoteZulipServer(RateLimitedObject):
+    def __init__(
+        self, remote_server: RemoteZulipServer, domain: str = "api_by_remote_server"
+    ) -> None:
+        # Remote servers can only make API requests regarding push notifications
+        # which requires ZILENCED_ENABLED and of course can't happen on API endpoints
+        # inside Tornado.
+        assert not settings.RUNNING_INSIDE_TORNADO
+        assert settings.ZILENCER_ENABLED
+
+        self.uuid = remote_server.uuid
+        self.domain = domain
+        super().__init__()
+
+    def key(self) -> str:
+        return f"{type(self).__name__}:<{self.uuid}>:{self.domain}"
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return rate_limiter_rules[self.domain]

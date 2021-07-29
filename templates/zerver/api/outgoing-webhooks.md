@@ -18,7 +18,7 @@ with porting an existing Slack integration to work with Zulip.
 To register an outgoing webhook:
 
 * Log in to the Zulip server.
-* Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* ->
+* Navigate to *Personal settings (<i class="fa fa-cog"></i>)* -> *Bots* ->
   *Add a new bot*.  Select *Outgoing webhook* for bot type, the URL
   you'd like Zulip to post to as the **Endpoint URL**, the format you
   want, and click on *Create bot*. to submit the form/
@@ -46,10 +46,7 @@ settings][settings].
 
 ## Outgoing webhook format
 
-This is an example of the JSON payload that the Zulip server will `POST`
-to your server:
-
-{generate_code_example|/zulip-outgoing-webhook:post|fixture(200)}
+{generate_code_example|/zulip-outgoing-webhook:post|fixture}
 
 ### Fields documentation
 

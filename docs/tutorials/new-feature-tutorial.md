@@ -193,7 +193,7 @@ class Realm(models.Model)
   # ...
   # Define the types of the various automatically managed properties
     property_types = dict(
-        add_emoji_by_admins_only=bool,
+        add_custom_emoji_policy=int,
         allow_edit_history=bool,
         # ...
 +       mandatory_topics=bool,
@@ -437,7 +437,7 @@ can be handled at the beginning of `update_realm`.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
     if description is not None and len(description) > 100:
-        return json_error(_("Realm description cannot exceed 100 characters."))
+        raise JsonableError(_("Realm description cannot exceed 100 characters."))
     # ...
 
 The code in `update_realm` loops through the `property_types` dictionary
@@ -590,7 +590,7 @@ function dispatch_normal_event(event) {
     // ...
     case 'realm':
       var realm_settings = {
-          add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
+          add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
           allow_edit_history: noop,
           // ...
 +         mandatory_topics: noop,

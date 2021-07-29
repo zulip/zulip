@@ -80,7 +80,3 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
         response[header] = value
 
     return response
-
-
-def json_error(msg: str, data: Mapping[str, Any] = {}, status: int = 400) -> HttpResponse:
-    return json_response(res_type="error", msg=msg, data=data, status=status)

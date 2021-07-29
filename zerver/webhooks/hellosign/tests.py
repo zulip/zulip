@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class HelloSignHookTests(WebhookTestCase):
     STREAM_NAME = "hellosign"
     URL_TEMPLATE = "/api/v1/external/hellosign?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "hellosign"
+    WEBHOOK_DIR_NAME = "hellosign"
 
     def test_signatures_message(self) -> None:
         expected_topic = "NDA with Acme Co."

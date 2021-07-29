@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type, cast
 
 import redis
 from django.conf import settings
@@ -42,11 +42,12 @@ class RateLimitedObject(ABC):
         )
 
     def rate_limit_request(self, request: HttpRequest) -> None:
-        ratelimited, time = self.rate_limit()
+        from zerver.lib.request import get_request_notes
 
-        if not hasattr(request, "_ratelimits_applied"):
-            request._ratelimits_applied = []
-        request._ratelimits_applied.append(
+        ratelimited, time = self.rate_limit()
+        request_notes = get_request_notes(request)
+
+        request_notes.ratelimits_applied.append(
             RateLimitResult(
                 entity=self,
                 secs_to_freedom=time,
@@ -61,8 +62,8 @@ class RateLimitedObject(ABC):
 
         calls_remaining, seconds_until_reset = self.api_calls_left()
 
-        request._ratelimits_applied[-1].remaining = calls_remaining
-        request._ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
+        request_notes.ratelimits_applied[-1].remaining = calls_remaining
+        request_notes.ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
 
     def block_access(self, seconds: int) -> None:
         "Manually blocks an entity for the desired number of seconds"
@@ -110,7 +111,8 @@ class RateLimitedObject(ABC):
 
 class RateLimitedUser(RateLimitedObject):
     def __init__(self, user: UserProfile, domain: str = "api_by_user") -> None:
-        self.user = user
+        self.user_id = user.id
+        self.rate_limits = user.rate_limits
         self.domain = domain
         if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
             backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
@@ -119,16 +121,34 @@ class RateLimitedUser(RateLimitedObject):
         super().__init__(backend=backend)
 
     def key(self) -> str:
-        return f"{type(self).__name__}:{self.user.id}:{self.domain}"
+        return f"{type(self).__name__}:{self.user_id}:{self.domain}"
 
     def rules(self) -> List[Tuple[int, int]]:
         # user.rate_limits are general limits, applicable to the domain 'api_by_user'
-        if self.user.rate_limits != "" and self.domain == "api_by_user":
+        if self.rate_limits != "" and self.domain == "api_by_user":
             result: List[Tuple[int, int]] = []
-            for limit in self.user.rate_limits.split(","):
+            for limit in self.rate_limits.split(","):
                 (seconds, requests) = limit.split(":", 2)
                 result.append((int(seconds), int(requests)))
             return result
+        return rules[self.domain]
+
+
+class RateLimitedIPAddr(RateLimitedObject):
+    def __init__(self, ip_addr: str, domain: str = "api_by_ip") -> None:
+        self.ip_addr = ip_addr
+        self.domain = domain
+        if settings.RUNNING_INSIDE_TORNADO and domain in settings.RATE_LIMITING_DOMAINS_FOR_TORNADO:
+            backend: Optional[Type[RateLimiterBackend]] = TornadoInMemoryRateLimiterBackend
+        else:
+            backend = None
+        super().__init__(backend=backend)
+
+    def key(self) -> str:
+        # The angle brackets are important since IPv6 addresses contain :.
+        return f"{type(self).__name__}:<{self.ip_addr}>:{self.domain}"
+
+    def rules(self) -> List[Tuple[int, int]]:
         return rules[self.domain]
 
 
@@ -427,7 +447,9 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     pipe.watch(list_key)
 
                     # Get the last elem that we'll trim (so we can remove it from our sorted set)
-                    last_val = pipe.lindex(list_key, max_api_calls - 1)
+                    last_val = cast(  # mypy doesn’t know the pipe is in immediate mode
+                        Optional[bytes], pipe.lindex(list_key, max_api_calls - 1)
+                    )
 
                     # Restart buffered execution
                     pipe.multi()

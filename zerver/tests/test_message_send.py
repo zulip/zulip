@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.decorator import JsonableError
 from zerver.lib.actions import (
     build_message_send_dict,
     check_message,
@@ -35,6 +34,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -240,7 +240,7 @@ class MessagePOSTTest(ZulipTestCase):
         )
 
         # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com")
+        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
@@ -319,8 +319,8 @@ class MessagePOSTTest(ZulipTestCase):
             "Only organization administrators and moderators can send to this stream.",
         )
 
-        # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com")
+        # System bots should be allowed
+        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
@@ -425,8 +425,8 @@ class MessagePOSTTest(ZulipTestCase):
         moderator_owned_bot.save()
         self._send_and_verify_message(moderator_owned_bot, stream_name)
 
-        # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com")
+        # System bots should be allowed
+        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
@@ -899,6 +899,21 @@ class MessagePOSTTest(ZulipTestCase):
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content, "  I like whitespace at the end!")
 
+        # Test if it removes the new line from the beginning of the message.
+        post_data = {
+            "type": "stream",
+            "to": "Verona",
+            "client": "test suite",
+            "content": "\nAvoid the new line at the beginning of the message.",
+            "topic": "Test topic",
+        }
+        result = self.client_post("/json/messages", post_data)
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(
+            sent_message.content, "Avoid the new line at the beginning of the message."
+        )
+
     @override_settings(MAX_MESSAGE_LENGTH=25)
     def test_long_message(self) -> None:
         """
@@ -1271,8 +1286,9 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_cross_realm_bots_can_use_api_on_own_subdomain(self) -> None:
         # Cross realm bots should use internal_send_*_message, not the API:
-        notification_bot = self.notification_bot()
-        stream = self.make_stream("notify_channel", get_realm("zulipinternal"))
+        internal_realm = get_realm("zulipinternal")
+        notification_bot = self.notification_bot(internal_realm)
+        stream = self.make_stream("notify_channel", internal_realm)
 
         result = self.api_post(
             notification_bot,
@@ -2042,7 +2058,8 @@ class PersonalMessageSendTest(ZulipTestCase):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
 
         bot_profile = self.create_test_bot("testbot", user_profile)
-        self.send_personal_message(user_profile, get_system_bot(settings.NOTIFICATION_BOT))
+        notification_bot = get_system_bot("notification-bot@zulip.com", user_profile.realm_id)
+        self.send_personal_message(user_profile, notification_bot)
         self.send_personal_message(user_profile, bot_profile)
         self.send_personal_message(bot_profile, user_profile)
 
@@ -2326,7 +2343,9 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         user3 = self.create_user(user3_email)
-        notification_bot = get_system_bot(notification_bot_email)
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(notification_bot_email, internal_realm.id)
         with self.settings(
             CROSS_REALM_BOT_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
         ):
@@ -2346,7 +2365,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Cross-realm bots in the zulip.com realm can PM any realm
         # (They need lower level APIs to do this.)
         internal_send_private_message(
-            sender=get_system_bot(notification_bot_email),
+            sender=notification_bot,
             recipient_user=get_user(user2_email, r2),
             content="bla",
         )
@@ -2359,7 +2378,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # be used.
         internal_send_private_message(
             sender=user2,
-            recipient_user=get_system_bot(notification_bot_email),
+            recipient_user=notification_bot,
             content="blabla",
         )
         assert_message_received(notification_bot, user2)
@@ -2501,7 +2520,8 @@ class CheckMessageTest(ZulipTestCase):
         do_change_can_forge_sender(forwarder_user_profile, True)
 
         mit_user = self.mit_user("sipbtest")
-        notification_bot = self.notification_bot()
+        internal_realm = get_realm("zulipinternal")
+        notification_bot = self.notification_bot(internal_realm)
 
         client = make_client(name="test suite")
         stream = get_stream("Denmark", forwarder_user_profile.realm)
@@ -2538,7 +2558,8 @@ class CheckMessageTest(ZulipTestCase):
         do_change_can_forge_sender(forwarder_user_profile, True)
 
         mit_user = self.mit_user("sipbtest")
-        notification_bot = self.notification_bot()
+        internal_realm = get_realm("zulipinternal")
+        notification_bot = self.notification_bot(internal_realm)
 
         client = make_client(name="test suite")
         stream_name = "España y Francia"

@@ -32,7 +32,7 @@ set_global("document", _document);
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
 const keydown_util = zrequire("keydown_util");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
@@ -120,7 +120,7 @@ function test(label, f) {
         presence_info.set(me.user_id, {status: "active"});
 
         clear_buddy_list();
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
 
         activity.clear_for_testing();
         activity.set_cursor_and_filter();
@@ -387,6 +387,7 @@ test("first/prev/next", ({override, mock_template}) => {
                 user_circle_class: "user_circle_green",
                 user_circle_status: "translated: Active",
                 user_id: alice.user_id,
+                status_emoji_info: undefined,
             });
         } else if (data.user_id === fred.user_id) {
             rendered_fred = true;
@@ -400,6 +401,7 @@ test("first/prev/next", ({override, mock_template}) => {
                 user_circle_class: "user_circle_green",
                 user_circle_status: "translated: Active",
                 faded: false,
+                status_emoji_info: undefined,
             });
         } else {
             throw new Error(`we did not expect to have to render a row for  ${data.name}`);
@@ -440,6 +442,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             user_circle_class: "user_circle_green",
             user_circle_status: "translated: Active",
             faded: true,
+            status_emoji_info: undefined,
         });
         assert.ok(html.startsWith("<li data-user-id="));
         return html;
@@ -545,7 +548,7 @@ test("realm_presence_disabled", () => {
 });
 
 test("redraw_muted_user", () => {
-    muting.add_muted_user(mark.user_id);
+    muted_users.add_muted_user(mark.user_id);
     let appended_html;
     $("#user_presences").append = function (html) {
         appended_html = html;

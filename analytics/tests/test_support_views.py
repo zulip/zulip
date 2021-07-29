@@ -20,6 +20,7 @@ from zerver.models import (
     Realm,
     UserMessage,
     UserProfile,
+    get_org_type_display_name,
     get_realm,
 )
 
@@ -29,7 +30,7 @@ class TestSupportEndpoint(ZulipTestCase):
         reset_emails_in_zulip_realm()
 
         def assert_user_details_in_html_response(
-            html_response: str, full_name: str, email: str, role: str
+            html_response: HttpResponse, full_name: str, email: str, role: str
         ) -> None:
             self.assert_in_success_response(
                 [
@@ -70,10 +71,12 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
+            org_type_display_name = get_org_type_display_name(zulip_realm.org_type)
             first_human_user = zulip_realm.get_first_human_user()
             assert first_human_user is not None
             self.assert_in_success_response(
                 [
+                    f"<b>Organization type</b>: {org_type_display_name}",
                     f"<b>First human user</b>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
@@ -288,6 +291,10 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_get("/activity/support", {"q": "zulip"})
             check_realm_reactivation_link_query_result(result)
             check_zulip_realm_query_result(result)
+
+    def test_get_org_type_display_name(self) -> None:
+        self.assertEqual(get_org_type_display_name(Realm.ORG_TYPES["business"]["id"]), "Business")
+        self.assertEqual(get_org_type_display_name(883), "")
 
     @mock.patch("analytics.views.support.update_billing_method_of_current_plan")
     def test_change_billing_method(self, m: mock.Mock) -> None:

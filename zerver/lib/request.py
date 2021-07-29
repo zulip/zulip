@@ -1,5 +1,7 @@
 import threading
+import weakref
 from collections import defaultdict
+from dataclasses import dataclass, field
 from functools import wraps
 from types import FunctionType
 from typing import (
@@ -8,8 +10,10 @@ from typing import (
     Dict,
     Generic,
     List,
+    MutableMapping,
     Optional,
     Sequence,
+    Set,
     TypeVar,
     Union,
     cast,
@@ -22,8 +26,58 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from typing_extensions import Literal
 
+import zerver.lib.rate_limiter as rate_limiter
+import zerver.tornado.handlers as handlers
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.types import Validator, ViewFuncT
+from zerver.models import Client, Realm
+
+
+@dataclass
+class ZulipRequestNotes:
+    """This class contains extra metadata that Zulip associated with a
+    Django HttpRequest object.
+
+    Note that most Optional fields will be definitely not None once
+    middlware has run. In the future, we may want to express that in
+    the types by having different types ZulipEarlyRequestNotes and
+    post-middleware ZulipRequestNotes types, but for now we have a lot
+    of `assert request_notes.foo is not None` when accessing them.
+    """
+
+    client: Optional[Client] = None
+    client_name: Optional[str] = None
+    client_version: Optional[str] = None
+    log_data: Optional[MutableMapping[str, Any]] = None
+    rate_limit: Optional[str] = None
+    requestor_for_logs: Optional[str] = None
+    # We use realm_cached to indicate whether the realm is cached or not.
+    # Because the default value of realm is None, which can indicate "unset"
+    # and "nonexistence" at the same time.
+    realm: Optional[Realm] = None
+    has_fetched_realm: bool = False
+    set_language: Optional[str] = None
+    ratelimits_applied: List["rate_limiter.RateLimitResult"] = field(default_factory=lambda: [])
+    query: Optional[str] = None
+    error_format: Optional[str] = None
+    placeholder_open_graph_description: Optional[str] = None
+    saved_response: Optional[HttpResponse] = None
+    # tornado_handler is a weak reference to work around a memory leak
+    # in WeakKeyDictionary (https://bugs.python.org/issue44680).
+    tornado_handler: Optional["weakref.ReferenceType[handlers.AsyncDjangoHandler]"] = None
+    processed_parameters: Set[str] = field(default_factory=set)
+    ignored_parameters: Set[str] = field(default_factory=set)
+
+
+request_notes_map: MutableMapping[HttpRequest, ZulipRequestNotes] = weakref.WeakKeyDictionary()
+
+
+def get_request_notes(request: HttpRequest) -> ZulipRequestNotes:
+    try:
+        return request_notes_map[request]
+    except KeyError:
+        request_notes_map[request] = ZulipRequestNotes()
+        return request_notes_map[request]
 
 
 class RequestConfusingParmsError(JsonableError):
@@ -272,7 +326,7 @@ arguments_map: Dict[str, List[str]] = defaultdict(list)
 # the default parameter values used by has_request_variables.
 #
 # Note that this can't be used in helper functions which are not
-# expected to call json_error or json_success, as it uses json_error
+# expected to call json_success or raise JsonableError, as it uses JsonableError
 # internally when it encounters an error
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     num_params = view_func.__code__.co_argcount
@@ -304,6 +358,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+        request_notes = get_request_notes(request)
         for param in post_params:
             func_var_name = param.func_var_name
             if param.path_only:
@@ -337,10 +392,13 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             post_var_name: Optional[str] = None
 
             for req_var in post_var_names:
+                assert req_var is not None
                 if req_var in request.POST:
                     val = request.POST[req_var]
+                    request_notes.processed_parameters.add(req_var)
                 elif req_var in request.GET:
                     val = request.GET[req_var]
+                    request_notes.processed_parameters.add(req_var)
                 else:
                     # This is covered by test_REQ_aliases, but coverage.py
                     # fails to recognize this for some reason.

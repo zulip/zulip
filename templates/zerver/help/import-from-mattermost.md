@@ -36,10 +36,10 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 3. Create an export of all your Mattermost teams, as a tar file.
 
     ```
-    sudo ./mattermost export bulk export.json --all-teams
+    sudo ./mattermost export bulk export.json --all-teams --attachments
     mkdir -p exported_emoji
     tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-        exported_emoji/ export.json
+        data/ exported_emoji/ export.json
     ```
 
 4. Exit your shell on the Mattermost server.
@@ -73,11 +73,11 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 
     ```
     docker exec -it mattermost-docker_app_1 mattermost \
-        export bulk data/export.json --all-teams
+        export bulk data/export.json --all-teams --attachments
     cd volumes/app/mattermost/data/
     mkdir -p exported_emoji
     tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-        exported_emoji/ export.json
+        data/ exported_emoji/ export.json
     ```
 
 4. Exit your shell on the Mattermost server.
@@ -103,10 +103,10 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     sudo -u \
         mattermost /opt/gitlab/embedded/bin/mattermost \
         --config=/var/opt/gitlab/mattermost/config.json \
-        export bulk export.json --all-teams
+        export bulk export.json --all-teams --attachments
     mkdir -p exported_emoji
     tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-        exported_emoji/ export.json
+        data/ exported_emoji/ export.json
     ```
 
 3. Exit your shell on the GitLab Omnibus server.
@@ -182,7 +182,6 @@ Mattermost's export tool is incomplete and does not support exporting
 the following data:
 
 * user avatars
-* uploaded files and message attachments.
 
 We expect to add support for importing these data from Mattermost once
 Mattermost's export tool includes them.

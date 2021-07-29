@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class MentionHookTests(WebhookTestCase):
     STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/mention?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "mention"
+    WEBHOOK_DIR_NAME = "mention"
 
     def test_mention_webfeed(self) -> None:
         expected_topic = "news"

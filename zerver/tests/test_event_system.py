@@ -15,10 +15,11 @@ from zerver.lib.actions import (
     do_update_user_presence,
 )
 from zerver.lib.event_schema import check_restart_event
-from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
+from zerver.lib.events import fetch_initial_state_data
+from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, queries_captured, stub_event_queue_user_events
-from zerver.lib.users import get_api_key
+from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
     Realm,
     UserMessage,
@@ -190,8 +191,10 @@ class EventsEndpointTest(ZulipTestCase):
         )
         req = HostRequestMock(post_data, user_profile=None)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
-        result = self.client_post_request("/notify_tornado", req)
-        self.assert_json_error(result, "Access denied", status_code=403)
+        with self.assertRaises(AccessDeniedError) as context:
+            result = self.client_post_request("/notify_tornado", req)
+        self.assertEqual(str(context.exception), "Access denied")
+        self.assertEqual(context.exception.http_status_code, 403)
 
         post_data["secret"] = settings.SHARED_SECRET
         req = HostRequestMock(post_data, user_profile=None)
@@ -427,7 +430,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result["realm_bots"], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = get_api_key(self.notification_bot())
+        api_key = get_api_key(self.notification_bot(user_profile.realm))
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field
@@ -436,7 +439,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile)
-        self.assertTrue(len(result["realm_bots"]) > 2)
+        self.assertGreater(len(result["realm_bots"]), 2)
 
     def test_max_message_id_with_no_history(self) -> None:
         user_profile = self.example_user("aaron")
@@ -977,7 +980,7 @@ class FetchQueriesTest(ZulipTestCase):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
-        self.assert_length(queries, 31)
+        self.assert_length(queries, 33)
 
         expected_counts = dict(
             alert_words=1,
@@ -1107,17 +1110,18 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
 
 class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
     def test_get_raw_user_data_on_system_bot_realm(self) -> None:
+        realm = get_realm(settings.SYSTEM_BOT_REALM)
         result = get_raw_user_data(
-            get_realm("zulipinternal"),
+            realm,
             self.example_user("hamlet"),
             client_gravatar=True,
             user_avatar_url_field_optional=True,
         )
 
         for bot_email in settings.CROSS_REALM_BOT_EMAILS:
-            bot_profile = get_system_bot(bot_email)
+            bot_profile = get_system_bot(bot_email, realm.id)
             self.assertTrue(bot_profile.id in result)
-            self.assertTrue(result[bot_profile.id]["is_cross_realm_bot"])
+            self.assertTrue(result[bot_profile.id]["is_system_bot"])
 
 
 class TestUserPresenceUpdatesDisabled(ZulipTestCase):

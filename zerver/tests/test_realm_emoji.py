@@ -1,6 +1,12 @@
 from unittest import mock
 
-from zerver.lib.actions import check_add_realm_emoji, do_create_realm, do_create_user
+from zerver.lib.actions import (
+    check_add_realm_emoji,
+    do_change_user_role,
+    do_create_realm,
+    do_create_user,
+    do_set_realm_property,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
@@ -47,7 +53,7 @@ class RealmEmojiTest(ZulipTestCase):
         # having no author are also there in the list.
         self.login("othello")
         realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = True
+        realm.add_custom_emoji_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
         realm_emoji = self.create_test_emoji_with_no_author("my_emoji", realm)
 
@@ -68,6 +74,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         realm_emoji = RealmEmoji.objects.get(name="my_emoji")
+        assert realm_emoji.author is not None
         self.assertEqual(realm_emoji.author.email, email)
 
         result = self.client_get("/json/realm/emoji")
@@ -78,6 +85,29 @@ class RealmEmojiTest(ZulipTestCase):
         self.assertIn("author_id", test_emoji)
         author = UserProfile.objects.get(id=test_emoji["author_id"])
         self.assertEqual(author.email, email)
+
+    def test_override_built_in_emoji_by_admin(self) -> None:
+        # Test that only administrators can override built-in emoji.
+        self.login("othello")
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/laughing", info=emoji_data)
+        self.assert_json_error(
+            result,
+            "Only administrators can override built-in emoji.",
+        )
+
+        user = self.example_user("iago")
+        email = user.email
+        self.login_user(user)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/smile", info=emoji_data)
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+        realm_emoji = RealmEmoji.objects.get(name="smile")
+        assert realm_emoji is not None and realm_emoji.author is not None
+        self.assertEqual(realm_emoji.author.email, email)
 
     def test_realm_emoji_repr(self) -> None:
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
@@ -108,32 +138,81 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/%20", info=emoji_data)
         self.assert_json_error(result, "Emoji name is missing")
 
-    def test_upload_admins_only(self) -> None:
-        self.login("othello")
-        realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = True
-        realm.save()
-        with get_test_image_file("img.png") as fp1:
-            emoji_data = {"f1": fp1}
-            result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
-        self.assert_json_error(result, "Must be an organization administrator")
+    def test_can_add_custom_emoji(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_add_custom_emoji()
 
-    def test_upload_anyone(self) -> None:
-        self.login("othello")
-        realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = False
-        realm.save()
+        self.check_has_permission_policies("add_custom_emoji_policy", validation_func)
+
+    def test_user_settings_for_adding_custom_emoji(self) -> None:
+        othello = self.example_user("othello")
+        self.login_user(othello)
+
+        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
+        do_set_realm_property(
+            othello.realm, "add_custom_emoji_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
-            result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
+            result = self.client_post("/json/realm/emoji/my_emoji_1", info=emoji_data)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji_1", info=emoji_data)
         self.assert_json_success(result)
 
-    def test_emoji_upload_by_guest_user(self) -> None:
-        self.login("polonius")
+        do_set_realm_property(
+            othello.realm, "add_custom_emoji_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
-            result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
+            result = self.client_post("/json/realm/emoji/my_emoji_2", info=emoji_data)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji_2", info=emoji_data)
+        self.assert_json_success(result)
+
+        do_set_realm_property(
+            othello.realm,
+            "add_custom_emoji_policy",
+            Realm.POLICY_FULL_MEMBERS_ONLY,
+            acting_user=None,
+        )
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 100000, acting_user=None)
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
+
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji_3", info=emoji_data)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 0, acting_user=None)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji_3", info=emoji_data)
+        self.assert_json_success(result)
+
+        do_set_realm_property(
+            othello.realm, "add_custom_emoji_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        do_change_user_role(othello, UserProfile.ROLE_GUEST, acting_user=None)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji_4", info=emoji_data)
         self.assert_json_error(result, "Not allowed for guest users")
+
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post("/json/realm/emoji/my_emoji_4", info=emoji_data)
+        self.assert_json_success(result)
 
     def test_delete(self) -> None:
         emoji_author = self.example_user("iago")
@@ -158,23 +237,10 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_success(result)
 
-    def test_delete_admins_only(self) -> None:
-        emoji_author = self.example_user("othello")
-        self.login_user(emoji_author)
-        realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = True
-        realm.save()
-        self.create_test_emoji_with_no_author("my_emoji", realm)
-        result = self.client_delete("/json/realm/emoji/my_emoji")
-        self.assert_json_error(result, "Must be an organization administrator")
-
     def test_delete_admin_or_author(self) -> None:
-        # If any user in a realm can upload the emoji then the user who
-        # uploaded it as well as the admin should be able to delete it.
+        # Admins can delete emoji added by others also.
+        # Non-admins can only delete emoji they added themselves.
         emoji_author = self.example_user("othello")
-        realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = False
-        realm.save()
 
         self.create_test_emoji("my_emoji_1", emoji_author)
         self.login_user(emoji_author)

@@ -8,7 +8,7 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
-import * as muting from "./muting";
+import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
@@ -311,7 +311,7 @@ export function get_display_full_names(user_ids) {
             return "?";
         }
 
-        if (muting.is_user_muted(user_id)) {
+        if (muted_users.is_user_muted(user_id)) {
             return $t({defaultMessage: "Muted user"});
         }
 
@@ -663,7 +663,7 @@ export function sender_info_for_recent_topics_row(sender_ids) {
     for (const id of sender_ids) {
         const sender = {...get_by_user_id(id)};
         sender.avatar_url_small = small_avatar_url_for_person(sender);
-        sender.is_muted = muting.is_user_muted(id);
+        sender.is_muted = muted_users.is_user_muted(id);
         senders_info.push(sender);
     }
     return senders_info;
@@ -1162,6 +1162,10 @@ export function add_active_user(person) {
 export const is_person_active = (user_id) => {
     if (!people_by_user_id_dict.has(user_id)) {
         blueslip.error("No user found.", user_id);
+    }
+
+    if (cross_realm_dict.has(user_id)) {
+        return true;
     }
 
     return active_user_dict.has(user_id);

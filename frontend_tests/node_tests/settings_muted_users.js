@@ -6,18 +6,18 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 
 const noop = () => {};
 
 run_test("settings", ({override}) => {
-    muting.add_muted_user(5, 1577836800);
+    muted_users.add_muted_user(5, 1577836800);
     let populate_list_called = false;
     override(settings_muted_users, "populate_list", () => {
-        const opts = muting.get_muted_users();
+        const opts = muted_users.get_muted_users();
         assert.deepEqual(opts, [
             {
                 date_muted: 1577836800000,
@@ -59,7 +59,7 @@ run_test("settings", ({override}) => {
     };
 
     let unmute_user_called = false;
-    muting_ui.unmute_user = (user_id) => {
+    muted_users_ui.unmute_user = (user_id) => {
         assert.equal(user_id, 5);
         unmute_user_called = true;
     };

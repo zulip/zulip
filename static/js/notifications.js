@@ -10,7 +10,7 @@ import * as favicon from "./favicon";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -361,7 +361,10 @@ export function message_is_notifiable(message) {
         return false;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
+    if (
+        message.type === "stream" &&
+        muted_topics.is_topic_muted(message.stream_id, message.topic)
+    ) {
         return false;
     }
 
@@ -539,7 +542,10 @@ export function get_local_notify_mix_reason(message) {
         return undefined;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
+    if (
+        message.type === "stream" &&
+        muted_topics.is_topic_muted(message.stream_id, message.topic)
+    ) {
         return $t({defaultMessage: "Sent! Your message was sent to a topic you have muted."});
     }
 

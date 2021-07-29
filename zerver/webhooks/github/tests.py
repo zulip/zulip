@@ -17,7 +17,7 @@ TOPIC_WIKI = "public-repo / wiki pages"
 class GitHubWebhookTest(WebhookTestCase):
     STREAM_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "github"
+    WEBHOOK_DIR_NAME = "github"
 
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."

@@ -100,7 +100,7 @@ tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 orjson
 
 # Needed for iOS push notifications
-apns2
+aioapns
 
 python-twitter
 
@@ -130,7 +130,8 @@ py3dns
 
 # Install Python Social Auth
 social-auth-app-django
-social-auth-core[azuread,openidconnect,saml]<4.0.3  # 4.0.3 needs PyJWT 2: https://github.com/Pr0Ger/PyAPNs2/pull/122, https://github.com/twilio/twilio-python/issues/556
+social-auth-core[azuread,openidconnect,saml]
+https://github.com/onelogin/python3-saml/archive/4b6c4b1f2ed3f6eab70ff4391e595b808ace168c.zip#egg=python3-saml==1.10.1+git  # remove defusedxml: https://github.com/onelogin/python3-saml/pull/236
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -140,6 +141,7 @@ lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
+https://github.com/karls/twilio-python/archive/355de2bc698596c20226990be48d8625d17e38fb.zip#egg=twilio==6.61.0+git  # support PyJWT ≥ 2.0.0: https://github.com/twilio/twilio-python/pull/560
 
 # Needed for processing payments (in corporate)
 stripe
@@ -181,3 +183,6 @@ pyuca
 
 # Handle connection retries with exponential backoff
 backoff
+
+# Needed for reading bson files in rocketchat import tool
+pymongo

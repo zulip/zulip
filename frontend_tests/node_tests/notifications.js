@@ -18,7 +18,7 @@ const _navigator = {
 };
 set_global("navigator", _navigator);
 
-const muting = zrequire("muting");
+const muted_topics = zrequire("muted_topics");
 const stream_data = zrequire("stream_data");
 const ui = zrequire("ui");
 const spoilers = zrequire("spoilers");
@@ -47,7 +47,7 @@ const muted = {
 stream_data.add_sub(general);
 stream_data.add_sub(muted);
 
-muting.add_muted_topic(general.stream_id, "muted topic");
+muted_topics.add_muted_topic(general.stream_id, "muted topic");
 
 function test(label, f) {
     run_test(label, ({override}) => {

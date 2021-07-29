@@ -288,3 +288,13 @@ input[name="licenses"]::-webkit-inner-spin-button {
 input[name="licenses"] {
     appearance: textfield;
 }
+
+#sponsorship-form {
+    input {
+        box-sizing: border-box;
+        height: 30px;
+    }
+    textarea {
+        box-sizing: border-box;
+    }
+}

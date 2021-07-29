@@ -2,8 +2,9 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, has_request_variables, webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -27,8 +28,18 @@ SONARR_MESSAGE_TEMPLATE_EPISODE_DELETED = (
 )
 SONARR_MESSAGE_TEMPLATE_EPISODE_DELETED_UPGRADE = "{series_title} - {series_number}x{episode_number} - {episode_name} has been deleted due to quality upgrade.".strip()
 
+ALL_EVENT_TYPES = [
+    "Grab",
+    "EpisodeFileDelete",
+    "Test",
+    "Download",
+    "SeriesDelete",
+    "Health",
+    "Rename",
+]
 
-@webhook_view("Sonarr")
+
+@webhook_view("Sonarr", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_sonarr_webhook(
     request: HttpRequest,
@@ -38,7 +49,7 @@ def api_sonarr_webhook(
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, payload["eventType"])
     return json_success()
 
 

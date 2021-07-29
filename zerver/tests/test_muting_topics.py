@@ -12,7 +12,7 @@ from zerver.lib.topic_mutes import (
     remove_topic_mute,
     topic_is_muted,
 )
-from zerver.models import MutedTopic, UserProfile, get_stream
+from zerver.models import UserProfile, UserTopic, get_stream
 
 
 class MutedTopicsTests(ZulipTestCase):
@@ -25,6 +25,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
+        assert recipient is not None
         add_topic_mute(
             user_profile=user,
             stream_id=stream.id,
@@ -56,6 +57,7 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
+            assert recipient is not None
             add_topic_mute(
                 user_profile=user,
                 stream_id=stream.id,
@@ -67,13 +69,13 @@ class MutedTopicsTests(ZulipTestCase):
         mute_topic_for_user(hamlet)
         user_ids = stream_topic_target.user_ids_muting_topic()
         self.assertEqual(user_ids, {hamlet.id})
-        hamlet_date_muted = MutedTopic.objects.filter(user_profile=hamlet)[0].date_muted
+        hamlet_date_muted = UserTopic.objects.filter(user_profile=hamlet)[0].date_muted
         self.assertTrue(timezone_now() - hamlet_date_muted <= timedelta(seconds=100))
 
         mute_topic_for_user(cordelia)
         user_ids = stream_topic_target.user_ids_muting_topic()
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
-        cordelia_date_muted = MutedTopic.objects.filter(user_profile=cordelia)[0].date_muted
+        cordelia_date_muted = UserTopic.objects.filter(user_profile=cordelia)[0].date_muted
         self.assertTrue(timezone_now() - cordelia_date_muted <= timedelta(seconds=100))
 
     def test_add_muted_topic(self) -> None:
@@ -123,6 +125,7 @@ class MutedTopicsTests(ZulipTestCase):
         ]
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
+        assert recipient is not None
         for data in payloads:
             add_topic_mute(
                 user_profile=user,
@@ -146,6 +149,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         stream = get_stream("Verona", realm)
         recipient = stream.recipient
+        assert recipient is not None
         add_topic_mute(
             user_profile=user,
             stream_id=stream.id,

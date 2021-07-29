@@ -10,8 +10,8 @@ from django.utils.translation import gettext as _
 from requests import Response
 
 from version import ZULIP_VERSION
-from zerver.decorator import JsonableError
 from zerver.lib.actions import check_send_message
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event

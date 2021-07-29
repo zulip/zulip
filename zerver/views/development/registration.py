@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 from zerver.views.auth import create_preregistration_user
 from zerver.views.registration import accounts_register
 
@@ -48,6 +48,7 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
     name = f"user-{count}"
     email = f"{name}@zulip.com"
     realm_name = f"realm-{count}"
+    realm_type = Realm.ORG_TYPES["business"]["id"]
     prereg = create_preregistration_user(
         email, request, realm_creation=True, password_required=False
     )
@@ -58,6 +59,7 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
         request,
         key=key,
         realm_name=realm_name,
+        realm_type=realm_type,
         full_name=name,
         password="test",
         realm_subdomain=realm_name,

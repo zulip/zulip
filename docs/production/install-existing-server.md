@@ -28,7 +28,7 @@ one created by Zulip into it:
 
 ```shell
 sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
-sudo curl -Lo /etc/nginx/nginx.conf.zulip \
+sudo curl -fL -o /etc/nginx/nginx.conf.zulip \
     https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/templates/nginx.conf.template.erb
 sudo meld /etc/nginx/nginx.conf /etc/nginx/nginx.conf.zulip  # be sure to merge to the right
 ```
@@ -98,5 +98,5 @@ We don't provide a convenient way to uninstall a Zulip server.
 
 Most of the limitations are things we'd accept a pull request to fix;
 we welcome contributions to shrink this list of gotchas.  Chat with us
-in the [chat.zulip.org community](../contributing/chat-zulip-org.md) if you're
+in the [chat.zulip.org community](https://zulip.com/developer-community/) if you're
 interested in helping!

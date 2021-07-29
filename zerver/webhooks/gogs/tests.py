@@ -7,7 +7,7 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 class GogsHookTests(WebhookTestCase):
     STREAM_NAME = "commits"
     URL_TEMPLATE = "/api/v1/external/gogs?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "gogs"
+    WEBHOOK_DIR_NAME = "gogs"
 
     def test_push(self) -> None:
         expected_topic = "try-git / master"

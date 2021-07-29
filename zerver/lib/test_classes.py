@@ -39,6 +39,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
@@ -72,7 +73,11 @@ from zerver.lib.test_console_output import (
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
-from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
+from zerver.lib.webhooks.common import (
+    check_send_webhook_message,
+    get_fixture_http_headers,
+    standardize_headers,
+)
 from zerver.models import (
     Client,
     Message,
@@ -93,11 +98,14 @@ from zerver.models import (
     get_user_by_delivery_email,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
-from zerver.tornado import django_api as django_tornado_api
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import get_remote_server_by_uuid
+
+
+class EmptyResponseError(Exception):
+    pass
 
 
 class UploadSerializeMixin(SerializeMixin):
@@ -462,8 +470,8 @@ Output:
     def mit_email(self, name: str) -> str:
         return self.mit_user_map[name]
 
-    def notification_bot(self) -> UserProfile:
-        return get_system_bot(settings.NOTIFICATION_BOT)
+    def notification_bot(self, realm: Realm) -> UserProfile:
+        return get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
     def create_test_bot(
         self, short_name: str, user_profile: UserProfile, full_name: str = "Foo Bot", **extras: Any
@@ -618,6 +626,7 @@ Output:
         default_stream_groups: Sequence[str] = [],
         source_realm_id: str = "",
         key: Optional[str] = None,
+        realm_type: Optional[int] = Realm.ORG_TYPES["business"]["id"],
         **kwargs: Any,
     ) -> HttpResponse:
         """
@@ -634,6 +643,7 @@ Output:
             "full_name": full_name,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
+            "realm_type": realm_type,
             "key": key if key is not None else find_key_by_email(email),
             "timezone": timezone,
             "terms": True,
@@ -1063,7 +1073,7 @@ Output:
         msg = self.get_last_message()
 
         if msg.id == prior_msg.id:
-            raise Exception(
+            raise EmptyResponseError(
                 """
                 Your test code called an endpoint that did
                 not write any new messages.  It is probably
@@ -1094,7 +1104,9 @@ Output:
         """
         with self.settings(ERROR_BOT=None), mock.patch(
             "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
-        ), mock.patch("zerver.lib.markdown.markdown_logger"):
+        ), self.assertLogs(
+            level="ERROR"
+        ):  # For markdown_logger.exception
             yield
 
     def create_default_device(
@@ -1303,24 +1315,22 @@ Output:
         self, lst: List[Mapping[str, Any]], expected_num_events: int
     ) -> Iterator[None]:
         lst.clear()
-        real_event_queue_process_notification = django_tornado_api.process_notification
 
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        django_tornado_api.process_notification = lambda notice: lst.append(notice)
-
-        # Some `send_event` calls need to be executed only after the current transaction
-        # commits (using `on_commit` hooks). Because the transaction in Django tests never
-        # commits (rather, gets rolled back after the test completes), such events would
-        # never be sent in tests, and we would be unable to verify them. Hence, we use
-        # this helper to make sure the `send_event` calls actually run.
-        with self.captureOnCommitCallbacks(execute=True):
-            yield
-
-        django_tornado_api.process_notification = real_event_queue_process_notification
+        with mock.patch(
+            "zerver.tornado.django_api.process_notification", lambda notice: lst.append(notice)
+        ):
+            # Some `send_event` calls need to be executed only after the current transaction
+            # commits (using `on_commit` hooks). Because the transaction in Django tests never
+            # commits (rather, gets rolled back after the test completes), such events would
+            # never be sent in tests, and we would be unable to verify them. Hence, we use
+            # this helper to make sure the `send_event` calls actually run.
+            with self.captureOnCommitCallbacks(execute=True):
+                yield
 
         self.assert_length(lst, expected_num_events)
 
@@ -1329,9 +1339,11 @@ Output:
     ) -> UserMessageNotificationsData:
         return UserMessageNotificationsData(
             user_id=user_id,
-            flags=kwargs.get("flags", []),
-            mentioned=kwargs.get("mentioned", False),
             online_push_enabled=kwargs.get("online_push_enabled", False),
+            pm_email_notify=kwargs.get("pm_email_notify", False),
+            pm_push_notify=kwargs.get("pm_push_notify", False),
+            mention_email_notify=kwargs.get("mention_email_notify", False),
+            mention_push_notify=kwargs.get("mention_push_notify", False),
             stream_email_notify=kwargs.get("stream_email_notify", False),
             stream_push_notify=kwargs.get("stream_push_notify", False),
             wildcard_mention_notify=kwargs.get("wildcard_mention_notify", False),
@@ -1353,8 +1365,7 @@ Output:
             user_notifications_data=user_notifications_data,
             message_id=message_id,
             acting_user_id=acting_user_id,
-            private_message=kwargs.get("private_message", False),
-            stream_name=kwargs.get("stream_name", None),
+            mentioned_user_group_id=kwargs.get("mentioned_user_group_id", None),
             idle=kwargs.get("idle", True),
             already_notified=kwargs.get(
                 "already_notified", {"email_notified": False, "push_notified": False}
@@ -1363,18 +1374,29 @@ Output:
 
 
 class WebhookTestCase(ZulipTestCase):
-    """
-    Common for all webhooks tests
+    """Shared test class for all incoming webhooks tests.
 
-    Override below class attributes and run send_and_test_message
-    If you create your URL in uncommon way you can override build_webhook_url method
-    In case that you need modify body or create it without using fixture you can also override get_body method
+    Used by configuring the below class attributes, and calling
+    send_and_test_message in individual tests.
+
+    * Tests can override build_webhook_url if the webhook requires a
+      different URL format.
+
+    * Tests can override get_body for cases where there is no
+      available fixture file.
+
+    * Tests should specify WEBHOOK_DIR_NAME to enforce that all event
+      types are declared in the @webhook_view decorator. This is
+      important for ensuring we document all fully supported event types.
     """
 
     STREAM_NAME: Optional[str] = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
-    FIXTURE_DIR_NAME: Optional[str] = None
+    WEBHOOK_DIR_NAME: Optional[str] = None
+    # This last parameter is a workaround to handle webhooks that do not
+    # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
+    VIEW_FUNCTION_NAME: Optional[str] = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -1384,6 +1406,57 @@ class WebhookTestCase(ZulipTestCase):
         super().setUp()
         self.url = self.build_webhook_url()
 
+        if self.WEBHOOK_DIR_NAME is not None:
+            # If VIEW_FUNCTION_NAME is explicitly specified and
+            # WEBHOOK_DIR_NAME is not None, an exception will be
+            # raised when a test triggers events that are not
+            # explicitly specified via the event_types parameter to
+            # the @webhook_view decorator.
+            if self.VIEW_FUNCTION_NAME is None:
+                function = import_string(
+                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.api_{self.WEBHOOK_DIR_NAME}_webhook"
+                )
+            else:
+                function = import_string(
+                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.{self.VIEW_FUNCTION_NAME}"
+                )
+            all_event_types = None
+
+            if hasattr(function, "_all_event_types"):
+                all_event_types = function._all_event_types
+
+            if all_event_types is None:
+                return  # nocoverage
+
+            def side_effect(*args: Any, **kwargs: Any) -> None:
+                complete_event_type = (
+                    kwargs.get("complete_event_type")
+                    if len(args) < 5
+                    else args[4]  # complete_event_type is the argument at index 4
+                )
+                if (
+                    complete_event_type is not None
+                    and all_event_types is not None
+                    and complete_event_type not in all_event_types
+                ):
+                    raise Exception(
+                        f"""
+Error: This test triggered a message using the event "{complete_event_type}", which was not properly
+registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
+self-documenting the supported event types for this integration.
+
+You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
+""".strip()
+                    )
+                check_send_webhook_message(*args, **kwargs)
+
+            self.patch = mock.patch(
+                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",
+                side_effect=side_effect,
+            )
+            self.patch.start()
+            self.addCleanup(self.patch.stop)
+
     def api_stream_message(self, user: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.check_webhook(*args, **kwargs)
@@ -1391,9 +1464,10 @@ class WebhookTestCase(ZulipTestCase):
     def check_webhook(
         self,
         fixture_name: str,
-        expected_topic: str,
-        expected_message: str,
+        expected_topic: Optional[str] = None,
+        expected_message: Optional[str] = None,
         content_type: Optional[str] = "application/json",
+        expect_noop: Optional[bool] = False,
         **kwargs: Any,
     ) -> None:
         """
@@ -1413,6 +1487,8 @@ class WebhookTestCase(ZulipTestCase):
 
         For the rare cases of webhooks actually sending private messages,
         see send_and_test_private_message.
+
+        When no message is expected to be sent, set `expect_noop` to True.
         """
         assert self.STREAM_NAME is not None
         self.subscribe(self.test_user, self.STREAM_NAME)
@@ -1420,17 +1496,34 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_payload(fixture_name)
         if content_type is not None:
             kwargs["content_type"] = content_type
-        if self.FIXTURE_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+        if self.WEBHOOK_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
+        try:
+            msg = self.send_webhook_payload(
+                self.test_user,
+                self.url,
+                payload,
+                **kwargs,
+            )
+        except EmptyResponseError:
+            if expect_noop:
+                return
+            else:
+                raise AssertionError(
+                    "No message was sent. Pass expect_noop=True if this is intentional."
+                )
 
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            payload,
-            **kwargs,
-        )
+        if expect_noop:
+            raise Exception(
+                """
+While no message is expected given expect_noop=True,
+your test code triggered an endpoint that did write
+one or more new messages.
+""".strip()
+            )
+        assert expected_message is not None and expected_topic is not None
 
         self.assert_stream_message(
             message=msg,
@@ -1467,8 +1560,8 @@ class WebhookTestCase(ZulipTestCase):
         payload = self.get_payload(fixture_name)
         kwargs["content_type"] = content_type
 
-        if self.FIXTURE_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.FIXTURE_DIR_NAME, fixture_name)
+        if self.WEBHOOK_DIR_NAME is not None:
+            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             kwargs.update(headers)
         # The sender profile shouldn't be passed any further in kwargs, so we pop it.
@@ -1512,8 +1605,8 @@ class WebhookTestCase(ZulipTestCase):
         return self.get_body(fixture_name)
 
     def get_body(self, fixture_name: str) -> str:
-        assert self.FIXTURE_DIR_NAME is not None
-        body = self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
+        assert self.WEBHOOK_DIR_NAME is not None
+        body = self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, fixture_name)
         # fail fast if we don't have valid json
         orjson.loads(body)
         return body
@@ -1528,7 +1621,9 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     @property
     def app(self) -> str:
-        return apps.get_containing_app_config(type(self).__module__).name
+        app_config = apps.get_containing_app_config(type(self).__module__)
+        assert app_config is not None
+        return app_config.name
 
     migrate_from: Optional[str] = None
     migrate_to: Optional[str] = None

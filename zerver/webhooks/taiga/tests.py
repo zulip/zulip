@@ -5,7 +5,7 @@ class TaigaHookTests(WebhookTestCase):
     STREAM_NAME = "taiga"
     TOPIC = "subject"
     URL_TEMPLATE = "/api/v1/external/taiga?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "taiga"
+    WEBHOOK_DIR_NAME = "taiga"
 
     def setUp(self) -> None:
         super().setUp()

@@ -10,6 +10,7 @@ from analytics.models import RealmCount
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    HostRequestMock,
     create_dummy_file,
     create_s3_buckets,
     stdout_suppressed,
@@ -33,7 +34,7 @@ class RealmExportTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with self.assertRaises(JsonableError):
-            export_realm(self.client_post, user)
+            export_realm(HostRequestMock(), user)
 
     @use_s3_backend
     def test_endpoint_s3(self) -> None:
@@ -61,10 +62,13 @@ class RealmExportTest(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
+        assert audit_log_entry is not None
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = orjson.loads(audit_log_entry.extra_data)["export_path"]
+        extra_data = audit_log_entry.extra_data
+        assert extra_data is not None
+        export_path = orjson.loads(extra_data)["export_path"]
         assert export_path.startswith("/")
         path_id = export_path[1:]
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
@@ -95,7 +99,9 @@ class RealmExportTest(ZulipTestCase):
 
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()
-        export_data = orjson.loads(audit_log_entry.extra_data)
+        extra_data = audit_log_entry.extra_data
+        assert extra_data is not None
+        export_data = orjson.loads(extra_data)
         self.assertIn("deleted_timestamp", export_data)
         result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
         self.assert_json_error(result, "Export already deleted")
@@ -126,10 +132,13 @@ class RealmExportTest(ZulipTestCase):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
+        assert audit_log_entry is not None
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = orjson.loads(audit_log_entry.extra_data).get("export_path")
+        extra_data = audit_log_entry.extra_data
+        assert extra_data is not None
+        export_path = orjson.loads(extra_data).get("export_path")
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
         self.assert_url_serves_contents_of_file(export_path, b"zulip!")
@@ -157,7 +166,9 @@ class RealmExportTest(ZulipTestCase):
 
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()
-        export_data = orjson.loads(audit_log_entry.extra_data)
+        extra_data = audit_log_entry.extra_data
+        assert extra_data is not None
+        export_data = orjson.loads(extra_data)
         self.assertIn("deleted_timestamp", export_data)
         result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
         self.assert_json_error(result, "Export already deleted")
@@ -184,8 +195,9 @@ class RealmExportTest(ZulipTestCase):
             )
         RealmAuditLog.objects.bulk_create(exports)
 
-        result = export_realm(self.client_post, admin)
-        self.assert_json_error(result, "Exceeded rate limit.")
+        with self.assertRaises(JsonableError) as error:
+            export_realm(HostRequestMock(), admin)
+        self.assertEqual(str(error.exception), "Exceeded rate limit.")
 
     def test_upload_and_message_limit(self) -> None:
         admin = self.example_user("iago")

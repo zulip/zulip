@@ -5,8 +5,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_icon_source
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.upload import upload_icon_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.models import UserProfile
@@ -16,11 +17,11 @@ from zerver.models import UserProfile
 def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     if len(request.FILES) != 1:
-        return json_error(_("You must upload exactly one icon."))
+        raise JsonableError(_("You must upload exactly one icon."))
 
     icon_file = list(request.FILES.values())[0]
     if (settings.MAX_ICON_FILE_SIZE_MIB * 1024 * 1024) < icon_file.size:
-        return json_error(
+        raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
                 settings.MAX_ICON_FILE_SIZE_MIB,
             )

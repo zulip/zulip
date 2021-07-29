@@ -2,7 +2,6 @@ import $ from "jquery";
 
 import marked from "../third/marked/lib/marked";
 
-import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
@@ -186,11 +185,6 @@ export function process(message_content) {
 
     if (content === "/fixed-width") {
         enter_fixed_mode();
-        return true;
-    }
-
-    if (content === "/settings") {
-        browser_history.go_to_location("settings/your-account");
         return true;
     }
 

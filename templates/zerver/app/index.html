@@ -12,6 +12,7 @@
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed" />
 <style>
     #app-loading {
+    font-size: 16px;
     background-color: hsl(0, 0%, 100%);
     position: fixed;
     height: 100%;
@@ -21,7 +22,29 @@
     left: 0px;
     z-index: 9001;
     }
-
+    #app-loading-middle-content, #app-loading-bottom-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    }
+    #app-loading-logo {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 24px;
+    }
+    #app-loading-middle-content h3 {
+    text-align: center;
+    }
+    #app-loading-bottom-content {
+    top: unset;
+    bottom: 20px;
+    }
+    body.night-mode #app-loading {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+    }
 </style>
 {% endblock %}
 
@@ -30,16 +53,23 @@
 </div>
 
 <div id="app-loading">
-    <h3>{{ _('Loading...') }}</h3>
-    <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
-    <script nonce="{{ csp_nonce }}">
-        document.addEventListener('DOMContentLoaded', function () {
-            function reload() {
-                location.reload(true);
-            }
-            document.getElementById('reload-lnk').addEventListener('click', reload);
-        });
-    </script>
+    <div id="app-loading-middle-content">
+        <div id="app-loading-logo">
+            <img src="/static/images/logo/zulip-icon-circle.svg" />
+        </div>
+        <h3>{{ _('Loading...') }}</h3>
+    </div>
+    <div id="app-loading-bottom-content">
+        <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
+        <script nonce="{{ csp_nonce }}">
+            document.addEventListener('DOMContentLoaded', function () {
+                function reload() {
+                    location.reload(true);
+                }
+                document.getElementById('reload-lnk').addEventListener('click', reload);
+            });
+        </script>
+    </div>
 </div>
 
 <div class="subscriptions">
@@ -48,11 +78,10 @@
 </div>
 <div id="drafts_table"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
-    {% include "zerver/app/settings_overlay.html" %}
 </div>
 
 <div id="navbar_alerts_wrapper"></div>
-{% include "zerver/app/navbar.html" %}
+<div id="navbar-container"></div>
 
 <div class="fixed-app">
     <div class="app-main">
@@ -90,8 +119,7 @@
         <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
     </div>
     <div class="app-main">
-        <div class="column-left">
-            {% include "zerver/app/left_sidebar.html" %}
+        <div class="column-left" id="left-sidebar-container">
         </div>
         <div class="column-middle">
             <div class="column-middle-inner tab-content">
@@ -123,15 +151,39 @@
                             </div>
                         </div>
                     </div>
-                    {% include "zerver/app/home.html" %}
+                    <div class="message_area_padder message_list" id="main_div">
+                        <div class="top-messages-logo">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                <circle cx="386.56" cy="386.56" r="386.56"/>
+                                <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                            </svg>
+                        </div>
+                        <div id="loading_older_messages_indicator"></div>
+                        <div id="page_loading_indicator"></div>
+                        {% include "zerver/app/message_feed_errors.html" %}
+                        <div class="message_table focused_table" id="zhome" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
+                        </div>
+                        <div class="message_table" id="zfilt" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
+                        </div>
+                        <div id="typing_notifications">
+                        </div>
+                        <div id="bottom_whitespace">
+                            <div class="bottom-messages-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                                    <circle cx="386.56" cy="386.56" r="386.56"/>
+                                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                                </svg>
+                            </div>
+                            <div id="loading_newer_messages_indicator"></div>
+                        </div>
+                    </div>
                 </div>
                 <div id="compose" {% if embedded %}data-embedded{% endif %}>
                     <div id="compose-container"></div>
                 </div>
             </div><!--/tab-content-->
         </div>
-        <div class="column-right">
-            {% include "zerver/app/right_sidebar.html" %}
+        <div class="column-right" id="right-sidebar-container">
         </div><!--/right sidebar-->
     </div><!--/row-->
     <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
@@ -152,5 +204,9 @@
     <div class="left-sidebar-modal-holder"></div>
     <div class="mute-user-modal-holder"></div>
     <div id="move-a-topic-modal-holder"></div>
+    <audio id="notification-sound-audio">
+        <source id="notification-sound-source-ogg" type="audio/ogg" />
+        <source id="notification-sound-source-mp3" type="audio/mpeg" />
+    </audio>
 </div>
 {% endblock %}

@@ -4,8 +4,14 @@ import os
 import sys
 import unittest
 
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.abspath(os.path.join(tools_dir, ".."))
+tools_test_dir = os.path.join(tools_dir, "tests")
+
+sys.path.insert(0, root_dir)
+
 # check for the venv
-from lib import sanity_check
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
@@ -14,22 +20,13 @@ if __name__ == "__main__":
     parser.add_argument("--coverage", action="store_true", help="compute test coverage")
     args = parser.parse_args()
 
-    def dir_join(dir1: str, dir2: str) -> str:
-        return os.path.abspath(os.path.join(dir1, dir2))
-
-    tools_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = dir_join(tools_dir, "..")
-    tools_test_dir = dir_join(tools_dir, "tests")
-
-    sys.path.insert(0, root_dir)
-
     loader = unittest.TestLoader()
 
     if args.coverage:
         import coverage
 
         cov = coverage.Coverage(
-            branch=True, omit=["*/zulip-venv-cache/*", dir_join(tools_test_dir, "*")]
+            branch=True, omit=["*/zulip-venv-cache/*", os.path.join(tools_test_dir, "*")]
         )
         cov.start()
 

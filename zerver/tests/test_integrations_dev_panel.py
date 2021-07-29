@@ -124,6 +124,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         target_url = "/devtools/integrations/somerandomnonexistantintegration/fixtures"
         response = self.client_get(target_url)
         expected_response = {
+            "code": "BAD_REQUEST",
             "msg": '"somerandomnonexistantintegration" is not a valid webhook integration.',
             "result": "error",
         }
@@ -138,6 +139,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         target_url = "/devtools/integrations/airbrake/fixtures"
         response = self.client_get(target_url)
         expected_response = {
+            "code": "BAD_REQUEST",
             "msg": 'The integration "airbrake" does not have fixtures.',
             "result": "error",
         }
@@ -220,6 +222,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "user_register.txt",
                 "status_code": 400,
@@ -228,6 +231,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_post_no_data_provided.txt",
                 "status_code": 400,
@@ -236,6 +240,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "unknown_action_no_data.txt",
                 "status_code": 400,
@@ -244,6 +249,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_page.txt",
                 "status_code": 400,
@@ -252,6 +258,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "unknown_action_no_hook_provided.txt",
                 "status_code": 400,
@@ -260,6 +267,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_post_type_not_provided.txt",
                 "status_code": 400,
@@ -268,6 +276,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "wp_login.txt",
                 "status_code": 400,
@@ -276,6 +285,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
                 "message": {
                     "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
+                    "code": "BAD_REQUEST",
                 },
                 "fixture_name": "publish_post.txt",
                 "status_code": 400,
@@ -311,6 +321,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "/devtools/integrations/send_all_webhook_fixture_messages", data
         )
         expected_response = {
+            "code": "BAD_REQUEST",
             "msg": 'The integration "appfollow" does not have fixtures.',
             "result": "error",
         }

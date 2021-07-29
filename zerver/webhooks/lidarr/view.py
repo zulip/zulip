@@ -2,8 +2,9 @@ from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, has_request_variables, webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -35,6 +36,8 @@ LIDARR_TRACKS_ROW_TEMPLATE = "* {track_title}\n"
 LIDARR_TRACKS_OTHERS_ROW_TEMPLATE = "[and {tracks_number} more tracks(s)]"
 LIDARR_TRACKS_LIMIT = 20
 
+ALL_EVENT_TYPES = ["Test", "Grab", "Rename", "Retag", "Download"]
+
 
 def get_tracks_content(tracks_data: List[Dict[str, Any]]) -> str:
     tracks_content = ""
@@ -49,7 +52,7 @@ def get_tracks_content(tracks_data: List[Dict[str, Any]]) -> str:
     return tracks_content.rstrip()
 
 
-@webhook_view("Lidarr")
+@webhook_view("Lidarr", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_lidarr_webhook(
     request: HttpRequest,
@@ -59,7 +62,7 @@ def api_lidarr_webhook(
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, payload["eventType"])
     return json_success()
 
 

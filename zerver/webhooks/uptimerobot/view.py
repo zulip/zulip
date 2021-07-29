@@ -3,9 +3,11 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import REQ, has_request_variables, webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -26,15 +28,20 @@ It was down for {alert_friendly_duration}.
 UPTIMEROBOT_MESSAGE_DOWN_TEMPLATE = (
     "{monitor_friendly_name} ({monitor_url}) is DOWN ({alert_details})."
 )
+ALL_EVENT_TYPES = ["up", "down"]
 
 
-@webhook_view("UptimeRobot")
+@webhook_view("UptimeRobot", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_uptimerobot_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
+    if payload["alert_type_friendly_name"] == "Up":
+        event = "up"
+    elif payload["alert_type_friendly_name"] == "Down":
+        event = "down"
 
     try:
         body = get_body_for_http_request(payload)
@@ -46,9 +53,9 @@ def api_uptimerobot_webhook(
         ).strip()
         send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
-        return json_error(_("Invalid payload"))
+        raise JsonableError(_("Invalid payload"))
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, event)
     return json_success()
 
 

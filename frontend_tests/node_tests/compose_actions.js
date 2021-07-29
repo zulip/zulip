@@ -200,6 +200,17 @@ test("start", ({override}) => {
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
+    // Triggered by new private message
+    opts = {
+        trigger: "new private message",
+    };
+
+    start("private", opts);
+
+    assert.equal(compose_state.private_message_recipient(), "");
+    assert.equal(compose_state.get_message_type(), "private");
+    assert.ok(compose_state.composing());
+
     // Cancel compose.
     let pill_cleared;
     compose_pm_pill.clear = () => {
@@ -358,9 +369,7 @@ test("quote_and_reply", ({override}) => {
         reply_type: "personal",
     };
 
-    $("#compose-textarea").caret = (pos) => {
-        assert.equal(pos, 0);
-    };
+    $("#compose-textarea").caret = noop;
 
     replaced = false;
     expected_replacement =

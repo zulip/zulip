@@ -60,6 +60,7 @@ class Command(BaseCommand):
             return
 
         fill_to_time = parse_datetime(options["time"])
+        assert fill_to_time is not None
         if options["utc"]:
             fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
         if fill_to_time.tzinfo is None:

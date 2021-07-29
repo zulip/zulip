@@ -8,15 +8,18 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only
 from zerver.lib.actions import do_update_user_status, update_user_presence
+from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import (
     UserActivity,
     UserPresence,
     UserProfile,
+    UserStatus,
     get_active_user,
     get_active_user_profile_by_id_in_realm,
 )
@@ -37,14 +40,14 @@ def get_presence_backend(
             email = user_id_or_email
             target = get_active_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:
-        return json_error(_("No such user"))
+        raise JsonableError(_("No such user"))
 
     if target.is_bot:
-        return json_error(_("Presence is not supported for bot users."))
+        raise JsonableError(_("Presence is not supported for bot users."))
 
     presence_dict = get_presence_for_user(target.id)
     if len(presence_dict) == 0:
-        return json_error(
+        raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
         )
 
@@ -67,19 +70,60 @@ def update_user_status_backend(
     user_profile: UserProfile,
     away: Optional[bool] = REQ(json_validator=check_bool, default=None),
     status_text: Optional[str] = REQ(str_validator=check_capped_string(60), default=None),
+    emoji_name: Optional[str] = REQ(default=None),
+    emoji_code: Optional[str] = REQ(default=None),
+    # TODO: emoji_type is the more appropriate name for this parameter, but changing
+    # that requires nontrivial work on the API documentation, since it's not clear
+    # that the reactions endpoint would prefer such a change.
+    emoji_type: Optional[str] = REQ("reaction_type", default=None),
 ) -> HttpResponse:
 
     if status_text is not None:
         status_text = status_text.strip()
 
-    if (away is None) and (status_text is None):
-        return json_error(_("Client did not pass any new values."))
+    if (away is None) and (status_text is None) and (emoji_name is None):
+        raise JsonableError(_("Client did not pass any new values."))
 
+    if emoji_name == "":
+        # Reset the emoji_code and reaction_type if emoji_name is empty.
+        # This should clear the user's configured emoji.
+        emoji_code = ""
+        emoji_type = UserStatus.UNICODE_EMOJI
+
+    elif emoji_name is not None:
+        if emoji_code is None:
+            # The emoji_code argument is only required for rare corner
+            # cases discussed in the long block comment below.  For simple
+            # API clients, we allow specifying just the name, and just
+            # look up the code using the current name->code mapping.
+            emoji_code = emoji_name_to_emoji_code(user_profile.realm, emoji_name)[0]
+
+        if emoji_type is None:
+            emoji_type = emoji_name_to_emoji_code(user_profile.realm, emoji_name)[1]
+
+    elif emoji_type or emoji_code:
+        raise JsonableError(
+            _("Client must pass emoji_name if they pass either emoji_code or reaction_type.")
+        )
+
+    # If we're asking to set an emoji (not clear it ("") or not adjust
+    # it (None)), we need to verify the emoji is valid.
+    if emoji_name not in ["", None]:
+        assert emoji_name is not None
+        assert emoji_code is not None
+        assert emoji_type is not None
+        check_emoji_request(user_profile.realm, emoji_name, emoji_code, emoji_type)
+
+    client = get_request_notes(request).client
+    assert client is not None
     do_update_user_status(
         user_profile=user_profile,
         away=away,
         status_text=status_text,
-        client_id=request.client.id,
+        client_id=client.id,
+        emoji_name=emoji_name,
+        emoji_code=emoji_code,
+        reaction_type=emoji_type,
     )
 
     return json_success()
@@ -99,9 +143,9 @@ def update_active_status_backend(
     if status_val is None:
         raise JsonableError(_("Invalid status: {}").format(status))
     elif user_profile.presence_enabled:
-        update_user_presence(
-            user_profile, request.client, timezone_now(), status_val, new_user_input
-        )
+        client = get_request_notes(request).client
+        assert client is not None
+        update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 
     if ping_only:
         ret: Dict[str, Any] = {}

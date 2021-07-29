@@ -14,15 +14,15 @@ from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
 from zerver.lib.actions import do_change_password, email_not_system_bot
 from zerver.lib.email_validation import email_allowed_for_realm
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
-from zerver.lib.rate_limiter import RateLimited, RateLimitedObject
-from zerver.lib.request import JsonableError
+from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
@@ -114,6 +114,7 @@ class RegistrationForm(forms.Form):
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
+    realm_type = forms.IntegerField(required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we

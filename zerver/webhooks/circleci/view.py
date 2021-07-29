@@ -14,8 +14,10 @@ outcome_to_formatted_status_map = {
     "canceled": "was canceled",
 }
 
+ALL_EVENT_TYPES = list(outcome_to_formatted_status_map.keys())
 
-@webhook_view("CircleCI")
+
+@webhook_view("CircleCI", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_circleci_webhook(
     request: HttpRequest,
@@ -26,7 +28,13 @@ def api_circleci_webhook(
     subject = get_subject(payload)
     body = get_body(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(
+        request,
+        user_profile,
+        subject,
+        body,
+        payload.get("status") if not payload.get("build_num") else payload.get("outcome"),
+    )
     return json_success()
 
 

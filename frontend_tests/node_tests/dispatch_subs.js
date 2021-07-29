@@ -21,7 +21,7 @@ const settings_org = mock_esm("../../static/js/settings_org");
 const settings_streams = mock_esm("../../static/js/settings_streams");
 const stream_events = mock_esm("../../static/js/stream_events");
 const stream_list = mock_esm("../../static/js/stream_list");
-const subs = mock_esm("../../static/js/subs");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 message_lists.current = {};
 
 const peer_data = zrequire("peer_data");
@@ -79,7 +79,7 @@ test("peer add/remove", ({override}) => {
     });
 
     const subs_stub = make_stub();
-    override(subs, "update_subscribers_ui", subs_stub.f);
+    override(stream_settings_ui, "update_subscribers_ui", subs_stub.f);
 
     const compose_fade_stub = make_stub();
     override(compose_fade, "update_faded_users", compose_fade_stub.f);
@@ -186,7 +186,7 @@ test("stream create", ({override}) => {
 
     const stub = make_stub();
     override(stream_data, "create_streams", stub.f);
-    override(subs, "add_sub_to_table", noop);
+    override(stream_settings_ui, "add_sub_to_table", noop);
     override(overlays, "streams_open", () => true);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
@@ -218,7 +218,7 @@ test("stream delete (normal)", ({override}) => {
 
     const removed_stream_ids = [];
 
-    override(subs, "remove_stream", (stream_id) => {
+    override(stream_settings_ui, "remove_stream", (stream_id) => {
         removed_stream_ids.push(stream_id);
     });
 
@@ -250,7 +250,7 @@ test("stream delete (special streams)", ({override}) => {
     page_params.realm_notifications_stream_id = event.streams[0].stream_id;
     page_params.realm_signup_notifications_stream_id = event.streams[1].stream_id;
 
-    override(subs, "remove_stream", noop);
+    override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_streams, "update_default_streams_table", noop);
     override(message_lists.current, "update_trailing_bookend", noop);

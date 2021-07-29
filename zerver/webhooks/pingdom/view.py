@@ -36,8 +36,10 @@ SUPPORTED_CHECK_TYPES = (
     "PORT_TCP",
 )
 
+ALL_EVENT_TYPES = list(SUPPORTED_CHECK_TYPES)
 
-@webhook_view("Pingdom")
+
+@webhook_view("Pingdom", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_pingdom_webhook(
     request: HttpRequest,
@@ -52,7 +54,7 @@ def api_pingdom_webhook(
     else:
         raise UnsupportedWebhookEventType(check_type)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, check_type)
     return json_success()
 
 

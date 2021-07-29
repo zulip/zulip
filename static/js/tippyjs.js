@@ -18,7 +18,7 @@ tippy.setDefaultProps({
     // Some delay to showing / hiding the tooltip makes
     // it look less forced and more natural.
     delay: [100, 20],
-    placement: "auto",
+    placement: "top",
 
     // disable animations to make the
     // tooltips feel snappy
@@ -111,7 +111,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".compose_control_button",
-        placement: "top",
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
@@ -120,7 +119,9 @@ export function initialize() {
 
     delegate("body", {
         target: ".message_control_button",
-        placement: "top",
+        // This ensures that the tooltip doesn't
+        // hide by the selected message blue border.
+        appendTo: () => document.body,
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
@@ -139,31 +140,21 @@ export function initialize() {
                 const edit_button = elem.find("i.edit_content_button");
                 content = edit_button.attr("data-tippy-content");
             }
-            if (content === undefined) {
-                // If content is still undefined it is because content
-                // is specified on inner i tags and is handled by our
-                // general tippy-zulip-tooltip class. So we return
-                // false here to avoid showing an extra empty tooltip
-                // for such cases.
-                return false;
-            }
+
             instance.setContent(content);
             return true;
         },
     });
 
     delegate("body", {
-        target: ".message_time",
-        allowHTML: true,
-        placement: "top",
+        target: ".message_table .message_time",
         appendTo: () => document.body,
         onShow(instance) {
             const time_elem = $(instance.reference);
             const row = time_elem.closest(".message_row");
             const message = message_lists.current.get(rows.id(row));
             const time = new Date(message.timestamp * 1000);
-            const full_datetime = timerender.get_full_datetime(time);
-            instance.setContent(full_datetime.date + "<br/>" + full_datetime.time);
+            instance.setContent(timerender.get_full_datetime(time));
         },
         onHidden(instance) {
             instance.destroy();
@@ -172,8 +163,23 @@ export function initialize() {
 
     delegate("body", {
         target: ".recipient_row_date > span",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // In case of recipient bar icons, following change
+    // ensures that tooltip doesn't hide behind the message
+    // box or it is not limited by the parent container.
+    delegate("body", {
+        target: [".recipient_bar_icon", ".sidebar-title", "#user_filter_icon"],
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: ".rendered_markdown time",
         allowHTML: true,
-        placement: "top",
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

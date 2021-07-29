@@ -26,6 +26,11 @@ mock_esm("../../static/js/list_widget", {
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
 });
+mock_esm("../../static/js/components", {
+    toggle: () => ({
+        get: () => [],
+    }),
+});
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -35,6 +40,8 @@ const stream_pill = zrequire("stream_pill");
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const user_pill = zrequire("user_pill");
+const stream_ui_updates = zrequire("stream_ui_updates");
+const settings_config = zrequire("settings_config");
 
 const jill = {
     email: "jill@zulip.com",
@@ -113,7 +120,12 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         assert.equal(typeof data.display_value, "string");
         return html;
     });
-    mock_template("subscription_settings.hbs", false, () => "subscription_settings");
+    mock_template("stream_settings/stream_settings.hbs", false, () => "stream_settings");
+    mock_template(
+        "stream_settings/stream_subscription_request_result.hbs",
+        false,
+        () => "stream_subscription_request_result",
+    );
 
     override(stream_edit, "sort_but_pin_current_user_on_top", noop);
 
@@ -277,6 +289,15 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     let fake_this = $subscription_settings;
     let event = {target: fake_this};
+
+    override(stream_ui_updates, "update_toggler_for_sub", noop);
+    override(stream_ui_updates, "update_add_subscriptions_elements", noop);
+
+    const {stream_notification_settings, pm_mention_notification_settings} = settings_config;
+    for (const setting of [...stream_notification_settings, ...pm_mention_notification_settings]) {
+        page_params[setting] = true;
+    }
+
     stream_row_handler.call(fake_this, event);
     assert.ok(template_rendered);
     assert.ok(input_typeahead_called);

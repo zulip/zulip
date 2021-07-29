@@ -475,7 +475,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         "big-blue-button",
         ["communication"],
         logo="images/integrations/logos/bigbluebutton.svg",
-        display_name="Big Blue Button",
+        display_name="BigBlueButton",
         doc="zerver/integrations/big-blue-button.md",
     ),
     "capistrano": Integration(

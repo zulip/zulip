@@ -13,6 +13,10 @@ from zerver.models import UserProfile
 GOOD_STATUSES = ["Passed", "Fixed"]
 BAD_STATUSES = ["Failed", "Broken", "Still Failing", "Errored", "Canceled"]
 PENDING_STATUSES = ["Pending"]
+ALL_EVENT_TYPES = [
+    "push",
+    "pull_request",
+]
 
 MESSAGE_TEMPLATE = """\
 Author: {}
@@ -20,7 +24,7 @@ Build status: {} {}
 Details: [changes]({}), [build log]({})"""
 
 
-@webhook_view("Travis")
+@webhook_view("Travis", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_travis_webhook(
     request: HttpRequest,
@@ -37,7 +41,7 @@ def api_travis_webhook(
         ),
     ),
 ) -> HttpResponse:
-
+    event = str(message["type"])
     message_status = message["status_message"]
     if ignore_pull_requests and message["type"] == "pull_request":
         return json_success()
@@ -60,5 +64,5 @@ def api_travis_webhook(
     )
     topic = "builds"
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success()

@@ -363,6 +363,41 @@ ul {
         margin-bottom: 20px;
     }
 
+    #user-profile-streams-tab {
+        .stream_list_info {
+            margin-bottom: 8px;
+        }
+
+        .stream-privacy {
+            display: inline-block;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+    }
+    .stream-list-top-section {
+        display: flex;
+
+        .stream-list-header {
+            margin: 0;
+            display: inline-block;
+            font-weight: inherit;
+        }
+
+        .stream-search {
+            margin-left: auto;
+            align-self: center;
+        }
+
+        #clear_stream_search {
+            display: none;
+            padding: 5px 8px 5px 4px;
+            position: relative;
+            right: 0;
+        }
+    }
+
     .subscription-group-list,
     .subscription-stream-list {
         position: relative;
@@ -391,6 +426,14 @@ ul {
 
                     &:first-of-type {
                         padding-left: 10px;
+                    }
+
+                    &:last-of-type {
+                        padding-right: 10px;
+                    }
+
+                    &.remove_subscription {
+                        text-align: right;
                     }
                 }
             }
@@ -485,7 +528,9 @@ ul {
 
         background-color: hsla(0, 0%, 0%, 0.7);
 
-        z-index: 103;
+        /* Needs to be higher than the 105 for div.overlay so that the
+           emoji picker can render on top of the user status picker. */
+        z-index: 106;
 
         opacity: 0;
         pointer-events: none;
@@ -505,6 +550,23 @@ ul {
     .emoji-info-popover {
         position: static;
         margin-right: 0;
+    }
+    #user-profile-modal {
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+
+            .stream-search {
+                margin-bottom: 8px;
+            }
+
+            #clear_stream_search {
+                padding-top: 1px;
+            }
+        }
     }
 }
 
@@ -583,6 +645,11 @@ ul {
 .user_info_status_text {
     opacity: 0.8;
     padding: 2px 0 3px 0;
+    .status_emoji {
+        height: 18px;
+        width: 18px;
+        top: 2px;
+    }
 }
 
 #move_topic_modal {
@@ -590,6 +657,12 @@ ul {
     overflow: visible;
     .modal-body {
         overflow: visible;
+    }
+
+    /* Override the default border-radius to properly align
+       the button corners with `stream_header_colorblock`. */
+    .dropdown-toggle {
+        border-radius: 1px 4px 4px 1px !important;
     }
 
     .stream_header_colorblock {

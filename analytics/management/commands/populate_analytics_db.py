@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Optional, Type
+from typing import Any, Dict, List, Mapping, Type, Union
 from unittest import mock
 
 from django.core.management.base import BaseCommand
@@ -103,8 +103,12 @@ class Command(BaseCommand):
         ]
         Subscription.objects.bulk_create(subs)
 
+        FixtureData = Mapping[Union[str, int, None], List[int]]
+
         def insert_fixture_data(
-            stat: CountStat, fixture_data: Mapping[Optional[str], List[int]], table: Type[BaseCount]
+            stat: CountStat,
+            fixture_data: FixtureData,
+            table: Type[BaseCount],
         ) -> None:
             end_times = time_range(
                 last_end_time, last_end_time, stat.frequency, len(list(fixture_data.values())[0])
@@ -132,11 +136,11 @@ class Command(BaseCommand):
                 )
 
         stat = COUNT_STATS["1day_actives::day"]
-        realm_data: Mapping[Optional[str], List[int]] = {
+        realm_data: FixtureData = {
             None: self.generate_fixture_data(stat, 0.08, 0.02, 3, 0.3, 6, partial_sum=True),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
-        installation_data: Mapping[Optional[str], List[int]] = {
+        installation_data: FixtureData = {
             None: self.generate_fixture_data(stat, 0.8, 0.2, 4, 0.3, 6, partial_sum=True),
         }
         insert_fixture_data(stat, installation_data, InstallationCount)
@@ -186,7 +190,7 @@ class Command(BaseCommand):
         )
 
         stat = COUNT_STATS["messages_sent:is_bot:hour"]
-        user_data: Mapping[Optional[str], List[int]] = {
+        user_data: FixtureData = {
             "false": self.generate_fixture_data(stat, 2, 1, 1.5, 0.6, 8, holiday_rate=0.1),
         }
         insert_fixture_data(stat, user_data, UserCount)
@@ -279,7 +283,7 @@ class Command(BaseCommand):
             "true": self.generate_fixture_data(stat, 20, 2, 3, 0.2, 3),
         }
         insert_fixture_data(stat, realm_data, RealmCount)
-        stream_data: Mapping[Optional[str], List[int]] = {
+        stream_data: Mapping[Union[int, str, None], List[int]] = {
             "false": self.generate_fixture_data(stat, 10, 7, 5, 0.6, 4),
             "true": self.generate_fixture_data(stat, 5, 3, 2, 0.4, 2),
         }

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from django.http import HttpRequest
 
 from zerver.decorator import webhook_view
+from zerver.lib.actions import do_rename_stream
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
@@ -35,9 +36,10 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(header_value, "custom_value")
 
     def test_webhook_http_header_header_does_not_exist(self) -> None:
-        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        realm = get_realm("zulip")
+        webhook_bot = get_user("webhook-bot@zulip.com", realm)
         webhook_bot.last_reminder = None
-        notification_bot = self.notification_bot()
+        notification_bot = self.notification_bot(realm)
         request = HostRequestMock()
         request.user = webhook_bot
         request.path = "some/random/path"
@@ -54,7 +56,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             integration_name="test_webhook",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
-        self.assertEqual(msg.sender.email, notification_bot.email)
+        self.assertEqual(msg.sender.id, notification_bot.id)
         self.assertEqual(msg.content, expected_message)
 
     def test_notify_bot_owner_on_invalid_json(self) -> None:
@@ -89,7 +91,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
             my_webhook_notify(request)
         msg = self.get_last_message()
         self.assertNotEqual(msg.id, last_message_id)
-        self.assertEqual(msg.sender.email, self.notification_bot().email)
+        self.assertEqual(msg.sender.id, self.notification_bot(webhook_bot_realm).id)
         self.assertEqual(msg.content, expected_msg.strip())
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
@@ -134,6 +136,43 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(djangoified_headers, expected_djangoified_headers)
 
 
+class WebhookURLConfigurationTestCase(WebhookTestCase):
+    STREAM_NAME = "helloworld"
+    WEBHOOK_DIR_NAME = "helloworld"
+    URL_TEMPLATE = "/api/v1/external/helloworld?stream={stream}&api_key={api_key}"
+
+    def setUp(self) -> None:
+        super().setUp()
+        stream = self.subscribe(self.test_user, self.STREAM_NAME)
+
+        # In actual webhook tests, we will not need to use stream id.
+        # We assign stream id to STREAM_NAME for testing URL configuration only.
+        self.STREAM_NAME = str(stream.id)
+        do_rename_stream(stream, "helloworld_renamed", self.test_user)
+
+        self.url = self.build_webhook_url()
+
+    def test_trigger_stream_message_by_id(self) -> None:
+        # check_webhook cannot be used here as it
+        # subscribes the test user to self.STREAM_NAME
+        payload = self.get_body("hello")
+
+        self.send_webhook_payload(
+            self.test_user, self.url, payload, content_type="application/json"
+        )
+
+        expected_topic = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
+
+        msg = self.get_last_message()
+        self.assert_stream_message(
+            message=msg,
+            stream_name="helloworld_renamed",
+            topic_name=expected_topic,
+            content=expected_message,
+        )
+
+
 class MissingEventHeaderTestCase(WebhookTestCase):
     STREAM_NAME = "groove"
     URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
@@ -149,9 +188,10 @@ class MissingEventHeaderTestCase(WebhookTestCase):
         )
         self.assert_json_error(result, "Missing the HTTP event header 'X_GROOVE_EVENT'")
 
-        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        realm = get_realm("zulip")
+        webhook_bot = get_user("webhook-bot@zulip.com", realm)
         webhook_bot.last_reminder = None
-        notification_bot = self.notification_bot()
+        notification_bot = self.notification_bot(realm)
         msg = self.get_last_message()
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=webhook_bot.full_name,
@@ -160,11 +200,11 @@ class MissingEventHeaderTestCase(WebhookTestCase):
             integration_name="Groove",
             support_email=FromAddress.SUPPORT,
         ).rstrip()
-        if msg.sender.email != notification_bot.email:  # nocoverage
+        if msg.sender.id != notification_bot.id:  # nocoverage
             # This block seems to fire occasionally; debug output:
             print(msg)
             print(msg.content)
-        self.assertEqual(msg.sender.email, notification_bot.email)
+        self.assertEqual(msg.sender.id, notification_bot.id)
         self.assertEqual(msg.content, expected_message)
 
     def get_body(self, fixture_name: str) -> str:

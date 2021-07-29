@@ -6,6 +6,9 @@ import generated_pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
+import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_navbar from "../templates/navbar.hbs";
+import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import * as about_zulip from "./about_zulip";
 import * as activity from "./activity";
@@ -40,7 +43,8 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
+import * as muted_users from "./muted_users";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
@@ -61,6 +65,8 @@ import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import * as settings from "./settings";
+import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
@@ -71,7 +77,7 @@ import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -127,6 +133,31 @@ function message_hover(message_row) {
         msg_id: id,
     };
     message_row.find(".edit_content").html(render_edit_content_button(args));
+}
+
+function initialize_left_sidebar() {
+    const rendered_sidebar = render_left_sidebar({
+        is_guest: page_params.is_guest,
+    });
+
+    $("#left-sidebar-container").html(rendered_sidebar);
+}
+
+function initialize_right_sidebar() {
+    const rendered_sidebar = render_right_sidebar({
+        can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+    });
+
+    $("#right-sidebar-container").html(rendered_sidebar);
+}
+
+function initialize_navbar() {
+    const rendered_navbar = render_navbar({
+        embedded: page_params.narrow_stream !== undefined,
+        search_pills_enabled: page_params.search_pills_enabled,
+    });
+
+    $("#navbar-container").html(rendered_navbar);
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -463,19 +494,38 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
 
-    realm_logo.rerender();
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
-    // We need to initialize compose early, because other modules'
-    // initialization expects `#compose` to be already present in the
-    // DOM, dating from when the compose area was part of the backend
-    // template.
+
+    people.initialize(page_params.user_id, people_params);
+
+    let date_joined;
+    if (!page_params.is_spectator) {
+        const user = people.get_by_user_id(page_params.user_id);
+        date_joined = user.date_joined;
+    } else {
+        // Spectators don't have an account, so we just prevent their
+        // date_joined is now.
+        date_joined = new Date();
+    }
+
+    settings_data.initialize(date_joined);
+
+    // These components must be initialized early, because other
+    // modules' initialization has not been audited for whether they
+    // expect DOM elements to always exist (As that did before these
+    // modules were migrated from Django templates to handlebars).
+    initialize_left_sidebar();
+    initialize_right_sidebar();
+    settings.initialize();
     compose.initialize();
+    initialize_navbar();
+    realm_logo.render();
+
     message_lists.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
-    people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
     navbar_alerts.initialize();
@@ -485,8 +535,9 @@ export function initialize_everything() {
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
-    muting.initialize();
-    subs.initialize();
+    muted_topics.initialize();
+    muted_users.initialize();
+    stream_settings_ui.initialize();
     stream_list.initialize();
     condense.initialize();
     spoilers.initialize();

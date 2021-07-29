@@ -11,6 +11,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -105,24 +106,27 @@ function clear_box() {
     compose.clear_invites();
 
     // TODO: Better encapsulate at-mention warnings.
-    compose.clear_all_everyone_warnings();
-    compose.clear_announce_warnings();
+    compose_validate.clear_all_everyone_warnings();
+    compose_validate.clear_announce_warnings();
     compose.clear_private_stream_alert();
-    compose.reset_user_acknowledged_all_everyone_flag();
-    compose.reset_user_acknowledged_announce_flag();
+    compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
+    compose_validate.set_user_acknowledged_announce_flag(undefined);
 
     clear_textarea();
+    compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
 }
 
 export function autosize_message_content() {
-    autosize($("#compose-textarea"), {
-        callback() {
-            maybe_scroll_up_selected_message();
-        },
-    });
+    if (!compose_ui.is_full_size()) {
+        autosize($("#compose-textarea"), {
+            callback() {
+                maybe_scroll_up_selected_message();
+            },
+        });
+    }
 }
 
 export function expand_compose_box() {
@@ -223,7 +227,11 @@ export function start(msg_type, opts) {
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // PM recipient should be.
-    if (opts.trigger === "compose_hotkey" || opts.trigger === "new topic button") {
+    if (
+        opts.trigger === "compose_hotkey" ||
+        opts.trigger === "new topic button" ||
+        opts.trigger === "new private message"
+    ) {
         opts.topic = "";
         opts.private_message_recipient = "";
     }
@@ -275,6 +283,9 @@ export function start(msg_type, opts) {
 }
 
 export function cancel() {
+    // As user closes the compose box, restore the compose box max height
+    compose_ui.make_compose_box_original_size();
+
     $("#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
@@ -453,20 +464,18 @@ export function quote_and_reply(opts) {
         // are prone to glitches where you select the
         // text, plus it's a complicated codepath that
         // can have other unintended consequences.)
-        //
-        // Note also that we always put the quoted text
-        // above the current text, which explains us
-        // moving the caret below.  I think this is what
-        // most users will want, and it's consistent with
-        // the behavior we had on FF before this change
-        // (which may have been an accident of
-        // implementation).  If we change this decision,
-        // we'll need to make `insert_syntax_and_focus`
-        // smarter about newlines.
-        textarea.caret(0);
+
+        if (textarea.caret() !== 0) {
+            // Insert a newline before quoted message if there is
+            // already some content in the compose box and quoted
+            // message is not being inserted at the beginning.
+            textarea.caret("\n");
+        }
     } else {
         respond_to_message(opts);
     }
+
+    const prev_caret = textarea.caret();
 
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
@@ -488,6 +497,8 @@ export function quote_and_reply(opts) {
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
         compose_ui.replace_syntax("[Quoting…]", content, textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
+        // Update textarea caret to point to the new line after quoted message.
+        textarea.caret(prev_caret + content.length + 1);
     }
 
     if (message && message.raw_content) {

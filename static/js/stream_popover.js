@@ -13,12 +13,12 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as confirm_dialog from "./confirm_dialog";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as muting from "./muting";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics from "./muted_topics";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
@@ -29,8 +29,8 @@ import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
-import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
 // We handle stream popovers and topic popovers in this
@@ -261,7 +261,7 @@ function build_topic_popover(opts) {
     popovers.hide_all();
     show_streamlist_sidebar();
 
-    const topic_muted = muting.is_topic_muted(sub.stream_id, topic_name);
+    const topic_muted = muted_topics.is_topic_muted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     // Arguably, we could offer the "Move topic" option even if users
     // can only edit the name within a stream.
@@ -379,7 +379,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
 
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
 
-    stream_widget = dropdown_list_widget(opts);
+    stream_widget = new DropdownListWidget(opts);
     stream_header_colorblock = $("#move_topic_modal .topic_stream_edit_header").find(
         ".stream_header_colorblock",
     );
@@ -461,7 +461,7 @@ export function register_stream_handlers() {
     $("body").on("click", ".pin_to_top", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
-        subs.toggle_pin_to_top_stream(sub);
+        stream_settings_ui.toggle_pin_to_top_stream(sub);
         e.stopPropagation();
     });
 
@@ -510,7 +510,7 @@ export function register_stream_handlers() {
         const data = {};
         data.starred_message_counts = JSON.stringify(!starred_msg_counts);
         channel.patch({
-            url: "/json/settings/display",
+            url: "/json/settings",
             data,
         });
     });
@@ -518,7 +518,7 @@ export function register_stream_handlers() {
     $("body").on("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
-        subs.set_muted(sub, !sub.is_muted);
+        stream_settings_ui.set_muted(sub, !sub.is_muted);
         e.stopPropagation();
     });
 
@@ -542,7 +542,7 @@ export function register_stream_handlers() {
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         const sub = stream_popover_sub(e);
-        subs.sub_or_unsub(sub, true);
+        stream_settings_ui.sub_or_unsub(sub, true);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -618,7 +618,7 @@ export function register_topic_handlers() {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        muted_topics_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -631,7 +631,7 @@ export function register_topic_handlers() {
         }
 
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute_topic(stream_id, topic);
+        muted_topics_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -671,7 +671,6 @@ export function register_topic_handlers() {
             html_heading: $t_html({defaultMessage: "Delete topic"}),
             help_link: "/help/delete-a-topic",
             html_body,
-            html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: () => {
                 message_edit.delete_topic(stream_id, topic);
             },

@@ -390,8 +390,10 @@ EVENT_FUNCTION_MAPPER = {
     "Pipeline Hook": get_pipeline_event_body,
 }
 
+ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
-@webhook_view("GitLab")
+
+@webhook_view("GitLab", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_gitlab_webhook(
     request: HttpRequest,
@@ -418,7 +420,7 @@ def api_gitlab_webhook(
             body = f"[{project_url}] {body}"
 
         topic = get_subject_based_on_event(event, payload, use_merge_request_title)
-        check_send_webhook_message(request, user_profile, topic, body)
+        check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success()
 
 

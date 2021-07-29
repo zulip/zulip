@@ -5,8 +5,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
 from zerver.models import UserProfile
 
@@ -23,8 +24,10 @@ DEFAULT_TEMPLATE = (
 
 TOPIC_TEMPLATE = """{policy_name} ({incident_id})""".strip()
 
+ALL_EVENT_TYPES = ["closed", "acknowledged", "open"]
 
-@webhook_view("NewRelic")
+
+@webhook_view("NewRelic", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_newrelic_webhook(
     request: HttpRequest,
@@ -46,7 +49,7 @@ def api_newrelic_webhook(
 
     unix_time = payload.get("timestamp", None)
     if unix_time is None:
-        return json_error(_("The newrelic webhook requires timestamp in milliseconds"))
+        raise JsonableError(_("The newrelic webhook requires timestamp in milliseconds"))
 
     info["iso_timestamp"] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
 
@@ -62,7 +65,7 @@ def api_newrelic_webhook(
     elif "closed" in info["status"]:
         content = DEFAULT_TEMPLATE.format(**info)
     else:
-        return json_error(
+        raise JsonableError(
             _("The newrelic webhook requires current_state be in [open|acknowledged|closed]")
         )
 
@@ -72,5 +75,5 @@ def api_newrelic_webhook(
     }
     topic = TOPIC_TEMPLATE.format(**topic_info)
 
-    check_send_webhook_message(request, user_profile, topic, content)
+    check_send_webhook_message(request, user_profile, topic, content, info["status"])
     return json_success()

@@ -2,6 +2,7 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import {$t} from "./i18n";
+import * as message_edit from "./message_edit";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -92,6 +93,11 @@ function message_matches_search_term(message, operator, operand) {
                     return message.alerted;
                 case "unread":
                     return unread.message_unread(message);
+                case "resolved":
+                    return (
+                        message.type === "stream" &&
+                        message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)
+                    );
                 default:
                     return false; // is:whatever returns false
             }
@@ -447,7 +453,7 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["is-mentioned"])) {
+        if (_.isEqual(term_types, ["is-resolved"])) {
             return true;
         }
 
@@ -484,15 +490,20 @@ export class Filter {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
         // is: private, pm-with:,
-        // is: mentioned
+        // is: resolved
         if (this.can_mark_messages_read()) {
             return true;
         }
         // that leaves us with checking:
         // is: starred
         // (which can_mark_messages_read_does not check as starred messages are always read)
+        // is: mentioned
+        // We don't mark messages as read when in mentioned narrow.
         const term_types = this.sorted_term_types();
 
+        if (_.isEqual(term_types, ["is-mentioned"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
@@ -554,6 +565,8 @@ export class Filter {
                         "/#narrow/pm-with/" +
                         people.emails_to_slug(this.operands("pm-with").join(","))
                     );
+                case "is-resolved":
+                    return "/#narrow/topics/is/resolved";
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
@@ -590,6 +603,8 @@ export class Filter {
                 return "at";
             case "pm-with":
                 return "envelope";
+            case "is-resolved":
+                return "check";
             default:
                 return undefined;
         }
@@ -640,6 +655,8 @@ export class Filter {
                     // can have the same return type as other cases.
                     return names.join(", ");
                 }
+                case "is-resolved":
+                    return $t({defaultMessage: "Topics marked as resolved"});
             }
         }
         /* istanbul ignore next */
@@ -849,6 +866,7 @@ export class Filter {
             "is-private",
             "is-starred",
             "is-unread",
+            "is-resolved",
             "has-link",
             "has-image",
             "has-attachment",

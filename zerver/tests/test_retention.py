@@ -139,9 +139,10 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
     def _send_cross_realm_personal_message(self) -> int:
         # Send message from bot to users from different realm.
         bot_email = "notification-bot@zulip.com"
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         zulip_user = self.example_user("hamlet")
         msg_id = internal_send_private_message(
-            sender=get_system_bot(bot_email),
+            sender=get_system_bot(bot_email, internal_realm.id),
             recipient_user=zulip_user,
             content="test message",
         )
@@ -602,6 +603,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._verify_archive_data(msg_ids, usermsg_ids)
 
         archive_transaction = ArchiveTransaction.objects.last()
+        assert archive_transaction is not None
         self.assertEqual(archive_transaction.realm, realm)
 
     def test_stream_messages_archiving(self) -> None:
@@ -1056,7 +1058,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         with queries_captured() as queries:
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
-        self.assert_length(queries, 18)
+        self.assert_length(queries, 19)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))

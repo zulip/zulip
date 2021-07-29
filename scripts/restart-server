@@ -18,6 +18,7 @@ from scripts.lib.zulip_tools import (
     get_tornado_ports,
     has_application_server,
     has_process_fts_updates,
+    list_supervisor_processes,
     overwrite_symlink,
 )
 
@@ -76,22 +77,19 @@ if has_application_server():
     if action == "start" or args.less_graceful:
         workers.append("zulip-workers:*")
     else:
-        worker_status = subprocess.run(
-            ["supervisorctl", "status", "zulip-workers:*"],
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-        )
-        # `supercisorctl status` returns 3 if any are stopped, which is fine here.
-        if worker_status.returncode not in (0, 3):
-            worker_status.check_returncode()
-        workers.extend(status_line.split()[0] for status_line in worker_status.stdout.splitlines())
+        workers.extend(list_supervisor_processes("zulip-workers:*"))
 
     if has_application_server(once=True):
+        # These used to be included in "zulip-workers:*"; since we may
+        # be restarting an older version of Zulip, which has not
+        # applied puppet to reload the new list of processes, only
+        # stop them if they currently exist according to
+        # `supervisorctl`.
         workers.extend(
-            [
+            list_supervisor_processes(
                 "zulip_deliver_scheduled_emails",
                 "zulip_deliver_scheduled_messages",
-            ]
+            )
         )
 
 if has_process_fts_updates():

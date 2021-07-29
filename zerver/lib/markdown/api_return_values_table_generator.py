@@ -40,9 +40,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
 
                 doc_name = match.group(2)
                 endpoint, method = doc_name.rsplit(":", 1)
-                return_values: Dict[str, Any] = {}
                 return_values = get_openapi_return_values(endpoint, method)
-                text: List[str] = []
                 if doc_name == "/events:get":
                     return_values = copy.deepcopy(return_values)
                     events = return_values["events"].pop("items", None)

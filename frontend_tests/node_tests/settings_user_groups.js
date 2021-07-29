@@ -32,6 +32,7 @@ const ui_report = mock_esm("../../static/js/ui_report");
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
+const settings_data = zrequire("settings_data");
 const settings_user_groups = zrequire("settings_user_groups");
 const user_pill = zrequire("user_pill");
 
@@ -51,16 +52,10 @@ function test_ui(label, f) {
 }
 
 test_ui("can_edit", () => {
-    page_params.is_guest = false;
-    page_params.is_admin = true;
-    assert.ok(settings_user_groups.can_edit(1));
-
-    page_params.is_admin = false;
-    page_params.is_guest = true;
+    settings_data.user_can_edit_user_groups = () => false;
     assert.ok(!settings_user_groups.can_edit(1));
 
-    page_params.is_guest = false;
-    page_params.is_admin = false;
+    settings_data.user_can_edit_user_groups = () => true;
     user_groups.is_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
@@ -68,20 +63,15 @@ test_ui("can_edit", () => {
     };
     assert.ok(!settings_user_groups.can_edit(1));
 
-    page_params.realm_user_group_edit_policy = 2;
     page_params.is_admin = true;
     assert.ok(settings_user_groups.can_edit(1));
 
     page_params.is_admin = false;
-    user_groups.is_member_of = (group_id, user_id) => {
-        assert.equal(group_id, 1);
-        assert.equal(user_id, undefined);
-        return true;
-    };
-    assert.ok(!settings_user_groups.can_edit(1));
+    page_params.is_moderator = true;
+    assert.ok(settings_user_groups.can_edit(1));
 
-    page_params.realm_user_group_edit_policy = 1;
     page_params.is_admin = false;
+    page_params.is_moderator = false;
     user_groups.is_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);

@@ -9,6 +9,7 @@ import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
+import * as compose_ui from "./compose_ui";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -29,6 +30,12 @@ export function resize_app() {
         $(".header").height() +
         Number.parseInt($(".header").css("paddingBottom"), 10);
     $("#floating_recipient_bar").css("top", frb_top + "px");
+
+    // If the compose-box is in expanded state,
+    // reset its height as well.
+    if (compose_ui.is_full_size()) {
+        compose_ui.set_compose_box_top(true);
+    }
 }
 
 const show_step = function ($process, step) {

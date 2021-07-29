@@ -6,6 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const all_messages_data = mock_esm("../../static/js/all_messages_data");
+const message_edit = mock_esm("../../static/js/message_edit");
 
 const {Filter} = zrequire("../js/filter");
 const {MessageListData} = zrequire("../js/message_list_data");
@@ -288,6 +289,54 @@ run_test("is:alerted with no unreads and one match", () => {
         all_messages: [
             {id: 55, topic: "whatever", alerted: true},
             {id: 57, topic: "whatever", alerted: false},
+        ],
+        expected_id_info: {
+            target_id: undefined,
+            final_select_id: 55,
+            local_select_id: 55,
+        },
+        expected_msg_ids: [55],
+    };
+
+    test_with(fixture);
+});
+
+run_test("is:resolved with one unread", () => {
+    const resolved_topic_name = message_edit.RESOLVED_TOPIC_PREFIX + "foo";
+    const fixture = {
+        filter_terms: [{operator: "is", operand: "resolved"}],
+        unread_info: {
+            flavor: "found",
+            msg_id: 56,
+        },
+        has_found_newest: true,
+        all_messages: [
+            {id: 55, type: "stream", topic: resolved_topic_name},
+            {id: 56, type: "stream", topic: resolved_topic_name},
+            {id: 57, type: "stream", topic: "foo"},
+        ],
+        expected_id_info: {
+            target_id: undefined,
+            final_select_id: 56,
+            local_select_id: 56,
+        },
+        expected_msg_ids: [55, 56],
+    };
+
+    test_with(fixture);
+});
+
+run_test("is:resolved with no unreads", () => {
+    const resolved_topic_name = message_edit.RESOLVED_TOPIC_PREFIX + "foo";
+    const fixture = {
+        filter_terms: [{operator: "is", operand: "resolved"}],
+        unread_info: {
+            flavor: "not_found",
+        },
+        has_found_newest: true,
+        all_messages: [
+            {id: 55, type: "stream", topic: resolved_topic_name},
+            {id: 57, type: "stream", topic: "foo"},
         ],
         expected_id_info: {
             target_id: undefined,

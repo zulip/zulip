@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class LidarrHookTests(WebhookTestCase):
     STREAM_NAME = "lidarr"
     URL_TEMPLATE = "/api/v1/external/lidarr?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "lidarr"
+    WEBHOOK_DIR_NAME = "lidarr"
 
     def test_lidarr_test(self) -> None:
         """

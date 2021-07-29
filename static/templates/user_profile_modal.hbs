@@ -7,7 +7,7 @@
         <div id="name">
             {{full_name}}
             {{#if is_me}}
-            <a href="/#settings/your-account">
+            <a href="/#settings/profile">
                 <i class="fa fa-edit" id="edit-button" aria-hidden="true"></i>
             </a>
             {{/if}}
@@ -64,13 +64,23 @@
                 </div>
             </div>
 
-            <div class="tabcontent" id="streams-tab">
+            <div class="tabcontent" id="user-profile-streams-tab">
+                <div class="stream-list-top-section">
+                    <div class="header-section">
+                        <h3 class="stream-list-header">{{t 'Subscribed streams' }}</h3>
+                    </div>
+                    <input type="text" class="stream-search" placeholder="{{t 'Filter streams' }}" />
+                    <button type="button" class="clear_search_button" id="clear_stream_search">
+                        <i class="fa fa-remove" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="alert stream_list_info"></div>
                 <div class="subscription-stream-list">
                     <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}"></table>
                 </div>
             </div>
 
-            <div class="tabcontent" id="groups-tab">
+            <div class="tabcontent" id="user-profile-groups-tab">
                 <div class="subscription-group-list">
                     <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
                 </div>

@@ -81,6 +81,7 @@ def add_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200_0")
 
+    ensure_users([26], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
@@ -185,6 +186,31 @@ def create_user(client: Client) -> None:
     validate_against_openapi_schema(result, "/users", "post", "400")
 
 
+@openapi_test_function("/users/me/status:post")
+def update_status(client: Client) -> None:
+    # {code_example|start}
+    # The request contains the new status and away boolean
+    request = {
+        "status_text": "on vacation",
+        "away": False,
+        "emoji_name": "car",
+        "emoji_code": "1f697",
+        "reaction_type": "unicode_emoji",
+    }
+    result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/status", "post", "200")
+
+    # Test "status_text is too long error"
+    request = {
+        "status_text": "This is a message that exceeds 60 characters, and so should throw an error.",
+        "away": "false",
+    }
+    validate_against_openapi_schema(result, "/users/me/status", "post", "400")
+
+
 @openapi_test_function("/users:get")
 def get_members(client: Client) -> None:
 
@@ -238,6 +264,7 @@ def get_user_by_email(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
+    ensure_users([8], ["cordelia"])
 
     # {code_example|start}
     # Fetch details on a user given a user ID
@@ -255,6 +282,7 @@ def get_single_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:delete")
 def deactivate_user(client: Client) -> None:
+    ensure_users([8], ["cordelia"])
 
     # {code_example|start}
     # Deactivate a user
@@ -276,6 +304,7 @@ def reactivate_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}:patch")
 def update_user(client: Client) -> None:
+    ensure_users([8, 10], ["cordelia", "hamlet"])
 
     # {code_example|start}
     # Change a user's full name.
@@ -294,6 +323,8 @@ def update_user(client: Client) -> None:
 
 @openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:get")
 def get_subscription_status(client: Client) -> None:
+    ensure_users([7], ["zoe"])
+
     # {code_example|start}
     # Check whether a user is a subscriber to a given stream.
     user_id = 7
@@ -493,6 +524,23 @@ def archive_stream(client: Client, stream_id: int) -> None:
     assert result["result"] == "success"
 
 
+@openapi_test_function("/streams/{stream_id}/delete_topic:post")
+def delete_topic(client: Client, stream_id: int, topic: str) -> None:
+
+    # {code_example|start}
+    # Delete a topic given its stream_id
+    request = {
+        "topic_name": topic,
+    }
+    result = client.call_endpoint(
+        url=f"/streams/{stream_id}/delete_topic", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/streams/{stream_id}/delete_topic", "post", "200")
+
+    assert result["result"] == "success"
+
+
 @openapi_test_function("/streams:get")
 def get_streams(client: Client) -> None:
 
@@ -512,7 +560,7 @@ def get_streams(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    assert len(result["streams"]) == 4
+    assert len(result["streams"]) == 5
 
 
 @openapi_test_function("/streams/{stream_id}:patch")
@@ -555,10 +603,16 @@ def test_user_not_authorized_error(nonadmin_client: Client) -> None:
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_2")
 
 
+@openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
+    ensure_users([11, 26], ["iago", "newbie"])
 
+    # {code_example|start}
+    # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
-    assert result["subscribers"] == ["iago@zulip.com", "newbie@zulip.com"]
+    print(result)
+    # {code_example|end}
+    assert result["subscribers"] == [11, 26]
 
 
 def get_user_agent(client: Client) -> None:
@@ -568,10 +622,10 @@ def get_user_agent(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/subscriptions:get")
-def list_subscriptions(client: Client) -> None:
+def get_subscriptions(client: Client) -> None:
     # {code_example|start}
     # Get all streams that the user is subscribed to
-    result = client.list_subscriptions()
+    result = client.get_subscriptions()
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "get", "200")
@@ -593,7 +647,7 @@ def remove_subscriptions(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions", "delete", "200")
 
     # test it was actually removed
-    result = client.list_subscriptions()
+    result = client.get_subscriptions()
     assert result["result"] == "success"
     streams = [s for s in result["subscriptions"] if s["name"] == "new stream"]
     assert len(streams) == 0
@@ -725,7 +779,7 @@ def update_subscription_settings(client: Client) -> None:
             "value": True,
         },
         {
-            "stream_id": 3,
+            "stream_id": 7,
             "property": "color",
             "value": "#f00f00",
         },
@@ -1097,6 +1151,18 @@ def deregister_queue(client: Client, queue_id: str) -> None:
     validate_against_openapi_schema(result, "/events", "delete", "400")
 
 
+@openapi_test_function("/events:get")
+def get_queue(client: Client, queue_id: str) -> None:
+
+    # {code_example|start}
+    # If you already have a queue registered and thus, have a queue_id
+    # on hand, you may use client.get_events() and pass in the above
+    # parameters, like so:
+    result = client.get_events(queue_id=queue_id, last_event_id=-1)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/events", "get", "200")
+
+
 @openapi_test_function("/server_settings:get")
 def get_server_settings(client: Client) -> None:
 
@@ -1108,35 +1174,20 @@ def get_server_settings(client: Client) -> None:
     validate_against_openapi_schema(result, "/server_settings", "get", "200")
 
 
-@openapi_test_function("/settings/notifications:patch")
-def update_notification_settings(client: Client) -> None:
+@openapi_test_function("/settings:patch")
+def update_settings(client: Client) -> None:
 
     # {code_example|start}
-    # Enable push notifications even when online
+    # Enable push notifications even when online and change emojiset
     request = {
         "enable_offline_push_notifications": True,
         "enable_online_push_notifications": True,
-    }
-    result = client.update_notification_settings(request)
-    # {code_example|end}
-
-    validate_against_openapi_schema(result, "/settings/notifications", "patch", "200")
-
-
-@openapi_test_function("/settings/display:patch")
-def update_display_settings(client: Client) -> None:
-
-    # {code_example|start}
-    # Show user list on left sidebar in narrow windows.
-    # Change emoji set used for display to Google modern.
-    request = {
-        "left_side_userlist": True,
         "emojiset": "google",
     }
-    result = client.call_endpoint("settings/display", method="PATCH", request=request)
+    result = client.call_endpoint("/settings", method="PATCH", request=request)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/settings/display", "patch", "200")
+    validate_against_openapi_schema(result, "/settings", "patch", "200")
 
 
 @openapi_test_function("/user_uploads:post")
@@ -1341,7 +1392,7 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
 
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
-    result = client_with_invalid_key.list_subscriptions()
+    result = client_with_invalid_key.get_subscriptions()
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_0")
 
 
@@ -1461,11 +1512,11 @@ def test_users(client: Client, owner_client: Client) -> None:
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
+    update_status(client)
     get_user_by_email(client)
     get_subscription_status(client)
     get_profile(client)
-    update_notification_settings(client)
-    update_display_settings(client)
+    update_settings(client)
     upload_file(client)
     get_attachments(client)
     set_typing_status(client)
@@ -1488,7 +1539,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
 
     add_subscriptions(client)
     test_add_subscriptions_already_subscribed(client)
-    list_subscriptions(client)
+    get_subscriptions(client)
     stream_id = get_stream_id(client)
     update_stream(client, stream_id)
     get_streams(client)
@@ -1496,8 +1547,8 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     remove_subscriptions(client)
     toggle_mute_topic(client)
     update_subscription_settings(client)
-    update_notification_settings(client)
     get_stream_topics(client, 1)
+    delete_topic(client, 1, "test")
     archive_stream(client, stream_id)
 
     test_user_not_authorized_error(nonadmin_client)
@@ -1511,6 +1562,7 @@ def test_queues(client: Client) -> None:
     # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth
     # the effort to come up with asynchronous logic for testing those here.
     queue_id = register_queue(client)
+    get_queue(client, queue_id)
     deregister_queue(client, queue_id)
     register_queue_all_events(client)
 

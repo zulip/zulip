@@ -29,7 +29,7 @@ const {run_test} = require("../zjsunit/test");
     We can quickly review some testing concepts:
 
         zrequire - bring in real code
-        set_global - create stubs
+        mock_esm - mock es6 modules
         assert.equal - verify results
 
     ------

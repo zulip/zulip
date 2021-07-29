@@ -2,7 +2,6 @@ from typing import Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import REQ, has_request_variables
 from zerver.lib.bot_storage import (
     StateError,
     get_bot_storage,
@@ -10,7 +9,9 @@ from zerver.lib.bot_storage import (
     remove_bot_storage,
     set_bot_storage,
 )
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict, check_list, check_string
 from zerver.models import UserProfile
 
@@ -24,7 +25,7 @@ def update_storage(
     try:
         set_bot_storage(user_profile, list(storage.items()))
     except StateError as e:  # nocoverage
-        return json_error(str(e))
+        raise JsonableError(str(e))
     return json_success()
 
 
@@ -39,7 +40,7 @@ def get_storage(
     try:
         storage = {key: get_bot_storage(user_profile, key) for key in keys}
     except StateError as e:
-        return json_error(str(e))
+        raise JsonableError(str(e))
     return json_success({"storage": storage})
 
 
@@ -54,5 +55,5 @@ def remove_storage(
     try:
         remove_bot_storage(user_profile, keys)
     except StateError as e:
-        return json_error(str(e))
+        raise JsonableError(str(e))
     return json_success()

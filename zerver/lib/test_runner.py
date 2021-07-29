@@ -205,7 +205,7 @@ def create_test_databases(worker_id: int) -> None:
         connection.close()
 
 
-def init_worker(counter: "multiprocessing.sharedctypes._Value") -> None:
+def init_worker(counter: "multiprocessing.sharedctypes.Synchronized[int]") -> None:
     """
     This function runs only under parallel mode. It initializes the
     individual processes which are also called workers.

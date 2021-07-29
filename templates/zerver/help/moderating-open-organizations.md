@@ -14,7 +14,7 @@ problematic behavior:
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
   [create bots](/help/restrict-bot-creation), [send private
   messages](/help/restrict-private-messages), or
-  [add custom emoji](/help/only-allow-admins-to-add-emoji).
+  [add custom emoji](/help/configure-who-can-add-custom-emoji).
 * Link to a code of conduct in your
   [organization description](/help/create-your-organization-profile)
   (displayed on the registration page).

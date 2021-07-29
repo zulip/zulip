@@ -5,7 +5,7 @@ from typing import Optional
 from django.db import models
 from django.db.models import CASCADE
 
-from zerver.models import Realm
+from zerver.models import Realm, UserProfile
 
 
 class Customer(models.Model):
@@ -16,7 +16,7 @@ class Customer(models.Model):
     """
 
     realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
-    stripe_customer_id: str = models.CharField(max_length=255, null=True, unique=True)
+    stripe_customer_id: Optional[str] = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending: bool = models.BooleanField(default=False)
     # A percentage, like 85.
     default_discount: Optional[Decimal] = models.DecimalField(
@@ -131,14 +131,16 @@ class CustomerPlan(models.Model):
         }[self.status]
 
     def licenses(self) -> int:
-        return LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses
+        ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
+        assert ledger_entry is not None
+        return ledger_entry.licenses
 
     def licenses_at_next_renewal(self) -> Optional[int]:
         if self.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
             return None
-        return (
-            LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses_at_next_renewal
-        )
+        ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
+        assert ledger_entry is not None
+        return ledger_entry.licenses_at_next_renewal
 
     def is_free_trial(self) -> bool:
         return self.status == CustomerPlan.FREE_TRIAL
@@ -189,3 +191,19 @@ class LicenseLedger(models.Model):
     # the same billing period. For plans on automatic license management this value is usually
     # equal to the number of activated users in the organization.
     licenses_at_next_renewal: Optional[int] = models.IntegerField(null=True)
+
+
+class ZulipSponsorshipRequest(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    requested_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    org_type: int = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+
+    MAX_ORG_URL_LENGTH: int = 200
+    org_website: str = models.URLField(max_length=MAX_ORG_URL_LENGTH)
+
+    org_description: str = models.TextField(default="")

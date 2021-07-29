@@ -24,6 +24,7 @@ const activity = mock_esm("../../static/js/activity");
 const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
 const attachments_ui = mock_esm("../../static/js/attachments_ui");
 const bot_data = mock_esm("../../static/js/bot_data");
+const compose = mock_esm("../../static/js/compose");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
@@ -32,7 +33,8 @@ const message_edit = mock_esm("../../static/js/message_edit");
 const message_events = mock_esm("../../static/js/message_events");
 const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
-const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
+const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
 const reactions = mock_esm("../../static/js/reactions");
@@ -63,7 +65,6 @@ const ui = mock_esm("../../static/js/ui");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
-mock_esm("../../static/js/compose");
 mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
@@ -234,7 +235,7 @@ run_test("muted_topics", ({override}) => {
     const event = event_fixtures.muted_topics;
 
     const stub = make_stub();
-    override(muting_ui, "handle_topic_updates", stub.f);
+    override(muted_topics_ui, "handle_topic_updates", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("muted_topics");
@@ -245,7 +246,7 @@ run_test("muted_users", ({override}) => {
     const event = event_fixtures.muted_users;
 
     const stub = make_stub();
-    override(muting_ui, "handle_user_updates", stub.f);
+    override(muted_users_ui, "handle_user_updates", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("muted_users");
@@ -409,7 +410,7 @@ run_test("realm settings", ({override}) => {
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
 
-    override(realm_logo, "rerender", noop);
+    override(realm_logo, "render", noop);
 
     event = event_fixtures.realm__update_dict__logo;
     dispatch(event);
@@ -432,7 +433,7 @@ run_test("realm_bot add", ({override}) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -448,7 +449,7 @@ run_test("realm_bot remove", ({override}) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -470,7 +471,7 @@ run_test("realm_bot update", ({override}) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
 
     dispatch(event);
@@ -707,7 +708,7 @@ run_test("update_display_settings", ({override}) => {
         assert_same(secs, 300);
     };
 
-    override(realm_logo, "rerender", noop);
+    override(realm_logo, "render", noop);
 
     {
         const stub = make_stub();
@@ -758,6 +759,7 @@ run_test("update_display_settings", ({override}) => {
         event = event_fixtures.update_display_settings__emojiset;
         called = false;
         override(settings_display, "report_emojiset_change", stub.f);
+        override(activity, "build_user_sidebar", noop);
         page_params.emojiset = "text";
         dispatch(event);
         assert.equal(stub.num_calls, 1);
@@ -787,6 +789,13 @@ run_test("update_display_settings", ({override}) => {
         assert.equal(stub.num_calls, 1);
         assert_same(page_params.demote_inactive_streams, 2);
     }
+
+    override(compose, "toggle_enter_sends_ui", noop);
+
+    event = event_fixtures.update_display_settings__enter_sends;
+    page_params.enter_sends = false;
+    dispatch(event);
+    assert_same(page_params.enter_sends, true);
 });
 
 run_test("update_global_notifications", ({override}) => {
@@ -901,6 +910,24 @@ run_test("user_status", ({override}) => {
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
         assert_same(args.user_id, 63);
+    }
+
+    event = event_fixtures.user_status__set_status_emoji;
+    {
+        const stub = make_stub();
+        override(activity, "redraw_user", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("user_id");
+        assert_same(args.user_id, test_user.user_id);
+        const emoji_info = user_status.get_status_emoji(test_user.user_id);
+        assert.deepEqual(emoji_info, {
+            emoji_name: "smiley",
+            emoji_code: "1f603",
+            reaction_type: "unicode_emoji",
+            // Extra parameters that were added by `emoji.get_emoji_details_by_name`
+            emoji_alt_code: false,
+        });
     }
 
     event = event_fixtures.user_status__set_status_text;

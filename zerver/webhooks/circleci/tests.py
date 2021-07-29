@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class CircleCiHookTests(WebhookTestCase):
     STREAM_NAME = "circleci"
     URL_TEMPLATE = "/api/v1/external/circleci?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "circleci"
+    WEBHOOK_DIR_NAME = "circleci"
 
     def test_private_repo_with_pull_request_off_bitbucket(self) -> None:
         expected_topic = "circleci-test"

@@ -9,7 +9,6 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
-    RESOLVED_TOPIC_PREFIX,
     do_change_stream_post_policy,
     do_change_user_role,
     do_delete_messages,
@@ -21,7 +20,7 @@ from zerver.lib.actions import (
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
-from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
+from zerver.lib.topic import LEGACY_PREV_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
@@ -231,6 +230,7 @@ class EditMessageTest(EditMessageTestCase):
         # tested in this class. Hence, its performance is tested here.
         # Generate 2 messages
         user = self.example_user("hamlet")
+        realm = user.realm
         self.login_user(user)
         stream_name = "public_stream"
         self.subscribe(user, stream_name)
@@ -239,9 +239,9 @@ class EditMessageTest(EditMessageTestCase):
         user_2 = self.example_user("cordelia")
         self.subscribe(user_2, stream_name)
         message_ids.append(self.send_stream_message(user_2, stream_name, "Message two"))
-        self.subscribe(self.notification_bot(), stream_name)
+        self.subscribe(self.notification_bot(realm), stream_name)
         message_ids.append(
-            self.send_stream_message(self.notification_bot(), stream_name, "Message three")
+            self.send_stream_message(self.notification_bot(realm), stream_name, "Message three")
         )
         messages = [
             Message.objects.select_related().get(id=message_id) for message_id in message_ids

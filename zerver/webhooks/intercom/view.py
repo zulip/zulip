@@ -301,8 +301,10 @@ EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Tuple[str, str]]]
     "visitor.signed_up": get_contact_signed_up_message,
 }
 
+ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
 
-@webhook_view("Intercom")
+
+@webhook_view("Intercom", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_intercom_webhook(
     request: HttpRequest,
@@ -318,5 +320,5 @@ def api_intercom_webhook(
         raise UnsupportedWebhookEventType(event_type)
     topic, body = handler(payload)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, event_type)
     return json_success()

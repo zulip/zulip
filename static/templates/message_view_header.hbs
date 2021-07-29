@@ -2,10 +2,10 @@
 <a class="stream" href="{{stream_settings_link}}">
     {{> navbar_icon_and_title }}
 </a>
-<a class="sub_count no-style tippy-zulip-tooltip" data-tippy-content="{{sub_count_tooltip_text}}" href="{{stream_settings_link}}">
+<a class="sub_count no-style tippy-zulip-tooltip" data-tippy-content="{{sub_count_tooltip_text}}" data-tippy-placement="bottom" href="{{stream_settings_link}}">
     <i class="fa fa-user-o"></i>{{formatted_sub_count}}
 </a>
-<span class="narrow_description rendered_markdown">
+<span class="narrow_description navbar-click-opens-search rendered_markdown">
     {{#if rendered_narrow_description}}
     {{rendered_markdown rendered_narrow_description}}
     {{else}}
@@ -13,7 +13,7 @@
     {{/if}}
 </span>
 {{else}}
-<span>
+<span class="navbar-click-opens-search">
     {{> navbar_icon_and_title }}
 </span>
 {{/if}}

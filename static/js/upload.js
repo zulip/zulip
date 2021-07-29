@@ -3,21 +3,12 @@ import ProgressBar from "@uppy/progress-bar";
 import XHRUpload from "@uppy/xhr-upload";
 import $ from "jquery";
 
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
-
-export function make_upload_absolute(uri) {
-    if (uri.startsWith(compose.uploads_path)) {
-        // Rewrite the URI to a usable link
-        return compose.uploads_domain + uri;
-    }
-    return uri;
-}
 
 // Show the upload button only if the browser supports it.
 export function feature_check(upload_button) {
@@ -255,8 +246,7 @@ export function setup_upload(config) {
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }
-        const absolute_uri = make_upload_absolute(uri);
-        const filename_uri = "[" + filename + "](" + absolute_uri + ")";
+        const filename_uri = "[" + filename + "](" + uri + ")";
         compose_ui.replace_syntax(
             get_translated_status(file),
             filename_uri,

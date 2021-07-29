@@ -76,13 +76,13 @@ Dependencies:
 
 """
 import re
-from typing import Any, Iterable, List, Mapping, MutableSequence, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 
 import lxml.html
 from django.utils.html import escape
 from markdown import Markdown
-from markdown.extensions import Extension
-from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from markdown.extensions import Extension, codehilite
+from markdown.extensions.codehilite import CodeHiliteExtension, parse_hl_lines
 from markdown.preprocessors import Preprocessor
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
@@ -92,7 +92,7 @@ from zerver.lib.tex import render_tex
 
 # Global vars
 FENCE_RE = re.compile(
-    """
+    r"""
     # ~~~ or ```
     (?P<fence>
         ^(?:~{3,}|`{3,})
@@ -100,21 +100,21 @@ FENCE_RE = re.compile(
 
     [ ]* # spaces
 
-    (
-        \\{?\\.?
+    (?:
+        # language, like ".py" or "{javascript}"
+        \{?\.?
         (?P<lang>
-            [a-zA-Z0-9_+-./#]*
+            [a-zA-Z0-9_+-./#]+
         ) # "py" or "javascript"
-        \\}?
-    ) # language, like ".py" or "{javascript}"
-    [ ]* # spaces
-    (
-        \\{?\\.?
+
+        [ ]* # spaces
+
+        # header for features that use fenced block header syntax (like spoilers)
         (?P<header>
-            [^~`]*
-        )
-        \\}?
-    ) # header for features that use fenced block header syntax (like spoilers)
+            [^ ~`][^~`]*
+        )?
+        \}?
+    )?
     $
     """,
     re.VERBOSE,
@@ -139,7 +139,7 @@ Missing required -X argument in curl command:
                 raise MarkdownRenderingException(error_msg.format(command=line.strip()))
 
 
-CODE_VALIDATORS = {
+CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
     "curl": validate_curl_content,
 }
 
@@ -165,24 +165,63 @@ class FencedCodeExtension(Extension):
         md.preprocessors.register(processor, "fenced_code_block", 25)
 
 
-class BaseHandler:
+class ZulipBaseHandler:
+    def __init__(
+        self,
+        processor: "FencedBlockPreprocessor",
+        output: MutableSequence[str],
+        fence: Optional[str] = None,
+        process_contents: bool = False,
+    ) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.process_contents = process_contents
+        self.lines: List[str] = []
+
     def handle_line(self, line: str) -> None:
-        raise NotImplementedError()
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            self.lines.append(line.rstrip())
 
     def done(self) -> None:
+        if self.lines:
+            text = "\n".join(self.lines)
+            text = self.format_text(text)
+
+            # For code blocks, the contents should not receive further
+            # processing.  Whereas with quote and spoiler blocks, we
+            # explicitly want Markdown formatting of the content
+            # inside. This behavior is controlled by the
+            # process_contents configuration flag.
+            if not self.process_contents:
+                text = self.processor.placeholder(text)
+
+            processed_lines = text.split("\n")
+            self.output.append("")
+            self.output.extend(processed_lines)
+            self.output.append("")
+        self.processor.pop()
+
+    def format_text(self, text: str) -> str:
+        """Returns a formatted text.
+        Subclasses should override this method.
+        """
         raise NotImplementedError()
 
 
 def generic_handler(
-    processor: Any,
+    processor: "FencedBlockPreprocessor",
     output: MutableSequence[str],
     fence: str,
-    lang: str,
-    header: str,
+    lang: Optional[str],
+    header: Optional[str],
     run_content_validators: bool = False,
     default_language: Optional[str] = None,
-) -> BaseHandler:
-    lang = lang.lower()
+) -> ZulipBaseHandler:
+    if lang is not None:
+        lang = lang.lower()
     if lang in ("quote", "quoted"):
         return QuoteHandler(processor, output, fence, default_language)
     elif lang == "math":
@@ -194,7 +233,7 @@ def generic_handler(
 
 
 def check_for_new_fence(
-    processor: Any,
+    processor: "FencedBlockPreprocessor",
     output: MutableSequence[str],
     line: str,
     run_content_validators: bool = False,
@@ -203,8 +242,8 @@ def check_for_new_fence(
     m = FENCE_RE.match(line)
     if m:
         fence = m.group("fence")
-        lang = m.group("lang")
-        header = m.group("header")
+        lang: Optional[str] = m.group("lang")
+        header: Optional[str] = m.group("header")
         if not lang and default_language:
             lang = default_language
         handler = generic_handler(
@@ -215,80 +254,58 @@ def check_for_new_fence(
         output.append(line)
 
 
-class OuterHandler(BaseHandler):
+class OuterHandler(ZulipBaseHandler):
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         run_content_validators: bool = False,
         default_language: Optional[str] = None,
     ) -> None:
-        self.output = output
-        self.processor = processor
         self.run_content_validators = run_content_validators
         self.default_language = default_language
+        super().__init__(processor, output)
 
     def handle_line(self, line: str) -> None:
         check_for_new_fence(
             self.processor, self.output, line, self.run_content_validators, self.default_language
         )
 
-    def done(self) -> None:
-        self.processor.pop()
 
-
-class CodeHandler(BaseHandler):
+class CodeHandler(ZulipBaseHandler):
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
-        lang: str,
+        lang: Optional[str],
         run_content_validators: bool = False,
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
         self.lang = lang
-        self.lines: List[str] = []
         self.run_content_validators = run_content_validators
-
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            self.lines.append(line.rstrip())
+        super().__init__(processor, output, fence)
 
     def done(self) -> None:
-        text = "\n".join(self.lines)
-
         # run content validators (if any)
         if self.run_content_validators:
             validator = CODE_VALIDATORS.get(self.lang, lambda text: None)
             validator(self.lines)
+        super().done()
 
-        text = self.processor.format_code(self.lang, text)
-        text = self.processor.placeholder(text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+    def format_text(self, text: str) -> str:
+        return self.processor.format_code(self.lang, text)
 
 
-class QuoteHandler(BaseHandler):
+class QuoteHandler(ZulipBaseHandler):
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
         default_language: Optional[str] = None,
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
-        self.lines: List[str] = []
         self.default_language = default_language
+        super().__init__(processor, output, fence, process_contents=True)
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -298,25 +315,20 @@ class QuoteHandler(BaseHandler):
                 self.processor, self.lines, line, default_language=self.default_language
             )
 
-    def done(self) -> None:
-        text = "\n".join(self.lines)
-        text = self.processor.format_quote(text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+    def format_text(self, text: str) -> str:
+        return self.processor.format_quote(text)
 
 
-class SpoilerHandler(BaseHandler):
+class SpoilerHandler(ZulipBaseHandler):
     def __init__(
-        self, processor: Any, output: MutableSequence[str], fence: str, spoiler_header: str
+        self,
+        processor: "FencedBlockPreprocessor",
+        output: MutableSequence[str],
+        fence: str,
+        spoiler_header: Optional[str],
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
         self.spoiler_header = spoiler_header
-        self.lines: List[str] = []
+        super().__init__(processor, output, fence, process_contents=True)
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -324,44 +336,63 @@ class SpoilerHandler(BaseHandler):
         else:
             check_for_new_fence(self.processor, self.lines, line)
 
-    def done(self) -> None:
-        if len(self.lines) == 0:
-            # No content, do nothing
-            return
-        else:
-            header = self.spoiler_header
-            text = "\n".join(self.lines)
-
-        text = self.processor.format_spoiler(header, text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+    def format_text(self, text: str) -> str:
+        return self.processor.format_spoiler(self.spoiler_header, text)
 
 
-class TexHandler(BaseHandler):
-    def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
-        self.lines: List[str] = []
+class TexHandler(ZulipBaseHandler):
+    def format_text(self, text: str) -> str:
+        return self.processor.format_tex(text)
 
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            self.lines.append(line)
 
-    def done(self) -> None:
-        text = "\n".join(self.lines)
-        text = self.processor.format_tex(text)
-        text = self.processor.placeholder(text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+class CodeHilite(codehilite.CodeHilite):
+    def _parseHeader(self) -> None:
+        # Python-Markdown has a feature to parse-and-hide shebang
+        # lines present in code blocks:
+        #
+        # https://python-markdown.github.io/extensions/code_hilite/#shebang-no-path
+        #
+        # While using shebang lines for language detection is
+        # reasonable, we don't want this feature because it can be
+        # really confusing when doing anything else in a one-line code
+        # block that starts with `!` (which would then render as an
+        # empty code block!).  So we disable the feature, by
+        # overriding this function, which implements it in CodeHilite
+        # upstream.
+
+        # split text into lines
+        lines = self.src.split("\n")
+        # Python-Markdown pops out the first line which we are avoiding here.
+        # Examine first line
+        fl = lines[0]
+
+        c = re.compile(
+            r"""
+            (?:(?:^::+)|(?P<shebang>^[#]!)) # Shebang or 2 or more colons
+            (?P<path>(?:/\w+)*[/ ])?        # Zero or 1 path
+            (?P<lang>[\w#.+-]*)             # The language
+            \s*                             # Arbitrary whitespace
+            # Optional highlight lines, single- or double-quote-delimited
+            (hl_lines=(?P<quot>"|')(?P<hl_lines>.*?)(?P=quot))?
+            """,
+            re.VERBOSE,
+        )
+        # Search first line for shebang
+        m = c.search(fl)
+        if m:
+            # We have a match
+            try:
+                self.lang = m.group("lang").lower()
+            except IndexError:  # nocoverage
+                self.lang = None
+
+            if self.options["linenos"] is None and m.group("shebang"):
+                # Overridable and Shebang exists - use line numbers
+                self.options["linenos"] = True
+
+            self.options["hl_lines"] = parse_hl_lines(m.group("hl_lines"))
+
+        self.src = "\n".join(lines).strip("\n")
 
 
 class FencedBlockPreprocessor(Preprocessor):
@@ -372,7 +403,7 @@ class FencedBlockPreprocessor(Preprocessor):
         self.run_content_validators = run_content_validators
         self.codehilite_conf: Mapping[str, Sequence[Any]] = {}
 
-    def push(self, handler: BaseHandler) -> None:
+    def push(self, handler: ZulipBaseHandler) -> None:
         self.handlers.append(handler)
 
     def pop(self) -> None:
@@ -384,7 +415,7 @@ class FencedBlockPreprocessor(Preprocessor):
         output: List[str] = []
 
         processor = self
-        self.handlers: List[BaseHandler] = []
+        self.handlers: List[ZulipBaseHandler] = []
 
         default_language = None
         try:
@@ -407,7 +438,7 @@ class FencedBlockPreprocessor(Preprocessor):
             output.append("")
         return output
 
-    def format_code(self, lang: str, text: str) -> str:
+    def format_code(self, lang: Optional[str], text: str) -> str:
         if lang:
             langclass = LANG_TAG.format(lang)
         else:
@@ -474,14 +505,15 @@ class FencedBlockPreprocessor(Preprocessor):
             quoted_paragraphs.append("\n".join("> " + line for line in lines))
         return "\n".join(quoted_paragraphs)
 
-    def format_spoiler(self, header: str, text: str) -> str:
+    def format_spoiler(self, header: Optional[str], text: str) -> str:
         output = []
         header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">'
         end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">'
         footer_html = "</div></div>"
 
         output.append(self.placeholder(header_div_open_html))
-        output.append(header)
+        if header is not None:
+            output.append(header)
         output.append(self.placeholder(end_header_start_content_html))
         output.append(text)
         output.append(self.placeholder(footer_html))

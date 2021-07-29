@@ -172,7 +172,7 @@
     border: 1px solid hsl(0, 0%, 68%);
 }
 
-.create_stream_button {
+.create_stream_plus_button {
     margin: 0 0 0 5px;
 
     border: none;
@@ -200,10 +200,11 @@
     color: hsl(0, 100%, 50%);
 }
 
-.sub_settings_title {
-    line-height: 30px;
+.stream_setting_subsection_title {
+    display: inline-block;
+    font-size: 1.5em;
+    line-height: 1.5;
     margin: 10px 0 0 0;
-    font-size: 16px;
 }
 
 .new-stream-name,
@@ -222,7 +223,8 @@
 
     .subscriber_list_container {
         position: relative;
-        max-height: 300px;
+        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
+        max-height: calc(95vh - 282px);
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
@@ -302,7 +304,7 @@
     width: 100%;
     margin: 10px auto;
 
-    .stream_subscription_info {
+    .stream_subscription_request_result {
         a {
             color: inherit;
         }
@@ -759,9 +761,6 @@
     }
 }
 
-#subscription_overlay
-    .stream-description
-    .stream-description-editable:empty::after,
 .stream-row .sub-info-box .description:empty::after {
     content: attr(data-no-description);
     font-style: italic;
@@ -820,6 +819,32 @@
         margin: 20px;
     }
 
+    .stream_settings_header {
+        white-space: nowrap;
+        display: flex;
+        margin-left: 15px;
+
+        .tab-container {
+            .ind-tab {
+                padding: 3px 4px;
+                width: 80px;
+            }
+        }
+
+        .button-group {
+            padding-top: 5px;
+            margin-left: auto;
+            margin-right: 15px;
+
+            .subscribe-button,
+            #preview-stream-button,
+            .deactivate {
+                margin-right: 3px;
+                text-decoration: none;
+            }
+        }
+    }
+
     .stream-header {
         white-space: nowrap;
 
@@ -829,31 +854,24 @@
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
+            margin-top: -5px;
             white-space: nowrap;
             max-width: 260px;
 
-            .stream-name-editable {
+            .sub-stream-name {
                 display: block;
                 max-width: 20ch;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 float: left;
             }
-
-            .stream-name-edit-box {
-                text-overflow: clip;
-                border-style: groove;
-            }
         }
 
         .button-group {
             float: right;
-            margin-top: -5px;
 
-            .subscribe-button,
-            #preview-stream-button,
             .deactivate {
-                margin-right: 5px;
+                margin-right: 3px;
                 text-decoration: none;
             }
         }
@@ -871,59 +889,39 @@
             display: inline-block;
             vertical-align: top;
             margin-right: 5px;
+            margin-top: -5px;
             font-size: 1.5em;
 
             &.hash::after {
                 top: 1px;
             }
         }
+
+        .stream_change_property_info {
+            vertical-align: top;
+            margin: -5px 0 0 0;
+        }
     }
 
     .stream-description {
         margin-bottom: 5px;
-    }
-
-    .editable-section {
-        position: relative;
-        display: inline;
-        min-width: 10px;
-        max-width: 100%;
-
-        &[contenteditable="true"] {
-            display: inline-block;
-            color: hsl(170, 48%, 54%);
-
-            &:focus {
-                outline: none;
-            }
+        .no-description {
+            font-style: italic;
+            color: hsl(0, 0%, 67%);
         }
     }
 
-    .editable {
-        position: relative;
-        top: -1px;
-        margin-left: 5px;
-        color: hsl(0, 0%, 67%);
-        cursor: pointer;
-        font-size: 1.4rem;
-        font-weight: 300;
+    .stream_setting_subsection_header {
+        display: flex;
 
-        transition: all 0.3s ease;
-
-        &:empty::before {
-            content: "\f040";
-            font-family: FontAwesome;
-            font-size: 0.8rem;
-            font-weight: normal;
+        .stream_permission_change_info {
+            margin: 12px auto 0 3px;
         }
 
-        &:not(:empty) {
-            position: relative;
-            top: 3px;
-        }
-
-        &:hover {
-            color: hsl(0, 0%, 27%);
+        .button-group {
+            display: inline;
+            margin-left: auto;
+            align-self: center;
         }
     }
 
@@ -941,10 +939,13 @@
 
     .subscription-type {
         margin-bottom: 10px;
-        opacity: 0.5;
 
         .subscription-type-text {
             display: inline;
+            ul {
+                margin: 0 0 10px 14px;
+                list-style-type: unset;
+            }
         }
 
         b {
@@ -964,6 +965,10 @@
         height: calc(100% - 45px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+
+        .tab-container {
+            padding-top: 5px;
+        }
     }
 
     .subscription_settings {
@@ -979,13 +984,10 @@
         }
     }
 
-    #personal_settings_label_container {
-        margin-bottom: 5px;
-    }
-
-    .alert-notification:not(:empty) {
-        vertical-align: unset;
-        margin-top: 10px;
+    #personal-stream-settings {
+        .stream_change_property_status {
+            margin: 9px auto 3px 3px;
+        }
     }
 
     .loading_indicator_text {
@@ -1028,7 +1030,7 @@
             padding: 5px 0;
 
             input[type="radio"] {
-                margin: 0 0 1px 0;
+                margin: 3.5px 0 1px 0;
             }
 
             &:last-of-type {
@@ -1055,6 +1057,24 @@
         }
     }
 }
+#change_stream_info_modal {
+    .modal-header h3 {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    #change_stream_description {
+        width: 80%;
+        max-width: 500px;
+        box-sizing: border-box;
+    }
+}
+
+#stream_privacy_modal .modal-body {
+    .grey-box {
+        margin-bottom: 20px;
+    }
+}
 
 @media (width < $lg_min) {
     .subscriptions-container {
@@ -1079,6 +1099,10 @@
 
     .search-container {
         text-align: center;
+    }
+
+    #subscription_overlay .stream_settings_header {
+        flex-wrap: wrap;
     }
 }
 
@@ -1149,10 +1173,52 @@
 }
 
 @media (width < $sm_min) {
-    #subscription_overlay .subscription_settings .button-group {
+    #subscription_overlay .subscription_settings {
+        .button-group {
+            display: block;
+            float: right;
+            margin-top: 10px;
+        }
+
+        .stream-header .button-group {
+            margin-top: -5px;
+        }
+    }
+
+    #subscription_overlay .subscription_settings .stream_change_property_info {
+        /* For small widths where there is not enough space
+        to show alert beside stream name we set its display
+        to block so it is shown in new line. But to avoid
+        it covering whole screen width we set max-width
+        so that it does not losses inline-block appearence. */
+
+        /* TODO: This will probably be not required once
+        we have tabbed navigation as button group width
+        will be smaller. */
         display: block;
-        float: unset;
-        margin-top: 10px;
+        max-width: max-content;
+        white-space: nowrap;
+    }
+}
+
+@media (width <= 500px) {
+    #subscription_overlay .stream_settings_header {
+        display: block;
+        text-align: center;
+        margin-left: 0;
+        .tab-container {
+            .ind-tab {
+                width: 85px;
+            }
+        }
+    }
+
+    #subscription_overlay .stream_setting_subsection_header {
+        display: block;
+
+        .stream_permission_change_info {
+            margin: 12px auto 0 3px;
+        }
     }
 }
 

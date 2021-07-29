@@ -2,7 +2,7 @@ import copy
 import os
 import re
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, cast
 from unittest import mock
 
 import orjson
@@ -22,7 +22,7 @@ from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
-from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.exceptions import JsonableError, MarkdownRenderingException
 from zerver.lib.markdown import (
     MarkdownListPreprocessor,
     MessageRenderingResult,
@@ -47,7 +47,6 @@ from zerver.lib.mention import (
     possible_user_group_mentions,
 )
 from zerver.lib.message import render_markdown
-from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.user_groups import create_user_group
@@ -72,8 +71,8 @@ from zerver.models import (
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
     # Simulate code formatting.
 
-    def format_code(self, lang: str, code: str) -> str:
-        return lang + ":" + code
+    def format_code(self, lang: Optional[str], code: str) -> str:
+        return (lang or "") + ":" + code
 
     def placeholder(self, s: str) -> str:
         return "**" + s.strip("\n") + "**"
@@ -1468,7 +1467,7 @@ class MarkdownTest(ZulipTestCase):
 
             instance = Instance()
             instance.realm_id = realm.id
-            flush_linkifiers(sender=None, instance=instance)
+            flush_linkifiers(sender=RealmFilter, instance=cast(RealmFilter, instance))
 
         def save_new_linkifier() -> None:
             linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_format_string="whatever")
@@ -1967,7 +1966,7 @@ class MarkdownTest(ZulipTestCase):
         # incorrect(as it uses hamlet's id) so it should not be able
         # to use that data for creating a valid mention.
 
-        content = f"@**King Hamlet|10** and @**aaron|{hamlet.id}**"
+        content = f"@**King Hamlet|{hamlet.id}** and @**aaron|{hamlet.id}**"
         rendering_result = render_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,

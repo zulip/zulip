@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class GreenhouseHookTests(WebhookTestCase):
     STREAM_NAME = "greenhouse"
     URL_TEMPLATE = "/api/v1/external/greenhouse?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "greenhouse"
+    WEBHOOK_DIR_NAME = "greenhouse"
     CONTENT_TYPE = "application/x-www-form-urlencoded"
 
     def test_message_candidate_hired(self) -> None:

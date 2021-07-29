@@ -51,7 +51,7 @@ const lightbox = mock_esm("../../static/js/lightbox");
 const list_util = mock_esm("../../static/js/list_util");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_lists = mock_esm("../../static/js/message_lists");
-const muting_ui = mock_esm("../../static/js/muting_ui");
+const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const narrow = mock_esm("../../static/js/narrow");
 const navigate = mock_esm("../../static/js/navigate");
 const overlays = mock_esm("../../static/js/overlays", {
@@ -61,6 +61,7 @@ const overlays = mock_esm("../../static/js/overlays", {
     lightbox_open: () => false,
     drafts_open: () => false,
     info_overlay_open: () => false,
+    is_modal_open: () => false,
 });
 const popovers = mock_esm("../../static/js/popovers", {
     actions_popped: () => false,
@@ -72,7 +73,7 @@ const reactions = mock_esm("../../static/js/reactions");
 const search = mock_esm("../../static/js/search");
 const settings_data = mock_esm("../../static/js/settings_data");
 const stream_list = mock_esm("../../static/js/stream_list");
-const subs = mock_esm("../../static/js/subs");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 
 mock_esm("../../static/js/hotspots", {
     is_open: () => false,
@@ -255,10 +256,6 @@ run_test("allow normal typing when processing text", ({override}) => {
     assert_unmapped("bfmoyz");
     assert_unmapped("BEFHILNOQTUWXYZ");
 
-    // We have to skip some checks due to the way the code is
-    // currently organized for mapped keys.
-    override(hotkey, "in_content_editable_widget", () => false);
-
     // All letters should return false if we are composing text.
     override(hotkey, "processing_text", () => true);
 
@@ -281,9 +278,9 @@ run_test("streams", ({override}) => {
     settings_data.user_can_create_streams = () => true;
     override(overlays, "streams_open", () => true);
     override(overlays, "is_active", () => true);
-    assert_mapping("S", subs, "keyboard_sub");
-    assert_mapping("V", subs, "view_stream");
-    assert_mapping("n", subs, "open_create_stream");
+    assert_mapping("S", stream_settings_ui, "keyboard_sub");
+    assert_mapping("V", stream_settings_ui, "view_stream");
+    assert_mapping("n", stream_settings_ui, "open_create_stream");
     settings_data.user_can_create_streams = () => false;
     assert_unmapped("n");
 });
@@ -318,6 +315,11 @@ run_test("drafts closed w/other overlay", ({override}) => {
 run_test("drafts closed launch", ({override}) => {
     override(overlays, "is_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
+});
+
+run_test("modal open", ({override}) => {
+    override(overlays, "is_modal_open", () => true);
+    test_normal_typing();
 });
 
 run_test("misc", () => {
@@ -381,7 +383,7 @@ run_test("emoji picker", ({override}) => {
 run_test("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", muting_ui, "toggle_topic_mute");
+    assert_mapping("M", muted_topics_ui, "toggle_topic_mute");
 });
 
 run_test("n/p keys", () => {
@@ -469,19 +471,14 @@ run_test("motion_keys", () => {
     overlays.info_overlay_open = () => false;
 
     overlays.streams_open = () => true;
-    assert_mapping("up_arrow", subs, "switch_rows");
-    assert_mapping("down_arrow", subs, "switch_rows");
+    assert_mapping("up_arrow", stream_settings_ui, "switch_rows");
+    assert_mapping("down_arrow", stream_settings_ui, "switch_rows");
     overlays.streams_open = () => false;
 
     overlays.lightbox_open = () => true;
     assert_mapping("left_arrow", lightbox, "prev");
     assert_mapping("right_arrow", lightbox, "next");
     overlays.lightbox_open = () => false;
-
-    hotkey.__Rewire__("in_content_editable_widget", () => true);
-    assert_unmapped("down_arrow");
-    assert_unmapped("up_arrow");
-    hotkey.__Rewire__("in_content_editable_widget", () => false);
 
     overlays.settings_open = () => true;
     assert_unmapped("end");

@@ -19,7 +19,6 @@ module.exports = {
 
         // Additional stylistic rules
         "font-family-name-quotes": "always-where-recommended",
-        "function-url-quotes": "never",
 
         // Limit language features
         "color-no-hex": true,
@@ -38,7 +37,9 @@ module.exports = {
 
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
-        "function-url-scheme-allowed-list": [],
+        "function-url-scheme-allowed-list": [
+            "data", // Allow data URIs
+        ],
 
         // We use autoprefixer to generate vendor prefixes
         "at-rule-no-vendor-prefix": true,

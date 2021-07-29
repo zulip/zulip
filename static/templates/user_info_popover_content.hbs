@@ -7,7 +7,7 @@
                 {{#if is_bot}}
                 <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                 {{else}}
-                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip" data-tippy-content="{{user_last_seen_time_status}}" data-tippy-placement="top"></span>
+                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip" data-tippy-content="{{user_last_seen_time_status}}"></span>
                 {{/if}}
             {{/if}}
         </li>
@@ -15,13 +15,13 @@
 
         {{#if is_active }}
             {{#if show_email}}
-            <li class="user_popover_email">
-                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                {{ user_email }}
-                <div class="tooltip_holder">
-                    <span class="email_tooltip">{{ user_email }}</span>
-                </div>
-            </li>
+            {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
+            <div>
+                <li class="user_popover_email">
+                    <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
+                    {{ user_email }}
+                </li>
+            </div>
             {{/if}}
         {{else}}
             <li class="user_popover_email half-opacity italic">{{#tr}}(This user has been deactivated){{/tr}}</li>
@@ -40,7 +40,7 @@
                     </span>
                 </li>
             {{else}}
-                {{#if is_cross_realm_bot}}
+                {{#if is_system_bot}}
                 <li>{{#tr}}System bot{{/tr}}</li>
                 {{else}}
                 <li>{{#tr}}Bot{{/tr}}</li>
@@ -71,19 +71,28 @@
             <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
-                    {{#tr}}Edit status message{{/tr}}
+                    {{#tr}}Edit status{{/tr}}
                 {{else}}
-                    {{#tr}}Set a status message{{/tr}}
+                    {{#tr}}Set a status{{/tr}}
                 {{/if}}
             </a>
         </li>
     {{/if}}
 
-    {{#if status_text}}
+    {{#if status_content_available}}
         {{#unless is_me}}<hr />{{/unless}}
         <li class="user_info_status_text">
             <span id="status_message">
                 {{status_text}}
+                {{#if status_emoji_info.emoji_alt_code}}
+                    <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
+                {{else}}
+                    {{#if status_emoji_info.url}}
+                    <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                    {{else}}
+                    <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                    {{/if}}
+                {{/if}}
                 {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>){{/if}}
             </span>
         </li>
@@ -129,7 +138,7 @@
     {{/unless}}
     {{#if is_me}}
     <li>
-        <a href="/#settings/your-account">
+        <a href="/#settings/profile">
             <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Edit your profile{{/tr}}
         </a>
     </li>

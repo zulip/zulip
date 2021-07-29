@@ -20,7 +20,7 @@ with the following commands:
 
 ```
 cd $(mktemp -d)
-curl -LO https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+curl -fLO https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
 
@@ -176,6 +176,6 @@ out!  Please provide details like the full traceback from the bottom
 of `/var/log/zulip/errors.log` in your report (ideally in a [code
 block][code-block]).
 
-[chat-zulip-org]: ../contributing/chat-zulip-org.md
+[chat-zulip-org]: https://zulip.com/developer-community/
 [production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
 [code-block]: https://zulip.com/help/code-blocks

@@ -7,7 +7,7 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 class GitlabHookTests(WebhookTestCase):
     STREAM_NAME = "gitlab"
     URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "gitlab"
+    WEBHOOK_DIR_NAME = "gitlab"
 
     def test_push_event_specified_topic(self) -> None:
         self.url = self.build_webhook_url("topic=Specific%20topic")

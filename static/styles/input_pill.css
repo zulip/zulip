@@ -112,6 +112,10 @@
     }
 }
 
+.deactivated-pill {
+    background-color: hsl(0, 86%, 86%) !important;
+}
+
 .add_subscribers_container .pill-container {
     width: 100%;
     background-color: hsl(0, 0%, 100%);

@@ -13,6 +13,8 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
@@ -21,20 +23,7 @@ const meta = {
     loaded: false,
 };
 
-export function can_add_emoji() {
-    if (page_params.is_guest) {
-        return false;
-    }
-
-    if (page_params.is_admin) {
-        return true;
-    }
-
-    // for normal users, we depend on the setting
-    return !page_params.realm_add_emoji_by_admins_only;
-}
-
-function can_admin_emoji(emoji) {
+function can_delete_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
     }
@@ -42,7 +31,7 @@ function can_admin_emoji(emoji) {
         // If we don't have the author information then only admin is allowed to disable that emoji.
         return false;
     }
-    if (!page_params.realm_add_emoji_by_admins_only && people.is_my_user_id(emoji.author_id)) {
+    if (people.is_my_user_id(emoji.author_id)) {
         return true;
     }
     return false;
@@ -50,10 +39,11 @@ function can_admin_emoji(emoji) {
 
 export function update_custom_emoji_ui() {
     const rendered_tip = render_settings_emoji_settings_tip({
-        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
+        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
+        policy_values: settings_config.common_policy_values,
     });
     $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
-    if (page_params.realm_add_emoji_by_admins_only && !page_params.is_admin) {
+    if (!settings_data.user_can_add_custom_emoji()) {
         $(".add-emoji-text").hide();
         $(".admin-emoji-form").hide();
     } else {
@@ -118,7 +108,7 @@ export function populate_emoji() {
                         display_name: item.name.replace(/_/g, " "),
                         source_url: item.source_url,
                         author: item.author || "",
-                        can_admin_emoji: can_admin_emoji(item),
+                        can_delete_emoji: can_delete_emoji(item),
                     },
                 });
             }
@@ -269,7 +259,6 @@ export function set_up() {
                     parent: modal_parent,
                     html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
                     html_body,
-                    html_yes_button: $t_html({defaultMessage: "Confirm"}),
                     on_click: submit_custom_emoji_request,
                     fade: true,
                 });

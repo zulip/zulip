@@ -1,9 +1,11 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import asyncio
 import base64
 import logging
 import re
-import time
+from dataclasses import dataclass
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import gcm
@@ -14,6 +16,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
@@ -21,21 +24,21 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     ArchivedMessage,
     Message,
+    NotificationTriggers,
     PushDeviceToken,
     Recipient,
     UserMessage,
     UserProfile,
     get_display_recipient,
     get_user_profile_by_id,
-    receives_offline_push_notifications,
-    receives_online_push_notifications,
 )
 
 if TYPE_CHECKING:
-    from apns2.client import APNsClient
+    import aioapns
 
 logger = logging.getLogger(__name__)
 
@@ -57,31 +60,41 @@ def hex_to_b64(data: str) -> str:
 # Sending to APNs, for iOS
 #
 
-_apns_client: Optional["APNsClient"] = None
-_apns_client_initialized = False
+
+@dataclass
+class APNsContext:
+    apns: "aioapns.APNs"
+    loop: asyncio.AbstractEventLoop
 
 
-def get_apns_client() -> "Optional[APNsClient]":
+@lru_cache(maxsize=None)
+def get_apns_context() -> Optional[APNsContext]:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
-    from apns2.client import APNsClient
+    import aioapns
 
-    global _apns_client, _apns_client_initialized
-    if not _apns_client_initialized:
-        # NB if called concurrently, this will make excess connections.
-        # That's a little sloppy, but harmless unless a server gets
-        # hammered with a ton of these all at once after startup.
-        if settings.APNS_CERT_FILE is not None:
-            _apns_client = APNsClient(
-                credentials=settings.APNS_CERT_FILE, use_sandbox=settings.APNS_SANDBOX
-            )
-        _apns_client_initialized = True
-    return _apns_client
+    # aioapns logs at "error" level for every non-successful request,
+    # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
+    logging.getLogger("aioapns").setLevel(logging.CRITICAL)
+
+    if settings.APNS_CERT_FILE is None:
+        return None
+
+    # NB if called concurrently, this will make excess connections.
+    # That's a little sloppy, but harmless unless a server gets
+    # hammered with a ton of these all at once after startup.
+    loop = asyncio.new_event_loop()
+    apns = aioapns.APNs(
+        client_cert=settings.APNS_CERT_FILE,
+        topic=settings.APNS_TOPIC,
+        loop=loop,
+        use_sandbox=settings.APNS_SANDBOX,
+    )
+    return APNsContext(apns=apns, loop=loop)
 
 
 def apns_enabled() -> bool:
-    client = get_apns_client()
-    return client is not None
+    return get_apns_context() is not None
 
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -115,7 +128,7 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_id: int, devices: List[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
+    user_id: int, devices: Sequence[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
 ) -> None:
     if not devices:
         return
@@ -123,11 +136,11 @@ def send_apple_push_notification(
     # import time; since these are only needed in the push
     # notification queue worker, it's best to only import them in the
     # code that needs them.
-    from apns2.payload import Payload as APNsPayload
-    from hyper.http20.exceptions import HTTP20Error
+    import aioapns
+    import aioapns.exceptions
 
-    client = get_apns_client()
-    if client is None:
+    apns_context = get_apns_context()
+    if apns_context is None:
         logger.debug(
             "APNs: Dropping a notification because nothing configured.  "
             "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE)."
@@ -141,36 +154,29 @@ def send_apple_push_notification(
         DeviceTokenClass = PushDeviceToken
 
     logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
-    payload = APNsPayload(**modernize_apns_payload(payload_data))
-    expiration = int(time.time() + 24 * 3600)
+    payload_data = modernize_apns_payload(payload_data).copy()
+    message = {**payload_data.pop("custom", {}), "aps": payload_data}
     retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
+        request = aioapns.NotificationRequest(
+            device_token=device.token, message=message, time_to_live=24 * 3600
+        )
 
-        def attempt_send() -> Optional[str]:
-            assert client is not None
+        async def attempt_send() -> Optional[str]:
+            assert apns_context is not None
             try:
-                stream_id = client.send_notification_async(
-                    device.token, payload, topic=settings.APNS_TOPIC, expiration=expiration
-                )
-                return client.get_notification_result(stream_id)
-            except HTTP20Error as e:
+                result = await apns_context.apns.send_notification(request)
+                return "Success" if result.is_successful else result.description
+            except aioapns.exceptions.ConnectionClosed as e:  # nocoverage
                 logger.warning(
-                    "APNs: HTTP error sending for user %d to device %s: %s",
+                    "APNs: ConnectionClosed sending for user %d to device %s: %s",
                     user_id,
                     device.token,
                     e.__class__.__name__,
                 )
                 return None
-            except BrokenPipeError as e:
-                logger.warning(
-                    "APNs: BrokenPipeError sending for user %d to device %s: %s",
-                    user_id,
-                    device.token,
-                    e.__class__.__name__,
-                )
-                return None
-            except ConnectionError as e:  # nocoverage
+            except aioapns.exceptions.ConnectionError as e:  # nocoverage
                 logger.warning(
                     "APNs: ConnectionError sending for user %d to device %s: %s",
                     user_id,
@@ -179,17 +185,13 @@ def send_apple_push_notification(
                 )
                 return None
 
-        result = attempt_send()
+        result = apns_context.loop.run_until_complete(attempt_send())
         while result is None and retries_left > 0:
             retries_left -= 1
-            result = attempt_send()
+            result = apns_context.loop.run_until_complete(attempt_send())
         if result is None:
             result = "HTTP error, retries exhausted"
 
-        if result[0] == "Unregistered":
-            # For some reason, "Unregistered" result values have a
-            # different format, as a tuple of the pair ("Unregistered", 12345132131).
-            result = result[0]
         if result == "Success":
             logger.info("APNs: Success sending for user %d to device %s", user_id, device.token)
         elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
@@ -290,7 +292,10 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
-    devices: List[DeviceToken], data: Dict[str, Any], options: Dict[str, Any], remote: bool = False
+    devices: Sequence[DeviceToken],
+    data: Dict[str, Any],
+    options: Dict[str, Any],
+    remote: bool = False,
 ) -> None:
     """
     Send a GCM message to the given devices.
@@ -412,9 +417,7 @@ def send_notifications_to_bouncer(
 #
 
 
-def num_push_devices_for_user(
-    user_profile: UserProfile, kind: Optional[int] = None
-) -> PushDeviceToken:
+def num_push_devices_for_user(user_profile: UserProfile, kind: Optional[int] = None) -> int:
     if kind is None:
         return PushDeviceToken.objects.filter(user=user_profile).count()
     else:
@@ -551,21 +554,32 @@ def initialize_push_notifications() -> None:
         )
 
 
-def get_gcm_alert(message: Message) -> str:
+def get_gcm_alert(message: Message, mentioned_user_group_name: Optional[str] = None) -> str:
     """
     Determine what alert string to display based on the missed messages.
     """
     sender_str = message.sender.full_name
-    if message.recipient.type == Recipient.HUDDLE and message.trigger == "private_message":
-        return f"New private group message from {sender_str}"
-    elif message.recipient.type == Recipient.PERSONAL and message.trigger == "private_message":
-        return f"New private message from {sender_str}"
-    elif message.is_stream_message() and (
-        message.trigger == "mentioned" or message.trigger == "wildcard_mentioned"
+    display_recipient = get_display_recipient(message.recipient)
+    if (
+        message.recipient.type == Recipient.HUDDLE
+        and message.trigger == NotificationTriggers.PRIVATE_MESSAGE
     ):
-        return f"New mention from {sender_str}"
-    else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
-        return f"New stream message from {sender_str} in {get_display_recipient(message.recipient)}"
+        return f"New private group message from {sender_str}"
+    elif (
+        message.recipient.type == Recipient.PERSONAL
+        and message.trigger == NotificationTriggers.PRIVATE_MESSAGE
+    ):
+        return f"New private message from {sender_str}"
+    elif message.is_stream_message() and message.trigger == NotificationTriggers.MENTION:
+        if mentioned_user_group_name is None:
+            return f"{sender_str} mentioned you in #{display_recipient}"
+        else:
+            return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
+    elif message.is_stream_message() and message.trigger == NotificationTriggers.WILDCARD_MENTION:
+        return f"{sender_str} mentioned everyone in #{display_recipient}"
+    else:
+        assert message.is_stream_message() and message.trigger == NotificationTriggers.STREAM_PUSH
+        return f"New stream message from {sender_str} in #{display_recipient}"
 
 
 def get_mobile_push_content(rendered_content: str) -> str:
@@ -629,7 +643,13 @@ def get_mobile_push_content(rendered_content: str) -> str:
         return plain_text
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
-        return "***REDACTED***"
+        return (
+            "*"
+            + _(
+                "This organization has disabled including message content in mobile push notifications"
+            )
+            + "*"
+        )
 
     elem = lxml.html.fromstring(rendered_content)
     plain_text = process(elem)
@@ -659,13 +679,22 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     return data
 
 
-def get_message_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+def get_message_payload(
+    user_profile: UserProfile,
+    message: Message,
+    mentioned_user_group_id: Optional[int] = None,
+    mentioned_user_group_name: Optional[str] = None,
+) -> Dict[str, Any]:
     """Common fields for `message` payloads, for all platforms."""
     data = get_base_payload(user_profile)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data["sender_id"] = message.sender.id
     data["sender_email"] = message.sender.email
+    if mentioned_user_group_id is not None:
+        assert mentioned_user_group_name is not None
+        data["mentioned_user_group_id"] = mentioned_user_group_id
+        data["mentioned_user_group_name"] = mentioned_user_group_name
 
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
@@ -694,13 +723,20 @@ def get_apns_alert_title(message: Message) -> str:
     return message.sender.full_name
 
 
-def get_apns_alert_subtitle(message: Message) -> str:
+def get_apns_alert_subtitle(
+    user_profile: UserProfile, message: Message, mentioned_user_group_name: Optional[str] = None
+) -> str:
     """
     On an iOS notification, this is the second bolded line.
     """
-    if message.trigger == "mentioned":
-        return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
-    elif message.trigger == "wildcard_mentioned":
+    if message.trigger == NotificationTriggers.MENTION:
+        if mentioned_user_group_name is not None:
+            return _("{full_name} mentioned @{user_group_name}:").format(
+                full_name=message.sender.full_name, user_group_name=mentioned_user_group_name
+            )
+        else:
+            return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
+    elif message.trigger == NotificationTriggers.WILDCARD_MENTION:
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
@@ -736,46 +772,61 @@ def get_apns_badge_count_future(
     )
 
 
-def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+def get_message_payload_apns(
+    user_profile: UserProfile,
+    message: Message,
+    mentioned_user_group_id: Optional[int] = None,
+    mentioned_user_group_name: Optional[str] = None,
+) -> Dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
-    zulip_data = get_message_payload(user_profile, message)
+    zulip_data = get_message_payload(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+    )
     zulip_data.update(
         message_ids=[message.id],
     )
 
     assert message.rendered_content is not None
-    content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
-    apns_data = {
-        "alert": {
-            "title": get_apns_alert_title(message),
-            "subtitle": get_apns_alert_subtitle(message),
-            "body": content,
-        },
-        "sound": "default",
-        "badge": get_apns_badge_count(user_profile),
-        "custom": {"zulip": zulip_data},
-    }
+    with override_language(user_profile.default_language):
+        content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
+        apns_data = {
+            "alert": {
+                "title": get_apns_alert_title(message),
+                "subtitle": get_apns_alert_subtitle(
+                    user_profile, message, mentioned_user_group_name
+                ),
+                "body": content,
+            },
+            "sound": "default",
+            "badge": get_apns_badge_count(user_profile),
+            "custom": {"zulip": zulip_data},
+        }
     return apns_data
 
 
 def get_message_payload_gcm(
     user_profile: UserProfile,
     message: Message,
+    mentioned_user_group_id: Optional[int] = None,
+    mentioned_user_group_name: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """A `message` payload + options, for Android via GCM/FCM."""
-    data = get_message_payload(user_profile, message)
-    assert message.rendered_content is not None
-    content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-    data.update(
-        event="message",
-        alert=get_gcm_alert(message),
-        zulip_message_id=message.id,  # message_id is reserved for CCS
-        time=datetime_to_timestamp(message.date_sent),
-        content=content,
-        content_truncated=truncated,
-        sender_full_name=message.sender.full_name,
-        sender_avatar_url=absolute_avatar_url(message.sender),
+    data = get_message_payload(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
     )
+    assert message.rendered_content is not None
+    with override_language(user_profile.default_language):
+        content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
+        data.update(
+            event="message",
+            alert=get_gcm_alert(message, mentioned_user_group_name),
+            zulip_message_id=message.id,  # message_id is reserved for CCS
+            time=datetime_to_timestamp(message.date_sent),
+            content=content,
+            content_truncated=truncated,
+            sender_full_name=message.sender.full_name,
+            sender_avatar_url=absolute_avatar_url(message.sender),
+        )
     gcm_options = {"priority": "high"}
     return data, gcm_options
 
@@ -850,11 +901,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if not push_notifications_enabled():
         return
     user_profile = get_user_profile_by_id(user_profile_id)
-    if not (
-        receives_offline_push_notifications(user_profile)
-        or receives_online_push_notifications(user_profile)
-    ):
-        return
 
     try:
         (message, user_message) = access_message(user_profile, missed_message["message_id"])
@@ -872,10 +918,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     if user_message is not None:
         # If the user has read the message already, don't push-notify.
-        #
-        # TODO: It feels like this is already handled when things are
-        # put in the queue; maybe we should centralize this logic with
-        # the `zerver/tornado/event_queue.py` logic?
         if user_message.flags.read or user_message.flags.active_mobile_push_notification:
             return
 
@@ -898,9 +940,19 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             return
 
     message.trigger = missed_message["trigger"]
+    mentioned_user_group_name = None
+    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
-    apns_payload = get_message_payload_apns(user_profile, message)
-    gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
+    if mentioned_user_group_id is not None:
+        user_group = access_user_group_by_id(mentioned_user_group_id, user_profile)
+        mentioned_user_group_name = user_group.name
+
+    apns_payload = get_message_payload_apns(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+    )
+    gcm_payload, gcm_options = get_message_payload_gcm(
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
+    )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     if uses_notification_bouncer():

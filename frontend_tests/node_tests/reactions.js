@@ -331,12 +331,15 @@ test("sending", ({override}) => {
             reaction_type: "zulip_extra_emoji",
             emoji_name: "zulip",
             emoji_code: "zulip",
+            url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
         });
     }
 
     emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
-    blueslip.expect("warn", "Bad emoji name: " + emoji_name);
-    reactions.toggle_emoji_reaction(message.id, emoji_name);
+    assert.throws(() => reactions.toggle_emoji_reaction(message.id, emoji_name), {
+        name: "Error",
+        message: "Bad emoji name: unknown-emoji",
+    });
 });
 
 test("set_reaction_count", () => {

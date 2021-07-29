@@ -21,6 +21,7 @@
 * [Subscribe to a stream](/api/subscribe)
 * [Unsubscribe from a stream](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
+* [Get all subscribers](/api/get-subscribers)
 * [Update subscription settings](/api/update-subscription-settings)
 * [Get all streams](/api/get-streams)
 * [Get stream ID](/api/get-stream-id)
@@ -29,6 +30,7 @@
 * [Archive a stream](/api/archive-stream)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
+* [Delete a topic](/api/delete-topic)
 
 #### Users
 
@@ -37,6 +39,7 @@
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
 * [Update a user](/api/update-user)
+* [Update your status](/api/update-status)
 * [Create a user](/api/create-user)
 * [Deactivate a user](/api/deactivate-user)
 * [Reactivate a user](/api/reactivate-user)
@@ -44,8 +47,7 @@
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
 * [Get attachments](/api/get-attachments)
-* [Update display settings](/api/update-display-settings)
-* [Update notification settings](/api/update-notification-settings)
+* [Update settings](/api/update-settings)
 * [Get user groups](/api/get-user-groups)
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)

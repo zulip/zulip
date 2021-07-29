@@ -17,7 +17,7 @@ RUN if (. /etc/os-release && [ "$ID $VERSION_ID" = 'ubuntu 18.04' ]); then \
 # Download the release tarball, start rabbitmq server and install the server
 ARG VERSION
 RUN cd $(mktemp -d) \
-  && curl -LO "https://www.zulip.org/dist/releases/zulip-server-$VERSION.tar.gz" \
+  && curl -fLO "https://www.zulip.org/dist/releases/zulip-server-$VERSION.tar.gz" \
   && tar -xf "zulip-server-$VERSION.tar.gz" \
   && sudo service rabbitmq-server start \
   && sudo service rabbitmq-server status \

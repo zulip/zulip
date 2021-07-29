@@ -33,10 +33,6 @@ Copyright: 2005 Francesc Guasch
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh
-Copyright: 2011 Chris Freeman
-License: GPL-2.0
-
 Files: puppet/zulip_ops/files/zulip-ec2-configure-interfaces
 Copyright: 2013-2017, Dropbox, Inc., Kandra Labs, Inc., and contributors
 License: Expat

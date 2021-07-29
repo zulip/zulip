@@ -6,8 +6,9 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.actions import do_mute_topic, do_mute_user, do_unmute_topic, do_unmute_user
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
@@ -36,7 +37,7 @@ def mute_topic(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
     if topic_is_muted(user_profile, stream.id, topic_name):
-        return json_error(_("Topic already muted"))
+        raise JsonableError(_("Topic already muted"))
 
     do_mute_topic(user_profile, stream, topic_name, date_muted)
     return json_success()
@@ -54,7 +55,7 @@ def unmute_topic(
         stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
 
     if not topic_is_muted(user_profile, stream.id, topic_name):
-        return json_error(error)
+        raise JsonableError(error)
 
     do_unmute_topic(user_profile, stream, topic_name)
     return json_success()
@@ -91,13 +92,15 @@ def update_muted_topic(
 
 def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: int) -> HttpResponse:
     if user_profile.id == muted_user_id:
-        return json_error(_("Cannot mute self"))
+        raise JsonableError(_("Cannot mute self"))
 
-    muted_user = access_user_by_id(user_profile, muted_user_id, allow_bots=False, for_admin=False)
+    muted_user = access_user_by_id(
+        user_profile, muted_user_id, allow_bots=False, allow_deactivated=True, for_admin=False
+    )
     date_muted = timezone_now()
 
     if get_mute_object(user_profile, muted_user) is not None:
-        return json_error(_("User already muted"))
+        raise JsonableError(_("User already muted"))
 
     do_mute_user(user_profile, muted_user, date_muted)
     return json_success()
@@ -106,11 +109,13 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
 def unmute_user(
     request: HttpRequest, user_profile: UserProfile, muted_user_id: int
 ) -> HttpResponse:
-    muted_user = access_user_by_id(user_profile, muted_user_id, allow_bots=False, for_admin=False)
+    muted_user = access_user_by_id(
+        user_profile, muted_user_id, allow_bots=False, allow_deactivated=True, for_admin=False
+    )
     mute_object = get_mute_object(user_profile, muted_user)
 
     if mute_object is None:
-        return json_error(_("User is not muted"))
+        raise JsonableError(_("User is not muted"))
 
     do_unmute_user(mute_object)
     return json_success()

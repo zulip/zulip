@@ -12,7 +12,7 @@ moto[s3]
 Twisted
 
 # Needed for documentation links test
-Scrapy<2.5.0  # 2.5.0 needs h2 3.0: https://github.com/Pr0Ger/PyAPNs2/issues/126
+https://github.com/scrapy/scrapy/archive/c5b1ee810167266fcd259f263dbfc0fe0204761a.zip#egg=Scrapy==2.5.0+git  # aioapns requires h2 ≥ 4.0: https://github.com/scrapy/scrapy/pull/5113
 
 # Needed to compute test coverage
 coverage
@@ -27,7 +27,7 @@ responses
 isort
 
 # For doing highly usable Python profiling
-line-profiler<3.2  # https://github.com/pyutils/line_profiler/issues/77
+line-profiler
 
 # for pep8 linter
 pycodestyle

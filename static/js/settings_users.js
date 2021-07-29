@@ -9,8 +9,8 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import * as edit_fields_modal from "./edit_fields_modal";
+import * as dialog_widget from "./dialog_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -447,7 +447,6 @@ function confirm_deactivation(row, user_id, status_field) {
         parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
         html_body,
-        html_yes_button: $t_html({defaultMessage: "Confirm"}),
         on_click: handle_confirm,
         fade: true,
     });
@@ -523,9 +522,19 @@ function handle_human_form(tbody, status_field) {
             return;
         }
 
-        const modal_body_html = render_admin_human_form({
+        let user_email = settings_data.email_for_user_settings(person);
+        if (!user_email) {
+            // When email_address_visibility is "Nobody", we still
+            // want to show the fake email address in the edit form.
+            //
+            // We may in the future want to just hide the form field
+            // for this situation, once we display user IDs.
+            user_email = person.email;
+        }
+
+        const html_body = render_admin_human_form({
             user_id,
-            email: person.email,
+            email: user_email,
             full_name: person.full_name,
             user_role_values: settings_config.user_role_values,
             disable_role_dropdown: person.is_owner && !page_params.is_owner,
@@ -571,15 +580,16 @@ function handle_human_form(tbody, status_field) {
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#edit-fields-modal");
+            overlays.close_modal("#dialog_widget_modal");
         }
 
-        edit_fields_modal.launch({
-            modal_label: $t({defaultMessage: "Change user info and roles"}),
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Change user info and roles"}),
             parent: modal_parent,
-            modal_body_html,
+            html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
+            fade: true,
         });
     });
 }
@@ -595,7 +605,7 @@ function handle_bot_form(tbody, status_field) {
             return;
         }
 
-        const modal_body_html = render_admin_bot_form({
+        const html_body = render_admin_bot_form({
             user_id,
             email: bot.email,
             full_name: bot.full_name,
@@ -606,7 +616,7 @@ function handle_bot_form(tbody, status_field) {
         let owner_widget;
 
         function submit_bot_details() {
-            const full_name = $("#edit-fields-modal").find("input[name='full_name']");
+            const full_name = $("#dialog_widget_modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
@@ -622,7 +632,7 @@ function handle_bot_form(tbody, status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#edit-fields-modal");
+            overlays.close_modal("#dialog_widget_modal");
         }
 
         function get_bot_owner_widget() {
@@ -642,15 +652,16 @@ function handle_bot_form(tbody, status_field) {
             };
             // Note: Rendering this is quite expensive in
             // organizations with 10Ks of users.
-            owner_widget = dropdown_list_widget(opts);
+            owner_widget = new DropdownListWidget(opts);
         }
 
-        edit_fields_modal.launch({
-            modal_label: $t({defaultMessage: "Change bot info and owner"}),
+        dialog_widget.launch({
+            html_heading: $t({defaultMessage: "Change bot info and owner"}),
             parent: modal_parent,
-            modal_body_html,
+            html_body,
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
+            fade: true,
         });
     });
 }

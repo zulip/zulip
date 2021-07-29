@@ -16,6 +16,9 @@ TOPIC_NAME = "subject"
 TOPIC_LINKS = "topic_links"
 MATCH_TOPIC = "match_subject"
 
+# Prefix use to mark topic as resolved.
+RESOLVED_TOPIC_PREFIX = "✔ "
+
 # This constant is actually embedded into
 # the JSON data for message edit history,
 # so we'll always need to handle legacy data
@@ -77,6 +80,11 @@ def topic_match_sa(topic_name: str) -> "ColumnElement[bool]":
     # queries that search messages
     topic_cond = func.upper(column("subject", Text)) == func.upper(literal(topic_name))
     return topic_cond
+
+
+def get_resolved_topic_condition_sa() -> "ColumnElement[bool]":
+    resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
+    return resolved_topic_cond
 
 
 def topic_column_sa() -> "ColumnElement[str]":

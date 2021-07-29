@@ -1,4 +1,3 @@
-# Webhooks for external integrations.
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
@@ -34,6 +33,15 @@ PAGER_DUTY_EVENT_NAMES_V3 = {
     "incident.resolved": "resolved",
     "incident.reassigned": "reassigned",
 }
+
+ALL_EVENT_TYPES = [
+    "resolved",
+    "assigned",
+    "unacknowledged",
+    "acknowledged",
+    "triggered",
+    "reassigned",
+]
 
 AGENT_TEMPLATE = "[{username}]({url})"
 
@@ -206,10 +214,10 @@ def send_formated_pagerduty(
 
     subject = "Incident {incident_num_title}".format(**format_dict)
     body = template.format(**format_dict)
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, format_dict["action"])
 
 
-@webhook_view("PagerDuty")
+@webhook_view("PagerDuty", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_pagerduty_webhook(
     request: HttpRequest,

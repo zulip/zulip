@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS
@@ -26,7 +26,7 @@ from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm, UserActivityInterval, UserProfile
+from zerver.models import Realm, UserActivityInterval, UserProfile, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
@@ -102,6 +102,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             realm.string_id,
             realm.date_created,
             realm.plan_type,
+            realm.org_type,
             coalesce(wau_table.value, 0) wau_count,
             coalesce(dau_table.value, 0) dau_count,
             coalesce(user_count_table.value, 0) user_profile_count,
@@ -233,6 +234,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
         total_arr += sum(estimated_arrs.values())
 
+    for row in rows:
+        row["org_type_string"] = get_org_type_display_name(row["org_type"])
+
     # augment data with realm_minutes
     total_hours = 0.0
     for row in rows:
@@ -271,6 +275,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     total_row = dict(
         string_id="Total",
         plan_type_string="",
+        org_type_string="",
         effective_rate="",
         arr=total_arr,
         stats_link="",
@@ -364,7 +369,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
         cursor.close()
 
         def fix_rows(
-            i: int, fixup_func: Union[Callable[[Realm], mark_safe], Callable[[datetime], str]]
+            i: int, fixup_func: Union[Callable[[str], mark_safe], Callable[[datetime], str]]
         ) -> None:
             for row in rows:
                 row[i] = fixup_func(row[i])

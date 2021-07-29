@@ -6,8 +6,10 @@ import sys
 import time
 import types
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 # check for the venv
-from lib import sanity_check
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 

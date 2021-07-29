@@ -111,6 +111,7 @@ from zerver.lib.event_schema import (
     check_default_streams,
     check_delete_message,
     check_has_zoom_token,
+    check_heartbeat,
     check_hotspots,
     check_invites_changed,
     check_message,
@@ -195,14 +196,17 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     get_client,
     get_stream,
     get_user_by_delivery_email,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema
+from zerver.tornado.django_api import send_event
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
+    create_heartbeat_event,
     send_restart_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
@@ -593,6 +597,17 @@ class NormalActionsTest(BaseAction):
         )
         check_reaction_add("events[0]", events[0])
 
+    def test_heartbeat_event(self) -> None:
+        events = self.verify_action(
+            lambda: send_event(
+                self.user_profile.realm,
+                create_heartbeat_event(),
+                [self.user_profile.id],
+            ),
+            state_change_expected=False,
+        )
+        check_heartbeat("events[0]", events[0])
+
     def test_add_submessage(self) -> None:
         cordelia = self.example_user("cordelia")
         stream_name = "Verona"
@@ -699,7 +714,7 @@ class NormalActionsTest(BaseAction):
                 acting_user=None,
             ),
             state_change_expected=True,
-            num_events=4,
+            num_events=5,
         )
 
         check_invites_changed("events[3]", events[3])
@@ -887,11 +902,20 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_register_events(self) -> None:
-        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"))
-        self.assert_length(events, 1)
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
+        self.assert_length(events, 3)
+
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
+
+        check_subscription_peer_add("events[1]", events[1])
+
+        check_message("events[2]", events[2])
+        self.assertIn(
+            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
+            events[2]["message"]["content"],
+        )
 
     def test_register_events_email_address_visibility(self) -> None:
         do_set_realm_property(
@@ -901,11 +925,19 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
 
-        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"))
-        self.assert_length(events, 1)
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
+        self.assert_length(events, 3)
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
+
+        check_subscription_peer_add("events[1]", events[1])
+
+        check_message("events[2]", events[2])
+        self.assertIn(
+            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
+            events[2]["message"]["content"],
+        )
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -923,23 +955,45 @@ class NormalActionsTest(BaseAction):
                 user_profile=self.user_profile,
                 away=True,
                 status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
             )
         )
 
-        check_user_status("events[0]", events[0], {"away", "status_text"})
-
+        check_user_status(
+            "events[0]",
+            events[0],
+            {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
+        )
         events = self.verify_action(
             lambda: do_update_user_status(
-                user_profile=self.user_profile, away=False, status_text="", client_id=client.id
+                user_profile=self.user_profile,
+                away=False,
+                status_text="",
+                emoji_name="",
+                emoji_code="",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+                client_id=client.id,
             )
         )
 
-        check_user_status("events[0]", events[0], {"away", "status_text"})
+        check_user_status(
+            "events[0]",
+            events[0],
+            {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
+        )
 
         events = self.verify_action(
             lambda: do_update_user_status(
-                user_profile=self.user_profile, away=True, status_text=None, client_id=client.id
+                user_profile=self.user_profile,
+                away=True,
+                status_text=None,
+                emoji_name=None,
+                emoji_code=None,
+                reaction_type=None,
+                client_id=client.id,
             )
         )
 
@@ -950,6 +1004,9 @@ class NormalActionsTest(BaseAction):
                 user_profile=self.user_profile,
                 away=None,
                 status_text="at the beach",
+                emoji_name=None,
+                emoji_code=None,
+                reaction_type=None,
                 client_id=client.id,
             )
         )
@@ -991,7 +1048,7 @@ class NormalActionsTest(BaseAction):
 
     def test_default_stream_groups_events(self) -> None:
         streams = []
-        for stream_name in ["Scotland", "Verona", "Denmark"]:
+        for stream_name in ["Scotland", "Rome", "Denmark"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         events = self.verify_action(
@@ -1038,7 +1095,7 @@ class NormalActionsTest(BaseAction):
 
     def test_default_stream_group_events_guest(self) -> None:
         streams = []
-        for stream_name in ["Scotland", "Verona", "Denmark"]:
+        for stream_name in ["Scotland", "Rome", "Denmark"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         do_create_default_stream_group(self.user_profile.realm, "group1", "This is group1", streams)
@@ -1503,7 +1560,9 @@ class NormalActionsTest(BaseAction):
         )
         check_realm_playgrounds("events[0]", events[0])
 
-        last_id = RealmPlayground.objects.last().id
+        last_realm_playground = RealmPlayground.objects.last()
+        assert last_realm_playground is not None
+        last_id = last_realm_playground.id
         realm_playground = access_playground_by_id(self.user_profile.realm, last_id)
         events = self.verify_action(
             lambda: do_remove_realm_playground(self.user_profile.realm, realm_playground)
@@ -1920,8 +1979,10 @@ class NormalActionsTest(BaseAction):
         audit_log_entry = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
+        assert audit_log_entry is not None
+        audit_log_entry_id = audit_log_entry.id
         events = self.verify_action(
-            lambda: self.client_delete(f"/json/export/realm/{audit_log_entry.id}"),
+            lambda: self.client_delete(f"/json/export/realm/{audit_log_entry_id}"),
             state_change_expected=False,
             num_events=1,
         )
@@ -1998,7 +2059,7 @@ class RealmPropertyActionTest(BaseAction):
             create_stream_policy=[4, 3, 2, 1],
             invite_to_stream_policy=[4, 3, 2, 1],
             private_message_policy=[2, 1],
-            user_group_edit_policy=[1, 2],
+            user_group_edit_policy=[1, 2, 3, 4],
             wildcard_mention_policy=[7, 6, 5, 4, 3, 2, 1],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
@@ -2010,8 +2071,9 @@ class RealmPropertyActionTest(BaseAction):
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=[4, 3, 2, 1],
+            invite_to_realm_policy=[6, 4, 3, 2, 1],
             move_messages_between_streams_policy=[4, 3, 2, 1],
+            add_custom_emoji_policy=[4, 3, 2, 1],
         )
 
         vals = test_values.get(name)
@@ -2075,14 +2137,11 @@ class UserDisplayActionTest(BaseAction):
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
             default_view=["all_messages", "recent_topics"],
-            timezone=["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""],
             demote_inactive_streams=[2, 3, 1],
             color_scheme=[2, 3, 1],
         )
 
         num_events = 1
-        if setting_name == "timezone":
-            num_events = 2
         values = test_changes.get(setting_name)
 
         property_type = UserProfile.property_types[setting_name]
@@ -2103,12 +2162,22 @@ class UserDisplayActionTest(BaseAction):
 
             check_update_display_settings("events[0]", events[0])
 
-            if setting_name == "timezone":
-                check_realm_user_update("events[1]", events[1], "timezone")
-
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
             self.do_set_user_display_settings_test(prop)
+
+    def test_set_user_timezone(self) -> None:
+        values = ["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""]
+        num_events = 2
+
+        for value in values:
+            events = self.verify_action(
+                lambda: do_set_user_display_setting(self.user_profile, "timezone", value),
+                num_events=num_events,
+            )
+
+            check_update_display_settings("events[0]", events[0])
+            check_realm_user_update("events[1]", events[1], "timezone")
 
 
 class SubscribeActionTest(BaseAction):

@@ -1,14 +1,29 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import * as common from "./common";
 import {$t} from "./i18n";
 import * as people from "./people";
+import * as rtl from "./rtl";
 import * as user_status from "./user_status";
+
+let full_size_status = false; // true or false
+
+// Some functions to handle the full size status explicitly
+export function set_full_size(is_full) {
+    full_size_status = is_full;
+}
+
+export function is_full_size() {
+    return full_size_status;
+}
 
 export function autosize_textarea(textarea) {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
-    autosize.update(textarea);
+    if (!is_full_size()) {
+        autosize.update(textarea);
+    }
 }
 
 export function smart_insert(textarea, syntax) {
@@ -121,4 +136,134 @@ export function compute_placeholder_text(opts) {
         return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
     }
     return $t({defaultMessage: "Compose your message here"});
+}
+
+export function wrap_text_with_markdown(textarea, prefix, suffix) {
+    const range = textarea.range();
+
+    if (!document.execCommand("insertText", false, prefix + range.text + suffix)) {
+        textarea.range(range.start, range.end).range(prefix + range.text + suffix);
+    }
+}
+
+export function set_compose_box_top(set_top) {
+    if (set_top) {
+        // As `#compose` has `position: fixed` property, we cannot
+        // make the compose-box to attain the correct height just by
+        // using CSS. If that wasn't the case, we could have somehow
+        // refactored the HTML so as to consider only the space below
+        // below the `#navbar_alerts` as `height: 100%` of `#compose`.
+        const compose_top =
+            $("#navbar_alerts_wrapper").height() +
+            $(".header").height() +
+            Number.parseInt($(".header").css("paddingBottom"), 10);
+        $("#compose").css("top", compose_top + "px");
+    } else {
+        $("#compose").css("top", "");
+    }
+}
+
+export function make_compose_box_full_size() {
+    set_full_size(true);
+
+    // The autosize should be destroyed for the full size compose
+    // box else it will interfare and shrink its size accordingly.
+    autosize.destroy($("#compose-textarea"));
+
+    $("#compose").addClass("compose-fullscreen");
+
+    // Set the `top` property of compose-box.
+    set_compose_box_top(true);
+
+    $(".collapse_composebox_button").show();
+    $(".expand_composebox_button").hide();
+    $("#compose-textarea").trigger("focus");
+}
+
+export function make_compose_box_original_size() {
+    set_full_size(false);
+
+    $("#compose").removeClass("compose-fullscreen");
+
+    // Unset the `top` property of compose-box.
+    set_compose_box_top(false);
+
+    // Again initialise the compose textarea as it was destroyed
+    // when compose box was made full screen
+    autosize($("#compose-textarea"));
+
+    $(".collapse_composebox_button").hide();
+    $(".expand_composebox_button").show();
+    $("#compose-textarea").trigger("focus");
+}
+
+export function handle_keydown(event, textarea) {
+    // The event.key property will have uppercase letter if
+    // the "Shift + <key>" combo was used or the Caps Lock
+    // key was on. We turn to key to lowercase so the keybindings
+    // work regardless of whether Caps Lock was on or not.
+    const key = event.key.toLowerCase();
+    const isBold = key === "b";
+    const isItalic = key === "i" && !event.shiftKey;
+    const isLink = key === "l" && event.shiftKey;
+
+    // detect Cmd and Ctrl key
+    const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
+
+    if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
+        const range = textarea.range();
+
+        if (isBold) {
+            // Ctrl + B: Convert selected text to bold text
+            wrap_text_with_markdown(textarea, "**", "**");
+            event.preventDefault();
+
+            if (!range.length) {
+                textarea.caret(textarea.caret() - 2);
+            }
+        }
+
+        if (isItalic) {
+            // Ctrl + I: Convert selected text to italic text
+            wrap_text_with_markdown(textarea, "*", "*");
+            event.preventDefault();
+
+            if (!range.length) {
+                textarea.caret(textarea.caret() - 1);
+            }
+        }
+
+        if (isLink) {
+            // Ctrl + L: Insert a link to selected text
+            wrap_text_with_markdown(textarea, "[", "](url)");
+            event.preventDefault();
+
+            const position = textarea.caret();
+            const txt = textarea[0];
+
+            // Include selected text in between [] parentheses and insert '(url)'
+            // where "url" should be automatically selected.
+            // Position of cursor depends on whether browser supports exec
+            // command or not. So set cursor position accordingly.
+            if (range.length > 0) {
+                if (document.queryCommandEnabled("insertText")) {
+                    txt.selectionStart = position - 4;
+                    txt.selectionEnd = position - 1;
+                } else {
+                    txt.selectionStart = position + range.length + 3;
+                    txt.selectionEnd = position + range.length + 6;
+                }
+            } else {
+                textarea.caret(textarea.caret() - 6);
+            }
+        }
+
+        autosize_textarea(textarea);
+        return;
+    }
+}
+
+export function handle_keyup(event, textarea) {
+    // Set the rtl class if the text has an rtl direction, remove it otherwise
+    rtl.set_rtl_class_for_textarea(textarea);
 }

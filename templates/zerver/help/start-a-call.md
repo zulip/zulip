@@ -28,7 +28,7 @@ supported by zulip are:
 
 * [Jitsi Meet](/integrations/doc/jitsi)
 * [Zoom integration](/integrations/doc/zoom)
-* [Big Blue Button integration](/integrations/doc/big-blue-button)
+* [BigBlueButton integration](/integrations/doc/big-blue-button)
 
 !!! tip ""
     It is also possible to disable the video call button for your organization by

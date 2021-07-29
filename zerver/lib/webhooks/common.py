@@ -1,6 +1,7 @@
+import fnmatch
 import importlib
 from datetime import datetime
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
@@ -9,15 +10,17 @@ from django.utils.translation import gettext as _
 from zerver.lib.actions import (
     check_send_private_message,
     check_send_stream_message,
+    check_send_stream_message_by_id,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.validator import check_list, check_string
 from zerver.models import UserProfile
 
-MISSING_EVENT_HEADER_MESSAGE = """
+MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
 is missing the HTTP {header_name} header.  Because this header is how
 {integration_name} indicates the event type, this usually indicates a configuration
@@ -75,20 +78,46 @@ def check_send_webhook_message(
     user_profile: UserProfile,
     topic: str,
     body: str,
+    complete_event_type: Optional[str] = None,
     stream: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
+    only_events: Optional[List[str]] = REQ(default=None, json_validator=check_list(check_string)),
+    exclude_events: Optional[List[str]] = REQ(
+        default=None, json_validator=check_list(check_string)
+    ),
     unquote_url_parameters: bool = False,
 ) -> None:
+    if complete_event_type is not None:
+        # Here, we implement Zulip's generic support for filtering
+        # events sent by the third-party service.
+        #
+        # If complete_event_type is passed to this function, we will check the event
+        # type against user configured lists of only_events and exclude events.
+        # If the event does not satisfy the configuration, the function will return
+        # without sending any messages.
+        #
+        # We match items in only_events and exclude_events using Unix
+        # shell-style wildcards.
+        if (
+            only_events is not None
+            and all([not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events])
+        ) or (
+            exclude_events is not None
+            and any([fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events])
+        ):
+            return
 
+    client = get_request_notes(request).client
+    assert client is not None
     if stream is None:
         assert user_profile.bot_owner is not None
-        check_send_private_message(user_profile, request.client, user_profile.bot_owner, body)
+        check_send_private_message(user_profile, client, user_profile.bot_owner, body)
     else:
         # Some third-party websites (such as Atlassian's Jira), tend to
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
         # that the URL parameters are decoded on our end.
-        if unquote_url_parameters:
+        if stream is not None and unquote_url_parameters:
             stream = unquote(stream)
 
         if user_specified_topic is not None:
@@ -97,7 +126,10 @@ def check_send_webhook_message(
                 topic = unquote(topic)
 
         try:
-            check_send_stream_message(user_profile, request.client, stream, topic, body)
+            if stream.isdecimal():
+                check_send_stream_message_by_id(user_profile, client, int(stream), topic, body)
+            else:
+                check_send_stream_message(user_profile, client, stream, topic, body)
         except StreamDoesNotExistError:
             # A PM will be sent to the bot_owner by check_message, notifying
             # that the webhook bot just tried to send a message to a non-existent
@@ -132,6 +164,8 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 def validate_extract_webhook_http_header(
     request: HttpRequest, header: str, integration_name: str, fatal: bool = True
 ) -> Optional[str]:
+    assert request.user.is_authenticated
+
     extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
     if extracted_header is None and fatal:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(

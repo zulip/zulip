@@ -37,8 +37,9 @@ set_global("document", "document-stub");
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
+const compose_validate = zrequire("compose_validate");
 const typeahead_helper = zrequire("typeahead_helper");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
@@ -159,11 +160,6 @@ const me_slash = {
 const my_slash = {
     name: "my",
     text: "translated: /my (Test)",
-};
-
-const settings_slash = {
-    name: "settings",
-    text: "translated: /settings (Load settings menu)",
 };
 
 const sweden_stream = {
@@ -305,7 +301,7 @@ function test(label, f) {
         user_groups.add(backend);
         user_groups.add(call_center);
 
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
 
         f({override, mock_template});
     });
@@ -380,7 +376,7 @@ test("content_typeahead_selected", ({override}) => {
     // mention
     fake_this.completing = "mention";
 
-    override(compose, "warn_if_mentioning_unsubscribed_user", () => {});
+    override(compose_validate, "warn_if_mentioning_unsubscribed_user", () => {});
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
@@ -389,7 +385,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     let warned_for_mention = false;
-    override(compose, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
+    override(compose_validate, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
         assert.equal(mentioned, othello);
         warned_for_mention = true;
     });
@@ -421,7 +417,7 @@ test("content_typeahead_selected", ({override}) => {
 
     fake_this.query = "@back";
     fake_this.token = "back";
-    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     });
     expected_value = "@*Backend* ";
@@ -441,7 +437,7 @@ test("content_typeahead_selected", ({override}) => {
 
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     });
 
@@ -468,7 +464,7 @@ test("content_typeahead_selected", ({override}) => {
 
     fake_this.query = "@_back";
     fake_this.token = "back";
-    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     });
     expected_value = "@_*Backend* ";
@@ -489,7 +485,7 @@ test("content_typeahead_selected", ({override}) => {
     // stream
     fake_this.completing = "stream";
     let warned_for_stream_link = false;
-    override(compose, "warn_if_private_stream_is_linked", (linked_stream) => {
+    override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
         assert.equal(linked_stream, sweden_stream);
         warned_for_stream_link = true;
     });
@@ -1101,15 +1097,14 @@ test("initialize", ({override, mock_template}) => {
 
     // select_on_focus()
 
-    $("#compose-send-button").fadeOut = noop;
-    $("#compose-send-button").fadeIn = noop;
-    let channel_post_called = false;
-    override(channel, "post", (params) => {
-        assert.equal(params.url, "/json/users/me/enter-sends");
+    override(compose, "toggle_enter_sends_ui", noop);
+    let channel_patch_called = false;
+    override(channel, "patch", (params) => {
+        assert.equal(params.url, "/json/settings");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});
 
-        channel_post_called = true;
+        channel_patch_called = true;
     });
     $("#enter_sends").is = () => false;
     $("#enter_sends").trigger("click");
@@ -1133,7 +1128,7 @@ test("initialize", ({override, mock_template}) => {
     assert.ok(stream_typeahead_called);
     assert.ok(subject_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
-    assert.ok(channel_post_called);
+    assert.ok(channel_patch_called);
     assert.ok(compose_textarea_typeahead_called);
 });
 
@@ -1197,18 +1192,22 @@ test("begins_typeahead", ({override}) => {
     assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
 
-    assert_typeahead_equals("@", false);
-    assert_typeahead_equals("@_", false);
-    assert_typeahead_equals(" @", false);
-    assert_typeahead_equals(" @_", false);
+    assert_typeahead_equals("@", all_mentions);
+    assert_typeahead_equals("@_", people_only);
+    assert_typeahead_equals(" @", all_mentions);
+    assert_typeahead_equals(" @_", people_only);
+    assert_typeahead_equals("@*", all_mentions);
+    assert_typeahead_equals("@_*", people_only);
+    assert_typeahead_equals("@**", all_mentions);
+    assert_typeahead_equals("@_**", people_only);
     assert_typeahead_equals("test @**o", all_mentions);
     assert_typeahead_equals("test @_**o", people_only);
     assert_typeahead_equals("test @*o", all_mentions);
     assert_typeahead_equals("test @_*k", people_only);
     assert_typeahead_equals("test @*h", all_mentions);
     assert_typeahead_equals("test @_*h", people_only);
-    assert_typeahead_equals("test @", false);
-    assert_typeahead_equals("test @_", false);
+    assert_typeahead_equals("test @", all_mentions);
+    assert_typeahead_equals("test @_", people_only);
     assert_typeahead_equals("test no@o", false);
     assert_typeahead_equals("test no@_k", false);
     assert_typeahead_equals("@ ", false);
@@ -1518,7 +1517,6 @@ test("typeahead_results", () => {
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
-    assert_slash_matches("settings", [settings_slash]);
 
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches("den", [denmark_stream, sweden_stream]);
@@ -1589,7 +1587,7 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [cordelia]);
 
     // Mute Cordelia, and test that she's excluded from results.
-    muting.add_muted_user(cordelia.user_id);
+    muted_users.add_muted_user(cordelia.user_id);
     results = ct.get_person_suggestions("corde", opts);
     assert.deepEqual(results, []);
 

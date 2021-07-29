@@ -31,7 +31,7 @@
                 </button>
             </span>
             {{/unless}}
-            <span class="new_message_button hide only-visible-for-spectators">
+            <span class="new_message_button only-visible-for-spectators">
                 <a class="no-underline button small rounded float-left" href="/login">
                     {{t 'Log in to send messages' }}
                 </a>
@@ -55,7 +55,11 @@
         <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
         <div id="out-of-view-notification" class="notification-alert"></div>
         <div class="composition-area">
-            <button type="button" class="close" id='compose_close' title="{{t 'Cancel compose' }} (Esc)">&times;</button>
+            <div id="compose_top_right">
+                <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 title="{{t 'Expand compose' }}"></button>
+                <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" tabindex=0 title="{{t 'Collapse compose' }}"></button>
+                <button type="button" class="close" id='compose_close' title="{{t 'Cancel compose' }} (Esc)">&times;</button>
+            </div>
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
                 <div class="compose_table">
@@ -82,16 +86,16 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div class="messagebox-wrapper">
                         <div class="messagebox">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" maxlength="10000" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
                             <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
                                 <div class="markdown_preview_spinner"></div>
                                 <div class="preview_content rendered_markdown"></div>
                             </div>
                             <div class="drag"></div>
                             <div id="below-compose-content">
-                                <button type="submit" id="compose-send-button" class="button small send_message" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
+                                <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
                                 {{> compose_control_buttons }}
                                 <span id="sending-indicator"></span>
                                 <div id="send_controls" class="new-style">
@@ -100,6 +104,7 @@
                                         <span></span>{{t 'Press Enter to send' }}
                                     </label>
                                 </div>
+                                <span id="compose_limit_indicator"></span>
                             </div>
                         </div>
                     </div>

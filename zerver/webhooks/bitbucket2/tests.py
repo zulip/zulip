@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -12,7 +13,7 @@ TOPIC_BRANCH_EVENTS = "Repository name / master"
 class Bitbucket2HookTests(WebhookTestCase):
     STREAM_NAME = "bitbucket2"
     URL_TEMPLATE = "/api/v1/external/bitbucket2?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "bitbucket2"
+    WEBHOOK_DIR_NAME = "bitbucket2"
 
     def test_bitbucket2_on_push_event(self) -> None:
         commit_info = "* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"
@@ -116,7 +117,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_created_event(self) -> None:
         expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:created",
         }
         self.check_webhook(
@@ -125,7 +126,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_created_without_reviewer_username_event(self) -> None:
         expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:created",
         }
         self.check_webhook(
@@ -139,7 +140,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "Tomasz created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:created",
         }
         self.check_webhook(
@@ -148,7 +149,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_updated_event(self) -> None:
         expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:updated",
         }
         self.check_webhook(
@@ -157,7 +158,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_approved_event(self) -> None:
         expected_message = "Tomasz approved [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:approved",
         }
         self.check_webhook(
@@ -168,7 +169,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "Tomasz approved [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:approved",
         }
         self.check_webhook(
@@ -177,7 +178,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_unapproved_event(self) -> None:
         expected_message = "Tomasz unapproved [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:unapproved",
         }
         self.check_webhook(
@@ -186,7 +187,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_declined_event(self) -> None:
         expected_message = "Tomasz rejected [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:rejected",
         }
         self.check_webhook(
@@ -197,7 +198,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_message = (
             "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
         )
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:fulfilled",
         }
         self.check_webhook(
@@ -206,7 +207,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_created_event(self) -> None:
         expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:comment_created",
         }
         self.check_webhook(
@@ -217,7 +218,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:comment_created",
         }
         self.check_webhook(
@@ -226,7 +227,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_updated_event(self) -> None:
         expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:comment_updated",
         }
         self.check_webhook(
@@ -237,7 +238,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "Tomasz updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:comment_updated",
         }
         self.check_webhook(
@@ -246,7 +247,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_deleted_event(self) -> None:
         expected_message = "Tomasz deleted a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3):\n\n~~~ quote\nComment1\n~~~"
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:comment_deleted",
         }
         self.check_webhook(
@@ -256,14 +257,14 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_repo_updated_event(self) -> None:
         expected_message = "eeshangarg changed the website of the **new-name** repo to **http://zulipchat.com**.\neeshangarg changed the name of the **new-name** repo from **test-repo** to **new-name**.\neeshangarg changed the language of the **new-name** repo to **python**.\neeshangarg changed the full name of the **new-name** repo from **webhooktest/test-repo** to **webhooktest/new-name**.\neeshangarg changed the description of the **new-name** repo to **Random description.**"
         expected_topic = "new-name"
-        kwargs = {"HTTP_X_EVENT_KEY": "repo:updated"}
+        kwargs: Dict[str, Any] = {"HTTP_X_EVENT_KEY": "repo:updated"}
         self.check_webhook("repo_updated", expected_topic, expected_message, **kwargs)
 
     def test_bitbucket2_on_push_one_tag_event(self) -> None:
         expected_message = (
             "Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
         )
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:push",
         }
         self.check_webhook("push_one_tag", TOPIC, expected_message, **kwargs)
@@ -272,14 +273,14 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_message = (
             "Tomasz removed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)."
         )
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:push",
         }
         self.check_webhook("push_remove_tag", TOPIC, expected_message, **kwargs)
 
     def test_bitbucket2_on_push_more_than_one_tag_event(self) -> None:
         expected_message = "Tomasz pushed tag [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name})."
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:push",
         }
 
@@ -311,7 +312,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_more_than_one_push_event(self) -> None:
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:push",
         }
 
@@ -344,7 +345,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches="master,development")
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:push",
         }
 
@@ -377,7 +378,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches_ignore(self) -> None:
         self.url = self.build_webhook_url(branches="changes,development")
-        kwargs = {
+        kwargs: Dict[str, Any] = {
             "HTTP_X_EVENT_KEY": "pullrequest:push",
         }
         expected_message = (

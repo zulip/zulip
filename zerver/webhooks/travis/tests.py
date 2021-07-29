@@ -6,8 +6,13 @@ from zerver.lib.test_classes import WebhookTestCase
 class TravisHookTests(WebhookTestCase):
     STREAM_NAME = "travis"
     URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "travis"
+    WEBHOOK_DIR_NAME = "travis"
     TOPIC = "builds"
+    EXPECTED_MESSAGE = """
+Author: josh_mandel
+Build status: Passed :thumbs_up:
+Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
+""".strip()
 
     def test_travis_message(self) -> None:
         """
@@ -16,46 +21,130 @@ class TravisHookTests(WebhookTestCase):
         The subject describes the repo and Stash "project". The
         content describes the commits pushed.
         """
-        expected_message = (
-            "Author: josh_mandel\nBuild status: Passed :thumbs_up:\n"
-            "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
-            "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
-            "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"
+
+        self.check_webhook(
+            "build",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_ignore_travis_pull_request_by_default(self) -> None:
+        self.check_webhook(
+            "pull_request", content_type="application/x-www-form-urlencoded", expect_noop=True
+        )
+
+    def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
+        self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
+
+        self.check_webhook(
+            "pull_request",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_only_push_event(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["push"]'
+
+        self.check_webhook(
+            "build",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_only_push_event_not_sent(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["push"]&ignore_pull_requests=false'
+
+        self.check_webhook(
+            "pull_request",
+            content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
+        )
+
+    def test_travis_exclude_push_event(self) -> None:
+        self.url = f'{self.build_webhook_url()}&exclude_events=["push"]'
+
+        self.check_webhook(
+            "build",
+            content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
+        )
+
+    def test_travis_exlude_push_event_sent(self) -> None:
+        self.url = f'{self.build_webhook_url()}&exclude_events=["push"]&ignore_pull_requests=false'
+
+        self.check_webhook(
+            "pull_request",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_include_glob_events(self) -> None:
+        self.url = f'{self.build_webhook_url()}&include_events=["*"]&ignore_pull_requests=false'
+
+        self.check_webhook(
+            "pull_request",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
             "build",
             self.TOPIC,
-            expected_message,
+            self.EXPECTED_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_ignore_travis_pull_request_by_default(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(
-            self.url,
-            self.get_body("pull_request"),
-            content_type="application/x-www-form-urlencoded",
-        )
-        self.assert_json_success(result)
-        msg = self.get_last_message()
-        self.assertNotEqual(msg.topic_name(), self.TOPIC)
-
-    def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
-        self.url = f"{self.build_webhook_url()}&ignore_pull_requests=false"
-        expected_message = (
-            "Author: josh_mandel\nBuild status: Passed :thumbs_up:\n"
-            "Details: [changes](https://github.com/hl7-fhir/fhir-sv"
-            "n/compare/6dccb98bcfd9...6c457d366a31), [build log](ht"
-            "tps://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)"
-        )
+    def test_travis_exclude_glob_events(self) -> None:
+        self.url = f'{self.build_webhook_url()}&exclude_events=["*"]&ignore_pull_requests=false'
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC,
-            expected_message,
             content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
         )
+
+        self.check_webhook(
+            "build",
+            content_type="application/x-www-form-urlencoded",
+            expect_noop=True,
+        )
+
+    def test_travis_invalid_event(self) -> None:
+        payload = self.get_body("build")
+        payload = payload.replace("push", "invalid_event")
+        expected_error_messsage = """
+Error: This test triggered a message using the event "invalid_event", which was not properly
+registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
+self-documenting the supported event types for this integration.
+
+You can fix this by adding "invalid_event" to ALL_EVENT_TYPES for this webhook.
+""".strip()
+        with self.assertLogs("django.request"):
+            with self.assertLogs("zerver.middleware.json_error_handler", level="ERROR") as m:
+                self.client_post(
+                    self.url,
+                    payload,
+                    content_type="application/x-www-form-urlencoded",
+                )
+            self.assertIn(expected_error_messsage, m.output[0])
+
+    def test_travis_noop(self) -> None:
+        expected_error_message = """
+While no message is expected given expect_noop=True,
+your test code triggered an endpoint that did write
+one or more new messages.
+        """.strip()
+
+        with self.assertRaises(Exception) as exc:
+            self.check_webhook(
+                "build", content_type="application/x-www-form-urlencoded", expect_noop=True
+            )
+        self.assertEqual(str(exc.exception), expected_error_message)
 
     def get_body(self, fixture_name: str) -> str:
         return urllib.parse.urlencode(

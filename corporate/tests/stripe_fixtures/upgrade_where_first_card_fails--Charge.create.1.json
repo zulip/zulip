@@ -1,6 +1,19 @@
 {
   "_message": "Your card was declined.",
   "code": "card_declined",
+  "error": {
+    "charge": "ch_NORMALIZED00000000000001",
+    "code": "card_declined",
+    "decline_code": "generic_decline",
+    "doc_url": "https://stripe.com/docs/error-codes/card-declined",
+    "message": "Your card was declined.",
+    "param": null,
+    "payment_intent": null,
+    "payment_method": null,
+    "setup_intent": null,
+    "source": null,
+    "type": "card_error"
+  },
   "headers": {
     "Connection": "keep-alive",
     "Content-Length": "269",
@@ -17,7 +30,9 @@
     "idempotency-key": "00000000-0000-0000-0000-000000000000",
     "original-request": "req_NORMALIZED0001",
     "request-id": "req_NORMALIZED0001",
-    "stripe-version": "2019-03-14"
+    "stripe-should-retry": "false",
+    "stripe-version": "2020-08-27",
+    "x-stripe-c-cost": "6"
   },
   "http_body": "{\n  \"error\": {\n    \"charge\": \"ch_NORMALIZED00000000000001\",\n    \"code\": \"card_declined\",\n    \"decline_code\": \"generic_decline\",\n    \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\",\n    \"message\": \"Your card was declined.\",\n    \"type\": \"card_error\"\n  }\n}\n",
   "http_status": 402,

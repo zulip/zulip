@@ -6,8 +6,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_realm_playground, do_remove_realm_playground
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError, ValidationFailureError
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.validator import check_capped_string, check_url
 from zerver.models import Realm, RealmPlayground, UserProfile
 
@@ -50,7 +51,7 @@ def add_realm_playground(
             url_prefix=url_prefix.strip(),
         )
     except ValidationError as e:
-        return json_error(e.messages[0], data={"errors": dict(e)})
+        raise ValidationFailureError(e)
     return json_success({"id": playground_id})
 
 

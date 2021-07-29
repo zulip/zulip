@@ -16,7 +16,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
-from zerver.lib.users import compute_show_invites_and_add_streams
+from zerver.lib.request import get_request_notes
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
 
@@ -139,9 +139,11 @@ def build_page_params_for_home_page_load(
     }
 
     if user_profile is not None:
+        client = get_request_notes(request).client
+        assert client is not None
         register_ret = do_events_register(
             user_profile,
-            request.client,
+            client,
             apply_markdown=True,
             client_gravatar=True,
             slim_presence=True,
@@ -179,7 +181,6 @@ def build_page_params_for_home_page_load(
 
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
     billing_info = get_billing_info(user_profile)
-    show_invites, _ = compute_show_invites_and_add_streams(user_profile)
     user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
@@ -189,7 +190,6 @@ def build_page_params_for_home_page_load(
         test_suite=settings.TEST_SUITE,
         insecure_desktop_app=insecure_desktop_app,
         login_page=settings.HOME_NOT_LOGGED_IN,
-        save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email=settings.WARN_NO_EMAIL,
         search_pills_enabled=settings.SEARCH_PILLS_ENABLED,
         # Only show marketing email settings if on Zulip Cloud
@@ -206,7 +206,6 @@ def build_page_params_for_home_page_load(
         show_billing=billing_info.show_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
         show_plans=billing_info.show_plans,
-        show_invites=show_invites,
         show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.

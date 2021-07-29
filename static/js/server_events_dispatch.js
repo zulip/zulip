@@ -20,7 +20,8 @@ import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics_ui from "./muted_topics_ui";
+import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as night_mode from "./night_mode";
@@ -54,10 +55,10 @@ import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
-import * as subs from "./subs";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as user_events from "./user_events";
@@ -134,11 +135,11 @@ export function dispatch_normal_event(event) {
             break;
 
         case "muted_topics":
-            muting_ui.handle_topic_updates(event.muted_topics);
+            muted_topics_ui.handle_topic_updates(event.muted_topics);
             break;
 
         case "muted_users":
-            muting_ui.handle_user_updates(event.muted_users);
+            muted_users_ui.handle_user_updates(event.muted_users);
             break;
 
         case "presence":
@@ -175,7 +176,7 @@ export function dispatch_normal_event(event) {
 
         case "realm": {
             const realm_settings = {
-                add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
+                add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
                 allow_edit_history: noop,
                 allow_message_deleting: noop,
                 allow_message_editing: noop,
@@ -262,12 +263,12 @@ export function dispatch_normal_event(event) {
                         case "logo":
                             page_params.realm_logo_url = event.data.logo_url;
                             page_params.realm_logo_source = event.data.logo_source;
-                            realm_logo.rerender();
+                            realm_logo.render();
                             break;
                         case "night_logo":
                             page_params.realm_night_logo_url = event.data.night_logo_url;
                             page_params.realm_night_logo_source = event.data.night_logo_source;
-                            realm_logo.rerender();
+                            realm_logo.render();
                             break;
                         default:
                             blueslip.error(
@@ -299,13 +300,13 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.eventually_render_bots();
+                    settings_bots.render_bots();
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "remove":
                     bot_data.deactivate(event.bot.user_id);
                     event.bot.is_active = false;
-                    settings_bots.eventually_render_bots();
+                    settings_bots.render_bots();
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "delete":
@@ -313,7 +314,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    settings_bots.eventually_render_bots();
+                    settings_bots.render_bots();
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 default:
@@ -398,7 +399,7 @@ export function dispatch_normal_event(event) {
         case "stream":
             switch (event.op) {
                 case "update":
-                    // Legacy: Stream properties are still managed by subs.js on the client side.
+                    // Legacy: Stream properties are still managed by stream_settings_ui.js on the client side.
                     stream_events.update_property(event.stream_id, event.property, event.value, {
                         rendered_description: event.rendered_description,
                         history_public_to_subscribers: event.history_public_to_subscribers,
@@ -411,7 +412,7 @@ export function dispatch_normal_event(event) {
                     for (const stream of event.streams) {
                         const sub = sub_store.get(stream.stream_id);
                         if (overlays.streams_open()) {
-                            subs.add_sub_to_table(sub);
+                            stream_settings_ui.add_sub_to_table(sub);
                         }
                     }
                     break;
@@ -421,7 +422,7 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        subs.remove_stream(stream.stream_id);
+                        stream_settings_ui.remove_stream(stream.stream_id);
                         stream_data.delete_sub(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
@@ -485,7 +486,7 @@ export function dispatch_normal_event(event) {
 
                     for (const stream_id of stream_ids) {
                         const sub = sub_store.get(stream_id);
-                        subs.update_subscribers_ui(sub);
+                        stream_settings_ui.update_subscribers_ui(sub);
                     }
 
                     compose_fade.update_faded_users();
@@ -499,7 +500,7 @@ export function dispatch_normal_event(event) {
 
                     for (const stream_id of stream_ids) {
                         const sub = sub_store.get(stream_id);
-                        subs.update_subscribers_ui(sub);
+                        stream_settings_ui.update_subscribers_ui(sub);
                     }
 
                     compose_fade.update_faded_users();
@@ -589,13 +590,13 @@ export function dispatch_normal_event(event) {
                 setTimeout(() => {
                     if (event.setting === settings_config.color_scheme_values.night.code) {
                         night_mode.enable();
-                        realm_logo.rerender();
+                        realm_logo.render();
                     } else if (event.setting === settings_config.color_scheme_values.day.code) {
                         night_mode.disable();
-                        realm_logo.rerender();
+                        realm_logo.render();
                     } else {
                         night_mode.default_preference_checker();
-                        realm_logo.rerender();
+                        realm_logo.render();
                     }
                     $("body").fadeIn(300);
                 }, 300);
@@ -625,6 +626,14 @@ export function dispatch_normal_event(event) {
                 if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
+                // Rerender buddy list status emoji
+                activity.build_user_sidebar();
+            }
+            if (event.setting_name === "enter_sends") {
+                page_params.enter_sends = event.setting;
+                $("#enter_sends").prop("checked", page_params.enter_sends);
+                compose.toggle_enter_sends_ui();
+                break;
             }
             settings_display.update_page();
             break;
@@ -701,6 +710,11 @@ export function dispatch_normal_event(event) {
                     user_id: event.user_id,
                     status_text: event.status_text,
                 });
+                activity.redraw_user(event.user_id);
+            }
+
+            if (event.emoji_name !== undefined) {
+                user_status.set_status_emoji(event);
                 activity.redraw_user(event.user_id);
             }
             break;

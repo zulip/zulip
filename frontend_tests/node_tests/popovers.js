@@ -39,6 +39,7 @@ mock_esm("../../static/js/stream_popover", {
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
+const emoji = zrequire("../shared/js/emoji");
 
 // Bypass some scary code that runs when we import the module.
 const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
@@ -100,7 +101,9 @@ function test_ui(label, f) {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
-        override(popovers, "clipboard_enable", noop);
+        override(popovers, "clipboard_enable", () => ({
+            on: noop,
+        }));
         popovers.clear_for_testing();
         popovers.register_click_handlers();
         f({override, mock_template});
@@ -109,6 +112,7 @@ function test_ui(label, f) {
 
 test_ui("sender_hover", ({override, mock_template}) => {
     override($.fn, "popover", noop);
+    override(emoji, "get_emoji_details_by_name", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
     const handler = $("#main_div").get_on_handler("click", selection);
@@ -122,6 +126,14 @@ test_ui("sender_hover", ({override, mock_template}) => {
         user_id: alice.user_id,
         status_text: "on the beach",
     });
+
+    const status_emoji_info = {
+        emoji_name: "car",
+        emoji_code: "1f697",
+        reaction_type: "unicode_emoji",
+        emoji_alt_code: false,
+    };
+    user_status.set_status_emoji({user_id: alice.user_id, ...status_emoji_info});
 
     rows.id = () => message.id;
 
@@ -180,7 +192,9 @@ test_ui("sender_hover", ({override, mock_template}) => {
             is_bot: undefined,
             is_sender_popover: true,
             has_message_context: true,
+            status_content_available: true,
             status_text: "on the beach",
+            status_emoji_info,
             user_mention_syntax: "@**Alice Smith**",
         });
         return "content-html";

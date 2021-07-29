@@ -8,8 +8,15 @@ from django.views.decorators.csrf import csrf_exempt
 
 from zerver.context_processors import get_realm_from_request
 from zerver.decorator import do_login, require_post
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import (
+    AuthenticationFailedError,
+    InvalidSubdomainError,
+    JsonableError,
+    RealmDeactivatedError,
+    UserDeactivatedError,
+)
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
@@ -103,23 +110,22 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
     validate_login_email(username)
     realm = get_realm_from_request(request)
     if realm is None:
-        return json_error(_("Invalid subdomain"))
+        raise InvalidSubdomainError()
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
     if return_data.get("inactive_realm"):
-        return json_error(
-            _("This organization has been deactivated."),
-            data={"reason": "realm deactivated"},
-            status=403,
-        )
+        raise RealmDeactivatedError()
     if return_data.get("inactive_user"):
-        return json_error(
-            _("Your account has been disabled."), data={"reason": "user disable"}, status=403
-        )
+        raise UserDeactivatedError()
+    if return_data.get("invalid_subdomain"):
+        raise InvalidSubdomainError()
     if user_profile is None:
-        return json_error(
-            _("This user is not registered."), data={"reason": "unregistered"}, status=403
-        )
+        # Since we're not actually checking passwords, this condition
+        # is when one's attempting to send an email address that
+        # doesn't have an account, i.e. it's definitely invalid username.
+        raise AuthenticationFailedError()
+    assert user_profile is not None
+
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

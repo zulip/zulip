@@ -33,7 +33,7 @@ from analytics.models import (
     installation_epoch,
 )
 from zerver.lib.actions import (
-    do_activate_user,
+    do_activate_mirror_dummy_user,
     do_create_realm,
     do_create_user,
     do_deactivate_user,
@@ -51,6 +51,7 @@ from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Client,
     Huddle,
@@ -220,7 +221,7 @@ class AnalyticsTestCase(ZulipTestCase):
                     else:
                         kwargs["realm"] = self.default_realm
             self.assertEqual(table.objects.filter(**kwargs).count(), 1)
-        self.assertEqual(table.objects.count(), len(arg_values))
+        self.assert_length(arg_values, table.objects.count())
 
 
 class TestProcessCountStat(AnalyticsTestCase):
@@ -240,6 +241,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self, stat: CountStat, end_time: datetime, state: int = FillState.DONE
     ) -> None:
         fill_state = FillState.objects.filter(property=stat.property).first()
+        assert fill_state is not None
         self.assertEqual(fill_state.end_time, end_time)
         self.assertEqual(fill_state.state, state)
 
@@ -1329,7 +1331,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 "value__sum"
             ],
         )
-        do_activate_user(user, acting_user=None)
+        do_activate_mirror_dummy_user(user, acting_user=None)
         self.assertEqual(
             1,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
@@ -1387,11 +1389,13 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
-        do_revoke_user_invite(PreregistrationUser.objects.filter(realm=user.realm).first())
+        do_revoke_user_invite(
+            assert_is_not_none(PreregistrationUser.objects.filter(realm=user.realm).first())
+        )
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        do_resend_user_invite_email(PreregistrationUser.objects.first())
+        do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:
@@ -1422,7 +1426,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         self.send_stream_message(user1, stream.name)
         self.send_stream_message(user1, stream.name)
-        do_mark_stream_messages_as_read(user2, stream.recipient_id)
+        do_mark_stream_messages_as_read(user2, assert_is_not_none(stream.recipient_id))
         self.assertEqual(
             3,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[
@@ -1663,7 +1667,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
             "email4", "password", self.default_realm, "full_name", acting_user=None
         )
         do_deactivate_user(user2, acting_user=None)
-        do_activate_user(user3, acting_user=None)
+        do_activate_mirror_dummy_user(user3, acting_user=None)
         do_reactivate_user(user4, acting_user=None)
         end_time = floor_to_day(timezone_now()) + self.DAY
         do_fill_count_stat_at_hour(self.stat, end_time)

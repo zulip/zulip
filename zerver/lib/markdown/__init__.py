@@ -323,8 +323,7 @@ def walk_tree(
     while queue:
         currElement = queue.popleft()
         for child in currElement:
-            if child:
-                queue.append(child)
+            queue.append(child)
 
             result = processor(child)
             if result is not None:
@@ -374,8 +373,7 @@ def walk_tree_with_family(
     while queue:
         currElementPair = queue.popleft()
         for child in currElementPair.value:
-            if child:
-                queue.append(ElementPair(parent=currElementPair, value=child))
+            queue.append(ElementPair(parent=currElementPair, value=child))
             result = processor(child)
             if result is not None:
                 if currElementPair.parent is not None:
@@ -606,6 +604,10 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
         return ret
 
 
+# List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", "jpeg", ".jpg", ".png", ".webp"]
+
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
@@ -759,8 +761,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if parsed_url.netloc == "pasteboard.co":
             return False
 
-        # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
-        for ext in [".bmp", ".gif", ".jpe", "jpeg", ".jpg", ".png", ".webp"]:
+        for ext in IMAGE_EXTENSIONS:
             if parsed_url.path.lower().endswith(ext):
                 return True
         return False
@@ -1743,12 +1744,13 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             m = FENCE_RE.match(lines[i])
             if m:
                 fence_str = m.group("fence")
-                is_code = not m.group("lang") in ("quote", "quoted")
+                lang: Optional[str] = m.group("lang")
+                is_code = lang not in ("quote", "quoted")
                 has_open_fences = not len(open_fences) == 0
                 matches_last_fence = (
                     fence_str == open_fences[-1].fence_str if has_open_fences else False
                 )
-                closes_last_fence = not m.group("lang") and matches_last_fence
+                closes_last_fence = not lang and matches_last_fence
 
                 if closes_last_fence:
                     open_fences.pop()

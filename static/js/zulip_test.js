@@ -5,7 +5,7 @@
 export {
     set_wildcard_mention_large_stream_threshold,
     wildcard_mention_large_stream_threshold,
-} from "./compose";
+} from "./compose_validate";
 export {private_message_recipient} from "./compose_state";
 export {current as current_msg_list} from "./message_lists";
 export {get_stream_id, get_sub, get_subscriber_count} from "./stream_data";
@@ -14,4 +14,3 @@ export {last_visible as last_visible_row, id as row_id} from "./rows";
 export {cancel as cancel_compose} from "./compose_actions";
 export {page_params, page_params_parse_time} from "./page_params";
 export {initiate as initiate_reload} from "./reload";
-export {last_stacktrace} from "./blueslip";

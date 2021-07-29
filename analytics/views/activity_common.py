@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import pytz
 from django.conf import settings
-from django.db import connection
+from django.db.backends.utils import CursorWrapper
 from django.db.models.query import QuerySet
 from django.template import loader
 from django.urls import reverse
-from jinja2 import Markup as mark_safe
+from jinja2.utils import Markup as mark_safe
 
 eastern_tz = pytz.timezone("US/Eastern")
 
@@ -39,7 +39,7 @@ def make_table(
     return content
 
 
-def dictfetchall(cursor: connection.cursor) -> List[Dict[str, Any]]:
+def dictfetchall(cursor: CursorWrapper) -> List[Dict[str, Any]]:
     "Returns all rows from a cursor as a dict"
     desc = cursor.description
     return [dict(zip((col[0] for col in desc), row)) for row in cursor.fetchall()]
@@ -110,7 +110,7 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
 
     for record in records:
         client = record.client.name
-        query = record.query
+        query = str(record.query)
 
         update("use", record)
 

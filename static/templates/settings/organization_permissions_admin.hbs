@@ -8,9 +8,11 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}</label>
+                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change this setting.' }}"></i>
+                    </label>
                     <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
+                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
                     </select>
                     {{> settings_checkbox
                       setting_name="realm_invite_required"
@@ -205,15 +207,14 @@
                 <div class="input-group">
                     <label for="realm_user_group_edit_policy" class="dropdown-title">{{t "Who can create and manage user groups" }}</label>
                     <select name="realm_user_group_edit_policy" id="id_realm_user_group_edit_policy" class="prop-element" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=user_group_edit_policy_values}}
+                        {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>
 
                 <div class="input-group">
-                    <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
-                    <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only" class="prop-element">
-                        <option value="by_admins_only">{{t "Admins" }}</option>
-                        <option value="by_anyone">{{t "Admins and members" }}</option>
+                    <label for="realm_add_custom_emoji_policy" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
+                    <select name="realm_add_cutsom_emoji_policy" class="setting-widget prop-element" id="id_realm_add_custom_emoji_policy" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>
 

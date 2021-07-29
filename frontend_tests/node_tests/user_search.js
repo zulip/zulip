@@ -34,7 +34,7 @@ set_global("document", _document);
 
 const activity = zrequire("activity");
 const buddy_data = zrequire("buddy_data");
-const muting = zrequire("muting");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 
 const me = {
@@ -70,7 +70,7 @@ function test(label, f) {
         people.add_active_user(jill);
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
-        muting.set_muted_users([]);
+        muted_users.set_muted_users([]);
         activity.set_cursor_and_filter();
         f({override});
     });
@@ -175,10 +175,10 @@ test("filter_user_ids", ({override}) => {
 
     // Test no match for muted users even with filter text.
     test_filter("ji", [jill]);
-    muting.add_muted_user(jill.user_id);
+    muted_users.add_muted_user(jill.user_id);
     test_filter("ji", []);
 
-    muting.remove_muted_user(jill.user_id);
+    muted_users.remove_muted_user(jill.user_id);
 
     test_filter("abc", []); // no match
     test_filter("fred", [fred]);

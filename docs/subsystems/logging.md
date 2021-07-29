@@ -32,9 +32,8 @@ infrastructure needed by our error reporting system:
 * A nice framework for filtering passwords and other important user
   data from the exception details, which we use in
   `zerver/filters.py`.
-* Middleware for handling `JsonableError`, our system for allowing
-  code anywhere in Django to report an API-facing `json_error` from
-  anywhere in a view code path.
+* Middleware for handling `JsonableError`, which is our standard
+  system for API code to return a JSON-format HTTP error response.
 
 Since 500 errors in any Zulip server are usually a problem the server
 administrator should investigate and/or report upstream, we have this

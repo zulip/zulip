@@ -13,7 +13,7 @@ from django.views.generic import TemplateView
 from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, WebhookIntegration
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.templates import render_markdown_path
 from zerver.models import Realm
@@ -92,9 +92,8 @@ class MarkdownDirectoryView(ApiURLView):
         article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
 
         if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
-            endpoint_path = article.replace("-", "_")
             try:
-                endpoint_name, endpoint_method = get_endpoint_from_operationid(endpoint_path)
+                endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
                 path = "/zerver/api/api-doc-template.md"
             except AssertionError:
                 return DocumentationArticle(
@@ -131,12 +130,14 @@ class MarkdownDirectoryView(ApiURLView):
         if self.path_template == "/zerver/help/%s.md":
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
+            context["doc_root_title"] = "Help center"
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
+            context["doc_root_title"] = "API documentation"
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
@@ -153,9 +154,11 @@ class MarkdownDirectoryView(ApiURLView):
                     documentation_article.endpoint_path,
                     documentation_article.endpoint_method,
                 )
+                assert endpoint_name is not None
+                assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             elif self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
-                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1].replace("-", "_")
+                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             else:
@@ -165,10 +168,11 @@ class MarkdownDirectoryView(ApiURLView):
                 context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
             else:
                 context["OPEN_GRAPH_TITLE"] = title_base
-            self.request.placeholder_open_graph_description = (
+            request_notes = get_request_notes(self.request)
+            request_notes.placeholder_open_graph_description = (
                 f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
             )
-            context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
+            context["OPEN_GRAPH_DESCRIPTION"] = request_notes.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
         # An "article" might require the api_uri_context to be rendered

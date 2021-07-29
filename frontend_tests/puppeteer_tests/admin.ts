@@ -33,7 +33,7 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
 
     await page.type(
         "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-        "verona",
+        "rome",
     );
 
     const verona_in_dropdown = await page.waitForXPath(

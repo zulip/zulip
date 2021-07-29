@@ -1,0 +1,131 @@
+<div class="history-limited-box">
+    <p>
+        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+        {% trans %}
+        Some older messages are unavailable.
+        <a href="/plans/" target="_blank" rel="noopener noreferrer">Upgrade your organization</a>
+        to access your full message history.
+        {% endtrans %}
+    </p>
+</div>
+<div class="all-messages-search-caution" hidden>
+    <p>
+        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+        {% trans %}
+        End of results from your
+        <a href="/help/search-for-messages#searching-shared-history"
+          target="_blank" rel="noopener noreferrer">history</a>.
+        Consider <a class="search-shared-history" href="">searching all public streams</a>.
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_narrow_message" class="empty_feed_notice">
+    <h4>{{ _("Nothing's been sent here yet!") }}</h4>
+
+    <p>
+        {% trans %}
+        Why not <a href="#" class="empty_feed_compose_stream">
+        start the conversation</a>?
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_narrow_all_private_message" class="empty_feed_notice">
+    <h4>{{ _('You have no private messages yet!') }}</h4>
+
+    <p>
+        {% trans %}
+        Why not <a href="#" class="empty_feed_compose_private">
+        start the conversation</a>?
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_narrow_private_message" class="empty_feed_notice">
+    <h4>{{ _('You have no private messages with this person yet!') }}</h4>
+
+    <p>
+        {% trans %}
+        Why not <a href="#" class="empty_feed_compose_private">
+        start the conversation</a>?
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_narrow_self_private_message" class="empty_feed_notice">
+    <h4>{{ _('You have not sent any private messages to yourself yet!') }}</h4>
+
+    <p>
+        {% trans %}
+        Why not <a href="#" class="empty_feed_compose_private">
+        start a conversation with yourself</a>?
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_narrow_group_private_message" class="empty_feed_notice">
+    <h4>{{ _('You have no group private messages with this person yet!') }}</h4>
+
+    <p>
+        {% trans %}
+        Why not <a href="#" class="empty_feed_compose_private">
+        start the conversation</a>?
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_narrow_multi_private_message" class="empty_feed_notice">
+    <h4>{{ _('You have no private messages with these people yet!') }}</h4>
+
+    <p>
+        {% trans %}
+        Why not <a href="#" class="empty_feed_compose_private">
+        start the conversation</a>?
+        {% endtrans %}
+    </p>
+</div>
+<div id="silent_user" class="empty_feed_notice">
+    <h4>{{ _("You haven't received any messages sent by this user yet!") }}</h4>
+</div>
+<div id="non_existing_user" class="empty_feed_notice">
+    <h4>{{ _("This user does not exist!") }}</h4>
+</div>
+<div id="non_existing_users" class="empty_feed_notice">
+    <h4>{{ _("One or more of these users do not exist!") }}</h4>
+</div>
+<div id="nonsubbed_stream_narrow_message" class="empty_feed_notice">
+    <h4>{{ _("You aren't subscribed to this stream and nobody has talked about that yet!") }}</h4>
+    <div class="sub_button_row new-style">
+        <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">
+            {{ _('Subscribe') }}
+        </button>
+    </div>
+</div>
+<div id="nonsubbed_private_nonexistent_stream_narrow_message" class="empty_feed_notice">
+    <h4>{{ _("This stream does not exist or is private.") }}</h4>
+</div>
+<div id="empty_star_narrow_message" class="empty_feed_notice">
+    <h4>{{ _("You haven't starred anything yet!") }}</h4>
+
+    <p>
+        {% trans %}
+        Learn more about starring messages <a href="/help/star-a-message">
+        here</a>.
+        {% endtrans %}
+    </p>
+</div>
+<div id="no_unread_narrow_message" class="empty_feed_notice">
+    <h4>{{ _("You have no unread messages!") }}</h4>
+</div>
+<div id="empty_narrow_all_mentioned" class="empty_feed_notice">
+    <h4>{{ _("You haven't been mentioned yet!") }}</h4>
+
+    <p>
+        {% trans %}
+        Learn more about mentions <a href="/help/mention-a-user-or-group">
+        here</a>.
+        {% endtrans %}
+    </p>
+</div>
+<div id="empty_search_narrow_message" class="empty_feed_notice">
+    <h4>{{ _('No search results') }}</h4>
+    <p><span id="empty_search_stop_words_string" class="empty_search_text"></span></p>
+</div>
+<div id="empty_narrow_resolved_topics" class="empty_feed_notice">
+    <h4>{{ _("No topics are marked as resolved.") }}</h4>
+</div>

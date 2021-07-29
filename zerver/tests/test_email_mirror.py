@@ -18,7 +18,6 @@ from zerver.lib.actions import (
     ensure_stream,
 )
 from zerver.lib.email_mirror import (
-    ZulipEmailForwardError,
     create_missed_message_address,
     filter_footer,
     get_missed_message_token_from_address,
@@ -31,6 +30,7 @@ from zerver.lib.email_mirror import (
     strip_from_subject,
 )
 from zerver.lib.email_mirror_helpers import (
+    ZulipEmailForwardError,
     decode_email_address,
     encode_email_address,
     get_email_gateway_message_string_from_address,
@@ -528,7 +528,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 len(image_bytes),
                 "image/png",
                 image_bytes,
-                get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
                 target_realm=user_profile.realm,
             )
 
@@ -571,7 +571,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 len(image_bytes),
                 "image/png",
                 image_bytes,
-                get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
                 target_realm=user_profile.realm,
             )
 
@@ -617,7 +617,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 len(image_bytes),
                 "image/png",
                 image_bytes,
-                get_system_bot(settings.EMAIL_GATEWAY_BOT),
+                get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
                 target_realm=user_profile.realm,
             )
 
@@ -977,7 +977,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             message.content,
             "Error sending message to stream announce via message notification email reply:\nOnly organization administrators can send to this stream.",
         )
-        self.assertEqual(message.sender, get_system_bot(settings.NOTIFICATION_BOT))
+        self.assertEqual(
+            message.sender, get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+        )
 
     def test_missed_stream_message_email_response_tracks_topic_change(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")
@@ -1500,7 +1502,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         self.assertEqual(
             error_log.output,
             [
-                "ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@testserver <Address to stream id: 1>\ntest error message"
+                f"ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@testserver <Address to stream id: {stream.id}>\ntest error message"
             ],
         )
         message = most_recent_message(user_profile)

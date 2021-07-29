@@ -74,3 +74,7 @@ below by sending email to
   Zulip to prefer the plain text version of the email if both are
   present (the current default behavior).
 
+## Related articles
+
+* [Using Zulip via email](/help/using-zulip-via-email)
+

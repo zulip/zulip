@@ -6,7 +6,7 @@ PGROONGA_VERSION="2.2.8"
 
 cd "$(mktemp -d)"
 
-curl -LO https://packages.groonga.org/source/pgroonga/pgroonga-"$PGROONGA_VERSION".tar.gz
+curl -fLO https://packages.groonga.org/source/pgroonga/pgroonga-"$PGROONGA_VERSION".tar.gz
 tar xf pgroonga-"$PGROONGA_VERSION".tar.gz
 cd pgroonga-"$PGROONGA_VERSION"
 

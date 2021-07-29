@@ -57,7 +57,7 @@ few people who understand the conversation model at the beginning.
   the organization.
 
 * If you're unsure at all, create an account on the
-  [Zulip community server](https://chat.zulip.org) and see what topics look
+  [Zulip community server](/developer-community/) and see what topics look
   like there.
 
 Topics are lightweight and do not need to be managed. Anyone writing to a

@@ -3,10 +3,10 @@ from typing import Dict, Optional, Union
 
 import orjson
 from django.conf import settings
-from django.core.management.base import CommandParser
+from django.core.management.base import CommandError, CommandParser
 from django.test import Client
 
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.webhooks.common import standardize_headers
 from zerver.models import get_realm
 

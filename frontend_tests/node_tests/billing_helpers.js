@@ -49,7 +49,6 @@ run_test("create_ajax_request", ({override}) => {
         zulip_limited_section_hide: 0,
         free_trial_alert_message_hide: 0,
         free_trial_alert_message_show: 0,
-        location_reload: 0,
         pushState: 0,
         make_indicator: 0,
     };
@@ -112,6 +111,11 @@ run_test("create_ajax_request", ({override}) => {
 
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
+    let success_callback_called = false;
+    const success_callback = (response) => {
+        assert.equal(response.result, "success");
+        success_callback_called = true;
+    };
     override($, "ajax", ({type, url, data, success, error}) => {
         assert.equal(state.form_input_section_hide, 1);
         assert.equal(state.form_error_hide, 1);
@@ -143,18 +147,8 @@ run_test("create_ajax_request", ({override}) => {
             assert.equal(path, "/upgrade/");
         };
 
-        location.reload = () => {
-            state.location_reload += 1;
-        };
+        success({result: "success"});
 
-        window.location.replace = (reload_to) => {
-            state.location_reload += 1;
-            assert.equal(reload_to, "/billing");
-        };
-
-        success();
-
-        assert.equal(state.location_reload, 1);
         assert.equal(state.pushState, 1);
         assert.equal(state.form_success_show, 1);
         assert.equal(state.form_error_hide, 2);
@@ -163,6 +157,7 @@ run_test("create_ajax_request", ({override}) => {
         assert.equal(state.zulip_limited_section_show, 0);
         assert.equal(state.free_trial_alert_message_hide, 1);
         assert.equal(state.free_trial_alert_message_show, 0);
+        assert.ok(success_callback_called);
 
         error({responseText: '{"msg": "response_message"}'});
 
@@ -179,8 +174,8 @@ run_test("create_ajax_request", ({override}) => {
         "autopay",
         {id: "stripe_token_id"},
         ["license_management"],
-        undefined,
         "PATCH",
+        success_callback,
     );
 });
 

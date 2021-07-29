@@ -16,14 +16,19 @@ link_mapping = {
     # breadcrumb to that setting to the name of its setting type, the setting
     # name as it appears in the user interface, and a relative link that can
     # be used to get to that setting
-    "your-account": ["Settings", "Your account", "/#settings/your-account"],
-    "display-settings": ["Settings", "Display settings", "/#settings/display-settings"],
-    "notifications": ["Settings", "Notifications", "/#settings/notifications"],
-    "your-bots": ["Settings", "Your bots", "/#settings/your-bots"],
-    "alert-words": ["Settings", "Alert words", "/#settings/alert-words"],
-    "uploaded-files": ["Settings", "Uploaded files", "/#settings/uploaded-files"],
-    "muted-topics": ["Settings", "Muted topics", "/#settings/muted-topics"],
-    "muted-users": ["Settings", "Muted users", "/#settings/muted-users"],
+    "profile": ["Personal settings", "Profile", "/#settings/profile"],
+    "account-and-privacy": [
+        "Personal settings",
+        "Account & privacy",
+        "/#settings/account-and-privacy",
+    ],
+    "display-settings": ["Personal settings", "Display settings", "/#settings/display-settings"],
+    "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
+    "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
+    "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
+    "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
+    "muted-topics": ["Personal settings", "Muted topics", "/#settings/muted-topics"],
+    "muted-users": ["Personal settings", "Muted users", "/#settings/muted-users"],
     "organization-profile": [
         "Manage organization",
         "Organization profile",

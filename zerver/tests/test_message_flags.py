@@ -173,7 +173,7 @@ class UnreadCountTests(ZulipTestCase):
         content = "Test message for unset read bit"
         last_msg = self.send_stream_message(self.example_user("hamlet"), "Verona", content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
-        self.assertEqual(len(user_messages) > 0, True)
+        self.assertGreater(len(user_messages), 0)
         for um in user_messages:
             self.assertEqual(um.message.content, content)
             if um.user_profile.email != self.example_email("hamlet"):
@@ -245,7 +245,7 @@ class UnreadCountTests(ZulipTestCase):
         )
 
         differences = [key for key in expected if expected[key] != event[key]]
-        self.assertTrue(len(differences) == 0)
+        self.assert_length(differences, 0)
 
         hamlet = self.example_user("hamlet")
         um = list(UserMessage.objects.filter(message=message_id))
@@ -316,7 +316,7 @@ class UnreadCountTests(ZulipTestCase):
         )
 
         differences = [key for key in expected if expected[key] != event[key]]
-        self.assertTrue(len(differences) == 0)
+        self.assert_length(differences, 0)
 
         um = list(UserMessage.objects.filter(message=message_id))
         for msg in um:
@@ -374,6 +374,7 @@ class FixUnreadTests(ZulipTestCase):
         def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
+            assert recipient is not None
 
             add_topic_mute(
                 user_profile=user,
@@ -573,6 +574,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
         recipient = stream.recipient
+        assert recipient is not None
 
         add_topic_mute(
             user_profile=user_profile,

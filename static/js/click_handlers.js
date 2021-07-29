@@ -14,17 +14,17 @@ import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
-import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muting_ui from "./muting_ui";
+import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
@@ -35,7 +35,6 @@ import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
-import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
@@ -283,18 +282,6 @@ export function initialize() {
         e.stopPropagation();
         popovers.hide_all();
     });
-    $("body").on("click", ".copy_message", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
-        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        row.find(".alert-msg").css("display", "block");
-        row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
-        e.preventDefault();
-        e.stopPropagation();
-    });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
             ui_util.blur_active_element();
@@ -339,14 +326,31 @@ export function initialize() {
         row.find(".markdown_preview").show();
     });
 
+    // RESOLVED TOPICS
+    $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
+        e.stopPropagation();
+        const recipient_row = $(e.target).closest(".recipient_row");
+        const message_id = rows.id_for_recipient_row(recipient_row);
+        const topic_name = $(e.target).attr("data-topic-name");
+        message_edit.toggle_resolve_topic(message_id, topic_name);
+    });
+
+    $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
+        e.stopPropagation();
+        const recipient_row = $(e.target).closest(".recipient_row");
+        const message_id = rows.id_for_recipient_row(recipient_row);
+        const topic_name = $(e.target).attr("data-topic-name");
+        message_edit.toggle_resolve_topic(message_id, topic_name);
+    });
+
     // TOPIC MUTING
     function mute_or_unmute_topic($elt, mute_topic) {
         const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
         const topic = $elt.attr("data-topic-name");
         if (mute_topic) {
-            muting_ui.mute_topic(stream_id, topic);
+            muted_topics_ui.mute_topic(stream_id, topic);
         } else {
-            muting_ui.unmute_topic(stream_id, topic);
+            muted_topics_ui.unmute_topic(stream_id, topic);
         }
     }
 
@@ -606,7 +610,7 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
-        $("#compose-send-status").stop(true).fadeOut(500);
+        compose_error.hide();
     });
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
@@ -725,84 +729,6 @@ export function initialize() {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
 
-    {
-        const map = {
-            ".stream-description-editable": {
-                on_start: stream_edit.set_raw_description,
-                on_save: stream_edit.change_stream_description,
-            },
-            ".stream-name-editable": {
-                on_start: null,
-                on_save: stream_edit.change_stream_name,
-            },
-        };
-
-        $(document).on("keydown", ".editable-section", function (e) {
-            e.stopPropagation();
-            // Cancel editing description if Escape key is pressed.
-            if (e.key === "Escape") {
-                $("[data-finish-editing='.stream-description-editable']").hide();
-                $(this).attr("contenteditable", false);
-                $(this).text($(this).attr("data-prev-text"));
-                $("[data-make-editable]").html("");
-            } else if (e.key === "Enter") {
-                $(this).siblings(".checkmark").trigger("click");
-            }
-        });
-
-        $(document).on("drop", ".editable-section", () => false);
-
-        $(document).on("input", ".editable-section", function () {
-            // if there are any child nodes, inclusive of <br> which means you
-            // have lines in your description or title, you're doing something
-            // wrong.
-            for (let x = 0; x < this.childNodes.length; x += 1) {
-                if (this.childNodes[x].nodeType !== 3) {
-                    this.textContent = this.textContent.replace(/\n/, "");
-                    break;
-                }
-            }
-        });
-
-        $("body").on("click", "[data-make-editable]", function () {
-            const selector = $(this).attr("data-make-editable");
-            const edit_area = $(this).parent().find(`${selector}`);
-            $(selector).removeClass("stream-name-edit-box");
-            if (edit_area.attr("contenteditable") === "true") {
-                $(`[data-finish-editing='${CSS.escape(selector)}']`).hide();
-                edit_area.attr("contenteditable", false);
-                edit_area.text(edit_area.attr("data-prev-text"));
-                $(this).html("");
-            } else {
-                $(`[data-finish-editing='${CSS.escape(selector)}']`).show();
-
-                $(selector).addClass("stream-name-edit-box");
-                edit_area
-                    .attr("data-prev-text", edit_area.text().trim())
-                    .attr("contenteditable", true);
-
-                if (map[selector].on_start) {
-                    map[selector].on_start(this, edit_area);
-                }
-
-                ui_util.place_caret_at_end(edit_area[0]);
-
-                $(this).html("&times;");
-            }
-        });
-
-        $("body").on("click", "[data-finish-editing]", function (e) {
-            const selector = $(this).attr("data-finish-editing");
-            $(selector).removeClass("stream-name-edit-box");
-            if (map[selector].on_save) {
-                map[selector].on_save(e);
-                $(this).hide();
-                $(this).parent().find(`${selector}`).attr("contenteditable", false);
-                $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
-            }
-        });
-    }
-
     // HOTSPOTS
 
     // open
@@ -902,10 +828,17 @@ export function initialize() {
         }
 
         if (compose_state.composing()) {
-            if ($(e.target).closest("a").length > 0) {
+            if (
+                $(e.target).closest("a").length > 0 ||
+                $(e.target).closest(".copy_codeblock").length > 0
+            ) {
                 // Refocus compose message text box if one clicks an external
-                // link/url to view something else while composing a message
-                // See issue #4331 for more details
+                // link/url to view something else while composing a message.
+                // See issue #4331 for more details.
+                //
+                // We do the same when copying a code block, since the
+                // most likely next action within Zulip is to paste it
+                // into compose and modify it.
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (

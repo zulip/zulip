@@ -405,10 +405,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, try having a user who didn't receive the message try to publish it, and fail
         body = f"Illegal message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        cordelia = self.example_user("cordelia")
         with self.assertLogs(level="WARNING") as warn_log:
-            self.send_stream_message(self.example_user("cordelia"), "Denmark", body, "test")
+            self.send_stream_message(cordelia, "Denmark", body, "test")
         self.assertTrue(
-            "WARNING:root:User 8 tried to share upload" in warn_log.output[0]
+            f"WARNING:root:User {cordelia.id} tried to share upload" in warn_log.output[0]
             and "but lacks permission" in warn_log.output[0]
         )
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
@@ -587,7 +588,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
         with self.settings(CROSS_REALM_BOT_EMAILS={user_2.email, user_3.email}):
             internal_send_private_message(
-                sender=get_system_bot(user_2.email),
+                sender=get_system_bot(user_2.email, user_2.realm_id),
                 recipient_user=user_1,
                 content=body,
             )
@@ -1016,7 +1017,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.email = cordelia.delivery_email
         cordelia.save()
 
-        cross_realm_bot = get_system_bot(settings.WELCOME_BOT)
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()

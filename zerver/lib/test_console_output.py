@@ -66,7 +66,7 @@ class TeeStderrAndFindExtraConsoleOutput:
 
     def __enter__(self) -> None:
         sys.stderr = self  # type: ignore[assignment] # Doing tee by swapping stderr stream with custom file like class
-        self.console_log_handler.stream = self  # type: ignore[assignment] # Doing tee by swapping stderr stream with custom file like class
+        self.console_log_handler.stream = self
 
     def __exit__(
         self,

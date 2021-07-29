@@ -19,7 +19,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import validate_external_account_field_data
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import (
@@ -124,7 +124,7 @@ def create_realm_custom_profile_field(
             )
             return json_success({"id": field.id})
     except IntegrityError:
-        return json_error(_("A field with that label already exists."))
+        raise JsonableError(_("A field with that label already exists."))
 
 
 @require_realm_admin
@@ -134,7 +134,7 @@ def delete_realm_custom_profile_field(
     try:
         field = CustomProfileField.objects.get(id=field_id)
     except CustomProfileField.DoesNotExist:
-        return json_error(_("Field id {id} not found.").format(id=field_id))
+        raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
     do_remove_realm_custom_profile_field(realm=user_profile.realm, field=field)
     return json_success()
@@ -154,17 +154,17 @@ def update_realm_custom_profile_field(
     try:
         field = CustomProfileField.objects.get(realm=realm, id=field_id)
     except CustomProfileField.DoesNotExist:
-        return json_error(_("Field id {id} not found.").format(id=field_id))
+        raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
     if field.field_type == CustomProfileField.EXTERNAL_ACCOUNT:
         if is_default_external_field(field.field_type, orjson.loads(field.field_data)):
-            return json_error(_("Default custom field cannot be updated."))
+            raise JsonableError(_("Default custom field cannot be updated."))
 
     validate_custom_profile_field(name, hint, field.field_type, field_data)
     try:
         try_update_realm_custom_profile_field(realm, field, name, hint=hint, field_data=field_data)
     except IntegrityError:
-        return json_error(_("A field with that label already exists."))
+        raise JsonableError(_("A field with that label already exists."))
     return json_success()
 
 

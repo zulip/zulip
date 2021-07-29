@@ -207,11 +207,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
         "/realm/presence",
-        "/streams/{stream_id}/members",
-        "/streams/{stream_id}/delete_topic",
         "/users/me/presence",
         "/users/me/alert_words",
-        "/users/me/status",
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
@@ -253,7 +250,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/users/me/android_gcm_reg_id",
         "/users/me/apns_device_token",
         #### These personal settings endpoints have modest value to document:
-        "/settings",
         "/users/me/avatar",
         "/users/me/api_key/regenerate",
         # Much more valuable would be an org admin bulk-upload feature.

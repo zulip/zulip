@@ -400,7 +400,8 @@ html {
 
         input[type="text"],
         input[type="email"],
-        input[type="password"] {
+        input[type="password"],
+        select {
             padding: 10px 32px 10px 12px;
             margin: 25px 0 5px;
 
@@ -458,9 +459,11 @@ html {
         input[type="text"]:focus + label,
         input[type="email"]:focus + label,
         input[type="password"]:focus + label,
+        select:focus + label,
         input[type="text"]:valid + label,
         input[type="email"]:valid + label,
-        input[type="password"]:valid + label {
+        input[type="password"]:valid + label,
+        select:valid + label {
             left: 0;
             transform: translateY(0) translateX(0);
             pointer-events: auto;
@@ -468,6 +471,12 @@ html {
             font-size: 1rem;
             font-weight: 600;
             color: hsl(0, 0%, 27%);
+        }
+
+        /* The width of the "Organization name" text box
+           right above this one is also 326px. */
+        select {
+            width: 326px;
         }
 
         p.text-error {

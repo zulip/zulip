@@ -26,7 +26,7 @@ from confirmation.models import (
     validate_key,
 )
 from zerver.context_processors import get_realm_from_request, login_context
-from zerver.decorator import do_login, require_post
+from zerver.decorator import do_login, rate_limit_request_by_ip, require_post
 from zerver.forms import (
     FindMyTeamForm,
     HomepageForm,
@@ -36,7 +36,7 @@ from zerver.forms import (
 )
 from zerver.lib.actions import (
     bulk_add_subscriptions,
-    do_activate_user,
+    do_activate_mirror_dummy_user,
     do_change_full_name,
     do_change_password,
     do_create_realm,
@@ -45,6 +45,7 @@ from zerver.lib.actions import (
     lookup_default_stream_groups,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
+from zerver.lib.exceptions import RateLimited
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
@@ -79,9 +80,9 @@ from zproject.backends import (
     ExternalAuthResult,
     ZulipLDAPAuthBackend,
     ZulipLDAPExceptionNoMatchingLDAPUser,
-    any_social_backend_enabled,
     email_auth_enabled,
     email_belongs_to_ldap,
+    get_external_method_dicts,
     ldap_auth_enabled,
     password_auth_enabled,
 )
@@ -103,6 +104,7 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
         )
 
     prereg_user = confirmation.content_object
+    assert prereg_user is not None
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
         return render(request, "zerver/confirmation_link_expired_error.html")
 
@@ -130,6 +132,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
     prereg_user = confirmation.content_object
+    assert prereg_user is not None
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
         return render(request, "zerver/confirmation_link_expired_error.html", status=404)
     email = prereg_user.email
@@ -308,7 +311,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if realm_creation:
             string_id = form.cleaned_data["realm_subdomain"]
             realm_name = form.cleaned_data["realm_name"]
-            realm = do_create_realm(string_id, realm_name)
+            realm_type = form.cleaned_data["realm_type"]
+            realm = do_create_realm(string_id, realm_name, org_type=realm_type)
             setup_realm_internal_bots(realm)
         assert realm is not None
 
@@ -369,8 +373,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 return_data=return_data,
             )
             if user_profile is None:
-                can_use_different_backend = email_auth_enabled(realm) or any_social_backend_enabled(
-                    realm
+                can_use_different_backend = email_auth_enabled(realm) or (
+                    len(get_external_method_dicts(realm)) > 0
                 )
                 if settings.LDAP_APPEND_DOMAIN:
                     # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
@@ -406,11 +410,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
-            do_activate_user(user_profile, acting_user=user_profile)
+            do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_set_user_display_setting(user_profile, "timezone", timezone)
-            # TODO: When we clean up the `do_activate_user` code path,
+            # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
@@ -484,6 +488,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
             "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
             "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "sorted_realm_types": sorted(
+                Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
+            ),
         },
     )
 
@@ -584,6 +591,17 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     if request.method == "POST":
         form = RealmCreationForm(request.POST)
         if form.is_valid():
+            try:
+                rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+            except RateLimited as e:
+                assert e.secs_to_freedom is not None
+                return render(
+                    request,
+                    "zerver/rate_limit_exceeded.html",
+                    context={"retry_after": int(e.secs_to_freedom)},
+                    status=429,
+                )
+
             email = form.cleaned_data["email"]
             activation_url = prepare_activation_url(email, request, realm_creation=True)
             if key_record is not None and key_record.presume_email_valid:

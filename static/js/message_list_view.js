@@ -19,7 +19,8 @@ import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
-import * as muting from "./muting";
+import * as muted_topics from "./muted_topics";
+import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -154,12 +155,13 @@ function populate_group_from_message_container(group, message_container) {
             // Hack to handle unusual cases like the tutorial where
             // the streams used don't actually exist in the subs
             // module.  Ideally, we'd clean this up by making the
-            // tutorial populate subs.js "properly".
+            // tutorial populate stream_settings_ui.js "properly".
             group.stream_id = -1;
         } else {
             group.stream_id = sub.stream_id;
         }
-        group.topic_muted = muting.is_topic_muted(group.stream_id, group.topic);
+        group.topic_is_resolved = group.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX);
+        group.topic_muted = muted_topics.is_topic_muted(group.stream_id, group.topic);
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
@@ -253,7 +255,8 @@ export class MessageListView {
             the sender.
         */
 
-        const is_hidden = muting.is_user_muted(message_container.msg.sender_id) && !is_revealed;
+        const is_hidden =
+            muted_users.is_user_muted(message_container.msg.sender_id) && !is_revealed;
 
         message_container.is_hidden = is_hidden;
         // Make sure the right thing happens if the message was edited to mention us.

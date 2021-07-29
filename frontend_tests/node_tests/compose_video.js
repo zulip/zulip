@@ -54,7 +54,7 @@ const realm_available_video_chat_providers = {
     },
     big_blue_button: {
         id: 4,
-        name: "Big Blue Button",
+        name: "BigBlueButton",
     },
 };
 

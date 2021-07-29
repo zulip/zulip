@@ -11,6 +11,90 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 86**
+
+* [`GET /events`](/api/get-events): Added `emoji_name`,
+  `emoji_code`, and `reaction_type` fields to `user_status` objects.
+* [`POST /register`](/api/register-queue): Added `emoji_name`,
+  `emoji_code`, and `reaction_type` fields to `user_status` objects.
+* `POST /users/me/status`: Added support for new `emoji_name`,
+  `emoji_code`, and `reaction_type` parameters.
+
+**Feature level 85**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `add_emoji_by_admins_only`
+  field with an integer field `add_custom_emoji_policy`.
+
+**Feature level 84**
+
+* [`POST /register`](/api/register-queue): The `enter_sends` setting
+  is now sent when `update_display_setting` is present in
+  `fetch_event_types` instead of `realm_user`.
+
+**Feature level 83**
+
+* * [`POST /register`](/api/register-queue): The `cross_realm_bots`
+  section of the response now uses the `is_system_bot` flag to
+  indicate whether the bot is a system bot.
+
+**Feature level 82**
+
+* [`PATCH /settings`](/api/update-settings) now accepts a new
+  `email_notifications_batching_period_seconds` field for setting the
+  time duration for which the server will collect email notifications
+  before sending them.
+
+**Feature level 81**
+
+* `POST /users/me/enter-sends` has been removed. The `enter_sends`
+  setting is now edited using the normal [`PATCH
+  /settings`](/api/update-settings) endpoint.
+
+**Feature level 80**
+
+* [`PATCH /settings`](/api/update-settings): The
+  `/settings/notifications` and `/settings/display` endpoints were
+  merged into the main `/settings` endpoint; now all personal settings
+  should be edited using that single endpoint. The old URLs are
+  preserved as deprecated aliases for backwards compatibility.
+
+**Feature level 79**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions): The
+  `subscribers` field now returns user IDs if `include_subscribers` is
+  passed. Previously, this endpoint returned user display email
+  addresses in this field.
+* `GET /streams/{stream_id}/members`: This endpoint now returns user
+  IDs. Previously, it returned display email addresses.
+
+**Feature level 78**
+
+* [`PATCH /settings`](/api/update-settings): Added
+  `ignored_parameters_unsupported` field, which is a list of
+  parameters that were ignored by the endpoint, to the response
+  object.
+
+* [`PATCH /settings`](/api/update-settings): Removed `full_name` and
+  `account_email` fields from the response object.
+
+**Feature level 77**
+
+* [`GET /events`](/api/get-events): Removed `recipient_id` and
+  `sender_id` field in responses of `delete_message` event when
+  `message_type` is `private`.
+
+**Feature level 76**
+
+* [`POST /fetch_api_key`](/api/fetch-api-key), [`POST
+  /dev_fetch_api_key`](/api/dev-fetch-api-key): The HTTP status for
+  authentication errors is now 401. This was previously 403.
+* All API endpoints now use the HTTP 401 error status for API requests
+  involving a deactivated user or realm. This was previously 403.
+* Mobile push notifications now include the `mentioned_user_group_id`
+  and `mentioned_user_group_name` fields when a user group containing
+  the user is mentioned.  Previously, these were indistinguishable
+  from personal mentions (as both types have `trigger="mention"`).
+
 **Feature level 75**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `allow_community_topic_editing`
@@ -268,6 +352,8 @@ field with an integer field `invite_to_realm_policy`.
 
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
+* [Error handling](/api/rest-error-handling): The `code` property will
+  not be present in errors due to rate limits.
 
 **Feature level 35**
 

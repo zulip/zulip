@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class NetlifyHookTests(WebhookTestCase):
     STREAM_NAME = "netlify"
     URL_TEMPLATE = "/api/v1/external/netlify?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "netlify"
+    WEBHOOK_DIR_NAME = "netlify"
 
     def test_building_message(self) -> None:
         expected_topic = "master"

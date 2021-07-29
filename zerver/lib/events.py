@@ -23,6 +23,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
@@ -41,7 +42,6 @@ from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
-from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.topic import TOPIC_NAME
@@ -59,6 +59,7 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
+    UserStatus,
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
@@ -384,7 +385,6 @@ def fetch_initial_state_data(
         state["is_guest"] = settings_user.is_guest
         state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
-        state["enter_sends"] = settings_user.enter_sends
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
         state["full_name"] = settings_user.full_name
@@ -503,7 +503,8 @@ def fetch_initial_state_data(
     if want("update_display_settings"):
         for prop in UserProfile.property_types:
             state[prop] = getattr(settings_user, prop)
-            state["emojiset_choices"] = UserProfile.emojiset_choices()
+        state["emojiset_choices"] = UserProfile.emojiset_choices()
+        state["timezone"] = settings_user.timezone
 
     if want("update_global_notifications"):
         for notification in UserProfile.notification_setting_types:
@@ -613,6 +614,10 @@ def apply_event(
                 if stream_dict["first_message_id"] is None:
                     stream_dict["first_message_id"] = event["message"]["id"]
 
+    elif event["type"] == "heartbeat":
+        # It may be impossible for a heartbeat event to actually reach
+        # this code path. But in any case, they're noops.
+        pass
     elif event["type"] == "hotspots":
         state["hotspots"] = event["hotspots"]
     elif event["type"] == "custom_profile_fields":
@@ -982,23 +987,6 @@ def apply_event(
         if "raw_recent_private_conversations" not in state or event["message_type"] != "private":
             return
 
-        recipient_id = get_recent_conversations_recipient_id(
-            user_profile, event["recipient_id"], event["sender_id"]
-        )
-
-        # Ideally, we'd have test coverage for these two blocks.  To
-        # do that, we'll need a test where we delete not-the-latest
-        # messages or delete a private message not in
-        # recent_private_conversations.
-        if recipient_id not in state["raw_recent_private_conversations"]:  # nocoverage
-            return
-
-        old_max_message_id = state["raw_recent_private_conversations"][recipient_id][
-            "max_message_id"
-        ]
-        if old_max_message_id not in message_ids:  # nocoverage
-            return
-
         # OK, we just deleted what had been the max_message_id for
         # this recent conversation; we need to recompute that value
         # from scratch.  Definitely don't need to re-query everything,
@@ -1067,7 +1055,8 @@ def apply_event(
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
-        assert event["setting_name"] in UserProfile.property_types
+        if event["setting_name"] != "timezone":
+            assert event["setting_name"] in UserProfile.property_types
         state[event["setting_name"]] = event["setting"]
     elif event["type"] == "update_global_notifications":
         assert event["notification_name"] in UserProfile.notification_setting_types
@@ -1104,6 +1093,9 @@ def apply_event(
         user_status = state["user_status"]
         away = event.get("away")
         status_text = event.get("status_text")
+        emoji_name = event.get("emoji_name")
+        emoji_code = event.get("emoji_code")
+        reaction_type = event.get("reaction_type")
 
         if user_id_str not in user_status:
             user_status[user_id_str] = {}
@@ -1119,6 +1111,24 @@ def apply_event(
                 user_status[user_id_str].pop("status_text", None)
             else:
                 user_status[user_id_str]["status_text"] = status_text
+
+            if emoji_name is not None:
+                if emoji_name == "":
+                    user_status[user_id_str].pop("emoji_name", None)
+                else:
+                    user_status[user_id_str]["emoji_name"] = emoji_name
+
+                if emoji_code is not None:
+                    if emoji_code == "":
+                        user_status[user_id_str].pop("emoji_code", None)
+                    else:
+                        user_status[user_id_str]["emoji_code"] = emoji_code
+
+                if reaction_type is not None:
+                    if reaction_type == UserStatus.UNICODE_EMOJI and emoji_name == "":
+                        user_status[user_id_str].pop("reaction_type", None)
+                    else:
+                        user_status[user_id_str]["reaction_type"] = reaction_type
 
         if not user_status[user_id_str]:
             user_status.pop(user_id_str, None)

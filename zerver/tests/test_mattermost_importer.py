@@ -5,7 +5,7 @@ from unittest.mock import call, patch
 
 import orjson
 
-from zerver.data_import.import_util import SubscriberHandler
+from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT
 from zerver.data_import.mattermost import (
     build_reactions,
     check_user_in_team,
@@ -18,12 +18,13 @@ from zerver.data_import.mattermost import (
     get_mentioned_user_ids,
     label_mirror_dummy_users,
     mattermost_data_file_to_dict,
+    process_message_attachments,
     process_user,
     reset_mirror_dummy_users,
     write_emoticon_data,
 )
-from zerver.data_import.mattermost_user import UserHandler
 from zerver.data_import.sequencer import IdMapper
+from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
@@ -382,6 +383,64 @@ class MatterMostImporter(ZulipTestCase):
         )
         self.assertTrue(filecmp.cmp(records_json[1]["path"], exported_emoji_path))
 
+    def test_process_message_attachments(self) -> None:
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures/direct_channel")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        fixture_file_name = self.fixture_file_name(
+            "export.json", "mattermost_fixtures/direct_channel"
+        )
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
+
+        user_handler = UserHandler()
+        user_id_mapper = IdMapper()
+        team_name = "gryffindor"
+
+        convert_user_data(
+            user_handler=user_handler,
+            user_id_mapper=user_id_mapper,
+            user_data_map=username_to_user,
+            realm_id=3,
+            team_name=team_name,
+        )
+
+        zerver_attachments: List[ZerverFieldsT] = []
+        uploads_list: List[ZerverFieldsT] = []
+
+        process_message_attachments(
+            attachments=mattermost_data["post"]["direct_post"][0]["attachments"],
+            realm_id=3,
+            message_id=1,
+            user_id=2,
+            user_handler=user_handler,
+            zerver_attachment=zerver_attachments,
+            uploads_list=uploads_list,
+            mattermost_data_dir=mattermost_data_dir,
+            output_dir=output_dir,
+        )
+
+        self.assert_length(zerver_attachments, 1)
+        self.assertEqual(zerver_attachments[0]["file_name"], "harry-ron.jpg")
+        self.assertEqual(zerver_attachments[0]["owner"], 2)
+        self.assertEqual(
+            user_handler.get_user(zerver_attachments[0]["owner"])["email"], "ron@zulip.com"
+        )
+        # TODO: Assert this for False after fixing the file permissions in PMs
+        self.assertTrue(zerver_attachments[0]["is_realm_public"])
+
+        self.assert_length(uploads_list, 1)
+        self.assertEqual(uploads_list[0]["user_profile_email"], "ron@zulip.com")
+
+        attachment_path = self.fixture_file_name(
+            mattermost_data["post"]["direct_post"][0]["attachments"][0]["path"],
+            "mattermost_fixtures/direct_channel/data",
+        )
+        attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
+        self.assertTrue(os.path.exists(attachment_out_path))
+        self.assertTrue(filecmp.cmp(attachment_path, attachment_out_path))
+
     def test_get_mentioned_user_ids(self) -> None:
         user_id_mapper = IdMapper()
         harry_id = user_id_mapper.get("harry")
@@ -680,6 +739,7 @@ class MatterMostImporter(ZulipTestCase):
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "avatars")), True)
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "emoji")), True)
+        self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "uploads")), True)
         self.assertEqual(
             os.path.exists(os.path.join(harry_team_output_dir, "attachment.json")), True
         )
@@ -763,6 +823,15 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(stream_messages[0].sender.email, "ron@zulip.com")
         self.assertEqual(stream_messages[0].content, "ron joined the channel.\n\n")
 
+        self.assertEqual(stream_messages[3].sender.email, "harry@zulip.com")
+        self.assertRegex(
+            stream_messages[3].content,
+            "Looks like this channel is empty\n\n\\[this is a file\\]\\(.*\\)",
+        )
+        self.assertTrue(stream_messages[3].has_attachment)
+        self.assertFalse(stream_messages[3].has_image)
+        self.assertTrue(stream_messages[3].has_link)
+
         huddle_messages = messages.filter(recipient__type=Recipient.HUDDLE).order_by("date_sent")
         huddle_recipients = huddle_messages.values_list("recipient", flat=True)
         self.assert_length(huddle_messages, 3)
@@ -777,7 +846,10 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(personal_messages, 4)
         self.assert_length(set(personal_recipients), 3)
         self.assertEqual(personal_messages[0].sender.email, "ron@zulip.com")
-        self.assertEqual(personal_messages[0].content, "hey harry\n\n")
+        self.assertRegex(personal_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)")
+        self.assertTrue(personal_messages[0].has_attachment)
+        self.assertTrue(personal_messages[0].has_image)
+        self.assertTrue(personal_messages[0].has_link)
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")

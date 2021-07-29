@@ -20,6 +20,7 @@ from zerver.lib.actions import (
     do_update_message,
 )
 from zerver.lib.avatar import avatar_url
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionData
 from zerver.lib.message import (
     MessageDict,
@@ -29,12 +30,11 @@ from zerver.lib.message import (
     update_first_visible_message_id,
 )
 from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
-from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
-from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
+from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.topic_mutes import set_topic_mutes
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.upload import create_attachment
@@ -74,9 +74,9 @@ def get_sqlalchemy_query_params(query: ClauseElement) -> Dict[str, object]:
     return comp.params
 
 
-def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
+def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> Optional[int]:
     stream = get_stream(stream_name, realm)
-    return stream.recipient.id
+    return stream.recipient.id if stream.recipient is not None else None
 
 
 def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
@@ -165,7 +165,7 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
-            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s)",
+            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s",
         )
 
     def test_add_term_using_streams_operator_and_public_stream_operand_negated(self) -> None:
@@ -247,6 +247,14 @@ class NarrowBuilderTest(ZulipTestCase):
             param_2=0,
         )
         self._do_add_term_test(term, where_clause, params)
+
+    def test_add_term_using_is_operator_for_resolved_topics(self) -> None:
+        term = dict(operator="is", operand="resolved")
+        self._do_add_term_test(term, "WHERE (subject LIKE %(subject_1)s || '%%'")
+
+    def test_add_term_using_is_operator_for_negated_resolved_topics(self) -> None:
+        term = dict(operator="is", operand="resolved", negated=True)
+        self._do_add_term_test(term, "WHERE (subject NOT LIKE %(subject_1)s || '%%'")
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
@@ -527,7 +535,7 @@ class NarrowLibraryTest(ZulipTestCase):
         fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/narrow.json")
         with open(fixtures_path, "rb") as f:
             scenarios = orjson.loads(f.read())
-        self.assertTrue(len(scenarios) == 9)
+        self.assert_length(scenarios, 10)
         for scenario in scenarios:
             narrow = scenario["narrow"]
             accept_events = scenario["accept_events"]
@@ -661,6 +669,11 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator="streams", operand="public"),
             dict(operator="is", operand="alerted"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        narrow = [
+            dict(operator="streams", operand="public"),
+            dict(operator="is", operand="resolved"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1406,9 +1419,15 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         Test old `/json/messages` returns reactions.
         """
+        self.send_stream_message(self.example_user("iago"), "Verona")
+
         self.login("hamlet")
-        messages = self.get_and_check_messages({})
-        message_id = messages["messages"][0]["id"]
+
+        get_messages_params: Dict[str, Union[int, str]] = {"anchor": "newest", "num_before": 1}
+        messages = self.get_and_check_messages(get_messages_params)["messages"]
+        self.assert_length(messages, 1)
+        message_id = messages[0]["id"]
+        self.assert_length(messages[0]["reactions"], 0)
 
         self.login("othello")
         reaction_name = "thumbs_up"
@@ -1421,15 +1440,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
 
         self.login("hamlet")
-        messages = self.get_and_check_messages({})
-        message_to_assert = None
-        for message in messages["messages"]:
-            if message["id"] == message_id:
-                message_to_assert = message
-                break
-        assert message_to_assert is not None
-        self.assert_length(message_to_assert["reactions"], 1)
-        self.assertEqual(message_to_assert["reactions"][0]["emoji_name"], reaction_name)
+        messages = self.get_and_check_messages(get_messages_params)["messages"]
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0]["id"], message_id)
+        self.assert_length(messages[0]["reactions"], 1)
+        self.assertEqual(messages[0]["reactions"][0]["emoji_name"], reaction_name)
 
     def test_successful_get_messages(self) -> None:
         """
@@ -2493,6 +2508,22 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         self.assert_length(result["messages"], 0)
 
+    def test_get_messages_for_resolved_topics(self) -> None:
+        self.login("cordelia")
+        cordelia = self.example_user("cordelia")
+
+        self.send_stream_message(cordelia, "Verona", "whatever1")
+        resolved_topic_name = RESOLVED_TOPIC_PREFIX + "foo"
+        anchor = self.send_stream_message(cordelia, "Verona", "whatever2", resolved_topic_name)
+        self.send_stream_message(cordelia, "Verona", "whatever3")
+
+        narrow = [dict(operator="is", operand="resolved")]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=1, num_after=1)
+        )
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], anchor)
+
     def test_get_visible_messages_with_anchor(self) -> None:
         def messages_matches_ids(messages: List[Dict[str, Any]], message_ids: List[int]) -> None:
             self.assert_length(messages, len(message_ids))
@@ -3246,6 +3277,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_length(queries, 1)
 
         stream = get_stream("Scotland", realm)
+        assert stream.recipient is not None
         recipient_id = stream.recipient.id
         cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf'))"
         self.assertIn(cond, queries[0]["sql"])

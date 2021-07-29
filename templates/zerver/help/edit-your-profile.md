@@ -12,15 +12,11 @@ fill them out.
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|profile}
 
 1. Edit the fields under **Profile**.
 
 {end_tabs}
-
-!!! warn ""
-    Note: The **Profile** section will only appear if an organization
-    administrator has added custom profile fields.
 
 ## Related articles
 

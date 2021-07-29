@@ -18,6 +18,14 @@
     }
 }
 
+.todo-widget {
+    /* For the box-shadow to be visible on the left */
+    input.add-task,
+    input.add-desc {
+        margin-left: 2px;
+    }
+}
+
 .todo-widget,
 .poll-widget {
     h4 {
@@ -37,6 +45,11 @@
 }
 
 .poll-widget {
+    /* For the box-shadow to be visible on the left */
+    input.poll-option {
+        margin-left: 2px;
+    }
+
     .poll-option {
         font-weight: 600;
     }

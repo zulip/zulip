@@ -22,7 +22,7 @@ function test(label, f) {
 }
 
 test("basics", () => {
-    const hash1 = "#settings/your-account";
+    const hash1 = "#settings/profile";
     const hash2 = "#narrow/is/private";
     browser_history.go_to_location(hash1);
     assert.equal(location.hash, hash1);

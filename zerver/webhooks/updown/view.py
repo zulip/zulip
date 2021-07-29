@@ -20,7 +20,7 @@ def send_message_for_event(
     event_type = get_event_type(event)
     subject = TOPIC_TEMPLATE.format(service_url=event["check"]["url"])
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body, event_type)
 
 
 def get_body_for_up_event(event: Dict[str, Any]) -> str:
@@ -62,7 +62,14 @@ def get_body_for_down_event(event: Dict[str, Any]) -> str:
     )
 
 
-@webhook_view("Updown")
+EVENT_TYPE_BODY_MAPPER = {
+    "up": get_body_for_up_event,
+    "down": get_body_for_down_event,
+}
+ALL_EVENT_TYPES = list(EVENT_TYPE_BODY_MAPPER.keys())
+
+
+@webhook_view("Updown", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_updown_webhook(
     request: HttpRequest,
@@ -72,12 +79,6 @@ def api_updown_webhook(
     for event in payload:
         send_message_for_event(request, user_profile, event)
     return json_success()
-
-
-EVENT_TYPE_BODY_MAPPER = {
-    "up": get_body_for_up_event,
-    "down": get_body_for_down_event,
-}
 
 
 def get_event_type(event: Dict[str, Any]) -> str:

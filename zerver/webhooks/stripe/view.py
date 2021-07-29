@@ -21,7 +21,31 @@ class NotImplementedEventType(SuppressedEvent):
     pass
 
 
-@webhook_view("Stripe")
+ALL_EVENT_TYPES = [
+    "charge.dispute.closed",
+    "charge.dispute.created",
+    "charge.failed",
+    "charge.succeeded",
+    "charge.succeeded",
+    "customer.created",
+    "customer.created",
+    "customer.deleted",
+    "customer.discount.created",
+    "customer.subscription.created",
+    "customer.subscription.deleted",
+    "customer.subscription.trial_will_end",
+    "customer.subscription.updated",
+    "customer.updated",
+    "invoice.created",
+    "invoice.updated",
+    "invoice.payment_failed",
+    "invoiceitem.created",
+    "charge.refund.updated",
+    "charge.refund.updated",
+]
+
+
+@webhook_view("Stripe", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_stripe_webhook(
     request: HttpRequest,
@@ -33,7 +57,7 @@ def api_stripe_webhook(
         topic, body = topic_and_body(payload)
     except SuppressedEvent:  # nocoverage
         return json_success()
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, payload["type"])
     return json_success()
 
 

@@ -116,7 +116,7 @@ class DocPageTest(ZulipTestCase):
         endpoint_list = [f"/api/{endpoint}" for endpoint in endpoint_list_set]
         # Validate that the parsing logic isn't broken, since if it
         # broke, the below would become a noop.
-        self.assertTrue(len(endpoint_list) > 70)
+        self.assertGreater(len(endpoint_list), 70)
 
         for endpoint in endpoint_list:
             self._test(endpoint, "", doc_html_str=True)
@@ -155,11 +155,16 @@ class DocPageTest(ZulipTestCase):
             self._test("/apps/", "Apps for every platform.")
         self._test("/features/", "Beautiful messaging")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
+        self._test("/developer-community/", "Zulip developer community")
         self._test("/why-zulip/", "Why Zulip?")
         self._test("/for/open-source/", "for open source projects")
-        self._test("/for/research/", "for researchers")
+        self._test("/for/events/", "for conferences and events")
+        self._test("/for/education/", "education pricing")
+        self._test("/case-studies/tum/", "Technical University of Munich")
+        self._test("/case-studies/ucsd/", "UCSD")
+        self._test("/for/research/", "for research")
         self._test("/for/companies/", "in a company")
-        self._test("/for/working-groups-and-communities/", "standards bodies")
+        self._test("/for/communities/", "Zulip for communities")
         self._test("/security/", "TLS encryption")
         self._test("/devlogin/", "Normal users", landing_page=False)
         self._test("/devtools/", "Useful development URLs")
@@ -386,7 +391,7 @@ class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
         root_domain = ""
         result = self.client_get("/plans/", subdomain=root_domain)
-        self.assert_in_success_response(["Sign up now"], result)
+        self.assert_in_success_response(["Self host Zulip"], result)
         self.assert_not_in_success_response(["/upgrade#sponsorship"], result)
         self.assert_in_success_response(["/accounts/go/?next=/upgrade%23sponsorship"], result)
 
@@ -421,7 +426,7 @@ class PlansPageTest(ZulipTestCase):
         # self.assert_in_success_response(["Sign up now"], result)
 
     def test_CTA_text_by_plan_type(self) -> None:
-        sign_up_now = "Sign up now"
+        sign_up_now = "Create organization"
         buy_standard = "Buy Standard"
         current_plan = "Current plan"
         sponsorship_pending = "Sponsorship pending"

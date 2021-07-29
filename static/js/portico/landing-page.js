@@ -230,4 +230,26 @@ $(() => {
     if (window.location.pathname === "/team/") {
         render_tabs();
     }
+
+    // Source: https://stackoverflow.com/questions/819416/adjust-width-and-height-of-iframe-to-fit-with-content-in-it
+    // Resize tweet to avoid overlapping with image. Since tweet uses an iframe which doesn't adjust with
+    // screen resize, we need to manually adjust its width.
+
+    function resizeIFrameToFitContent(iFrame) {
+        $(iFrame).width("38vw");
+    }
+
+    window.addEventListener("resize", () => {
+        const iframes = document.querySelectorAll(".twitter-tweet iframe");
+        for (const iframe of iframes) {
+            resizeIFrameToFitContent(iframe);
+        }
+    });
+});
+
+// Scroll to anchor link when clicked. Note that help.js has a similar
+// function; this file and help.js are never included on the same
+// page.
+$(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
+    window.location.hash = $(this).attr("id");
 });

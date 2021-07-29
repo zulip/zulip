@@ -150,7 +150,9 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
             except UserProfile.DoesNotExist:
                 return None
 
-        last_user_id = UserProfile.objects.last().id
+        last_user = UserProfile.objects.last()
+        assert last_user is not None
+        last_user_id = last_user.id
         with queries_captured() as queries:
             result = get_user_function_can_return_none(last_user_id + 1)
 
@@ -261,7 +263,7 @@ class BotCacheKeyTest(ZulipTestCase):
         realm = get_realm(settings.SYSTEM_BOT_REALM)
         # Get the profile cached on both cache keys:
         user_profile = get_user(settings.EMAIL_GATEWAY_BOT, realm)
-        bot_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        bot_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
         self.assertEqual(user_profile, bot_profile)
 
         # Flip the setting and save:
@@ -271,7 +273,7 @@ class BotCacheKeyTest(ZulipTestCase):
 
         # The .save() should have deleted cache keys, so if we fetch again,
         # the returned objects should have can_forge_sender set correctly.
-        bot_profile2 = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        bot_profile2 = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
         self.assertEqual(bot_profile2.can_forge_sender, flipped_setting)
 
         user_profile2 = get_user(settings.EMAIL_GATEWAY_BOT, realm)

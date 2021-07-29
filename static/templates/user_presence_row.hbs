@@ -5,9 +5,17 @@
           href="{{href}}"
           data-user-id="{{user_id}}"
           data-name="{{name}}">
-            {{name}}
-            {{#if my_user_status}}
-            <span class="my_user_status">{{my_user_status}}</span>
+            <span class="user-name">{{name}}</span>
+            {{#if status_emoji_info}}
+                {{#if status_emoji_info.emoji_alt_code}}
+                    <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
+                {{else}}
+                    {{#if status_emoji_info.url}}
+                    <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                    {{else}}
+                    <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                    {{/if}}
+                {{/if}}
             {{/if}}
         </a>
         <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>

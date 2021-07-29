@@ -18,10 +18,10 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
 )
-from zerver.lib.exceptions import OrganizationOwnerRequired
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.request import REQ, JsonableError, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import (
@@ -53,14 +53,16 @@ def update_realm(
     ),
     invite_required: Optional[bool] = REQ(json_validator=check_bool, default=None),
     invite_to_realm_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
     ),
     name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     inline_image_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
     inline_url_embed_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    add_emoji_by_admins_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    add_custom_emoji_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    ),
     allow_message_deleting: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_delete_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
@@ -102,7 +104,7 @@ def update_realm(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     user_group_edit_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     private_message_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None
@@ -131,15 +133,15 @@ def update_realm(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         if True not in list(authentication_methods.values()):
-            return json_error(_("At least one authentication method must be enabled."))
+            raise JsonableError(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
-        return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
+        raise JsonableError(_("Invalid video_chat_provider {}").format(video_chat_provider))
     if giphy_rating is not None and giphy_rating not in {
         p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
     }:
-        return json_error(_("Invalid giphy_rating {}").format(giphy_rating))
+        raise JsonableError(_("Invalid giphy_rating {}").format(giphy_rating))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:
@@ -149,6 +151,9 @@ def update_realm(
         message_retention_days = parse_message_retention_days(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+
+    if invite_to_realm_policy is not None and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequired()
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.

@@ -54,11 +54,10 @@ from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
 )
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zerver.lib.request import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -67,10 +66,10 @@ from zerver.lib.test_helpers import (
     load_subdomain_token,
     use_s3_backend,
 )
+from zerver.lib.types import Validator
 from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.validator import (
-    Validator,
     check_bool,
     check_dict_only,
     check_int,
@@ -169,7 +168,7 @@ class AuthBackendTest(ZulipTestCase):
         if isinstance(backend, SocialAuthMixin):
             # Returns a redirect to login page with an error.
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/?is_deactivated=true")
+            self.assertEqual(result.url, user_profile.realm.uri + "/login/?is_deactivated=true")
         else:
             # Just takes you back to the login page treating as
             # invalid auth; this is correct because the form will
@@ -184,7 +183,12 @@ class AuthBackendTest(ZulipTestCase):
 
         # Verify auth fails with a deactivated realm
         do_deactivate_realm(user_profile.realm, acting_user=None)
-        self.assertIsNone(backend.authenticate(**good_kwargs))
+        result = backend.authenticate(**good_kwargs)
+        if isinstance(backend, SocialAuthMixin):
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, user_profile.realm.uri + "/login/")
+        else:
+            self.assertIsNone(result)
 
         # Verify auth works again after reactivating the realm
         do_reactivate_realm(user_profile.realm)
@@ -199,7 +203,12 @@ class AuthBackendTest(ZulipTestCase):
         # Verify auth fails if the auth backend is disabled on server
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipDummyBackend",)):
             clear_supported_auth_backends_cache()
-            self.assertIsNone(backend.authenticate(**good_kwargs))
+            result = backend.authenticate(**good_kwargs)
+            if isinstance(backend, SocialAuthMixin):
+                self.assertEqual(result.status_code, 302)
+                self.assertEqual(result.url, user_profile.realm.uri + "/login/")
+            else:
+                self.assertIsNone(result)
         clear_supported_auth_backends_cache()
 
         # Verify auth fails if the auth backend is disabled for the realm
@@ -218,7 +227,12 @@ class AuthBackendTest(ZulipTestCase):
             # propagate the changes we just made to the actual realm
             # object in good_kwargs.
             good_kwargs["realm"] = user_profile.realm
-        self.assertIsNone(backend.authenticate(**good_kwargs))
+
+        if isinstance(backend, SocialAuthMixin):
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, user_profile.realm.uri + "/login/")
+        else:
+            self.assertIsNone(result)
         user_profile.realm.authentication_methods.set_bit(index, True)
         user_profile.realm.save()
 
@@ -1085,7 +1099,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 account_data_dict, expect_choose_email_screen=True, subdomain="zulip"
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/?is_deactivated=true")
+            self.assertEqual(result.url, user_profile.realm.uri + "/login/?is_deactivated=true")
         self.assertEqual(
             m.output,
             [
@@ -1109,15 +1123,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_invalid_email(self) -> None:
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with self.assertLogs(self.logger_string, level="INFO") as m:
             result = self.social_auth_test(
                 account_data_dict,
                 expect_choose_email_screen=True,
-                subdomain="zulip",
+                subdomain=subdomain,
                 next="/user_uploads/image",
             )
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/?next=/user_uploads/image")
         self.assertEqual(
             m.output,
             [
@@ -1127,6 +1141,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 )
             ],
         )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, realm.uri + "/register/")
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1311,6 +1327,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         else:
             self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().last()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         if expect_confirm_registration_page:
             self.assert_in_success_response(["do_confirm/" + confirmation_key], result)
@@ -1496,6 +1513,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         multiuse_obj.streams.set(streams)
         create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
         multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
         multiuse_object_key = multiuse_confirmation.confirmation_key
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
@@ -1845,9 +1863,13 @@ class SAMLAuthBackendTest(SocialAuthBase):
         with {email}, {first_name}, {last_name} placeholders, that can
         be filled out with the data we want.
         """
-        name_parts = name.split(" ")
-        first_name = name_parts[0]
-        last_name = name_parts[1]
+        if name:
+            name_parts = name.split(" ")
+            first_name = name_parts[0]
+            last_name = name_parts[1]
+        else:
+            first_name = ""
+            last_name = ""
 
         extra_attrs = ""
         for extra_attr_name, extra_attr_values in extra_attributes.items():
@@ -1876,6 +1898,29 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
+
+    def test_auth_registration_with_no_name_provided(self) -> None:
+        """
+        The SAMLResponse may not actually provide name values, which is considered
+        unexpected behavior for most social backends, but SAML is an exception. The
+        signup flow should proceed normally, without pre-filling the name in the
+        registration form.
+        """
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name="")
+        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup=True)
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            "",
+            "Full Name",
+            skip_registration_form=False,
+            expect_full_name_prepopulated=False,
+        )
 
     def test_social_auth_no_key(self) -> None:
         """
@@ -1916,6 +1961,39 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assert_in_success_response(
                 [f'entityID="{settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID}"'],
                 result,
+            )
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_registration_auto_signup(self) -> None:
+        """
+        Verify that with SAML auto signup enabled, a user coming from the /login page
+        (so without the is_signup param) will be taken straight to registration, without
+        having to go through the step of having to confirm that they do want to sign up.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict["test_idp"]["auto_signup"] = True
+
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=False,
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                name,
+                self.BACKEND_CLASS.full_name_validated,
+                expect_confirm_registration_page=False,
             )
 
     def test_social_auth_complete(self) -> None:
@@ -2143,18 +2221,20 @@ class SAMLAuthBackendTest(SocialAuthBase):
         if the authentication attempt failed. See SAMLAuthBackend.auth_complete for details.
         """
         account_data_dict = self.get_account_data_dict(email="invalid", name=self.name)
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with self.assertLogs(self.logger_string, "WARNING") as warn_log:
             result = self.social_auth_test(
                 account_data_dict,
                 expect_choose_email_screen=True,
-                subdomain="zulip",
+                subdomain=subdomain,
                 next="/user_uploads/image",
             )
         self.assertEqual(
             warn_log.output, [self.logger_output("SAML got invalid email argument.", "warning")]
         )
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result.url, realm.uri + "/register/")
 
     def test_social_auth_saml_multiple_idps_configured(self) -> None:
         # Setup a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
@@ -2588,9 +2668,7 @@ class AppleAuthMixin:
         headers = {"kid": "SOMEKID"}
         private_key = settings.APPLE_ID_TOKEN_GENERATION_KEY
 
-        id_token = jwt.encode(payload, private_key, algorithm="RS256", headers=headers).decode(
-            "utf-8"
-        )
+        id_token = jwt.encode(payload, private_key, algorithm="RS256", headers=headers)
 
         return id_token
 
@@ -3045,6 +3123,38 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             family_name=name.split(" ")[1],
         )
 
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_registration_auto_signup(self) -> None:
+        """
+        The analogue of the auto_signup test for SAML.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idp_settings_dict = list(oidc_setting_dict.values())[0]
+        idp_settings_dict["auto_signup"] = True
+        with mock.patch.object(GenericOpenIdConnectBackend, "settings_dict", new=idp_settings_dict):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=False,
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                name,
+                self.BACKEND_CLASS.full_name_validated,
+                expect_confirm_registration_page=False,
+            )
+
     def test_social_auth_no_key(self) -> None:
         """
         Requires overriding because client key/secret are configured
@@ -3201,12 +3311,14 @@ class GitHubAuthBackendTest(SocialAuthBase):
         email_data = [
             dict(email=account_data_dict["email"], verified=False, primary=True),
         ]
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with self.assertLogs(self.logger_string, level="WARNING") as m:
             result = self.social_auth_test(
-                account_data_dict, subdomain="zulip", email_data=email_data
+                account_data_dict, subdomain=subdomain, email_data=email_data
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -3220,13 +3332,15 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID="zulip-webapp")
     def test_social_auth_github_team_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with mock.patch(
             "social_core.backends.github.GithubTeamOAuth2.user_data",
             side_effect=AuthFailed("Not found"),
         ), self.assertLogs(self.logger_string, level="INFO") as mock_info:
-            result = self.social_auth_test(account_data_dict, subdomain="zulip")
+            result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             mock_info.output,
             [
@@ -3254,13 +3368,15 @@ class GitHubAuthBackendTest(SocialAuthBase):
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME="Zulip")
     def test_social_auth_github_organization_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with mock.patch(
             "social_core.backends.github.GithubOrganizationOAuth2.user_data",
             side_effect=AuthFailed("Not found"),
         ), self.assertLogs(self.logger_string, level="INFO") as mock_info:
-            result = self.social_auth_test(account_data_dict, subdomain="zulip")
+            result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             mock_info.output,
             [
@@ -3500,15 +3616,17 @@ class GitHubAuthBackendTest(SocialAuthBase):
             dict(email="aaron@zulip.com", verified=True),
             dict(email=account_data_dict["email"], verified=True),
         ]
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with self.assertLogs(self.logger_string, level="WARNING") as m:
             result = self.social_auth_test(
                 account_data_dict,
-                subdomain="zulip",
+                subdomain=subdomain,
                 expect_choose_email_screen=True,
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -3551,15 +3669,17 @@ class GitHubAuthBackendTest(SocialAuthBase):
             dict(email="hamlet@zulip.com", verified=True, primary=True),
             dict(email="aaron@zulip.com", verified=True),
         ]
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with self.assertLogs(self.logger_string, level="WARNING") as m:
             result = self.social_auth_test(
                 account_data_dict,
-                subdomain="zulip",
+                subdomain=subdomain,
                 expect_choose_email_screen=True,
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -3575,7 +3695,9 @@ class GitHubAuthBackendTest(SocialAuthBase):
         # check if a user is denied to log in if the user manages to
         # send an unverified email that has an existing account in
         # organisation through `email` GET parameter.
-        account_data_dict = self.get_account_data_dict(email="hamlet@zulip.com", name=self.name)
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
+        account_data_dict = dict(email="hamlet@zulip.com", name=self.name)
         email_data = [
             dict(email="iago@zulip.com", verified=True),
             dict(email="hamlet@zulip.com", verified=False),
@@ -3584,12 +3706,12 @@ class GitHubAuthBackendTest(SocialAuthBase):
         with self.assertLogs(self.logger_string, level="WARNING") as m:
             result = self.social_auth_test(
                 account_data_dict,
-                subdomain="zulip",
+                subdomain=subdomain,
                 expect_choose_email_screen=True,
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -3644,10 +3766,12 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
     def test_social_auth_email_not_verified(self) -> None:
         account_data_dict = dict(email=self.email, name=self.name)
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
         with self.assertLogs(self.logger_string, level="WARNING") as m:
-            result = self.social_auth_test(account_data_dict, subdomain="zulip")
+            result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/login/")
+            self.assertEqual(result.url, realm.uri + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -3838,6 +3962,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().first()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         self.assertIn("do_confirm/" + confirmation_key, result.url)
         result = self.client_get(result.url)
@@ -3873,6 +3998,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             result.content.decode("utf-8"),
         )[0]
         confirmation = Confirmation.objects.all().first()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         self.assertIn("do_confirm/" + confirmation_key, url)
         result = self.client_get(url)
@@ -3919,6 +4045,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         multiuse_obj.streams.set(streams)
         create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
         multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
         multiuse_object_key = multiuse_confirmation.confirmation_key
 
         data["multiuse_object_key"] = multiuse_object_key
@@ -3926,6 +4053,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
 
         confirmation = Confirmation.objects.all().last()
+        assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         self.assertIn("do_confirm/" + confirmation_key, result.url)
         result = self.client_get(result.url)
@@ -4032,7 +4160,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         result = self.client_post(
             "/api/v1/fetch_api_key", dict(username=self.email, password="wrong")
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
     def test_invalid_subdomain(self) -> None:
         with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
@@ -4040,7 +4168,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=initial_password(self.email)),
             )
-        self.assert_json_error(result, "Invalid subdomain", 400)
+        self.assert_json_error(result, "Invalid subdomain", 404)
 
     def test_password_auth_disabled(self) -> None:
         with mock.patch("zproject.backends.password_auth_enabled", return_value=False):
@@ -4048,7 +4176,9 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username=self.email, password=initial_password(self.email)),
             )
-            self.assert_json_error_contains(result, "Password auth is disabled", 403)
+            self.assert_json_error_contains(
+                result, "Password authentication is disabled in this organization", 401
+            )
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auth_email_auth_disabled_success(self) -> None:
@@ -4074,14 +4204,14 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "department", "zulip")
         result = self.client_post(
@@ -4107,7 +4237,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "test2", "testing")
         # Check with only one set
@@ -4115,7 +4245,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         self.change_ldap_user_attr("hamlet", "test1", "test")
         # Setting org_membership to not cause django_ldap_auth to warn, when synchronising
@@ -4150,7 +4280,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
 
         # Override access with `org_membership`
         self.change_ldap_user_attr("hamlet", "department", "zulip")
@@ -4169,7 +4299,7 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username="hamlet", password=self.ldap_password("hamlet")),
             )
-            self.assert_json_error(result, "Your username or password is incorrect.", 403)
+            self.assert_json_error(result, "Your username or password is incorrect", 401)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
@@ -4177,7 +4307,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_error_contains(result, "Your account has been disabled", 403)
+        self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
@@ -4185,7 +4315,7 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 401)
 
     def test_old_weak_password_after_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -4206,7 +4336,9 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username=self.email, password=password),
             )
-            self.assert_json_error(result, "You need to reset your password.", 403)
+            self.assert_json_error(
+                result, "Your password has been disabled and needs to be reset", 401
+            )
 
 
 class DevFetchAPIKeyTest(ZulipTestCase):
@@ -4231,17 +4363,17 @@ class DevFetchAPIKeyTest(ZulipTestCase):
     def test_unregistered_user(self) -> None:
         email = "foo@zulip.com"
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=email))
-        self.assert_json_error_contains(result, "This user is not registered.", 403)
+        self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
 
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_error_contains(result, "Your account has been disabled", 403)
+        self.assert_json_error_contains(result, "Account is deactivated", 401)
 
     def test_deactivated_realm(self) -> None:
         do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 401)
 
     def test_dev_auth_disabled(self) -> None:
         with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):
@@ -4256,7 +4388,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/dev_fetch_api_key",
                 dict(username=self.email, password=initial_password(self.email)),
             )
-            self.assert_json_error_contains(result, "Invalid subdomain", 400)
+            self.assert_json_error_contains(result, "Invalid subdomain", 404)
 
 
 class DevGetEmailsTest(ZulipTestCase):
@@ -4966,7 +5098,7 @@ class TestJWTLogin(ZulipTestCase):
             realm = get_realm("zulip")
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
 
             user_profile = get_user_by_delivery_email(email, realm)
             data = {"json_web_token": web_token}
@@ -4979,7 +5111,7 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
             data = {"json_web_token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assert_json_error_contains(
@@ -4991,7 +5123,7 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
             data = {"json_web_token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assert_json_error_contains(
@@ -5021,7 +5153,7 @@ class TestJWTLogin(ZulipTestCase):
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": "key", "algorithms": ["HS256"]}}):
             key = settings.JWT_AUTH_KEYS["zulip"]["key"]
             [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-            web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+            web_token = jwt.encode(payload, key, algorithm)
             data = {"json_web_token": web_token}
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 200)  # This should ideally be not 200.
@@ -5033,7 +5165,7 @@ class TestJWTLogin(ZulipTestCase):
             with mock.patch("zerver.views.auth.get_subdomain", return_value="acme"):
                 key = settings.JWT_AUTH_KEYS["acme"]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS["acme"]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+                web_token = jwt.encode(payload, key, algorithm)
 
                 data = {"json_web_token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
@@ -5046,7 +5178,7 @@ class TestJWTLogin(ZulipTestCase):
             with mock.patch("zerver.views.auth.get_subdomain", return_value=""):
                 key = settings.JWT_AUTH_KEYS[""]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS[""]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+                web_token = jwt.encode(payload, key, algorithm)
 
                 data = {"json_web_token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
@@ -5059,7 +5191,7 @@ class TestJWTLogin(ZulipTestCase):
             with mock.patch("zerver.views.auth.get_subdomain", return_value="zulip"):
                 key = settings.JWT_AUTH_KEYS["zulip"]["key"]
                 [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-                web_token = jwt.encode(payload, key, algorithm).decode("utf8")
+                web_token = jwt.encode(payload, key, algorithm)
 
                 data = {"json_web_token": web_token}
                 result = self.client_post("/accounts/login/jwt/", data)
@@ -6140,6 +6272,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             )
             self.assertEqual(result.status_code, 302)
             confirmation = Confirmation.objects.all().first()
+            assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result.url)
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)
@@ -6171,6 +6304,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             result = maybe_send_to_registration(request, email, is_signup=True)
             self.assertEqual(result.status_code, 302)
             confirmation = Confirmation.objects.all().first()
+            assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result.url)
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)

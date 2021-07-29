@@ -8,8 +8,25 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+ALL_EVENT_TYPES = [
+    "AddTeam",
+    "UnAcknowledge",
+    "AddNote",
+    "TestAction",
+    "Close",
+    "Escalate",
+    "AddRecipient",
+    "RemoveTags",
+    "Acknowledge",
+    "Delete",
+    "AddTags",
+    "TakeOwnership",
+    "Create",
+    "AssignOwnership",
+]
 
-@webhook_view("OpsGenie")
+
+@webhook_view("OpsGenie", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_opsgenie_webhook(
     request: HttpRequest,
@@ -82,6 +99,6 @@ def api_opsgenie_webhook(
 """.strip()
 
     body = body_template.format(**info)
-    check_send_webhook_message(request, user_profile, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body, info["alert_type"])
 
     return json_success()

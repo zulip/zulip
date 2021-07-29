@@ -1,3 +1,13 @@
+[Zulip Standard](/plans) is free for open-source communities! To join the
+hundreds of open-source projects we sponsor, you can request sponsorship
+from your organization's
+[billing page](/accounts/go/?next=/upgrade%23sponsorship), or contact us at
+[sales@zulip.com](mailto:sales@zulip.com) to check whether your organization
+qualifies.
+
+
+------------------------------------------
+
 The Zulip core developers have decades of combined experience leading
 and growing open source communities. We use Zulip to fashion the
 day-to-day experience of being a part of our project. No other chat
@@ -72,7 +82,7 @@ Zulip’s topic-based threading model solves these problems:
   conversation.
 
 You can see this in action in our own
-[chat.zulip.org](https://chat.zulip.org) community, which sends
+[chat.zulip.org](/developer-community/) community, which sends
 thousands of messages a week.  We often get feedback from contributors
 around the world that they love how responsive Zulip’s project leaders
 are in public Zulip conversations.  We are able to achieve this
@@ -89,16 +99,6 @@ community succeed too!
 
 Below, we’ve collected a list of [Zulip features](/features) that are
 particularly useful to open source communities.
-
-### Free hosting at zulip.com.
-
-Zulip sponsors free hosting for hundreds of open source projects,
-supported by (and is identical to) zulip.com’s commercial
-offerings. This offer extends to any community involved in supporting
-free and open source software: development projects, foundations,
-meetups, hackathons, conference committees, and more. If you’re not
-sure whether your organization qualifies, send us an email at
-support@zulip.com.
 
 ### Moderation suite.
 
@@ -120,11 +120,12 @@ account](/help/configure-authentication-methods), instead of with a
 username and password.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
-### Import from Slack, Mattermost, or Gitter.
+### Import from Slack, Mattermost, Gitter, or Rocket.Chat.
 
 Import your existing organization from [Slack](/help/import-from-slack),
-[Mattermost](/help/import-from-mattermost), or
-[Gitter](/help/import-from-gitter).
+[Mattermost](/help/import-from-mattermost),
+[Gitter](/help/import-from-gitter), or
+[Rocket.Chat](/help/import-from-rocketchat).
 
 ### Collaborate on code and formulas
 

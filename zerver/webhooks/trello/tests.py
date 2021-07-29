@@ -9,7 +9,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class TrelloHookTests(WebhookTestCase):
     STREAM_NAME = "trello"
     URL_TEMPLATE = "/api/v1/external/trello?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "trello"
+    WEBHOOK_DIR_NAME = "trello"
 
     def test_trello_confirmation_request(self) -> None:
         response = self.client_head(self.build_webhook_url())

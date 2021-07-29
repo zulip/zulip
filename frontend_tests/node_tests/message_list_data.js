@@ -11,7 +11,8 @@ set_global("setTimeout", (f, delay) => {
     return f();
 });
 
-const muting = zrequire("muting");
+const muted_topics = zrequire("muted_topics");
+const muted_users = zrequire("muted_users");
 const {MessageListData} = zrequire("../js/message_list_data");
 const {Filter} = zrequire("filter");
 
@@ -129,7 +130,7 @@ run_test("muting", () => {
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
     with_field(
-        muting,
+        muted_topics,
         "is_topic_muted",
         () => {
             throw new Error(
@@ -145,7 +146,7 @@ run_test("muting", () => {
     // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
     // filtering messages.
     with_field(
-        muting,
+        muted_topics,
         "is_user_muted",
         () => {
             throw new Error("Messages should not be filtered for user mutes in 1:1 PM narrows.");
@@ -159,7 +160,7 @@ run_test("muting", () => {
     // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;
     mld.filter = new Filter([{operator: "stream", operand: "general"}]);
-    muting.add_muted_topic(1, "muted");
+    muted_topics.add_muted_topic(1, "muted");
     const res = mld.messages_filtered_for_topic_mutes(msgs);
     assert.deepEqual(res, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
@@ -174,7 +175,7 @@ run_test("muting", () => {
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ]);
 
-    muting.add_muted_user(10);
+    muted_users.add_muted_user(10);
     const res_user = mld.messages_filtered_for_user_mutes(msgs);
     assert.deepEqual(res_user, [
         // `messages_filtered_for_user_mutes` does not affect stream messages

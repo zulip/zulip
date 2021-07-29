@@ -37,9 +37,8 @@ const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
 const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
-const settings_data = mock_esm("../../static/js/settings_data");
 const stream_edit = mock_esm("../../static/js/stream_edit");
-const subs = mock_esm("../../static/js/subs");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const transmit = mock_esm("../../static/js/transmit");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
@@ -48,9 +47,7 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
-const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const upload = zrequire("upload");
 
@@ -111,240 +108,6 @@ function initialize_handlers({override}) {
     override(resize, "watch_manual_resize", () => {});
     compose.initialize();
 }
-
-test_ui("test_wildcard_mention_allowed", () => {
-    page_params.user_id = me.user_id;
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_everyone.code;
-    page_params.is_guest = true;
-    page_params.is_admin = false;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.nobody.code;
-    page_params.is_admin = true;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_members.code;
-    page_params.is_guest = true;
-    page_params.is_admin = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    page_params.is_guest = false;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code;
-    page_params.is_moderator = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    page_params.is_moderator = true;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
-    page_params.is_admin = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-
-    // TODO: Add a by_admins_only case when we implement stream-level administrators.
-
-    page_params.is_admin = true;
-    assert.ok(compose.wildcard_mention_allowed());
-
-    page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_full_members.code;
-    const person = people.get_by_user_id(page_params.user_id);
-    person.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-
-    assert.ok(compose.wildcard_mention_allowed());
-    page_params.is_admin = false;
-    assert.ok(!compose.wildcard_mention_allowed());
-});
-
-test_ui("right-to-left", () => {
-    const textarea = $("#compose-textarea");
-
-    const event = {
-        key: "A",
-    };
-
-    assert.equal(textarea.hasClass("rtl"), false);
-
-    textarea.val("```quote\nمرحبا");
-    compose.handle_keyup(event, $("#compose-textarea"));
-
-    assert.equal(textarea.hasClass("rtl"), true);
-
-    textarea.val("```quote foo");
-    compose.handle_keyup(event, textarea);
-
-    assert.equal(textarea.hasClass("rtl"), false);
-});
-
-test_ui("markdown_shortcuts", ({override}) => {
-    let queryCommandEnabled = true;
-    const event = {
-        key: "b",
-        target: {
-            id: "compose-textarea",
-        },
-        stopPropagation: noop,
-        preventDefault: noop,
-    };
-    let input_text = "";
-    let range_start = 0;
-    let range_length = 0;
-    let compose_value = $("#compose_textarea").val();
-    let selected_word = "";
-
-    override(document, "queryCommandEnabled", () => queryCommandEnabled);
-
-    override(document, "execCommand", (cmd, bool, markdown) => {
-        const compose_textarea = $("#compose-textarea");
-        const value = compose_textarea.val();
-        $("#compose-textarea").val(
-            value.slice(0, compose_textarea.range().start) +
-                markdown +
-                value.slice(compose_textarea.range().end),
-        );
-    });
-
-    $("#compose-textarea")[0] = {};
-    $("#compose-textarea").range = () => ({
-        start: range_start,
-        end: range_start + range_length,
-        length: range_length,
-        range: noop,
-        text: $("#compose-textarea")
-            .val()
-            .slice(range_start, range_length + range_start),
-    });
-    $("#compose-textarea").caret = noop;
-
-    function test_i_typed(isCtrl, isCmd) {
-        // Test 'i' is typed correctly.
-        $("#compose-textarea").val("i");
-        event.key = "i";
-        event.metaKey = isCmd;
-        event.ctrlKey = isCtrl;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal("i", $("#compose-textarea").val());
-    }
-
-    function all_markdown_test(isCtrl, isCmd) {
-        input_text = "Any text.";
-        $("#compose-textarea").val(input_text);
-        compose_value = $("#compose-textarea").val();
-        // Select "text" word in compose box.
-        selected_word = "text";
-        range_start = compose_value.search(selected_word);
-        range_length = selected_word.length;
-
-        // Test bold:
-        // Mac env = Cmd+b
-        // Windows/Linux = Ctrl+b
-        event.key = "b";
-        event.ctrlKey = isCtrl;
-        event.metaKey = isCmd;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal("Any **text**.", $("#compose-textarea").val());
-        // Test if no text is selected.
-        range_start = 0;
-        // Change cursor to first position.
-        range_length = 0;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal("****Any **text**.", $("#compose-textarea").val());
-
-        // Test italic:
-        // Mac = Cmd+I
-        // Windows/Linux = Ctrl+I
-        // We use event.key = "I" to emulate user using Caps Lock key.
-        $("#compose-textarea").val(input_text);
-        range_start = compose_value.search(selected_word);
-        range_length = selected_word.length;
-        event.key = "I";
-        event.shiftKey = false;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal("Any *text*.", $("#compose-textarea").val());
-        // Test if no text is selected.
-        range_length = 0;
-        // Change cursor to first position.
-        range_start = 0;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal("**Any *text*.", $("#compose-textarea").val());
-
-        // Test link insertion:
-        // Mac = Cmd+Shift+L
-        // Windows/Linux = Ctrl+Shift+L
-        $("#compose-textarea").val(input_text);
-        range_start = compose_value.search(selected_word);
-        range_length = selected_word.length;
-        event.key = "l";
-        event.shiftKey = true;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal("Any [text](url).", $("#compose-textarea").val());
-        // Test if exec command is not enabled in browser.
-        queryCommandEnabled = false;
-        compose.handle_keydown(event, $("#compose-textarea"));
-    }
-
-    // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
-    // Mac and Linux/Windows environments.  So in short, this tests
-    // that e.g. Cmd+B should be ignored on Linux/Windows and Ctrl+B
-    // should be ignored on Mac.
-    function os_specific_markdown_test(isCtrl, isCmd) {
-        input_text = "Any text.";
-        $("#compose-textarea").val(input_text);
-        compose_value = $("#compose-textarea").val();
-        selected_word = "text";
-        range_start = compose_value.search(selected_word);
-        range_length = selected_word.length;
-        event.metaKey = isCmd;
-        event.ctrlKey = isCtrl;
-
-        event.key = "b";
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal(input_text, $("#compose-textarea").val());
-
-        event.key = "i";
-        event.shiftKey = false;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal(input_text, $("#compose-textarea").val());
-
-        event.key = "l";
-        event.shiftKey = true;
-        compose.handle_keydown(event, $("#compose-textarea"));
-        assert.equal(input_text, $("#compose-textarea").val());
-    }
-
-    // These keyboard shortcuts differ as to what key one should use
-    // on MacOS vs. other platforms: Cmd (Mac) vs. Ctrl (non-Mac).
-
-    // Default (Linux/Windows) userAgent tests:
-    navigator.platform = "";
-
-    test_i_typed(false, false);
-    // Check all the Ctrl + Markdown shortcuts work correctly
-    all_markdown_test(true, false);
-    // The Cmd + Markdown shortcuts should do nothing on Linux/Windows
-    os_specific_markdown_test(false, true);
-
-    // Setting following platform to test in mac env
-    navigator.platform = "MacIntel";
-
-    // Mac userAgent tests:
-    test_i_typed(false, false);
-    // The Ctrl + Markdown shortcuts should do nothing on mac
-    os_specific_markdown_test(true, false);
-    // Check all the Cmd + Markdown shortcuts work correctly
-    all_markdown_test(false, true);
-
-    // Reset userAgent
-    navigator.userAgent = "";
-});
 
 test_ui("send_message_success", ({override}) => {
     override(drafts, "delete_active_draft", () => {});
@@ -447,9 +210,7 @@ test_ui("send_message", ({override}) => {
             stub_state.reify_message_id_checked += 1;
         });
 
-        // Setting message content with a host server link and we will assert
-        // later that this has been converted to a relative link.
-        $("#compose-textarea").val("[foobar](https://foo.com/user_uploads/123456)");
+        $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").prop("disabled", true);
@@ -573,10 +334,7 @@ test_ui("enter_with_preview_open", ({override}) => {
     compose.enter_with_preview_open();
 
     assert.ok($("#enter_sends").prop("checked"));
-    assert.equal(
-        $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "You have nothing to send!"}),
-    );
+    assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
 test_ui("finish", ({override}) => {
@@ -604,7 +362,7 @@ test_ui("finish", ({override}) => {
     })();
 
     (function test_when_compose_validation_succeed() {
-        $("#compose-textarea").hide();
+        // Testing successfully sending of a message.
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
@@ -622,85 +380,37 @@ test_ui("finish", ({override}) => {
             send_message_called = true;
         });
         assert.ok(compose.finish());
+        assert.equal($("#sending-indicator").text(), "translated: Sending...");
         assert.ok($("#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
         assert.ok(send_message_called);
         assert.ok(compose_finished_event_checked);
-    })();
-});
 
-test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
-    const test_sub = {
-        name: compose_state.stream_name(),
-        stream_id: 99,
-    };
-
-    stream_data.add_sub(test_sub);
-    peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
-
-    let denmark = {
-        stream_id: 100,
-        name: "Denmark",
-    };
-    stream_data.add_sub(denmark);
-
-    peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
-
-    function test_noop_case(invite_only) {
+        // Testing successful scheduling of message.
+        $("#compose .undo_markdown_preview").show();
+        $("#compose .preview_message_area").show();
+        $("#compose .markdown_preview").hide();
+        $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("stream");
-        denmark.invite_only = invite_only;
-        compose.warn_if_private_stream_is_linked(denmark);
-        assert.equal($("#compose_private_stream_alert").visible(), false);
-    }
-
-    test_noop_case(false);
-    // invite_only=true and current compose stream subscribers are a subset
-    // of mentioned_stream subscribers.
-    test_noop_case(true);
-
-    $("#compose_private").hide();
-    compose_state.set_message_type("stream");
-
-    const checks = [
-        (function () {
-            let called;
-            mock_template("compose_private_stream_alert.hbs", false, (context) => {
-                called = true;
-                assert.equal(context.stream_name, "Denmark");
-                return "fake-compose_private_stream_alert-template";
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            $("#compose_private_stream_alert").append = (html) => {
-                called = true;
-                assert.equal(html, "fake-compose_private_stream_alert-template");
-            };
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-    ];
-
-    denmark = {
-        invite_only: true,
-        name: "Denmark",
-        stream_id: 22,
-    };
-    stream_data.add_sub(denmark);
-
-    compose.warn_if_private_stream_is_linked(denmark);
-    assert.equal($("#compose_private_stream_alert").visible(), true);
-
-    for (const f of checks) {
-        f();
-    }
+        override(compose_state, "stream_name", () => "social");
+        override(people, "get_by_user_id", () => []);
+        compose_finished_event_checked = false;
+        let schedule_message = false;
+        override(reminder, "schedule_message", () => {
+            schedule_message = true;
+        });
+        reminder.is_deferred_delivery = () => true;
+        assert.ok(compose.finish());
+        assert.equal($("#sending-indicator").text(), "translated: Scheduling...");
+        assert.ok($("#compose-textarea").visible());
+        assert.ok(!$("#compose .undo_markdown_preview").visible());
+        assert.ok(!$("#compose .preview_message_area").visible());
+        assert.ok($("#compose .markdown_preview").visible());
+        assert.ok(schedule_message);
+        assert.ok(compose_finished_event_checked);
+    })();
 });
 
 test_ui("initialize", ({override, mock_template}) => {
@@ -854,164 +564,6 @@ test_ui("trigger_submit_compose_form", ({override}) => {
     assert.ok(compose_finish_checked);
 });
 
-test_ui("needs_subscribe_warning", () => {
-    const invalid_user_id = 999;
-
-    const test_bot = {
-        full_name: "Test Bot",
-        email: "test-bot@example.com",
-        user_id: 135,
-        is_bot: true,
-    };
-    people.add_active_user(test_bot);
-
-    const sub = {
-        stream_id: 110,
-        name: "stream",
-    };
-
-    stream_data.add_sub(sub);
-    peer_data.set_subscribers(sub.stream_id, [bob.user_id, me.user_id]);
-
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 999");
-    // Test with an invalid user id.
-    assert.equal(compose.needs_subscribe_warning(invalid_user_id, sub.stream_id), false);
-
-    // Test with bot user.
-    assert.equal(compose.needs_subscribe_warning(test_bot.user_id, sub.stream_id), false);
-
-    // Test when user is subscribed to the stream.
-    assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
-
-    peer_data.remove_subscriber(sub.stream_id, bob.user_id);
-    // Test when the user is not subscribed.
-    assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
-});
-
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
-    override(settings_data, "user_can_subscribe_other_users", () => true);
-
-    let mentioned = {
-        email: "foo@bar.com",
-    };
-
-    $("#compose_invite_users .compose_invite_user").length = 0;
-
-    function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
-        const msg_type = is_private ? "private" : "stream";
-        compose_state.set_message_type(msg_type);
-        page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
-        mentioned.is_broadcast = is_broadcast;
-        compose.warn_if_mentioning_unsubscribed_user(mentioned);
-        assert.equal($("#compose_invite_users").visible(), false);
-    }
-
-    test_noop_case(true, false, false);
-    test_noop_case(false, true, false);
-    test_noop_case(false, false, true);
-
-    $("#compose_invite_users").hide();
-    compose_state.set_message_type("stream");
-    page_params.realm_is_zephyr_mirror_realm = false;
-
-    // Test with empty stream name in compose box. It should return noop.
-    assert.equal(compose_state.stream_name(), "");
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), false);
-
-    compose_state.stream_name("random");
-    const sub = {
-        stream_id: 111,
-        name: "random",
-    };
-
-    // Test with invalid stream in compose box. It should return noop.
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), false);
-
-    // Test mentioning a user that should gets a warning.
-
-    const checks = [
-        (function () {
-            let called;
-            override(compose, "needs_subscribe_warning", (user_id, stream_id) => {
-                called = true;
-                assert.equal(user_id, 34);
-                assert.equal(stream_id, 111);
-                return true;
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            mock_template("compose_invite_users.hbs", false, (context) => {
-                called = true;
-                assert.equal(context.user_id, 34);
-                assert.equal(context.stream_id, 111);
-                assert.equal(context.name, "Foo Barson");
-                return "fake-compose-invite-user-template";
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            $("#compose_invite_users").append = (html) => {
-                called = true;
-                assert.equal(html, "fake-compose-invite-user-template");
-            };
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-    ];
-
-    mentioned = {
-        email: "foo@bar.com",
-        user_id: 34,
-        full_name: "Foo Barson",
-    };
-
-    stream_data.add_sub(sub);
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), true);
-
-    for (const f of checks) {
-        f();
-    }
-
-    // Simulate that the row was added to the DOM.
-    const warning_row = $("<warning row>");
-
-    let looked_for_existing;
-    warning_row.data = (field) => {
-        if (field === "user-id") {
-            looked_for_existing = true;
-            return "34";
-        }
-        if (field === "stream-id") {
-            return "111";
-        }
-        throw new Error(`Unknown field ${field}`);
-    };
-
-    const previous_users = $("#compose_invite_users .compose_invite_user");
-    previous_users.length = 1;
-    previous_users[0] = warning_row;
-    $("#compose_invite_users").hide();
-
-    // Now try to mention the same person again. The template should
-    // not render.
-    compose.warn_if_mentioning_unsubscribed_user(mentioned);
-    assert.equal($("#compose_invite_users").visible(), true);
-    assert.ok(looked_for_existing);
-});
-
 test_ui("on_events", ({override}) => {
     initialize_handlers({override});
 
@@ -1160,7 +712,7 @@ test_ui("on_events", ({override}) => {
             subscribed: false,
         };
         let compose_not_subscribed_called = false;
-        subs.sub_or_unsub = () => {
+        stream_settings_ui.sub_or_unsub = () => {
             compose_not_subscribed_called = true;
         };
 

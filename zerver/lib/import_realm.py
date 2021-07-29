@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import secrets
 import shutil
+from mimetypes import guess_type
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import orjson
@@ -31,7 +32,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, get_bucket, guess_type, sanitize_name
+from zerver.lib.upload import BadImageError, get_bucket, sanitize_name
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -44,7 +45,6 @@ from zerver.models import (
     DefaultStream,
     Huddle,
     Message,
-    MutedTopic,
     MutedUser,
     Reaction,
     Realm,
@@ -65,7 +65,9 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_huddle_hash,
+    get_realm,
     get_system_bot,
     get_user_profile_by_id,
 )
@@ -929,9 +931,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     for item in data["zerver_userprofile_crossrealm"]:
-        logging.info("Adding to ID map: %s %s", item["id"], get_system_bot(item["email"]).id)
-        new_user_id = get_system_bot(item["email"]).id
+        logging.info(
+            "Adding to ID map: %s %s",
+            item["id"],
+            get_system_bot(item["email"], internal_realm.id).id,
+        )
+        new_user_id = get_system_bot(item["email"], internal_realm.id).id
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
         new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
         update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
@@ -1084,8 +1091,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_mutedtopic", "user_profile", related_table="user_profile")
         re_map_foreign_keys(data, "zerver_mutedtopic", "stream", related_table="stream")
         re_map_foreign_keys(data, "zerver_mutedtopic", "recipient", related_table="recipient")
-        update_model_ids(MutedTopic, data, "mutedtopic")
-        bulk_import_model(data, MutedTopic)
+        update_model_ids(UserTopic, data, "mutedtopic")
+        bulk_import_model(data, UserTopic)
 
     if "zerver_muteduser" in data:
         fix_datetime_fields(data, "zerver_muteduser")

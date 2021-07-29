@@ -16,7 +16,7 @@ that's running one of:
 * Ubuntu 20.04 Focal, 18.04 Bionic
 * Debian 10 Buster, 11 Bullseye (beta)
 * CentOS 7 (beta)
-* Fedora 33 (beta)
+* Fedora 33 and 34 (beta)
 * RHEL 7 (beta)
 
 You can just run the Zulip provision script on your machine.
@@ -263,7 +263,7 @@ expected.
 
 As with other installation methods, please visit [#provision
 help][provision-help] in the [Zulip development community
-server](../contributing/chat-zulip-org.md) if you need help.
+server](https://zulip.com/developer-community/) if you need help.
 
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 

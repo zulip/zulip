@@ -35,9 +35,11 @@ class SlowQueryTest(ZulipTestCase):
 
     def test_slow_query_log(self) -> None:
         self.log_data["time_started"] = time.time() - self.SLOW_QUERY_TIME
-        with patch("zerver.middleware.slow_query_logger") as mock_slow_query_logger, patch(
-            "zerver.middleware.logger"
-        ) as mock_normal_logger:
+        with self.assertLogs(
+            "zulip.slow_queries", level="INFO"
+        ) as slow_query_logger, self.assertLogs(
+            "zulip.requests", level="INFO"
+        ) as middleware_normal_logger:
 
             write_log_line(
                 self.log_data,
@@ -47,12 +49,11 @@ class SlowQueryTest(ZulipTestCase):
                 requestor_for_logs="unknown",
                 client_name="?",
             )
-            mock_slow_query_logger.info.assert_called_once()
-            mock_normal_logger.info.assert_called_once()
+            self.assert_length(middleware_normal_logger.output, 1)
+            self.assert_length(slow_query_logger.output, 1)
 
-            logged_line = mock_slow_query_logger.info.call_args_list[0][0][0]
             self.assertRegex(
-                logged_line,
+                slow_query_logger.output[0],
                 r"123\.456\.789\.012 GET     200 10\.\ds .* \(unknown via \?\)",
             )
 
@@ -98,7 +99,7 @@ class OpenGraphTest(ZulipTestCase):
         )
 
     def test_settings_tab(self) -> None:
-        # deactivate-your-account starts with {settings_tab|your-account}
+        # deactivate-your-account starts with {settings_tab|account-and-privacy}
         self.check_title_and_description(
             "/help/deactivate-your-account",
             "Deactivate your account (Zulip Help Center)",

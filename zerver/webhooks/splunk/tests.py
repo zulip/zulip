@@ -5,7 +5,7 @@ class SplunkHookTests(WebhookTestCase):
 
     STREAM_NAME = "splunk"
     URL_TEMPLATE = "/api/v1/external/splunk?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "splunk"
+    WEBHOOK_DIR_NAME = "splunk"
 
     def test_splunk_search_one_result(self) -> None:
         self.url = self.build_webhook_url(topic="New Search Alert")

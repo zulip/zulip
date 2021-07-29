@@ -400,6 +400,8 @@ it as follows:
         user ID) and name for the user.
      5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
+     6. The `auto_signup` field determines how Zulip should handle
+        login attempts by users who don't have an account yet.
 
 1. Install the certificate(s) required for SAML authentication.  You
     will definitely need the public certificate of your IdP.  Some IdP
@@ -695,10 +697,25 @@ enabling `zproject.backends.GenericOpenIdConnectBackend` in
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
-Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single backend
+Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
+
+By default, users who attempt to login with OIDC using an email
+address that does not have a current Zulip account will be prompted
+for whether they intend to create a new account or would like to login
+using another authentication method. You can configure automatic
+account creation on first login attempt by setting `"auto_signup":
+True` in the IdP configuration dictionary.
+
+The global setting `SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED` controls how
+Zulip uses the Full Name provided by the IdP. By default, Zulip
+prefills that value in the new account creation form, but gives the
+user the opportunity to edit it before submitting. When `True`, Zulip
+assumes the name is correct, and new users will not be presented with
+a registration form unless they need to accept Terms of Service for
+the server (i.e. `TERMS_OF_SERVICE=True`).
 
 ## Adding more authentication backends
 

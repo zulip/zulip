@@ -919,8 +919,6 @@ td.pointer {
         /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
         width: 30px;
         cursor: pointer;
-        font-weight: bold;
-        color: hsl(0, 100%, 50%);
         position: relative;
         vertical-align: middle;
 
@@ -928,6 +926,12 @@ td.pointer {
             display: inline-block;
 
             animation: rotate 1s infinite linear;
+        }
+
+        .failed_message_action {
+            opacity: 1 !important;
+            color: hsl(0, 100%, 50%);
+            font-weight: bold;
         }
     }
 
@@ -957,7 +961,9 @@ td.pointer {
     border: none;
 
     &:hover .message_controls,
-    &:focus-within .message_controls {
+    &:focus-within .message_controls,
+    &:hover .message_failed,
+    &:focus-within .message_failed {
         .empty-star:hover {
             cursor: pointer;
         }
@@ -1320,6 +1326,8 @@ td.pointer {
     }
 }
 
+.on_hover_topic_unresolve,
+.on_hover_topic_resolve,
 .on_hover_topic_mute {
     opacity: 0.2;
     &:hover {
@@ -1466,6 +1474,25 @@ div.focused_table {
     display: inline-flex;
     margin: -10px auto -5px 10px;
     align-items: baseline;
+}
+
+.message_edit_save .loader {
+    display: none;
+    vertical-align: top;
+    position: relative;
+    height: 28px;
+    margin-top: -10px;
+    top: 6px;
+    width: 30px;
+}
+
+.edit-controls {
+    .btn-wrapper {
+        cursor: not-allowed;
+    }
+    .disable-btn {
+        pointer-events: none;
+    }
 }
 
 .topic_edit {
@@ -1620,15 +1647,13 @@ div.focused_table {
 }
 
 .search_icon {
-    color: hsl(0, 0%, 80%);
+    /* These rules match the .dropdown-toggle CSS for the gear menu. */
+    color: inherit;
+    opacity: 0.5;
     text-decoration: none;
     &:hover {
-        color: hsl(0, 0%, 0%);
+        opacity: 1;
     }
-}
-
-.deactivated-pill {
-    background-color: hsl(0, 86%, 86%) !important;
 }
 
 #message_view_header {
@@ -1777,13 +1802,10 @@ div.focused_table {
        last element is either the narrow description (for stream narrows) or
        the "title" (for other narrows). The flex-grow property ensures these
        elements take up the entirety of the white space. */
-    > :nth-last-child(2) {
+    .navbar-click-opens-search {
         flex-grow: 1;
 
-        /* We extend the clickable area for the search_closed icon over the
-           2nd last navbar element for better design (user convenience) this
-           selector makes it so mousing over that element also gives the user
-           a visual cue about the results of clicking the element */
+        /* Provide the visual cue that clicking this will work as expected. */
         cursor: pointer;
         &:hover + .search_closed {
             color: hsl(0, 0%, 0%);
@@ -1999,6 +2021,11 @@ div.focused_table {
     text-align: center;
     vertical-align: middle;
     /* border-right: 2px solid hsl(204, 20%, 74%); */
+}
+
+.hide-streamlist-toggle-visibility,
+.hide-navbar-buttons-visibility {
+    visibility: hidden;
 }
 
 #streamlist-toggle-button {
@@ -2259,16 +2286,6 @@ div.floating_recipient {
         outline: none;
     }
 
-    &.small_square_check {
-        background-color: hsl(166, 35%, 57%);
-        color: hsl(0, 0%, 95%);
-
-        &:hover {
-            background-color: hsl(156, 30%, 50%);
-            color: hsl(0, 0%, 100%);
-        }
-    }
-
     &.small_square_x {
         background-color: hsl(0, 0%, 100%);
         color: hsl(0, 0%, 47%);
@@ -2303,8 +2320,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 20px;
 }
 
-.topic_move_spinner,
-#confirm_dialog_spinner {
+.topic_move_spinner {
     margin: 0 auto;
 }
 
@@ -2518,6 +2534,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 
+    /* Override the default border-radius to properly align
+       the button corners with `stream_header_colorblock`. */
+    .dropdown-toggle {
+        border-radius: 1px 4px 4px 1px !important;
+    }
+
+    .stream_header_colorblock {
+        margin-bottom: 20px;
+    }
+
     textarea {
         width: 100%;
         min-width: 206px;
@@ -2587,17 +2613,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     overflow: hidden;
     transition: all 0.4s ease;
 
-    &:hover .email_tooltip {
-        visibility: visible;
-        opacity: 1;
-    }
-
-    .tooltip_holder {
-        display: none;
-        position: absolute;
-        left: 50%;
-    }
-
     i {
         cursor: pointer;
 
@@ -2618,31 +2633,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .display-tooltip {
     display: block !important;
-}
-
-.email_tooltip {
-    visibility: hidden;
-    opacity: 0;
-    position: relative;
-    padding: 5px 8px;
-    left: -50%;
-    top: 10px;
-    border-radius: 6px;
-    background-color: hsl(0, 0%, 30%);
-    color: hsl(0, 0%, 100%);
-    transition: visibility 0.2s ease-out, opacity 0.2s linear;
-
-    ::after {
-        content: "";
-        position: absolute;
-        top: -47%;
-        left: 50%;
-        margin-left: -5px;
-        border-width: 7px;
-        border-style: solid;
-        border-color: transparent;
-        border-bottom: hsl(0, 0%, 30%) solid 7px;
-    }
 }
 
 .hotkey-hint {
@@ -2682,6 +2672,10 @@ select.inline_select_topic_edit {
 
     .about-zulip-logo img {
         height: 40px;
+    }
+
+    i.fa-copy {
+        cursor: pointer;
     }
 }
 

@@ -5,8 +5,10 @@ import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables, internal_notify_view, process_client
-from zerver.lib.response import json_error, json_success
+from zerver.decorator import internal_notify_view, process_client
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
     check_int,
@@ -17,7 +19,6 @@ from zerver.lib.validator import (
 from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
 from zerver.tornado.event_queue import fetch_events, get_client_descriptor, process_notification
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.handlers import AsyncDjangoHandler
 
 
 @internal_notify_view(True)
@@ -34,8 +35,10 @@ def cleanup_event_queue(
     if client is None:
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
-        return json_error(_("You are not authorized to access this queue"))
-    request._log_data["extra"] = f"[{queue_id}]"
+        raise JsonableError(_("You are not authorized to access this queue"))
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{queue_id}]"
     client.cleanup()
     return json_success()
 
@@ -46,7 +49,7 @@ def get_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, client_name="internal")
     return get_events_backend(request, user_profile)
 
@@ -102,13 +105,17 @@ def get_events_backend(
     ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
-        return json_error(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized for this query"))
 
     # Extract the Tornado handler from the request
-    handler: AsyncDjangoHandler = request._tornado_handler
+    tornado_handler = get_request_notes(request).tornado_handler
+    assert tornado_handler is not None
+    handler = tornado_handler()
+    assert handler is not None
 
     if user_client is None:
-        valid_user_client = request.client
+        valid_user_client = get_request_notes(request).client
+        assert valid_user_client is not None
     else:
         valid_user_client = user_client
 
@@ -144,7 +151,9 @@ def get_events_backend(
 
     result = fetch_events(events_query)
     if "extra_log_data" in result:
-        request._log_data["extra"] = result["extra_log_data"]
+        log_data = get_request_notes(request).log_data
+        assert log_data is not None
+        log_data["extra"] = result["extra_log_data"]
 
     if result["type"] == "async":
         # Mark this response with .asynchronous; this will result in

@@ -4,7 +4,7 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Callable, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import Callable, Dict, Optional, Sequence, Tuple, TypeVar, Union, cast, overload
 
 import django_otp
 from django.conf import settings
@@ -24,6 +24,7 @@ from django_otp import user_has_device
 from two_factor.utils import default_device
 
 from zerver.lib.exceptions import (
+    AccessDeniedError,
     ErrorCode,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
@@ -32,14 +33,15 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequired,
     OrganizationMemberRequired,
     OrganizationOwnerRequired,
+    RateLimited,
     RealmDeactivatedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.rate_limiter import RateLimitedUser
-from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_method_not_allowed, json_success, json_unauthorized
+from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
@@ -47,7 +49,13 @@ from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
+    from zilencer.models import (
+        RateLimitedRemoteZulipServer,
+        RemoteZulipServer,
+        get_remote_server_by_uuid,
+    )
+
+rate_limiter_logger = logging.getLogger("zerver.lib.rate_limiter")
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
@@ -77,18 +85,20 @@ def update_user_activity(
     if request.META["PATH_INFO"] == "/json/users/me/presence":
         return
 
+    request_notes = get_request_notes(request)
     if query is not None:
         pass
-    elif hasattr(request, "_query"):
-        query = request._query
+    elif request_notes.query is not None:
+        query = request_notes.query
     else:
         query = request.META["PATH_INFO"]
 
+    assert request_notes.client is not None
     event = {
         "query": query,
         "user_profile_id": user_profile.id,
         "time": datetime_to_timestamp(timezone_now()),
-        "client_id": request.client.id,
+        "client_id": request_notes.client.id,
     }
     queue_json_publish("user_activity", event, lambda event: None)
 
@@ -105,7 +115,7 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
                 request.path,
                 extra={"status_code": 405, "request": request},
             )
-            if request.error_format == "JSON":
+            if get_request_notes(request).error_format == "JSON":
                 return json_method_not_allowed(["POST"])
             else:
                 return TemplateResponse(
@@ -166,15 +176,18 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
 
 def process_client(
     request: HttpRequest,
-    user_profile: UserProfile,
+    user: Union[UserProfile, AnonymousUser],
     *,
     is_browser_view: bool = False,
     client_name: Optional[str] = None,
     skip_update_user_activity: bool = False,
     query: Optional[str] = None,
 ) -> None:
+    request_notes = get_request_notes(request)
     if client_name is None:
-        client_name = request.client_name
+        client_name = request_notes.client_name
+
+    assert client_name is not None
 
     # We could check for a browser's name being "Mozilla", but
     # e.g. Opera and MobileSafari don't set that, and it seems
@@ -184,9 +197,9 @@ def process_client(
         # the Zulip desktop apps be themselves.
         client_name = "website"
 
-    request.client = get_client(client_name)
-    if not skip_update_user_activity and user_profile.is_authenticated:
-        update_user_activity(request, user_profile, query)
+    request_notes.client = get_client(client_name)
+    if not skip_update_user_activity and user.is_authenticated:
+        update_user_activity(request, user, query)
 
 
 class InvalidZulipServerError(JsonableError):
@@ -309,6 +322,7 @@ def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[
 def webhook_view(
     webhook_client_name: str,
     notify_bot_owner_on_invalid_json: bool = True,
+    all_event_types: Optional[Sequence[str]] = None,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     # Unfortunately, callback protocols are insufficient for this:
     # https://mypy.readthedocs.io/en/stable/protocols.html#callback-protocols
@@ -353,6 +367,7 @@ def webhook_view(
                     )
                 raise err
 
+        _wrapped_func_arguments._all_event_types = all_event_types
         return _wrapped_func_arguments
 
     return _wrapped_view_func
@@ -364,7 +379,7 @@ def webhook_view(
 # the subdomain validation happen elsewhere and switch to using the
 # stock Django version.
 def user_passes_test(
-    test_func: Callable[[HttpResponse], bool],
+    test_func: Callable[[HttpRequest], bool],
     login_url: Optional[str] = None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
 ) -> Callable[[ViewFuncT], ViewFuncT]:
@@ -423,7 +438,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    request._requestor_for_logs = user_profile.format_requestor_for_logs()
+    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Log in with two factor authentication as well.
@@ -433,7 +448,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
 def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
-        request._query = view_func.__name__
+        get_request_notes(request).query = view_func.__name__
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
@@ -451,11 +466,30 @@ def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
 def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+        assert request.user.is_authenticated
         if request.user.is_bot:
-            return json_error(_("This endpoint does not accept bot requests."))
+            raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+
+
+@overload
+def zulip_login_required(
+    function: ViewFuncT,
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
+    login_url: str = settings.HOME_NOT_LOGGED_IN,
+) -> ViewFuncT:
+    ...
+
+
+@overload
+def zulip_login_required(
+    function: None,
+    redirect_field_name: str = REDIRECT_FIELD_NAME,
+    login_url: str = settings.HOME_NOT_LOGGED_IN,
+) -> Callable[[ViewFuncT], ViewFuncT]:
+    ...
 
 
 # Based on Django 1.8's @login_required
@@ -549,7 +583,7 @@ def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
         if user_profile.is_bot:
-            return json_error(_("This endpoint does not accept bot requests."))
+            raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
@@ -561,12 +595,8 @@ def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
     def _wrapped_view_func(
         request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
     ) -> HttpResponse:
-        realm = user_profile.realm
-        if (
-            realm.user_group_edit_policy != Realm.USER_GROUP_EDIT_POLICY_MEMBERS
-            and not user_profile.is_realm_admin
-        ):
-            raise OrganizationAdministratorRequired()
+        if not user_profile.can_edit_user_groups():
+            raise JsonableError(_("Insufficient permission"))
         return view_func(request, user_profile, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
@@ -624,7 +654,7 @@ def authenticated_rest_api_view(
                 auth_type, credentials = request.META["HTTP_AUTHORIZATION"].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
-                    return json_error(_("This endpoint requires HTTP basic authentication."))
+                    raise JsonableError(_("This endpoint requires HTTP basic authentication."))
                 role, api_key = base64.b64decode(credentials).decode("utf-8").split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))
@@ -778,19 +808,22 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    return (request.client and request.client.name.lower() == "internal") and (
+    client = get_request_notes(request).client
+    return (client is not None and client.name.lower() == "internal") and (
         is_local_addr(request.META["REMOTE_ADDR"]) or settings.DEBUG_RATE_LIMITING
     )
 
 
-def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFuncT]:
+def internal_notify_view(
+    is_tornado_view: bool,
+) -> Callable[[ViewFuncT], Callable[..., HttpResponse]]:
     # The typing here could be improved by using the extended Callable types:
     # https://mypy.readthedocs.io/en/stable/additional_features.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
 
-    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
+    def _wrapped_view_func(view_func: ViewFuncT) -> Callable[..., HttpResponse]:
         @csrf_exempt
         @require_post
         @wraps(view_func)
@@ -798,15 +831,16 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
             request: HttpRequest, *args: object, **kwargs: object
         ) -> HttpResponse:
             if not authenticate_notify(request):
-                return json_error(_("Access denied"), status=403)
-            is_tornado_request = hasattr(request, "_tornado_handler")
+                raise AccessDeniedError()
+            request_notes = get_request_notes(request)
+            is_tornado_request = request_notes.tornado_handler is not None
             # These next 2 are not security checks; they are internal
             # assertions to help us find bugs.
             if is_tornado_view and not is_tornado_request:
                 raise RuntimeError("Tornado notify view called with no Tornado handler")
             if not is_tornado_view and is_tornado_request:
                 raise RuntimeError("Django notify view called with Tornado handler")
-            request._requestor_for_logs = "internal"
+            request_notes.requestor_for_logs = "internal"
             return view_func(request, *args, **kwargs)
 
         return _wrapped_func_arguments
@@ -844,11 +878,33 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 
-def rate_limit(domain: str = "api_by_user") -> Callable[[ViewFuncT], ViewFuncT]:
-    """Rate-limits a view. Takes an optional 'domain' param if you wish to
-    rate limit different types of API calls independently.
+def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
+    RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
 
-    Returns a decorator"""
+
+def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
+    # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
+    # with the nginx configuration to guarantee this to be *the* correct
+    # IP address to use - without worrying we'll grab the IP of a proxy.
+    ip_addr = request.META["REMOTE_ADDR"]
+    assert ip_addr
+    rate_limit_ip(request, ip_addr, domain=domain)
+
+
+def rate_limit_remote_server(
+    request: HttpRequest, remote_server: "RemoteZulipServer", domain: str
+) -> None:
+    try:
+        RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
+    except RateLimited as e:
+        rate_limiter_logger.warning(
+            "Remote server %s exceeded rate limits on domain %s", remote_server, domain
+        )
+        raise e
+
+
+def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
+    """Rate-limits a view. Returns a decorator"""
 
     def wrapper(func: ViewFuncT) -> ViewFuncT:
         @wraps(func)
@@ -865,17 +921,14 @@ def rate_limit(domain: str = "api_by_user") -> Callable[[ViewFuncT], ViewFuncT]:
 
             user = request.user
 
-            if isinstance(user, AnonymousUser) or (
-                settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer)
-            ):
-                # We can only rate-limit logged-in users for now.
-                # We also only support rate-limiting authenticated
-                # views right now.
-                # TODO: implement per-IP non-authed rate limiting
+            if isinstance(user, AnonymousUser):
+                rate_limit_request_by_ip(request, domain="api_by_ip")
                 return func(request, *args, **kwargs)
-
-            assert isinstance(user, UserProfile)
-            rate_limit_user(request, user, domain)
+            elif settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer):
+                rate_limit_remote_server(request, user, domain="api_by_remote_server")
+            else:
+                assert isinstance(user, UserProfile)
+                rate_limit_user(request, user, domain="api_by_user")
 
             return func(request, *args, **kwargs)
 

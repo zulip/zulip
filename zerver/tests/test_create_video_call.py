@@ -211,7 +211,7 @@ class TestVideoCall(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
         )
-        self.assert_json_error(response, "Error authenticating to the Big Blue Button server.")
+        self.assert_json_error(response, "Error authenticating to the BigBlueButton server.")
 
     @responses.activate
     def test_join_bigbluebutton_redirect_server_error(self) -> None:
@@ -226,7 +226,7 @@ class TestVideoCall(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
         )
-        self.assert_json_error(response, "Error connecting to the Big Blue Button server.")
+        self.assert_json_error(response, "Error connecting to the BigBlueButton server.")
 
     @responses.activate
     def test_join_bigbluebutton_redirect_error_by_server(self) -> None:
@@ -240,7 +240,7 @@ class TestVideoCall(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
         )
-        self.assert_json_error(response, "Big Blue Button server returned an unexpected error.")
+        self.assert_json_error(response, "BigBlueButton server returned an unexpected error.")
 
     def test_join_bigbluebutton_redirect_not_configured(self) -> None:
         with self.settings(BIG_BLUE_BUTTON_SECRET=None, BIG_BLUE_BUTTON_URL=None):
@@ -248,4 +248,4 @@ class TestVideoCall(ZulipTestCase):
                 "/calls/bigbluebutton/join",
                 {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
             )
-            self.assert_json_error(response, "Big Blue Button is not configured.")
+            self.assert_json_error(response, "BigBlueButton is not configured.")

@@ -3,13 +3,13 @@ from typing import List, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import (
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
     do_update_message_flags,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.topic import user_message_exists_for_topic
@@ -35,22 +35,28 @@ def update_message_flags(
     operation: str = REQ("op"),
     flag: str = REQ(),
 ) -> HttpResponse:
+    request_notes = get_request_notes(request)
+    assert request_notes.client is not None
+    assert request_notes.log_data is not None
 
-    count = do_update_message_flags(user_profile, request.client, operation, flag, messages)
+    count = do_update_message_flags(user_profile, request_notes.client, operation, flag, messages)
 
     target_count_str = str(len(messages))
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
-    request._log_data["extra"] = log_data_str
+    request_notes.log_data["extra"] = log_data_str
 
     return json_success({"result": "success", "messages": messages, "msg": ""})
 
 
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    count = do_mark_all_as_read(user_profile, request.client)
+    request_notes = get_request_notes(request)
+    assert request_notes.client is not None
+    count = do_mark_all_as_read(user_profile, request_notes.client)
 
     log_data_str = f"[{count} updated]"
-    request._log_data["extra"] = log_data_str
+    assert request_notes.log_data is not None
+    request_notes.log_data["extra"] = log_data_str
 
     return json_success({"result": "success", "msg": ""})
 
@@ -63,7 +69,9 @@ def mark_stream_as_read(
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
 
     log_data_str = f"[{count} updated]"
-    request._log_data["extra"] = log_data_str
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = log_data_str
 
     return json_success({"result": "success", "msg": ""})
 
@@ -90,6 +98,8 @@ def mark_topic_as_read(
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id, topic_name)
 
     log_data_str = f"[{count} updated]"
-    request._log_data["extra"] = log_data_str
+    log_data = get_request_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = log_data_str
 
     return json_success({"result": "success", "msg": ""})

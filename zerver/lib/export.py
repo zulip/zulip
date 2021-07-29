@@ -40,7 +40,6 @@ from zerver.models import (
     DefaultStream,
     Huddle,
     Message,
-    MutedTopic,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -60,7 +59,9 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_display_recipient,
+    get_realm,
     get_system_bot,
     get_user_profile_by_id,
 )
@@ -142,10 +143,12 @@ ALL_ZULIP_TABLES = {
     "zerver_realmemoji",
     "zerver_realmfilter",
     "zerver_realmplayground",
+    "zerver_realmuserdefault",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
+    "zerver_scheduledmessagenotificationemail",
     "zerver_service",
     "zerver_stream",
     "zerver_submessage",
@@ -182,6 +185,8 @@ NON_EXPORTED_TABLES = {
     # missed-message email addresses include the server's hostname and
     # expire after a few days.
     "zerver_missedmessageemailaddress",
+    # Scheduled message notification email data is for internal use by the server.
+    "zerver_scheduledmessagenotificationemail",
     # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
     "zerver_pushdevicetoken",
@@ -317,11 +322,17 @@ def sanity_check_output(data: TableData) -> None:
     # We'll want to make sure we handle it for exports before
     # releasing the new feature, but doing so correctly requires some
     # expertise on this export system.
-    assert ALL_ZULIP_TABLES == all_tables_db
-    assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES)
-    assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES)
-    assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES)
-    assert ANALYTICS_TABLES.issubset(ALL_ZULIP_TABLES)
+    error_message = f"""
+    It appears you've added a new database table, but haven't yet
+    registered it in ALL_ZULIP_TABLES and the related declarations
+    in {__file__} for what to include in data exports.
+    """
+
+    assert ALL_ZULIP_TABLES == all_tables_db, error_message
+    assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES), error_message
+    assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
+    assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES), error_message
+    assert ANALYTICS_TABLES.issubset(ALL_ZULIP_TABLES), error_message
 
     tables = set(ALL_ZULIP_TABLES)
     tables -= NON_EXPORTED_TABLES
@@ -740,7 +751,7 @@ def get_realm_config() -> Config:
 
     Config(
         table="zerver_mutedtopic",
-        model=MutedTopic,
+        model=UserTopic,
         normal_parent=user_profile_config,
         parent_key="user_profile__in",
     )
@@ -888,6 +899,7 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
     if realm.string_id == settings.SYSTEM_BOT_REALM:
         return
 
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     for bot in settings.INTERNAL_BOTS:
         bot_name = bot["var_name"]
         if bot_name not in bot_name_to_default_email:
@@ -895,7 +907,7 @@ def fetch_user_profile_cross_realm(response: TableData, config: Config, context:
 
         bot_email = bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
         bot_default_email = bot_name_to_default_email[bot_name]
-        bot_user_id = get_system_bot(bot_email).id
+        bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
         recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
         response["zerver_userprofile_crossrealm"].append(
@@ -1386,7 +1398,10 @@ def export_files_from_s3(
         object_prefix = f"{realm.id}/"
 
     if settings.EMAIL_GATEWAY_BOT is not None:
-        email_gateway_bot: Optional[UserProfile] = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        email_gateway_bot: Optional[UserProfile] = get_system_bot(
+            settings.EMAIL_GATEWAY_BOT, internal_realm.id
+        )
     else:
         email_gateway_bot = None
 
@@ -1457,10 +1472,12 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     records = []
 
     users = list(UserProfile.objects.filter(realm=realm))
+
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     users += [
-        get_system_bot(settings.NOTIFICATION_BOT),
-        get_system_bot(settings.EMAIL_GATEWAY_BOT),
-        get_system_bot(settings.WELCOME_BOT),
+        get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
+        get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
+        get_system_bot(settings.WELCOME_BOT, internal_realm.id),
     ]
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
@@ -1542,7 +1559,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         author = realm_emoji.author
         author_id = None
         if author:
-            author_id = realm_emoji.author.id
+            author_id = author.id
         record = dict(
             realm_id=realm.id,
             author=author_id,
@@ -1955,6 +1972,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
         export_url = None
         deleted_timestamp = None
         failed_timestamp = None
+        acting_user = export.acting_user
 
         if export.extra_data is not None:
             pending = False
@@ -1969,10 +1987,11 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
                     user.realm, export_path
                 )
 
+        assert acting_user is not None
         exports_dict[export.id] = dict(
             id=export.id,
             export_time=export.event_time.timestamp(),
-            acting_user_id=export.acting_user.id,
+            acting_user_id=acting_user.id,
             export_url=export_url,
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,

@@ -3,11 +3,10 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import get_client
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import Subscription, UserPresence
+from zerver.models import Subscription, UserPresence, get_client
 from zerver.tornado.event_queue import maybe_enqueue_notifications
 
 
@@ -189,9 +188,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            mentioned=True,
-            flags=["mentioned"],
-            stream_name="Scotland",
+            mention_email_notify=True,
+            mention_push_notify=True,
             already_notified={},
         )
 
@@ -319,9 +317,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            mentioned=True,
-            stream_name="Scotland",
-            flags=["mentioned"],
+            mention_push_notify=True,
+            mention_email_notify=True,
             online_push_enabled=True,
             idle=False,
             already_notified={},
@@ -356,7 +353,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            stream_name="Scotland",
             online_push_enabled=True,
             idle=False,
             already_notified={},
@@ -366,9 +362,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = info["queue_messages"]
 
-        # Even though Cordelia has enable_online_push_notifications set
-        # to True, we don't send her any offline notifications, since she
-        # was not mentioned.
+        # Cordelia being present and having `enable_online_push_notifications`
+        # does not mean we'll send her notifications for messages which she
+        # wouldn't otherwise have received notifications for.
         self.assert_length(queue_messages, 0)
 
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
@@ -392,9 +388,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             message_id=message_id,
             acting_user_id=self.example_user("hamlet").id,
-            mentioned=True,
-            flags=["mentioned"],
-            stream_name="Scotland",
+            mention_email_notify=True,
+            mention_push_notify=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -426,8 +421,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             acting_user_id=hamlet.id,
             message_id=message_id,
             wildcard_mention_notify=True,
-            flags=["wildcard_mentioned"],
-            stream_name="Scotland",
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -483,9 +476,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            mentioned=True,
-            flags=["mentioned"],
-            stream_name="Scotland",
+            mention_email_notify=True,
+            mention_push_notify=True,
             idle=False,
             already_notified={},
         )

@@ -295,7 +295,7 @@ class PermissionTest(ZulipTestCase):
             "zerver.lib.events.request_event_queue", return_value=None
         ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                result = do_events_register(user, get_client("website"), client_gravatar=True)
+                do_events_register(user, get_client("website"), client_gravatar=True)
             self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], True)
 
         #############################################################
@@ -761,7 +761,7 @@ class QueryCountTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=7):
+                with self.tornado_redirected_to_list(events, expected_num_events=8):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -771,8 +771,8 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 71)
-        self.assert_length(cache_tries, 22)
+        self.assert_length(queries, 84)
+        self.assert_length(cache_tries, 27)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1207,9 +1207,10 @@ class UserProfileTest(ZulipTestCase):
 
     def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
         realm = get_realm("zulip")
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
-        bot = get_system_bot(settings.WELCOME_BOT)
+        bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
 
         # Pass in the ID of a cross-realm bot and a valid realm
         cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, realm)
@@ -1388,6 +1389,7 @@ class ActivateTest(ZulipTestCase):
             ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1
         )
         email = ScheduledEmail.objects.all().first()
+        assert email is not None and email.users is not None
         self.assertEqual(email.users.count(), 2)
 
     def test_clear_scheduled_emails_with_multiple_user_ids(self) -> None:
@@ -1455,6 +1457,7 @@ class ActivateTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
+        assert email is not None
         email.users.remove(*to_user_ids)
 
         with self.assertLogs("zulip.send_email", level="INFO") as info_log:
@@ -1497,6 +1500,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         stream = get_stream(stream_name, realm)
         recipient = stream.recipient
+        assert recipient is not None
 
         stream_topic = StreamTopicTarget(
             stream_id=stream.id,
@@ -1516,6 +1520,8 @@ class RecipientInfoTest(ZulipTestCase):
         expected_info = dict(
             active_user_ids=all_user_ids,
             online_push_user_ids=set(),
+            pm_mention_email_disabled_user_ids=set(),
+            pm_mention_push_disabled_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
@@ -1527,6 +1533,22 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         self.assertEqual(info, expected_info)
+
+        hamlet.enable_offline_email_notifications = False
+        hamlet.enable_offline_push_notifications = False
+        hamlet.save()
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_wildcard_mention=False,
+        )
+        self.assertEqual(info["pm_mention_email_disabled_user_ids"], set([hamlet.id]))
+        self.assertEqual(info["pm_mention_push_disabled_user_ids"], set([hamlet.id]))
+        hamlet.enable_offline_email_notifications = True
+        hamlet.enable_offline_push_notifications = True
+        hamlet.save()
 
         cordelia.wildcard_mentions_notify = False
         cordelia.save()
@@ -1966,7 +1988,7 @@ class DeleteUserTest(ZulipTestCase):
         personal_message_ids_to_hamlet = Message.objects.filter(
             recipient=hamlet_personal_recipient
         ).values_list("id", flat=True)
-        self.assertTrue(len(personal_message_ids_to_hamlet) > 0)
+        self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(sender=hamlet).exists())
 
         huddle_message_ids_from_cordelia = [
@@ -1981,7 +2003,7 @@ class DeleteUserTest(ZulipTestCase):
                 user_profile=hamlet, recipient__type=Recipient.HUDDLE
             ).values_list("recipient_id", flat=True)
         )
-        self.assertTrue(len(huddle_with_hamlet_recipient_ids) > 0)
+        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
         do_delete_user(hamlet)
 

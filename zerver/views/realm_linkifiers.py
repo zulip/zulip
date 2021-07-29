@@ -4,8 +4,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_linkifier, do_remove_linkifier, do_update_linkifier
+from zerver.lib.exceptions import JsonableError, ValidationFailureError
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.models import RealmFilter, UserProfile, linkifiers_for_realm
 
 
@@ -31,7 +32,7 @@ def create_linkifier(
         )
         return json_success({"id": linkifier_id})
     except ValidationError as e:
-        return json_error(e.messages[0], data={"errors": dict(e)})
+        raise ValidationFailureError(e)
 
 
 @require_realm_admin
@@ -41,7 +42,7 @@ def delete_linkifier(
     try:
         do_remove_linkifier(realm=user_profile.realm, id=filter_id)
     except RealmFilter.DoesNotExist:
-        return json_error(_("Linkifier not found."))
+        raise JsonableError(_("Linkifier not found."))
     return json_success()
 
 
@@ -63,6 +64,6 @@ def update_linkifier(
         )
         return json_success()
     except RealmFilter.DoesNotExist:
-        return json_error(_("Linkifier not found."))
+        raise JsonableError(_("Linkifier not found."))
     except ValidationError as e:
-        return json_error(e.messages[0], data={"errors": dict(e)})
+        raise ValidationFailureError(e)

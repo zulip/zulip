@@ -103,27 +103,8 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
     // clicking on a reaction and that is handled by `process_reaction_click()`
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.
-    const reaction_info = {
-        emoji_name,
-    };
 
-    if (emoji.active_realm_emojis.has(emoji_name)) {
-        if (emoji_name === "zulip") {
-            reaction_info.reaction_type = "zulip_extra_emoji";
-        } else {
-            reaction_info.reaction_type = "realm_emoji";
-        }
-        reaction_info.emoji_code = emoji.active_realm_emojis.get(emoji_name).id;
-    } else {
-        const codepoint = emoji.get_emoji_codepoint(emoji_name);
-        if (codepoint === undefined) {
-            blueslip.warn("Bad emoji name: " + emoji_name);
-            return;
-        }
-        reaction_info.reaction_type = "unicode_emoji";
-        reaction_info.emoji_code = codepoint;
-    }
-
+    const reaction_info = emoji.get_emoji_details_by_name(emoji_name);
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
 }
 

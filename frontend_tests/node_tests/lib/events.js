@@ -691,6 +691,13 @@ exports.fixtures = {
         user: test_user.email,
     },
 
+    update_display_settings__enter_sends: {
+        type: "update_display_settings",
+        setting_name: "enter_sends",
+        setting: true,
+        user: test_user.email,
+    },
+
     update_display_settings__fluid_layout_width: {
         type: "update_display_settings",
         setting_name: "fluid_layout_width",
@@ -818,6 +825,14 @@ exports.fixtures = {
         type: "user_status",
         user_id: 55,
         away: true,
+    },
+
+    user_status__set_status_emoji: {
+        type: "user_status",
+        user_id: test_user.user_id,
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
     },
 
     user_status__set_status_text: {

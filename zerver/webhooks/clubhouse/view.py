@@ -640,7 +640,7 @@ def send_stream_messages_for_actions(
     body = body_func(payload, action)
 
     if topic and body:
-        check_send_webhook_message(request, user_profile, topic, body)
+        check_send_webhook_message(request, user_profile, topic, body, event)
 
 
 EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]], Optional[str]]] = {
@@ -676,6 +676,8 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]],
     "story_update_batch": get_story_update_batch_body,
 }
 
+ALL_EVENT_TYPES = list(EVENT_BODY_FUNCTION_MAPPER.keys())
+
 EVENT_TOPIC_FUNCTION_MAPPER = {
     "story": partial(get_entity_name, entity="story"),
     "pull-request": partial(get_entity_name, entity="story"),
@@ -705,7 +707,7 @@ EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[
 }
 
 
-@webhook_view("ClubHouse")
+@webhook_view("ClubHouse", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_clubhouse_webhook(
     request: HttpRequest,

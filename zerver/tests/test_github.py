@@ -40,12 +40,12 @@ class GitHubTestCase(ZulipTestCase):
 
         responses.add(
             responses.HEAD,
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3.dmg",
+            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3-x64.dmg",
             status=302,
         )
         self.assertEqual(
             get_latest_github_release_download_link_for_platform("mac"),
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3.dmg",
+            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3-x64.dmg",
         )
 
         api_url = "https://api.github.com/repos/zulip/zulip-desktop/releases/latest"

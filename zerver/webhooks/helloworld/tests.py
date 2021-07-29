@@ -1,14 +1,14 @@
 from django.conf import settings
 
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_system_bot
+from zerver.models import get_realm, get_system_bot
 
 
 class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     PM_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    FIXTURE_DIR_NAME = "helloworld"
+    WEBHOOK_DIR_NAME = "helloworld"
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
@@ -51,7 +51,8 @@ class HelloWorldHookTests(WebhookTestCase):
         # Note that this is really just a test for check_send_webhook_message
         self.STREAM_NAME = "nonexistent"
         self.url = self.build_webhook_url()
-        notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+        realm = get_realm("zulip")
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
         expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to stream #**nonexistent**, but that stream does not exist. Click [here](#streams/new) to create it."
         self.send_and_test_private_message(
             "goodbye",

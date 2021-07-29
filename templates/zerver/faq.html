@@ -1,42 +1,29 @@
 <div class="faqs">
     <div class="padded-content">
-        <header>
-            <h1>Frequently asked questions</h1>
+        <header class="center">
+            <a class="faq-header-link" href="#faq">
+                <h1 id="faq">Frequently asked questions</h1>
+            </a>
         </header>
         <div class="faq-box">
             <div class="faq">
                 <div class="question">
-                    Do you have special plans for open source projects,
-                    non-profits, and other non-commercial entities?
+                    How do I request sponsorship or special pricing for my organization?
                 </div>
                 <p class="answer">
-                    Yes! Zulip Cloud Standard is free for open source
-                    projects; we're proud to fully sponsor hundreds of
-                    worthy organizations.  We also offer steep discounts (usually
-                    85%-100%) for non-profits, education, and research, and in other
-                    scenarios where most of the users are not full-time
-                    employees of the customer. Generally, only closed
-                    organizations that also pay their members’
-                    salaries pay full price.
-                </p>
-                <p class="answer">
                     {% if free_trial_days %}
-                    You can request sponsorship during
+                    You can request sponsorship or special pricing during
                     <a href="/new">organization creation</a>, in an organization's
-                    <a href="{{ sponsorship_url }}">billing page</a>, or contact us at
+                    <a href="{{ sponsorship_url }}">billing page</a>, or by contacting us at
                     <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
                     {% else %}
                     You can request sponsorship from an organization's
                     <a href="{{ sponsorship_url }}">billing page</a>, or contact us at
                     <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
                     {% endif %}
-                </p>
-                <p class="answer">
-                    You may also be interested in
-                    <a href="/for/open-source">Zulip for open source
-                    projects</a> or
-                    <a href="/for/working-groups-and-communities">Zulip
-                    for working groups and other part-time communities</a>.
+                    Zulip sponsors free Zulip Cloud Standard for hundreds of
+                    worthy organizations via the above programs. Organizations whose members are
+                    not employees are generally eligible for special pricing.
                 </p>
             </div>
             <div class="faq">
@@ -50,7 +37,7 @@
                     <a href="https://www.recurse.com/blog/112-how-rc-uses-zulip">The
                     Recurse Center</a>. If you’d like to see a large Zulip
                     in action, the
-                    <a href="https://chat.zulip.org">Zulip
+                    <a href="/developer-community/">Zulip
                     community server</a> has thousands of accounts and hundreds of weekly active users, and is run on a single machine with 8GB of RAM.
                 </p>
             </div>
@@ -104,11 +91,40 @@
             </div>
             <div class="faq">
                 <div class="question">
+                    What is the difference between automatic and manual billing?
+                </div>
+                <p class="answer">
+                    With automatic billing, you automatically purchase a Zulip license
+                    for each user in your organization at the start of each billing period
+                    (month or year). Deactivating a user frees up their license for reuse.
+                    Additional licenses are purchased automatically as needed.
+
+                    With manual billing, you choose and pay for a preset user limit. If
+                    the limit is reached, no more users can join until licenses are manually
+                    added.
+
+                    In general, we highly recommend selecting automatic billing unless you
+                    have a specific reason to do otherwise.
+                </p>
+            </div>
+            <div class="faq">
+                <div class="question">
+                    How will I be charged for temporary users (e.g. limited-time
+                    clients)?
+                </div>
+                <p class="answer">
+                    Users
+                    <a href="/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user">can be deactivated</a>
+                    any time. Deactivating a user frees up their license for reuse.
+                </p>
+            </div>
+            <div class="faq">
+                <div class="question">
                     Who can I contact if I have further questions?
                 </div>
                 <p class="answer">
                     Stop by the
-                    <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html">Zulip
+                    <a href="/developer-community/">Zulip
                     community server</a> to see Zulip in action and chat
                     with the developers,
                     tweet <a href="https://twitter.com/zulip">@zulip</a>, or

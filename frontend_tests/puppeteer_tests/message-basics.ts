@@ -336,8 +336,12 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
 
     await page.waitForSelector("#stream_filters .highlighted_stream", {visible: true});
     // First stream in list gets highlihted on clicking search.
-    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_stream", {
         visible: true,
+    });
+
+    await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
+        hidden: true,
     });
     await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
         hidden: true,
@@ -346,27 +350,35 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
         hidden: true,
     });
 
-    // Navigate through suggesrions using arrow keys
+    // Navigate through suggestions using arrow keys
+    await arrow(page, "Down"); // core team -> Denmark
     await arrow(page, "Down"); // Denmark -> Venice
     await arrow(page, "Up"); // Venice -> Denmark
-    await arrow(page, "Up"); // Denmark -> Denmark
+    await arrow(page, "Up"); // Denmark -> core team
+    await arrow(page, "Up"); // core team -> core team
+    await arrow(page, "Down"); // core team -> Denmark
     await arrow(page, "Down"); // Denmark -> Venice
+    await arrow(page, "Down"); // Venice -> Verona
 
-    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_stream", {
         visible: true,
+    });
+
+    await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_stream", {
+        hidden: true,
     });
     await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
         hidden: true,
     });
-    await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_stream", {
+    await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
         hidden: true,
     });
-
     await test_search_venice(page);
 
-    // Search for brginning of "Verona".
+    // Search for beginning of "Verona".
     await page.click("#streams_header .sidebar-title");
     await page.type(".stream-list-filter", "ver");
+    await page.waitForSelector(await get_stream_li(page, "core team"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {hidden: true});
     await page.click(await get_stream_li(page, "Verona"));

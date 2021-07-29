@@ -8,8 +8,8 @@ export function create_update_license_request() {
         "licensechange",
         undefined,
         ["licenses_at_next_renewal"],
-        undefined,
         "PATCH",
+        () => window.location.replace("/billing"),
     );
 }
 
@@ -22,7 +22,14 @@ export function initialize() {
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",
         token(stripe_token) {
-            helpers.create_ajax_request("/json/billing/sources/change", "cardchange", stripe_token);
+            helpers.create_ajax_request(
+                "/json/billing/sources/change",
+                "cardchange",
+                stripe_token,
+                [],
+                "POST",
+                () => window.location.replace("/billing"),
+            );
         },
     });
 
@@ -67,8 +74,8 @@ export function initialize() {
             "licensechange",
             undefined,
             ["licenses"],
-            undefined,
             "PATCH",
+            () => window.location.replace("/billing"),
         );
     });
 
@@ -77,9 +84,9 @@ export function initialize() {
             "/json/billing/plan",
             "planchange",
             undefined,
-            undefined,
-            undefined,
+            [],
             "PATCH",
+            () => window.location.replace("/billing"),
         );
         e.preventDefault();
     });

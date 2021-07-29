@@ -4,11 +4,11 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import do_add_submessage, verify_submessage_sender
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
-from zerver.lib.response import json_error, json_success
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.validator import check_int, validate_poll_data, validate_todo_data
 from zerver.lib.widget import get_widget_type
 from zerver.models import UserProfile
@@ -35,7 +35,7 @@ def process_submessage(
     try:
         widget_data = orjson.loads(content)
     except orjson.JSONDecodeError:
-        return json_error(_("Invalid json for submessage"))
+        raise JsonableError(_("Invalid json for submessage"))
 
     widget_type = get_widget_type(message_id=message.id)
 

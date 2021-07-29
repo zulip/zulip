@@ -12,7 +12,6 @@ import * as blueslip_stacktrace from "./blueslip_stacktrace";
 import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
-export let last_stacktrace: string | undefined;
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
@@ -163,21 +162,12 @@ function report_error(
             }
         },
     });
-
-    if (page_params.save_stacktraces) {
-        // Save the stacktrace so it can be examined even in
-        // development servers.  (N.B. This assumes you have set DEBUG
-        // = False on your development server, or else this code path
-        // won't execute to begin with -- useful for testing
-        // (un)minification.)
-        last_stacktrace = stack;
-    }
 }
 
 class BlueslipError extends Error {
     name = "BlueslipError";
     more_info?: unknown;
-    constructor(msg: string, more_info: unknown) {
+    constructor(msg: string, more_info?: unknown) {
         super(msg);
         if (more_info !== undefined) {
             this.more_info = more_info;
@@ -217,7 +207,7 @@ $(window).on("error", (event) => {
     report_error(message, ex.stack);
 });
 
-function build_arg_list(msg: string, more_info: unknown): [string, string?, unknown?] {
+function build_arg_list(msg: string, more_info?: unknown): [string, string?, unknown?] {
     const args: [string, string?, unknown?] = [msg];
     if (more_info !== undefined) {
         args.push("\nAdditional information: ", more_info);
@@ -225,22 +215,22 @@ function build_arg_list(msg: string, more_info: unknown): [string, string?, unkn
     return args;
 }
 
-export function debug(msg: string, more_info: unknown): void {
+export function debug(msg: string, more_info?: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.debug(...args);
 }
 
-export function log(msg: string, more_info: unknown): void {
+export function log(msg: string, more_info?: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.log(...args);
 }
 
-export function info(msg: string, more_info: unknown): void {
+export function info(msg: string, more_info?: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.info(...args);
 }
 
-export function warn(msg: string, more_info: unknown): void {
+export function warn(msg: string, more_info?: unknown): void {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
     if (page_params.development_environment) {
@@ -248,7 +238,7 @@ export function warn(msg: string, more_info: unknown): void {
     }
 }
 
-export function error(msg: string, more_info: unknown, stack = new Error("dummy").stack): void {
+export function error(msg: string, more_info?: unknown, stack = new Error("dummy").stack): void {
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
     report_error(msg, stack, {more_info});

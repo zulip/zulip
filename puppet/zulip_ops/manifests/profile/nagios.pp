@@ -1,7 +1,6 @@
 class zulip_ops::profile::nagios {
   include zulip_ops::profile::base
   include zulip_ops::apache
-  include zulip::nagios
 
   $nagios_packages = [# Packages needed for Nagios
                       'nagios3',
@@ -16,7 +15,10 @@ class zulip_ops::profile::nagios {
   $nagios_mail_domain = zulipconf('nagios', 'mail_domain', undef)
   $nagios_mail_host = zulipconf('nagios', 'mail_host', undef)
   $nagios_mail_password = zulipsecret('secrets', 'nagios_mail_password', '')
-  $nagios_camo_check_url = zulipconf('nagios', 'camo_check_url', undef)
+  if zulipconf('nagios', 'camo_check_url', undef) =~ /^https:\/\/([^\/]*)(\/.*)$/ {
+    $nagios_camo_check_host = $1
+    $nagios_camo_check_path = $2
+  }
 
   $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
   $hosts_zmirror = split(zulipconf('nagios', 'hosts_zmirror', undef), ',')

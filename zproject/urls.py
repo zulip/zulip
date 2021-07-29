@@ -18,7 +18,6 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
-from zerver.views.archive import archive, get_web_public_topics_backend
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
     api_fetch_api_key,
@@ -179,14 +178,11 @@ from zerver.views.user_groups import (
     update_user_group_backend,
 )
 from zerver.views.user_settings import (
-    change_enter_sends,
     confirm_email_change,
     delete_avatar_backend,
-    json_change_notify_settings,
     json_change_settings,
     regenerate_api_key,
     set_avatar_backend,
-    update_display_settings_backend,
 )
 from zerver.views.users import (
     add_bot_backend,
@@ -383,14 +379,6 @@ v1_api_and_json_patterns = [
     rest_path("user_groups/<int:user_group_id>/members", POST=update_user_group_backend),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
-    rest_path(
-        "users/me/enter-sends",
-        POST=(
-            change_enter_sends,
-            # This endpoint should be folded into user settings
-            {"intentionally_undocumented"},
-        ),
-    ),
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots
     rest_path(
@@ -414,8 +402,13 @@ v1_api_and_json_patterns = [
     ),
     # settings -> zerver.views.user_settings
     rest_path("settings", PATCH=json_change_settings),
-    rest_path("settings/display", PATCH=update_display_settings_backend),
-    rest_path("settings/notifications", PATCH=json_change_notify_settings),
+    # These next two are legacy aliases for /settings, from before
+    # we merged the endpoints. They are documented in the `/json/settings`
+    # documentation, rather than having dedicated pages.
+    rest_path("settings/display", PATCH=(json_change_settings, {"intentionally_undocumented"})),
+    rest_path(
+        "settings/notifications", PATCH=(json_change_settings, {"intentionally_undocumented"})
+    ),
     # users/me/alert_words -> zerver.views.alert_words
     rest_path(
         "users/me/alert_words",
@@ -490,7 +483,7 @@ v1_api_and_json_patterns = [
     ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
-    # Used to generate a Big Blue Button video call URL
+    # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
@@ -596,9 +589,6 @@ i18n_urls = [
     path("new/<creation_key>", create_realm, name="create_realm"),
     # Realm reactivation
     path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
-    # Global public streams (Zulip's way of doing archives)
-    path("archive/streams/<int:stream_id>/topics/<topic_name>", archive),
-    path("archive/streams/<int:stream_id>/topics", get_web_public_topics_backend),
     # Login/registration
     path("register/", accounts_home, name="register"),
     path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
@@ -607,7 +597,7 @@ i18n_urls = [
     path("calls/zoom/register", register_zoom_user),
     path("calls/zoom/complete", complete_zoom_user),
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
-    # Used to join a Big Blue Button video call
+    # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
     # API and integrations documentation
     path("integrations/doc-html/<integration_name>", integration_doc),
@@ -621,16 +611,28 @@ i18n_urls = [
     path("apps/", apps_view),
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
+    path(
+        "developer-community/", landing_view, {"template_name": "zerver/developer-community.html"}
+    ),
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "zerver/history.html"}),
     path("why-zulip/", landing_view, {"template_name": "zerver/why-zulip.html"}),
+    path("for/education/", landing_view, {"template_name": "zerver/for-education.html"}),
+    path("for/events/", landing_view, {"template_name": "zerver/for-events.html"}),
     path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
+    path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
+    path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
+    path(
+        "for/communities/",
+        landing_view,
+        {"template_name": "zerver/for-communities.html"},
+    ),
+    # We merged this into /for/communities.
     path(
         "for/working-groups-and-communities/",
-        landing_view,
-        {"template_name": "zerver/for-working-groups-and-communities.html"},
+        RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
     # Terms of Service and privacy pages.
@@ -765,6 +767,10 @@ urls += [
     path(
         "help/community-topic-edits",
         RedirectView.as_view(url="/help/configure-who-can-edit-topics", permanent=True),
+    ),
+    path(
+        "help/only-allow-admins-to-add-emoji",
+        RedirectView.as_view(url="/help/configure-who-can-add-custom-emoji", permanent=True),
     ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),

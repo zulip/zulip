@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class ErrBitHookTests(WebhookTestCase):
     STREAM_NAME = "errbit"
     URL_TEMPLATE = "/api/v1/external/errbit?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "errbit"
+    WEBHOOK_DIR_NAME = "errbit"
 
     def test_errbit_error_message(self) -> None:
         expected_topic = "ZulipIntegrationTest / ErrbitEnvName"

@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_subscription_type from "../templates/subscription_type.hbs";
+import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -8,7 +8,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
-import * as subs from "./subs";
+import * as stream_settings_ui from "./stream_settings_ui";
 
 export function initialize_disable_btn_hint_popover(
     btn_wrapper,
@@ -41,7 +41,7 @@ export function initialize_disable_btn_hint_popover(
 
 export function initialize_cant_subscribe_popover(sub) {
     const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
-    const settings_button = subs.settings_button_for_sub(sub);
+    const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     initialize_disable_btn_hint_popover(
         button_wrapper,
         settings_button,
@@ -50,9 +50,29 @@ export function initialize_cant_subscribe_popover(sub) {
     );
 }
 
+export function update_toggler_for_sub(sub) {
+    if (!stream_edit.is_sub_settings_active(sub)) {
+        return;
+    }
+    if (sub.subscribed) {
+        stream_edit.toggler.enable_tab("personal_settings");
+        stream_edit.toggler.goto(stream_edit.select_tab);
+    } else {
+        if (stream_edit.select_tab === "personal_settings") {
+            // Go to the general settings tab, if the user is not
+            // subscribed. Also preserve the previous selected tab,
+            // to render next time a stream row is selected.
+            stream_edit.toggler.goto("general_settings");
+        } else {
+            stream_edit.toggler.goto(stream_edit.select_tab);
+        }
+        stream_edit.toggler.disable_tab("personal_settings");
+    }
+}
+
 export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
-    const settings_button = subs.settings_button_for_sub(sub);
+    const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     if (sub.subscribed) {
         settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
     } else {
@@ -81,9 +101,9 @@ export function update_regular_sub_settings(sub) {
             $settings.find(".email-address").text(sub.email_address);
             $settings.find(".stream-email-box").show();
         }
-        $settings.find(".regular_subscription_settings").addClass("in");
+        $settings.find(".personal_settings").addClass("in");
     } else {
-        $settings.find(".regular_subscription_settings").removeClass("in");
+        $settings.find(".personal_settings").removeClass("in");
         // Clear email address widget
         $settings.find(".email-address").html("");
     }
@@ -120,8 +140,8 @@ export function update_stream_row_in_settings_tab(sub) {
     // If user is subscribed to stream, it will show sub row under
     // "Subscribed" tab, otherwise if stream is not public hide
     // stream row under tab.
-    if (subs.is_subscribed_stream_tab_active()) {
-        const sub_row = subs.row_for_stream_id(sub.stream_id);
+    if (stream_settings_ui.is_subscribed_stream_tab_active()) {
+        const sub_row = stream_settings_ui.row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
             sub_row.removeClass("notdisplayed");
         } else if (sub.invite_only || page_params.is_guest) {
@@ -138,7 +158,7 @@ export function update_stream_subscription_type_text(sub) {
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
     };
-    const html = render_subscription_type(template_data);
+    const html = render_stream_permission_description(template_data);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
