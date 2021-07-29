@@ -76,7 +76,7 @@
 <form method="POST" class="approve-sponsorship-form">
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <input type="hidden" name="approve_sponsorship" value="approve_sponsorship" />
+    <input type="hidden" name="approve_sponsorship" value="true" />
     <button class="btn btn-default sea-green small approve-sponsorship-button">
         Approve full sponsorship
     </button>
@@ -143,6 +143,6 @@
     <h3>❌ Scrub realm</h3>
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <input type="hidden" name="scrub_realm" value="scrub_realm" />
+    <input type="hidden" name="scrub_realm" value="true" />
     <button data-string-id="{{realm.string_id}}" class="btn btn-danger small scrub-realm-button">Scrub realm (danger)</button>
 </form>

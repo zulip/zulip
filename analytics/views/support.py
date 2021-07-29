@@ -27,8 +27,9 @@ from zerver.lib.actions import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain_from_hostname
-from zerver.lib.utils import assert_is_not_none
+from zerver.lib.validator import check_bool, check_string_in, to_decimal, to_non_negative_int
 from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
@@ -40,8 +41,8 @@ from zerver.models import (
 from zerver.views.invite import get_invitee_emails_set
 
 if settings.BILLING_ENABLED:
+    from corporate.lib.stripe import approve_sponsorship as do_approve_sponsorship
     from corporate.lib.stripe import (
-        approve_sponsorship,
         attach_discount_to_realm,
         downgrade_at_the_end_of_billing_cycle,
         downgrade_now_without_creating_additional_invoices,
@@ -103,8 +104,43 @@ def get_confirmations(
     return confirmation_dicts
 
 
+VALID_DOWNGRADE_METHODS = [
+    "downgrade_at_billing_cycle_end",
+    "downgrade_now_without_additional_licenses",
+    "downgrade_now_void_open_invoices",
+]
+
+VALID_STATUS_VALUES = [
+    "active",
+    "deactivated",
+]
+
+VALID_BILLING_METHODS = [
+    "send_invoice",
+    "charge_automatically",
+]
+
+
 @require_server_admin
-def support(request: HttpRequest) -> HttpResponse:
+@has_request_variables
+def support(
+    request: HttpRequest,
+    realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    plan_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    new_subdomain: Optional[str] = REQ(default=None),
+    status: Optional[str] = REQ(default=None, str_validator=check_string_in(VALID_STATUS_VALUES)),
+    billing_method: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_BILLING_METHODS)
+    ),
+    sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    approve_sponsorship: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    downgrade_method: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_DOWNGRADE_METHODS)
+    ),
+    scrub_realm: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    query: Optional[str] = REQ("q", default=None),
+) -> HttpResponse:
     context: Dict[str, Any] = {}
 
     if "success_message" in request.session:
@@ -120,26 +156,22 @@ def support(request: HttpRequest) -> HttpResponse:
         if len(keys) != 2:
             raise JsonableError(_("Invalid parameters"))
 
-        realm_id: str = assert_is_not_none(request.POST.get("realm_id"))
         realm = Realm.objects.get(id=realm_id)
 
         acting_user = request.user
         assert isinstance(acting_user, UserProfile)
-        if request.POST.get("plan_type", None) is not None:
-            new_plan_type = int(assert_is_not_none(request.POST.get("plan_type")))
+        if plan_type is not None:
             current_plan_type = realm.plan_type
-            do_change_plan_type(realm, new_plan_type, acting_user=acting_user)
-            msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
+            do_change_plan_type(realm, plan_type, acting_user=acting_user)
+            msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
             context["success_message"] = msg
-        elif request.POST.get("discount", None) is not None:
-            new_discount = Decimal(assert_is_not_none(request.POST.get("discount")))
+        elif discount is not None:
             current_discount = get_discount_for_realm(realm) or 0
-            attach_discount_to_realm(realm, new_discount, acting_user=acting_user)
+            attach_discount_to_realm(realm, discount, acting_user=acting_user)
             context[
                 "success_message"
-            ] = f"Discount of {realm.string_id} changed to {new_discount}% from {current_discount}%."
-        elif request.POST.get("new_subdomain", None) is not None:
-            new_subdomain: str = assert_is_not_none(request.POST.get("new_subdomain"))
+            ] = f"Discount of {realm.string_id} changed to {discount}% from {current_discount}%."
+        elif new_subdomain is not None:
             old_subdomain = realm.string_id
             try:
                 check_subdomain_available(new_subdomain)
@@ -153,8 +185,7 @@ def support(request: HttpRequest) -> HttpResponse:
                 return HttpResponseRedirect(
                     reverse("support") + "?" + urlencode({"q": new_subdomain})
                 )
-        elif request.POST.get("status", None) is not None:
-            status = request.POST.get("status")
+        elif status is not None:
             if status == "active":
                 do_send_realm_reactivation_email(realm, acting_user=acting_user)
                 context[
@@ -163,8 +194,7 @@ def support(request: HttpRequest) -> HttpResponse:
             elif status == "deactivated":
                 do_deactivate_realm(realm, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} deactivated."
-        elif request.POST.get("billing_method", None) is not None:
-            billing_method = request.POST.get("billing_method")
+        elif billing_method is not None:
             if billing_method == "send_invoice":
                 update_billing_method_of_current_plan(
                     realm, charge_automatically=False, acting_user=acting_user
@@ -179,20 +209,17 @@ def support(request: HttpRequest) -> HttpResponse:
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to charge automatically."
-        elif request.POST.get("sponsorship_pending", None) is not None:
-            sponsorship_pending = request.POST.get("sponsorship_pending")
-            if sponsorship_pending == "true":
+        elif sponsorship_pending is not None:
+            if sponsorship_pending:
                 update_sponsorship_status(realm, True, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
-            elif sponsorship_pending == "false":
+            else:
                 update_sponsorship_status(realm, False, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
-        elif request.POST.get("approve_sponsorship") is not None:
-            if request.POST.get("approve_sponsorship") == "approve_sponsorship":
-                approve_sponsorship(realm, acting_user=acting_user)
-                context["success_message"] = f"Sponsorship approved for {realm.string_id}"
-        elif request.POST.get("downgrade_method", None) is not None:
-            downgrade_method = request.POST.get("downgrade_method")
+        elif approve_sponsorship is True:
+            do_approve_sponsorship(realm, acting_user=acting_user)
+            context["success_message"] = f"Sponsorship approved for {realm.string_id}"
+        elif downgrade_method is not None:
             if downgrade_method == "downgrade_at_billing_cycle_end":
                 downgrade_at_the_end_of_billing_cycle(realm)
                 context[
@@ -209,12 +236,10 @@ def support(request: HttpRequest) -> HttpResponse:
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
-        elif request.POST.get("scrub_realm", None) is not None:
-            if request.POST.get("scrub_realm") == "scrub_realm":
-                do_scrub_realm(realm, acting_user=acting_user)
-                context["success_message"] = f"{realm.string_id} scrubbed."
+        elif scrub_realm is True:
+            do_scrub_realm(realm, acting_user=acting_user)
+            context["success_message"] = f"{realm.string_id} scrubbed."
 
-    query = request.GET.get("q", None)
     if query:
         key_words = get_invitee_emails_set(query)
 

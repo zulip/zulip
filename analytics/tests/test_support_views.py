@@ -416,7 +416,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         result = self.client_post(
             "/activity/support",
-            {"realm_id": f"{lear_realm.id}", "approve_sponsorship": "approve_sponsorship"},
+            {"realm_id": f"{lear_realm.id}", "approve_sponsorship": "true"},
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
@@ -426,7 +426,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         result = self.client_post(
             "/activity/support",
-            {"realm_id": f"{lear_realm.id}", "approve_sponsorship": "approve_sponsorship"},
+            {"realm_id": f"{lear_realm.id}", "approve_sponsorship": "true"},
         )
         self.assert_in_success_response(["Sponsorship approved for lear"], result)
         lear_realm.refresh_from_db()
@@ -585,7 +585,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch("analytics.views.support.do_scrub_realm") as m:
             result = self.client_post(
-                "/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "scrub_realm"}
+                "/activity/support", {"realm_id": f"{lear_realm.id}", "scrub_realm": "true"}
             )
             m.assert_called_once_with(lear_realm, acting_user=self.example_user("iago"))
             self.assert_in_success_response(["lear scrubbed"], result)
