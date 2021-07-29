@@ -11,9 +11,107 @@ This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally.  See the [commit
 log][commit-log] for an up-to-date list of raw changes.
 
+#### Highlights
+
+- New [resolve topic](https://zulip.com/help/resolve-a-topic) feature
+  allows marking topics as completed for lightweight workflow management.
+- Users can now select an emoji when setting an away status.
+- OpenID Connect joins SAML, LDAP, Google, GitHub, Azure Active
+  Directory, and more as a supported Single Sign-On provider.
+- Redesigned "Stream settings" to be much more usable, with separate
+  tabs for personal settings, global settings, and membership.
+- Redesigned "Full user profile" widget to show the user's stream
+  and user group subscriptions.
+- Reorganized personal and organization settings to have clearer
+  labels and make it easier to find privacy settings.
+- Migrated most permissions settings that only supported
+  administrators or normal users to fully support roles.
+- Added a data import tool for migrating from Rocket.Chat. Mattermost
+  data import now supports importing uploaded files.
+
 #### Upgrade notes for 5.0
 
 - None yet.
+
+#### Full feature changelog
+
+- Timestamps in Zulip messages are now permanent links to the message
+  in its thread.
+- Added support for referring to a user group with a silent mention.
+- Added support for expanding the compose box to be full-screen.
+- Added support for filtering events in webhooks.
+- Added support for overriding Zulip's defaults for new users in your
+  organization.
+- User groups mentions are now correctly inactive inside block quotes.
+- Messages sent by muted users can now be rehidden after being
+  revealed. One can also now muted deactivated users.
+- Reworked the UI for selecting a stream when moving topics.
+- Redesigned modals in the app to have more consistent and cleaner UX.
+- SAML authentication now supports syncing custom profile
+  fields. Additionally, SAML authentication now supports automatic
+  account creation.
+- Added new topic filter widget in left sidebar zoomed view.
+- New integrations: Freshstatus, Lidarr, Radarr, Sonarr.
+- Redesigned hover behavior for timestamps and time mentions.
+- Added styled loading page.
+- Webhook integrations now support specifying the target stream by ID.
+- Notifications now differentiate user group mentions from personal mentions.
+- Added support for configuring how long the server should wait before
+  sending email notifications after a mention or PM.
+- Improved integrations: Grafana, PagerDuty.
+- Improved the typeahead sorting for choosing code block languages.
+- Zulip now supports configuring the database name and username when
+  using a remote Postgres server. Previously, these were hardcoded to "zulip".
+- Migrated many tooltips to prettier tooltips powered by TippyJS.
+- Autocomplete is now available when editing topics.
+- Changed "Quote and reply" to insert quoted content at the cursor when
+  the compose box is not empty.
+- The compose box now has friendly UI for messages longer than 10K characters.
+- Compose typeahead now opens after typing only "@".
+- Adjusted permissions to only allow administrators to override
+  unicode emoji with a custom emoji of the same name.
+- Fixed various bugs resulting in missing translations; most
+  importantly in the in-application search/markdown/hotkeys help widgets.
+- Fixed linkifier validation to prevent invalid linkifiers.
+- Fixed `Ctrl+.` shortcut not working correctly with empty topics.
+- Fixed numerous corner case bugs with email and mobile push notifications.
+- Fixed a bug resulting in long LaTeX messages failing to render.
+- Fixed buggy logic displaying users' last active time.
+- Fixed confusing "delete stream" language for archiving streams.
+- Fixed exceptions in races involving messages being deleted while
+  processing a request to add emoji reactions, mark messages as read,
+  or sending notifications.
+- Fixed most remaining 500 errors seen in Zulip Cloud (these were
+  already quite rare, so this process involved debugging several rare
+  races, timeouts, and error handling bugs.).
+- Fixed subtle bugs involving composing messages to deactivated users.
+- Fixed subtle bugs with reloading the page while viewing settings
+  with "Recent topics" as the default view.
+- Fixed bug where pending email notifications could be lost when restarting
+  the Zulip server.
+- Fixed several subtle Markdown rendering bugs.
+- Changed "From" header in invitation emails to no longer include the
+  name of the user who sent the invitation, to prevent anti-phishing
+  software from flagging invitations.
+- Reworked the `manage.py help` interface to hide Django commands that are
+  useless or harmful to run on a production system. Also deleted
+  several useless management commands.
+- Added automated testing of the upgrade process from previous releases,
+  to reduce the likelihood of problems upgrading Zulip.
+- Optimized critical parts of the message sending code path for large
+  organizations.
+- Added IP-based rate limiting for unauthenticated requests.
+- Added documentation for Zulip's rate-limiting rules.
+- Merged the API endpoints for a user's personal settings into the
+  /settings endpoint with a cleaner interface.
+- Added to the API most page-load parameters used by the web app
+  application that were missing from the `/register` API.
+- Simplified the infrastructure for rendering API documentation so
+  that only a few pages require Markdown templates in addition to the
+  OpenAPI specification file.
+- Major improvements to the mypy type-checking, discovered via
+  using the django-stubs project to get Django stubs.
+- Added development environment support for M1 Mac hardware.
 
 ## Zulip 4.x series
 
