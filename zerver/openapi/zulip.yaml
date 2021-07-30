@@ -4342,6 +4342,65 @@ paths:
                           ],
                         "upload_space_used": 571946,
                       }
+  /attachments/{attachment_id}:
+    delete:
+      operationId: remove-attachment
+      summary: Delete an attachment
+      tags: ["users"]
+      description: |
+        Delete an uploaded file given its attachment ID.
+
+        Note that uploaded files that have been referenced in at least
+        one message are automatically deleted once the last message
+        containing a link to them is deleted (whether directly or via
+        a [message retention policy](/help/message-retention-policy)).
+
+        Uploaded files that are never used in a message are
+        automatically deleted a few weeks after being uploaded.
+
+        Attachment IDs can be contained from [GET /attachments](/api/get-attachments).
+      parameters:
+        - name: attachment_id
+          in: path
+          description: |
+            The ID of the attachment to be deleted.
+          schema:
+            type: string
+          example: "1"
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid attachment",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the `attachment_id` is invalid
+        "401":
+          description: Error.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Not logged in: API authentication or user session required",
+                      }
+                    description: |
+                      A typical failed JSON response for when the user is not logged in
   /drafts:
     get:
       operationId: get-drafts
