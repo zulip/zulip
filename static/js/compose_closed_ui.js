@@ -8,6 +8,47 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as recent_topics_util from "./recent_topics_util";
 
+export function get_recipient_label(message) {
+    if (message === undefined) {
+        if (message_lists.current.empty()) {
+            // For empty narrows where there's a clear reply target,
+            // i.e. stream+topic or a single PM conversation, we label
+            // the button as replying to the thread.
+            if (narrow_state.narrowed_to_topic()) {
+                message = {
+                    stream: narrow_state.stream(),
+                    topic: narrow_state.topic(),
+                };
+            } else if (narrow_state.pm_string()) {
+                // TODO: This is a total hack.  Ideally, we'd rework
+                // this to not duplicate the actual compose_actions.js
+                // logic for what happens when you click the button,
+                // and not call into random modules with hacky fake
+                // "message" objects.
+                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_string());
+                const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
+                message = {
+                    display_reply_to: message_store.get_pm_full_names({
+                        type: "private",
+                        display_recipient: user_ids_dicts,
+                    }),
+                };
+            }
+        } else {
+            message = message_lists.current.selected_message();
+        }
+    }
+
+    if (message) {
+        if (message.stream && message.topic) {
+            return "#" + message.stream + " > " + message.topic;
+        } else if (message.display_reply_to) {
+            return message.display_reply_to;
+        }
+    }
+    return "";
+}
+
 function update_stream_button(btn_text, title) {
     $("#left_bar_compose_stream_button_big").text(btn_text);
     $("#left_bar_compose_stream_button_big").prop("title", title);
@@ -50,45 +91,8 @@ export function set_standard_text_for_reply_button() {
 }
 
 export function update_reply_recipient_label(message) {
-    if (message === undefined) {
-        if (message_lists.current.empty()) {
-            // For empty narrows where there's a clear reply target,
-            // i.e. stream+topic or a single PM conversation, we label
-            // the button as replying to the thread.
-            if (narrow_state.narrowed_to_topic()) {
-                message = {
-                    stream: narrow_state.stream(),
-                    topic: narrow_state.topic(),
-                };
-            } else if (narrow_state.pm_string()) {
-                // TODO: This is a total hack.  Ideally, we'd rework
-                // this to not duplicate the actual compose_actions.js
-                // logic for what happens when you click the button,
-                // and not call into random modules with hacky fake
-                // "message" objects.
-                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_string());
-                const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
-                message = {
-                    display_reply_to: message_store.get_pm_full_names({
-                        type: "private",
-                        display_recipient: user_ids_dicts,
-                    }),
-                };
-            } else {
-                set_standard_text_for_reply_button();
-            }
-        } else {
-            message = message_lists.current.selected_message();
-        }
-    }
-
-    let recipient_label = "";
-    if (message) {
-        if (message.stream && message.topic) {
-            recipient_label = "#" + message.stream + " > " + message.topic;
-        } else if (message.display_reply_to) {
-            recipient_label = message.display_reply_to;
-        }
+    const recipient_label = get_recipient_label(message);
+    if (recipient_label) {
         set_reply_button_label(
             $t({defaultMessage: "Message {recipient_label}"}, {recipient_label}),
         );
