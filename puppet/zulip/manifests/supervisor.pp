@@ -100,7 +100,7 @@ class zulip::supervisor {
       # don't match.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
+      restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else if ! ${zulip::common::supervisor_reload}; then ${zulip::common::supervisor_start}; fi; fi'",
       # lint:endignore
     }
     exec { 'supervisor-restart':

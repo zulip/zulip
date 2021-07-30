@@ -228,6 +228,10 @@ jobs:
             name: 3.4 Version Upgrade
             os: buster
 
+          - docker_image: ligmitz/ci:bullseye-4.5
+            name: 4.5 Version Upgrade
+            os: bullseye
+
     name: ${{ matrix.name  }}
     container:
       image: ${{ matrix.docker_image }}
