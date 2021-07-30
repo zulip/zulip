@@ -54,6 +54,7 @@
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
 * [Get attachments](/api/get-attachments)
+* [Delete an attachment](/api/remove-attachment)
 * [Update settings](/api/update-settings)
 * [Get user groups](/api/get-user-groups)
 * [Create a user group](/api/create-user-group)
