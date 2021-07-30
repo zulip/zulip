@@ -1241,7 +1241,6 @@ export function build_page() {
             help_link: "/help/deactivate-your-organization",
             html_body,
             on_click: do_deactivate_realm,
-            fade: true,
         });
     });
 }

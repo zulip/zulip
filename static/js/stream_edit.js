@@ -923,7 +923,6 @@ export function initialize() {
                 ),
                 html_body,
                 on_click: remove_user_from_private_stream,
-                fade: true,
             });
             return;
         }
@@ -989,7 +988,6 @@ export function initialize() {
             help_link: "/help/archive-a-stream",
             html_body,
             on_click: do_archive_stream,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-stream-id", stream_id);

@@ -205,7 +205,6 @@ export function on_load_success(invites_data, initialize_event_handlers) {
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
             on_click: do_revoke_invite,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
@@ -228,7 +227,6 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
             on_click: do_resend_invite,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
