@@ -11,6 +11,16 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 88**
+
+* [`POST /register`](/api/register-queue): Added `zulip_merge_base`
+  field to the response.
+* [`GET /events`](/api/get-events): Added new `zulip_merge_base`
+  field to the `restart` event.
+* [`GET /server_settings`](/api/get-server-settings): Added
+  `zulip_merge_base` to the responses which can be used to
+  make "About Zulip" widgets in clients.
+
 **Feature level 87**
 
 * [`PATCH /settings`](/api/update-settings): Added a new

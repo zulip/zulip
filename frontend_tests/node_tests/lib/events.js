@@ -520,6 +520,7 @@ exports.fixtures = {
     restart: {
         type: "restart",
         zulip_version: "4.0-dev+git",
+        zulip_merge_base: "",
         zulip_feature_level: 55,
         server_generation: 2,
         immediate: true,

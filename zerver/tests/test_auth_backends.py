@@ -4547,6 +4547,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("require_email_format_usernames", check_bool),
                     ("realm_uri", check_string),
                     ("zulip_version", check_string),
+                    ("zulip_merge_base", check_string),
                     ("zulip_feature_level", check_int),
                     ("push_notifications_enabled", check_bool),
                     ("msg", check_string),

@@ -36,7 +36,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
-from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.decorator import cachify
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
@@ -584,6 +584,7 @@ def send_restart_events(immediate: bool = False) -> None:
     event: Dict[str, Any] = dict(
         type="restart",
         zulip_version=ZULIP_VERSION,
+        zulip_merge_base=ZULIP_MERGE_BASE,
         zulip_feature_level=API_FEATURE_LEVEL,
         server_generation=settings.SERVER_GENERATION,
     )

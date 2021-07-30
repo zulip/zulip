@@ -7,7 +7,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
-from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.actions import (
     check_send_message,
     do_change_user_role,
@@ -889,6 +889,7 @@ class RestartEventsTest(ZulipTestCase):
             dict(
                 type="restart",
                 zulip_version=ZULIP_VERSION,
+                zulip_merge_base=ZULIP_MERGE_BASE,
                 zulip_feature_level=API_FEATURE_LEVEL,
                 server_generation=settings.SERVER_GENERATION,
                 immediate=True,

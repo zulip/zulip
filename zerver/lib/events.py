@@ -7,7 +7,7 @@ from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.actions import (
     default_stream_groups_to_dicts_sorted,
     do_get_streams,
@@ -135,6 +135,7 @@ def fetch_initial_state_data(
     # Show the version info unconditionally.
     state["zulip_version"] = ZULIP_VERSION
     state["zulip_feature_level"] = API_FEATURE_LEVEL
+    state["zulip_merge_base"] = ZULIP_MERGE_BASE
 
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)

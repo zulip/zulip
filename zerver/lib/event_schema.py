@@ -1169,6 +1169,7 @@ restart_event = event_dict_type(
     required_keys=[
         ("type", Equals("restart")),
         ("zulip_version", str),
+        ("zulip_merge_base", str),
         ("zulip_feature_level", int),
         ("server_generation", int),
         ("immediate", bool),

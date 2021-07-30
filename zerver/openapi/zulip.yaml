@@ -3240,6 +3240,14 @@ paths:
                                     [register](/api/register-queue) responses.
 
                                     **Changes**: New in Zulip 4.0 (feature level 59).
+                                zulip_merge_base:
+                                  type: string
+                                  description: |
+                                    The Zulip merge base number, in the format where this appears
+                                    in the [server_settings](/api/get-server-settings) and
+                                    [register](/api/register-queue) responses.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 87).
                                 zulip_feature_level:
                                   type: integer
                                   description: |
@@ -3272,7 +3280,8 @@ paths:
                                   "server_generation": 1619334181,
                                   "type": "restart",
                                   "zulip_feature_level": 57,
-                                  "zulip_version": "4.0-dev+git",
+                                  "zulip_version": "5.0-dev-1650-gc3fd37755f",
+                                  "zulip_merge_base": "5.0-dev-1646-gea6b21cd8c",
                                 }
                             - type: object
                               additionalProperties: false
@@ -8248,7 +8257,23 @@ paths:
                       zulip_version:
                         type: string
                         description: |
-                          The server's version.
+                          The server's version number.  This is often a release version number,
+                          like `2.1.7`. But for a server running a [version from Git][git-release],
+                          it will be a Git reference to the commit, like `5.0-dev-1650-gc3fd37755f`.
+
+                          [git-release]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#git-versions
+                      zulip_merge_base:
+                        type: string
+                        description: |
+                          The `git merge-base` between `zulip_verson` and official branches
+                          in the public
+                          [Zulip server and web app repository](https://github.com/zulip/zulip),
+                          in the same format as `zulip_version`. This will equal
+                          `zulip_version` if the server is not running a fork of the Zulip server.
+
+                          This will be `""` if the server does not know its `merge-base`.
+
+                          **Changes**: New in Zulip 5.0 (feature level 88).
                       alert_words:
                         type: array
                         description: |
@@ -10237,7 +10262,8 @@ paths:
                           },
                         "result": "success",
                         "zulip_feature_level": 2,
-                        "zulip_version": "2.1.0",
+                        "zulip_version": "5.0-dev-1650-gc3fd37755f",
+                        "zulip_merge_base": "5.0-dev-1646-gea6b21cd8c",
                       }
   /server_settings:
     get:
@@ -10380,10 +10406,6 @@ paths:
                               type: string
                               description: |
                                 URL to be used to initiate account registration using this method.
-                      zulip_version:
-                        type: string
-                        description: |
-                          The version of Zulip running in the server.
                       zulip_feature_level:
                         type: integer
                         description: |
@@ -10397,6 +10419,26 @@ paths:
 
                           **Changes**.  New in Zulip 3.0.  We recommend using an implied value
                           of 0 for Zulip servers that do not send this field.
+                      zulip_version:
+                        type: string
+                        description: |
+                          The server's version number.  This is often a release version number,
+                          like `2.1.7`. But for a server running a [version from Git][git-release],
+                          it will be a Git reference to the commit, like `5.0-dev-1650-gc3fd37755f`.
+
+                          [git-release]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#git-versions
+                      zulip_merge_base:
+                        type: string
+                        description: |
+                          The `git merge-base` between `zulip_verson` and official branches
+                          in the public
+                          [Zulip server and web app repository](https://github.com/zulip/zulip),
+                          in the same format as `zulip_version`. This will equal
+                          `zulip_version` if the server is not running a fork of the Zulip server.
+
+                          This will be `""` if unavailable.
+
+                          **Changes**: New in Zulip 5.0 (feature level 88).
                       push_notifications_enabled:
                         type: boolean
                         description: |
@@ -10457,7 +10499,8 @@ paths:
                             "google": true,
                             "saml": true,
                           },
-                        "zulip_version": "2.0.6+git",
+                        "zulip_version": "5.0-dev-1650-gc3fd37755f",
+                        "zulip_merge_base": "5.0-dev-1646-gea6b21cd8c",
                         "push_notifications_enabled": false,
                         "msg": "",
                         "is_incompatible": false,
