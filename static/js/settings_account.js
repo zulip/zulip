@@ -603,7 +603,6 @@ export function set_up() {
             html_body,
             on_click: handle_confirm,
             help_link: "/help/deactivate-your-account",
-            fade: true,
             loading_spinner: true,
         });
     });

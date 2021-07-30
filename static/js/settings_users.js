@@ -445,7 +445,6 @@ function confirm_deactivation(row, user_id, status_field) {
         html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
         html_body,
         on_click: handle_confirm,
-        fade: true,
     });
 }
 
@@ -584,7 +583,6 @@ function handle_human_form(tbody, status_field) {
             html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
-            fade: true,
         });
     });
 }
@@ -653,7 +651,6 @@ function handle_bot_form(tbody, status_field) {
             html_body,
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
-            fade: true,
         });
     });
 }

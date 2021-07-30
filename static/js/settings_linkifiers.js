@@ -100,7 +100,6 @@ function open_linkifier_edit_form(linkifier_id) {
         html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
         html_body,
         on_click: submit_linkifier_form,
-        fade: true,
     });
 }
 

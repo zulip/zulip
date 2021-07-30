@@ -258,7 +258,6 @@ export function set_up() {
                     html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
                     html_body,
                     on_click: submit_custom_emoji_request,
-                    fade: true,
                 });
             } else {
                 submit_custom_emoji_request();

@@ -970,7 +970,6 @@ export function unsubscribe_from_private_stream(sub) {
         ),
         html_body,
         on_click: unsubscribe_from_stream,
-        fade: true,
     });
 }
 

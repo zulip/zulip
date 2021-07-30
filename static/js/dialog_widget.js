@@ -94,7 +94,6 @@ export function launch(conf) {
         link: conf.help_link,
     });
     const html = render_dialog_widget({
-        fade: conf.fade,
         html_submit_button,
         html_dialog_heading,
         html_body: conf.html_body,

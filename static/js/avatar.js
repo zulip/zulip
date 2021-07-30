@@ -101,7 +101,6 @@ export function build_user_avatar_widget(upload_function) {
             html_heading: $t_html({defaultMessage: "Delete profile picture"}),
             html_body,
             on_click: delete_user_avatar,
-            fade: true,
         });
     });
 
