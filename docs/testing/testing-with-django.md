@@ -44,12 +44,12 @@ URL coverage, and slow tests.  Use the `-h` option to discover these
 features.  We also have a `--profile` option to facilitate profiling
 tests.
 
-Another thing to note is that our tests generally "fail fast," i.e. they
-stop at the first sign of trouble.  This is generally a good thing for
-iterative development, but you can override this behavior with the
-`--nonfatal-errors` option.  A useful option to combine with that is
-the `--rerun` option, which will rerun just the tests that failed in
-the last test run.
+By default, `test-backend` will run all requested tests, and report
+all failures at the end. You can configure it to stop after the first
+error with the `--stop` option (or `-x`).
+
+Another useful option is `--rerun`, which will rerun just the tests
+that failed in the last test run.
 
 **Webhook integrations**.  For performance, `test-backend` with no
 arguments will not run webhook integration tests (`zerver/webhooks/`),

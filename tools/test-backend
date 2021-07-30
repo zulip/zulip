@@ -223,10 +223,11 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--nonfatal-errors",
-        action="store_false",
+        "-x",
+        "--stop",
+        action="store_true",
         dest="fatal_errors",
-        help="Continue past test failures to run all tests",
+        help="Stop running tests after the first failure.",
     )
     parser.add_argument("--coverage", action="store_true", help="Compute test coverage.")
     parser.add_argument(
@@ -257,8 +258,7 @@ def main() -> None:
         "--rerun",
         action="store_true",
         help=(
-            "Run the tests which failed the last time "
-            "test-backend was run.  Implies --nonfatal-errors."
+            "Run the tests which failed the last time " "test-backend was run.  Implies not --stop."
         ),
     )
     parser.add_argument(
@@ -294,7 +294,7 @@ def main() -> None:
     # While running --rerun, we read var/last_test_failure.json to get
     # the list of tests that failed on the last run, and then pretend
     # those tests were passed explicitly.  --rerun implies
-    # --nonfatal-errors, so that we don't end up removing tests from
+    # !fatal_errors, so that we don't end up removing tests from
     # the list that weren't run.
     if options.rerun:
         parallel = 1
