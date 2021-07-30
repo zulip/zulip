@@ -147,8 +147,6 @@ class TestVideoCall(ZulipTestCase):
 
     @responses.activate
     def test_deauthorize_zoom_user(self) -> None:
-        responses.add(responses.POST, "https://api.zoom.us/oauth/data/compliance")
-
         response = self.client_post(
             "/calls/zoom/deauthorize",
             """\
