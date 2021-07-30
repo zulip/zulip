@@ -3,17 +3,29 @@ import type {Page} from "puppeteer";
 import common from "../puppeteer_lib/common";
 
 async function open_set_user_status_modal(page: Page): Promise<void> {
-    const buddy_list_me_item = "#user_presences .user_sidebar_entry:first-child";
-    await page.hover(buddy_list_me_item);
-    const menu_icon_selector = buddy_list_me_item + " .user-list-sidebar-menu-icon";
-    await page.waitForSelector(menu_icon_selector, {visible: true});
-    await page.click(menu_icon_selector);
+    const menu_icon_selector = ".user_sidebar_entry:first-child .user-list-sidebar-menu-icon";
+    // We are clicking on the menu icon with the help of `waitForFunction` because the list
+    // re-renders many times and can cause the element to become stale.
+    await page.waitForFunction(
+        (selector: string): boolean => {
+            const menu_icon = document.querySelector(selector);
+            if (menu_icon) {
+                (menu_icon as HTMLSpanElement).click();
+                return true;
+            }
+            return false;
+        },
+        {},
+        menu_icon_selector,
+    );
     await page.waitForSelector(".user_popover", {visible: true});
     // We are using evaluate to click because it is very hard to detect if the user info popover has opened.
     await page.evaluate(() =>
         (document.querySelector(".update_status_text") as HTMLAnchorElement)!.click(),
     );
-    await page.waitForSelector("#set_user_status_modal", {visible: true});
+
+    // Wait for the modal to completely open.
+    await page.waitForFunction(() => document.activeElement?.classList.contains("user_status"));
 }
 
 async function test_user_status(page: Page): Promise<void> {
