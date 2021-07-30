@@ -77,7 +77,7 @@ table td {
 .footer p,
 .footer span,
 .footer a {
-    color: #999;
+    color: #5f5ec7;
     font-size: 12px;
     text-align: center;
 }
@@ -90,7 +90,7 @@ h1,
 h2,
 h3,
 h4 {
-    color: #000;
+    color: #4e4d4d !important;
     font-family: sans-serif;
     font-weight: 400;
     line-height: 1.4;
@@ -122,12 +122,12 @@ ol li {
 }
 
 a {
-    color: #46aa8f;
+    color: #5f5ec7;
     text-decoration: underline;
 }
 
 a:hover {
-    color: #52c7a8;
+    color: #434388;
 }
 
 .important {
@@ -139,12 +139,12 @@ a:hover {
     padding: 10px 0;
     margin: 20px auto;
     width: 200px;
-    border: 1px solid #80d1ba;
-    background-color: #80d1ba;
+    color: #5f5ec7;
+    border: 2px solid #5f5ec7;
+    background-color: #fff;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
-    color: #fff;
     font-family: sans-serif;
     text-decoration: none;
     text-align: center;
@@ -152,7 +152,8 @@ a:hover {
 }
 
 a.button:hover {
-    color: #caf7ea;
+    background-color: #5f5ec7;
+    color: #fff;
     text-decoration: none;
 }
 
