@@ -25,6 +25,10 @@ below features are supported.
   event queue.
 * [`POST /register`](/api/register-queue): Added `user_settings` field
   in the response, which is a dictionary containing all the user settings.
+* [`POST /register`](/api/register-queue): User's personal settings in
+  the top-level object are included in response only when `user_settings_object`
+  is not included in the `client_capabilities` when registering the event
+  queue.
 
 **Feature level 88**
 

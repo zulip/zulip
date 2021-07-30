@@ -105,6 +105,7 @@ def fetch_initial_state_data(
     queue_id: Optional[str] = "",
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
+    user_settings_object: bool = False,
     slim_presence: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
@@ -513,13 +514,13 @@ def fetch_initial_state_data(
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
-    if want("update_display_settings"):
+    if want("update_display_settings") and not user_settings_object:
         for prop in UserProfile.property_types:
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
         state["timezone"] = settings_user.timezone
 
-    if want("update_global_notifications"):
+    if want("update_global_notifications") and not user_settings_object:
         for notification in UserProfile.notification_setting_types:
             state[notification] = getattr(settings_user, notification)
         state["available_notification_sounds"] = get_available_notification_sounds()
@@ -1276,6 +1277,7 @@ def do_events_register(
             queue_id=queue_id,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
+            user_settings_object=user_settings_object,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
             include_streams=include_streams,

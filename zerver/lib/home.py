@@ -164,6 +164,7 @@ def build_page_params_for_home_page_load(
             queue_id=None,
             client_gravatar=False,
             user_avatar_url_field_optional=client_capabilities["user_avatar_url_field_optional"],
+            user_settings_object=client_capabilities["user_settings_object"],
             slim_presence=False,
             include_subscribers=False,
             include_streams=False,
