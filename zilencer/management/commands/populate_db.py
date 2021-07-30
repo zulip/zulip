@@ -46,6 +46,7 @@ from zerver.models import (
     Client,
     CustomProfileField,
     DefaultStream,
+    Draft,
     Huddle,
     Message,
     Reaction,
@@ -469,6 +470,23 @@ class Command(BaseCommand):
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
             iago.is_staff = True
             iago.save(update_fields=["is_staff"])
+
+            # We need to create at least two test draft for Iago for the sake
+            # of the cURL tests. Two since one will be deleted.
+            Draft.objects.create(
+                user_profile=iago,
+                recipient=None,
+                topic="Release Notes",
+                content="Release 4.0 will contain ...",
+                last_edit_time=datetime.now(),
+            )
+            Draft.objects.create(
+                user_profile=iago,
+                recipient=None,
+                topic="Release Notes",
+                content="Release 4.0 will contain many new features such as ... ",
+                last_edit_time=datetime.now(),
+            )
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
             do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None)

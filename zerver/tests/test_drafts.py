@@ -16,10 +16,6 @@ class DraftCreationTests(ZulipTestCase):
     ) -> None:
         hamlet = self.example_user("hamlet")
 
-        # Make sure that there are no drafts in the database before
-        # the test begins.
-        self.assertEqual(Draft.objects.count(), 0)
-
         # Now send a POST request to the API endpoint.
         payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
@@ -27,7 +23,7 @@ class DraftCreationTests(ZulipTestCase):
 
         # Finally check to make sure that the drafts were actually created properly.
         new_draft_dicts = []
-        for draft in Draft.objects.order_by("last_edit_time"):
+        for draft in Draft.objects.filter(user_profile=hamlet).order_by("last_edit_time"):
             draft_dict = draft.to_dict()
             draft_dict.pop("id")
             new_draft_dicts.append(draft_dict)
@@ -40,9 +36,7 @@ class DraftCreationTests(ZulipTestCase):
     ) -> None:
         hamlet = self.example_user("hamlet")
 
-        # Make sure that there are no drafts in the database before
-        # the test begins.
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         # Now send a POST request to the API endpoint.
         payload = {"drafts": orjson.dumps(draft_dicts).decode()}
@@ -52,7 +46,7 @@ class DraftCreationTests(ZulipTestCase):
         # Make sure that there are no drafts in the database at the
         # end of the test. Drafts should never be created in error
         # conditions.
-        self.assertEqual(Draft.objects.count(), 0)
+        self.assertEqual(Draft.objects.count(), initial_count)
 
     def test_require_enable_drafts_synchronization(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -169,15 +163,16 @@ class DraftCreationTests(ZulipTestCase):
             }
         ]
 
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         current_time = int(time.time())
         payload = {"drafts": orjson.dumps(draft_dicts).decode()}
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
+        ids = orjson.loads(resp.content)["ids"]
         self.assert_json_success(resp)
 
-        new_drafts = Draft.objects.all()
-        self.assertEqual(Draft.objects.count(), 1)
+        new_drafts = Draft.objects.filter(id__gte=ids[0])
+        self.assertEqual(Draft.objects.count() - initial_count, 1)
         new_draft = new_drafts[0].to_dict()
         self.assertTrue(isinstance(new_draft["timestamp"], int))
         # Since it would be too tricky to get the same times, perform
@@ -322,9 +317,6 @@ class DraftEditTests(ZulipTestCase):
         stream_a = self.get_stream_id(visible_streams[0])
         stream_b = self.get_stream_id(visible_streams[1])
 
-        # Make sure that there are no drafts at the start of this test.
-        self.assertEqual(Draft.objects.count(), 0)
-
         # Create a draft.
         draft_dict = {
             "type": "stream",
@@ -360,8 +352,7 @@ class DraftEditTests(ZulipTestCase):
     def test_edit_non_existant_draft(self) -> None:
         hamlet = self.example_user("hamlet")
 
-        # Make sure that no draft exists in the first place.
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         # Try to update a draft that doesn't exist.
         draft_dict = {
@@ -377,15 +368,12 @@ class DraftEditTests(ZulipTestCase):
         self.assert_json_error(resp, "Draft does not exist", status_code=404)
 
         # Now make sure that no changes were made.
-        self.assertEqual(Draft.objects.count(), 0)
+        self.assertEqual(Draft.objects.count() - initial_count, 0)
 
     def test_edit_unowned_draft(self) -> None:
         hamlet = self.example_user("hamlet")
         visible_streams = self.get_streams(hamlet)
         stream_id = self.get_stream_id(visible_streams[0])
-
-        # Make sure that there are no drafts at the start of this test.
-        self.assertEqual(Draft.objects.count(), 0)
 
         # Create a draft.
         draft_dict = {
@@ -433,7 +421,7 @@ class DraftDeleteTests(ZulipTestCase):
         stream_id = self.get_stream_id(visible_streams[0])
 
         # Make sure that there are no drafts at the start of this test.
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         # Create a draft.
         draft_dict = {
@@ -450,27 +438,27 @@ class DraftDeleteTests(ZulipTestCase):
         new_draft_id = orjson.loads(resp.content)["ids"][0]
 
         # Make sure that exactly 1 draft exists now.
-        self.assertEqual(Draft.objects.count(), 1)
+        self.assertEqual(Draft.objects.count() - initial_count, 1)
 
         # Update this change in the backend.
         resp = self.api_delete(hamlet, f"/api/v1/drafts/{new_draft_id}")
         self.assert_json_success(resp)
 
         # Now make sure that the there are no more drafts.
-        self.assertEqual(Draft.objects.count(), 0)
+        self.assertEqual(Draft.objects.count() - initial_count, 0)
 
     def test_delete_non_existant_draft(self) -> None:
         hamlet = self.example_user("hamlet")
 
         # Make sure that no draft exists in the first place.
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         # Try to delete a draft that doesn't exist.
         resp = self.api_delete(hamlet, "/api/v1/drafts/9999999999")
         self.assert_json_error(resp, "Draft does not exist", status_code=404)
 
         # Now make sure that no drafts were made for whatever reason.
-        self.assertEqual(Draft.objects.count(), 0)
+        self.assertEqual(Draft.objects.count() - initial_count, 0)
 
     def test_delete_unowned_draft(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -478,7 +466,7 @@ class DraftDeleteTests(ZulipTestCase):
         stream_id = self.get_stream_id(visible_streams[0])
 
         # Make sure that there are no drafts at the start of this test.
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         # Create a draft.
         draft_dict = {
@@ -500,7 +488,7 @@ class DraftDeleteTests(ZulipTestCase):
         self.assert_json_error(resp, "Draft does not exist", status_code=404)
 
         # Make sure that the draft was not deleted.
-        self.assertEqual(Draft.objects.count(), 1)
+        self.assertEqual(Draft.objects.count() - initial_count, 1)
 
         # Now make sure that no changes were made either.
         existing_draft = Draft.objects.get(id=new_draft_id, user_profile=hamlet)
@@ -518,7 +506,7 @@ class DraftFetchTest(ZulipTestCase):
         self.assert_json_error(resp, "User has disabled synchronizing drafts.")
 
     def test_fetch_drafts(self) -> None:
-        self.assertEqual(Draft.objects.count(), 0)
+        initial_count = Draft.objects.count()
 
         hamlet = self.example_user("hamlet")
         zoe = self.example_user("ZOE")
@@ -551,7 +539,7 @@ class DraftFetchTest(ZulipTestCase):
         resp = self.api_post(hamlet, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
 
-        self.assertEqual(Draft.objects.count(), 3)
+        self.assertEqual(Draft.objects.count() - initial_count, 3)
 
         zoe_draft_dicts = [
             {
@@ -566,7 +554,7 @@ class DraftFetchTest(ZulipTestCase):
         resp = self.api_post(zoe, "/api/v1/drafts", payload)
         self.assert_json_success(resp)
 
-        self.assertEqual(Draft.objects.count(), 4)
+        self.assertEqual(Draft.objects.count() - initial_count, 4)
 
         # Now actually fetch the drafts. Make sure that hamlet gets only
         # his drafts and exactly as he made them.
@@ -575,7 +563,7 @@ class DraftFetchTest(ZulipTestCase):
         data = orjson.loads(resp.content)
         self.assertEqual(data["count"], 3)
 
-        first_draft_id = Draft.objects.order_by("id")[0].id
+        first_draft_id = Draft.objects.filter(user_profile=hamlet).order_by("id")[0].id
         expected_draft_contents = [
             {"id": first_draft_id + i, **draft_dicts[i]} for i in range(0, 3)
         ]

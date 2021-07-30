@@ -1044,14 +1044,19 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["default_language"], "es")
 
+    # TODO: This test would likely be better written as a /register
+    # API test with just the drafts event type, to avoid the
+    # performance cost of fetching /.
     @override_settings(MAX_DRAFTS_IN_REGISTER_RESPONSE=5)
     def test_limit_drafts(self) -> None:
         draft_objects = []
         hamlet = self.example_user("hamlet")
         base_time = timezone_now()
+        initial_count = Draft.objects.count()
 
         step_value = timedelta(seconds=1)
         # Create 11 drafts.
+        # TODO: This would be better done as an API request.
         for i in range(0, settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1):
             draft_objects.append(
                 Draft(
@@ -1072,6 +1077,9 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(self._get_home_page())
         self.assertEqual(page_params["enable_drafts_synchronization"], True)
         self.assert_length(page_params["drafts"], settings.MAX_DRAFTS_IN_REGISTER_RESPONSE)
-        self.assertEqual(Draft.objects.count(), settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1)
+        self.assertEqual(
+            Draft.objects.count(), settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1 + initial_count
+        )
+        # +2 for what's already in the test DB.
         for draft in page_params["drafts"]:
             self.assertNotEqual(draft["timestamp"], base_time)
