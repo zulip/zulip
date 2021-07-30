@@ -6831,6 +6831,118 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for when the token does not exist
+  /users/me/android_gcm_reg_id:
+    post:
+      operationId: add-android-reg-id
+      summary: Add Android GCM registration ID
+      tags: ["users"]
+      description: |
+        This endpoint adds an Android GCM registration ID for push notifications.
+
+        `POST {{ api_url }}/v1/users/me/android_gcm_reg_id`
+      parameters:
+        - name: token
+          schema:
+            type: string
+          description: |
+            The token provided by the device.
+          in: query
+          example: android-token
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when the token's length is invalid
+                      or it is empty
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Empty or invalid length token",
+                        "code": "BAD_REQUEST",
+                      }
+        "502":
+          description: Error.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          A typical failed JSON response for when connection to the push notification bouncer cannot
+                          be established
+                        example:
+                          {
+                            "result": "error",
+                            "msg": "ConnectionError while trying to connect to push notification bouncer",
+                            "code": "BAD_REQUEST",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Received 500 from push notification bouncer",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when 500 response is received
+                          from the push notification bouncer
+    delete:
+      operationId: remove-android-reg-id
+      summary: Remove Android GCM registration ID
+      tags: ["users"]
+      description: |
+        This endpoint remove Android GCM registration ID for push notifications.
+
+        `DELETE {{ api_url }}/v1/users/me/android_gcm_reg_id`
+      parameters:
+        - name: token
+          schema:
+            type: string
+          description: |
+            The token provided by the device.
+          in: query
+          example: android-token
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          A typical failed JSON response for when the token's length is invalid
+                          or it is empty
+                        example:
+                          {
+                            "result": "error",
+                            "msg": "Empty or invalid length token",
+                            "code": "BAD_REQUEST",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Token does not exist",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the token does not exist
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get-subscription-status

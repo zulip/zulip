@@ -57,6 +57,8 @@
 * [Unmute a user](/api/unmute-user)
 * [Add APNs device token](/api/add-apns-device-token)
 * [Remove APNs device token](/api/remove-apns-device-token)
+* [Add Android GCM registration ID](/api/add-android-reg-id)
+* [Remove Android GCM registration ID](/api/remove-android-reg-id)
 
 #### Server & organizations
 
