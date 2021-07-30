@@ -170,7 +170,7 @@ test("basics", () => {
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.can_mark_messages_read());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
@@ -250,7 +250,11 @@ function assert_not_mark_read_with_is_operands(additional_operators_to_test) {
 
     is_operator = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
-    assert.ok(!filter.can_mark_messages_read());
+    if (additional_operators_to_test.length === 0) {
+        assert.ok(filter.can_mark_messages_read());
+    } else {
+        assert.ok(!filter.can_mark_messages_read());
+    }
 
     is_operator = [{operator: "is", operand: "mentioned", negated: true}];
     filter = new Filter(additional_operators_to_test.concat(is_operator));
