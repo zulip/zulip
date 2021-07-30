@@ -55,6 +55,8 @@
 * [Update user group members](/api/update-user-group-members)
 * [Mute a user](/api/mute-user)
 * [Unmute a user](/api/unmute-user)
+* [Add APNs device token](/api/add-apns-device-token)
+* [Remove APNs device token](/api/remove-apns-device-token)
 
 #### Server & organizations
 
