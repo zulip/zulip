@@ -154,20 +154,6 @@ def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpRespons
 @require_POST
 @has_request_variables
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
-    data = json.loads(request.body)
-    payload = data["payload"]
-    if payload["user_data_retention"] == "false":
-        requests.post(
-            "https://api.zoom.us/oauth/data/compliance",
-            json={
-                "client_id": settings.VIDEO_ZOOM_CLIENT_ID,
-                "user_id": payload["user_id"],
-                "account_id": payload["account_id"],
-                "deauthorization_event_received": payload,
-                "compliance_completed": True,
-            },
-            auth=(settings.VIDEO_ZOOM_CLIENT_ID, settings.VIDEO_ZOOM_CLIENT_SECRET),
-        ).raise_for_status()
     return json_success()
 
 
