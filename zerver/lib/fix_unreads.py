@@ -33,7 +33,7 @@ def build_topic_mute_checker(
             recipient_id,
             topic_name
         FROM
-            zerver_mutedtopic
+            zerver_usertopic
         WHERE
             user_profile_id = %s
     """

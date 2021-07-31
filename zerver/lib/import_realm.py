@@ -116,7 +116,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "realmauditlog": {},
     "recipient_to_huddle_map": {},
     "userhotspot": {},
-    "mutedtopic": {},
+    "usertopic": {},
     "muteduser": {},
     "service": {},
     "usergroup": {},
@@ -382,6 +382,10 @@ def idseq(model_class: Any) -> str:
         return "zerver_botuserstatedata_id_seq"
     elif model_class == BotConfigData:
         return "zerver_botuserconfigdata_id_seq"
+    elif model_class == UserTopic:
+        # The database table for this model was renamed from `mutedtopic` to
+        # `usertopic`, but the name of the sequence object remained the same.
+        return "zerver_mutedtopic_id_seq"
     return f"{model_class._meta.db_table}_id_seq"
 
 
@@ -1091,12 +1095,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(UserHotspot, data, "userhotspot")
         bulk_import_model(data, UserHotspot)
 
-    if "zerver_mutedtopic" in data:
-        fix_datetime_fields(data, "zerver_mutedtopic")
-        re_map_foreign_keys(data, "zerver_mutedtopic", "user_profile", related_table="user_profile")
-        re_map_foreign_keys(data, "zerver_mutedtopic", "stream", related_table="stream")
-        re_map_foreign_keys(data, "zerver_mutedtopic", "recipient", related_table="recipient")
-        update_model_ids(UserTopic, data, "mutedtopic")
+    if "zerver_usertopic" in data:
+        fix_datetime_fields(data, "zerver_usertopic")
+        re_map_foreign_keys(data, "zerver_usertopic", "user_profile", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_usertopic", "stream", related_table="stream")
+        re_map_foreign_keys(data, "zerver_usertopic", "recipient", related_table="recipient")
+        update_model_ids(UserTopic, data, "usertopic")
         bulk_import_model(data, UserTopic)
 
     if "zerver_muteduser" in data:

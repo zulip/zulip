@@ -163,7 +163,7 @@ ALL_ZULIP_TABLES = {
     "zerver_userprofile_groups",
     "zerver_userprofile_user_permissions",
     "zerver_userstatus",
-    "zerver_mutedtopic",
+    "zerver_usertopic",
     "zerver_muteduser",
 }
 
@@ -277,7 +277,7 @@ ANALYTICS_TABLES = {
 DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
-    "zerver_mutedtopic": ["last_updated"],
+    "zerver_usertopic": ["last_updated"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
     "zerver_useractivity": ["last_visit"],
@@ -756,7 +756,7 @@ def get_realm_config() -> Config:
     )
 
     Config(
-        table="zerver_mutedtopic",
+        table="zerver_usertopic",
         model=UserTopic,
         normal_parent=user_profile_config,
         parent_key="user_profile__in",
