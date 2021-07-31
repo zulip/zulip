@@ -226,9 +226,9 @@ p.n-margin {
     }
 
     .exit-me {
-        font-size: 30pt;
+        font-size: 20pt;
         font-weight: 200;
-        margin: 5px 0 0 10px;
+        margin: 0 0 0 10px;
         cursor: pointer;
     }
 }
