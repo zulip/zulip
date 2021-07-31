@@ -2208,11 +2208,6 @@ class UserTopic(models.Model):
     class Meta:
         unique_together = ("user_profile", "stream", "topic_name")
 
-        # This model was originally called "MutedTopic". We
-        # generalized it to "UserTopic", but have not yet done the
-        # database migration to rename the table and indexes.
-        db_table = "zerver_mutedtopic"
-
     def __str__(self) -> str:
         return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})>"
 
