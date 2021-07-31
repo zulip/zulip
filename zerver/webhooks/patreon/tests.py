@@ -11,7 +11,7 @@ class PatreonHookTests(WebhookTestCase):
         Tests condition of when a new patron joined
         """
         expected_topic = "patreon"
-        expected_message = "New patron joined! :tada:\nPatrons in total: 5"
+        expected_message = "Zulip joined! :tada:\nYou now have 5 patrons."
 
         self.check_webhook(
             "members_create",
@@ -57,7 +57,7 @@ class PatreonHookTests(WebhookTestCase):
         Tests condition of when a patron created pledge
         """
         expected_topic = "patreon"
-        expected_message = "New patron joined through custom pledge! :tada:\nPatrons in total: 5"
+        expected_message = "Zulip joined and pledged $5.5. :tada:\nYou now have 5 patrons."
 
         self.check_webhook(
             "members_pledge_create",

@@ -30,7 +30,9 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_PATREON_EVENT")
 def members_create(payload: Dict[str, Any]) -> str:
     included = payload["included"][0]
     patron_count = included["attributes"]["patron_count"]
-    body = f"New patron joined! :tada:\nPatrons in total: {patron_count}"
+    user_data = payload["data"]["attributes"]
+    user_name = user_data["full_name"]
+    body = f"{user_name} joined! :tada:\nYou now have {patron_count} patrons."
 
     return body
 
@@ -61,7 +63,10 @@ def members_delete(payload: Dict[str, Any]) -> str:
 def members_pledge_create(payload: Dict[str, Any]) -> str:
     included = payload["included"][0]
     patron_count = included["attributes"]["patron_count"]
-    body = f"New patron joined through custom pledge! :tada:\nPatrons in total: {patron_count}"
+    user_data = payload["data"]["attributes"]
+    user_name = user_data["full_name"]
+    pledge_amount = user_data["pledge_amount_cents"] / 100
+    body = f"{user_name} joined and pledged ${pledge_amount}. :tada:\nYou now have {patron_count} patrons."
 
     return body
 
