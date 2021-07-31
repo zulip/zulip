@@ -84,9 +84,13 @@ def get_object_from_key(
 def create_confirmation_link(
     obj: Union[Realm, HasRealmObject, OptionalHasRealmObject],
     confirmation_type: int,
+    *,
     validity_in_days: Optional[int] = None,
     url_args: Mapping[str, str] = {},
 ) -> str:
+    # validity_in_days is an override for the default values which are
+    # determined by the confirmation_type - its main purpose is for use
+    # in tests which may want to have control over the exact expiration time.
     key = generate_key()
     realm = None
     if isinstance(obj, Realm):
