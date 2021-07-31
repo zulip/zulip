@@ -1647,6 +1647,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_admin_user(self, target_user: "UserProfile") -> bool:
         """Returns whether this user has permission to modify target_user"""
+
+        if is_system_bot_email(target_user.delivery_email):
+            # We don't support modifying system bots.
+            return False
+
         if target_user.bot_owner == self:
             return True
         elif self.is_realm_admin and self.realm == target_user.realm:

@@ -65,6 +65,7 @@ from zerver.models import (
     get_realm,
     get_source_profile,
     get_stream,
+    get_system_bot,
     get_user,
     get_user_by_delivery_email,
 )
@@ -270,6 +271,16 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_error(result, "Insufficient permission")
 
+    def test_admin_api_cant_modify_system_bots(self) -> None:
+        self.login("desdemona")
+
+        desdemona = self.example_user("desdemona")
+        welcome_bot = get_system_bot("welcome-bot@zulip.com", desdemona.realm_id)
+
+        req = dict(full_name=orjson.dumps("New Name").decode())
+        result = self.client_patch(f"/json/users/{welcome_bot.id}", req)
+        self.assert_json_error(result, "Insufficient permission")
+
     def test_admin_api_hide_emails(self) -> None:
         reset_emails_in_zulip_realm()
 
@@ -419,6 +430,12 @@ class PermissionTest(ZulipTestCase):
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, bot.id, for_admin=True)
+
+        # System bots can only be accessed for reading.
+        system_bot = get_system_bot("welcome-bot@zulip.com", iago.realm_id)
+        access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=True)
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
