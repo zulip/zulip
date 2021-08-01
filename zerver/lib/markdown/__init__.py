@@ -1369,7 +1369,13 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         time_input_string = match.group("time")
         timestamp = None
         try:
-            timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
+            # Check if the time string is of the new more-readable format.
+            if "|UTC" in time_input_string:
+                # Remove and replace the non-standard characters with the ISO ones.
+                standard_format_time = time_input_string.replace("|", "T", 1).replace("|UTC", "")
+                timestamp = dateutil.parser.parse(standard_format_time, tzinfos=common_timezones)
+            else:
+                timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
         except ValueError:
             try:
                 timestamp = datetime.datetime.fromtimestamp(float(time_input_string))

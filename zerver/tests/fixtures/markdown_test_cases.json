@@ -791,6 +791,19 @@
       "text_content": "Let's meet at 1496701800."
     },
     {
+      "name": "timestamp_new_format",
+      "input": "<time:2021-08-02|14:03:00|UTC+05:30>",
+      "expected_output": "<p><time datetime=\"2021-08-02T08:33:00Z\">2021-08-02|14:03:00|UTC+05:30</time></p>",
+      "text_content": "2021-08-02|14:03:00|UTC+05:30"
+    },
+    {
+      "name": "timestamp_without_utc",
+      "input": "<time:2021-08-02|14:03:00|+05:30>",
+      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 2021-08-02|14:03:00|+05:30</span></p>",
+      "marked_expected_output": "<p><span>2021-08-02|14:03:00|+05:30</span></p>",
+      "text_content": "Invalid time format: 2021-08-02|14:03:00|+05:30"
+    },
+    {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
       "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222222222222222em;\"></span><span class=\"mbin\">⊕</span><span class=\"mspace\" style=\"margin-right:0.2222222222222222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"mord\">0</span><span class=\"mspace\" style=\"margin-right:0.2777777777777778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2777777777777778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"mord\">1</span></span></span></span></p>"
