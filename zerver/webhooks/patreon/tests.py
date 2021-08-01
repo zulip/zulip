@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class PatreonHookTests(WebhookTestCase):
     STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/patreon?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "patreon"
+    WEBHOOK_DIR_NAME = "patreon"
 
     def test_patreon_members_create(self) -> None:
         """
