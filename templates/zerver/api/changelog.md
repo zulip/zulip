@@ -13,22 +13,24 @@ below features are supported.
 
 **Feature level 89**
 
-* [`GET /events`](/api/get-events): Introduced new event type
-  `user_settings`.  The previous `update_display_settings`  and
-  `update_global_notifications` event types are still supported
-  for backwards compatibility, but will be removed in future.
-* [`POST /register`](/api/register-queue): Added the new
-  `user_settings_object` property to supported `client_capabilities`.
-* [`GET /events`](/api/get-events): `update_display_settings` and
-  `update_global_notifications` are sent only when `user_settings_object`
-  is not included in the `client_capabilities` when registering the
-  event queue.
+* [`GET /events`](/api/get-events): Introduced the `user_settings`
+  event type, unifying and replacing the previous
+  `update_display_settings` and `update_global_notifications` event
+  types. The legacy event types are still supported for backwards
+  compatibility, but will be removed in a future release.
 * [`POST /register`](/api/register-queue): Added `user_settings` field
-  in the response, which is a dictionary containing all the user settings.
-* [`POST /register`](/api/register-queue): User's personal settings in
-  the top-level object are included in response only when `user_settings_object`
-  is not included in the `client_capabilities` when registering the event
-  queue.
+  in the response, which is a dictionary containing all the user's
+  personal settings. For backwards-compatibility, individual settings
+  will still appear in the top-level response for clients don't
+  support the `user_settings_object` client capability.
+* [`POST /register`](/api/register-queue): Added the
+  `user_settings_object` property to supported `client_capabilities`.
+  When enabled, the server will not include a duplicate copy of
+  personal settings in the top-level response.
+* [`GET /events`](/api/get-events): `update_display_settings` and
+  `update_global_notifications` events now only sent to clients that
+  did not include `user_settings_object` in their
+  `client_capabilities` when the event queue was created.
 
 **Feature level 88**
 

@@ -241,13 +241,14 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to a user's clients when that user's display settings
-                                have changed with an additional rule that it is only sent to
-                                clients that did not include `user_settings_object` in their
-                                `client_capabilities` when registering the event queue.
+                                Event sent to clients that that have requested the
+                                `update_display_settings` event type and did not include
+                                `user_settings_object` in their `client_capabilities` when
+                                registering the event queue.
 
-                                **Changes**: Deprecated in Zulip 5.0 (feature level 89), replaced by
-                                the `user_settings` event type.
+                                **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                                connecting to newer servers should declare the `user_settings_object`
+                                client capability and process the `user_settings` event type instead.
                               deprecated: true
                               properties:
                                 id:
@@ -290,8 +291,9 @@ paths:
                                 `user_settings_object` in their `client_capabilities` when
                                 registering the event queue.
 
-                                **Changes**: Deprecated in Zulip 5.0 (feature level 89), replaced by
-                                the `user_settings` event type.
+                                **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                                connecting to newer servers should declare the `user_settings_object`
+                                client capability and process the `user_settings` event type instead.
                               deprecated: true
                               properties:
                                 id:
@@ -8237,8 +8239,9 @@ paths:
               client can handle the current API with null values for
               stream-level notification settings (which means the stream
               is not customized and should inherit the user's global
-              notification settings for stream messages).  New in Zulip
-              2.1.0; in earlier Zulip releases, stream-level
+              notification settings for stream messages).
+              <br />
+              New in Zulip 2.1.0; in earlier Zulip releases, stream-level
               notification settings were simple booleans.
 
             * `bulk_message_deletion`: Boolean for whether the client's
@@ -8246,7 +8249,9 @@ paths:
                updated to process the new bulk format (with a
                `message_ids`, rather than a singleton `message_id`).
                Otherwise, the server will send `delete_message` events
-               in a loop.  New in Zulip 3.0 (feature level 13).  This
+               in a loop.
+               <br />
+               New in Zulip 3.0 (feature level 13).  This
                capability is for backwards-compatibility; it will be
                required in a future server release.
 
@@ -8257,11 +8262,12 @@ paths:
                `avatar_url` field in the `realm_user` at its sole discretion
                to optimize network performance.  This is an important optimization
                in organizations with 10,000s of users.
+               <br />
                New in Zulip 3.0 (feature level 18).
 
             * `stream_typing_notifications`: Boolean for whether the client
               supports stream typing notifications.
-
+              <br />
               New in Zulip 4.0 (feature level 58).  This capability is
               for backwards-compatibility; it will be required in a
               future server release.
@@ -8270,8 +8276,17 @@ paths:
               `user_settings` event type. If False, the server will additionally send the
               legacy `update_display_settings` and `update_global_notifications` event
               types for backwards-compatibility with clients that predate this API migration.
-
-              New in Zulip 4.0 (feature level 89).  This capability is for
+              <br />
+              <br />
+              Because the feature level 89 API changes were merged together, clients can
+              safely make a request with this client capability and requesting all of the
+              `user_settings`, `update_display_settings`, and
+              `update_global_notifications` event types, and get exactly one copy of
+              settings data on any server version. (And then use the `zulip_feature_level`
+              in the `/register` response or the presence/absence of a `user_settings` key
+              to determine where to look).
+              <br />
+              New in Zulip 5.0 (feature level 89).  This capability is for
               backwards-compatibility; it will be removed in a future server release.
           content:
             application/json:
@@ -9289,8 +9304,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_digest_emails:
                         deprecated: true
                         type: boolean
@@ -9303,8 +9319,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_login_emails:
                         deprecated: true
                         type: boolean
@@ -9317,8 +9334,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_marketing_emails:
                         deprecated: true
                         type: boolean
@@ -9331,8 +9349,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       email_notifications_batching_period_seconds:
                         deprecated: true
                         type: integer
@@ -9345,8 +9364,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_offline_email_notifications:
                         deprecated: true
                         type: boolean
@@ -9359,8 +9379,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_offline_push_notifications:
                         deprecated: true
                         type: boolean
@@ -9373,8 +9394,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_online_push_notifications:
                         deprecated: true
                         type: boolean
@@ -9387,8 +9409,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_sounds:
                         deprecated: true
                         type: boolean
@@ -9401,8 +9424,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_stream_desktop_notifications:
                         deprecated: true
                         type: boolean
@@ -9415,8 +9439,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_stream_email_notifications:
                         deprecated: true
                         type: boolean
@@ -9429,8 +9454,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_stream_push_notifications:
                         deprecated: true
                         type: boolean
@@ -9443,8 +9469,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_stream_audible_notifications:
                         deprecated: true
                         type: boolean
@@ -9457,8 +9484,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       wildcard_mentions_notify:
                         deprecated: true
                         type: boolean
@@ -9471,8 +9499,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       message_content_in_email_notifications:
                         deprecated: true
                         type: boolean
@@ -9485,8 +9514,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       notification_sound:
                         deprecated: true
                         type: string
@@ -9499,8 +9529,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       pm_content_in_desktop_notifications:
                         deprecated: true
                         type: boolean
@@ -9513,8 +9544,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       desktop_icon_count_display:
                         deprecated: true
                         type: integer
@@ -9527,8 +9559,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       realm_name_in_notifications:
                         deprecated: true
                         type: boolean
@@ -9541,8 +9574,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       presence_enabled:
                         deprecated: true
                         type: boolean
@@ -9555,8 +9589,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       available_notification_sounds:
                         deprecated: true
                         type: array
@@ -9571,8 +9606,9 @@ paths:
                           this Zulip server.  Only relevant to support UI for configuring notification
                           sounds.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       color_scheme:
                         deprecated: true
                         type: integer
@@ -9586,8 +9622,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       default_language:
                         deprecated: true
                         type: string
@@ -9601,8 +9638,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       demote_inactive_streams:
                         deprecated: true
                         type: integer
@@ -9616,8 +9654,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       dense_mode:
                         deprecated: true
                         type: boolean
@@ -9632,8 +9671,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       emojiset:
                         deprecated: true
                         type: string
@@ -9647,8 +9687,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       enable_drafts_synchronization:
                         deprecated: true
                         type: boolean
@@ -9661,8 +9702,11 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead. New in Zulip 5.0 (feature level 87).
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
+
+                          New in Zulip 5.0 (feature level 87).
                       fluid_layout_width:
                         deprecated: true
                         type: boolean
@@ -9676,8 +9720,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       default_view:
                         deprecated: true
                         type: string
@@ -9694,8 +9739,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       high_contrast_mode:
                         deprecated: true
                         type: boolean
@@ -9709,8 +9755,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       left_side_userlist:
                         deprecated: true
                         type: boolean
@@ -9726,8 +9773,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       starred_message_counts:
                         deprecated: true
                         type: boolean
@@ -9742,8 +9790,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       timezone:
                         deprecated: true
                         type: string
@@ -9758,8 +9807,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       translate_emoticons:
                         deprecated: true
                         type: boolean
@@ -9774,8 +9824,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       twenty_four_hour_time:
                         deprecated: true
                         type: boolean
@@ -9790,8 +9841,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                       emojiset_choices:
                         deprecated: true
                         description: |
@@ -9808,8 +9860,9 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and access the `user_settings` object instead.
                         type: array
                         items:
                           type: object
