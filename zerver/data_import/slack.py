@@ -1094,8 +1094,6 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
     s3_path = "/".join(
         [
             str(realm_id),
-            "SlackImportAttachment",  # This is a special placeholder which should be kept
-            # in sync with 'exports.py' function 'import_message_data'
             format(random.randint(0, 255), "x"),
             secrets.token_urlsafe(18),
             sanitize_name(fileinfo["name"]),
