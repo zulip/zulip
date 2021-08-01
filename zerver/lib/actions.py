@@ -124,7 +124,11 @@ from zerver.lib.send_email import (
     send_email,
     send_email_to_admins,
 )
-from zerver.lib.server_initialization import create_internal_realm, server_initialized
+from zerver.lib.server_initialization import (
+    create_internal_realm,
+    server_initialized,
+    setup_realm_internal_bots,
+)
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.storage import static_path
 from zerver.lib.stream_subscription import (
@@ -244,9 +248,9 @@ from zerver.models import (
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user_by_delivery_email,
-    get_user_by_id_in_realm_including_cross_realm,
+    get_user_by_id_in_realm,
     get_user_profile_by_id,
-    is_cross_realm_bot_email,
+    is_system_bot_email,
     linkifiers_for_realm,
     query_for_ids,
     realm_filters_for_realm,
@@ -2503,10 +2507,7 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
     user_profiles = []
     for user_id in user_ids:
         try:
-            # We include cross-bot realms as possible recipients,
-            # so that clients can know which huddle conversation
-            # is relevant here.
-            user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, sender.realm)
+            user_profile = get_user_by_id_in_realm(user_id, sender.realm)
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)
@@ -2601,12 +2602,8 @@ def validate_recipient_user_profiles(
 ) -> Sequence[UserProfile]:
     recipient_profiles_map: Dict[int, UserProfile] = {}
 
-    # We exempt cross-realm bots from the check that all the recipients
-    # are in the same realm.
     realms = set()
-    if not is_cross_realm_bot_email(sender.email):
-        realms.add(sender.realm_id)
-
+    realms.add(sender.realm_id)
     for user_profile in user_profiles:
         if (
             not user_profile.is_active
@@ -2617,8 +2614,7 @@ def validate_recipient_user_profiles(
                 _("'{email}' is no longer using Zulip.").format(email=user_profile.email)
             )
         recipient_profiles_map[user_profile.id] = user_profile
-        if not is_cross_realm_bot_email(user_profile.email):
-            realms.add(user_profile.realm_id)
+        realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
@@ -4969,6 +4965,8 @@ def do_create_realm(
             realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
         )
 
+    setup_realm_internal_bots(realm)
+
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
         realm,
@@ -6808,7 +6806,7 @@ def do_send_confirmation_email(
 
 
 def email_not_system_bot(email: str) -> None:
-    if is_cross_realm_bot_email(email):
+    if is_system_bot_email(email):
         msg = email_reserved_for_system_bots_error(email)
         code = msg
         raise ValidationError(

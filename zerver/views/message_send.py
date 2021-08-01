@@ -32,7 +32,7 @@ from zerver.models import (
     RealmDomain,
     UserProfile,
     email_to_domain,
-    get_user_including_cross_realm,
+    get_user_including_system_bots,
 )
 
 
@@ -76,7 +76,7 @@ def create_mirrored_message_users(
     for email in referenced_users:
         create_mirror_user_if_needed(user_profile.realm, email, fullname_function)
 
-    sender = get_user_including_cross_realm(sender_email, user_profile.realm)
+    sender = get_user_including_system_bots(sender_email, user_profile.realm)
     return sender
 
 

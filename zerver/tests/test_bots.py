@@ -26,7 +26,7 @@ from zerver.models import (
     get_realm,
     get_stream,
     get_user,
-    is_cross_realm_bot_email,
+    is_system_bot_email,
 )
 
 
@@ -1579,14 +1579,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid configuration data!")
 
-    def test_is_cross_realm_bot_email(self) -> None:
-        self.assertTrue(is_cross_realm_bot_email("notification-bot@zulip.com"))
-        self.assertTrue(is_cross_realm_bot_email("notification-BOT@zulip.com"))
-        self.assertFalse(is_cross_realm_bot_email("random-bot@zulip.com"))
+    def test_is_system_bot_email(self) -> None:
+        self.assertTrue(is_system_bot_email("notification-bot@zulip.com"))
+        self.assertTrue(is_system_bot_email("notification-BOT@zulip.com"))
+        self.assertFalse(is_system_bot_email("random-bot@zulip.com"))
 
-        with self.settings(CROSS_REALM_BOT_EMAILS={"random-bot@zulip.com"}):
-            self.assertTrue(is_cross_realm_bot_email("random-bot@zulip.com"))
-            self.assertFalse(is_cross_realm_bot_email("notification-bot@zulip.com"))
+        with self.settings(SYSTEM_BOTS_EMAILS={"random-bot@zulip.com"}):
+            self.assertTrue(is_system_bot_email("random-bot@zulip.com"))
+            self.assertFalse(is_system_bot_email("notification-bot@zulip.com"))
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:

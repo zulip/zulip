@@ -389,7 +389,6 @@ def build_realm(
         zerver_useractivity=[],
         zerver_realm=zerver_realm,
         zerver_huddle=[],
-        zerver_userprofile_crossrealm=[],
         zerver_useractivityinterval=[],
         zerver_reaction=[],
         zerver_realmemoji=[],

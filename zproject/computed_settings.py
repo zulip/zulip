@@ -486,6 +486,20 @@ TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
     {
+        "var_name": "NAGIOS_RECEIVE_BOT",
+        "email_template": "nagios-receive-bot@%s",
+        "name": "Nagios Receive Bot",
+    },
+    {
+        "var_name": "NAGIOS_SEND_BOT",
+        "email_template": "nagios-send-bot@%s",
+        "name": "Nagios Send Bot",
+    },
+]
+
+# Bots that are created for each realm like the reminder-bot goes here.
+REALM_INTERNAL_BOTS: List[Dict[str, str]] = [
+    {
         "var_name": "NOTIFICATION_BOT",
         "email_template": "notification-bot@%s",
         "name": "Notification Bot",
@@ -496,24 +510,11 @@ INTERNAL_BOTS = [
         "name": "Email Gateway",
     },
     {
-        "var_name": "NAGIOS_SEND_BOT",
-        "email_template": "nagios-send-bot@%s",
-        "name": "Nagios Send Bot",
-    },
-    {
-        "var_name": "NAGIOS_RECEIVE_BOT",
-        "email_template": "nagios-receive-bot@%s",
-        "name": "Nagios Receive Bot",
-    },
-    {
         "var_name": "WELCOME_BOT",
         "email_template": "welcome-bot@%s",
         "name": "Welcome Bot",
     },
 ]
-
-# Bots that are created for each realm like the reminder-bot goes here.
-REALM_INTERNAL_BOTS: List[Dict[str, str]] = []
 # These are realm-internal bots that may exist in some organizations,
 # so configure power the setting, but should not be auto-created at this time.
 DISABLED_REALM_INTERNAL_BOTS = [
@@ -1175,7 +1176,7 @@ if PRODUCTION:
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False
 
-CROSS_REALM_BOT_EMAILS = {
+SYSTEM_BOTS_EMAILS = {
     "notification-bot@zulip.com",
     "welcome-bot@zulip.com",
     "emailgateway@zulip.com",

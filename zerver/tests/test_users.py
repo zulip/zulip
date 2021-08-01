@@ -4,7 +4,6 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, TypeVar, Union
 from unittest import mock
 
 import orjson
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import override_settings
@@ -69,7 +68,6 @@ from zerver.models import (
     get_system_bot,
     get_user,
     get_user_by_delivery_email,
-    get_user_by_id_in_realm_including_cross_realm,
 )
 
 K = TypeVar("K")
@@ -273,6 +271,16 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_error(result, "Insufficient permission")
 
+    def test_admin_api_cant_modify_system_bots(self) -> None:
+        self.login("desdemona")
+
+        desdemona = self.example_user("desdemona")
+        welcome_bot = get_system_bot("welcome-bot@zulip.com", desdemona.realm_id)
+
+        req = dict(full_name=orjson.dumps("New Name").decode())
+        result = self.client_patch(f"/json/users/{welcome_bot.id}", req)
+        self.assert_json_error(result, "Insufficient permission")
+
     def test_admin_api_hide_emails(self) -> None:
         reset_emails_in_zulip_realm()
 
@@ -422,6 +430,12 @@ class PermissionTest(ZulipTestCase):
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, bot.id, for_admin=True)
+
+        # System bots can only be accessed for reading.
+        system_bot = get_system_bot("welcome-bot@zulip.com", iago.realm_id)
+        access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=False)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, system_bot.id, allow_bots=True, for_admin=True)
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
@@ -772,7 +786,7 @@ class QueryCountTest(ZulipTestCase):
                     )
 
         self.assert_length(queries, 84)
-        self.assert_length(cache_tries, 27)
+        self.assert_length(cache_tries, 26)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1204,34 +1218,6 @@ class UserProfileTest(ZulipTestCase):
 
         hotspots = list(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
         self.assertEqual(hotspots, hotspots_completed)
-
-    def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
-        realm = get_realm("zulip")
-        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
-
-        # Pass in the ID of a cross-realm bot and a valid realm
-        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, realm)
-        self.assertEqual(cross_realm_bot.email, bot.email)
-        self.assertEqual(cross_realm_bot.id, bot.id)
-
-        # Pass in the ID of a cross-realm bot but with a invalid realm,
-        # note that the realm should be irrelevant here
-        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, None)
-        self.assertEqual(cross_realm_bot.email, bot.email)
-        self.assertEqual(cross_realm_bot.id, bot.id)
-
-        # Pass in the ID of a non-cross-realm user with a realm
-        user_profile = get_user_by_id_in_realm_including_cross_realm(othello.id, realm)
-        self.assertEqual(user_profile.email, othello.email)
-        self.assertEqual(user_profile.id, othello.id)
-
-        # If the realm doesn't match, or if the ID is not that of a
-        # cross-realm bot, UserProfile.DoesNotExist is raised
-        with self.assertRaises(UserProfile.DoesNotExist):
-            get_user_by_id_in_realm_including_cross_realm(hamlet.id, None)
 
     def test_get_user_subscription_status(self) -> None:
         self.login("hamlet")

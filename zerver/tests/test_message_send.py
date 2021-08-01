@@ -1,4 +1,5 @@
 import datetime
+from contextlib import contextmanager
 from typing import Any, List, Mapping, Optional, Set
 from unittest import mock
 
@@ -2314,7 +2315,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         return get_user(email, get_realm(subdomain))
 
     @override_settings(
-        CROSS_REALM_BOT_EMAILS=[
+        SYSTEM_BOTS_EMAILS=[
             "notification-bot@zulip.com",
             "welcome-bot@zulip.com",
             "support@3.example.com",
@@ -2329,8 +2330,19 @@ class TestCrossRealmPMs(ZulipTestCase):
             messages = get_user_messages(to_user)
             self.assertEqual(messages[-1].sender.id, from_user.id)
 
-        def assert_invalid_user() -> Any:
-            return self.assertRaisesRegex(JsonableError, "Invalid user ID ")
+        def assert_invalid_user_id() -> Any:
+            return self.assertRaisesRegex(JsonableError, r"Invalid user ID \d+")
+
+        @contextmanager
+        def assert_cant_send_outside_realm_error_logged() -> Any:
+            original_count = Message.objects.count()
+            with self.assertLogs(level="ERROR") as m:
+                yield m
+
+            self.assertIn(
+                "You can't send private messages outside of your organization.", m.output[0]
+            )
+            self.assertEqual(original_count, Message.objects.count())
 
         user1_email = "user1@1.example.com"
         user1a_email = "user1a@1.example.com"
@@ -2347,7 +2359,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         notification_bot = get_system_bot(notification_bot_email, internal_realm.id)
         with self.settings(
-            CROSS_REALM_BOT_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
+            SYSTEM_BOTS_EMAILS=["notification-bot@zulip.com", "welcome-bot@zulip.com"]
         ):
             # HACK: We should probably be creating this "bot" user another
             # way, but since you can't register a user with a
@@ -2364,62 +2376,63 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         # Cross-realm bots in the zulip.com realm can PM any realm
         # (They need lower level APIs to do this.)
-        internal_send_private_message(
-            sender=notification_bot,
-            recipient_user=get_user(user2_email, r2),
-            content="bla",
-        )
-        assert_message_received(user2, notification_bot)
+        with assert_cant_send_outside_realm_error_logged():
+            internal_send_private_message(
+                sender=notification_bot,
+                recipient_user=get_user(user2_email, r2),
+                content="bla",
+            )
 
         # All users can PM cross-realm bots in the zulip.com realm
-        self.send_personal_message(user1, notification_bot)
-        assert_message_received(notification_bot, user1)
+        with assert_invalid_user_id():
+            self.send_personal_message(user1, notification_bot)
+
         # Verify that internal_send_private_message can also successfully
         # be used.
-        internal_send_private_message(
-            sender=user2,
-            recipient_user=notification_bot,
-            content="blabla",
-        )
-        assert_message_received(notification_bot, user2)
+        with assert_cant_send_outside_realm_error_logged():
+            internal_send_private_message(
+                sender=user2,
+                recipient_user=notification_bot,
+                content="blabla",
+            )
+
         # Users can PM cross-realm bots on non-zulip realms.
         # (The support bot represents some theoretical bot that we may
         # create in the future that does not have zulip.com as its realm.)
-        self.send_personal_message(user1, support_bot)
-        assert_message_received(support_bot, user1)
+        with assert_invalid_user_id():
+            self.send_personal_message(user1, support_bot)
 
         # Allow sending PMs to two different cross-realm bots simultaneously.
         # (We don't particularly need this feature, but since users can
         # already individually send PMs to cross-realm bots, we shouldn't
         # prevent them from sending multiple bots at once.  We may revisit
         # this if it's a nuisance for huddles.)
-        self.send_huddle_message(user1, [notification_bot, support_bot])
-        assert_message_received(notification_bot, user1)
-        assert_message_received(support_bot, user1)
+        with assert_invalid_user_id():
+            self.send_huddle_message(user1, [notification_bot, support_bot])
 
         # Prevent old loophole where I could send PMs to other users as long
         # as I copied a cross-realm bot from the same realm.
-        with assert_invalid_user():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [user3, support_bot])
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
-        with assert_invalid_user():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [user2, notification_bot])
 
-        with assert_invalid_user():
+        with assert_invalid_user_id():
             self.send_huddle_message(notification_bot, [user1, user2])
 
         # Users on the different realms cannot PM each other
-        with assert_invalid_user():
+        with assert_invalid_user_id():
             self.send_personal_message(user1, user2)
 
         # Users on non-zulip realms can't PM "ordinary" Zulip users
-        with assert_invalid_user():
+        with assert_invalid_user_id():
             self.send_personal_message(user1, self.example_user("hamlet"))
 
         # Users on three different realms cannot PM each other
-        with assert_invalid_user():
+        with assert_invalid_user_id():
             self.send_huddle_message(user1, [user2, user3])
 
 

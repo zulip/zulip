@@ -227,7 +227,6 @@ class ZulipUploadBackend:
         content_type: Optional[str],
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
     ) -> str:
         raise NotImplementedError()
 
@@ -468,13 +467,10 @@ class S3UploadBackend(ZulipUploadBackend):
         content_type: Optional[str],
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
     ) -> str:
-        if target_realm is None:
-            target_realm = user_profile.realm
         s3_file_name = "/".join(
             [
-                str(target_realm.id),
+                str(user_profile.realm_id),
                 secrets.token_urlsafe(18),
                 sanitize_name(uploaded_file_name),
             ]
@@ -795,7 +791,6 @@ class LocalUploadBackend(ZulipUploadBackend):
         content_type: Optional[str],
         file_data: bytes,
         user_profile: UserProfile,
-        target_realm: Optional[Realm] = None,
     ) -> str:
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join(
@@ -1018,7 +1013,6 @@ def upload_message_file(
     content_type: Optional[str],
     file_data: bytes,
     user_profile: UserProfile,
-    target_realm: Optional[Realm] = None,
 ) -> str:
     return upload_backend.upload_message_file(
         uploaded_file_name,
@@ -1026,7 +1020,6 @@ def upload_message_file(
         content_type,
         file_data,
         user_profile,
-        target_realm=target_realm,
     )
 
 

@@ -46,7 +46,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import RateLimited
-from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
+from zerver.lib.onboarding import send_initial_realm_messages
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
@@ -313,7 +313,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             realm = do_create_realm(string_id, realm_name, org_type=realm_type)
-            setup_realm_internal_bots(realm)
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]

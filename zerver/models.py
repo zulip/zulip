@@ -1648,6 +1648,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_admin_user(self, target_user: "UserProfile") -> bool:
         """Returns whether this user has permission to modify target_user"""
+
+        if is_system_bot_email(target_user.delivery_email):
+            # We don't support modifying system bots.
+            return False
+
         if target_user.bot_owner == self:
             return True
         elif self.is_realm_admin and self.realm == target_user.realm:
@@ -3090,41 +3095,28 @@ def get_active_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfil
     return user_profile
 
 
-def get_user_including_cross_realm(email: str, realm: Realm) -> UserProfile:
-    if is_cross_realm_bot_email(email):
+def get_user_including_system_bots(email: str, realm: Realm) -> UserProfile:
+    if is_system_bot_email(email):
         return get_system_bot(email, realm.id)
-    assert realm is not None
     return get_user(email, realm)
 
 
 @cache_with_key(bot_profile_cache_key, timeout=3600 * 24 * 7)
 def get_system_bot(email: str, realm_id: int) -> UserProfile:
-    """
-    This function doesn't use the realm_id argument yet, but requires
-    passing it as preparation for adding system bots to each realm instead
-    of having them all in a separate system bot realm.
-    If you're calling this function, use the id of the realm in which the system
-    bot will be after that migration. If the bot is supposed to send a message,
-    the same realm as the one *to* which the message will be sent should be used - because
-    cross-realm messages will be eliminated as part of the migration.
-    """
-    return UserProfile.objects.select_related().get(email__iexact=email.strip())
+    return UserProfile.objects.select_related().get(
+        email__iexact=email.strip(), realm_id=realm_id, is_bot=True
+    )
 
 
-def get_user_by_id_in_realm_including_cross_realm(
+def get_user_by_id_in_realm(
     uid: int,
-    realm: Optional[Realm],
+    realm: Realm,
 ) -> UserProfile:
     user_profile = get_user_profile_by_id(uid)
-    if user_profile.realm == realm:
-        return user_profile
+    if user_profile.realm_id != realm.id:
+        raise UserProfile.DoesNotExist()
 
-    # Note: This doesn't validate whether the `realm` passed in is
-    # None/invalid for the CROSS_REALM_BOT_EMAILS case.
-    if user_profile.delivery_email in settings.CROSS_REALM_BOT_EMAILS:
-        return user_profile
-
-    raise UserProfile.DoesNotExist()
+    return user_profile
 
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
@@ -3170,8 +3162,8 @@ def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
 
-def is_cross_realm_bot_email(email: str) -> bool:
-    return email.lower() in settings.CROSS_REALM_BOT_EMAILS
+def is_system_bot_email(email: str) -> bool:
+    return email.lower() in settings.SYSTEM_BOTS_EMAILS
 
 
 # The Huddle class represents a group of individuals who have had a

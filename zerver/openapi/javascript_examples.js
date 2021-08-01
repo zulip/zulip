@@ -114,7 +114,7 @@ add_example("send_message", "/messages:post", 200, async (client, console) => {
     console.log(await client.messages.send(params));
 
     // Send a private message
-    const user_id = 9;
+    const user_id = 18;
     params = {
         to: [user_id],
         type: "private",
@@ -244,8 +244,8 @@ add_example("render_message", "/messages/render:post", 200, async (client, conso
 
 add_example("set_typing_status", "/typing:post", 200, async (client, console) => {
     // {code_example|start}
-    const user_id1 = 9;
-    const user_id2 = 10;
+    const user_id1 = 18;
+    const user_id2 = 19;
 
     const typingParams = {
         op: "start",
@@ -267,7 +267,7 @@ add_example("add_subscriptions", "/users/me/subscriptions:post", 200, async (cli
 
     // To subscribe another user to a stream, you may pass in
     // the `principals` parameter, like so:
-    const user_id = 7;
+    const user_id = 16;
     const anotherUserParams = {
         subscriptions: JSON.stringify([{name: "Verona"}, {name: "Denmark"}]),
         principals: JSON.stringify([user_id]),
@@ -288,7 +288,7 @@ add_example(
         };
         console.log(await client.users.me.subscriptions.remove(meParams));
 
-        const user_id = 7;
+        const user_id = 16;
         // Unsubscribe Zoe from the stream "Denmark"
         const zoeParams = {
             subscriptions: JSON.stringify(["Denmark"]),

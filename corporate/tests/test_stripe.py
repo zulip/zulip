@@ -395,7 +395,7 @@ class StripeTestCase(ZulipTestCase):
         # sure relevant queries restrict on realm).
         self.assertEqual(
             UserProfile.objects.exclude(realm=realm).filter(is_active=True).count(),
-            10,
+            16,
         )
 
         # Our seat count excludes our guest user and bot, and

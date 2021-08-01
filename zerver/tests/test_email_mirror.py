@@ -529,7 +529,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
-                target_realm=user_profile.realm,
             )
 
         message = most_recent_message(user_profile)
@@ -572,7 +571,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
-                target_realm=user_profile.realm,
             )
 
         message = most_recent_message(user_profile)
@@ -618,7 +616,6 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
                 "image/png",
                 image_bytes,
                 get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id),
-                target_realm=user_profile.realm,
             )
 
         message = most_recent_message(user_profile)

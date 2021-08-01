@@ -497,7 +497,7 @@ paths:
                                       "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=3",
                                       "avatar_url_medium": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=3",
                                       "avatar_version": 3,
-                                      "user_id": 10,
+                                      "user_id": 19,
                                     },
                                   "id": 0,
                                 }
@@ -687,7 +687,7 @@ paths:
                                   "type": "subscription",
                                   "op": "peer_add",
                                   "stream_id": 9,
-                                  "user_id": 12,
+                                  "user_id": 21,
                                   "id": 0,
                                 }
                             - type: object
@@ -726,7 +726,7 @@ paths:
                                   "type": "subscription",
                                   "op": "peer_remove",
                                   "stream_id": 9,
-                                  "user_id": 12,
+                                  "user_id": 21,
                                   "id": 0,
                                 }
                             - type: object
@@ -854,7 +854,7 @@ paths:
                                   "person":
                                     {
                                       "email": "foo@zulip.com",
-                                      "user_id": 38,
+                                      "user_id": 47,
                                       "avatar_version": 1,
                                       "is_admin": false,
                                       "is_owner": false,
@@ -910,7 +910,7 @@ paths:
                                   "type": "realm_user",
                                   "op": "remove",
                                   "person":
-                                    {"user_id": 35, "full_name": "Foo Bot"},
+                                    {"user_id": 44, "full_name": "Foo Bot"},
                                   "id": 0,
                                 }
                             - type: object
@@ -956,7 +956,7 @@ paths:
                               example:
                                 {
                                   "type": "presence",
-                                  "user_id": 10,
+                                  "user_id": 19,
                                   "email": "user10@zulip.testserver",
                                   "server_timestamp": 1594825445.320078373,
                                   "presence":
@@ -1183,10 +1183,10 @@ paths:
                                     {
                                       "type": "reaction",
                                       "op": "add",
-                                      "user_id": 10,
+                                      "user_id": 19,
                                       "user":
                                         {
-                                          "user_id": 10,
+                                          "user_id": 19,
                                           "email": "user10@zulip.testserver",
                                           "full_name": "King Hamlet",
                                         },
@@ -1228,10 +1228,10 @@ paths:
                                     {
                                       "type": "reaction",
                                       "op": "remove",
-                                      "user_id": 10,
+                                      "user_id": 19,
                                       "user":
                                         {
-                                          "user_id": 10,
+                                          "user_id": 19,
                                           "email": "user10@zulip.testserver",
                                           "full_name": "King Hamlet",
                                         },
@@ -1467,7 +1467,7 @@ paths:
                               example:
                                 {
                                   "type": "user_status",
-                                  "user_id": 10,
+                                  "user_id": 19,
                                   "away": true,
                                   "status_text": "out to lunch",
                                   "emoji_name": "car",
@@ -2075,7 +2075,7 @@ paths:
                               example:
                                 {
                                   "type": "update_message",
-                                  "user_id": 10,
+                                  "user_id": 19,
                                   "edit_timestamp": 1594825451,
                                   "message_id": 58,
                                   "stream_name": "Verona",
@@ -2193,17 +2193,17 @@ paths:
                                   "op": "start",
                                   "sender":
                                     {
-                                      "user_id": 10,
+                                      "user_id": 19,
                                       "email": "user10@zulip.testserver",
                                     },
                                   "recipients":
                                     [
                                       {
-                                        "user_id": 8,
+                                        "user_id": 17,
                                         "email": "user8@zulip.testserver",
                                       },
                                       {
-                                        "user_id": 10,
+                                        "user_id": 19,
                                         "email": "user10@zulip.testserver",
                                       },
                                     ],
@@ -2309,17 +2309,17 @@ paths:
                                   "op": "stop",
                                   "sender":
                                     {
-                                      "user_id": 10,
+                                      "user_id": 19,
                                       "email": "user10@zulip.testserver",
                                     },
                                   "recipients":
                                     [
                                       {
-                                        "user_id": 8,
+                                        "user_id": 17,
                                         "email": "user8@zulip.testserver",
                                       },
                                       {
-                                        "user_id": 10,
+                                        "user_id": 19,
                                         "email": "user10@zulip.testserver",
                                       },
                                     ],
@@ -2983,7 +2983,7 @@ paths:
                                   "bot":
                                     {
                                       "email": "test-bot@zulip.testserver",
-                                      "user_id": 36,
+                                      "user_id": 45,
                                       "full_name": "Foo Bot",
                                       "bot_type": 1,
                                       "is_active": true,
@@ -3036,7 +3036,7 @@ paths:
                                   "op": "update",
                                   "bot":
                                     {
-                                      "user_id": 37,
+                                      "user_id": 46,
                                       "services":
                                         [
                                           {
@@ -3083,7 +3083,7 @@ paths:
                                   "type": "realm_bot",
                                   "op": "remove",
                                   "bot":
-                                    {"user_id": 35, "full_name": "Foo Bot"},
+                                    {"user_id": 44, "full_name": "Foo Bot"},
                                   "id": 1,
                                 }
                             - type: object
@@ -3119,7 +3119,7 @@ paths:
                                   "type": "realm_bot",
                                   "op": "delete",
                                   "bot":
-                                    {"user_id": 35, "full_name": "Foo Bot"},
+                                    {"user_id": 44, "full_name": "Foo Bot"},
                                   "id": 1,
                                 }
                             - type: object
@@ -4734,7 +4734,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [9, 10]
+              example: [18, 19]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
         - name: topic
@@ -4918,14 +4918,14 @@ paths:
                               "topic": "party at my houz",
                               "rendered_content": "<p>Hello!</p>",
                               "timestamp": 1530129122,
-                              "user_id": 5,
+                              "user_id": 14,
                             },
                             {
                               "topic": "party at my house",
                               "content": "Howdy!",
                               "prev_content": "Hello!",
                               "rendered_content": "<p>Howdy!</p>",
-                              "user_id": 5,
+                              "user_id": 14,
                               "prev_rendered_content": "<p>Hello!</p>",
                               "content_html_diff": '<div><p><span class="highlight_text_inserted">Howdy!</span></p> <p><span class="highlight_text_deleted">Hello!</span></p></div>',
                               "prev_topic": "party at my houz",
@@ -5719,7 +5719,7 @@ paths:
                               "bot_type": null,
                               "timezone": "",
                               "is_bot": false,
-                              "user_id": 7,
+                              "user_id": 16,
                               "profile_data": {},
                               "is_guest": false,
                               "date_joined": "2019-10-20T07:50:53.728864+00:00",
@@ -5752,7 +5752,7 @@ paths:
                                       "value": "Dark chocolate",
                                     },
                                 },
-                              "user_id": 10,
+                              "user_id": 19,
                               "is_bot": false,
                               "bot_type": null,
                               "timezone": "",
@@ -5765,7 +5765,7 @@ paths:
                               "email": "hamlet@zulip.com",
                             },
                             {
-                              "bot_owner_id": 11,
+                              "bot_owner_id": 20,
                               "is_guest": false,
                               "date_joined": "2019-10-20T12:52:17.862053+00:00",
                               "full_name": "Iago's Bot",
@@ -5776,7 +5776,7 @@ paths:
                               "is_owner": false,
                               "is_billing_admin": false,
                               "role": 400,
-                              "user_id": 23,
+                              "user_id": 32,
                               "bot_type": 1,
                               "timezone": "",
                               "is_bot": true,
@@ -5838,7 +5838,7 @@ paths:
                           The ID assigned to the newly created user.
 
                           **Changes**: New in Zulip 4.0 (feature level 30).
-                    example: {"msg": "", "result": "success", "user_id": 25}
+                    example: {"msg": "", "result": "success", "user_id": 44}
         "400":
           description: Bad request.
           content:
@@ -6135,7 +6135,7 @@ paths:
                         "max_message_id": 30,
                         "msg": "",
                         "result": "success",
-                        "user_id": 5,
+                        "user_id": 14,
                         "profile_data":
                           {
                             "5": {"value": "2000-01-01"},
@@ -7620,7 +7620,7 @@ paths:
                                     "value": "Dark chocolate",
                                   },
                               },
-                            "user_id": 10,
+                            "user_id": 19,
                             "is_bot": false,
                             "bot_type": null,
                             "timezone": "",
@@ -7710,7 +7710,7 @@ paths:
                                     "value": "Dark chocolate",
                                   },
                               },
-                            "user_id": 10,
+                            "user_id": 19,
                             "is_bot": false,
                             "bot_type": null,
                             "timezone": "",
@@ -11557,7 +11557,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [9, 10]
+              example: [18, 19]
           required: true
         - name: topic
           in: query
@@ -11681,7 +11681,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [10]
+              example: [19]
           required: false
         - name: add
           in: query
@@ -11693,7 +11693,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [12, 13]
+              example: [21, 22]
           required: false
       responses:
         "200":
@@ -13236,6 +13236,7 @@ components:
           properties:
             email: {}
             is_bot: {}
+            is_system_bot: {}
             avatar_url: {}
             avatar_version: {}
             full_name: {}
@@ -13268,6 +13269,10 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is a bot or full account.
+        is_system_bot:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a system bot.
         avatar_url:
           type: string
           nullable: true
@@ -13836,7 +13841,7 @@ components:
         The target user's ID.
       schema:
         type: integer
-      example: 12
+      example: 21
       required: true
     MutedUserId:
       name: muted_user_id
@@ -13845,7 +13850,7 @@ components:
         The ID of the user to mute/un-mute.
       schema:
         type: integer
-      example: 10
+      example: 19
       required: true
     StreamPostPolicy:
       name: stream_post_policy

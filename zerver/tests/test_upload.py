@@ -579,19 +579,18 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         host = user_3.realm.host
 
         # Send a message from @zulip.com -> @uploadtest.example.com
-        self.login_user(user_2)
+        self.login_user(user_3)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client_post("/json/user_uploads", {"file": fp})
+        result = self.client_post("/json/user_uploads", {"file": fp}, subdomain=test_subdomain)
         uri = result.json()["uri"]
         fp_path_id = re.sub("/user_uploads/", "", uri)
         body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
-        with self.settings(CROSS_REALM_BOT_EMAILS={user_2.email, user_3.email}):
-            internal_send_private_message(
-                sender=get_system_bot(user_2.email, user_2.realm_id),
-                recipient_user=user_1,
-                content=body,
-            )
+        internal_send_private_message(
+            sender=user_3,
+            recipient_user=user_1,
+            content=body,
+        )
 
         self.login_user(user_1)
         response = self.client_get(uri, subdomain=test_subdomain)
@@ -600,9 +599,19 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(b"zulip!", data)
         self.logout()
 
-        # Confirm other cross-realm users can't read it.
-        self.login_user(user_3)
-        response = self.client_get(uri, subdomain=test_subdomain)
+        # Confirm users in other realms can't read it.
+        self.login_user(user_2)
+        with self.assertLogs(level="WARN") as m:
+            response = self.client_get(uri, subdomain=test_subdomain)
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(
+                m.output,
+                [
+                    "WARNING:root:User test-og-bot@zulip.com (zulip) attempted to access API on wrong subdomain (uploadtest.example.com)"
+                ],
+            )
+
+        response = self.client_get(uri)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
 
@@ -1017,8 +1026,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.email = cordelia.delivery_email
         cordelia.save()
 
-        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        system_bot = get_system_bot(settings.WELCOME_BOT, hamlet.realm_id)
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
@@ -1044,15 +1052,15 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
 
-        # Test cross_realm_bot avatar access using email.
+        # Test system_bot avatar access using email.
         response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(system_bot)) + "&foo=bar"))
 
-        # Test cross_realm_bot avatar access using id.
-        response = self.api_get(hamlet, f"/avatar/{cross_realm_bot.id}", {"foo": "bar"})
+        # Test system_bot avatar access using id.
+        response = self.api_get(hamlet, f"/avatar/{system_bot.id}", {"foo": "bar"})
         redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(system_bot)) + "&foo=bar"))
 
         response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
         self.assert_json_error(

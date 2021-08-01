@@ -909,7 +909,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.content, message_content)
         self.assertEqual(message.sender.email, "notification-bot@zulip.com")
-        self.assertEqual(message.sender.realm, get_realm(settings.SYSTEM_BOT_REALM))
+        self.assertEqual(message.sender.realm, stream.realm)
 
     def test_realm_admin_can_update_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
@@ -3425,7 +3425,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         self.assertNotIn(self.example_user("polonius").id, add_peer_event["users"])
-        self.assert_length(add_peer_event["users"], 12)
+        self.assert_length(add_peer_event["users"], 15)
         self.assertEqual(add_peer_event["event"]["type"], "subscription")
         self.assertEqual(add_peer_event["event"]["op"], "peer_add")
         self.assertEqual(add_peer_event["event"]["user_ids"], [self.user_profile.id])
@@ -3456,7 +3456,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event["users"])
         self.assertNotIn(self.example_user("polonius").id, add_peer_event["users"])
-        self.assert_length(add_peer_event["users"], 12)
+        self.assert_length(add_peer_event["users"], 15)
         self.assertEqual(add_peer_event["event"]["type"], "subscription")
         self.assertEqual(add_peer_event["event"]["op"], "peer_add")
         self.assertEqual(add_peer_event["event"]["user_ids"], [user_profile.id])

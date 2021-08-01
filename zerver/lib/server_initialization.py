@@ -10,9 +10,34 @@ def server_initialized() -> bool:
     return Realm.objects.exists()
 
 
-def create_internal_realm() -> None:
+def setup_realm_internal_bots(realm: Realm) -> None:
+    """Create this realm's internal bots.
+
+    This function is idempotent; it does nothing for a bot that
+    already exists.
+    """
     from zerver.lib.actions import do_change_can_forge_sender
 
+    internal_bots = [
+        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
+        for bot in settings.REALM_INTERNAL_BOTS
+    ]
+    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
+    bots = UserProfile.objects.filter(
+        realm=realm,
+        email__in=[bot_info[1] for bot_info in internal_bots],
+        bot_owner__isnull=True,
+    )
+    for bot in bots:
+        bot.bot_owner = bot
+        bot.save()
+
+    # Initialize the email gateway bot as able to forge senders.
+    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+    do_change_can_forge_sender(email_gateway_bot, True)
+
+
+def create_internal_realm() -> None:
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM)
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
@@ -32,14 +57,14 @@ def create_internal_realm() -> None:
     ]
     create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
     # Set the owners for these bots to the bots themselves
-    bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in internal_bots])
+    bots = UserProfile.objects.filter(
+        email__in=[bot_info[1] for bot_info in internal_bots], realm=realm
+    )
     for bot in bots:
         bot.bot_owner = bot
         bot.save()
 
-    # Initialize the email gateway bot as able to forge senders.
-    email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
-    do_change_can_forge_sender(email_gateway_bot, True)
+    setup_realm_internal_bots(realm)
 
 
 def create_users(
