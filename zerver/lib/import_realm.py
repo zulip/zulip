@@ -774,7 +774,10 @@ def import_uploads(
             record["last_modified"] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
-            # function 'upload_message_file'
+            # function 'upload_message_file'.
+            # This relative_path is basically the new location of the file,
+            # which will later be copied from its original location as
+            # specified in record["s3_path"].
             relative_path = "/".join(
                 [
                     str(record["realm_id"]),
