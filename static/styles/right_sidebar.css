@@ -3,7 +3,7 @@
         text-decoration: none;
     }
     #user_presences{
-        display: none; // hide user presences
+        display: none; 
     }
 }
 
