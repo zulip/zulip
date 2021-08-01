@@ -2306,9 +2306,6 @@ class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
         do_set_user_display_setting(user_profile, "enable_drafts_synchronization", True)
 
-    def do_disable_drafts_synchronization(self, user_profile: UserProfile) -> None:
-        do_set_user_display_setting(user_profile, "enable_drafts_synchronization", False)
-
     def test_draft_create_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
         dummy_draft = {
@@ -2346,14 +2343,4 @@ class DraftActionTest(BaseAction):
         }
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         action = lambda: do_delete_draft(draft_id, self.user_profile)
-        self.verify_action(action)
-
-    def test_enable_syncing_drafts(self) -> None:
-        self.do_disable_drafts_synchronization(self.user_profile)
-        action = lambda: self.do_enable_drafts_synchronization(self.user_profile)
-        self.verify_action(action)
-
-    def test_disable_syncing_drafts(self) -> None:
-        self.do_enable_drafts_synchronization(self.user_profile)
-        action = lambda: self.do_disable_drafts_synchronization(self.user_profile)
         self.verify_action(action)
