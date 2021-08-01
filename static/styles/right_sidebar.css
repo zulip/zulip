@@ -2,6 +2,9 @@
     a:hover {
         text-decoration: none;
     }
+    #user_presences{
+        display: none; // hide user presences
+    }
 }
 
 #buddy_list_wrapper {
