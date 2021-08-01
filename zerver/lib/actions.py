@@ -6868,7 +6868,7 @@ def do_send_confirmation_email(
     invitee: PreregistrationUser,
     referrer: UserProfile,
     email_language: str,
-    invite_expires_in_days: int,
+    invite_expires_in_days: Optional[int] = None,
 ) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
