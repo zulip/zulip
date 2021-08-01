@@ -2040,15 +2040,32 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         invite_expires_in_days = 2
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, invite_expires_in_days)
+        do_invite_users(
+            self.user_profile,
+            ["foo@zulip.com"],
+            streams,
+            invite_expires_in_days=invite_expires_in_days,
+        )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, invite_expires_in_days)
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, invite_expires_in_days)
+        do_invite_users(
+            self.user_profile,
+            ["foo@zulip.com"],
+            streams,
+            invite_expires_in_days=invite_expires_in_days,
+        )
+        do_invite_users(
+            self.user_profile,
+            ["foo@zulip.com"],
+            streams,
+            invite_expires_in_days=invite_expires_in_days,
+        )
 
         # Also send an invite from a different realm.
         lear = get_realm("lear")
         lear_user = self.lear_user("cordelia")
-        do_invite_users(lear_user, ["foo@zulip.com"], [], invite_expires_in_days)
+        do_invite_users(
+            lear_user, ["foo@zulip.com"], [], invite_expires_in_days=invite_expires_in_days
+        )
 
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
         self.assert_length(invites, 4)
@@ -2185,11 +2202,30 @@ class InvitationsTestCase(InviteUserBase):
             streams.append(get_stream(stream_name, user_profile.realm))
 
         invite_expires_in_days = 2
-        do_invite_users(user_profile, ["TestOne@zulip.com"], streams, invite_expires_in_days)
-        do_invite_users(user_profile, ["TestTwo@zulip.com"], streams, invite_expires_in_days)
-        do_invite_users(hamlet, ["TestThree@zulip.com"], streams, invite_expires_in_days)
-        do_invite_users(othello, ["TestFour@zulip.com"], streams, invite_expires_in_days)
-        do_invite_users(self.mit_user("sipbtest"), ["TestOne@mit.edu"], [], invite_expires_in_days)
+        do_invite_users(
+            user_profile,
+            ["TestOne@zulip.com"],
+            streams,
+            invite_expires_in_days=invite_expires_in_days,
+        )
+        do_invite_users(
+            user_profile,
+            ["TestTwo@zulip.com"],
+            streams,
+            invite_expires_in_days=invite_expires_in_days,
+        )
+        do_invite_users(
+            hamlet, ["TestThree@zulip.com"], streams, invite_expires_in_days=invite_expires_in_days
+        )
+        do_invite_users(
+            othello, ["TestFour@zulip.com"], streams, invite_expires_in_days=invite_expires_in_days
+        )
+        do_invite_users(
+            self.mit_user("sipbtest"),
+            ["TestOne@mit.edu"],
+            [],
+            invite_expires_in_days=invite_expires_in_days,
+        )
         do_create_multiuse_invite_link(
             user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
         )
@@ -2216,13 +2252,23 @@ class InvitationsTestCase(InviteUserBase):
             streams.append(get_stream(stream_name, user_profile.realm))
 
         invite_expires_in_days = 2
-        do_invite_users(user_profile, ["TestOne@zulip.com"], streams, invite_expires_in_days)
+        do_invite_users(
+            user_profile,
+            ["TestOne@zulip.com"],
+            streams,
+            invite_expires_in_days=invite_expires_in_days,
+        )
 
         with patch(
             "confirmation.models.timezone_now",
             return_value=timezone_now() - datetime.timedelta(days=invite_expires_in_days + 1),
         ):
-            do_invite_users(user_profile, ["TestTwo@zulip.com"], streams, invite_expires_in_days)
+            do_invite_users(
+                user_profile,
+                ["TestTwo@zulip.com"],
+                streams,
+                invite_expires_in_days=invite_expires_in_days,
+            )
             do_create_multiuse_invite_link(
                 othello, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
             )

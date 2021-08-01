@@ -1766,7 +1766,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             iago,
             [email],
             [],
-            invite_expires_in_days,
+            invite_expires_in_days=invite_expires_in_days,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
         now = timezone_now() + datetime.timedelta(days=invite_expires_in_days + 1)

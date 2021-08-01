@@ -1372,7 +1372,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days,
+            invite_expires_in_days=invite_expires_in_days,
         )
         assertInviteCountEquals(2)
 
@@ -1382,7 +1382,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days,
+            invite_expires_in_days=invite_expires_in_days,
         )
         assertInviteCountEquals(4)
 
@@ -1392,7 +1392,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
-                invite_expires_in_days,
+                invite_expires_in_days=invite_expires_in_days,
             )
         except InvitationError:
             pass
@@ -1404,7 +1404,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
-                invite_expires_in_days,
+                invite_expires_in_days=invite_expires_in_days,
             )
         except InvitationError:
             pass

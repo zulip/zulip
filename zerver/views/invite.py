@@ -76,7 +76,13 @@ def invite_users_backend(
             )
         streams.append(stream)
 
-    do_invite_users(user_profile, invitee_emails, streams, invite_expires_in_days, invite_as)
+    do_invite_users(
+        user_profile,
+        invitee_emails,
+        streams,
+        invite_expires_in_days=invite_expires_in_days,
+        invite_as=invite_as,
+    )
     return json_success()
 
 
