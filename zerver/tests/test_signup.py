@@ -2039,15 +2039,15 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
 
         # Also send an invite from a different realm.
         lear = get_realm("lear")
         lear_user = self.lear_user("cordelia")
-        do_invite_users(lear_user, ["foo@zulip.com"], [], False)
+        do_invite_users(lear_user, ["foo@zulip.com"], [])
 
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
         self.assert_length(invites, 4)

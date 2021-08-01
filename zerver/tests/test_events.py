@@ -671,7 +671,7 @@ class NormalActionsTest(BaseAction):
         streams = []
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
         prereg_users = PreregistrationUser.objects.filter(
             referred_by__realm=self.user_profile.realm
         )
@@ -705,7 +705,7 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
         events = self.verify_action(
