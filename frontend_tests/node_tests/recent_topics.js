@@ -99,6 +99,7 @@ mock_esm("../../static/js/muted_topics", {
 });
 mock_esm("../../static/js/narrow", {
     set_narrow_title: noop,
+    hide_mark_as_read_turned_off_banner: noop,
 });
 mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],

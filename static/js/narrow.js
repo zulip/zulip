@@ -153,12 +153,17 @@ function update_narrow_title(filter) {
     }
 }
 
+export function hide_mark_as_read_turned_off_banner() {
+    $("#mark_as_read_turned_off_banner").hide();
+}
+
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
+    hide_mark_as_read_turned_off_banner();
 }
 
 export function activate(raw_operators, opts) {

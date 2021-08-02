@@ -1137,6 +1137,20 @@ td.pointer {
     padding-right: 2px;
 }
 
+#mark_as_read_turned_off_banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    #mark_as_read_turned_off_content {
+        margin: 0;
+    }
+
+    .mark_as_read_close {
+        margin-top: 6px;
+    }
+}
+
 .summary_row {
     .message_header {
         padding: 5px 0 4px 5px;
