@@ -109,7 +109,7 @@ def get_package_names(requirements_file: str) -> List[str]:
         if package.startswith("git+https://") and "#egg=" in package:
             split_package = package.split("#egg=")
             if len(split_package) != 2:
-                raise Exception("Unexpected duplicate #egg in package {}".format(package))
+                raise Exception(f"Unexpected duplicate #egg in package {package}")
             # Extract the package name from Git requirements entries
             package = split_package[1]
 
@@ -197,8 +197,8 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         # Here, we select the old virtualenv with the largest overlap
         overlaps = sorted(overlaps)
         _, source_venv_path, copied_packages = overlaps[-1]
-        print("Copying packages from {}".format(source_venv_path))
-        clone_ve = "{}/bin/virtualenv-clone".format(source_venv_path)
+        print(f"Copying packages from {source_venv_path}")
+        clone_ve = f"{source_venv_path}/bin/virtualenv-clone"
         cmd = [clone_ve, source_venv_path, venv_path]
 
         try:
@@ -222,7 +222,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         success_stamp_path = os.path.join(venv_path, "success-stamp")
         run_as_root(["rm", "-f", success_stamp_path])
 
-        run_as_root(["chown", "-R", "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        run_as_root(["chown", "-R", f"{os.getuid()}:{os.getgid()}", venv_path])
         source_log = get_logfile_name(source_venv_path)
         copy_parent_log(source_log, target_log)
         create_log_entry(
@@ -234,7 +234,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
 
 
 def get_logfile_name(venv_path: str) -> str:
-    return "{}/setup-venv.log".format(venv_path)
+    return f"{venv_path}/setup-venv.log"
 
 
 def create_log_entry(
@@ -246,14 +246,14 @@ def create_log_entry(
 
     venv_path = os.path.dirname(target_log)
     with open(target_log, "a") as writer:
-        writer.write("{}\n".format(venv_path))
+        writer.write(f"{venv_path}\n")
         if copied_packages:
-            writer.write("Copied from {}:\n".format(parent))
-            writer.write("\n".join("- {}".format(p) for p in sorted(copied_packages)))
+            writer.write(f"Copied from {parent}:\n")
+            writer.write("\n".join(f"- {p}" for p in sorted(copied_packages)))
             writer.write("\n")
 
         writer.write("New packages:\n")
-        writer.write("\n".join("- {}".format(p) for p in sorted(new_packages)))
+        writer.write("\n".join(f"- {p}" for p in sorted(new_packages)))
         writer.write("\n\n")
 
 
@@ -274,7 +274,7 @@ def do_patch_activate_script(venv_path: str) -> None:
         lines = f.readlines()
     for i, line in enumerate(lines):
         if line.startswith("VIRTUAL_ENV="):
-            lines[i] = 'VIRTUAL_ENV="{}"\n'.format(venv_path)
+            lines[i] = f'VIRTUAL_ENV="{venv_path}"\n'
 
     with open(script_path, "w") as f:
         f.write("".join(lines))
@@ -306,7 +306,7 @@ def setup_virtualenv(
         with open(success_stamp, "w") as f:
             f.close()
 
-    print("Using cached Python venv from {}".format(cached_venv_path))
+    print(f"Using cached Python venv from {cached_venv_path}")
     if target_venv_path is not None:
         run_as_root(["ln", "-nsf", cached_venv_path, target_venv_path])
         if patch_activate_script:
@@ -331,7 +331,7 @@ def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
         # Create new virtualenv.
         run_as_root(["mkdir", "-p", venv_path])
         run_as_root(["virtualenv", "-p", "python3", venv_path])
-        run_as_root(["chown", "-R", "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        run_as_root(["chown", "-R", f"{os.getuid()}:{os.getgid()}", venv_path])
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
 
     create_requirements_index_file(venv_path, requirements_file)

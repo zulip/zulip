@@ -27,9 +27,7 @@ class TestBuildEmail(ZulipTestCase):
             from_address=FromAddress.NOREPLY,
             language="en",
         )
-        self.assertEqual(
-            mail.extra_headers["From"], "{} <{}>".format(limit_length_name, FromAddress.NOREPLY)
-        )
+        self.assertEqual(mail.extra_headers["From"], f"{limit_length_name} <{FromAddress.NOREPLY}>")
 
     def test_build_and_send_SES_incompatible_From_address(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -142,9 +140,7 @@ class TestSendEmail(ZulipTestCase):
             from_address=FromAddress.NOREPLY,
             language="en",
         )
-        self.assertEqual(
-            mail.extra_headers["From"], "{} <{}>".format(from_name, FromAddress.NOREPLY)
-        )
+        self.assertEqual(mail.extra_headers["From"], f"{from_name} <{FromAddress.NOREPLY}>")
 
         # We test the two cases that should raise an EmailNotDeliveredException
         errors = {

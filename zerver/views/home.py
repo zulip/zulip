@@ -194,7 +194,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     log_data = get_request_notes(request).log_data
     assert log_data is not None
-    log_data["extra"] = "[{}]".format(queue_id)
+    log_data["extra"] = f"[{queue_id}]"
 
     csp_nonce = secrets.token_hex(24)
 

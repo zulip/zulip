@@ -83,7 +83,7 @@ class TextTestResult(runner.TextTestResult):
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
         self.stream.writeln(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-            "** Skipping {}: {}".format(test.id(), reason)
+            f"** Skipping {test.id()}: {reason}"
         )
         self.stream.flush()
 
