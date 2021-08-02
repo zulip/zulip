@@ -111,7 +111,13 @@ class Command(ZulipBaseCommand):
 
         # Only email users who've agreed to the terms of service.
         if settings.TOS_VERSION is not None:
-            users = users.exclude(tos_version=None)
+            # We need to do a new query because the `get_users` path
+            # passes us a list rather than a QuerySet.
+            users = (
+                UserProfile.objects.select_related()
+                .filter(id__in=[u.id for u in users])
+                .exclude(tos_version=None)
+            )
         send_custom_email(users, options)
 
         if options["dry_run"]:
