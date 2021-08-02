@@ -515,6 +515,13 @@ export function initialize_everything() {
 
     settings_data.initialize(date_joined);
 
+    // The emoji module must be initialized before the right sidebar
+    // module, so that we can display custom emoji in statuses.
+    emoji.initialize({
+        realm_emoji: emoji_params.realm_emoji,
+        emoji_codes: generated_emoji_codes,
+    });
+
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
     // expect DOM elements to always exist (As that did before these
@@ -561,10 +568,6 @@ export function initialize_everything() {
     bot_data.initialize(bot_params); // Must happen after people.initialize()
     message_fetch.initialize(server_events.home_view_loaded);
     message_scroll.initialize();
-    emoji.initialize({
-        realm_emoji: emoji_params.realm_emoji,
-        emoji_codes: generated_emoji_codes,
-    });
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);

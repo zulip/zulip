@@ -107,6 +107,7 @@ export function initialize(params) {
                 emoji_name: dct.emoji_name,
                 emoji_code: dct.emoji_code,
                 reaction_type: dct.reaction_type,
+                ...emoji.get_emoji_details_by_name(dct.emoji_name),
             });
         }
     }
