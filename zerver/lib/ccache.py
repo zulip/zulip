@@ -91,7 +91,7 @@ def der_encode_uint32(val: int) -> bytes:
 def der_encode_string(val: str) -> bytes:
     if not isinstance(val, str):
         raise TypeError("unicode")
-    return der_encode_tlv(0x1B, val.encode("utf-8"))
+    return der_encode_tlv(0x1B, val.encode())
 
 
 def der_encode_octet_string(val: bytes) -> bytes:

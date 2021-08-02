@@ -655,7 +655,7 @@ def authenticated_rest_api_view(
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
                     raise JsonableError(_("This endpoint requires HTTP basic authentication."))
-                role, api_key = base64.b64decode(credentials).decode("utf-8").split(":")
+                role, api_key = base64.b64decode(credentials).decode().split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:

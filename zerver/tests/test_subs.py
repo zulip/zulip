@@ -1395,7 +1395,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # A deleted stream's name is changed, is deactivated, is invite-only,
         # and has no subscribers.
-        hashed_stream_id = hashlib.sha512(str(stream_id).encode("utf-8")).hexdigest()[0:7]
+        hashed_stream_id = hashlib.sha512(str(stream_id).encode()).hexdigest()[0:7]
         deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)

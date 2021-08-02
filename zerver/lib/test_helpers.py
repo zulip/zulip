@@ -162,7 +162,7 @@ def queries_captured(
             if include_savepoints or not isinstance(sql, str) or "SAVEPOINT" not in sql:
                 queries.append(
                     {
-                        "sql": self.mogrify(sql, params).decode("utf-8"),
+                        "sql": self.mogrify(sql, params).decode(),
                         "time": f"{duration:.3f}",
                     }
                 )

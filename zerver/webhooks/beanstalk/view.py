@@ -62,10 +62,10 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
         encoded_value: str
         auth_type, encoded_value = request.META["HTTP_AUTHORIZATION"].split()
         if auth_type.lower() == "basic":
-            email, api_key = base64.b64decode(encoded_value).decode("utf-8").split(":")
+            email, api_key = base64.b64decode(encoded_value).decode().split(":")
             email = email.replace("%40", "@")
             credentials = f"{email}:{api_key}"
-            encoded_credentials: str = base64.b64encode(credentials.encode("utf-8")).decode("utf8")
+            encoded_credentials: str = base64.b64encode(credentials.encode()).decode()
             request.META["HTTP_AUTHORIZATION"] = "Basic " + encoded_credentials
 
         return view_func(request, *args, **kwargs)

@@ -27,7 +27,7 @@ def generate_sha1sum_puppet_modules() -> str:
     ).strip()
 
     sha1sum = hashlib.sha1()
-    sha1sum.update(json.dumps(data, sort_keys=True).encode("utf-8"))
+    sha1sum.update(json.dumps(data, sort_keys=True).encode())
     return sha1sum.hexdigest()
 
 

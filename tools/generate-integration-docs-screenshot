@@ -177,7 +177,7 @@ def send_bot_payload_message(
     headers = get_requests_headers(integration.name, fixture_name)
     headers.update(config.custom_headers)
     if config.use_basic_auth:
-        credentials = base64.b64encode(f"{bot.email}:{bot.api_key}".encode("utf8")).decode("utf8")
+        credentials = base64.b64encode(f"{bot.email}:{bot.api_key}".encode()).decode()
         auth = f"basic {credentials}"
         headers.update(dict(Authorization=auth))
 

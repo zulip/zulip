@@ -606,8 +606,8 @@ def alter_content(request: HttpRequest, content: bytes) -> bytes:
     ).placeholder_open_graph_description
     assert placeholder_open_graph_description is not None
     return content.replace(
-        placeholder_open_graph_description.encode("utf-8"),
-        first_paragraph_text.encode("utf-8"),
+        placeholder_open_graph_description.encode(),
+        first_paragraph_text.encode(),
     )
 
 

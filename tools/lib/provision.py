@@ -376,7 +376,7 @@ def main(options: argparse.Namespace) -> "NoReturn":
     sha_sum = hashlib.sha1()
 
     for apt_depedency in SYSTEM_DEPENDENCIES:
-        sha_sum.update(apt_depedency.encode("utf8"))
+        sha_sum.update(apt_depedency.encode())
     if "debian" in os_families():
         with open("scripts/lib/setup-apt-repo", "rb") as fb:
             sha_sum.update(fb.read())

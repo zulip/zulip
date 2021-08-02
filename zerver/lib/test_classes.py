@@ -718,7 +718,7 @@ Output:
         identifier: Can be an email or a remote server uuid.
         """
         credentials = f"{identifier}:{api_key}"
-        return "Basic " + base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+        return "Basic " + base64.b64encode(credentials.encode()).decode()
 
     def uuid_get(self, identifier: str, *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
@@ -904,17 +904,17 @@ Output:
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
     def assert_in_response(self, substring: str, response: HttpResponse) -> None:
-        self.assertIn(substring, response.content.decode("utf-8"))
+        self.assertIn(substring, response.content.decode())
 
     def assert_in_success_response(self, substrings: List[str], response: HttpResponse) -> None:
         self.assertEqual(response.status_code, 200)
-        decoded = response.content.decode("utf-8")
+        decoded = response.content.decode()
         for substring in substrings:
             self.assertIn(substring, decoded)
 
     def assert_not_in_success_response(self, substrings: List[str], response: HttpResponse) -> None:
         self.assertEqual(response.status_code, 200)
-        decoded = response.content.decode("utf-8")
+        decoded = response.content.decode()
         for substring in substrings:
             self.assertNotIn(substring, decoded)
 

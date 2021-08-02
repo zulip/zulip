@@ -39,7 +39,7 @@ def move_missed_message_addresses_to_database(
             redis_client.delete(key)
             continue
 
-        topic_name = subject_b.decode("utf-8")
+        topic_name = subject_b.decode()
 
         # The data model for missed-message emails has changed in two
         # key ways: We're moving it from Redis to the database for

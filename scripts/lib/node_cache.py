@@ -48,7 +48,7 @@ def generate_sha1sum_node_modules(
     data["yarn-args"] = get_yarn_args(production=production)
 
     sha1sum = hashlib.sha1()
-    sha1sum.update(json.dumps(data, sort_keys=True).encode("utf-8"))
+    sha1sum.update(json.dumps(data, sort_keys=True).encode())
     return sha1sum.hexdigest()
 
 

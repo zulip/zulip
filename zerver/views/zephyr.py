@@ -65,7 +65,7 @@ def webathena_kerberos_login(
             "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
             user,
             api_key,
-            base64.b64encode(ccache).decode("utf-8"),
+            base64.b64encode(ccache).decode(),
         ]
         subprocess.check_call(
             ["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--", " ".join(map(shlex.quote, command))]

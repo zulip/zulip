@@ -451,7 +451,7 @@ def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[st
             sha1sum.update(file_to_hash.read())
 
     for extra_string in extra_strings:
-        sha1sum.update(extra_string.encode("utf-8"))
+        sha1sum.update(extra_string.encode())
 
     return sha1sum.hexdigest()
 

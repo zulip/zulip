@@ -538,11 +538,11 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         api_key = get_api_key(user_profile)
         credentials = f"{user_profile.email}:{api_key}"
-        api_auth = "Digest " + base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+        api_auth = "Digest " + base64.b64encode(credentials.encode()).decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
         self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
 
-        api_auth = "Basic " + base64.b64encode(b"foo").decode("utf-8")
+        api_auth = "Basic " + base64.b64encode(b"foo").decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
         self.assert_json_error(
             result, "Invalid authorization header for basic auth", status_code=401

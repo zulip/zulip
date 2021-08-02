@@ -1286,7 +1286,7 @@ def do_deactivate_stream(
 
     # Prepend a substring of the hashed stream ID to the new stream name
     streamID = str(stream.id)
-    stream_id_hash_object = hashlib.sha512(streamID.encode("utf-8"))
+    stream_id_hash_object = hashlib.sha512(streamID.encode())
     hashed_stream_id = stream_id_hash_object.hexdigest()[0:7]
 
     new_name = (hashed_stream_id + "!DEACTIVATED:" + old_name)[: Stream.MAX_NAME_LENGTH]

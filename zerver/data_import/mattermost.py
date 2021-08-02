@@ -227,7 +227,7 @@ def generate_huddle_name(huddle_members: List[str]) -> str:
     # lifetime of export tool run, as it doesn't appear in the output.
     import hashlib
 
-    return hashlib.md5("".join(sorted(huddle_members)).encode("utf-8")).hexdigest()
+    return hashlib.md5("".join(sorted(huddle_members)).encode()).hexdigest()
 
 
 def convert_huddle_data(
