@@ -41,7 +41,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     rest_endpoints_path = os.path.join(
         settings.DEPLOY_ROOT, "templates/zerver/help/include/rest-endpoints.md"
     )
-    rest_endpoints_raw = open(rest_endpoints_path, "r").read()
+    rest_endpoints_raw = open(rest_endpoints_path).read()
     ENDPOINT_REGEXP = re.compile(r"/api/\s*(.*?)\)")
     endpoint_list = sorted(set(re.findall(ENDPOINT_REGEXP, rest_endpoints_raw)))
 
@@ -51,7 +51,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         curl_commands_to_test = []
 
         if os.path.exists(file_name):
-            f = open(file_name, "r")
+            f = open(file_name)
             for line in f:
                 # A typical example from the Markdown source looks like this:
                 #     {generate_code_example(curl, ...}
