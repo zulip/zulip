@@ -15,6 +15,7 @@ from zerver.data_import.import_util import (
     build_message,
     build_personal_subscriptions,
     build_realm,
+    build_realm_emoji,
     build_recipients,
     build_stream,
     build_stream_subscriptions,
@@ -28,7 +29,7 @@ from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.utils import process_list_in_batches
-from zerver.models import Reaction, Recipient, UserProfile
+from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
 def make_realm(
@@ -238,18 +239,92 @@ def convert_huddle_data(
     return zerver_huddle
 
 
+def build_custom_emoji(
+    realm_id: int, custom_emoji_data: Dict[str, List[Dict[str, Any]]], output_dir: str
+) -> List[ZerverFieldsT]:
+    logging.info("Starting to process custom emoji")
+
+    emoji_folder = os.path.join(output_dir, "emoji")
+    os.makedirs(emoji_folder, exist_ok=True)
+
+    zerver_realmemoji: List[ZerverFieldsT] = []
+    emoji_records: List[ZerverFieldsT] = []
+
+    # Map emoji file_id to emoji file data
+    emoji_file_data = {}
+    for emoji_file in custom_emoji_data["file"]:
+        emoji_file_data[emoji_file["_id"]] = {"filename": emoji_file["filename"], "chunks": []}
+    for emoji_chunk in custom_emoji_data["chunk"]:
+        emoji_file_data[emoji_chunk["files_id"]]["chunks"].append(emoji_chunk["data"])
+
+    # Build custom emoji
+    for rc_emoji in custom_emoji_data["emoji"]:
+        # Subject to change with changes in database
+        emoji_file_id = ".".join([rc_emoji["name"], rc_emoji["extension"]])
+
+        emoji_file_info = emoji_file_data[emoji_file_id]
+
+        emoji_filename = emoji_file_info["filename"]
+        emoji_data = b"".join(emoji_file_info["chunks"])
+
+        target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm_id,
+            emoji_file_name=emoji_filename,
+        )
+        target_path = os.path.join(emoji_folder, target_sub_path)
+
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+        with open(target_path, "wb") as e_file:
+            e_file.write(emoji_data)
+
+        emoji_aliases = [rc_emoji["name"]]
+        emoji_aliases.extend(rc_emoji["aliases"])
+
+        for alias in emoji_aliases:
+            emoji_record = dict(
+                path=target_path,
+                s3_path=target_path,
+                file_name=emoji_filename,
+                realm_id=realm_id,
+                name=alias,
+            )
+            emoji_records.append(emoji_record)
+
+            realmemoji = build_realm_emoji(
+                realm_id=realm_id,
+                name=alias,
+                id=NEXT_ID("realmemoji"),
+                file_name=emoji_filename,
+            )
+            zerver_realmemoji.append(realmemoji)
+
+    create_converted_data_files(emoji_records, output_dir, "/emoji/records.json")
+    logging.info("Done processing emoji")
+
+    return zerver_realmemoji
+
+
 def build_reactions(
     total_reactions: List[ZerverFieldsT],
     reactions: List[Dict[str, Any]],
     message_id: int,
+    zerver_realmemoji: List[ZerverFieldsT],
 ) -> None:
+    realmemoji = {}
+    for emoji in zerver_realmemoji:
+        realmemoji[emoji["name"]] = emoji["id"]
+
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for reaction in reactions:
         emoji_name = reaction["name"]
         user_id = reaction["user_id"]
+        # Check in realm emoji
+        if emoji_name in realmemoji:
+            emoji_code = realmemoji[emoji_name]
+            reaction_type = Reaction.REALM_EMOJI
         # Check in Unicode emoji
-        if emoji_name in name_to_codepoint:
+        elif emoji_name in name_to_codepoint:
             emoji_code = name_to_codepoint[emoji_name]
             reaction_type = Reaction.UNICODE_EMOJI
         else:  # nocoverage
@@ -276,6 +351,7 @@ def process_raw_message_batch(
     user_handler: UserHandler,
     is_pm_data: bool,
     output_dir: str,
+    zerver_realmemoji: List[ZerverFieldsT],
     total_reactions: List[ZerverFieldsT],
 ) -> None:
     def fix_mentions(content: str, mention_user_ids: Set[int]) -> str:
@@ -331,6 +407,7 @@ def process_raw_message_batch(
             total_reactions=total_reactions,
             reactions=raw_message["reactions"],
             message_id=message_id,
+            zerver_realmemoji=zerver_realmemoji,
         )
 
     zerver_usermessage = make_user_messages(
@@ -366,6 +443,7 @@ def process_messages(
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
+    zerver_realmemoji: List[ZerverFieldsT],
     total_reactions: List[ZerverFieldsT],
     output_dir: str,
 ) -> None:
@@ -458,6 +536,7 @@ def process_messages(
             user_handler=user_handler,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
+            zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
         )
 
@@ -550,6 +629,7 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
     rocketchat_data["avatar"] = {"avatar": [], "file": [], "chunk": []}
     rocketchat_data["room"] = []
     rocketchat_data["message"] = []
+    rocketchat_data["custom_emoji"] = {"emoji": [], "file": [], "chunk": []}
 
     # Get instance
     with open(os.path.join(rocketchat_data_dir, "instances.bson"), "rb") as fcache:
@@ -563,11 +643,16 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
     with open(os.path.join(rocketchat_data_dir, "rocketchat_avatars.bson"), "rb") as fcache:
         rocketchat_data["avatar"]["avatar"] = bson.decode_all(fcache.read())
 
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_avatars.chunks.bson"), "rb") as fcache:
-        rocketchat_data["avatar"]["chunk"] = bson.decode_all(fcache.read())
+    if rocketchat_data["avatar"]["avatar"]:
+        with open(
+            os.path.join(rocketchat_data_dir, "rocketchat_avatars.files.bson"), "rb"
+        ) as fcache:
+            rocketchat_data["avatar"]["file"] = bson.decode_all(fcache.read())
 
-    with open(os.path.join(rocketchat_data_dir, "rocketchat_avatars.files.bson"), "rb") as fcache:
-        rocketchat_data["avatar"]["file"] = bson.decode_all(fcache.read())
+        with open(
+            os.path.join(rocketchat_data_dir, "rocketchat_avatars.chunks.bson"), "rb"
+        ) as fcache:
+            rocketchat_data["avatar"]["chunk"] = bson.decode_all(fcache.read())
 
     # Get room
     with open(os.path.join(rocketchat_data_dir, "rocketchat_room.bson"), "rb") as fcache:
@@ -576,6 +661,17 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
     # Get messages
     with open(os.path.join(rocketchat_data_dir, "rocketchat_message.bson"), "rb") as fcache:
         rocketchat_data["message"] = bson.decode_all(fcache.read())
+
+    # Get custom emoji
+    with open(os.path.join(rocketchat_data_dir, "rocketchat_custom_emoji.bson"), "rb") as fcache:
+        rocketchat_data["custom_emoji"]["emoji"] = bson.decode_all(fcache.read())
+
+    if rocketchat_data["custom_emoji"]["emoji"]:
+        with open(os.path.join(rocketchat_data_dir, "custom_emoji.files.bson"), "rb") as fcache:
+            rocketchat_data["custom_emoji"]["file"] = bson.decode_all(fcache.read())
+
+        with open(os.path.join(rocketchat_data_dir, "custom_emoji.chunks.bson"), "rb") as fcache:
+            rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(fcache.read())
 
     return rocketchat_data
 
@@ -677,6 +773,13 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
     realm["zerver_subscription"] = zerver_subscription
 
+    zerver_realmemoji = build_custom_emoji(
+        realm_id=realm_id,
+        custom_emoji_data=rocketchat_data["custom_emoji"],
+        output_dir=output_dir,
+    )
+    realm["zerver_realmemoji"] = zerver_realmemoji
+
     subscriber_map = make_subscriber_map(
         zerver_subscription=zerver_subscription,
     )
@@ -722,6 +825,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        zerver_realmemoji=zerver_realmemoji,
         total_reactions=total_reactions,
         output_dir=output_dir,
     )
@@ -742,6 +846,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        zerver_realmemoji=zerver_realmemoji,
         total_reactions=total_reactions,
         output_dir=output_dir,
     )

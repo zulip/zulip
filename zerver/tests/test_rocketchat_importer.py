@@ -6,6 +6,7 @@ import orjson
 
 from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT, build_recipients
 from zerver.data_import.rocketchat import (
+    build_custom_emoji,
     build_reactions,
     categorize_channels_and_map_with_id,
     convert_channel_data,
@@ -31,7 +32,7 @@ class RocketChatImporter(ZulipTestCase):
     def test_rocketchat_data_to_dict(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-        self.assert_length(rocketchat_data, 5)
+        self.assert_length(rocketchat_data, 6)
 
         self.assert_length(rocketchat_data["user"], 6)
         self.assertEqual(rocketchat_data["user"][2]["username"], "harry.potter")
@@ -41,10 +42,13 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(rocketchat_data["room"][0]["_id"], "GENERAL")
         self.assertEqual(rocketchat_data["room"][0]["name"], "general")
 
-        self.assert_length(rocketchat_data["message"], 52)
+        self.assert_length(rocketchat_data["message"], 58)
         self.assertEqual(rocketchat_data["message"][1]["msg"], "Hey everyone, how's it going??")
         self.assertEqual(rocketchat_data["message"][1]["rid"], "GENERAL")
         self.assertEqual(rocketchat_data["message"][1]["u"]["username"], "priyansh3133")
+
+        self.assert_length(rocketchat_data["custom_emoji"]["emoji"], 3)
+        self.assertEqual(rocketchat_data["custom_emoji"]["emoji"][0]["name"], "tick")
 
     def test_map_user_id_to_user(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -438,6 +442,51 @@ class RocketChatImporter(ZulipTestCase):
         huddle_id = huddle_id_mapper.get(rc_huddle_id)
         self.assertEqual(subscriber_handler.get_users(huddle_id=huddle_id), {3, 4, 5})
 
+    def test_write_emoticon_data(self) -> None:
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
+        output_dir = self.make_import_output_dir("rocketchat")
+
+        with self.assertLogs(level="INFO"):
+            zerver_realmemoji = build_custom_emoji(
+                realm_id=3,
+                custom_emoji_data=rocketchat_data["custom_emoji"],
+                output_dir=output_dir,
+            )
+
+        self.assert_length(zerver_realmemoji, 5)
+        self.assertEqual(zerver_realmemoji[0]["name"], "tick")
+        self.assertEqual(zerver_realmemoji[0]["file_name"], "tick.png")
+        self.assertEqual(zerver_realmemoji[0]["realm"], 3)
+        self.assertEqual(zerver_realmemoji[0]["deactivated"], False)
+
+        self.assertEqual(zerver_realmemoji[1]["name"], "check")
+        self.assertEqual(zerver_realmemoji[1]["file_name"], "tick.png")
+        self.assertEqual(zerver_realmemoji[1]["realm"], 3)
+        self.assertEqual(zerver_realmemoji[1]["deactivated"], False)
+
+        self.assertEqual(zerver_realmemoji[2]["name"], "zulip")
+        self.assertEqual(zerver_realmemoji[2]["file_name"], "zulip.png")
+        self.assertEqual(zerver_realmemoji[2]["realm"], 3)
+        self.assertEqual(zerver_realmemoji[2]["deactivated"], False)
+
+        records_file = os.path.join(output_dir, "emoji", "records.json")
+        with open(records_file, "rb") as f:
+            records_json = orjson.loads(f.read())
+
+        self.assertEqual(records_json[0]["name"], "tick")
+        self.assertEqual(records_json[0]["file_name"], "tick.png")
+        self.assertEqual(records_json[0]["realm_id"], 3)
+        self.assertEqual(records_json[1]["name"], "check")
+        self.assertEqual(records_json[1]["file_name"], "tick.png")
+        self.assertEqual(records_json[1]["realm_id"], 3)
+        self.assertTrue(os.path.isfile(records_json[0]["path"]))
+
+        self.assertEqual(records_json[2]["name"], "zulip")
+        self.assertEqual(records_json[2]["file_name"], "zulip.png")
+        self.assertEqual(records_json[2]["realm_id"], 3)
+        self.assertTrue(os.path.isfile(records_json[2]["path"]))
+
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -564,8 +613,8 @@ class RocketChatImporter(ZulipTestCase):
             private_messages=private_messages,
         )
 
-        self.assert_length(rocketchat_data["message"], 52)
-        self.assert_length(channel_messages, 47)
+        self.assert_length(rocketchat_data["message"], 58)
+        self.assert_length(channel_messages, 53)
         self.assert_length(private_messages, 5)
 
         self.assertIn(rocketchat_data["message"][0], channel_messages)
@@ -612,10 +661,21 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         # No new message added to channel or private messages
-        self.assert_length(channel_messages, 47)
+        self.assert_length(channel_messages, 53)
         self.assert_length(private_messages, 5)
 
     def test_build_reactions(self) -> None:
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
+        output_dir = self.make_import_output_dir("rocketchat")
+
+        with self.assertLogs(level="INFO"):
+            zerver_realmemoji = build_custom_emoji(
+                realm_id=3,
+                custom_emoji_data=rocketchat_data["custom_emoji"],
+                output_dir=output_dir,
+            )
+
         total_reactions: List[ZerverFieldsT] = []
 
         reactions = [
@@ -625,32 +685,53 @@ class RocketChatImporter(ZulipTestCase):
             {"name": "star_struck", "user_id": 4},
             {"name": "heart", "user_id": 3},
             {"name": "rocket", "user_id": 4},
+            {"name": "check", "user_id": 2},
+            {"name": "zulip", "user_id": 3},
+            {"name": "harry-ron", "user_id": 4},
         ]
 
-        build_reactions(total_reactions=total_reactions, reactions=reactions, message_id=3)
+        build_reactions(
+            total_reactions=total_reactions,
+            reactions=reactions,
+            message_id=3,
+            zerver_realmemoji=zerver_realmemoji,
+        )
 
         # :grin: and :star_struck: are not present in Zulip's default
         # emoji set, or in Reaction.UNICODE_EMOJI reaction type.
-        self.assert_length(total_reactions, 4)
+        self.assert_length(total_reactions, 7)
 
         grinning_emoji_code = name_to_codepoint["grinning"]
         innocent_emoji_code = name_to_codepoint["innocent"]
         heart_emoji_code = name_to_codepoint["heart"]
         rocket_emoji_code = name_to_codepoint["rocket"]
 
+        realmemoji_code = {}
+        for emoji in zerver_realmemoji:
+            realmemoji_code[emoji["name"]] = emoji["id"]
+
         self.assertEqual(
             self.get_set(total_reactions, "reaction_type"),
-            {Reaction.UNICODE_EMOJI},
+            {Reaction.UNICODE_EMOJI, Reaction.REALM_EMOJI},
         )
         self.assertEqual(
-            self.get_set(total_reactions, "emoji_name"), {"grinning", "innocent", "heart", "rocket"}
+            self.get_set(total_reactions, "emoji_name"),
+            {"grinning", "innocent", "heart", "rocket", "check", "zulip", "harry-ron"},
         )
         self.assertEqual(
             self.get_set(total_reactions, "emoji_code"),
-            {grinning_emoji_code, innocent_emoji_code, heart_emoji_code, rocket_emoji_code},
+            {
+                grinning_emoji_code,
+                innocent_emoji_code,
+                heart_emoji_code,
+                rocket_emoji_code,
+                realmemoji_code["check"],
+                realmemoji_code["zulip"],
+                realmemoji_code["harry-ron"],
+            },
         )
         self.assertEqual(self.get_set(total_reactions, "user_profile"), {2, 3, 4})
-        self.assert_length(self.get_set(total_reactions, "id"), 4)
+        self.assert_length(self.get_set(total_reactions, "id"), 7)
         self.assert_length(self.get_set(total_reactions, "message"), 1)
 
     def read_file(self, team_output_dir: str, output_file: str) -> Any:
@@ -670,13 +751,15 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
+                "INFO:root:Starting to process custom emoji",
+                "INFO:root:Done processing emoji",
                 "INFO:root:Start making tarball",
                 "INFO:root:Done making tarball",
             ],
         )
 
         self.assertEqual(os.path.exists(os.path.join(output_dir, "avatars")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "emoji")), False)
+        self.assertEqual(os.path.exists(os.path.join(output_dir, "emoji")), True)
         self.assertEqual(os.path.exists(os.path.join(output_dir, "attachment.json")), True)
 
         realm = self.read_file(output_dir, "realm.json")
@@ -784,12 +867,12 @@ class RocketChatImporter(ZulipTestCase):
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
         # After removing user_joined, added_user, discussion_created, etc.
-        # messages. (Total messages were 44.)
-        self.assert_length(messages, 27)
+        # messages. (Total messages were 58.)
+        self.assert_length(messages, 31)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
-        self.assert_length(stream_messages, 22)
+        self.assert_length(stream_messages, 26)
         self.assert_length(set(stream_recipients), 5)
         self.assertEqual(stream_messages[0].sender.email, "priyansh3133@email.com")
         self.assertEqual(stream_messages[0].content, "Hey everyone, how's it going??")

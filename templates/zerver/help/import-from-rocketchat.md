@@ -83,7 +83,6 @@ root domain. Replace the last line above with the following, after replacing
 This import tool is currently beta and does not support importing
 the following data:
 
--   Custom emoji
 -   User avatars
 -   Uploaded files
 -   Default channels for new users
