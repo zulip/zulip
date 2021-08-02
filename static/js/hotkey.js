@@ -433,6 +433,12 @@ export function process_enter_key(e) {
         return false;
     }
 
+    // All custom logic for overlays/modals is above; if we're in a
+    // modal at this point, let the browser handle the event.
+    if (overlays.is_modal_open()) {
+        return false;
+    }
+
     // If we're on a button or a link and have pressed Enter, let the
     // browser handle the keypress
     //
