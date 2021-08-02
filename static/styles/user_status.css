@@ -29,14 +29,15 @@
         .status_emoji_wrapper {
             height: 20px;
             width: 22px;
-            padding: 4px 8px 4px 8px;
+            padding: 6px 8px 2px 8px;
             border-right: 1px solid;
             border-color: inherit;
             cursor: pointer;
             .selected_emoji {
                 width: 18px;
                 height: 18px;
-                top: 4px;
+                top: 50%;
+                transform: translateY(-50%);
                 cursor: pointer;
             }
             .smiley_icon {
