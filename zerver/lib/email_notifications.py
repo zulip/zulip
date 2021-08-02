@@ -584,6 +584,9 @@ def handle_missedmessage_emails(
     }
 
     user_profile = get_user_profile_by_id(user_profile_id)
+    if user_profile.is_bot:  # nocoverage # TODO -- needs a test.
+        # Never email bot users.
+        return
 
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be
