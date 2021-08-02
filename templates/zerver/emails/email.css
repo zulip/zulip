@@ -118,6 +118,12 @@ h2 {
     margin-bottom: 10px;
 }
 
+ul,
+ol {
+    /* Override excessive indentation seen in Gmail. */
+    padding-left: 5px;
+}
+
 p,
 ul,
 ol {
