@@ -133,7 +133,7 @@ class Confirmation(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
     date_sent: datetime.datetime = models.DateTimeField(db_index=True)
     confirmation_key: str = models.CharField(max_length=40, db_index=True)
-    expiry_date: datetime.datetime = models.DateTimeField(db_index=True, null=True)
+    expiry_date: datetime.datetime = models.DateTimeField(db_index=True)
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
     # The following list is the set of valid types
