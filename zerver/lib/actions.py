@@ -2008,14 +2008,11 @@ def do_send_messages(
         else:
             user_list = list(user_ids)
 
-        UserData = TypedDict(
-            "UserData",
-            {
-                "id": int,
-                "flags": List[str],
-                "mentioned_user_group_id": Optional[int],
-            },
-        )
+        class UserData(TypedDict):
+            id: int
+            flags: List[str]
+            mentioned_user_group_id: Optional[int]
+
         users: List[UserData] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
