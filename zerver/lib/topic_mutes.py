@@ -13,7 +13,7 @@ from zerver.models import UserProfile, UserTopic, get_stream
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
 ) -> List[Tuple[str, str, float]]:
-    query = UserTopic.objects.filter(user_profile=user_profile)
+    query = UserTopic.objects.filter(user_profile=user_profile, visibility_policy=UserTopic.MUTED)
     # Exclude muted topics that are part of deactivated streams unless
     # explicitly requested.
     if not include_deactivated:
@@ -40,6 +40,7 @@ def set_topic_mutes(
 
     UserTopic.objects.filter(
         user_profile=user_profile,
+        visibility_policy=UserTopic.MUTED,
     ).delete()
 
     if date_muted is None:
@@ -72,6 +73,7 @@ def add_topic_mute(
         recipient_id=recipient_id,
         topic_name=topic_name,
         last_updated=date_muted,
+        visibility_policy=UserTopic.MUTED,
     )
 
 
@@ -80,6 +82,7 @@ def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
+        visibility_policy=UserTopic.MUTED,
     )
     row.delete()
 
@@ -89,6 +92,7 @@ def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
+        visibility_policy=UserTopic.MUTED,
     ).exists()
     return is_muted
 
@@ -101,6 +105,7 @@ def exclude_topic_mutes(
     # never filtered from the query in this method.
     query = UserTopic.objects.filter(
         user_profile=user_profile,
+        visibility_policy=UserTopic.MUTED,
     )
 
     if stream_id is not None:
@@ -129,7 +134,9 @@ def exclude_topic_mutes(
 
 
 def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
-    rows = UserTopic.objects.filter(user_profile=user_profile).values(
+    rows = UserTopic.objects.filter(
+        user_profile=user_profile, visibility_policy=UserTopic.MUTED
+    ).values(
         "recipient_id",
         "topic_name",
     )
