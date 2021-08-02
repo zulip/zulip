@@ -102,6 +102,14 @@ export function notify_server_message_read(message, options) {
 export function process_scrolled_to_bottom() {
     if (message_lists.current.can_mark_messages_read()) {
         mark_current_list_as_read();
+        return;
+    }
+
+    // For message lists that don't support marking messages as read
+    // automatically, we display a banner offering to let you mark
+    // them as read manually, only if there are unreads present.
+    if (message_lists.current.has_unread_messages()) {
+        unread_ui.notify_messages_remain_unread();
     }
 }
 

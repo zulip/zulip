@@ -10,7 +10,9 @@ import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as recent_topics_util from "./recent_topics_util";
+import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
 
 let actively_scrolling = false;
 
@@ -245,6 +247,19 @@ export function initialize() {
             }
             if (event.msg_list.can_mark_messages_read()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
+            } else if (
+                unread.get_unread_messages(messages).length !== 0 &&
+                // The below checks might seem redundant, but it's
+                // possible this logic, which runs after a delay, lost
+                // a race with switching to another view, like Recent
+                // Topics, and we don't want to displ[ay this banner
+                // in such a view.
+                //
+                // This can likely be fixed more cleanly with another approach.
+                narrow_state.filter() !== undefined &&
+                message_lists.current === event.msg_list
+            ) {
+                unread_ui.notify_messages_remain_unread();
             }
         }
     });
