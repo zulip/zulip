@@ -307,7 +307,7 @@ def image_preview_enabled(
 
 def list_of_tlds() -> List[str]:
     # Skip a few overly-common false-positives from file extensions
-    common_false_positives = set(["java", "md", "mov", "py", "zip"])
+    common_false_positives = {"java", "md", "mov", "py", "zip"}
     tlds = list(tld_set - common_false_positives)
 
     tlds.sort(key=len, reverse=True)

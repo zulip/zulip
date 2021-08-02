@@ -1544,8 +1544,8 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
             possible_wildcard_mention=False,
         )
-        self.assertEqual(info["pm_mention_email_disabled_user_ids"], set([hamlet.id]))
-        self.assertEqual(info["pm_mention_push_disabled_user_ids"], set([hamlet.id]))
+        self.assertEqual(info["pm_mention_email_disabled_user_ids"], {hamlet.id})
+        self.assertEqual(info["pm_mention_push_disabled_user_ids"], {hamlet.id})
         hamlet.enable_offline_email_notifications = True
         hamlet.enable_offline_push_notifications = True
         hamlet.save()
@@ -1883,7 +1883,7 @@ class GetProfileTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users")
         self.assert_json_success(result)
 
-        (my_user,) = [user for user in result.json()["members"] if user["email"] == hamlet.email]
+        (my_user,) = (user for user in result.json()["members"] if user["email"] == hamlet.email)
 
         self.assertEqual(
             my_user["avatar_url"],

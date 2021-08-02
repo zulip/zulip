@@ -68,7 +68,7 @@ class WorkerTest(ZulipTestCase):
                     chunk = []
 
         def local_queue_size(self) -> int:
-            return sum([len(q) for q in self.queues.values()])
+            return sum(len(q) for q in self.queues.values())
 
     def test_UserActivityWorker(self) -> None:
         fake_client = self.FakeClient()
