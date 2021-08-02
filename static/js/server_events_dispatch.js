@@ -9,7 +9,9 @@ import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
+import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
@@ -710,6 +712,11 @@ export function dispatch_normal_event(event) {
                     status_text: event.status_text,
                 });
                 activity.redraw_user(event.user_id);
+
+                // Update the status text in compose box placeholder when opened to self.
+                if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
+                    compose_actions.update_placeholder_text();
+                }
             }
 
             if (event.emoji_name !== undefined) {

@@ -87,6 +87,7 @@ const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
+const compose_pm_pill = zrequire("compose_pm_pill");
 
 const emoji = zrequire("../shared/js/emoji");
 
@@ -934,6 +935,7 @@ run_test("user_status", ({override}) => {
     {
         const stub = make_stub();
         override(activity, "redraw_user", stub.f);
+        override(compose_pm_pill, "get_user_ids", () => [event.user_id]);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
