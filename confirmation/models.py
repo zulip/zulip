@@ -85,6 +85,7 @@ def get_object_from_key(
 def create_confirmation_link(
     obj: Union[Realm, HasRealmObject, OptionalHasRealmObject],
     confirmation_type: int,
+    validity_in_days: Optional[int] = None,
     url_args: Mapping[str, str] = {},
 ) -> str:
     key = generate_key()
@@ -94,11 +95,20 @@ def create_confirmation_link(
     elif hasattr(obj, "realm"):
         realm = obj.realm
 
+    expiry_date = None
+    if validity_in_days:
+        expiry_date = timezone_now() + datetime.timedelta(days=validity_in_days)
+    else:
+        expiry_date = timezone_now() + datetime.timedelta(
+            days=_properties[confirmation_type].validity_in_days
+        )
+
     Confirmation.objects.create(
         content_object=obj,
         date_sent=timezone_now(),
         confirmation_key=key,
         realm=realm,
+        expiry_date=expiry_date,
         type=confirmation_type,
     )
     return confirmation_url(key, realm, confirmation_type, url_args)
@@ -124,6 +134,7 @@ class Confirmation(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
     date_sent: datetime.datetime = models.DateTimeField(db_index=True)
     confirmation_key: str = models.CharField(max_length=40, db_index=True)
+    expiry_date: datetime.datetime = models.DateTimeField(db_index=True, null=True)
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
     # The following list is the set of valid types
