@@ -92,9 +92,8 @@ h3,
 h4 {
     color: #4e4d4d !important;
     font-family: sans-serif;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.4;
-    margin: 0;
     margin-bottom: 30px;
 }
 
@@ -103,6 +102,12 @@ h1 {
     font-weight: 300;
     text-align: center;
     text-transform: capitalize;
+}
+
+h2 {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
 p,
