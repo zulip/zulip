@@ -110,7 +110,7 @@ class DocPageTest(ZulipTestCase):
     def test_api_doc_endpoints(self) -> None:
         # We extract the set of /api/ endpoints to check by parsing
         # the /api/ page sidebar for links starting with /api/.
-        api_page_raw = str((self.client_get("/api/").content))
+        api_page_raw = str(self.client_get("/api/").content)
         ENDPOINT_REGEXP = re.compile(r"href=\"/api/\s*(.*?)\"")
         endpoint_list_set = set(re.findall(ENDPOINT_REGEXP, api_page_raw))
         endpoint_list = [f"/api/{endpoint}" for endpoint in endpoint_list_set]

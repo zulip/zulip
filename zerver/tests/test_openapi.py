@@ -162,11 +162,7 @@ class OpenAPIToolsTest(ZulipTestCase):
             with self.assertRaises(SchemaError, msg='Opaque object "obj"'):
                 # Checks for opaque objects
                 validate_schema(
-                    (
-                        test_dict["test3"]["responses"]["200"]["content"]["application/json"][
-                            "schema"
-                        ]
-                    )
+                    test_dict["test3"]["responses"]["200"]["content"]["application/json"]["schema"]
                 )
         finally:
             openapi_spec.openapi()["paths"].pop("testing", None)
