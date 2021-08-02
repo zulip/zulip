@@ -92,7 +92,7 @@ def make_safe_digest(string: str, hash_func: Callable[[bytes], Any] = hashlib.sh
     """
     # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
     # be encoded.
-    return hash_func(string.encode("utf-8")).hexdigest()
+    return hash_func(string.encode()).hexdigest()
 
 
 def log_statsd_event(name: str) -> None:

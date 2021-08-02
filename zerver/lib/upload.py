@@ -767,7 +767,7 @@ LOCAL_FILE_ACCESS_TOKEN_SALT = "local_file_"
 
 def generate_unauthed_file_access_url(path_id: str) -> str:
     signed_data = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT).sign(path_id)
-    token = base64.b16encode(signed_data.encode("utf-8")).decode("utf-8")
+    token = base64.b16encode(signed_data.encode()).decode()
 
     filename = path_id.split("/")[-1]
     return reverse("local_file_unauthed", args=[token, filename])
@@ -776,7 +776,7 @@ def generate_unauthed_file_access_url(path_id: str) -> str:
 def get_local_file_path_id_from_token(token: str) -> Optional[str]:
     signer = TimestampSigner(salt=LOCAL_FILE_ACCESS_TOKEN_SALT)
     try:
-        signed_data = base64.b16decode(token).decode("utf-8")
+        signed_data = base64.b16decode(token).decode()
         path_id = signer.unsign(signed_data, max_age=timedelta(seconds=60))
     except (BadSignature, binascii.Error):
         return None

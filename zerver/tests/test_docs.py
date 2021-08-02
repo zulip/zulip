@@ -256,10 +256,10 @@ class DocPageTest(ZulipTestCase):
     def test_electron_detection(self) -> None:
         result = self.client_get("/accounts/password/reset/")
         # TODO: Ideally, this Mozilla would be the specific browser.
-        self.assertTrue('data-platform="Mozilla"' in result.content.decode("utf-8"))
+        self.assertTrue('data-platform="Mozilla"' in result.content.decode())
 
         result = self.client_get("/accounts/password/reset/", HTTP_USER_AGENT="ZulipElectron/1.0.0")
-        self.assertTrue('data-platform="ZulipElectron"' in result.content.decode("utf-8"))
+        self.assertTrue('data-platform="ZulipElectron"' in result.content.decode())
 
 
 class HelpTest(ZulipTestCase):
@@ -539,7 +539,7 @@ class AppsPageTest(ZulipTestCase):
         with self.settings(ZILENCER_ENABLED=True):
             result = self.client_get("/apps/")
         self.assertEqual(result.status_code, 200)
-        html = result.content.decode("utf-8")
+        html = result.content.decode()
         self.assertIn("Apps for every platform.", html)
 
     def test_app_download_link_view(self) -> None:

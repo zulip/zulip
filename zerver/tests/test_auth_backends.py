@@ -3995,7 +3995,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
         url = re.findall(
             'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
-            result.content.decode("utf-8"),
+            result.content.decode(),
         )[0]
         confirmation = Confirmation.objects.all().first()
         assert confirmation is not None

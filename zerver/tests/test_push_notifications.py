@@ -241,7 +241,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         del self.API_KEYS[self.server_uuid]
 
         credentials = "{}:{}".format("5678-efgh", "invalid")
-        api_auth = "Basic " + base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+        api_auth = "Basic " + base64.b64encode(credentials.encode()).decode()
         result = self.client_post(
             endpoint,
             {"user_id": user_id, "token_kind": token_kind, "token": token},

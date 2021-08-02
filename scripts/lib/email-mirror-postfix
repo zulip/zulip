@@ -156,7 +156,7 @@ def send_email_mirror(
         "msg_base64": base64.b64encode(msg_bytes).decode(),
         "secret": shared_secret,
     }
-    req = Request(url=urljoin(host, url), data=urlencode(data).encode("utf8"))
+    req = Request(url=urljoin(host, url), data=urlencode(data).encode())
     try:
         urlopen(req, context=context)
     except HTTPError as err:

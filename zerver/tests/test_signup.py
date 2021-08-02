@@ -5114,7 +5114,7 @@ class TestLoginPage(ZulipTestCase):
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self) -> None:
         result = self.client_get("/accounts/find/")
-        self.assertIn("Find your Zulip accounts", result.content.decode("utf8"))
+        self.assertIn("Find your Zulip accounts", result.content.decode())
 
     def test_result(self) -> None:
         # We capitalize a letter in cordelia's email to test that the search is case-insensitive.
@@ -5126,7 +5126,7 @@ class TestFindMyTeam(ZulipTestCase):
             result.url, "/accounts/find/?emails=iago%40zulip.com%2CcordeliA%40zulip.com"
         )
         result = self.client_get(result.url)
-        content = result.content.decode("utf8")
+        content = result.content.decode()
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn("iago@zulip.com", content)
         self.assertIn("cordeliA@zulip.com", content)
@@ -5144,7 +5144,7 @@ class TestFindMyTeam(ZulipTestCase):
             result.url, "/accounts/find/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com"
         )
         result = self.client_get(result.url)
-        content = result.content.decode("utf8")
+        content = result.content.decode()
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
         self.assertIn("invalid_email@", content)
@@ -5167,7 +5167,7 @@ class TestFindMyTeam(ZulipTestCase):
     def test_find_team_zero_emails(self) -> None:
         data = {"emails": ""}
         result = self.client_post("/accounts/find/", data)
-        self.assertIn("This field is required", result.content.decode("utf8"))
+        self.assertIn("This field is required", result.content.decode())
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
@@ -5215,7 +5215,7 @@ class TestFindMyTeam(ZulipTestCase):
         data = {"emails": ",".join(f"hamlet-{i}@zulip.com" for i in range(11))}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 200)
-        self.assertIn("Please enter at most 10", result.content.decode("utf8"))
+        self.assertIn("Please enter at most 10", result.content.decode())
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)

@@ -36,7 +36,7 @@ for tag in [t["name"] for t in resp.json()]:
             f"https://raw.githubusercontent.com/zulip/zulip/{tag}/zproject/prod_settings_template.py",
         )
         if resp.status_code == 200:
-            templ[tag] = resp.content.decode("utf-8")
+            templ[tag] = resp.content.decode()
         else:
             print("Failure: ")
             print(resp)

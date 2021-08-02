@@ -40,7 +40,7 @@ def python_version() -> str:
 
 def hash_deps(deps: Iterable[str]) -> str:
     deps_str = "\n".join(deps) + "\n" + python_version()
-    return hashlib.sha1(deps_str.encode("utf-8")).hexdigest()
+    return hashlib.sha1(deps_str.encode()).hexdigest()
 
 
 def main() -> int:

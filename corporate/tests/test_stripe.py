@@ -411,13 +411,11 @@ class StripeTestCase(ZulipTestCase):
         self.next_year = datetime(2013, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
-        match = re.search(
-            r"name=\"signed_seat_count\" value=\"(.+)\"", response.content.decode("utf-8")
-        )
+        match = re.search(r"name=\"signed_seat_count\" value=\"(.+)\"", response.content.decode())
         return match.group(1) if match else None
 
     def get_salt_from_response(self, response: HttpResponse) -> Optional[str]:
-        match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode("utf-8"))
+        match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode())
         return match.group(1) if match else None
 
     def upgrade(

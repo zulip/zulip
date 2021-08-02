@@ -240,7 +240,7 @@ class HomeTest(ZulipTestCase):
         self.assert_length(queries, 43)
         self.assert_length(cache_mock.call_args_list, 5)
 
-        html = result.content.decode("utf-8")
+        html = result.content.decode()
 
         for html_bit in html_bits:
             if html_bit not in html:
@@ -351,7 +351,7 @@ class HomeTest(ZulipTestCase):
         self.assert_length(queries2, 38)
 
         # Do a sanity check that our new streams were in the payload.
-        html = result.content.decode("utf-8")
+        html = result.content.decode()
         self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, **kwargs: Any) -> HttpResponse:
@@ -366,7 +366,7 @@ class HomeTest(ZulipTestCase):
         Use this for tests that are geared toward specific edge cases, but
         which still want the home page to load properly.
         """
-        html = result.content.decode("utf-8")
+        html = result.content.decode()
         if "start a conversation" not in html:
             raise AssertionError("Home page probably did not load.")
 
@@ -382,7 +382,7 @@ class HomeTest(ZulipTestCase):
 
                 result = self.client_get("/", dict(stream="Denmark"))
 
-            html = result.content.decode("utf-8")
+            html = result.content.decode()
             self.assertIn("Accept the new Terms of Service", html)
 
     def test_banned_desktop_app_versions(self) -> None:
@@ -390,7 +390,7 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_get("/", HTTP_USER_AGENT="ZulipElectron/2.3.82")
-        html = result.content.decode("utf-8")
+        html = result.content.decode()
         self.assertIn("You are using old version of the Zulip desktop", html)
 
     def test_unsupported_browser(self) -> None:
@@ -405,7 +405,7 @@ class HomeTest(ZulipTestCase):
         ]
         for user_agent in unsupported_user_agents:
             result = self.client_get("/", HTTP_USER_AGENT=user_agent)
-            html = result.content.decode("utf-8")
+            html = result.content.decode()
             self.assertIn("Internet Explorer is not supported by Zulip.", html)
 
     def test_terms_of_service_first_time_template(self) -> None:
@@ -445,7 +445,7 @@ class HomeTest(ZulipTestCase):
         self.login("hamlet")
         result = self._get_home_page(stream="Denmark", topic="lunch")
         self._sanity_check(result)
-        html = result.content.decode("utf-8")
+        html = result.content.decode()
         self.assertIn("lunch", html)
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}

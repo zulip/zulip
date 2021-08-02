@@ -487,7 +487,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     with open(options["markdown_template_path"]) as f:
         text = f.read()
         parsed_email_template = Parser(policy=default).parsestr(text)
-        email_template_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[0:32]
+        email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
 
     email_filename = f"custom/custom_email_{email_template_hash}.source.html"
     email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"
