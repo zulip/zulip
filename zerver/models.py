@@ -2205,6 +2205,9 @@ class UserTopic(models.Model):
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
+    # Implicitly, if a UserTopic does not exist, the (user, topic)
+    # pair should have normal behavior for that (user, stream) pair.
+
     # A normal muted topic. No notifications and unreads hidden.
     MUTED = 1
 
@@ -2227,6 +2230,22 @@ class UserTopic(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "stream", "topic_name")
+
+        indexes = [
+            # This index is designed to optimize queries fetching the
+            # set of users who have special policy for a stream,
+            # e.g. for the send-message code paths.
+            models.Index(
+                fields=("stream", "topic_name", "visibility_policy", "user_profile"),
+                name="zerver_usertopic_stream_topic_user_visibility_idx",
+            ),
+            # This index is useful for handling API requests fetching the
+            # muted topics for a given user or user/stream pair.
+            models.Index(
+                fields=("user_profile", "visibility_policy", "stream", "topic_name"),
+                name="zerver_usertopic_user_visibility_idx",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})>"
