@@ -11,6 +11,13 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 91**
+
+* `PATCH /realm`, [`PATCH /streams/{stream_id}`](/api/update-stream):
+  These endpoints now accept `"unlimited"` for `message_retention_days`,
+  replacing `"forever"` as the way to encode a retention policy where
+  messages are not automatically deleted.
+
 **Feature level 90**
 
 * [`POST /register`](/api/register-queue): The `unread_msgs` section

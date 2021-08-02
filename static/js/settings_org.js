@@ -810,7 +810,7 @@ export function build_page() {
                     "#id_realm_message_retention_setting",
                 ).val();
                 if (message_retention_setting_value === "retain_forever") {
-                    data.message_retention_days = JSON.stringify("forever");
+                    data.message_retention_days = JSON.stringify("unlimited");
                 } else {
                     data.message_retention_days = JSON.stringify(
                         get_input_element_value($("#id_realm_message_retention_days")),

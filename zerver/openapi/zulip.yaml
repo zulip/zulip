@@ -10051,8 +10051,11 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The default [message retention policy](/help/message-retention-policy)
-                          for this organization.  Pass `"forever"` to request that messages
+                          for this organization.  Pass `"unlimited"` to request that messages
                           by retained forever (the default).
+
+                          **Changes**: Prior to Zulip 5.0 (feature level 91), no limit was encoded
+                          by passing `"forever"`.
                       realm_name:
                         type: string
                         description: |
@@ -14548,9 +14551,13 @@ components:
         values are supported:
 
         * "realm_default" => Return to the organization-level setting.
-        * "forever" => Retain messages forever.
+        * "unlimited" => Retain messages forever.
 
-        **Changes**: New in Zulip 3.0 (feature level 17).
+        **Changes**: Prior to Zulip 5.0 (feature level 91), retaining
+        messages forever was encoded using `"forever"` instead of
+        `"unlimited"`.
+
+        New in Zulip 3.0 (feature level 17).
       schema:
         oneOf:
           - type: string

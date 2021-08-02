@@ -1204,7 +1204,7 @@ class StreamAdminTest(ZulipTestCase):
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
-                {"message_retention_days": orjson.dumps("forever").decode()},
+                {"message_retention_days": orjson.dumps("unlimited").decode()},
             )
         self.assert_json_success(result)
         event = events[0]["event"]

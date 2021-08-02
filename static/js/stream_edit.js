@@ -151,7 +151,7 @@ function set_stream_message_retention_setting_dropdown(stream) {
     if (stream.message_retention_days === null) {
         value = "realm_default";
     } else if (stream.message_retention_days === settings_config.retain_message_forever) {
-        value = "forever";
+        value = "unlimited";
     }
 
     $(".stream_message_retention_setting").val(value);
@@ -637,7 +637,7 @@ function get_message_retention_days_from_sub(sub) {
         return "realm_default";
     }
     if (sub.message_retention_days === -1) {
-        return "forever";
+        return "unlimited";
     }
     return sub.message_retention_days;
 }

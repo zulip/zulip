@@ -404,7 +404,7 @@ class Realm(models.Model):
     )
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
-        "forever": -1,
+        "unlimited": -1,
     }
     # For old messages being automatically deleted
     message_retention_days: int = models.IntegerField(null=False, default=-1)
@@ -2063,7 +2063,7 @@ class Stream(models.Model):
     # Value -1 means "disable retention policy for this stream unconditionally".
     # Non-negative values have the natural meaning of "archive messages older than <value> days".
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
-        "forever": -1,
+        "unlimited": -1,
         "realm_default": None,
     }
     message_retention_days: Optional[int] = models.IntegerField(null=True, default=None)
