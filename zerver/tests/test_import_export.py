@@ -889,7 +889,9 @@ class ImportExportTest(ZulipTestCase):
         # test muted topics
         def get_muted_topics(r: Realm) -> Set[str]:
             user_profile_id = get_user_id(r, hamlet_full_name)
-            muted_topics = UserTopic.objects.filter(user_profile_id=user_profile_id)
+            muted_topics = UserTopic.objects.filter(
+                user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
+            )
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
 

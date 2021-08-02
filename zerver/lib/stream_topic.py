@@ -19,6 +19,7 @@ class StreamTopicTarget:
         query = UserTopic.objects.filter(
             stream_id=self.stream_id,
             topic_name__iexact=self.topic_name,
+            visibility_policy=UserTopic.MUTED,
         ).values(
             "user_profile_id",
         )
