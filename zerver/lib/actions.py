@@ -3640,7 +3640,7 @@ def bulk_get_subscriber_user_ids(
         target_stream_dicts.append(stream_dict)
 
     recip_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in target_stream_dicts}
-    recipient_ids = sorted([stream["recipient_id"] for stream in target_stream_dicts])
+    recipient_ids = sorted(stream["recipient_id"] for stream in target_stream_dicts)
 
     result: Dict[int, List[int]] = {stream["id"]: [] for stream in stream_dicts}
     if not recipient_ids:

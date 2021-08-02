@@ -2147,7 +2147,7 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p><a href="https://google.com">https://<span class="highlight">google.com</span></a></p>',
         )
 
-        (meeting_message,) = [m for m in messages if m[TOPIC_NAME] == "meetings"]
+        (meeting_message,) = (m for m in messages if m[TOPIC_NAME] == "meetings")
         self.assertEqual(meeting_message[MATCH_TOPIC], "meetings")
         self.assertEqual(
             meeting_message["match_content"],
@@ -2155,7 +2155,7 @@ class GetOldMessagesTest(ZulipTestCase):
             + '<span class="highlight">lunch</span></p>',
         )
 
-        (lunch_message,) = [m for m in messages if m[TOPIC_NAME] == "lunch plans"]
+        (lunch_message,) = (m for m in messages if m[TOPIC_NAME] == "lunch plans")
         self.assertEqual(lunch_message[MATCH_TOPIC], '<span class="highlight">lunch</span> plans')
         self.assertEqual(lunch_message["match_content"], "<p>I am hungry!</p>")
 
@@ -2200,7 +2200,7 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>昨日、<span class="highlight">日本</span>' + " のお菓子を送りました。</p>",
         )
 
-        (english_message,) = [m for m in messages if m[TOPIC_NAME] == "english"]
+        (english_message,) = (m for m in messages if m[TOPIC_NAME] == "english")
         self.assertEqual(english_message[MATCH_TOPIC], "english")
         self.assertIn(
             english_message["match_content"],
@@ -3649,7 +3649,7 @@ WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject IL
         self.assert_length(result["messages"], 1)
         messages = result["messages"]
 
-        (hello_message,) = [m for m in messages if m[TOPIC_NAME] == "say hello"]
+        (hello_message,) = (m for m in messages if m[TOPIC_NAME] == "say hello")
         self.assertEqual(hello_message[MATCH_TOPIC], "say hello")
         self.assertEqual(
             hello_message["match_content"],

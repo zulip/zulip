@@ -28,7 +28,7 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 }
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
-EXCLUDE_DOCUMENTED_ENDPOINTS: Set[Tuple[str, str]] = set([])
+EXCLUDE_DOCUMENTED_ENDPOINTS: Set[Tuple[str, str]] = set()
 
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we

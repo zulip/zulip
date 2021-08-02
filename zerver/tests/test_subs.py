@@ -2965,7 +2965,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         expected_stream_ids = {get_stream(stream, self.test_realm).id for stream in add_streams}
 
-        (peer_add_event,) = [event for event in events if event["event"].get("op") == "peer_add"]
+        (peer_add_event,) = (event for event in events if event["event"].get("op") == "peer_add")
 
         self.assertEqual(set(peer_add_event["event"]["stream_ids"]), expected_stream_ids)
         self.assertEqual(set(peer_add_event["event"]["user_ids"]), {self.test_user.id})

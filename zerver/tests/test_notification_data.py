@@ -271,7 +271,7 @@ class TestNotificationData(ZulipTestCase):
         # Personal and user group mentioned. Test that we don't consider the user
         # group mention for Hamlet in this case.
         result = get_user_group_mentions_data(
-            mentioned_user_ids=set([hamlet.id]),
+            mentioned_user_ids={hamlet.id},
             mentioned_user_group_ids=[hamlet_and_cordelia.id],
             mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia*!"),
         )

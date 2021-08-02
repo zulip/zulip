@@ -21,13 +21,11 @@ def remove_unused_versions_dir(args: argparse.Namespace) -> None:
     """
     current_version_dir = os.path.join(YARN_CACHE_PATH, CURRENT_VERSION)
     try:
-        dirs_to_purge = set(
-            [
-                os.path.join(YARN_CACHE_PATH, directory)
-                for directory in os.listdir(YARN_CACHE_PATH)
-                if directory != CURRENT_VERSION
-            ]
-        )
+        dirs_to_purge = {
+            os.path.join(YARN_CACHE_PATH, directory)
+            for directory in os.listdir(YARN_CACHE_PATH)
+            if directory != CURRENT_VERSION
+        }
     except FileNotFoundError:
         return
 

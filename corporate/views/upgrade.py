@@ -187,11 +187,11 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         },
         "realm_org_type": user.realm.org_type,
         "sorted_org_types": sorted(
-            [
+            (
                 [org_type_name, org_type]
                 for (org_type_name, org_type) in Realm.ORG_TYPES.items()
                 if not org_type.get("hidden")
-            ],
+            ),
             key=lambda d: d[1]["display_order"],
         ),
     }

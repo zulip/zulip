@@ -526,12 +526,12 @@ class TestDigestTopics(ZulipTestCase):
             lengthy_topic_d,
         ]
         self.assertEqual(
-            get_hot_topics(topics, set([1, 0])),
+            get_hot_topics(topics, {1, 0}),
             [diverse_topic_a, diverse_topic_b, lengthy_topic_a, lengthy_topic_b],
         )
         self.assertEqual(
-            get_hot_topics(topics, set([1, 2])),
+            get_hot_topics(topics, {1, 2}),
             [diverse_topic_a, diverse_topic_c, lengthy_topic_a, lengthy_topic_d],
         )
-        self.assertEqual(get_hot_topics(topics, set([2])), [diverse_topic_c, lengthy_topic_d])
+        self.assertEqual(get_hot_topics(topics, {2}), [diverse_topic_c, lengthy_topic_d])
         self.assertEqual(get_hot_topics(topics, set()), [])
