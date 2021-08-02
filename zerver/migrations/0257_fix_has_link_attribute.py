@@ -13,9 +13,9 @@ BATCH_SIZE = 1000
 def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> None:
     Message = apps.get_model("zerver", "Message")
     for message in Message.objects.filter(id__gte=id_start, id__lte=id_end).order_by("id"):
-        if message.rendered_content == "":
+        if message.rendered_content in ["", None]:
             # There have been bugs in the past that made it possible
-            # for a message to have "" as its rendered_content; we
+            # for a message to have "" or None as its rendered_content; we
             # need to skip those because lxml won't process them.
             #
             # They should safely already have the correct state
