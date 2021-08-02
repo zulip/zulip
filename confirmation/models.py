@@ -70,8 +70,7 @@ def get_object_from_key(
     except Confirmation.DoesNotExist:
         raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
 
-    time_elapsed = timezone_now() - confirmation.date_sent
-    if time_elapsed.total_seconds() > _properties[confirmation.type].validity_in_days * 24 * 3600:
+    if timezone_now() > confirmation.expiry_date:
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
