@@ -131,6 +131,8 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
 
 
 class SimpleQueueClient(QueueClient[BlockingChannel]):
+    connection: Optional[pika.BlockingConnection]
+
     def _connect(self) -> None:
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
@@ -183,11 +185,13 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
             # batch of events it has.
             for method, properties, body in channel.consume(queue_name, inactivity_timeout=timeout):
                 if body is not None:
+                    assert method is not None
                     events.append(orjson.loads(body))
                     max_processed = method.delivery_tag
                 now = time.time()
                 if len(events) >= batch_size or (timeout and now >= last_process + timeout):
                     if events:
+                        assert max_processed is not None
                         try:
                             callback(events)
                             channel.basic_ack(max_processed, multiple=True)
@@ -203,7 +207,9 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
 
     def local_queue_size(self) -> int:
         assert self.channel is not None
-        return self.channel.get_waiting_message_count() + len(self.channel._pending_events)
+        return self.channel.get_waiting_message_count() + len(
+            self.channel._pending_events  # type: ignore[attr-defined] # private member missing from stubs
+        )
 
     def stop_consuming(self) -> None:
         assert self.channel is not None
@@ -218,7 +224,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
 class ExceptionFreeTornadoConnection(pika.adapters.tornado_connection.TornadoConnection):
     def _adapter_disconnect(self) -> None:
         try:
-            super()._adapter_disconnect()
+            super()._adapter_disconnect()  # type: ignore[misc]  # private method missing from stubs
         except (
             pika.exceptions.ProbableAuthenticationError,
             pika.exceptions.ProbableAccessDeniedError,
@@ -352,6 +358,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             properties: pika.BasicProperties,
             body: bytes,
         ) -> None:
+            assert method.delivery_tag is not None
             callback([orjson.loads(body)])
             ch.basic_ack(delivery_tag=method.delivery_tag)
 

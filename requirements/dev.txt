@@ -880,6 +880,9 @@ pika==1.2.0 \
     --hash=sha256:59da6701da1aeaf7e5e93bb521cc03129867f6e54b7dd352c4b3ecb2bd7ec624 \
     --hash=sha256:f023d6ac581086b124190cb3dc81dd581a149d216fa4540ac34f9be1e3970b89
     # via -r requirements/common.in
+https://github.com/andersk/pika-stubs/archive/87c5795741449e37bdbd2ceceee853fd56462440.zip#egg=pika-stubs==0.1.3+git \
+    --hash=sha256:b56b4210ba66c65e3c54236dc3ccfd79d02c1385b9d72146d3ea8af05ec7c5ff
+    # via -r requirements/mypy.in
 pillow==8.3.0 \
     --hash=sha256:063d17a02a0170c2f880fbd373b2738b089c6adcbd1f7418667bc9e97524c11b \
     --hash=sha256:1037288a22cc8ec9d2918a24ded733a1cc4342fd7f21d15d37e6bbe5fb4a7306 \

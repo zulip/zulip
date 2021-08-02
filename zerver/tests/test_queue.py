@@ -81,6 +81,7 @@ class TestQueueImplementation(ZulipTestCase):
     @override_settings(USING_RABBITMQ=True)
     def test_queue_error_json(self) -> None:
         queue_client = get_queue_client()
+        assert isinstance(queue_client, SimpleQueueClient)
         actual_publish = queue_client.publish
 
         self.counter = 0
