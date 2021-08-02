@@ -75,7 +75,7 @@ if not args.noop and not args.force:
             env=puppet_env,
         )
 
-        with open(lastrun_file.name, "r") as lastrun:
+        with open(lastrun_file.name) as lastrun:
             lastrun_data = yaml.safe_load(lastrun)
             if lastrun_data.get("resources", {}).get("out_of_sync", 0) == 0:
                 sys.exit(0)

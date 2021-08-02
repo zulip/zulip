@@ -34,11 +34,11 @@ def generate_sha1sum_node_modules(
     PACKAGE_JSON_FILE_PATH = os.path.join(setup_dir, "package.json")
     YARN_LOCK_FILE_PATH = os.path.join(setup_dir, "yarn.lock")
     data: Dict[str, object] = {}
-    with open(PACKAGE_JSON_FILE_PATH, "r") as f:
+    with open(PACKAGE_JSON_FILE_PATH) as f:
         data[PACKAGE_JSON_FILE_PATH] = f.read().strip()
     if os.path.exists(YARN_LOCK_FILE_PATH):
         # For backwards compatibility, we can't assume yarn.lock exists
-        with open(YARN_LOCK_FILE_PATH, "r") as f:
+        with open(YARN_LOCK_FILE_PATH) as f:
             data[YARN_LOCK_FILE_PATH] = f.read().strip()
     with open(YARN_PACKAGE_JSON) as f:
         data["yarn-package-version"] = json.load(f)["version"]

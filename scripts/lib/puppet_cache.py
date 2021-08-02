@@ -18,7 +18,7 @@ PUPPET_THIRDPARTY = os.path.join(PUPPET_MODULES_CACHE_PATH, "current")
 
 def generate_sha1sum_puppet_modules() -> str:
     data = {}
-    with open(PUPPET_DEPS_FILE_PATH, "r") as fb:
+    with open(PUPPET_DEPS_FILE_PATH) as fb:
         data["deps.yaml"] = fb.read().strip()
     data["puppet-version"] = subprocess.check_output(
         # This is 10x faster than `puppet --version`
@@ -57,7 +57,7 @@ def do_puppet_module_install(
         puppet_env["RUBYOPT"] = "-W0"
 
     os.makedirs(target_path, exist_ok=True)
-    with open(PUPPET_DEPS_FILE_PATH, "r") as yaml_file:
+    with open(PUPPET_DEPS_FILE_PATH) as yaml_file:
         deps = yaml.safe_load(yaml_file)
         for module, version in deps.items():
             run(

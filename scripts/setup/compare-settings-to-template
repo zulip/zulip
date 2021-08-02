@@ -17,7 +17,7 @@ if len(sys.argv) >= 2:
     current_path = sys.argv[1]
 
 print(f"Reading current configuration from {current_path}...")
-with open(current_path, "r") as f:
+with open(current_path) as f:
     current_contents = f.read()
 
 import requests
