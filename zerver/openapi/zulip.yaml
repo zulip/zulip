@@ -10745,8 +10745,9 @@ paths:
                           Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
                           in the compose box is enabled.
 
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 87), clients should
-                          use `user_settings` dictionary instead.
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and process the `user_settings` event type instead.
                           Prior to Zulip 5.0 (feature level 84) this field was present
                           in response if 'realm_user' was present in `fetch_event_types`, not
                           `update_display_settings`.
