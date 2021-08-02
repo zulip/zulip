@@ -2205,6 +2205,26 @@ class UserTopic(models.Model):
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
+    # A normal muted topic. No notifications and unreads hidden.
+    MUTED = 1
+
+    # This topic will behave like an unmuted topic in an unmuted stream even if it
+    # belongs to a muted stream.
+    UNMUTED = 2
+
+    # This topic will behave like `UNMUTED`, plus will also always trigger notifications.
+    FOLLOWED = 3
+
+    visibility_policy_choices = (
+        (MUTED, "Muted topic"),
+        (UNMUTED, "Unmuted topic in muted stream"),
+        (FOLLOWED, "Followed topic"),
+    )
+
+    visibility_policy: int = models.SmallIntegerField(
+        choices=visibility_policy_choices, default=MUTED
+    )
+
     class Meta:
         unique_together = ("user_profile", "stream", "topic_name")
 
