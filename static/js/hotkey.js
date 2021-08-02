@@ -564,6 +564,12 @@ export function process_hotkey(e, hotkey) {
             return process_shift_tab_key();
     }
 
+    // This block needs to be before the open modals check, because
+    // the "user status" modal can show the emoji picker.
+    if (emoji_picker.reactions_popped()) {
+        return emoji_picker.navigate(event_name);
+    }
+
     if (overlays.is_modal_open()) {
         return false;
     }
@@ -608,10 +614,6 @@ export function process_hotkey(e, hotkey) {
 
     if (overlays.settings_open() && !popovers.user_info_popped()) {
         return false;
-    }
-
-    if (emoji_picker.reactions_popped()) {
-        return emoji_picker.navigate(event_name);
     }
 
     if (hotspots.is_open()) {
