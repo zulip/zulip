@@ -3308,7 +3308,7 @@ paths:
                                     in the [server_settings](/api/get-server-settings) and
                                     [register](/api/register-queue) responses.
 
-                                    **Changes**: New in Zulip 5.0 (feature level 87).
+                                    **Changes**: New in Zulip 5.0 (feature level 88).
                                 zulip_feature_level:
                                   type: integer
                                   description: |
