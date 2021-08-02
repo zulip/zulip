@@ -8,7 +8,7 @@ def generate_camo_url(url: str) -> str:
     encoded_url = url.encode()
     encoded_camo_key = settings.CAMO_KEY.encode()
     digest = hmac.new(encoded_camo_key, encoded_url, hashlib.sha1).hexdigest()
-    return "{}/{}".format(digest, encoded_url.hex())
+    return f"{digest}/{encoded_url.hex()}"
 
 
 # Encodes the provided URL using the same algorithm used by the camo

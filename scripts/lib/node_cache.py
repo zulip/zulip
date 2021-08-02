@@ -67,7 +67,7 @@ def setup_node_modules(
     if not os.path.exists(success_stamp):
         do_yarn_install(target_path, yarn_args, success_stamp)
 
-    print("Using cached node modules from {}".format(cached_node_modules))
+    print(f"Using cached node modules from {cached_node_modules}")
     if os.path.islink("node_modules"):
         os.remove("node_modules")
     elif os.path.isdir("node_modules"):

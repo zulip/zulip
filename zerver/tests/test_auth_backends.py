@@ -1136,7 +1136,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             m.output,
             [
                 self.logger_output(
-                    "{} got invalid email argument.".format(self.backend.auth_backend_name),
+                    f"{self.backend.auth_backend_name} got invalid email argument.",
                     "warning",
                 )
             ],
@@ -3929,7 +3929,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Invalid or expired login session.", result)
         self.assertEqual(
-            m.output, ["WARNING:root:log_into_subdomain: Invalid token given: {}".format(token)]
+            m.output, [f"WARNING:root:log_into_subdomain: Invalid token given: {token}"]
         )
 
     def test_prevent_duplicate_signups(self) -> None:
@@ -4088,7 +4088,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
             result = self.get_log_into_subdomain(data, force_token=token)
             self.assertEqual(result.status_code, 400)
         self.assertEqual(
-            m.output, ["WARNING:root:log_into_subdomain: Invalid token given: {}".format(token)]
+            m.output, [f"WARNING:root:log_into_subdomain: Invalid token given: {token}"]
         )
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:

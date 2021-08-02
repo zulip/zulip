@@ -21,7 +21,7 @@ class RequestMockWithProxySupport(responses.RequestsMock):
             if proxy_uri is not None:
                 request = requests.Request(
                     method="GET",
-                    url="{}/".format(proxy_uri),
+                    url=f"{proxy_uri}/",
                     headers=adapter.proxy_headers(proxy_uri),
                 ).prepare()
         return super()._on_request(  # type: ignore[misc]  # This is an undocumented internal API

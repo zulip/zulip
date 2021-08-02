@@ -458,7 +458,7 @@ class Command(BaseCommand):
                     else:
                         full_name += " " + random.choice(mnames)
                     if random.random() < 0.1:
-                        full_name += " {} ".format(random.choice(raw_emojis))
+                        full_name += f" {random.choice(raw_emojis)} "
                     else:
                         full_name += " " + random.choice(lnames)
                 email = fname.lower() + "@zulip.com"
@@ -806,9 +806,7 @@ class Command(BaseCommand):
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
-                    "ビデオゲーム": {
-                        "description": "Share your favorite video games!  {}".format(raw_emojis[2])
-                    },
+                    "ビデオゲーム": {"description": f"Share your favorite video games!  {raw_emojis[2]}"},
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,

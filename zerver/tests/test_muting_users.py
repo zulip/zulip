@@ -22,7 +22,7 @@ class MutedUsersTests(ZulipTestCase):
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
         with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
-            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
@@ -41,7 +41,7 @@ class MutedUsersTests(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
-        url = "/api/v1/users/me/muted_users/{}".format(hamlet.id)
+        url = f"/api/v1/users/me/muted_users/{hamlet.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_error(result, "Cannot mute self")
 
@@ -58,7 +58,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assert_json_success(result)
         muted_id = result.json()["user_id"]
 
-        url = "/api/v1/users/me/muted_users/{}".format(muted_id)
+        url = f"/api/v1/users/me/muted_users/{muted_id}"
         result = self.api_post(hamlet, url)
         # Currently we do not allow muting bots. This is the error message
         # from `access_user_by_id`.
@@ -69,11 +69,11 @@ class MutedUsersTests(ZulipTestCase):
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_error(result, "User already muted")
 
@@ -87,7 +87,7 @@ class MutedUsersTests(ZulipTestCase):
             do_deactivate_user(cordelia, acting_user=None)
 
         with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
-            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
@@ -127,7 +127,7 @@ class MutedUsersTests(ZulipTestCase):
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_delete(hamlet, url)
         self.assert_json_error(result, "User is not muted")
 
@@ -141,13 +141,13 @@ class MutedUsersTests(ZulipTestCase):
             do_deactivate_user(cordelia, acting_user=None)
 
         with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
-            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
         with mock.patch("zerver.lib.actions.timezone_now", return_value=mute_time):
             # To test that `RealmAuditLog` entry has correct `event_time`.
-            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_delete(hamlet, url)
 
         self.assert_json_success(result)
@@ -191,14 +191,14 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(set(), get_muting_users(cordelia.id))
         self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia.id))[0])
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
         self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia.id)))
         self.assertEqual({hamlet.id}, get_muting_users(cordelia.id))
         self.assertEqual({hamlet.id}, cache_get(get_muting_users_cache_key(cordelia.id))[0])
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_delete(hamlet, url)
         self.assert_json_success(result)
         self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia.id)))
@@ -224,7 +224,7 @@ class MutedUsersTests(ZulipTestCase):
         self.subscribe(othello, "general")
 
         # Hamlet mutes Cordelia.
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
 
@@ -271,7 +271,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assert_usermessage_read_flag(othello, pm_to_othello, False)
 
         # Hamlet mutes Cordelia.
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
 
@@ -296,7 +296,7 @@ class MutedUsersTests(ZulipTestCase):
             m.assert_called_once()
 
         # Hamlet mutes Cordelia.
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
 
@@ -335,7 +335,7 @@ class MutedUsersTests(ZulipTestCase):
 
         # Hamlet mutes Cordelia.
         self.login("hamlet")
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        url = f"/api/v1/users/me/muted_users/{cordelia.id}"
         result = self.api_post(hamlet, url)
         self.assert_json_success(result)
 

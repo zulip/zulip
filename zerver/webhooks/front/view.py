@@ -61,7 +61,7 @@ def get_outbound_reply_body(payload: Dict[str, Any]) -> str:
 def get_comment_body(payload: Dict[str, Any]) -> str:
     name = get_source_name(payload)
     comment = payload["target"]["data"]["body"]
-    return "**{name}** left a comment:\n```quote\n{comment}\n```".format(name=name, comment=comment)
+    return f"**{name}** left a comment:\n```quote\n{comment}\n```"
 
 
 def get_conversation_assigned_body(payload: Dict[str, Any]) -> str:
@@ -69,7 +69,7 @@ def get_conversation_assigned_body(payload: Dict[str, Any]) -> str:
     target_name = get_target_name(payload)
 
     if source_name == target_name:
-        return "**{source_name}** assigned themselves.".format(source_name=source_name)
+        return f"**{source_name}** assigned themselves."
 
     return "**{source_name}** assigned **{target_name}**.".format(
         source_name=source_name, target_name=target_name
