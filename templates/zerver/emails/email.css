@@ -46,12 +46,20 @@ table td {
     padding: 10px;
 }
 
+.container.wide-container {
+    max-width: 700px;
+}
+
 .content {
     box-sizing: border-box;
     display: block;
     margin: 20px auto 0 auto;
     max-width: 580px;
     padding: 10px;
+}
+
+.content.wide-content {
+    max-width: 780px;
 }
 
 .main {
