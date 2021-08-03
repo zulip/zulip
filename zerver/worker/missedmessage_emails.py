@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 import sentry_sdk
+from django.conf import settings
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils.timezone import now as timezone_now
@@ -111,6 +112,14 @@ class MissedMessageWorker(QueueProcessingWorker):
     def start(self) -> None:
         with self.cv:
             self.stopping = False
+
+        # Do nothing to process events on staging servers, since we do
+        # not support running multiple copies of this worker.
+        if settings.STAGING:
+            with self.cv:
+                self.cv.wait()
+            return
+
         self.worker_thread = threading.Thread(target=self.work)
         self.worker_thread.start()
         super().start()
@@ -263,4 +272,8 @@ class MissedMessageWorker(QueueProcessingWorker):
             self.cv.notify()
         if self.worker_thread is not None:
             self.worker_thread.join()
+
+        if settings.STAGING:
+            return
+
         super().stop()
