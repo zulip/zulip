@@ -163,7 +163,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/case-studies/ucsd/", "UCSD")
         self._test("/for/research/", "for research")
-        self._test("/for/companies/", "in a company")
+        self._test("/for/companies/", "Communication efficiency represents")
         self._test("/for/communities/", "Zulip for communities")
         self._test("/security/", "TLS encryption")
         self._test("/attribution/", "Attributions")

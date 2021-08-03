@@ -4248,6 +4248,26 @@ nav {
     }
 }
 
+.intro_quote {
+    blockquote {
+        font-size: 17px;
+        font-weight: 400;
+        color: hsl(223, 6%, 25%);
+        border-left: 6px solid hsl(218, 46%, 43%);
+        position: relative;
+        background: hsl(0, 0%, 93%);
+        padding: 20px;
+    }
+
+    blockquote::after {
+        content: "";
+    }
+
+    .author {
+        padding-top: 20px;
+    }
+}
+
 .solutions-page {
     .hero-text {
         position: relative;
@@ -4419,5 +4439,34 @@ nav {
     h1 {
         font-size: 36px;
         font-weight: 600;
+    }
+}
+
+.for-companies {
+    .feature-end {
+        margin-top: 50px;
+
+        p {
+            padding: 10px;
+        }
+
+        .intro_quote {
+            margin: 20px auto 0;
+            max-width: 800px;
+        }
+
+        .pricing-model {
+            .price-box {
+                margin: 10px;
+            }
+
+            .padded-content {
+                padding: 20px;
+            }
+
+            .plan-title {
+                color: hsl(0, 0%, 0%);
+            }
+        }
     }
 }

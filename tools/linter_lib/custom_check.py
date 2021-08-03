@@ -540,7 +540,11 @@ html_rules: List["Rule"] = [
     *prose_style_rules,
     {
         "pattern": "subject|SUBJECT",
-        "exclude": {"templates/zerver/email.html", "zerver/tests/fixtures/email"},
+        "exclude": {
+            "templates/zerver/email.html",
+            "zerver/tests/fixtures/email",
+            "templates/zerver/for-companies.html",
+        },
         "exclude_pattern": "email subject",
         "description": "avoid subject in templates",
         "good_lines": ["topic_name"],
