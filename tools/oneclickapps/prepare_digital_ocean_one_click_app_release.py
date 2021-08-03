@@ -11,7 +11,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 manager = digitalocean.Manager(token=os.environ["DIGITALOCEAN_API_KEY"])
 zulip_client = zulip.Client()
-TEST_DROPLET_SUBDOMAIN = "oneclicktest"
+TEST_DROPLET_SUBDOMAIN = "do"
 
 
 def generate_ssh_keys() -> None:
@@ -85,7 +85,7 @@ def create_snapshot(droplet: digitalocean.Droplet, snapshot_name: str) -> None:
 
 
 def create_dns_records(droplet: digitalocean.Droplet) -> None:
-    domain = digitalocean.Domain(token=manager.token, name="zulipdev.org")
+    domain = digitalocean.Domain(token=manager.token, name="oneclick.zulip.dev")
     set_api_request_retry_limits(domain)
     domain.load()
 
@@ -93,7 +93,7 @@ def create_dns_records(droplet: digitalocean.Droplet) -> None:
     for record in domain.get_records():
         if (
             record.name in oneclick_test_app_record_names
-            and record.domain == "zulipdev.org"
+            and record.domain == "oneclick.zulip.dev"
             and record.type == "A"
         ):
             record.destroy()
@@ -155,5 +155,5 @@ if __name__ == "__main__":
     test_droplet = create_droplet(test_droplet_name, manager.get_all_sshkeys(), image=snapshot.id)
     create_dns_records(test_droplet)
     send_message(
-        f"Test droplet `{test_droplet_name}` created. SSH as root to {TEST_DROPLET_SUBDOMAIN}.zulipdev.org for testing."
+        f"Test droplet `{test_droplet_name}` created. SSH as root to {TEST_DROPLET_SUBDOMAIN}.oneclick.zulip.dev for testing."
     )
