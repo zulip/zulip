@@ -102,7 +102,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         return self.channel is not None
 
     @abstractmethod
-    def ensure_queue(self, queue_name: str, callback: Callable[[ChannelT], None]) -> None:
+    def ensure_queue(self, queue_name: str, callback: Callable[[ChannelT], object]) -> None:
         raise NotImplementedError
 
     def publish(self, queue_name: str, body: bytes) -> None:
@@ -147,7 +147,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         if self.connection is not None:
             self.connection.close()
 
-    def ensure_queue(self, queue_name: str, callback: Callable[[BlockingChannel], None]) -> None:
+    def ensure_queue(self, queue_name: str, callback: Callable[[BlockingChannel], object]) -> None:
         """Ensure that a given queue has been declared, and then call
         the callback with no arguments."""
         if self.connection is None or not self.connection.is_open:
@@ -320,7 +320,7 @@ class TornadoQueueClient(QueueClient[Channel]):
         if self.connection is not None:
             self.connection.close()
 
-    def ensure_queue(self, queue_name: str, callback: Callable[[Channel], None]) -> None:
+    def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
         def finish(frame: Any) -> None:
             assert self.channel is not None
             self.queues.add(queue_name)
