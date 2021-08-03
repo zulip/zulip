@@ -220,9 +220,9 @@ def get_chart_data(
     server: Optional["RemoteZulipServer"] = None,
 ) -> HttpResponse:
     TableType = Union[
-        Type[RemoteInstallationCount],
+        Type["RemoteInstallationCount"],
         Type[InstallationCount],
-        Type[RemoteRealmCount],
+        Type["RemoteRealmCount"],
         Type[RealmCount],
     ]
     if for_installation:
