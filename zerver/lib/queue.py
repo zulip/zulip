@@ -275,7 +275,7 @@ class TornadoQueueClient(QueueClient[Channel]):
     CONNECTION_FAILURES_BEFORE_NOTIFY = 10
 
     def _on_connection_open_error(
-        self, connection: pika.connection.Connection, reason: Exception
+        self, connection: pika.connection.Connection, reason: Union[str, Exception]
     ) -> None:
         self._connection_failure_count += 1
         retry_secs = self.CONNECTION_RETRY_SECS
