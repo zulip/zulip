@@ -1,7 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 import datetime
 import logging
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
@@ -106,7 +106,7 @@ def get_users() -> List[UserProfile]:
 # wrapper the below adds an extra 3ms or so to startup time for
 # anything importing this file).
 cache_fillers: Dict[
-    str, Tuple[Callable[[], List[Any]], Callable[[Dict[str, Any], Any], None], int, int]
+    str, Tuple[Callable[[], Iterable[Any]], Callable[[Dict[str, Any], Any], None], int, int]
 ] = {
     "user": (get_users, user_cache_items, 3600 * 24 * 7, 10000),
     "client": (

@@ -302,7 +302,7 @@ def do_increment_logging_stat(
     table = stat.data_collector.output_table
     if table == RealmCount:
         assert isinstance(zerver_object, Realm)
-        id_args = {"realm": zerver_object}
+        id_args: Dict[str, Union[Realm, UserProfile, Stream]] = {"realm": zerver_object}
     elif table == UserCount:
         assert isinstance(zerver_object, UserProfile)
         id_args = {"realm": zerver_object.realm, "user": zerver_object}

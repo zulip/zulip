@@ -5,7 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union, cast
 
 import orjson
 import stripe
@@ -1032,7 +1032,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
 
             downgrade_now_without_creating_additional_invoices(realm)
             void_all_open_invoices(realm)
-            context: Dict[str, str] = {
+            context: Dict[str, Union[str, Realm]] = {
                 "upgrade_url": f"{realm.uri}{reverse('initial_upgrade')}",
                 "realm": realm,
             }
