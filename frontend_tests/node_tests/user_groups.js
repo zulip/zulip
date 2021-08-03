@@ -56,13 +56,16 @@ run_test("user_groups", () => {
     user_groups.update(update_des_event);
     assert.equal(user_groups.get_user_group_from_id(admins.id).description, "administer");
 
-    blueslip.expect("error", "Unknown group_id in get_user_group_from_id: " + all.id);
-    assert.equal(user_groups.get_user_group_from_id(all.id), undefined);
-
+    assert.throws(() => user_groups.get_user_group_from_id(all.id), {
+        name: "Error",
+        message: "Unknown group_id in get_user_group_from_id: 2",
+    });
     user_groups.remove(students);
 
-    blueslip.expect("error", "Unknown group_id in get_user_group_from_id: " + students.id);
-    assert.equal(user_groups.get_user_group_from_id(students.id), undefined);
+    assert.throws(() => user_groups.get_user_group_from_id(students.id), {
+        name: "Error",
+        message: "Unknown group_id in get_user_group_from_id: 0",
+    });
 
     assert.equal(user_groups.get_user_group_from_name(all.name), undefined);
     assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);

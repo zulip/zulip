@@ -100,8 +100,10 @@ export const update_elements = (content) => {
 
     content.find(".user-group-mention").each(function () {
         const user_group_id = get_user_group_id_for_mention_button(this);
-        const user_group = user_groups.get_user_group_from_id(user_group_id, true);
-        if (user_group === undefined) {
+        let user_group;
+        try {
+            user_group = user_groups.get_user_group_from_id(user_group_id);
+        } catch {
             // This is a user group the current user doesn't have
             // data on.  This can happen when user groups are
             // deleted.

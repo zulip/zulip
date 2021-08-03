@@ -842,12 +842,12 @@ export function register_click_handlers() {
         const row = $(this).closest(".message_row");
         e.stopPropagation();
         const message = message_lists.current.get(rows.id(row));
-        const group = user_groups.get_user_group_from_id(user_group_id, true);
-        if (group === undefined) {
+        try {
+            const group = user_groups.get_user_group_from_id(user_group_id);
+            show_user_group_info_popover(this, group, message);
+        } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);
-        } else {
-            show_user_group_info_popover(this, group, message);
         }
     });
 
