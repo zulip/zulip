@@ -84,13 +84,15 @@
         <li class="user_info_status_text">
             <span id="status_message">
                 {{status_text}}
-                {{#if status_emoji_info.emoji_alt_code}}
-                    <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
-                {{else}}
-                    {{#if status_emoji_info.url}}
-                    <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                {{#if status_emoji_info}}
+                    {{#if status_emoji_info.emoji_alt_code}}
+                        <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
                     {{else}}
-                    <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                        {{#if status_emoji_info.url}}
+                        <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                        {{else}}
+                        <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                        {{/if}}
                     {{/if}}
                 {{/if}}
                 {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>){{/if}}
