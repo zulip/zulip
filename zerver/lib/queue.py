@@ -4,7 +4,7 @@ import threading
 import time
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Set
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 import orjson
 import pika
@@ -227,7 +227,9 @@ calling _adapter_disconnect, ignoring",
             )
 
 
-class TornadoQueueClient(SimpleQueueClient):
+class TornadoQueueClient(QueueClient):
+    connection: Optional[ExceptionFreeTornadoConnection]
+
     # Based on:
     # https://pika.readthedocs.io/en/0.9.8/examples/asynchronous_consumer_example.html
     def __init__(self) -> None:
@@ -294,6 +296,7 @@ class TornadoQueueClient(SimpleQueueClient):
         ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
+        assert self.connection is not None
         self._connection_failure_count = 0
         try:
             self.connection.channel(on_open_callback=self._on_channel_open)
@@ -308,6 +311,10 @@ class TornadoQueueClient(SimpleQueueClient):
             callback(channel)
         self._reconnect_consumer_callbacks()
         self.log.info("TornadoQueueClient connected")
+
+    def close(self) -> None:
+        if self.connection is not None:
+            self.connection.close()
 
     def ensure_queue(self, queue_name: str, callback: Callable[[BlockingChannel], None]) -> None:
         def finish(frame: Any) -> None:
@@ -361,10 +368,10 @@ class TornadoQueueClient(SimpleQueueClient):
         )
 
 
-queue_client: Optional[SimpleQueueClient] = None
+queue_client: Optional[Union[SimpleQueueClient, TornadoQueueClient]] = None
 
 
-def get_queue_client() -> SimpleQueueClient:
+def get_queue_client() -> Union[SimpleQueueClient, TornadoQueueClient]:
     global queue_client
     if queue_client is None:
         if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:

@@ -5,7 +5,12 @@ import orjson
 from django.test import override_settings
 from pika.exceptions import AMQPConnectionError, ConnectionClosed
 
-from zerver.lib.queue import TornadoQueueClient, get_queue_client, queue_json_publish
+from zerver.lib.queue import (
+    SimpleQueueClient,
+    TornadoQueueClient,
+    get_queue_client,
+    queue_json_publish,
+)
 from zerver.lib.test_classes import ZulipTestCase
 
 
@@ -32,6 +37,7 @@ class TestQueueImplementation(ZulipTestCase):
         queue_client = get_queue_client()
 
         def collect(events: List[Dict[str, Any]]) -> None:
+            assert isinstance(queue_client, SimpleQueueClient)
             assert len(events) == 1
             output.append(events[0])
             queue_client.stop_consuming()
@@ -51,6 +57,7 @@ class TestQueueImplementation(ZulipTestCase):
         queue_client = get_queue_client()
 
         def collect(events: List[Dict[str, Any]]) -> None:
+            assert isinstance(queue_client, SimpleQueueClient)
             assert len(events) == 1
             queue_client.stop_consuming()
             nonlocal count
