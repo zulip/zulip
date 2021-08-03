@@ -9,15 +9,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-        with:
-          # We must fetch at least the immediate parents so that if this is
-          # a pull request then we can check out the head.
-          fetch-depth: 2
-
-      # If this run was triggered by a pull request event, then check out
-      # the head of the pull request instead of the merge commit.
-      - run: git checkout HEAD^2
-        if: ${{ github.event_name == 'pull_request' }}
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
@@ -26,5 +17,6 @@ jobs:
         # Override language selection by uncommenting this and choosing your languages
         # with:
         #   languages: go, javascript, csharp, python, cpp, java
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
