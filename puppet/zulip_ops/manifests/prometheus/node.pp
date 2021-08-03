@@ -22,7 +22,7 @@ class zulip_ops::prometheus::node {
   file { "${zulip::common::supervisor_conf_dir}/prometheus_node_exporter.conf":
     ensure  => file,
     require => [
-      User[prometheus],
+      User[zulip],
       Package[supervisor],
       File['/usr/local/bin/node_exporter'],
     ],
