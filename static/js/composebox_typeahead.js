@@ -1,4 +1,4 @@
-import {format} from "date-fns";
+import {formatISO} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import _ from "lodash";
@@ -778,7 +778,7 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         plugins: [new ConfirmDatePlugin({})],
         positionElement: element,
         dateFormat: "Z",
-        formatDate: (date) => format(date, "yyyy-MM-dd|HH:mm:ss|'UTC'xxx"),
+        formatDate: (date) => formatISO(date),
     });
     const container = $($(instance.innerContainer).parent());
     container.on("click", ".flatpickr-calendar", (e) => {
