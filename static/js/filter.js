@@ -5,6 +5,7 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
+import * as muted_topics from "./muted_topics";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -63,8 +64,11 @@ function message_in_home(message) {
         return true;
     }
 
-    // We don't display muted streams in 'All messages' view
-    return !stream_data.is_muted(message.stream_id);
+    // We don't display muted streams and topics in 'All messages' view
+    return !(
+        stream_data.is_muted(message.stream_id) ||
+        muted_topics.is_topic_muted(message.stream_id, message.topic)
+    );
 }
 
 function message_matches_search_term(message, operator, operand) {

@@ -13,6 +13,7 @@ const message_store = mock_esm("../../static/js/message_store");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../js/filter");
+const muted_topics = zrequire("muted_topics");
 
 const me = {
     email: "me@example.com",
@@ -629,9 +630,13 @@ test("predicate_basics", () => {
     assert.ok(!predicate({type: "stream", topic: "foo"}));
 
     const unknown_stream_id = 999;
+    const muted_topic = "A muted topic";
+    muted_topics.add_muted_topic(stream_id, muted_topic);
     predicate = get_predicate([["in", "home"]]);
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert.ok(predicate({type: "private"}));
+    assert.ok(!predicate({stream_id, topic: muted_topic}));
+    muted_topics.remove_muted_topic(stream_id, muted_topic); // Reset
 
     with_field(page_params, "narrow_stream", "kiosk", () => {
         assert.ok(predicate({stream: "kiosk"}));
