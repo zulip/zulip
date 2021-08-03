@@ -245,9 +245,6 @@ Application server and queue worker monitoring:
 * `check_rabbitmq_consumers` and `check_rabbitmq_queues`: Effective
   checks for Zulip's RabbitMQ-based queuing systems being healthy.
 * `check_worker_memory`: Monitors for memory leaks in queue workers.
-* `check_email_deliverer_backlog` and `check_email_deliverer_process`:
-  Monitors for whether scheduled outgoing emails (e.g. invitation
-  reminders) are being sent properly.
 
 Database monitoring:
 
