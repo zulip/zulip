@@ -10,9 +10,10 @@ const user_groups = zrequire("user_groups");
 
 run_test("user_groups", () => {
     const students = {
+        description: "Students group",
         name: "Students",
         id: 0,
-        members: [1, 2],
+        members: new Set([1, 2]),
     };
 
     const params = {};
@@ -21,22 +22,22 @@ run_test("user_groups", () => {
     const user_id_part_of_a_group = 2;
 
     user_groups.initialize(params);
-    assert.equal(user_groups.get_user_group_from_id(students.id), students);
+    assert.deepEqual(user_groups.get_user_group_from_id(students.id), students);
 
     const admins = {
         name: "Admins",
         description: "foo",
         id: 1,
-        members: [3],
+        members: new Set([3]),
     };
     const all = {
         name: "Everyone",
         id: 2,
-        members: [1, 2, 3],
+        members: new Set([1, 2, 3]),
     };
 
     user_groups.add(admins);
-    assert.equal(user_groups.get_user_group_from_id(admins.id), admins);
+    assert.deepEqual(user_groups.get_user_group_from_id(admins.id), admins);
 
     const update_name_event = {
         group_id: admins.id,
@@ -104,4 +105,8 @@ run_test("user_groups", () => {
 
     blueslip.expect("error", "Could not find user group with ID -1");
     assert.equal(user_groups.is_member_of(-1, 15), false);
+
+    blueslip.expect("error", "Could not find user group with ID -9999", 2);
+    user_groups.add_members(-9999);
+    user_groups.remove_members(-9999);
 });

@@ -256,21 +256,21 @@ const hamletcharacters = {
     name: "hamletcharacters",
     id: 1,
     description: "Characters of Hamlet",
-    members: [100, 104],
+    members: new Set([100, 104]),
 };
 
 const backend = {
     name: "Backend",
     id: 2,
     description: "Backend team",
-    members: [],
+    members: new Set([]),
 };
 
 const call_center = {
     name: "Call Center",
     id: 3,
     description: "folks working in support",
-    members: [],
+    members: new Set([]),
 };
 
 const make_emoji = (emoji_dict) => ({

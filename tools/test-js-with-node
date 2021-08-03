@@ -168,6 +168,7 @@ EXEMPT_FILES = {
     "static/js/topic_list.js",
     "static/js/topic_zoom.js",
     "static/js/tutorial.js",
+    "static/js/types.ts",
     "static/js/typing_events.js",
     "static/js/typing.js",
     "static/js/ui_init.js",
