@@ -1660,6 +1660,10 @@ types-decorator==0.1.5 \
     --hash=sha256:76045ca8ccb4cf2a2ccbaa36d02a75f4ec07af334036771af0a0b0ea0503d4a9 \
     --hash=sha256:88c8f0f4229124f7bea7cbd968dea48aebbfb0144f0b50c0ec810fe18916cf65
     # via -r requirements/mypy.in
+types-docutils==0.1.7 \
+    --hash=sha256:241b901395b4da05de39fe4aa364acc55536029e51308e11673f51e74e861645 \
+    --hash=sha256:61f1e12f3b090c28979338830f122d5bfc1a2287156a8c384b6142ce6d0aa8ec
+    # via types-pygments
 types-markdown==3.3.0 \
     --hash=sha256:b7bf9ce52a9f712c6a59b75350ed435d6fc1f1d5eafed44a321472bf96cf77db \
     --hash=sha256:cc18cc0fcc2ba8ab3f5233b2945db33e2e68ddad179708b2d2f08da08d33bc4e
@@ -1671,6 +1675,10 @@ types-orjson==0.1.1 \
 types-polib==0.1.3 \
     --hash=sha256:54fb4d5a9edc2b2f7e3cd7ebbf8631dbcecdeb69e9e31597e81c2b5b3bd3613b \
     --hash=sha256:bd79bc1780e5d7fb6fd0dce59bb8d118ca81f8b2f14d5d05e21d2716e2e1937b
+    # via -r requirements/mypy.in
+types-pygments==2.9.0 \
+    --hash=sha256:04dd3054e579d739e61c48757962969285ebdd09aca1bdac7c6d210455fb8f98 \
+    --hash=sha256:4dc3c9b1e96bce89b30b32503d9976b2a66dbcf0d285aabc59ffd7302dbf199f
     # via -r requirements/mypy.in
 types-python-dateutil==0.1.4 \
     --hash=sha256:39bfe0bde61fc673b8fa28167bd78622d976210f791971b9f3e10877cbf119a4 \

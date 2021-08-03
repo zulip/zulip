@@ -13,6 +13,7 @@ types-decorator
 types-Markdown
 types-orjson
 types-polib
+types-Pygments
 types-python-dateutil
 types-pytz
 types-PyYAML
