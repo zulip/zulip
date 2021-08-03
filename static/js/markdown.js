@@ -346,14 +346,7 @@ function handleEmoji(emoji_name) {
 function handleTimestamp(time) {
     let timeobject;
     if (Number.isNaN(Number(time))) {
-        // Check if the time string is of the new more-readable format.
-        if (time.includes("|UTC")) {
-            // Remove and replace the non-standard characters with the ISO ones.
-            const standard_format_time = time.replace("|UTC", "").replace(/\|/g, "T");
-            timeobject = new Date(standard_format_time);
-        } else {
-            timeobject = new Date(time); // not a Unix timestamp
-        }
+        timeobject = new Date(time); // not a Unix timestamp
     } else {
         // JavaScript dates are in milliseconds, Unix timestamps are in seconds
         timeobject = new Date(time * 1000);
