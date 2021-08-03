@@ -2033,7 +2033,7 @@ nav {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 100px 100px 0 100px;
+    padding: 50px 100px 0 100px;
     margin-top: 0;
 }
 
@@ -2051,7 +2051,7 @@ nav {
 }
 
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
-    margin: 15px auto 130px auto;
+    margin: 15px auto 50px auto;
     width: 32px;
     height: 30px;
     background-image: url(../../images/landing-page/zulip-octopus.png);
