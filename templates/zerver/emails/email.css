@@ -394,3 +394,17 @@ a.button:hover {
         text-decoration: none !important;
     }
 }
+
+.float-right-image {
+    float: right;
+}
+
+/* The 450px cutoff was determined by testing in Gmail as a point
+   where an image looks good in either state. Logically it makes senes
+   since then the text still has the majority of the space in the
+   side-by-side view. */
+@media only screen and (min-width: 450px) {
+    .float-right-image {
+        max-width: 200px;
+    }
+}
