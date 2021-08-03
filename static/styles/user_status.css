@@ -29,22 +29,29 @@
         .status_emoji_wrapper {
             height: 20px;
             width: 22px;
-            padding: 6px 8px 2px 8px;
+            padding: 8px 8px 1px 8px;
             border-right: 1px solid;
             border-color: inherit;
             cursor: pointer;
             .selected_emoji {
-                width: 18px;
-                height: 18px;
+                width: 20px;
+                height: 20px;
                 top: 50%;
                 transform: translateY(-50%);
                 cursor: pointer;
             }
+
+            /* For custom emojis and smiley icon to take full width. */
+            img.selected_emoji,
+            .smiley_icon {
+                min-width: 20px;
+            }
+
             .smiley_icon {
                 display: block;
                 font-size: 18px;
                 position: relative;
-                top: 1px;
+                top: -2px;
                 left: 2px;
                 &:hover {
                     text-decoration: none;
