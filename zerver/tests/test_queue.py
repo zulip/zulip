@@ -13,8 +13,8 @@ class TestTornadoQueueClient(ZulipTestCase):
     @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
     def test_on_open_closed(self, mock_cxn: mock.MagicMock) -> None:
         with self.assertLogs("zulip.queue", "WARNING") as m:
+            mock_cxn().channel.side_effect = ConnectionClosed("500", "test")
             connection = TornadoQueueClient()
-            connection.connection.channel.side_effect = ConnectionClosed("500", "test")
             connection._on_open(mock.MagicMock())
             self.assertEqual(
                 m.output,
