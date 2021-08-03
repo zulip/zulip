@@ -11,7 +11,7 @@ import unicodedata
 import urllib
 from datetime import timedelta
 from mimetypes import guess_extension, guess_type
-from typing import Any, Callable, Optional, Tuple
+from typing import IO, Any, Callable, Optional, Tuple
 
 import boto3
 import botocore
@@ -214,7 +214,7 @@ class ZulipUploadBackend:
 
     def upload_avatar_image(
         self,
-        user_file: File,
+        user_file: IO[bytes],
         acting_user_profile: UserProfile,
         target_user_profile: UserProfile,
         content_type: Optional[str] = None,
@@ -236,14 +236,14 @@ class ZulipUploadBackend:
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
         raise NotImplementedError()
 
-    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
+    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         raise NotImplementedError()
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         raise NotImplementedError()
 
     def upload_realm_logo_image(
-        self, logo_file: File, user_profile: UserProfile, night: bool
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
         raise NotImplementedError()
 
@@ -251,7 +251,7 @@ class ZulipUploadBackend:
         raise NotImplementedError()
 
     def upload_emoji_image(
-        self, emoji_file: File, emoji_file_name: str, user_profile: UserProfile
+        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> None:
         raise NotImplementedError()
 
@@ -511,7 +511,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def upload_avatar_image(
         self,
-        user_file: File,
+        user_file: IO[bytes],
         acting_user_profile: UserProfile,
         target_user_profile: UserProfile,
         content_type: Optional[str] = None,
@@ -558,7 +558,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join(str(realm.id), "realm")
 
-    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
+    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         content_type = guess_type(icon_file.name)[0]
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
 
@@ -587,7 +587,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     def upload_realm_logo_image(
-        self, logo_file: File, user_profile: UserProfile, night: bool
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
         content_type = guess_type(logo_file.name)[0]
         if night:
@@ -647,7 +647,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     def upload_emoji_image(
-        self, emoji_file: File, emoji_file_name: str, user_profile: UserProfile
+        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> None:
         content_type = guess_type(emoji_file.name)[0]
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -804,7 +804,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def upload_avatar_image(
         self,
-        user_file: File,
+        user_file: IO[bytes],
         acting_user_profile: UserProfile,
         target_user_profile: UserProfile,
         content_type: Optional[str] = None,
@@ -836,7 +836,7 @@ class LocalUploadBackend(ZulipUploadBackend):
     def realm_avatar_and_logo_path(self, realm: Realm) -> str:
         return os.path.join("avatars", str(realm.id), "realm")
 
-    def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
+    def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         image_data = icon_file.read()
         write_local_file(upload_path, "icon.original", image_data)
@@ -849,7 +849,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(
-        self, logo_file: File, user_profile: UserProfile, night: bool
+        self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
         if night:
@@ -896,7 +896,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("avatars", file_path + file_extension, resized_avatar)
 
     def upload_emoji_image(
-        self, emoji_file: File, emoji_file_name: str, user_profile: UserProfile
+        self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> None:
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
@@ -961,7 +961,7 @@ def delete_message_image(path_id: str) -> bool:
 
 
 def upload_avatar_image(
-    user_file: File,
+    user_file: IO[bytes],
     acting_user_profile: UserProfile,
     target_user_profile: UserProfile,
     content_type: Optional[str] = None,
@@ -979,15 +979,17 @@ def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> Non
     upload_backend.copy_avatar(source_profile, target_profile)
 
 
-def upload_icon_image(user_file: File, user_profile: UserProfile) -> None:
+def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile) -> None:
     upload_backend.upload_realm_icon_image(user_file, user_profile)
 
 
-def upload_logo_image(user_file: File, user_profile: UserProfile, night: bool) -> None:
+def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bool) -> None:
     upload_backend.upload_realm_logo_image(user_file, user_profile, night)
 
 
-def upload_emoji_image(emoji_file: File, emoji_file_name: str, user_profile: UserProfile) -> None:
+def upload_emoji_image(
+    emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
+) -> None:
     upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)
 
 

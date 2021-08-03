@@ -8,6 +8,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from operator import itemgetter
 from typing import (
+    IO,
     AbstractSet,
     Any,
     Callable,
@@ -28,7 +29,6 @@ import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.core.files import File
 from django.db import IntegrityError, connection, transaction
 from django.db.models import Count, Exists, F, OuterRef, Q, Sum
 from django.db.models.query import QuerySet
@@ -7128,7 +7128,7 @@ def notify_realm_emoji(realm: Realm) -> None:
 
 
 def check_add_realm_emoji(
-    realm: Realm, name: str, author: UserProfile, image_file: File
+    realm: Realm, name: str, author: UserProfile, image_file: IO[bytes]
 ) -> Optional[RealmEmoji]:
     realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
     realm_emoji.full_clean()
