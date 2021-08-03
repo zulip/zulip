@@ -162,7 +162,7 @@ EXEMPT_FILES = {
     "static/js/submessage.js",
     "static/js/stream_settings_ui.js",
     "static/js/message_view_header.js",
-    "static/js/timerender.js",
+    "static/js/timerender.ts",
     "static/js/tippyjs.js",
     "static/js/todo_widget.js",
     "static/js/topic_list.js",

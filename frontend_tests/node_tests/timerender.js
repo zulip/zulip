@@ -137,7 +137,7 @@ run_test("render_date_renders_time_above_html", () => {
     const span_stub = $("<span />");
 
     let appended_val;
-    span_stub.append = (val) => {
+    span_stub.append = (...val) => {
         appended_val = val;
         return span_stub;
     };

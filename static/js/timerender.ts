@@ -18,16 +18,16 @@ import {user_settings} from "./user_settings";
 
 let next_timerender_id = 0;
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     next_timerender_id = 0;
 }
 
 // Exported for tests only.
-export function get_tz_with_UTC_offset(time) {
+export function get_tz_with_UTC_offset(time: number | Date): string {
     const tz_offset = format(time, "xxx");
     let timezone = new Intl.DateTimeFormat(undefined, {timeZoneName: "short"})
         .formatToParts(time)
-        .find(({type}) => type === "timeZoneName").value;
+        .find(({type}) => type === "timeZoneName")?.value;
 
     if (timezone === "UTC") {
         return "UTC";
@@ -36,7 +36,7 @@ export function get_tz_with_UTC_offset(time) {
     // When user's locale doesn't match their timezone (eg. en_US for IST),
     // we get `timezone` in the format of'GMT+x:y. We don't want to
     // show that along with (UTC+x:y)
-    timezone = /GMT[+-][\d:]*/.test(timezone) ? "" : timezone;
+    timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
     const tz_UTC_offset = `(UTC${tz_offset})`;
 
@@ -54,7 +54,13 @@ export function get_tz_with_UTC_offset(time) {
 //      needs_update:    a boolean for if it will need to be updated when the
 //                       day changes
 // }
-export function render_now(time, today = new Date()) {
+export type TimeRender = {
+    time_str: string;
+    formal_time_str: string;
+    needs_update: boolean;
+};
+
+export function render_now(time: Date, today = new Date()): TimeRender {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -95,7 +101,10 @@ export function render_now(time, today = new Date()) {
 }
 
 // Current date is passed as an argument for unit testing
-export function last_seen_status_from_date(last_active_date, current_date = new Date()) {
+export function last_seen_status_from_date(
+    last_active_date: Date,
+    current_date = new Date(),
+): string {
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes <= 2) {
         return $t({defaultMessage: "Just now"});
@@ -140,35 +149,44 @@ export function last_seen_status_from_date(last_active_date, current_date = new 
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
 //   [id of the span element, Date representing the time]
-let update_list = [];
+type UpdateEntry = {
+    needs_update: boolean;
+    className: string;
+    time: Date;
+    time_above?: Date;
+};
+let update_list: UpdateEntry[] = [];
 
 // The time at the beginning of the day, when the timestamps were updated.
 // Represented as a Date with hour, minute, second, millisecond 0.
-let last_update;
+let last_update: Date;
 
-export function initialize() {
+export function initialize(): void {
     last_update = startOfToday();
 }
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
-function maybe_add_update_list_entry(entry) {
+function maybe_add_update_list_entry(entry: UpdateEntry): void {
     if (entry.needs_update) {
         update_list.push(entry);
     }
 }
 
-function render_date_span(elem, rendered_time, rendered_time_above) {
+function render_date_span(
+    elem: JQuery,
+    rendered_time: TimeRender,
+    rendered_time_above?: TimeRender,
+): JQuery {
     elem.text("");
     if (rendered_time_above !== undefined) {
-        const pieces = [
+        elem.append(
             '<i class="date-direction fa fa-caret-up"></i>',
             _.escape(rendered_time_above.time_str),
             '<hr class="date-line">',
             '<i class="date-direction fa fa-caret-down"></i>',
             _.escape(rendered_time.time_str),
-        ];
-        elem.append(pieces);
+        );
         return elem;
     }
     elem.append(_.escape(rendered_time.time_str));
@@ -184,7 +202,7 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time, time_above, today) {
+export function render_date(time: Date, time_above: Date | undefined, today: Date): JQuery {
     const className = "timerender" + next_timerender_id;
     next_timerender_id += 1;
     const rendered_time = render_now(time, today);
@@ -205,7 +223,10 @@ export function render_date(time, time_above, today) {
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function render_markdown_timestamp(time) {
+export function render_markdown_timestamp(time: number | Date): {
+    text: string;
+    tooltip_content: string;
+} {
     const hourformat = user_settings.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
 
@@ -220,7 +241,7 @@ export function render_markdown_timestamp(time) {
 
 // This isn't expected to be called externally except manually for
 // testing purposes.
-export function update_timestamps() {
+export function update_timestamps(): void {
     const today = startOfToday();
     if (!isEqual(today, last_update)) {
         const to_process = update_list;
@@ -257,11 +278,11 @@ setInterval(update_timestamps, 60 * 1000);
 
 // Transform a Unix timestamp into a ISO 8601 formatted date string.
 //   Example: 1978-10-31T13:37:42Z
-export function get_full_time(timestamp) {
+export function get_full_time(timestamp: number): string {
     return formatISO(timestamp * 1000);
 }
 
-export function get_timestamp_for_flatpickr(timestring) {
+export function get_timestamp_for_flatpickr(timestring: string): Date {
     let timestamp;
     try {
         // If there's already a valid time in the compose box,
@@ -276,7 +297,7 @@ export function get_timestamp_for_flatpickr(timestring) {
     return timestamp;
 }
 
-export function stringify_time(time) {
+export function stringify_time(time: number | Date): string {
     if (user_settings.twenty_four_hour_time) {
         return format(time, "HH:mm");
     }
@@ -301,10 +322,11 @@ export const absolute_time = (function () {
         "Dec",
     ];
 
-    const fmt_time = function (date, H_24) {
+    const fmt_time = function (date: Date, H_24: boolean): string {
         const payload = {
             hours: date.getHours(),
             minutes: date.getMinutes(),
+            is_pm: false,
         };
 
         if (payload.hours > 12 && !H_24) {
@@ -321,7 +343,7 @@ export const absolute_time = (function () {
         return str;
     };
 
-    return function (timestamp, today = new Date()) {
+    return function (timestamp: number, today = new Date()): string {
         const date = new Date(timestamp);
         const is_older_year = today.getFullYear() - date.getFullYear() > 0;
         const H_24 = user_settings.twenty_four_hour_time;
@@ -335,8 +357,8 @@ export const absolute_time = (function () {
     };
 })();
 
-export function get_full_datetime(time) {
-    const time_options = {timeStyle: "medium"};
+export function get_full_datetime(time: Date): string {
+    const time_options: Intl.DateTimeFormatOptions = {timeStyle: "medium"};
 
     if (user_settings.twenty_four_hour_time) {
         time_options.hourCycle = "h24";
