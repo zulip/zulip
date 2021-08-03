@@ -13,7 +13,9 @@ def get_latest_github_release_version_for_repo(repo: str) -> str:
     try:
         return requests.get(api_url).json()["tag_name"]
     except (requests.RequestException, json.JSONDecodeError, KeyError):
-        logger.error("Unable to fetch the latest release version from GitHub %s", api_url)
+        logger.exception(
+            "Unable to fetch the latest release version from GitHub %s", api_url, stack_info=True
+        )
         return ""
 
 

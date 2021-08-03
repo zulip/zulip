@@ -56,11 +56,9 @@ class GitHubTestCase(ZulipTestCase):
                 get_latest_github_release_download_link_for_platform("windows"),
                 "https://github.com/zulip/zulip-desktop/releases/latest",
             )
-            self.assertEqual(
-                error_log.output,
-                [
-                    f"ERROR:{logger_string}:Unable to fetch the latest release version from GitHub {api_url}"
-                ],
+            self.assertIn(
+                f"ERROR:{logger_string}:Unable to fetch the latest release version from GitHub {api_url}",
+                error_log.output[0],
             )
 
         responses.replace(
