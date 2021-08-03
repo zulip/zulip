@@ -797,7 +797,10 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
-        # Split into 256 subdirectories to prevent directories from getting too big
+        # If this function is changed, make sure to also change the
+        # relative_path calculation in the function import_uploads in
+        # zerver/lib/import_realm.py.
+        # Split into 256 subdirectories to prevent directories from getting too big.
         path = "/".join(
             [
                 str(user_profile.realm_id),

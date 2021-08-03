@@ -2,6 +2,7 @@ import datetime
 import logging
 import multiprocessing
 import os
+import random
 import secrets
 import shutil
 from mimetypes import guess_type
@@ -773,14 +774,16 @@ def import_uploads(
             relative_path = os.path.join(str(record["realm_id"]), "realm", icon_name)
             record["last_modified"] = timestamp
         else:
-            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
-            # function 'upload_message_file'.
+            # Should be kept in sync with its equivalent in
+            # zerver/lib/upload.py in the function 'upload_message_file'.
+            # In particular the one in LocalUploadBackend.
             # This relative_path is basically the new location of the file,
             # which will later be copied from its original location as
             # specified in record["s3_path"].
             relative_path = "/".join(
                 [
                     str(record["realm_id"]),
+                    format(random.randint(0, 255), "x"),
                     secrets.token_urlsafe(18),
                     sanitize_name(os.path.basename(record["path"])),
                 ]
