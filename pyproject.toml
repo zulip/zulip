@@ -86,7 +86,6 @@ module = [
     "PIL.*",
     "premailer.*",
     "psycopg2.*",
-    "pygments.*",
     "pyinotify.*",
     "pyoembed.*",
     "pyuca.*",

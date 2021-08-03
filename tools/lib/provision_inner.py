@@ -9,7 +9,7 @@ from typing import List
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from pygments import __version__ as pygments_version
+import pygments
 from pytz import VERSION as timezones_version
 
 from scripts.lib import clean_unused_caches
@@ -23,6 +23,8 @@ from scripts.lib.zulip_tools import (
 )
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 from version import PROVISION_VERSION
+
+pygments_version = pygments.__version__  # type: ignore[attr-defined] # private member missing from stubs
 
 VENV_PATH = "/srv/zulip-py3-venv"
 UUID_VAR_PATH = get_dev_uuid_var_path()
