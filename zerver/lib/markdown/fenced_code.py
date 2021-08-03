@@ -84,7 +84,7 @@ from markdown import Markdown
 from markdown.extensions import Extension, codehilite
 from markdown.extensions.codehilite import CodeHiliteExtension, parse_hl_lines
 from markdown.preprocessors import Preprocessor
-from pygments.lexers import get_lexer_by_name
+from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
 
 from zerver.lib.exceptions import MarkdownRenderingException
@@ -485,7 +485,7 @@ class FencedBlockPreprocessor(Preprocessor):
             # since that canonicalizes aliases (Eg: `js` and
             # `javascript` will be mapped to `JavaScript`).
             try:
-                code_language = get_lexer_by_name(lang).name
+                code_language = find_lexer_class_by_name(lang).name
             except ClassNotFound:
                 # If there isn't a Pygments lexer by this name, we
                 # still tag it with the user's data-code-language
