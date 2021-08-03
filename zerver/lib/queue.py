@@ -9,6 +9,8 @@ from typing import Any, Callable, Dict, Generic, List, Mapping, Optional, Set, T
 import orjson
 import pika
 import pika.adapters.tornado_connection
+import pika.connection
+import pika.exceptions
 from django.conf import settings
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
