@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 import orjson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 
 
 def load_config() -> Dict[str, Any]:
@@ -36,7 +37,23 @@ def generate_topics(num_topics: int) -> List[str]:
         topic = " ".join(filter(None, generated_topic))
         topics.append(topic)
 
-    return topics
+    # Mark a small subset of topics as resolved in some streams, and
+    # many topics in a few streams. Note that these don't have the
+    # "Marked as resolved" messages, so don't match the normal user
+    # experience perfectly.
+    if random.random() < 0.15:
+        resolved_topic_probability = 0.5
+    else:
+        resolved_topic_probability = 0.05
+
+    final_topics = []
+    for topic in topics:
+        if random.random() < resolved_topic_probability:
+            final_topics.append(RESOLVED_TOPIC_PREFIX + topic)
+        else:
+            final_topics.append(topic)
+
+    return final_topics
 
 
 def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
