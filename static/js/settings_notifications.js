@@ -5,6 +5,7 @@ import render_stream_specific_notification_row from "../templates/settings/strea
 import * as channel from "./channel";
 import {$t} from "./i18n";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
@@ -55,7 +56,7 @@ function update_desktop_icon_count_display() {
 }
 
 export function set_enable_digest_emails_visibility() {
-    if (user_settings.realm_digest_emails_enabled) {
+    if (page_params.realm_digest_emails_enabled) {
         $("#enable_digest_emails_label").parent().show();
     } else {
         $("#enable_digest_emails_label").parent().hide();
@@ -63,7 +64,7 @@ export function set_enable_digest_emails_visibility() {
 }
 
 export function set_enable_marketing_emails_visibility() {
-    if (user_settings.corporate_enabled) {
+    if (page_params.corporate_enabled) {
         $("#enable_marketing_emails_label").parent().show();
     } else {
         $("#enable_marketing_emails_label").parent().hide();
@@ -125,7 +126,7 @@ export function update_page() {
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
-            !user_settings.realm_push_notifications_enabled
+            !page_params.realm_push_notifications_enabled
         ) {
             // If push notifications are disabled at the realm level,
             // we should just leave the checkbox always off.
