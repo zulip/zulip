@@ -329,7 +329,7 @@ nav {
             width: 300px;
         }
 
-        @media (width > 686px) {
+        @media (width > 1024px) {
             ul.product-options {
                 width: 125px;
             }
@@ -3504,7 +3504,7 @@ nav {
     }
 }
 
-@media (width <= 686px) {
+@media (width <= 1024px) {
     .portico-landing {
         padding-top: 120px;
     }
