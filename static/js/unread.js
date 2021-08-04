@@ -426,7 +426,16 @@ export function update_unread_topics(msg, event) {
 export function process_loaded_messages(messages) {
     for (const message of messages) {
         if (message.unread) {
-            process_unread_message(message);
+            process_unread_message({
+                display_recipient: message.display_recipient,
+                id: message.id,
+                mentioned: message.mentioned,
+                mentioned_me_directly: message.mentioned_me_directly,
+                stream_id: message.stream_id,
+                topic: message.topic,
+                type: message.type,
+                unread: true,
+            });
         }
     }
 }
