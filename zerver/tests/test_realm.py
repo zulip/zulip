@@ -186,6 +186,14 @@ class RealmTest(ZulipTestCase):
         user = get_user_profile_by_id(hamlet_id)
         self.assertTrue(user.realm.deactivated)
 
+    def test_do_change_realm_delete_clears_user_realm_cache(self) -> None:
+        hamlet_id = self.example_user("hamlet").id
+        get_user_profile_by_id(hamlet_id)
+        realm = get_realm("zulip")
+        realm.delete()
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_id(hamlet_id)
+
     def test_do_change_realm_subdomain_clears_user_realm_cache(self) -> None:
         """The main complicated thing about changing realm subdomains is
         updating the cache, and we start by populating the cache for
