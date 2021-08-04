@@ -4476,3 +4476,7 @@ nav {
         }
     }
 }
+
+.mirror-image {
+    transform: scaleX(-1);
+}
