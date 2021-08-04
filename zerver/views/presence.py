@@ -14,6 +14,8 @@ from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import REQ, get_request_notes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_status import get_user_status
+from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import (
     UserActivity,
@@ -61,6 +63,13 @@ def get_presence_backend(
         val.pop("client", None)
         val.pop("pushable", None)
     return json_success(result)
+
+
+def get_status_backend(
+    request: HttpRequest, user_profile: UserProfile, user_id: int
+) -> HttpResponse:
+    target = access_user_by_id(user_profile, user_id, for_admin=False)
+    return json_success(get_user_status(target.id))
 
 
 @human_users_only
