@@ -292,7 +292,10 @@ body.dark-theme {
         color: hsl(236, 33%, 90%);
     }
 
-    .unread_count {
+    .unread_count,
+    /* The actions_popover unread_count object has its own variable CSS,
+       and thus needs to be repeated here with all three classes for precedence) */
+    .actions_popover .mark_as_unread .unread_count {
         background-color: hsla(105, 2%, 50%, 0.5);
     }
 

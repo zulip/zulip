@@ -34,8 +34,17 @@ export class MessageList {
         this.table_name = table_name;
         this.narrowed = this.table_name === "zfilt";
         this.num_appends = 0;
+        this.reading_prevented = false;
 
         return this;
+    }
+
+    prevent_reading() {
+        this.reading_prevented = true;
+    }
+
+    resume_reading() {
+        this.reading_prevented = false;
     }
 
     add_messages(messages, opts) {
@@ -100,6 +109,10 @@ export class MessageList {
         return this.data.last();
     }
 
+    ids_greater_or_equal_than(id) {
+        return this.data.ids_greater_or_equal_than(id);
+    }
+
     prev() {
         return this.data.prev();
     }
@@ -121,7 +134,14 @@ export class MessageList {
     }
 
     can_mark_messages_read() {
-        return this.data.can_mark_messages_read();
+        /* Automatically marking messages as read can be disabled for
+           two different reasons:
+           * The view is structurally a search view, encoded in the
+             properties of the message_list_data object.
+           * The user recently marked messages in the view as unread, and
+             we don't want to lose that state.
+        */
+        return this.data.can_mark_messages_read() && !this.reading_prevented;
     }
 
     clear({clear_selected_id = true} = {}) {
