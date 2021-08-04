@@ -397,6 +397,10 @@ export function message_unread(message) {
     return message.unread;
 }
 
+export function get_read_message_ids(message_ids) {
+    return message_ids.filter((message_id) => !unread_messages.has(message_id));
+}
+
 export function get_unread_message_ids(message_ids) {
     return message_ids.filter((message_id) => unread_messages.has(message_id));
 }
