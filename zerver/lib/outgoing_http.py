@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional
 
 import requests
-from urllib3 import HTTPResponse
 
 
 class OutgoingSession(requests.Session):
@@ -18,12 +17,12 @@ class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
     role: str
     timeout: int
 
-    def __init__(self, role: str, timeout: int, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, role: str, timeout: int) -> None:
         self.role = role
         self.timeout = timeout
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
-    def send(self, *args: Any, **kwargs: Any) -> HTTPResponse:
+    def send(self, *args: Any, **kwargs: Any) -> requests.Response:
         if kwargs.get("timeout") is None:
             kwargs["timeout"] = self.timeout
         return super().send(*args, **kwargs)
