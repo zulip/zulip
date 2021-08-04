@@ -35,7 +35,17 @@ export class MessageList {
         this.narrowed = this.table_name === "zfilt";
         this.num_appends = 0;
 
+        this.resume_reading();
+
         return this;
+    }
+
+    prevent_reading() {
+        this.reading_prevented = true;
+    }
+
+    resume_reading() {
+        this.reading_prevented = false;
     }
 
     add_messages(messages, opts) {
@@ -100,6 +110,10 @@ export class MessageList {
         return this.data.last();
     }
 
+    ids_greater_or_equal_than(id) {
+        return this.data.ids_greater_or_equal_than(id);
+    }
+
     prev() {
         return this.data.prev();
     }
@@ -121,7 +135,7 @@ export class MessageList {
     }
 
     can_mark_messages_read() {
-        return this.data.can_mark_messages_read();
+        return !this.reading_prevented && this.data.can_mark_messages_read();
     }
 
     clear({clear_selected_id = true} = {}) {
