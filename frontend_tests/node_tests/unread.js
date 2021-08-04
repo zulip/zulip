@@ -99,6 +99,7 @@ test("changing_topics", () => {
         unread: true,
     };
 
+    assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
     assert.deepEqual(unread.get_unread_messages([message, other_message]), []);
 
@@ -111,6 +112,7 @@ test("changing_topics", () => {
     unread.process_loaded_messages([message, other_message]);
 
     assert.deepEqual(unread.get_all_msg_ids(), [15, 16]);
+    assert.deepEqual(unread.get_read_message_ids([15, 16]), []);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_messages([message, other_message]), [
         message,
