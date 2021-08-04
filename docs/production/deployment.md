@@ -337,6 +337,12 @@ server {
                 proxy_buffering         off;
                 proxy_read_timeout      20m;
                 proxy_pass              https://zulip-upstream-host;
+
+                # Should you use an http instead of an https URL for the upstream host,
+                # then uncomment the line below and add "USE_X_FORWARDED_PORT = True"
+                # to your settings.py as well:
+                #proxy_set_header        X-Forwarded-Port $server_port;
+
         }
 }
 ```
