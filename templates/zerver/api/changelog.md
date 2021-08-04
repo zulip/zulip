@@ -13,11 +13,11 @@ below features are supported.
 
 **Feature level 90**
 
-* We no longer include `sender_ids` in the `streams` section of
-  `UnreadMessagesResult`, which becomes the `unread_msgs` section of
-  the events that clients fetch when registering events at page
-  load time. (We don't believe this feature has ever been used in
-  a meaningful way.)
+* [`POST /register`](/api/register-queue): The `unread_msgs` section
+  of the response no longer includes `sender_ids` in the `streams`
+  dictionaries. These were removed because no clients were interested
+  in using the data, which required substantial complexity to
+  construct correctly.
 
 **Feature level 89**
 

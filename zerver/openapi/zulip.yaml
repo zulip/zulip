@@ -8857,6 +8857,10 @@ paths:
                               An array of dictionaries where each dictionary contains
                               details of all unread messages of a single subscribed stream,
                               including muted streams.
+
+                              **Changes**: Prior to Zulip 5.0 (feature level 90), the
+                              dictionaries included an additional `sender_ids` key listing
+                              the set of IDs of users who had sent the unread messages.
                             items:
                               type: object
                               description: |
