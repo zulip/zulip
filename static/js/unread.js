@@ -119,12 +119,11 @@ class UnreadPMCounter {
         }
     }
 
-    add(message) {
-        const user_ids_string = people.pm_reply_user_string(message);
+    add({message_id, user_ids_string}) {
         if (user_ids_string) {
             this.bucketer.add({
                 bucket_key: user_ids_string,
-                item_id: message.id,
+                item_id: message_id,
             });
         }
     }
@@ -426,8 +425,10 @@ export function update_unread_topics(msg, event) {
 export function process_loaded_messages(messages) {
     for (const message of messages) {
         if (message.unread) {
+            const user_ids_string =
+                message.type === "private" ? people.pm_reply_user_string(message) : undefined;
+
             process_unread_message({
-                display_recipient: message.display_recipient,
                 id: message.id,
                 mentioned: message.mentioned,
                 mentioned_me_directly: message.mentioned_me_directly,
@@ -435,6 +436,7 @@ export function process_loaded_messages(messages) {
                 topic: message.topic,
                 type: message.type,
                 unread: true,
+                user_ids_string,
             });
         }
     }
@@ -448,7 +450,10 @@ function process_unread_message(message) {
     unread_messages.add(message.id);
 
     if (message.type === "private") {
-        unread_pm_counter.add(message);
+        unread_pm_counter.add({
+            message_id: message.id,
+            user_ids_string: message.user_ids_string,
+        });
     }
 
     if (message.type === "stream") {
