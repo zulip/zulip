@@ -75,7 +75,6 @@ module = [
     "jsonref.*",
     "jsonschema.*",
     "ldap.*",
-    "lxml.*",
     "markdown_include.*",
     "moto.*",
     "netifaces.*",

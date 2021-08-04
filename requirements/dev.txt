@@ -683,6 +683,10 @@ lxml==4.6.3 \
     #   talon-core
     #   xmlsec
     #   zulip-bots
+lxml-stubs==0.2.0 \
+    --hash=sha256:78f1bfb31b1f2af9a5c9e9a602ab1b589a64a5a3cc444931a39cdfd02d6864b0 \
+    --hash=sha256:f0b3621ec2a23bea4145f484490c8b27383ecb407b3f8b079199ad4a0af4180b
+    # via -r requirements/mypy.in
 markdown==3.3.4 \
     --hash=sha256:31b5b491868dcc87d6c24b7e3d19a0d730d59d3e46f4eea6430a321bed387a49 \
     --hash=sha256:96c3ba1261de2f7547b46a00ea8463832c921d3f9d6aba3f255a6f71386db20c

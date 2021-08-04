@@ -7,6 +7,10 @@
 #
 # For details, see requirements/README.md .
 #
+lxml-stubs==0.2.0 \
+    --hash=sha256:78f1bfb31b1f2af9a5c9e9a602ab1b589a64a5a3cc444931a39cdfd02d6864b0 \
+    --hash=sha256:f0b3621ec2a23bea4145f484490c8b27383ecb407b3f8b079199ad4a0af4180b
+    # via -r requirements/mypy.in
 mypy==0.910 \
     --hash=sha256:088cd9c7904b4ad80bec811053272986611b84221835e079be5bcad029e79dd9 \
     --hash=sha256:0aadfb2d3935988ec3815952e44058a3100499f5be5b28c34ac9d79f002a4a9a \
