@@ -318,6 +318,14 @@ ul {
         }
     }
 
+    #profile-tab {
+        margin: 0 -5px 0 5px;
+        .general-info {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+
     hr {
         border: 1px solid hsl(0, 0%, 93%);
         margin: 5px 0;

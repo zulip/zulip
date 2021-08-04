@@ -15,30 +15,32 @@
         <div id="tab-toggle" class="center"></div>
         <div class="tab-data">
             <div class="tabcontent active" id="profile-tab">
-                <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
-                  style="background-image: url('{{user_avatar}}');"></div>
-                <div id="default-section">
-                    {{#if show_email}}
-                    <div id="email" class="default-field">
-                        <span class="name">{{#tr}}Email{{/tr}}</span>
-                        <span class="value">{{email}}</span>
+                <div class="general-info">
+                    <div id="default-section">
+                        {{#if show_email}}
+                        <div id="email" class="default-field">
+                            <span class="name">{{#tr}}Email{{/tr}}</span>
+                            <span class="value">{{email}}</span>
+                        </div>
+                        {{/if}}
+                        <div id="date-joined" class="default-field">
+                            <span class="name">{{#tr}}Joined{{/tr}}</span>
+                            <span class="value">{{date_joined}}</span>
+                        </div>
+                        <div id="user-type" class="default-field">
+                            <span class="name">{{#tr}}Role{{/tr}}</span>
+                            <span class="value">{{user_type}}</span>
+                        </div>
+                        <span class="value">{{last_seen}}</span>
+                        {{#if user_time}}
+                        <div class="default-field">
+                            <span class="name">{{#tr}}Local time{{/tr}}</span>
+                            <span class="value">{{user_time}}</span>
+                        </div>
+                        {{/if}}
                     </div>
-                    {{/if}}
-                    <div id="date-joined" class="default-field">
-                        <span class="name">{{#tr}}Joined{{/tr}}</span>
-                        <span class="value">{{date_joined}}</span>
-                    </div>
-                    <div id="user-type" class="default-field">
-                        <span class="name">{{#tr}}Role{{/tr}}</span>
-                        <span class="value">{{user_type}}</span>
-                    </div>
-                    <span class="value">{{last_seen}}</span>
-                    {{#if user_time}}
-                    <div class="default-field">
-                        <span class="name">{{#tr}}Local time{{/tr}}</span>
-                        <span class="value">{{user_time}}</span>
-                    </div>
-                    {{/if}}
+                    <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
+                      style="background-image: url('{{user_avatar}}');"></div>
                 </div>
                 <div id="content">
                     {{#each profile_data}}
