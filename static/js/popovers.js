@@ -49,6 +49,7 @@ import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
+import * as unread_ops from "./unread_ops";
 import * as user_groups from "./user_groups";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
@@ -479,6 +480,17 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item = $t({defaultMessage: "View source"});
         }
 
+        // Theoretically, it could be useful to offer this even for a
+        // message that is already unread, so you can mark those below
+        // it as unread; but that's an unlikely situation, and showing
+        // it can be a confusing source of clutter.
+        //
+        // To work around #22893, we also only offer the option if the
+        // fetch_status data structure means we'll be able to mark
+        // everything below the current message as read correctly.
+        const should_display_mark_as_unread =
+            message_lists.current.data.fetch_status.has_found_newest() && !message.unread;
+
         const should_display_edit_history_option =
             message.edit_history &&
             message.edit_history.some(
@@ -521,6 +533,7 @@ export function toggle_actions_popover(element, id) {
             stream_id: message.stream_id,
             use_edit_icon,
             editability_menu_item,
+            should_display_mark_as_unread,
             should_display_collapse,
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
@@ -1099,6 +1112,16 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = $target.data("popover");
+    });
+
+    $("body").on("click", ".mark_as_unread", (e) => {
+        hide_actions_popover();
+        const message_id = $(e.currentTarget).data("message-id");
+
+        unread_ops.mark_as_unread_from_here(message_id);
+
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".respond_button", (e) => {

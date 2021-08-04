@@ -27,6 +27,16 @@
     </li>
     {{/if}}
 
+    {{#if should_display_mark_as_unread}}
+        <li>
+            <a class="mark_as_unread" data-message-id="{{message_id}}">
+                <span class="unread_count">1</span>
+                {{t "Mark as unread from here" }}
+                <span class="hotkey-hint">(U)</span>
+            </a>
+        </li>
+    {{/if}}
+
     {{#if should_display_reminder_option}}
     <li>
         <a class='reminder_button' data-message-id="{{message_id}}" tabindex="0">

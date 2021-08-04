@@ -145,6 +145,28 @@ ul {
     }
 }
 
+.actions_popover {
+    .mark_as_unread {
+        .unread_count {
+            /* The icon for this menu item is in the form of an unread count from
+               the left sidebar. We reuse much of the shared styling,
+               but need to override some of the defaults set in app_components.css. */
+            display: inline;
+            float: unset;
+            line-height: 14px;
+            font-size: 11px;
+            font-weight: 550;
+            margin-right: 2px;
+            background-color: hsl(200, 100%, 40%);
+            /* Override random undesired bootstrap style */
+            text-shadow: none;
+            /* Not center aligned but looks better. */
+            position: relative;
+            top: -1px;
+        }
+    }
+}
+
 .user_popover {
     width: 240px;
 
