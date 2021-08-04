@@ -1,7 +1,9 @@
 import logging
 import os
+import random
+import secrets
 import subprocess
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Tuple
 
 import bson
 from django.conf import settings
@@ -10,6 +12,7 @@ from django.forms.models import model_to_dict
 from zerver.data_import.import_util import (
     SubscriberHandler,
     ZerverFieldsT,
+    build_attachment,
     build_huddle,
     build_huddle_subscriptions,
     build_message,
@@ -28,6 +31,8 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.markdown import IMAGE_EXTENSIONS
+from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
@@ -344,6 +349,74 @@ def build_reactions(
         total_reactions.append(reaction_dict)
 
 
+def process_message_attachment(
+    upload: Dict[str, Any],
+    realm_id: int,
+    message_id: int,
+    user_id: int,
+    user_handler: UserHandler,
+    zerver_attachment: List[ZerverFieldsT],
+    uploads_list: List[ZerverFieldsT],
+    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
+    output_dir: str,
+) -> Tuple[str, bool]:
+    upload_file_data = upload_id_to_upload_data_map[upload["_id"]]
+    file_name = upload["name"]
+    file_ext = f'.{upload["type"].split("/")[-1]}'
+
+    has_image = False
+    if file_ext.lower() in IMAGE_EXTENSIONS:
+        has_image = True
+
+    s3_path = "/".join(
+        [
+            str(realm_id),
+            format(random.randint(0, 255), "x"),
+            secrets.token_urlsafe(18),
+            sanitize_name(file_name),
+        ]
+    )
+
+    # Build the attachment from chunks and save it to s3_path.
+    file_out_path = os.path.join(output_dir, "uploads", s3_path)
+    os.makedirs(os.path.dirname(file_out_path), exist_ok=True)
+    with open(file_out_path, "wb") as upload_file:
+        upload_file.write(b"".join(upload_file_data["chunk"]))
+
+    attachment_content = (
+        f'{upload_file_data["description"]}\n\n[{file_name}](/user_uploads/{s3_path})'
+    )
+
+    fileinfo = {
+        "name": file_name,
+        "size": upload_file_data["size"],
+        "created": float(upload_file_data["_updatedAt"].timestamp()),
+    }
+
+    upload = dict(
+        path=s3_path,
+        realm_id=realm_id,
+        content_type=upload["type"],
+        user_profile_id=user_id,
+        last_modified=fileinfo["created"],
+        user_profile_email=user_handler.get_user(user_id=user_id)["email"],
+        s3_path=s3_path,
+        size=fileinfo["size"],
+    )
+    uploads_list.append(upload)
+
+    build_attachment(
+        realm_id=realm_id,
+        message_ids={message_id},
+        user_id=user_id,
+        fileinfo=fileinfo,
+        s3_path=s3_path,
+        zerver_attachment=zerver_attachment,
+    )
+
+    return attachment_content, has_image
+
+
 def process_raw_message_batch(
     realm_id: int,
     raw_messages: List[Dict[str, Any]],
@@ -353,6 +426,9 @@ def process_raw_message_batch(
     output_dir: str,
     zerver_realmemoji: List[ZerverFieldsT],
     total_reactions: List[ZerverFieldsT],
+    uploads_list: List[ZerverFieldsT],
+    zerver_attachment: List[ZerverFieldsT],
+    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
 ) -> None:
     def fix_mentions(content: str, mention_user_ids: Set[int]) -> str:
         for user_id in mention_user_ids:
@@ -390,6 +466,28 @@ def process_raw_message_batch(
 
         rendered_content = None
 
+        has_attachment = False
+        has_image = False
+        has_link = raw_message["has_link"]
+
+        if "file" in raw_message:
+            has_attachment = True
+            has_link = True
+
+            attachment_content, has_image = process_message_attachment(
+                upload=raw_message["file"],
+                realm_id=realm_id,
+                message_id=message_id,
+                user_id=sender_user_id,
+                user_handler=user_handler,
+                uploads_list=uploads_list,
+                zerver_attachment=zerver_attachment,
+                upload_id_to_upload_data_map=upload_id_to_upload_data_map,
+                output_dir=output_dir,
+            )
+
+            content += attachment_content
+
         topic_name = raw_message["topic_name"]
 
         message = build_message(
@@ -400,7 +498,9 @@ def process_raw_message_batch(
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
-            has_attachment=False,
+            has_image=has_image,
+            has_link=has_link,
+            has_attachment=has_attachment,
         )
         zerver_message.append(message)
         build_reactions(
@@ -445,6 +545,9 @@ def process_messages(
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     zerver_realmemoji: List[ZerverFieldsT],
     total_reactions: List[ZerverFieldsT],
+    uploads_list: List[ZerverFieldsT],
+    zerver_attachment: List[ZerverFieldsT],
+    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]],
     output_dir: str,
 ) -> None:
     def list_reactions(reactions: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -477,6 +580,7 @@ def process_messages(
             content=content,
             date_sent=int(message["ts"].timestamp()),
             reactions=reactions,
+            has_link=True if message.get("urls") else False,
         )
 
         # Add recipient_id and topic to message_dict
@@ -518,6 +622,10 @@ def process_messages(
             mention_user_ids.add(user_id)
         message_dict["mention_user_ids"] = mention_user_ids
 
+        # Add uploaded file (attachment) to message_dict
+        if message.get("file"):
+            message_dict["file"] = message["file"]
+
         return message_dict
 
     raw_messages: List[Dict[str, Any]] = []
@@ -538,6 +646,9 @@ def process_messages(
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
+            uploads_list=uploads_list,
+            zerver_attachment=zerver_attachment,
+            upload_id_to_upload_data_map=upload_id_to_upload_data_map,
         )
 
     chunk_size = 1000
@@ -547,6 +658,20 @@ def process_messages(
         chunk_size=chunk_size,
         process_batch=process_batch,
     )
+
+
+def map_upload_id_to_upload_data(
+    upload_data: Dict[str, List[Dict[str, Any]]],
+) -> Dict[str, Dict[str, Any]]:
+    upload_id_to_upload_data_map: Dict[str, Dict[str, Any]] = {}
+
+    for upload in upload_data["upload"]:
+        upload_id_to_upload_data_map[upload["_id"]] = {**upload, "chunk": []}
+
+    for chunk in upload_data["chunk"]:
+        upload_id_to_upload_data_map[chunk["files_id"]]["chunk"].append(chunk["data"])
+
+    return upload_id_to_upload_data_map
 
 
 def separate_channel_and_private_messages(
@@ -630,6 +755,7 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
     rocketchat_data["room"] = []
     rocketchat_data["message"] = []
     rocketchat_data["custom_emoji"] = {"emoji": [], "file": [], "chunk": []}
+    rocketchat_data["upload"] = {"upload": [], "file": [], "chunk": []}
 
     # Get instance
     with open(os.path.join(rocketchat_data_dir, "instances.bson"), "rb") as fcache:
@@ -672,6 +798,21 @@ def rocketchat_data_to_dict(rocketchat_data_dir: str) -> Dict[str, Any]:
 
         with open(os.path.join(rocketchat_data_dir, "custom_emoji.chunks.bson"), "rb") as fcache:
             rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(fcache.read())
+
+    # Get uploads
+    with open(os.path.join(rocketchat_data_dir, "rocketchat_uploads.bson"), "rb") as fcache:
+        rocketchat_data["upload"]["upload"] = bson.decode_all(fcache.read())
+
+    if rocketchat_data["upload"]["upload"]:
+        with open(
+            os.path.join(rocketchat_data_dir, "rocketchat_uploads.files.bson"), "rb"
+        ) as fcache:
+            rocketchat_data["upload"]["file"] = bson.decode_all(fcache.read())
+
+        with open(
+            os.path.join(rocketchat_data_dir, "rocketchat_uploads.chunks.bson"), "rb"
+        ) as fcache:
+            rocketchat_data["upload"]["chunk"] = bson.decode_all(fcache.read())
 
     return rocketchat_data
 
@@ -807,6 +948,10 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     )
 
     total_reactions: List[ZerverFieldsT] = []
+    uploads_list: List[ZerverFieldsT] = []
+    zerver_attachment: List[ZerverFieldsT] = []
+
+    upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
 
     # Process channel messages
     process_messages(
@@ -827,6 +972,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         zerver_realmemoji=zerver_realmemoji,
         total_reactions=total_reactions,
+        uploads_list=uploads_list,
+        zerver_attachment=zerver_attachment,
+        upload_id_to_upload_data_map=upload_id_to_upload_data_map,
         output_dir=output_dir,
     )
     # Process private messages
@@ -848,6 +996,9 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         zerver_realmemoji=zerver_realmemoji,
         total_reactions=total_reactions,
+        uploads_list=uploads_list,
+        zerver_attachment=zerver_attachment,
+        upload_id_to_upload_data_map=upload_id_to_upload_data_map,
         output_dir=output_dir,
     )
     realm["zerver_reaction"] = total_reactions
@@ -857,12 +1008,11 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     create_converted_data_files(realm, output_dir, "/realm.json")
     # TODO: Add support for importing avatars
     create_converted_data_files([], output_dir, "/avatars/records.json")
-    # TODO: Add support for importing uploads
-    create_converted_data_files([], output_dir, "/uploads/records.json")
 
-    # TODO: Add support for importing attachments
-    attachment: Dict[str, List[Any]] = {"zerver_attachment": []}
+    # Import attachments
+    attachment: Dict[str, List[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
+    create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
 
     logging.info("Start making tarball")
     subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
