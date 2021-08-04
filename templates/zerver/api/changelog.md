@@ -11,7 +11,6 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
-=======
 **Feature level 90**
 
 * We no longer include `sender_ids` in the `streams` section of
