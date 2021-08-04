@@ -339,6 +339,20 @@ def get_subscription_status(client: Client) -> None:
     )
 
 
+@openapi_test_function("/users/{user_id}/status:get")
+def get_user_status(client: Client) -> None:
+
+    # {code_example|start}
+    # Get the status of a user.
+    user_id = 7
+    result = client.call_endpoint(
+        url=f"/users/{user_id}/status",
+        method="GET",
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/{user_id}/status", "get", "200")
+
+
 @openapi_test_function("/realm/linkifiers:get")
 def get_realm_linkifiers(client: Client) -> None:
 
@@ -1461,6 +1475,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     reactivate_user(client)
     update_user(client)
     update_status(client)
+    get_user_status(client)
     get_user_by_email(client)
     get_subscription_status(client)
     get_profile(client)

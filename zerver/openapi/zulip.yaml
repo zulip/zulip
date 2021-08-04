@@ -5940,7 +5940,90 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
+  /users/{user_id}/status:
+    get:
+      operationId: get-user-status
+      summary: Get a user's status
+      tags: ["users"]
+      description: |
+        Get the [status](/help/status-and-availability) of a user with the `user_id`.
 
+        `GET {{ api_url }}/v1/users/{user_id}/status`
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      status:
+                        type: object
+                        additionalProperties: false
+                        description: |
+                          The status of the user.
+                        properties:
+                          away:
+                            type: boolean
+                            description: |
+                              Whether the user has marked themself "away".
+                          status_text:
+                            type: string
+                            description: |
+                              The text content of the status message.
+                          emoji_name:
+                            type: string
+                            description: |
+                              The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                              **Changes**: New in Zulip 5.0 (feature level 86).
+                          emoji_code:
+                            type: string
+                            description: |
+                              The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                              **Changes**: New in Zulip 5.0 (feature level 86).
+                          reaction_type:
+                            type: string
+                            description: |
+                              The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+
+                              **Changes**: New in Zulip 5.0 (feature level 86).
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "status":
+                          {
+                            "away": true,
+                            "status_text": "on vacation",
+                            "emoji_name": "car",
+                            "emoji_code": "1f697",
+                            "reaction_type": "unicode_emoji",
+                          },
+                      }
+        "400":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "No such user",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response when the user does not exist
   /users/{user_id_or_email}/presence:
     get:
       operationId: get-user-presence
