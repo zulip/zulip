@@ -16,7 +16,6 @@ from django.contrib.auth import get_backends
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from lxml.cssselect import CSSSelector
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.decorator import statsd_increment
@@ -95,7 +94,7 @@ def relative_to_full_url(base_url: str, content: str) -> str:
 
 
 def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
-    def make_emoji_img_elem(emoji_span_elem: CSSSelector) -> Dict[str, Any]:
+    def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get("class")
         match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
