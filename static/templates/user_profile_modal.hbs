@@ -31,7 +31,12 @@
                             <span class="name">{{#tr}}Role{{/tr}}</span>
                             <span class="value">{{user_type}}</span>
                         </div>
-                        <span class="value">{{last_seen}}</span>
+                        <div class="default-field">
+                            <span class="name">{{#tr}}Presence{{/tr}}</span>
+                            <span class="value">
+                                <span class="{{user_circle_class}} user_circle"></span>{{last_seen}}
+                            </span>
+                        </div>
                         {{#if user_time}}
                         <div class="default-field">
                             <span class="name">{{#tr}}Local time{{/tr}}</span>

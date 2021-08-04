@@ -312,10 +312,6 @@ ul {
         .default-field {
             margin-bottom: 5px;
         }
-
-        #user-type {
-            margin-bottom: 15px;
-        }
     }
 
     #profile-tab {
@@ -323,6 +319,16 @@ ul {
         .general-info {
             display: flex;
             justify-content: space-between;
+
+            .user_circle {
+                width: 8px;
+                height: 8px;
+                position: relative;
+                top: 1px;
+                margin-right: 1px;
+                float: none;
+                display: inline-block;
+            }
         }
     }
 
