@@ -1,6 +1,10 @@
 name: "Code scanning"
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - dependabot/** # https://github.com/github/codeql-action/pull/435
+  pull_request: {}
 
 jobs:
   CodeQL:
