@@ -211,20 +211,20 @@ class UnreadTopicCounter {
             const topic = obj.topic;
             const unread_message_ids = obj.unread_message_ids;
 
-            for (const msg_id of unread_message_ids) {
-                this.add(stream_id, topic, msg_id);
+            for (const message_id of unread_message_ids) {
+                this.add({message_id, stream_id, topic});
             }
         }
     }
 
-    add(stream_id, topic, msg_id) {
+    add({message_id, stream_id, topic}) {
         this.bucketer.add({
             bucket_key: stream_id,
-            item_id: msg_id,
+            item_id: message_id,
             add_callback(per_stream_bucketer) {
                 per_stream_bucketer.add({
                     bucket_key: topic,
-                    item_id: msg_id,
+                    item_id: message_id,
                 });
             },
         });
@@ -419,7 +419,11 @@ export function update_unread_topics(msg, event) {
 
     unread_topic_counter.delete(msg.id);
 
-    unread_topic_counter.add(new_stream_id || msg.stream_id, new_topic || msg.topic, msg.id);
+    unread_topic_counter.add({
+        message_id: msg.id,
+        stream_id: new_stream_id || msg.stream_id,
+        topic: new_topic || msg.topic,
+    });
 }
 
 export function process_loaded_messages(messages) {
@@ -457,7 +461,11 @@ function process_unread_message(message) {
     }
 
     if (message.type === "stream") {
-        unread_topic_counter.add(message.stream_id, message.topic, message.id);
+        unread_topic_counter.add({
+            message_id: message.id,
+            stream_id: message.stream_id,
+            topic: message.topic,
+        });
     }
 
     update_message_for_mention(message);
