@@ -425,22 +425,28 @@ export function update_unread_topics(msg, event) {
 
 export function process_loaded_messages(messages) {
     for (const message of messages) {
-        if (!message.unread) {
-            continue;
+        if (message.unread) {
+            process_unread_message(message);
         }
-
-        unread_messages.add(message.id);
-
-        if (message.type === "private") {
-            unread_pm_counter.add(message);
-        }
-
-        if (message.type === "stream") {
-            unread_topic_counter.add(message.stream_id, message.topic, message.id);
-        }
-
-        update_message_for_mention(message);
     }
+}
+
+function process_unread_message(message) {
+    // The `message` here just needs to require certain fields. For example,
+    // the "message" may actually be constructed from a Zulip event that doesn't
+    // include fields like "content".  The caller must verify that the message
+    // is actually unread--we don't defend against that.
+    unread_messages.add(message.id);
+
+    if (message.type === "private") {
+        unread_pm_counter.add(message);
+    }
+
+    if (message.type === "stream") {
+        unread_topic_counter.add(message.stream_id, message.topic, message.id);
+    }
+
+    update_message_for_mention(message);
 }
 
 export function update_message_for_mention(message) {
