@@ -38,6 +38,11 @@ if action == "restart":
         action="store_true",
         help="Restart with more concern for expediency than minimizing availability interruption",
     )
+    parser.add_argument(
+        "--skip-tornado",
+        action="store_true",
+        help="Do not restart Tornado processes",
+    )
 args = parser.parse_args()
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -118,7 +123,9 @@ if has_application_server():
     # main source of user-visible downtime when we restart a Zulip server.
     # We do this before restarting Django, in case there are new event
     # types which it will need to know how to deal with.
-    if len(tornado_ports) > 1:
+    if action == "restart" and args.skip_tornado:
+        logging.info("Skipping restart of Tornado")
+    elif len(tornado_ports) > 1:
         for p in tornado_ports:
             # Restart Tornado processes individually for a better rate of
             # restarts.  This also avoids behavior with restarting a whole
