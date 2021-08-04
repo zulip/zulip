@@ -32,7 +32,7 @@ def members_create(payload: Dict[str, Any]) -> str:
     patron_count = included["attributes"]["patron_count"]
     user_data = payload["data"]["attributes"]
     user_name = user_data["full_name"]
-    body = f"{user_name} joined! :tada:\nYou now have {patron_count} patrons."
+    body = f"{user_name} has joined! :tada:\nYou now have {patron_count} patrons."
 
     return body
 

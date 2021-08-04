@@ -11,7 +11,7 @@ class PatreonHookTests(WebhookTestCase):
         Tests condition of when a new patron joined
         """
         expected_topic = "patreon"
-        expected_message = "Zulip joined! :tada:\nYou now have 5 patrons."
+        expected_message = "Zulip has joined! :tada:\nYou now have 5 patrons."
 
         self.check_webhook(
             "members_create",
