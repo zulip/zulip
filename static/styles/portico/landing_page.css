@@ -4460,8 +4460,10 @@ nav {
         }
 
         .pricing-model {
-            .price-box {
-                margin: 10px;
+            @media (width >= 768px) {
+                .price-box {
+                    margin: 10px;
+                }
             }
 
             .padded-content {
