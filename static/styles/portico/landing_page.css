@@ -4446,6 +4446,10 @@ nav {
     .feature-end {
         margin-top: 50px;
 
+        .description {
+            margin: 0 10px 0;
+        }
+
         p {
             padding: 10px;
         }
