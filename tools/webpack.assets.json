@@ -60,8 +60,7 @@
         "sorttable",
         "./static/js/analytics/activity",
         "./static/styles/portico/activity.css",
-        "./static/js/analytics/support",
-        "./static/styles/app_components.css"
+        "./static/js/analytics/support"
     ],
     "desktop-login": ["./static/js/bundles/portico", "./static/js/portico/desktop-login"],
     "desktop-redirect": ["./static/js/bundles/portico", "./static/js/portico/desktop-redirect"],
