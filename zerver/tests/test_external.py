@@ -1,5 +1,6 @@
 import time
-from typing import Callable, Optional
+from contextlib import contextmanager
+from typing import Callable, Iterator, Optional
 from unittest import mock, skipUnless
 
 import DNS
@@ -65,6 +66,17 @@ class MITNameTest(ZulipTestCase):
     def test_notmailinglist(self) -> None:
         with mock.patch("DNS.dnslookup", return_value=[["POP IMAP.EXCHANGE.MIT.EDU starnine"]]):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
+
+
+@contextmanager
+def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Iterator[None]:
+    add_ratelimit_rule(range_seconds, num_requests, domain=domain)
+    try:
+        yield
+    finally:
+        # We need this in a finally block to ensure the test cleans up after itself
+        # even in case of failure, to avoid polluting the rules state.
+        remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
 
 
 class RateLimitTests(ZulipTestCase):
@@ -174,52 +186,40 @@ class RateLimitTests(ZulipTestCase):
 
         self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
 
+    @rate_limit_rule(1, 5, domain="api_by_ip")
     def test_hit_ratelimits_as_ip(self) -> None:
-        add_ratelimit_rule(1, 5, domain="api_by_ip")
-        try:
-            RateLimitedIPAddr("127.0.0.1").clear_history()
-            self.do_test_hit_ratelimits(self.send_unauthed_api_request)
-        finally:
-            # We need this in a finally block to ensure the test cleans up after itself
-            # even in case of failure, to avoid polluting the rules state.
-            remove_ratelimit_rule(1, 5, domain="api_by_ip")
+        RateLimitedIPAddr("127.0.0.1").clear_history()
+        self.do_test_hit_ratelimits(self.send_unauthed_api_request)
 
+    @rate_limit_rule(1, 5, domain="create_realm_by_ip")
     def test_create_realm_rate_limiting(self) -> None:
         def assert_func(result: HttpResponse) -> None:
             self.assertEqual(result.status_code, 429)
             self.assert_in_response("Rate limit exceeded.", result)
 
         with self.settings(OPEN_REALM_CREATION=True):
-            add_ratelimit_rule(1, 5, domain="create_realm_by_ip")
-            try:
-                RateLimitedIPAddr("127.0.0.1", domain="create_realm_by_ip").clear_history()
-                self.do_test_hit_ratelimits(
-                    lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
-                    assert_func=assert_func,
-                )
-            finally:
-                remove_ratelimit_rule(1, 5, domain="create_realm_by_ip")
+            RateLimitedIPAddr("127.0.0.1", domain="create_realm_by_ip").clear_history()
+            self.do_test_hit_ratelimits(
+                lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
+                assert_func=assert_func,
+            )
 
     def test_find_account_rate_limiting(self) -> None:
         def assert_func(result: HttpResponse) -> None:
             self.assertEqual(result.status_code, 429)
             self.assert_in_response("Rate limit exceeded.", result)
 
-        add_ratelimit_rule(1, 5, domain="find_account_by_ip")
-        try:
+        with rate_limit_rule(1, 5, domain="find_account_by_ip"):
             RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
             self.do_test_hit_ratelimits(
                 lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com"}),
                 assert_func=assert_func,
             )
-        finally:
-            remove_ratelimit_rule(1, 5, domain="find_account_by_ip")
 
         # Now test whether submitting multiple emails is handled correctly.
         # The limit is set to 10 per second, so 5 requests with 2 emails
         # submitted in each should be allowed.
-        add_ratelimit_rule(1, 10, domain="find_account_by_ip")
-        try:
+        with rate_limit_rule(1, 10, domain="find_account_by_ip"):
             RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
             self.do_test_hit_ratelimits(
                 lambda: self.client_post(
@@ -227,12 +227,10 @@ class RateLimitTests(ZulipTestCase):
                 ),
                 assert_func=assert_func,
             )
-        finally:
-            remove_ratelimit_rule(1, 10, domain="find_account_by_ip")
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+    @rate_limit_rule(1, 5, domain="api_by_remote_server")
     def test_hit_ratelimits_as_remote_server(self) -> None:
-        add_ratelimit_rule(1, 5, domain="api_by_remote_server")
         server_uuid = "1234-abcd"
         server = RemoteZulipServer(
             uuid=server_uuid,
@@ -260,7 +258,6 @@ class RateLimitTests(ZulipTestCase):
             )
         finally:
             self.DEFAULT_SUBDOMAIN = original_default_subdomain
-            remove_ratelimit_rule(1, 5, domain="api_by_remote_server")
 
     def test_hit_ratelimiterlockingexception(self) -> None:
         user = self.example_user("cordelia")
