@@ -387,6 +387,9 @@ RATE_LIMITING_RULES = {
     "create_realm_by_ip": [
         (1800, 5),
     ],
+    "find_account_by_ip": [
+        (3600, 10),
+    ],
     "password_reset_form_by_email": [
         (3600, 2),  # 2 reset emails per hour
         (86400, 5),  # 5 per day

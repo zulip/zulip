@@ -711,6 +711,17 @@ def find_account(request: HttpRequest) -> HttpResponse:
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data["emails"]
+            for i in range(len(emails)):
+                try:
+                    rate_limit_request_by_ip(request, domain="find_account_by_ip")
+                except RateLimited as e:
+                    assert e.secs_to_freedom is not None
+                    return render(
+                        request,
+                        "zerver/rate_limit_exceeded.html",
+                        context={"retry_after": int(e.secs_to_freedom)},
+                        status=429,
+                    )
 
             # Django doesn't support __iexact__in lookup with EmailField, so we have
             # to use Qs to get around that without needing to do multiple queries.
