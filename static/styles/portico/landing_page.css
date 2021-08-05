@@ -927,13 +927,18 @@ nav {
 }
 
 /* -- compare css -- */
-.compare {
+.compare,
+.compare-education {
     background: linear-gradient(
         198deg,
         hsl(170deg 34% 47%),
         hsl(146deg 31% 60%)
     );
     color: hsl(0, 0%, 100%);
+
+    .table-container {
+        overflow-x: auto;
+    }
 
     .gradients .gradient.white-fade {
         background: none;
@@ -944,21 +949,20 @@ nav {
     }
 
     .padded-content {
-        width: 900px;
+        max-width: 900px;
         margin: 0 auto;
         position: relative; /* To place the content on top of gradients. */
         z-index: 2;
     }
 
     table {
+        min-width: 550px;
         padding: 33px;
         border: 20px solid transparent;
         width: 100%;
         text-align: left;
         border-collapse: collapse;
-
         font-weight: 400;
-
         color: hsla(0, 0%, 100%, 0.8);
 
         thead th {
@@ -1004,7 +1008,8 @@ nav {
 
             &:nth-of-type(3),
             &:nth-of-type(4),
-            &:nth-of-type(5) {
+            &:nth-of-type(5),
+            &:nth-of-type(6) {
                 width: 18%;
                 background-color: hsl(162, 67%, 25%);
             }
@@ -1031,7 +1036,8 @@ nav {
 
             &:nth-of-type(3),
             &:nth-of-type(4),
-            &:nth-of-type(5) {
+            &:nth-of-type(5),
+            &:nth-of-type(6) {
                 background-color: hsl(162, 44%, 38%);
             }
 
@@ -1087,6 +1093,27 @@ nav {
 
         a {
             color: hsl(170, 47%, 73%);
+        }
+    }
+}
+
+.compare-education {
+    color: hsl(0, 0%, 0%);
+    background: none;
+
+    table {
+        min-width: 650px;
+
+        .number {
+            font-weight: 800;
+
+            &.one {
+                color: hsl(0, 0%, 100%, 0.4);
+            }
+        }
+
+        td:first-of-type {
+            padding: 10px 10px 10px 0;
         }
     }
 }
