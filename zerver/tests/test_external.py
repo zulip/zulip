@@ -200,6 +200,36 @@ class RateLimitTests(ZulipTestCase):
             finally:
                 remove_ratelimit_rule(1, 5, domain="create_realm_by_ip")
 
+    def test_find_account_rate_limiting(self) -> None:
+        def assert_func(result: HttpResponse) -> None:
+            self.assertEqual(result.status_code, 429)
+            self.assert_in_response("Rate limit exceeded.", result)
+
+        add_ratelimit_rule(1, 5, domain="find_account_by_ip")
+        try:
+            RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
+            self.do_test_hit_ratelimits(
+                lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com"}),
+                assert_func=assert_func,
+            )
+        finally:
+            remove_ratelimit_rule(1, 5, domain="find_account_by_ip")
+
+        # Now test whether submitting multiple emails is handled correctly.
+        # The limit is set to 10 per second, so 5 requests with 2 emails
+        # submitted in each should be allowed.
+        add_ratelimit_rule(1, 10, domain="find_account_by_ip")
+        try:
+            RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
+            self.do_test_hit_ratelimits(
+                lambda: self.client_post(
+                    "/accounts/find/", {"emails": "new@zulip.com,new2@zulip.com"}
+                ),
+                assert_func=assert_func,
+            )
+        finally:
+            remove_ratelimit_rule(1, 10, domain="find_account_by_ip")
+
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_hit_ratelimits_as_remote_server(self) -> None:
         add_ratelimit_rule(1, 5, domain="api_by_remote_server")
