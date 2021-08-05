@@ -168,7 +168,13 @@ const events = function () {
         const $e = $(e.target);
 
         if ($e.is("nav ul .exit")) {
-            $("nav ul").removeClass("show");
+            $("nav ul").css("transform", "translate(-350px, 0)");
+            // See https://ishadeed.com/article/layout-flickering/ for
+            // more context as to why the following timeout is important.
+            setTimeout(() => {
+                $("nav ul").removeClass("show");
+                $("nav ul").css("transform", "");
+            }, 500);
         }
 
         if ($("nav ul.show") && !$e.closest("nav ul.show").length && !$e.is("nav ul.show")) {

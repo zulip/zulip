@@ -3574,12 +3574,11 @@ nav {
 
             box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
 
-            transition: all 0.5s ease;
-
             overflow-y: auto;
 
             &.show {
                 transform: translate(0, 0);
+                transition: all 0.5s ease;
             }
 
             .exit {
