@@ -67,6 +67,34 @@ from zerver.models import Message, Realm, linkifiers_for_realm
 ReturnT = TypeVar("ReturnT")
 
 
+# Taken from
+# https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+html_safelisted_schemes = (
+    "bitcoin",
+    "geo",
+    "im",
+    "irc",
+    "ircs",
+    "magnet",
+    "mailto",
+    "matrix",
+    "mms",
+    "news",
+    "nntp",
+    "openpgp4fpr",
+    "sip",
+    "sms",
+    "smsto",
+    "ssh",
+    "tel",
+    "urn",
+    "webcal",
+    "wtai",
+    "xmpp",
+)
+allowed_schemes = ("http", "https", "ftp", "file") + html_safelisted_schemes
+
+
 def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
     """
     Use this decorator with extreme caution.
@@ -1546,8 +1574,8 @@ def sanitize_url(url: str) -> Optional[str]:
     # Upstream code will accept a URL like javascript://foo because it
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
-    # on the safe side, we whitelist the scheme.
-    if scheme not in ("http", "https", "ftp", "mailto", "file", "bitcoin", "sms", "tel"):
+    # on the safe side, we allow a fixed set of schemes.
+    if scheme not in allowed_schemes:
         return None
 
     # Upstream code scans path, parameters, and query for colon characters
