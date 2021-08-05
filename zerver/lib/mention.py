@@ -1,12 +1,11 @@
 import functools
 import re
-from collections import defaultdict
 from typing import Dict, List, Match, Optional, Set, Tuple
 
 from django.db.models import Q
 
 from zerver.lib.types import FullNameInfo
-from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile, get_active_streams
+from zerver.models import Realm, UserGroup, UserProfile, get_active_streams
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
@@ -84,15 +83,6 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
     return list(rows)
 
 
-def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
-    if not user_group_names:
-        return {}
-
-    rows = UserGroup.objects.filter(realm_id=realm_id, name__in=user_group_names)
-    dct = {row.name.lower(): row for row in rows}
-    return dct
-
-
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
         mention_texts, has_wildcards = possible_mentions(content)
@@ -106,21 +96,17 @@ class MentionData:
         return self.has_wildcards
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
+        self.user_group_name_info: Dict[str, UserGroup] = {}
+        self.user_group_members: Dict[int, List[int]] = {}
         user_group_names = possible_user_group_mentions(content)
-        self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
-        self.user_group_members: Dict[int, List[int]] = defaultdict(list)
-        group_ids = [group.id for group in self.user_group_name_info.values()]
-
-        if not group_ids:
-            # Early-return to avoid the cost of hitting the ORM,
-            # which shows up in profiles.
-            return
-
-        membership = UserGroupMembership.objects.filter(user_group_id__in=group_ids)
-        for info in membership.values("user_group_id", "user_profile_id"):
-            group_id = info["user_group_id"]
-            user_profile_id = info["user_profile_id"]
-            self.user_group_members[group_id].append(user_profile_id)
+        if user_group_names:
+            for group in UserGroup.objects.filter(
+                realm_id=realm_id, name__in=user_group_names
+            ).prefetch_related("usergroupmembership_set"):
+                self.user_group_name_info[group.name.lower()] = group
+                self.user_group_members[group.id] = [
+                    m.user_profile_id for m in group.usergroupmembership_set.all()
+                ]
 
     def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
         # warning: get_user_by_name is not dependable if two
