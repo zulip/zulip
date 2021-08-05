@@ -239,7 +239,6 @@ def send_email(
         realm=realm,
     )
     template = template_prefix.split("/")[-1]
-    logger.info("Sending %s email to %s", template, mail.to)
 
     if dry_run:
         print(mail.message().get_payload()[0])
@@ -247,6 +246,8 @@ def send_email(
 
     if connection is None:
         connection = get_connection()
+
+    logger.info("Sending %s email to %s", template, mail.to)
 
     try:
         # This will call .open() for us, which is a no-op if it's already open;
