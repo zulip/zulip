@@ -988,6 +988,10 @@
         .stream_change_property_status {
             margin: 9px auto 3px 3px;
         }
+
+        .grey-box {
+            border: none;
+        }
     }
 
     .loading_indicator_text {
