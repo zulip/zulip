@@ -16,6 +16,7 @@ import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
+import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_sort from "./stream_sort";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
@@ -124,6 +125,7 @@ export function build_stream_list(force_rerender) {
     function add_sidebar_li(stream_id) {
         const sidebar_row = stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
+        sidebar_row.update_whether_muted_active();
         elems.push(sidebar_row.get_li());
     }
 
@@ -280,6 +282,16 @@ class StreamSidebarRow {
             this.list_item.removeClass("inactive_stream");
         } else {
             this.list_item.addClass("inactive_stream");
+        }
+    }
+
+    update_whether_muted_active() {
+        const toggle_button = this.list_item.find(".toggle_stream_mute");
+
+        if (stream_data.is_muted_active(this.sub) && this.sub.pin_to_top === false) {
+            toggle_button.removeClass("hide_muted_active_toggle");
+        } else {
+            toggle_button.addClass("hide_muted_active_toggle");
         }
     }
 
@@ -516,6 +528,7 @@ export function initialize() {
 export function set_event_handlers() {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
+            /* We want browsers to handle clicks here by opening a new tab. */
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
@@ -525,6 +538,18 @@ export function set_event_handlers() {
 
         clear_and_hide_search();
 
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("#stream_filters").on("click", "li .toggle_stream_mute", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            /* We want browsers to handle clicks here by opening a new tab. */
+            return;
+        }
+        const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        const sub = sub_store.get(stream_id);
+        stream_settings_ui.set_muted(sub, !sub.is_muted);
         e.preventDefault();
         e.stopPropagation();
     });

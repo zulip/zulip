@@ -107,6 +107,9 @@ test_ui("create_sidebar_row", ({override, mock_template}) => {
     const split = '<hr class="stream-split">';
     const devel_sidebar = $("<devel sidebar row>");
     const social_sidebar = $("<social sidebar row>");
+    const fake_find = $("<bell-slash>");
+    devel_sidebar.set_find_results(".toggle_stream_mute", fake_find);
+    social_sidebar.set_find_results(".toggle_stream_mute", fake_find);
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -183,8 +186,14 @@ test_ui("pinned_streams_never_inactive", ({override, mock_template}) => {
     create_devel_sidebar_row({mock_template});
     create_social_sidebar_row({mock_template});
 
-    // non-pinned streams can be made inactive
+    const devel_sidebar = $("<devel sidebar row>");
     const social_sidebar = $("<social sidebar row>");
+
+    const fake_find = $("<bell-slash>");
+    social_sidebar.set_find_results(".toggle_stream_mute", fake_find);
+    devel_sidebar.set_find_results(".toggle_stream_mute", fake_find);
+
+    // non-pinned streams can be made inactive
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
     override(stream_data, "is_active", () => false);
@@ -201,7 +210,7 @@ test_ui("pinned_streams_never_inactive", ({override, mock_template}) => {
     assert.ok(social_sidebar.hasClass("inactive_stream"));
 
     // pinned streams can never be made inactive
-    const devel_sidebar = $("<devel sidebar row>");
+    devel_sidebar.set_find_results(".toggle_stream_mute", fake_find);
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
     override(stream_data, "is_active", () => false);
@@ -217,11 +226,14 @@ function add_row(sub) {
     stream_data.add_sub(sub);
     const row = {
         update_whether_active() {},
+        update_whether_muted_active() {},
         get_li() {
             const html = "<" + sub.name + " sidebar row html>";
+            const fake_find = $("<bell-slash>");
             const obj = $(html);
 
             obj.length = 1; // bypass blueslip error
+            obj.set_find_results(".toggle_stream_mute", fake_find);
 
             return obj;
         },
@@ -594,6 +606,7 @@ test_ui("rename_stream", ({override, mock_template}) => {
 
     const li_stub = $.create("li stub");
     li_stub.length = 0;
+    li_stub.set_find_results(".toggle_stream_mute", $("<bell-slash"));
 
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {

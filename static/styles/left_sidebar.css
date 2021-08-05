@@ -155,6 +155,19 @@ li.show-more-topics {
     .inactive_stream {
         opacity: 0.5;
     }
+
+    .hide_muted_active_toggle {
+        display: none;
+    }
+
+    .toggle_stream_mute {
+        margin-right: 3px;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 }
 
 .narrows_panel {
