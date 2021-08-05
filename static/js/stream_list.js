@@ -137,8 +137,12 @@ export function build_stream_list(force_rerender) {
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
     const any_dormant_streams = stream_groups.dormant_streams.length > 0;
+    const any_muted_active_streams = stream_groups.muted_active_streams.length > 0;
 
-    if (any_pinned_streams && (any_normal_streams || any_dormant_streams)) {
+    if (
+        any_pinned_streams &&
+        (any_normal_streams || any_dormant_streams || any_muted_active_streams)
+    ) {
         elems.push('<hr class="stream-split">');
     }
 
@@ -146,7 +150,15 @@ export function build_stream_list(force_rerender) {
         add_sidebar_li(stream_id);
     }
 
-    if (any_dormant_streams && any_normal_streams) {
+    if (any_normal_streams && (any_muted_active_streams || any_dormant_streams)) {
+        elems.push('<hr class="stream-split">');
+    }
+
+    for (const stream_id of stream_groups.muted_active_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    if (any_dormant_streams && any_muted_active_streams) {
         elems.push('<hr class="stream-split">');
     }
 
@@ -236,6 +248,7 @@ export function set_in_home_view(stream_id, in_home) {
     } else {
         li.addClass("out_of_home_view");
     }
+    update_streams_sidebar();
 }
 
 function build_stream_sidebar_li(sub) {

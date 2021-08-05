@@ -149,6 +149,7 @@ test_ui("create_sidebar_row", ({override, mock_template}) => {
     stream_list.redraw_stream_privacy(social);
     assert.equal(privacy_elem.html(), "<div>privacy-html");
 
+    override(stream_list, "update_streams_sidebar", noop);
     stream_list.set_in_home_view(stream_id, false);
     assert.ok(social_li.hasClass("out_of_home_view"));
 
