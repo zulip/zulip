@@ -970,14 +970,23 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    $("body").on("click", ".update_status_text", (e) => {
+    function open_user_status_modal(e) {
         hide_all();
 
         user_status_ui.open_user_status_modal();
 
         e.stopPropagation();
         e.preventDefault();
-    });
+    }
+
+    $("body").on("click", ".update_status_text", open_user_status_modal);
+
+    // Clicking on one's own status emoji should open the user status modal.
+    $("#user_presences").on(
+        "click",
+        ".user_sidebar_entry_me .status_emoji",
+        open_user_status_modal,
+    );
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-mute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
