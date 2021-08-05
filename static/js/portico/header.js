@@ -6,39 +6,43 @@ $(() => {
         return false;
     });
 
-    const is_touchscreen = window.matchMedia("(hover: none)").matches;
-
-    $("body").on("click", (e) => {
+    $(".dropdown").on("click", (e) => {
         const $this = $(e.target);
         const dropdown_is_shown = $this.closest("ul .dropdown").hasClass("show");
-        const dropdown_label_was_clicked = $this.closest(".dropdown .dropdown-label").length > 0;
-        const logged_in_pill_was_clicked = $this.closest(".dropdown .dropdown-pill").length > 0;
-        const clicked_outside_dropdown_content =
-            !$this.is(".dropdown ul") && $this.closest(".dropdown ul").length === 0;
 
-        if (dropdown_label_was_clicked && !dropdown_is_shown && is_touchscreen) {
+        if (!dropdown_is_shown) {
             $this.closest("ul .dropdown").addClass("show");
-        } else if (logged_in_pill_was_clicked && !dropdown_is_shown) {
-            $this.closest("ul .dropdown").addClass("show");
-        } else if (clicked_outside_dropdown_content) {
+        } else if (dropdown_is_shown) {
             $this.closest("ul .dropdown").removeClass("show");
         }
     });
 
     $(".nav-dropdown").on("mouseover", (e) => {
         const $this = $(e.target);
+        // We switch to a vertical sidebar menu at width <= 1024px
+        const in_vertical_orientation = window.matchMedia("(max-width: 1024px)").matches;
+        // We only support mouseover events if we are in a horizontal
+        // orientation (width > 1024px) and if the primary input mechanism
+        // can hover over elements.
+        const hover_supported = window.matchMedia("(hover: hover)").matches;
         const dropdown_is_shown = $this.closest("ul .dropdown").hasClass("show");
 
-        if (!dropdown_is_shown && !is_touchscreen) {
+        if (!dropdown_is_shown && !in_vertical_orientation && hover_supported) {
             $this.closest("ul .dropdown").addClass("show");
         }
     });
 
     $(".nav-dropdown").on("mouseout", (e) => {
         const $this = $(e.target);
+        // We switch to a vertical sidebar menu at width <= 1024px
+        const in_vertical_orientation = window.matchMedia("(max-width: 1024px)").matches;
+        // We only support mouseout events if we are in a horizontal
+        // orientation (width > 1024px) and if the primary input mechanism
+        // can hover over elements.
+        const hover_supported = window.matchMedia("(hover: hover)").matches;
         const dropdown_is_shown = $this.closest("ul .dropdown").hasClass("show");
 
-        if (dropdown_is_shown && !is_touchscreen) {
+        if (dropdown_is_shown && !in_vertical_orientation && hover_supported) {
             $this.closest("ul .dropdown").removeClass("show");
         }
     });
