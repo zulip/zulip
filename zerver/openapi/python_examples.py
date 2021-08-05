@@ -229,7 +229,7 @@ def get_members(client: Client) -> None:
 
     # {code_example|start}
     # You may pass the `client_gravatar` query parameter as follows:
-    result = client.get_members({"client_gravatar": True})
+    result = client.get_members({"client_gravatar": False})
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")

@@ -37,7 +37,7 @@ def events_register_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     apply_markdown: bool = REQ(default=False, json_validator=check_bool),
-    client_gravatar: bool = REQ(default=False, json_validator=check_bool),
+    client_gravatar: bool = REQ(default=True, json_validator=check_bool),
     slim_presence: bool = REQ(default=False, json_validator=check_bool),
     all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
     include_subscribers: bool = REQ(default=False, json_validator=check_bool),

@@ -950,7 +950,7 @@ def get_messages_backend(
     use_first_unread_anchor_val: bool = REQ(
         "use_first_unread_anchor", json_validator=check_bool, default=False
     ),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
     apply_markdown: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)

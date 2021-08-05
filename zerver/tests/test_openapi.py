@@ -900,7 +900,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
-            "    --data-urlencode client_gravatar=true \\",
+            "    --data-urlencode client_gravatar=false \\",
             "    --data-urlencode apply_markdown=false \\",
             "    --data-urlencode use_first_unread_anchor=true",
             "```",

@@ -11,6 +11,14 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 92**
+
+* [`GET /messages`](/api/get-messages), [`POST
+  /register`](/api/register-queue), [`GET /users`](/api/get-users),
+  [`GET /users/{user_id}`](/api/get-user), [`GET
+  /users/{email}`](/api/get-user-by-email): The `client_gravatar`
+  parameter now defaults to `true`.
+
 **Feature level 91**
 
 * `PATCH /realm`, [`PATCH /streams/{stream_id}`](/api/update-stream):
@@ -178,7 +186,7 @@ below features are supported.
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
   [`GET /users/{email}`](/api/get-user-by-email) and
-  [`GET /users/me`](/api/get-own-user): Added `is_billing_admin` field to
+  [`GET /users/me`](/api/get-own-Added): is `user_billing_admin` field to
   returned user objects.
 * [`GET /events`](/api/get-events): Added `is_billing_admin` field to
   user objects sent in `realm_user` events.

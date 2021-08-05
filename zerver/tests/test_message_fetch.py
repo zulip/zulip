@@ -1662,7 +1662,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.send_personal_message(hamlet, self.example_user("iago"))
 
-        result = self.get_and_check_messages({})
+        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(False).decode()))
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 

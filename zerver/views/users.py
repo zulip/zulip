@@ -527,13 +527,13 @@ def get_members_backend(
     user_profile: UserProfile,
     user_id: Optional[int] = None,
     include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
     """
-    The client_gravatar field here is set to True if clients can compute
-    their own gravatars, which saves us bandwidth.  We want to eventually
-    make this the default behavior, but we have old clients that expect
-    the server to compute this for us.
+    The client_gravatar field here is set to True by default assuming that clients
+    can compute their own gravatars, which saves bandwidth. This is more important of
+    an optimization than it might seem because gravatar URLs contain MD5 hashes that
+    compress very poorly compared to other data.
     """
     realm = user_profile.realm
     if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
@@ -650,7 +650,7 @@ def get_user_by_email(
     user_profile: UserProfile,
     email: str,
     include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
     realm = user_profile.realm
 

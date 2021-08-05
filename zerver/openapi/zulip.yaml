@@ -14370,10 +14370,13 @@ components:
         since gravatar URLs are long, random strings and thus do not
         compress well. The `client_gravatar` field is set to `true` if
         clients can compute their own gravatars.
+
+        **Changes**: The default value of this parameter was `false`
+        prior to Zulip 5.0 (feature level 92).
       schema:
         type: boolean
-        default: false
-      example: true
+        default: true
+      example: false
     RequiredContent:
       name: content
       in: query
