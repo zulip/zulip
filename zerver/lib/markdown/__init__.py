@@ -605,7 +605,7 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
 
 
 # List from https://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
-IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", "jpeg", ".jpg", ".png", ".webp"]
+IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
