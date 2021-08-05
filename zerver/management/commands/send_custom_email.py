@@ -3,7 +3,6 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
-from django.db.models import Q
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.send_email import send_custom_email
@@ -71,18 +70,15 @@ class Command(ZulipBaseCommand):
             )
         elif options["marketing"]:
             # Marketing email sent at most once to each email address for users
-            # who are either recently active (!long_term_idle) or are a realm owner.
-            users = (
-                UserProfile.objects.filter(
-                    is_active=True,
-                    is_bot=False,
-                    is_mirror_dummy=False,
-                    realm__deactivated=False,
-                    enable_marketing_emails=True,
-                )
-                .filter(Q(long_term_idle=False) | Q(role=UserProfile.ROLE_REALM_OWNER))
-                .distinct("delivery_email")
-            )
+            # who are recently active (!long_term_idle) users of the product.
+            users = UserProfile.objects.filter(
+                is_active=True,
+                is_bot=False,
+                is_mirror_dummy=False,
+                realm__deactivated=False,
+                enable_marketing_emails=True,
+                long_term_idle=False,
+            ).distinct("delivery_email")
         elif options["all_sponsored_org_admins"]:
             # Sends at most one copy to each email address, even if it
             # is an administrator in several organizations.
