@@ -7,9 +7,13 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
 
 
-def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
+def access_user_group_by_id(
+    user_group_id: int, user_profile: UserProfile, for_mention: bool = False
+) -> UserGroup:
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        if not for_mention and user_group.is_system_group:
+            raise JsonableError(_("Insufficient permission"))
         group_member_ids = get_user_group_members(user_group)
         if (
             not user_profile.is_realm_admin
@@ -61,10 +65,17 @@ def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup
 
 
 def create_user_group(
-    name: str, members: List[UserProfile], realm: Realm, *, description: str = ""
+    name: str,
+    members: List[UserProfile],
+    realm: Realm,
+    *,
+    description: str = "",
+    is_system_group: bool = False,
 ) -> UserGroup:
     with transaction.atomic():
-        user_group = UserGroup.objects.create(name=name, realm=realm, description=description)
+        user_group = UserGroup.objects.create(
+            name=name, realm=realm, description=description, is_system_group=is_system_group
+        )
         UserGroupMembership.objects.bulk_create(
             UserGroupMembership(user_profile=member, user_group=user_group) for member in members
         )

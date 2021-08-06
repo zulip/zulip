@@ -937,7 +937,9 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = access_user_group_by_id(mentioned_user_group_id, user_profile)
+        user_group = access_user_group_by_id(
+            mentioned_user_group_id, user_profile, for_mention=True
+        )
         mentioned_user_group_name = user_group.name
 
     apns_payload = get_message_payload_apns(

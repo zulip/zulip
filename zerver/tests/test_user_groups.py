@@ -577,3 +577,39 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello.date_joined = timezone_now() - timedelta(days=11)
         othello.save()
         check_removing_members_from_group("othello")
+
+    def test_editing_system_user_groups(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        aaron = self.example_user("aaron")
+        members = [iago, othello]
+
+        user_group = create_user_group(
+            "System group",
+            members,
+            iago.realm,
+            description="This is a system group",
+            is_system_group=True,
+        )
+
+        def check_support_group_permission(acting_user: UserProfile) -> None:
+            self.login_user(acting_user)
+            params = {
+                "name": "Test system group",
+                "description": "This is a test system group.",
+            }
+            result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+            self.assert_json_error(result, "Insufficient permission")
+
+            params = {"add": orjson.dumps([aaron.id]).decode()}
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+            self.assert_json_error(result, "Insufficient permission")
+
+            params = {"delete": orjson.dumps([othello.id]).decode()}
+            result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+            self.assert_json_error(result, "Insufficient permission")
+
+        check_support_group_permission(desdemona)
+        check_support_group_permission(iago)
+        check_support_group_permission(othello)

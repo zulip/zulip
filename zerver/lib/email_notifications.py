@@ -371,7 +371,7 @@ def get_mentioned_user_group_name(
     smallest_user_group_size = math.inf
     smallest_user_group_name = None
     for user_group_id in mentioned_user_group_ids:
-        current_user_group = access_user_group_by_id(user_group_id, user_profile)
+        current_user_group = access_user_group_by_id(user_group_id, user_profile, for_mention=True)
         current_user_group_size = len(get_user_group_members(current_user_group))
 
         if current_user_group_size < smallest_user_group_size:
