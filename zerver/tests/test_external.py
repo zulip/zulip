@@ -190,7 +190,7 @@ class RateLimitTests(ZulipTestCase):
         with self.settings(OPEN_REALM_CREATION=True):
             add_ratelimit_rule(1, 5, domain="create_realm_by_ip")
             try:
-                RateLimitedIPAddr("127.0.0.1").clear_history()
+                RateLimitedIPAddr("127.0.0.1", domain="create_realm_by_ip").clear_history()
                 self.do_test_hit_ratelimits(
                     lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
                     assert_func=assert_func,
