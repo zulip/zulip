@@ -155,6 +155,8 @@ class RateLimitTests(ZulipTestCase):
         for i in range(6):
             with mock.patch("time.time", return_value=(start_time + i * 0.1)):
                 result = request_func()
+            if i < 5:
+                self.assertNotEqual(result.status_code, 429)
 
         assert_func(result)
 
