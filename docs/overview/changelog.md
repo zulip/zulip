@@ -7,6 +7,11 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.1.8 -- 2021-08-11
+
+- Fixed possible `0257_fix_has_link_attribute.py` database migration
+  failure, which would cause errors during the upgrade process.
+
 ### 2.1.7 -- 2020-06-25
 
 - CVE-2020-15070: Fix privilege escalation vulnerability with custom
