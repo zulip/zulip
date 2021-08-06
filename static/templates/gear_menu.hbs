@@ -24,7 +24,7 @@
                     <span>{{t 'Manage organization' }}</span>
                 </a>
             </li>
-            {{#unless page_params.is_guest}}
+            {{#unless is_guest}}
             <li role="presentation">
                 <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-bar-chart" aria-hidden="true"></i>
@@ -59,7 +59,7 @@
                     <span class="about_zulip_text">{{t "About Zulip" }}</span>
                 </a>
             </li>
-            {{#if page_params.corporate_enabled}}
+            {{#if corporate_enabled}}
             <li role="presentation">
                 <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-envelope" aria-hidden="true"></i> {{t 'Contact support' }}
@@ -68,7 +68,7 @@
             {{/if}}
             <li class="divider" role="presentation"></li>
             <li role="presentation">
-                <a href="{{ page_params.apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-desktop" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
                 </a>
             </li>
@@ -82,21 +82,21 @@
                     <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
                 </a>
             </li>
-            {{#if page_params.show_billing}}
+            {{#if show_billing}}
             <li role="presentation">
                 <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
                 </a>
             </li>
             {{/if}}
-            {{#if page_params.promote_sponsoring_zulip }}
+            {{#if promote_sponsoring_zulip}}
             <li role="presentation">
                 <a href="https://github.com/sponsors/zulip" target="_blank" role="menuitem">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
                 </a>
             </li>
             {{/if}}
-            {{#if page_params.show_plans}}
+            {{#if show_plans}}
             <li role="presentation">
                 <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
@@ -112,7 +112,7 @@
             </li>
             <li class="divider" role="presentation"></li>
             {{/if}}
-            {{#if page_params.show_webathena}}
+            {{#if show_webathena}}
             <li title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu" role="presentation">
                 <a href="#webathena" class="webathena_login" role="menuitem">
                     <i class="fa fa-bolt" aria-hidden="true"></i>{{t 'Link with Webathena' }}
