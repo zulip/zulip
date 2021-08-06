@@ -599,15 +599,43 @@ function validate_private_message() {
     return true;
 }
 
-export function check_overflow_text() {
-    const text = compose_state.message_content();
+export function check_overflow_text_helper(
+    textarea,
+    indicator,
+    text,
+    show_error_function,
+    hide_error_function,
+) {
     const max_length = page_params.max_message_length;
-    const indicator = $("#compose_limit_indicator");
 
     if (text.length > max_length) {
         indicator.addClass("over_limit");
-        $("#compose-textarea").addClass("over_limit");
+        textarea.addClass("over_limit");
         indicator.text(text.length + "/" + max_length);
+
+        show_error_function();
+    } else if (text.length > 0.9 * max_length) {
+        indicator.removeClass("over_limit");
+        textarea.removeClass("over_limit");
+        indicator.text(text.length + "/" + max_length);
+
+        hide_error_function();
+    } else {
+        indicator.text("");
+        textarea.removeClass("over_limit");
+
+        hide_error_function();
+    }
+}
+
+export function check_overflow_text() {
+    const textarea = $("#compose-textarea");
+    const text = compose_state.message_content();
+    const indicator = $("#compose_limit_indicator");
+
+    const show_error_function = () => {
+        const max_length = page_params.max_message_length;
+
         compose_error.show(
             $t_html(
                 {
@@ -618,24 +646,16 @@ export function check_overflow_text() {
             ),
         );
         $("#compose-send-button").prop("disabled", true);
-    } else if (text.length > 0.9 * max_length) {
-        indicator.removeClass("over_limit");
-        $("#compose-textarea").removeClass("over_limit");
-        indicator.text(text.length + "/" + max_length);
+    };
 
+    const hide_error_function = () => {
         $("#compose-send-button").prop("disabled", false);
         if ($("#compose-send-status").hasClass("alert-error")) {
             $("#compose-send-status").stop(true).fadeOut();
         }
-    } else {
-        indicator.text("");
-        $("#compose-textarea").removeClass("over_limit");
+    };
 
-        $("#compose-send-button").prop("disabled", false);
-        if ($("#compose-send-status").hasClass("alert-error")) {
-            $("#compose-send-status").stop(true).fadeOut();
-        }
-    }
+    check_overflow_text_helper(textarea, indicator, text, show_error_function, hide_error_function);
 }
 
 export function warn_for_text_overflow_when_tries_to_send() {
