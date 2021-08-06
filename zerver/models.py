@@ -1846,6 +1846,7 @@ class UserGroup(models.Model):
     members: Manager = models.ManyToManyField(UserProfile, through="UserGroupMembership")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
+    is_system_group: bool = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (("realm", "name"),)
