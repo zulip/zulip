@@ -199,7 +199,9 @@
     }
 }
 
-#compose_limit_indicator {
+#compose_limit_indicator,
+.message_edit_limit_indicator {
+    position: relative;
     margin-right: 8px;
     font-size: 12px;
     color: hsl(39, 100%, 50%);
@@ -209,6 +211,11 @@
         color: hsl(0, 76%, 65%);
         font-weight: bold;
     }
+}
+
+#compose_limit_indicator {
+    top: 3px;
+    float: right;
 }
 
 #compose {
@@ -369,7 +376,10 @@ textarea.new_message_textarea {
     margin-bottom: 0;
     resize: vertical !important;
     margin-top: 5px;
+}
 
+.message_edit_content,
+textarea.new_message_textarea {
     @keyframes flash {
         0% {
             box-shadow: none;

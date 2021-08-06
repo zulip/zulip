@@ -11,6 +11,7 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
@@ -283,6 +284,44 @@ function handle_message_row_edit_keydown(e) {
     }
 }
 
+function show_over_limit_error(error_area) {
+    const max_length = page_params.max_message_length;
+
+    const message = $t_html(
+        {
+            defaultMessage: "Message length shouldn't be greater than {max_length} characters.",
+        },
+        {max_length},
+    );
+
+    error_area.text(message).show();
+}
+
+function check_message_edit_overflow_text(e) {
+    // on change event, checks if the text limit exceeds
+    const row = $(e.target).closest(".message_row");
+    const indicator = row.find(".message_edit_limit_indicator");
+    const textarea = row.find(".message_edit_content");
+    const text = textarea.val().trimEnd();
+    const error_area = row.find(".edit_error");
+
+    const show_error_function = () => {
+        show_over_limit_error(error_area);
+    };
+
+    const hide_error_function = () => {
+        error_area.hide();
+    };
+
+    compose_validate.check_overflow_text_helper(
+        textarea,
+        indicator,
+        text,
+        show_error_function,
+        hide_error_function,
+    );
+}
+
 function handle_inline_topic_edit_keydown(e) {
     let row;
     switch (e.key) {
@@ -413,6 +452,7 @@ function edit_message(row, raw_content) {
     message_lists.current.show_edit_message(row, edit_obj);
 
     form.on("keydown", handle_message_row_edit_keydown);
+    form.on("input propertychange", check_message_edit_overflow_text);
 
     form.find(".message-edit-feature-group .video_link").toggle(
         compose.compute_show_video_chat_button(),
@@ -797,6 +837,11 @@ export function save_message_row_edit(row) {
     let stream_changed = false;
     let new_stream_id;
     const old_stream_id = message.stream_id;
+
+    if (new_content.trimEnd().length > page_params.max_message_length) {
+        show_over_limit_error(row.find(".edit_error"));
+        return;
+    }
 
     show_message_edit_spinner(row);
 
