@@ -89,7 +89,7 @@ export function clear_preview_area() {
     $("#compose .markdown_preview").show();
 }
 
-function update_fade() {
+export function update_fade() {
     if (!compose_state.composing()) {
         return;
     }

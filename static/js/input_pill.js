@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
+import * as compose from "./compose";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -355,6 +356,8 @@ export function create(opts) {
 
             funcs.removePill(id);
             $next.trigger("focus");
+
+            compose.update_fade();
         });
 
         store.$parent.on("click", function (e) {
