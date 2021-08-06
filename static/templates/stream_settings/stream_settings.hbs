@@ -76,14 +76,14 @@
             </div>
             <div class="subscription-config">
                 <ul class="grey-box">
-                    {{#each settings}}
+                    {{#each other_settings}}
                     <li>
                         {{> stream_settings_checkbox
                           setting_name=name
                           is_checked=is_checked
                           is_muted=(lookup ../sub "is_muted")
                           stream_id=(lookup ../sub "stream_id")
-                          notification_setting=is_notification_setting
+                          notification_setting=false
                           disabled_realm_setting=disabled_realm_setting
                           is_disabled=is_disabled
                           label=label}}
@@ -95,6 +95,22 @@
                             <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
                         </span>
                     </li>
+                </ul>
+                <h4>{{t "Notification settings" }}</h4>
+                <ul class="grey-box">
+                    {{#each notification_settings}}
+                    <li>
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=true
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </li>
+                    {{/each}}
                 </ul>
             </div>
         </div>

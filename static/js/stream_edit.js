@@ -517,10 +517,21 @@ export function show_settings_for(node) {
     const slim_sub = sub_store.get(stream_id);
     stream_data.clean_up_description(slim_sub);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
+    const all_settings = stream_settings(sub);
+
+    const other_settings = [];
+    const notification_settings = all_settings.filter((setting) => {
+        if (setting.is_notification_setting) {
+            return true;
+        }
+        other_settings.push(setting);
+        return false;
+    });
 
     const html = render_stream_settings({
         sub,
-        settings: stream_settings(sub),
+        notification_settings,
+        other_settings,
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: get_retention_policy_text_for_subscription_type(sub),
     });
