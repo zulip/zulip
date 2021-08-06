@@ -40,6 +40,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
             name=user_group.name,
             description=user_group.description,
             members=[],
+            is_system_group=user_group.is_system_group,
         )
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(

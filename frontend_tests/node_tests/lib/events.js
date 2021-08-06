@@ -663,6 +663,7 @@ exports.fixtures = {
             name: "Mobile",
             description: "mobile folks",
             members: [1],
+            is_system_group: false,
         },
     },
 

@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 93**
+
+* [`POST /register`](/api/register-queue), [`GET /user_groups`](/api/get-user-groups),
+  [`GET /events`](/api/get-events): Added `is_system_group` field to user group
+  objects.
+
 **Feature level 92**
 
 * [`GET /messages`](/api/get-messages), [`POST

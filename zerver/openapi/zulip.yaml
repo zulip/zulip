@@ -2526,6 +2526,7 @@ paths:
                                       "members": [12],
                                       "description": "Backend team",
                                       "id": 2,
+                                      "is_system_group": false,
                                     },
                                   "id": 0,
                                 }
@@ -12418,6 +12419,13 @@ paths:
                               type: string
                               description: |
                                 User group name.
+                            is_system_group:
+                              type: boolean
+                              description: |
+                                Whether the user group is a system group which cannot be
+                                modified by users.
+
+                                **Changes**: New in Zulip 5.0 (feature level 93).
                         description: |
                           A list of `user_group` objects, which contain a `description`, a `name`,
                           their `id` and the list of members of the user group.
@@ -12432,12 +12440,14 @@ paths:
                               "id": 1,
                               "name": "hamletcharacters",
                               "members": [3, 4],
+                              "is_system_group": false,
                             },
                             {
                               "description": "Other users",
                               "id": 2,
                               "name": "other users",
                               "members": [1, 2],
+                              "is_system_group": true,
                             },
                           ],
                       }
@@ -13191,6 +13201,13 @@ components:
           type: integer
           description: |
             The ID of the user group.
+        is_system_group:
+          type: boolean
+          description: |
+            Whether the user group is a system group which cannot be
+            directly modified by users.
+
+            **Changes**: New in Zulip 5.0 (feature level 93).
     Subscriptions:
       type: object
       additionalProperties: false

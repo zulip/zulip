@@ -7697,6 +7697,7 @@ def do_send_create_user_group_event(user_group: UserGroup, members: List[UserPro
             members=[member.id for member in members],
             description=user_group.description,
             id=user_group.id,
+            is_system_group=user_group.is_system_group,
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
