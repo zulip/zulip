@@ -175,6 +175,7 @@
 }
 
 .right-sidebar-items:first-of-type #userlist-header {
+    margin-bottom: 10px;
     border-top: none;
 }
 
@@ -186,7 +187,7 @@
     align-items: center;
     margin-right: 10px;
 
-    #userlist-title {
+    .sidebar-title {
         margin: 0;
     }
 

@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as activity from "./activity";
+import * as buddy_data from "./buddy_data";
 import * as compose_actions from "./compose_actions";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -108,6 +110,9 @@ export function initialize() {
         }
 
         update_reply_recipient_label();
+        if (buddy_data.do_recipients_list_needs_rerender()) {
+            activity.redraw();
+        }
     });
 
     // Click handlers for buttons in the compose compose box.

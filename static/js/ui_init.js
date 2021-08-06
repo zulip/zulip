@@ -34,6 +34,7 @@ import * as i18n from "./i18n";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
+import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
@@ -146,6 +147,12 @@ function initialize_left_sidebar() {
 }
 
 function initialize_right_sidebar() {
+    function set_buddy_list_mode(mode) {
+        if (localstorage.supported()) {
+            localStorage.setItem("buddy_list_mode", mode);
+        }
+    }
+
     const rendered_sidebar = render_right_sidebar({
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
     });
@@ -170,6 +177,30 @@ function initialize_right_sidebar() {
                 status_emoji.attr("src", still_url);
             }
         }
+    });
+
+    let buddy_list_mode;
+    if (localstorage.supported()) {
+        buddy_list_mode = localStorage.getItem("buddy_list_mode") || "all_users";
+    }
+
+    if (buddy_list_mode === "all_users") {
+        $("#right-sidebar-container").find(".all_users").addClass("active");
+    } else if (buddy_list_mode === "recipients") {
+        $("#right-sidebar-container").find(".recipients").addClass("active");
+    }
+
+    $("#right-sidebar-container").on("click", ".recipients", () => {
+        set_buddy_list_mode("recipients");
+        $("#userlist-header .all_users").removeClass("active");
+        $("#userlist-header .recipients").addClass("active");
+        activity.redraw();
+    });
+    $("#right-sidebar-container").on("click", ".all_users", () => {
+        set_buddy_list_mode("all_users");
+        $("#userlist-header .recipients").removeClass("active");
+        $("#userlist-header .all_users").addClass("active");
+        activity.redraw();
     });
 }
 

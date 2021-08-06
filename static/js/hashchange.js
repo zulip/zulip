@@ -1,9 +1,11 @@
 import $ from "jquery";
 
 import * as about_zulip from "./about_zulip";
+import * as activity from "./activity";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import * as buddy_data from "./buddy_data";
 import * as drafts from "./drafts";
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
@@ -368,6 +370,10 @@ export function replace_hash(hash) {
 export function initialize() {
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
+        // When we are in interleaved view and it has no message, render all users for recipients list.
+        if (buddy_data.do_recipients_list_needs_rerender()) {
+            activity.redraw();
+        }
     });
     hashchanged(true);
 }

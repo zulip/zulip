@@ -206,6 +206,7 @@ test("huddle_data.process_loaded_messages", () => {
 
 test("presence_list_full_update", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
+    override(buddy_data, "should_show_all_users", () => true);
 
     mock_template("user_presence_rows.hbs", false, (data) => {
         assert.equal(data.users.length, 7);
@@ -278,8 +279,8 @@ test("handlers", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
-    override(popovers, "show_userlist_sidebar", () => {});
     override(resize, "resize_sidebars", () => {});
+    override(buddy_data, "should_show_all_users", () => true);
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
@@ -324,18 +325,9 @@ test("handlers", ({override, mock_template}) => {
         };
 
         const handler = $(".user-list-filter").get_on_handler("focus");
-        handler(e);
-    })();
-
-    (function test_click_header_filter() {
-        init();
-        const e = {};
-        const handler = $("#userlist-header").get_on_handler("click");
 
         simulate_right_column_buddy_list();
 
-        handler(e);
-        // and click again
         handler(e);
     })();
 
@@ -371,6 +363,8 @@ test("handlers", ({override, mock_template}) => {
 });
 
 test("first/prev/next", ({override, mock_template}) => {
+    override(buddy_data, "should_show_all_users", () => true);
+
     let rendered_alice;
     let rendered_fred;
 
@@ -431,6 +425,8 @@ test("first/prev/next", ({override, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
+    override(buddy_data, "should_show_all_users", () => true);
+
     mock_template("user_presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
             href: "#narrow/pm-with/1-alice",
@@ -599,6 +595,7 @@ test("initialize", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
+    override(buddy_data, "should_show_all_users", () => true);
 
     let payload;
     override(channel, "post", (arg) => {

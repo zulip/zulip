@@ -83,6 +83,7 @@ test("clear_search", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(resize, "resize_sidebars", () => {});
+    override(buddy_data, "should_show_all_users", () => true);
 
     $(".user-list-filter").val("somevalue");
     assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
@@ -148,6 +149,7 @@ test("filter_user_ids", ({override}) => {
 
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);
+    override(buddy_data, "should_show_all_users", () => true);
 
     function test_filter(search_text, expected_users) {
         const expected_user_ids = expected_users.map((user) => user.user_id);
@@ -207,7 +209,7 @@ test("click on user header to toggle display", ({override}) => {
 
     user_filter.val("bla");
 
-    $("#userlist-header").trigger("click");
+    $("#user_filter_icon").trigger("click");
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal(user_filter.val(), "");
 
@@ -216,7 +218,7 @@ test("click on user header to toggle display", ({override}) => {
         return $.create("sidebar").addClass("column-right");
     };
 
-    $("#userlist-header").trigger("click");
+    $("#user_filter_icon").trigger("click");
     assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
 });
 

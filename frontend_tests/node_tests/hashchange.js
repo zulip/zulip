@@ -34,6 +34,9 @@ const ui_util = mock_esm("../../static/js/ui_util");
 mock_esm("../../static/js/top_left_corner", {
     handle_narrow_deactivated: () => {},
 });
+mock_esm("../../static/js/buddy_data", {
+    do_recipients_list_needs_rerender: () => false,
+});
 set_global("favicon", {});
 
 const browser_history = zrequire("browser_history");

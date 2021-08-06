@@ -1,6 +1,7 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
+import * as buddy_data from "./buddy_data";
 import * as message_lists from "./message_lists";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
@@ -166,6 +167,20 @@ export function initialize() {
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: "#userlist-title .recipients",
+        appendTo: () => document.body,
+        onShow(instance) {
+            // Handle dynamic text for recipients list button.
+            if (buddy_data.recipients_list_filtered_on.type === "stream") {
+                instance.setContent("Show users subscribed to selected stream");
+            } else {
+                instance.setContent("Show conversation participants");
+            }
+            return true;
         },
     });
 

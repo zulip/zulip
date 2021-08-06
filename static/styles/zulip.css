@@ -551,11 +551,39 @@ strong {
     white-space: nowrap;
 }
 
-.sidebar-title {
-    color: hsl(0, 0%, 43%);
-    font-size: inherit;
-    font-weight: normal;
-    display: inline;
+.sidebar-title-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: none;
+    padding-top: 0;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    margin-right: 10px;
+
+    .sidebar-title {
+        color: hsl(0, 0%, 43%);
+        font-size: inherit;
+        font-weight: normal;
+        display: inline;
+        text-align: center;
+        flex: 1;
+        padding: 5px;
+        border: solid 0.5px hsla(0, 0%, 100%, 0.8);
+        border-radius: 20px;
+        background: transparent;
+        outline: none;
+        transition: opacity 0.5s ease;
+
+        &:first-child {
+            margin-right: 8px !important;
+        }
+
+        &.active {
+            opacity: 1;
+            border-color: hsl(0, 0%, 100%);
+        }
+    }
 }
 
 .tooltip {

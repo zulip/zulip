@@ -1,7 +1,12 @@
+import * as buddy_data from "./buddy_data";
 import * as compose_fade_helper from "./compose_fade_helper";
 import * as people from "./people";
 
 function update_user_row_when_fading(li, conf) {
+    // Avoid fading of users when recipients list is selected.
+    if (!buddy_data.should_show_all_users()) {
+        return;
+    }
     const user_id = conf.get_user_id(li);
     const would_receive = compose_fade_helper.would_receive_message(user_id);
 

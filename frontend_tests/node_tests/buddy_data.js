@@ -7,9 +7,13 @@ const _ = require("lodash");
 const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const timerender = mock_esm("../../static/js/timerender");
+mock_esm("../../static/js/message_lists", {
+    current: {},
+});
 
 const compose_fade_helper = zrequire("compose_fade_helper");
 const muted_users = zrequire("muted_users");
@@ -20,6 +24,9 @@ const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
+const recent_topics_util = zrequire("recent_topics_util");
+const recent_topics_ui = zrequire("recent_topics_ui");
+const message_lists = zrequire("message_lists");
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -106,6 +113,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
+        $("#user-list .all_users").hasClass = () => true;
         f({override});
     });
 }
@@ -605,4 +613,68 @@ test("error handling", ({override}) => {
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
+});
+
+test("receipents list", ({override}) => {
+    $("#user-list .all_users").hasClass = () => false;
+    add_canned_users();
+
+    const sub = {
+        stream_id: 101,
+        name: "Devel",
+        subscribed: true,
+    };
+    stream_data.add_sub(sub);
+
+    const subscribed_user = [1001, 1002, 1003, 1000, 1004];
+    peer_data.set_subscribers(sub.stream_id, subscribed_user);
+
+    const pm_user_ids = [1003, 1004];
+
+    const stream_msg = {type: "stream", stream_id: sub.stream_id};
+    const private_msg = {type: "private", reply_to: "jill@zulip.com,fred@zulip.com"};
+
+    // Test when recent topics table is in focus.
+    {
+        override(recent_topics_util, "is_in_focus", () => true);
+        override(recent_topics_ui, "get_focused_row_message", () => stream_msg);
+        assert.ok(buddy_data.do_recipients_list_needs_rerender());
+        const user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+        assert.equal(buddy_data.do_recipients_list_needs_rerender(), false);
+        assert.deepEqual(buddy_data.recipients_list_filtered_on, {
+            type: "stream",
+            stream_id: 101,
+            pm_user_ids: null,
+        });
+        assert.deepEqual(user_ids, subscribed_user);
+    }
+
+    // Test when in interleaved view.
+    {
+        override(recent_topics_util, "is_in_focus", () => false);
+
+        // When private message is selcted.
+        override(message_lists.current, "selected_message", () => private_msg);
+        assert.ok(buddy_data.do_recipients_list_needs_rerender());
+        let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+        assert.equal(buddy_data.do_recipients_list_needs_rerender(), false);
+        assert.deepEqual(buddy_data.recipients_list_filtered_on, {
+            type: "private",
+            pm_user_ids,
+            stream_id: null,
+        });
+        assert.deepEqual(user_ids, [me.user_id, ...pm_user_ids]);
+
+        // When stream message is selcted.
+        override(message_lists.current, "selected_message", () => stream_msg);
+        assert.ok(buddy_data.do_recipients_list_needs_rerender());
+        user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+        assert.equal(buddy_data.do_recipients_list_needs_rerender(), false);
+        assert.deepEqual(buddy_data.recipients_list_filtered_on, {
+            type: "stream",
+            stream_id: 101,
+            pm_user_ids: null,
+        });
+        assert.deepEqual(user_ids, subscribed_user);
+    }
 });

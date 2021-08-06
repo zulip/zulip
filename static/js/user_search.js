@@ -18,7 +18,7 @@ export class UserSearch {
         this._on_focus = opts.on_focus;
 
         $("#clear_search_people_button").on("click", () => this.clear_search());
-        $("#userlist-header").on("click", () => this.toggle_filter_displayed());
+        $("#user_filter_icon").on("click", () => this.toggle_filter_displayed());
 
         this.$input.on("input", opts.update_list);
         this.$input.on("focus", (e) => this.on_focus(e));

@@ -19,6 +19,7 @@ const message_lists = mock_esm("../../static/js/message_lists");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
+const buddy_data = zrequire("buddy_data");
 
 // Helper test function
 function test_reply_label(expected_label) {
@@ -32,7 +33,9 @@ function test_reply_label(expected_label) {
     );
 }
 
-run_test("reply_label", () => {
+run_test("reply_label", ({override}) => {
+    override(buddy_data, "do_recipients_list_needs_rerender", () => false);
+
     // Mocking up a test message list
     const filter = new Filter();
     const list = new MessageList({

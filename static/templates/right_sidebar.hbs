@@ -2,8 +2,10 @@
     <div class="right-sidebar-items">
         <div id="user-list">
             <div id="userlist-header">
-                <h4 class='sidebar-title'
-                  id='userlist-title' data-tippy-content="{{t 'Search people' }} (w)">{{t 'USERS' }}</h4>
+                <div id="userlist-title" class="sidebar-title-wrapper">
+                    <button class='sidebar-title recipients'>{{t 'Recipients' }}</button>
+                    <button class='sidebar-title all_users' data-tippy-content="{{t 'Show all users' }}">{{t 'All users' }}</button>
+                </div>
                 <i id="user_filter_icon" class="fa fa-search"
                   aria-hidden="true" aria-label="{{t 'Search people' }}"
                   data-tippy-content="{{t 'Search people' }} (w)">

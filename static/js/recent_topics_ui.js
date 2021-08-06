@@ -4,6 +4,8 @@ import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
+import * as activity from "./activity";
+import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -146,6 +148,9 @@ function set_table_focus(row, col) {
         topic_row.get()[0].scrollIntoView({
             block: "center",
         });
+    }
+    if (buddy_data.do_recipients_list_needs_rerender()) {
+        activity.redraw();
     }
     return true;
 }

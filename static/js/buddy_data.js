@@ -1,11 +1,18 @@
+import $ from "jquery";
+import _ from "lodash";
+
 import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
+import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as unread from "./unread";
 import * as user_status from "./user_status";
@@ -33,6 +40,24 @@ const fade_config = {
         item.faded = false;
     },
 };
+
+export const recipients_list_filtered_on = {
+    type: null,
+    stream_id: null,
+    pm_user_ids: null,
+};
+
+function reset_recipients_list_filtered_on() {
+    recipients_list_filtered_on.type = null;
+    recipients_list_filtered_on.stream_id = null;
+    recipients_list_filtered_on.pm_user_ids = null;
+}
+
+function set_recipients_list_filtered_on(type, value) {
+    recipients_list_filtered_on.type = type;
+    recipients_list_filtered_on.stream_id = type === "stream" ? value : null;
+    recipients_list_filtered_on.pm_user_ids = type === "private" ? value : null;
+}
 
 export function get_user_circle_class(user_id) {
     const status = buddy_status(user_id);
@@ -354,6 +379,50 @@ function filter_user_ids(user_filter_text, user_ids) {
     return Array.from(user_id_dict.keys());
 }
 
+function get_stream_message_recipients_list(stream_id) {
+    let user_ids = people.get_active_user_ids();
+    user_ids = _.filter(user_ids, (user_id) => {
+        const person = people.get_by_user_id(user_id);
+        if (
+            person && // if the user is bot, do not show in presence data.
+            person.is_bot
+        ) {
+            return false;
+        }
+        if (stream_id && !stream_data.is_user_subscribed(stream_id, person.user_id)) {
+            return false;
+        }
+        return true;
+    });
+    return user_ids;
+}
+
+function get_pm_recipients_list(user_emails) {
+    // In case the following reduce function looks confusing,
+    // refer to https://underscorejs.org/#reduce
+    const user_ids = _.reduce(
+        user_emails,
+        (list, user_email) => {
+            const user_id = people.get_user_id(user_email);
+            const person = people.get_by_user_id(user_id);
+            // if the user is bot, do not show in presence data.
+            if (person && !person.is_bot) {
+                list.push(user_id);
+            }
+            return list;
+        },
+        [],
+    );
+
+    // Add current user to buddy list
+    const me = people.my_current_user_id();
+    if (!_.includes(user_ids, me)) {
+        user_ids.push(me);
+    }
+
+    return user_ids;
+}
+
 function get_filtered_user_id_list(user_filter_text) {
     let base_user_id_list;
 
@@ -378,9 +447,65 @@ function get_filtered_user_id_list(user_filter_text) {
     return user_ids;
 }
 
+export function should_show_all_users() {
+    return $("#user-list .all_users").hasClass("active");
+}
+
+// We call this before we re-render the recipients' list to
+// avoid duplication re-render calls.
+export function do_recipients_list_needs_rerender() {
+    let message;
+    if (recent_topics_util.is_in_focus()) {
+        // When in recent topics select the focused message.
+        message = recent_topics_ui.get_focused_row_message();
+    } else {
+        // When in interleaved view.
+        message = message_lists.current.selected_message();
+    }
+
+    if (message && message.type === recipients_list_filtered_on.type) {
+        if (message.type === "stream") {
+            return message.stream_id !== recipients_list_filtered_on.stream_id;
+        }
+
+        return !_.isEqual(
+            people.emails_strings_to_user_ids_array(message.reply_to),
+            recipients_list_filtered_on.pm_user_ids,
+        );
+    }
+
+    return true;
+}
+
 export function get_filtered_and_sorted_user_ids(user_filter_text) {
     let user_ids;
     user_ids = get_filtered_user_id_list(user_filter_text);
+    if (!should_show_all_users()) {
+        reset_recipients_list_filtered_on();
+        if (recent_topics_util.is_in_focus()) {
+            // When in recent topics view, show the selected topic's stream subscribers.
+            const message = recent_topics_ui.get_focused_row_message();
+            user_ids = get_stream_message_recipients_list(message.stream_id);
+            set_recipients_list_filtered_on("stream", message.stream_id);
+        } else {
+            // When in interleaved view, show the selected message recipients.
+            const message = message_lists.current.selected_message();
+            if (message) {
+                if (message.stream_id) {
+                    user_ids = get_stream_message_recipients_list(message.stream_id);
+                    set_recipients_list_filtered_on("stream", message.stream_id);
+                } else {
+                    user_ids = get_pm_recipients_list(message.reply_to.split(","));
+                    set_recipients_list_filtered_on(
+                        "private",
+                        people.emails_strings_to_user_ids_array(message.reply_to),
+                    );
+                }
+            }
+        }
+        user_ids = filter_user_ids(user_filter_text, user_ids);
+    }
+
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
     return sort_users(user_ids);
 }
