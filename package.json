@@ -34,6 +34,7 @@
     "emoji-datasource-google": "^7.0.2",
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",
     "emoji-datasource-twitter": "^7.0.2",
+    "emoji-regex": "^9.2.2",
     "error-stack-parser": "^2.0.2",
     "eslint-plugin-formatjs": "^2.16.0",
     "expose-loader": "^1.0.0",

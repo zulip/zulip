@@ -1,4 +1,5 @@
 import {isValid} from "date-fns";
+import emojiRegex from "emoji-regex/RGI_Emoji";
 import katex from "katex";
 import _ from "lodash";
 
@@ -479,6 +480,7 @@ export function initialize(helper_config) {
         zulip: true,
         emojiHandler: handleEmoji,
         unicodeEmojiHandler: handleUnicodeEmoji,
+        unicodeEmojiRegex: emojiRegex,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,
         texHandler: handleTex,
