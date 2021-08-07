@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterator, List, Optional
 
 import orjson
 
+from build_unicode_emoji_regex import generate_unicode_emoji_regex
 from emoji_names import EMOJI_NAME_MAPS
 from emoji_setup_utils import (
     EMOTICON_CONVERSIONS,
@@ -369,6 +370,9 @@ def dump_emojis(cache_path: str) -> None:
 
     # Generate various map files.
     generate_map_files(cache_path, emoji_catalog)
+
+    # Generate python usable unicode emoji regex.
+    generate_unicode_emoji_regex()
 
 
 if __name__ == "__main__":

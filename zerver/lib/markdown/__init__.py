@@ -46,7 +46,13 @@ from typing_extensions import TypedDict
 from zerver.lib import mention as mention
 from zerver.lib.cache import NotFoundInCache, cache_with_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
+from zerver.lib.emoji import (
+    EMOTICON_RE,
+    UNICODE_EMOJI_RE,
+    codepoint_to_name,
+    name_to_codepoint,
+    translate_emoticons,
+)
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
@@ -1418,29 +1424,8 @@ class Timestamp(markdown.inlinepatterns.Pattern):
 # \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
 # \u3000-\u303f         - CJK Symbols and Punctuation
 # \u3200-\u32ff         - Enclosed CJK Letters and Months
-UNICODE_EMOJI_RE = (
-    "(?P<syntax>["
-    "\U0001F100-\U0001F64F"
-    "\U0001F680-\U0001F6FF"
-    "\U0001F900-\U0001F9FF"
-    "\u2000-\u206F"
-    "\u2300-\u27BF"
-    "\u2900-\u297F"
-    "\u2B00-\u2BFF"
-    "\u3000-\u303F"
-    "\u3200-\u32FF"
-    "])"
-)
-# The equivalent JS regex is \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
-# \ud83e[\udd00-\uddff]|[\u2000-\u206f]|[\u2300-\u27bf]|[\u2b00-\u2bff]|[\u3000-\u303f]|
-# [\u3200-\u32ff]. See below comments for explanation. The JS regex is used by marked.js for
-# frontend Unicode emoji processing.
-# The JS regex \ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001f100-\U0001f64f
-# The JS regex \ud83d[\ude80-\udeff] represents \U0001f680-\U0001f6ff
-# The JS regex \ud83e[\udd00-\uddff] represents \U0001f900-\U0001f9ff
-# The JS regex [\u2000-\u206f] represents \u2000-\u206f
-# The JS regex [\u2300-\u27bf] represents \u2300-\u27bf
-# Similarly other JS regexes can be mapped to the respective Unicode blocks.
+
+# JS regexes can be mapped to the respective Unicode blocks.
 # For more information, please refer to the following article:
 # http://crocodillon.com/blog/parsing-emoji-unicode-in-javascript
 
@@ -1467,12 +1452,16 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
 
 
 def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
-    codepoint = hex(ord(unicode_emoji))[2:]
-    # Unicode codepoints are minimum of length 4, padded
-    # with zeroes if the length is less than zero.
-    while len(codepoint) < 4:
-        codepoint = "0" + codepoint
-    return codepoint
+    def process_char(codepoint_str: str) -> str:
+        # Unicode codepoints are minimum of length 4, padded
+        # with zeroes if the length is less than zero.
+        return "{:04x}".format(ord(codepoint_str))
+
+    codepoints = []
+    for codepoint_str in unicode_emoji:
+        codepoints.append(process_char(codepoint_str))
+
+    return "-".join(codepoints)
 
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):

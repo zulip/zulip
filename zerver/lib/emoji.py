@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from typing import Tuple
 
 import orjson
@@ -21,6 +22,17 @@ if not os.path.exists(emoji_codes_path):  # nocoverage
 
 with open(emoji_codes_path, "rb") as fp:
     emoji_codes = orjson.loads(fp.read())
+
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+sys.path.append(ZULIP_PATH)
+
+UNICODE_EMOJI_REGEX_PATH = os.path.join(
+    ZULIP_PATH, "tools", "setup", "emoji", "unicode_emoji_regex.txt"
+)
+
+with open(UNICODE_EMOJI_REGEX_PATH) as unicode_emoji_regex_file:
+    UNICODE_EMOJI_RE = unicode_emoji_regex_file.read()
 
 name_to_codepoint = emoji_codes["name_to_codepoint"]
 codepoint_to_name = emoji_codes["codepoint_to_name"]
