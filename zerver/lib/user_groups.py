@@ -61,7 +61,7 @@ def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup
 
 
 def create_user_group(
-    name: str, members: List[UserProfile], realm: Realm, description: str = ""
+    name: str, members: List[UserProfile], realm: Realm, *, description: str = ""
 ) -> UserGroup:
     with transaction.atomic():
         user_group = UserGroup.objects.create(name=name, realm=realm, description=description)
