@@ -31,6 +31,9 @@ Here is the **full list of search operators**.
 * `pm-with:ada@zulip.com`: Search 1-on-1 private messages between you and Ada.
 * `sender:ada@zulip.com`: Search messages sent by Ada.
 * `sender:me`: Search sent messages.
+* `date:2021-08-07`: Show messages sent on 7th August 2021.
+* `before:2021-08-07`: Show messages sent before 7th August 2021.
+* `after:2021-08-07`: Show messages sent after 7th August 2021.
 * `near:12345`: Show messages around the message with ID `12345`.
 * `id:12345`: Show only message `12345`.
 * `streams:public`: Search the history of all [public

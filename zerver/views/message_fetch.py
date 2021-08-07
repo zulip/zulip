@@ -1,7 +1,9 @@
 import re
+from datetime import timedelta
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import orjson
+from dateutil.parser import parse as dateparser
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
@@ -29,7 +31,7 @@ from sqlalchemy.sql import (
     table,
     union_all,
 )
-from sqlalchemy.types import Boolean, Integer, Text
+from sqlalchemy.types import Boolean, DateTime, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.actions import recipient_for_user_profiles
@@ -197,6 +199,22 @@ class NarrowBuilder:
             maybe_negate = lambda cond: cond
 
         return method(query, operand, maybe_negate)
+
+    def by_date(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        start_time = dateparser(operand)
+        end_time = start_time + timedelta(hours=24)
+        cond = column("date_sent", DateTime).between(start_time, end_time)
+        return query.where(cond)
+
+    def by_after(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        start_time = dateparser(operand)
+        cond = column("date_sent", DateTime) >= start_time
+        return query.where(cond)
+
+    def by_before(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        start_time = dateparser(operand)
+        cond = column("date_sent", DateTime) <= start_time
+        return query.where(cond)
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand not in ["attachment", "image", "link"]:

@@ -182,6 +182,12 @@ function pick_empty_narrow_banner() {
             return $("#non_existing_user");
         case "group-pm-with":
             return $("#empty_narrow_group_private_message");
+        case "date":
+            return $("#empty_date_narrow");
+        case "before":
+            return $("#empty_before_narrow");
+        case "after":
+            return $("#empty_after_narrow");
     }
     return default_banner;
 }

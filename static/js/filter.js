@@ -1,3 +1,4 @@
+import {format, isValid, parse, parseISO} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
@@ -231,6 +232,9 @@ export class Filter {
             case "stream":
                 operand = stream_data.get_name(operand);
                 break;
+            case "date":
+            case "before":
+            case "after":
             case "topic":
                 break;
             case "sender":
@@ -330,6 +334,13 @@ export class Filter {
                     search_term.push(token);
                     continue;
                 }
+                if (operator === "date" || operator === "before" || operator === "after") {
+                    // Convert date value to local time ISO string
+                    const searched_date = parse(operand, "yyyy-MM-dd", new Date());
+                    if (isValid(searched_date)) {
+                        operand = searched_date.toISOString();
+                    }
+                }
                 term = {negated, operator, operand};
                 operators.push(term);
             }
@@ -364,6 +375,17 @@ export class Filter {
             const sign = elem.negated ? "-" : "";
             if (elem.operator === "") {
                 return elem.operand;
+            }
+            if (
+                elem.operator === "date" ||
+                elem.operator === "before" ||
+                elem.operator === "after"
+            ) {
+                // Show date in YYYY-MM-DD format
+                const searched_date = parseISO(elem.operand);
+                if (isValid(searched_date)) {
+                    elem.operand = format(searched_date, "yyyy-MM-dd");
+                }
             }
             return sign + elem.operator + ":" + Filter.encodeOperand(elem.operand.toString());
         });
@@ -687,6 +709,12 @@ export class Filter {
         return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
     }
 
+    is_date() {
+        return (
+            this.has_operator("date") || this.has_operator("before") || this.has_operator("after")
+        );
+    }
+
     can_apply_locally(is_local_echo) {
         // Since there can be multiple operators, each block should
         // just return false here.
@@ -704,6 +732,10 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
+            return false;
+        }
+
+        if (this.is_date()) {
             return false;
         }
 
@@ -870,6 +902,9 @@ export class Filter {
             "has-image",
             "has-attachment",
             "search",
+            "date",
+            "before",
+            "after",
         ];
 
         const level = (term_type) => {
@@ -933,6 +968,15 @@ export class Filter {
 
             case "group-pm-with":
                 return verb + "group private messages including";
+
+            case "date":
+                return verb + "jump to date";
+
+            case "before":
+                return verb + "messages sent before";
+
+            case "after":
+                return verb + "messages sent after";
         }
         return "";
     }
@@ -970,7 +1014,20 @@ export class Filter {
         }
 
         const more_parts = operators.map((elem) => {
-            const operand = elem.operand;
+            let operand = elem.operand;
+
+            if (
+                elem.operator === "date" ||
+                elem.operator === "before" ||
+                elem.operator === "after"
+            ) {
+                // Show date in YYYY-MM-DD format
+                const searched_date = parseISO(operand);
+                if (isValid(searched_date)) {
+                    operand = format(searched_date, "yyyy-MM-dd");
+                }
+            }
+
             const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
             if (canonicalized_operator === "is") {
                 return Filter.describe_is_operator(elem);

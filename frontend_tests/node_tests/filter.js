@@ -210,6 +210,11 @@ test("basics", () => {
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+
+    operators = [{operator: "date", operand: "2021-08-07"}];
+    filter = new Filter(operators);
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.can_apply_locally());
 });
 
 function assert_not_mark_read_with_has_operands(additional_operators_to_test) {
@@ -995,6 +1000,20 @@ test("parse", () => {
         {operator: "topic", operand: "with space"},
     ];
     _test();
+
+    string = "date:2021-08-07 emoji";
+    operators = [
+        {operator: "date", operand: "2021-08-07T00:00:00.000Z"},
+        {operator: "search", operand: "emoji"},
+    ];
+    _test();
+
+    string = "before:2021-08-07 after:2021-08-01";
+    operators = [
+        {operator: "before", operand: "2021-08-07T00:00:00.000Z"},
+        {operator: "after", operand: "2021-08-01T00:00:00.000Z"},
+    ];
+    _test();
 });
 
 test("unparse", () => {
@@ -1035,6 +1054,18 @@ test("unparse", () => {
 
     operators = [{operator: "", operand: ""}];
     string = "";
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [{operator: "date", operand: "2021-08-07"}];
+    string = "date:2021-08-07";
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [{operator: "before", operand: "2021-08-07"}];
+    string = "before:2021-08-07";
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [{operator: "after", operand: "2021-08-07"}];
+    string = "after:2021-08-07";
     assert.deepEqual(Filter.unparse(operators), string);
 });
 
@@ -1147,6 +1178,17 @@ test("describe", () => {
 
     narrow = [];
     string = "all messages";
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [{operator: "date", operand: "2021-08-07"}];
+    string = "jump to date 2021-08-07";
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: "before", operand: "2021-08-07"},
+        {operator: "after", operand: "2021-08-01"},
+    ];
+    string = "messages sent before 2021-08-07, messages sent after 2021-08-01";
     assert.equal(Filter.describe(narrow), string);
 });
 

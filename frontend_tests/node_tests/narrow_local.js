@@ -126,6 +126,25 @@ run_test("near not in message list", () => {
     test_with(fixture);
 });
 
+run_test("narrow near date", () => {
+    const fixture = {
+        filter_terms: [{operator: "date", operand: "2021-08-07"}],
+        unread_info: {
+            flavor: "cannot_compute",
+        },
+        has_found_newest: false,
+        all_messages: [{id: 42}, {id: 43}, {id: 44}],
+        expected_id_info: {
+            target_id: undefined,
+            final_select_id: 10000000000000000,
+            local_select_id: undefined,
+        },
+        expected_msg_ids: [],
+    };
+
+    test_with(fixture);
+});
+
 run_test("near before unreads", () => {
     const fixture = {
         filter_terms: [{operator: "near", operand: 42}],

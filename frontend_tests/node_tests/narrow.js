@@ -61,6 +61,9 @@ function hide_all_empty_narrow_messages() {
         "#silent_user",
         "#empty_search_narrow_message",
         "#empty_narrow_resolved_topics",
+        "#empty_date_narrow",
+        "#empty_before_narrow",
+        "#empty_after_narrow",
     ];
     for (const selector of all_empty_narrow_messages) {
         $(selector).hide();
@@ -181,6 +184,21 @@ run_test("show_empty_narrow_message", () => {
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.ok($("#non_existing_user").visible());
+
+    set_filter([["date", "2020-08-01"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.ok($("#empty_date_narrow").visible());
+
+    set_filter([["before", "2020-08-01"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.ok($("#empty_before_narrow").visible());
+
+    set_filter([["after", "2020-08-01"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.ok($("#empty_after_narrow").visible());
 
     const display = $("#empty_search_stop_words_string");
 

@@ -485,6 +485,18 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="in", operand="home", negated=True)
         self._do_add_term_test(term, "WHERE recipient_id NOT IN (%(recipient_id_1)s)")
 
+    def test_add_term_using_date_operator(self) -> None:
+        term = dict(operator="date", operand="2021-08-07")
+        self._do_add_term_test(term, "WHERE date_sent BETWEEN %(date_sent_1)s AND %(date_sent_2)s")
+
+    def test_add_term_using_before_operator(self) -> None:
+        term = dict(operator="before", operand="2021-08-07")
+        self._do_add_term_test(term, "WHERE date_sent <= %(date_sent_1)s")
+
+    def test_add_term_using_after_operator(self) -> None:
+        term = dict(operator="after", operand="2021-08-07")
+        self._do_add_term_test(term, "WHERE date_sent >= %(date_sent_1)s")
+
     def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
         term = dict(operator="in", operand="all")

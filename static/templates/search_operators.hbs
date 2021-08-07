@@ -79,6 +79,33 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="operator">date:<span class="operator_value">date</span></td>
+                        <td class="definition">
+                            {{#tr}}
+                                Narrow to messages sent on <z-value></z-value>.
+                                {{#*inline "z-value"}}<span class="operator_value">date</span>{{/inline}}
+                            {{/tr}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">before:<span class="operator_value">date</span></td>
+                        <td class="definition">
+                            {{#tr}}
+                                Narrow to messages sent before <z-value></z-value>.
+                                {{#*inline "z-value"}}<span class="operator_value">date</span>{{/inline}}
+                            {{/tr}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">after:<span class="operator_value">date</span></td>
+                        <td class="definition">
+                            {{#tr}}
+                                Narrow to messages sent after <z-value></z-value>.
+                                {{#*inline "z-value"}}<span class="operator_value">date</span>{{/inline}}
+                            {{/tr}}
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="operator">streams:public</td>
                         <td class="definition">
                             {{t 'Search all public streams in the organization.'}}
