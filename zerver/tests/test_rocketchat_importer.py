@@ -44,7 +44,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(rocketchat_data["room"][0]["_id"], "GENERAL")
         self.assertEqual(rocketchat_data["room"][0]["name"], "general")
 
-        self.assert_length(rocketchat_data["message"], 63)
+        self.assert_length(rocketchat_data["message"], 66)
         self.assertEqual(rocketchat_data["message"][1]["msg"], "Hey everyone, how's it going??")
         self.assertEqual(rocketchat_data["message"][1]["rid"], "GENERAL")
         self.assertEqual(rocketchat_data["message"][1]["u"]["username"], "priyansh3133")
@@ -618,8 +618,8 @@ class RocketChatImporter(ZulipTestCase):
             private_messages=private_messages,
         )
 
-        self.assert_length(rocketchat_data["message"], 63)
-        self.assert_length(channel_messages, 57)
+        self.assert_length(rocketchat_data["message"], 66)
+        self.assert_length(channel_messages, 60)
         self.assert_length(private_messages, 6)
 
         self.assertIn(rocketchat_data["message"][0], channel_messages)
@@ -666,7 +666,7 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         # No new message added to channel or private messages
-        self.assert_length(channel_messages, 57)
+        self.assert_length(channel_messages, 60)
         self.assert_length(private_messages, 6)
 
     def test_map_upload_id_to_upload_data(self) -> None:
@@ -943,12 +943,12 @@ class RocketChatImporter(ZulipTestCase):
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
         # After removing user_joined, added_user, discussion_created, etc.
-        # messages. (Total messages were 63.)
-        self.assert_length(messages, 36)
+        # messages. (Total messages were 66.)
+        self.assert_length(messages, 39)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
-        self.assert_length(stream_messages, 30)
+        self.assert_length(stream_messages, 33)
         self.assert_length(set(stream_recipients), 5)
         self.assertEqual(stream_messages[0].sender.email, "priyansh3133@email.com")
         self.assertEqual(stream_messages[0].content, "Hey everyone, how's it going??")
