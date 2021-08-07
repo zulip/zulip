@@ -55,7 +55,8 @@ export function get_user_group_from_name(name) {
 }
 
 export function get_realm_user_groups() {
-    return Array.from(user_group_by_id_dict.values()).sort((a, b) => a.id - b.id);
+    const user_groups = Array.from(user_group_by_id_dict.values()).sort((a, b) => a.id - b.id);
+    return user_groups.filter((group) => !group.is_system_group);
 }
 
 export function is_member_of(user_group_id, user_id) {
