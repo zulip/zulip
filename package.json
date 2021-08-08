@@ -78,7 +78,8 @@
     "webpack-bundle-tracker": "^1.2.0",
     "webpack-cli": "^4.6.0",
     "winchan": "^0.2.1",
-    "zxcvbn": "^4.4.2"
+    "zxcvbn": "^4.4.2",
+    "@openapitools/openapi-generator-cli": "^2.3.7"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.11.3",
