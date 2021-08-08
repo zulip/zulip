@@ -865,6 +865,10 @@ td.pointer {
     /* Disable blue link styling for the message timestamp link. */
     color: hsl(0, 0%, 20%);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
+
+    a& {
+        z-index: 1;
+    }
 }
 
 /* The way this overrides the menus with a background-color and a high
