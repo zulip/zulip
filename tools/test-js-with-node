@@ -115,6 +115,7 @@ EXEMPT_FILES = {
     "static/js/realm_icon.js",
     "static/js/realm_logo.js",
     "static/js/realm_playground.js",
+    "static/js/realm_user_settings_defaults.ts",
     "static/js/recent_topics_ui.js",
     "static/js/recent_topics_util.js",
     "static/js/reload.js",

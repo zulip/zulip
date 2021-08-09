@@ -56,6 +56,7 @@ import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
+import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as resize from "./resize";
@@ -515,12 +516,14 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
+    const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
 
     initialize_user_settings(user_settings_params);
+    realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(page_params.user_id, people_params);
 
     let date_joined;
