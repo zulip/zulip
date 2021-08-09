@@ -4,6 +4,7 @@
 # See requirements/README.md for more detail.
 mypy
 
+backoff-stubs
 lxml-stubs
 https://github.com/andersk/pika-stubs/archive/87c5795741449e37bdbd2ceceee853fd56462440.zip#egg=pika-stubs==0.1.3+git  # https://github.com/hahow/pika-stubs/issues/1, https://github.com/hahow/pika-stubs/pull/4
 sqlalchemy-stubs

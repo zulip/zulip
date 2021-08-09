@@ -7,6 +7,9 @@
 #
 # For details, see requirements/README.md .
 #
+backoff-stubs==1.10.0 \
+    --hash=sha256:03e995de0a70016c6fe758498e1ca811f1db517c00cbd06e3039c9e4f6ea2566
+    # via -r requirements/mypy.in
 lxml-stubs==0.2.0 \
     --hash=sha256:78f1bfb31b1f2af9a5c9e9a602ab1b589a64a5a3cc444931a39cdfd02d6864b0 \
     --hash=sha256:f0b3621ec2a23bea4145f484490c8b27383ecb407b3f8b079199ad4a0af4180b
