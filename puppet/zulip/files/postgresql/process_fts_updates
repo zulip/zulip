@@ -33,6 +33,7 @@ import os
 import select
 import sys
 import time
+from typing import Optional
 
 import psycopg2
 import psycopg2.extensions
@@ -136,6 +137,7 @@ except ImportError:
         pg_args["host"] = "localhost"
     pg_args["dbname"] = get_config(config_file, "postgresql", "database_name", "zulip")
 
+conn: Optional[psycopg2.extensions.connection]
 
 if options.nagios_check:
     conn = psycopg2.connect(**pg_args)

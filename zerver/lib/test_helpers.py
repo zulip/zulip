@@ -149,7 +149,7 @@ def queries_captured(
 
     def wrapper_execute(
         self: TimeTrackingCursor,
-        action: Callable[[str, ParamsT], None],
+        action: Callable[[Query, ParamsT], None],
         sql: Query,
         params: ParamsT,
     ) -> None:

@@ -93,7 +93,7 @@ models_with_message_key: List[Dict[str, Any]] = [
 @transaction.atomic(savepoint=False)
 def move_rows(
     base_model: Model,
-    raw_query: Composable,
+    raw_query: SQL,
     *,
     src_db_table: Optional[str] = None,
     returning_id: bool = False,
@@ -122,7 +122,7 @@ def move_rows(
 
 
 def run_archiving_in_chunks(
-    query: Composable,
+    query: SQL,
     type: int,
     realm: Optional[Realm] = None,
     chunk_size: int = MESSAGE_BATCH_SIZE,
