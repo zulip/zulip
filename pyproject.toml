@@ -80,7 +80,6 @@ module = [
     "openapi_core.*",
     "openapi_schema_validator.*",
     "premailer.*",
-    "psycopg2.*",
     "pyinotify.*",
     "pyoembed.*",
     "pyuca.*",

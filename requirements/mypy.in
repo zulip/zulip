@@ -19,6 +19,7 @@ types-oauthlib
 types-orjson
 types-polib
 types-Pillow
+types-psycopg2
 types-Pygments
 types-python-dateutil
 types-pytz

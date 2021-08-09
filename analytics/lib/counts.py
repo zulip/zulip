@@ -356,7 +356,7 @@ def do_pull_by_sql_query(
     group_by: Optional[Tuple[Type[models.Model], str]],
 ) -> int:
     if group_by is None:
-        subgroup = SQL("NULL")
+        subgroup: Composable = SQL("NULL")
         group_by_clause = SQL("")
     else:
         subgroup = Identifier(group_by[0]._meta.db_table, group_by[1])
