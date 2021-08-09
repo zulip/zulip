@@ -1672,6 +1672,10 @@ types-docutils==0.1.7 \
     --hash=sha256:241b901395b4da05de39fe4aa364acc55536029e51308e11673f51e74e861645 \
     --hash=sha256:61f1e12f3b090c28979338830f122d5bfc1a2287156a8c384b6142ce6d0aa8ec
     # via types-pygments
+types-jsonschema==3.2.0 \
+    --hash=sha256:1bbee1d5992f768f798aea96f05045821035e919a34136ea94f0444f31d08189 \
+    --hash=sha256:4a8f2e87aa7001361b4c3666565f8684f0e016517228396ac1bffd397d8c3fd0
+    # via -r requirements/mypy.in
 types-markdown==3.3.0 \
     --hash=sha256:b7bf9ce52a9f712c6a59b75350ed435d6fc1f1d5eafed44a321472bf96cf77db \
     --hash=sha256:cc18cc0fcc2ba8ab3f5233b2945db33e2e68ddad179708b2d2f08da08d33bc4e

@@ -13,6 +13,7 @@ types-chardet
 types-commonmark
 types-dataclasses
 types-decorator
+types-jsonschema
 types-Markdown
 types-orjson
 types-polib
