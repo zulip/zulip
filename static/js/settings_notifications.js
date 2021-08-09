@@ -51,28 +51,33 @@ function change_notification_setting(setting, value, status_element) {
 }
 
 function update_desktop_icon_count_display() {
-    $("#desktop_icon_count_display").val(user_settings.desktop_icon_count_display);
+    $("#user-notification-settings .desktop_icon_count_display").val(
+        user_settings.desktop_icon_count_display,
+    );
     unread_ui.update_unread_counts();
 }
 
 export function set_enable_digest_emails_visibility() {
+    const container = $("#user-notification-settings");
     if (page_params.realm_digest_emails_enabled) {
-        $("#enable_digest_emails_label").parent().show();
+        container.find(".enable_digest_emails_label").parent().show();
     } else {
-        $("#enable_digest_emails_label").parent().hide();
+        container.find(".enable_digest_emails_label").parent().hide();
     }
 }
 
 export function set_enable_marketing_emails_visibility() {
+    const container = $("#user-notification-settings");
     if (page_params.corporate_enabled) {
-        $("#enable_marketing_emails_label").parent().show();
+        container.find(".enable_marketing_emails_label").parent().show();
     } else {
-        $("#enable_marketing_emails_label").parent().hide();
+        container.find(".enable_marketing_emails_label").parent().hide();
     }
 }
 
 export function set_up() {
-    $("#notification-settings").on("change", "input, select", function (e) {
+    const container = $("#user-notification-settings");
+    $("#user-notification-settings").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const input_elem = $(e.currentTarget);
@@ -90,25 +95,25 @@ export function set_up() {
 
     update_desktop_icon_count_display();
 
-    $("#send_test_notification").on("click", () => {
+    container.find(".send_test_notification").on("click", () => {
         notifications.send_test_notification(
             $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
 
-    $("#play_notification_sound").on("click", () => {
+    container.find(".play_notification_sound").on("click", () => {
         if (user_settings.notification_sound !== "none") {
             $("#notification-sound-audio")[0].play();
         }
     });
 
-    const notification_sound_dropdown = $("#notification_sound");
+    const notification_sound_dropdown = container.find(".notification_sound");
     notification_sound_dropdown.val(user_settings.notification_sound);
 
-    $("#enable_sounds, #enable_stream_audible_notifications").on("change", () => {
+    container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
         if (
-            $("#enable_stream_audible_notifications").prop("checked") ||
-            $("#enable_sounds").prop("checked")
+            container.find(".enable_stream_audible_notifications").prop("checked") ||
+            container.find(".enable_sounds").prop("checked")
         ) {
             notification_sound_dropdown.prop("disabled", false);
             notification_sound_dropdown.parent().removeClass("control-label-disabled");
@@ -136,7 +141,9 @@ export function update_page() {
             continue;
         }
 
-        $(`#${CSS.escape(setting)}`).prop("checked", user_settings[setting]);
+        $("#user-notification-settings")
+            .find(`.${CSS.escape(setting)}`)
+            .prop("checked", user_settings[setting]);
     }
     rerender_ui();
 }

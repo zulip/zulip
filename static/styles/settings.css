@@ -128,8 +128,8 @@ h3 .fa-question-circle-o {
     padding: 0 20px;
 }
 
-#notification_sound,
-#play_notification_sound {
+.notification_sound,
+.play_notification_sound {
     display: inline;
     margin-right: 4px;
 
@@ -139,7 +139,7 @@ h3 .fa-question-circle-o {
     }
 }
 
-#notification_sound {
+.notification_sound {
     text-transform: capitalize;
 }
 
@@ -562,12 +562,12 @@ input[type="checkbox"] {
     margin-top: 4px;
 }
 
-#notification-settings {
+#user-notification-settings {
     .notification-reminder {
         text-align: left;
     }
 
-    #notification-table {
+    .notification-table {
         th,
         td {
             text-align: center;
@@ -1561,7 +1561,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 /* These have enough space for "Admins and full members" in German. */
-#desktop_icon_count_display,
+.desktop_icon_count_display,
 #id_realm_waiting_period_setting,
 #id_realm_create_stream_policy,
 #id_realm_invite_to_stream_policy,
