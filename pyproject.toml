@@ -72,7 +72,6 @@ module = [
     "gcm.*",
     "gitlint.*",
     "jsonref.*",
-    "jsonschema.*",
     "ldap.*",
     "markdown_include.*",
     "moto.*",
