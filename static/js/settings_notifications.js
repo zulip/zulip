@@ -103,7 +103,7 @@ export function set_up() {
 
     container.find(".play_notification_sound").on("click", () => {
         if (user_settings.notification_sound !== "none") {
-            $("#notification-sound-audio")[0].play();
+            $("#user-notification-sound-audio")[0].play();
         }
     });
 

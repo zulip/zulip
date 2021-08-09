@@ -95,13 +95,18 @@ export function initialize() {
 function update_notification_sound_source() {
     const notification_sound = user_settings.notification_sound;
     const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
-    $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
-    $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
+    const container_elem = $("#user-notification-sound-audio");
+    container_elem
+        .find(".notification-sound-source-ogg")
+        .attr("src", `${audio_file_without_extension}.ogg`);
+    container_elem
+        .find(".notification-sound-source-mp3")
+        .attr("src", `${audio_file_without_extension}.mp3`);
 
     if (notification_sound !== "none") {
         // Load it so that it is ready to be played; without this the old sound
         // is played.
-        $("#notification-sound-audio")[0].load();
+        container_elem[0].load();
     }
 }
 
@@ -503,7 +508,7 @@ export function received_messages(messages) {
             });
         }
         if (should_send_audible_notification(message)) {
-            $("#notification-sound-audio")[0].play();
+            $("#user-notification-sound-audio")[0].play();
         }
     }
 }
