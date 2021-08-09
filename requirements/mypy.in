@@ -10,6 +10,7 @@ sqlalchemy-stubs
 types-boto
 types-certifi
 types-chardet
+types-commonmark
 types-dataclasses
 types-decorator
 types-Markdown
