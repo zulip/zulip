@@ -1656,6 +1656,10 @@ types-chardet==0.1.3 \
     --hash=sha256:6927c7ed3d477f51fbea5c708d79f9b13183b2fc229ca837ca1cdc1f4c43d699 \
     --hash=sha256:f9e6dfa655a2a7228e8128ef0f70a8b77f1176514ec2c055ca414ee883af1246
     # via -r requirements/mypy.in
+types-commonmark==0.9.0 \
+    --hash=sha256:556d6c7a5951ddf0f32047cf580b32b812f1f9045b507cc445253204bb800892 \
+    --hash=sha256:c35a1fa086555c607663d658808c9231c807df1cacb50dd088f2915e3d6efa96
+    # via -r requirements/mypy.in
 types-dataclasses==0.1.5 \
     --hash=sha256:7b5f4099fb21c209f2df3a83c2b64308c29955769d610a457244dc0eebe1cafc \
     --hash=sha256:c19491cfb981bff9cafd9c113c291a7a54adccc6298ded8ca3de0d7abe211984
