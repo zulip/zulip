@@ -30,7 +30,7 @@ def create_square_image(png: bytes) -> bytes:
         return png
 
     size = max(img.height, img.width)
-    new_img = Image.new("RGBA", (size, size), color=None)
+    new_img = Image.new("RGBA", (size, size), color=(0, 0, 0, 0))
     padding = int(abs(img.height - img.width) / 2)
     position = (0, padding) if img.height < img.width else (padding, 0)
     new_img.paste(img, position)
