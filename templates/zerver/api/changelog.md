@@ -186,7 +186,7 @@ below features are supported.
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
   [`GET /users/{email}`](/api/get-user-by-email) and
-  [`GET /users/me`](/api/get-own-Added): is `user_billing_admin` field to
+  [`GET /users/me`](/api/get-own-user): Added is `user_billing_admin` field to
   returned user objects.
 * [`GET /events`](/api/get-events): Added `is_billing_admin` field to
   user objects sent in `realm_user` events.
