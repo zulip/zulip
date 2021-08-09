@@ -216,7 +216,7 @@ def support(
             else:
                 update_sponsorship_status(realm, False, acting_user=acting_user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
-        elif approve_sponsorship is True:
+        elif approve_sponsorship:
             do_approve_sponsorship(realm, acting_user=acting_user)
             context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif downgrade_method is not None:
@@ -236,7 +236,7 @@ def support(
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
-        elif scrub_realm is True:
+        elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
             context["success_message"] = f"{realm.string_id} scrubbed."
 
