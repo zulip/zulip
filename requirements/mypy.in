@@ -15,6 +15,7 @@ types-dataclasses
 types-decorator
 types-jsonschema
 types-Markdown
+types-oauthlib
 types-orjson
 types-polib
 types-Pygments

@@ -76,7 +76,6 @@ module = [
     "markdown_include.*",
     "moto.*",
     "netifaces.*",
-    "oauthlib.*",
     "onelogin.*",
     "openapi_core.*",
     "openapi_schema_validator.*",

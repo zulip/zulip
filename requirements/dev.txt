@@ -1680,6 +1680,10 @@ types-markdown==3.3.0 \
     --hash=sha256:b7bf9ce52a9f712c6a59b75350ed435d6fc1f1d5eafed44a321472bf96cf77db \
     --hash=sha256:cc18cc0fcc2ba8ab3f5233b2945db33e2e68ddad179708b2d2f08da08d33bc4e
     # via -r requirements/mypy.in
+types-oauthlib==3.1.1 \
+    --hash=sha256:d87522d517543a56d3621e9832bbb0de470f719212ebcb452206b8d85fb4689d \
+    --hash=sha256:f5e0ceeaddbd54c08312ff4dcde40ce23501ab78fb2e2cbbb6fbb24d0bfc505a
+    # via -r requirements/mypy.in
 types-orjson==0.1.1 \
     --hash=sha256:7454bfbaed27900a844bb9d8e211b69f1c335f0b9e3541d4950a793db41c104d \
     --hash=sha256:92f85986261ea1a5cb215e4b35e4016631d35163a372f023918750f340ea737f
