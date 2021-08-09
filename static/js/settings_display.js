@@ -40,17 +40,22 @@ function change_display_setting(data, status_element, success_msg_html, sticky) 
 
 export function set_up() {
     meta.loaded = true;
-    $("#display-settings-status").hide();
+    const container = $("#user-display-settings");
+    container.find(".display-settings-status").hide();
 
-    $("#demote_inactive_streams").val(user_settings.demote_inactive_streams);
+    container.find(".demote_inactive_streams").val(user_settings.demote_inactive_streams);
 
-    $("#color_scheme").val(user_settings.color_scheme);
+    container.find(".color_scheme").val(user_settings.color_scheme);
 
-    $("#default_view").val(user_settings.default_view);
+    container.find(".default_view").val(user_settings.default_view);
 
-    $("#twenty_four_hour_time").val(JSON.stringify(user_settings.twenty_four_hour_time));
+    container
+        .find(".twenty_four_hour_time")
+        .val(JSON.stringify(user_settings.twenty_four_hour_time));
 
-    $(`.emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`).prop("checked", true);
+    container
+        .find(`.emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`)
+        .prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").on("click", () => {
         overlays.close_modal("#default_language_modal");
@@ -58,14 +63,14 @@ export function set_up() {
 
     const all_display_settings = settings_config.get_all_display_settings();
     for (const setting of all_display_settings.settings.user_display_settings) {
-        $(`#${CSS.escape(setting)}`).on("change", function () {
+        container.find(`.${CSS.escape(setting)}`).on("change", function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop("checked"));
 
             if (["left_side_userlist"].includes(setting)) {
                 change_display_setting(
                     data,
-                    "#display-settings-status",
+                    "#user-display-settings .display-settings-status",
                     $t_html(
                         {
                             defaultMessage:
@@ -76,7 +81,7 @@ export function set_up() {
                     true,
                 );
             } else {
-                change_display_setting(data, "#display-settings-status");
+                change_display_setting(data, "#user-display-settings .display-settings-status");
             }
         });
     }
@@ -91,11 +96,11 @@ export function set_up() {
         const data = {default_language: setting_value};
 
         const new_language = $link.attr("data-name");
-        $("#default_language_name").text(new_language);
+        container.find(".default_language_name").text(new_language);
 
         change_display_setting(
             data,
-            "#language-settings-status",
+            "#user-display-settings .language-settings-status",
             $t_html(
                 {
                     defaultMessage:
@@ -107,43 +112,43 @@ export function set_up() {
         );
     });
 
-    $("#default_language").on("click", (e) => {
+    container.find(".default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal("#default_language_modal");
     });
 
-    $("#demote_inactive_streams").on("change", function () {
+    container.find(".demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, "#display-settings-status");
+        change_display_setting(data, "#user-display-settings .display-settings-status");
     });
 
-    $("#color_scheme").on("change", function () {
+    container.find(".color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
-        change_display_setting(data, "#display-settings-status");
+        change_display_setting(data, "#user-display-settings .display-settings-status");
     });
 
-    $("#default_view").on("change", function () {
+    container.find(".default_view").on("change", function () {
         const data = {default_view: this.value};
-        change_display_setting(data, "#display-settings-status");
+        change_display_setting(data, "#user-display-settings .display-settings-status");
     });
 
     $("body").on("click", ".reload_link", () => {
         window.location.reload();
     });
 
-    $("#twenty_four_hour_time").on("change", function () {
+    container.find(".twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, "#time-settings-status");
+        change_display_setting(data, "#user-display-settings .time-settings-status");
     });
 
-    $(".emojiset_choice").on("click", function () {
+    container.find(".emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
         const current_emojiset = user_settings.emojiset;
         if (current_emojiset === data.emojiset) {
             return;
         }
-        const spinner = $("#emoji-settings-status").expectOne();
+        const spinner = container.find(".emoji-settings-status").expectOne();
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -154,15 +159,15 @@ export function set_up() {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $("#emoji-settings-status").expectOne(),
+                    container.find(".emoji-settings-status").expectOne(),
                 );
             },
         });
     });
 
-    $("#translate_emoticons").on("change", function () {
+    container.find(".translate_emoticons").on("change", function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, "#emoji-settings-status");
+        change_display_setting(data, "#user-display-settings .emoji-settings-status");
     });
 }
 
@@ -176,24 +181,28 @@ export async function report_emojiset_change() {
 
     await emojisets.select(user_settings.emojiset);
 
-    if ($("#emoji-settings-status").length) {
-        loading.destroy_indicator($("#emoji-settings-status"));
+    const spinner = $("#user-display-settings").find(".emoji-settings-status");
+    if (spinner.length) {
+        loading.destroy_indicator(spinner);
         ui_report.success(
             $t_html({defaultMessage: "Emojiset changed successfully!"}),
-            $("#emoji-settings-status").expectOne(),
+            spinner.expectOne(),
         );
-        const spinner = $("#emoji-settings-status").expectOne();
+        spinner.expectOne();
         settings_ui.display_checkmark(spinner);
     }
 }
 
 export function update_page() {
-    $("#left_side_userlist").prop("checked", user_settings.left_side_userlist);
-    $("#default_language_name").text(default_language_name);
-    $("#translate_emoticons").prop("checked", user_settings.translate_emoticons);
-    $("#twenty_four_hour_time").val(JSON.stringify(user_settings.twenty_four_hour_time));
-    $("#color_scheme").val(JSON.stringify(user_settings.color_scheme));
-    $("#default_view").val(user_settings.default_view);
+    const container = $("#user-display-settings");
+    container.find(".left_side_userlist").prop("checked", user_settings.left_side_userlist);
+    container.find(".default_language_name").text(default_language_name);
+    container.find(".translate_emoticons").prop("checked", user_settings.translate_emoticons);
+    container
+        .find(".twenty_four_hour_time")
+        .val(JSON.stringify(user_settings.twenty_four_hour_time));
+    container.find(".color_scheme").val(JSON.stringify(user_settings.color_scheme));
+    container.find(".default_view").val(user_settings.default_view);
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function

@@ -1,15 +1,15 @@
-<div id="display-settings" class="settings-section" data-name="display-settings">
+<div id="user-display-settings" class="settings-section" data-name="display-settings">
     <form class="display-settings-form">
-        <div id="user-lang-settings">
+        <div class="lang-settings">
             <!-- this is inline block so that the alert notification can sit beside
             it. If there's not an alert, don't make it inline-block. -->
             <h3 class="inline-block">{{t "Language settings" }}</h3>
-            <div class="alert-notification" id="language-settings-status"></div>
+            <div class="alert-notification language-settings-status"></div>
 
             <div class="input-group">
                 <label class="inline-block title">{{t "Default language" }}</label>
-                <button id="default_language" type="button" class="button btn-link rounded small inline-block">
-                    <span id="default_language_name">{{default_language_name}}</span>
+                <button type="button" class="default_language button btn-link rounded small inline-block">
+                    <span class="default_language_name">{{default_language_name}}</span>
                     <i class="fa fa-pencil"></i>
                 </button>
             </div>
@@ -17,15 +17,15 @@
             {{> ../default_language_modal language_list=language_list_dbl_col}}
         </div>
 
-        <div id="user-display-settings">
+        <div class="display-settings">
             <h3 class="inline-block">{{t "Display settings" }}</h3>
-            <div class="alert-notification" id="display-settings-status"></div>
+            <div class="alert-notification display-settings-status"></div>
 
             <div class="input-group">
                 <label for="default_view" class="dropdown-title">{{t "Default view" }}
                     {{> ../help_link_widget link="/help/change-default-view" }}
                 </label>
-                <select name="default_view" id="default_view">
+                <select name="default_view" class="default_view">
                     {{> dropdown_options_widget option_values=default_view_values}}
                 </select>
             </div>
@@ -33,7 +33,7 @@
             <div class="input-group">
                 <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
                 </label>
-                <select name="color_scheme" id="color_scheme">
+                <select name="color_scheme" class="color_scheme">
                     {{> dropdown_options_widget option_values=color_scheme_values}}
                 </select>
             </div>
@@ -50,19 +50,19 @@
                 <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
                     {{> ../help_link_widget link="/help/manage-inactive-streams" }}
                 </label>
-                <select name="demote_inactive_streams" id="demote_inactive_streams">
+                <select name="demote_inactive_streams" class="demote_inactive_streams">
                     {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
                 </select>
             </div>
         </div>
 
-        <div id="user-time-settings">
+        <div class="time-settings">
             <h3 class="inline-block">{{t "Time settings" }}</h3>
-            <div class="alert-notification" id="time-settings-status"></div>
+            <div class="alert-notification time-settings-status"></div>
 
             <div class="input-group">
                 <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
-                <select name="twenty_four_hour_time" id="twenty_four_hour_time">
+                <select name="twenty_four_hour_time" class="twenty_four_hour_time">
                     {{#each twenty_four_hour_time_values}}
                     <option value='{{ this.value }}'>{{ this.description }}</option>
                     {{/each}}
@@ -70,9 +70,9 @@
             </div>
         </div>
 
-        <div id="user-emoji-settings">
+        <div class="emoji-settings">
             <h3 class="inline-block light">{{t "Emoji settings" }}</h3>
-            <div class="alert-notification" id="emoji-settings-status"></div>
+            <div class="alert-notification emoji-settings-status"></div>
 
             <div class="input-group">
                 <div class="emojiset_choices grey-box">
