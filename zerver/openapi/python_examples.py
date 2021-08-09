@@ -233,7 +233,7 @@ def get_members(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")
-    assert result["members"][0]["avatar_url"] is None
+    assert result["members"][0]["avatar_url"] is not None
 
     # {code_example|start}
     # You may pass the `include_custom_profile_fields` query parameter as follows:
@@ -246,6 +246,7 @@ def get_members(client: Client) -> None:
             assert member.get("profile_data", None) is None
         else:
             assert member.get("profile_data", None) is not None
+        assert member["avatar_url"] is None
 
 
 @openapi_test_function("/users/{email}:get")
