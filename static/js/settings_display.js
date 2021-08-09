@@ -178,7 +178,6 @@ export async function report_emojiset_change() {
 
     if ($("#emoji-settings-status").length) {
         loading.destroy_indicator($("#emoji-settings-status"));
-        $("#emojiset_select").val(user_settings.emojiset);
         ui_report.success(
             $t_html({defaultMessage: "Emojiset changed successfully!"}),
             $("#emoji-settings-status").expectOne(),
