@@ -51,7 +51,6 @@ from zerver.lib.upload import (
     ZulipUploadBackend,
     delete_export_tarball,
     delete_message_image,
-    exif_rotate,
     resize_avatar,
     resize_emoji,
     sanitize_name,
@@ -2151,38 +2150,6 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         attachment.delete()
         self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
         self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
-
-
-class ExifRotateTests(ZulipTestCase):
-    def test_image_do_not_rotate(self) -> None:
-        # Image does not have _getexif method.
-        with get_test_image_file("img.png") as f, Image.open(f) as img:
-            result = exif_rotate(img)
-            self.assertEqual(result, img)
-
-        # Image with no exif data.
-        with get_test_image_file("img_no_exif.jpg") as f, Image.open(f) as img:
-            result = exif_rotate(img)
-            self.assertEqual(result, img)
-
-        # Orientation of the image is 1.
-        with get_test_image_file("img.jpg") as f, Image.open(f) as img:
-            result = exif_rotate(img)
-            self.assertEqual(result, img)
-
-    def test_image_rotate(self) -> None:
-        with mock.patch("PIL.Image.Image.rotate") as rotate:
-            with get_test_image_file("img_orientation_3.jpg") as f, Image.open(f) as img:
-                exif_rotate(img)
-                rotate.assert_called_with(180, expand=True)
-
-            with get_test_image_file("img_orientation_6.jpg") as f, Image.open(f) as img:
-                exif_rotate(img)
-                rotate.assert_called_with(270, expand=True)
-
-            with get_test_image_file("img_orientation_8.jpg") as f, Image.open(f) as img:
-                exif_rotate(img)
-                rotate.assert_called_with(90, expand=True)
 
 
 class DecompressionBombTests(ZulipTestCase):

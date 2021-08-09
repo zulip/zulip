@@ -25,7 +25,7 @@ from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from jinja2.utils import Markup as mark_safe
-from PIL import ExifTags, Image, ImageOps
+from PIL import Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
 from PIL.Image import DecompressionBombError
 
@@ -103,33 +103,10 @@ class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
 
-name_to_tag_num = {name: num for num, name in ExifTags.TAGS.items()}
-
-# https://stackoverflow.com/a/6218425
-def exif_rotate(image: Image) -> Image:
-    if not hasattr(image, "_getexif"):
-        return image
-    exif_data = image._getexif()
-    if exif_data is None:
-        return image
-
-    exif_dict = dict(exif_data.items())
-    orientation = exif_dict.get(name_to_tag_num["Orientation"])
-
-    if orientation == 3:
-        return image.rotate(180, expand=True)
-    elif orientation == 6:
-        return image.rotate(270, expand=True)
-    elif orientation == 8:
-        return image.rotate(90, expand=True)
-
-    return image
-
-
 def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
-        im = exif_rotate(im)
+        im = ImageOps.exif_transpose(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
@@ -145,7 +122,7 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
 def resize_logo(image_data: bytes) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
-        im = exif_rotate(im)
+        im = ImageOps.exif_transpose(im)
         im.thumbnail((8 * DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
     except OSError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
@@ -202,7 +179,7 @@ def resize_emoji(image_data: bytes, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
             )
             return resize_gif(im, size) if should_resize else image_data
         else:
-            im = exif_rotate(im)
+            im = ImageOps.exif_transpose(im)
             im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
             out = io.BytesIO()
             im.save(out, format=image_format)
