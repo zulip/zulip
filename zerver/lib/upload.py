@@ -148,7 +148,9 @@ def resize_gif(im: GifImageFile, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
         new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
         duration_info.append(im.info["duration"])
-        disposals.append(im.disposal_method)
+        disposals.append(
+            im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
+        )
     out = io.BytesIO()
     frames[0].save(
         out,
@@ -168,6 +170,7 @@ def resize_emoji(image_data: bytes, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
         if image_format == "GIF":
+            assert isinstance(im, GifImageFile)
             # There are a number of bugs in Pillow.GifImagePlugin which cause
             # results in resized gifs being broken. To work around this we
             # only resize under certain conditions to minimize the chance of

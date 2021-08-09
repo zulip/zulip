@@ -18,6 +18,7 @@ types-Markdown
 types-oauthlib
 types-orjson
 types-polib
+types-Pillow
 types-Pygments
 types-python-dateutil
 types-pytz
