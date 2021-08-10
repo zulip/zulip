@@ -2,7 +2,18 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
+from typing import (
+    Any,
+    AnyStr,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    MutableMapping,
+    Optional,
+    Tuple,
+)
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
@@ -394,7 +405,8 @@ class LogRequests(MiddlewareMixin):
                 requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
 
         if response.streaming:
-            content_iter = response.streaming_content
+            assert isinstance(response, StreamingHttpResponse)
+            content_iter: Optional[Iterator[bytes]] = response.streaming_content
             content = None
         else:
             content = response.content
@@ -499,6 +511,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         i18n_patterns_used, _ = is_language_prefix_patterns_used(urlconf)
         if not (i18n_patterns_used and language_from_path):
             patch_vary_headers(response, ("Accept-Language",))
+        assert language is not None
         response.setdefault("Content-Language", language)
 
         # An additional responsibility of our override of this middleware is to save the user's language

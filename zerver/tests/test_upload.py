@@ -12,6 +12,7 @@ from unittest.mock import patch
 import botocore.exceptions
 import orjson
 from django.conf import settings
+from django.http.response import StreamingHttpResponse
 from django.utils.timezone import now as timezone_now
 from django_sendfile.utils import _get_sendfile
 from PIL import Image
@@ -100,6 +101,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
         response = self.api_get(self.example_user("hamlet"), uri)
         self.assertEqual(response.status_code, 200)
+        assert isinstance(response, StreamingHttpResponse)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
 
@@ -133,6 +135,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         response = self.client_get(uri, {"api_key": get_api_key(user_profile)})
         self.assertEqual(response.status_code, 200)
+        assert isinstance(response, StreamingHttpResponse)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
 
@@ -596,6 +599,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login_user(user_1)
         response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 200)
+        assert isinstance(response, StreamingHttpResponse)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
         self.logout()
@@ -635,6 +639,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
@@ -645,6 +650,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
@@ -700,6 +706,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
@@ -710,6 +717,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
@@ -720,6 +728,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
@@ -783,6 +792,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         # If we were accidentally one query per message, this would be 20+
@@ -815,6 +825,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         for user in subscribed_users + unsubscribed_users:
             self.login_user(user)
             response = self.client_get(uri)
+            assert isinstance(response, StreamingHttpResponse)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
             self.logout()
@@ -1124,6 +1135,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
             if rfname is not None:
                 response = self.client_get(url)
+                assert isinstance(response, StreamingHttpResponse)
                 data = b"".join(response.streaming_content)
                 self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
@@ -1376,6 +1388,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
             if rfname is not None:
                 response = self.client_get(url)
+                assert isinstance(response, StreamingHttpResponse)
                 data = b"".join(response.streaming_content)
                 self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
@@ -1547,6 +1560,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
             if rfname is not None:
                 response = self.client_get(logo_url)
+                assert isinstance(response, StreamingHttpResponse)
                 data = b"".join(response.streaming_content)
                 # size should be 100 x 100 because thumbnail keeps aspect ratio
                 # while trying to fit in a 800 x 100 box without losing part of the image

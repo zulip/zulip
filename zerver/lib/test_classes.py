@@ -34,6 +34,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
+from django.http.response import StreamingHttpResponse
 from django.test import TestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
@@ -852,6 +853,7 @@ Output:
 
     def assert_url_serves_contents_of_file(self, url: str, result: bytes) -> None:
         response = self.client_get(url)
+        assert isinstance(response, StreamingHttpResponse)
         data = b"".join(response.streaming_content)
         self.assertEqual(result, data)
 
