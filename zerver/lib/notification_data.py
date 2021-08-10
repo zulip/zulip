@@ -13,9 +13,10 @@ class UserMessageNotificationsData:
     pm_push_notify: bool
     mention_email_notify: bool
     mention_push_notify: bool
+    wildcard_mention_email_notify: bool
+    wildcard_mention_push_notify: bool
     stream_push_notify: bool
     stream_email_notify: bool
-    wildcard_mention_notify: bool
     sender_is_muted: bool
 
     def __post_init__(self) -> None:
@@ -41,29 +42,40 @@ class UserMessageNotificationsData:
         wildcard_mention_user_ids: Set[int],
         muted_sender_user_ids: Set[int],
     ) -> "UserMessageNotificationsData":
-        wildcard_mention_notify = (
-            user_id in wildcard_mention_user_ids and "wildcard_mentioned" in flags
-        )
 
+        # `wildcard_mention_user_ids` are those user IDs for whom wildcard mentions should
+        # obey notification settings of personal mentions. Hence, it isn't an independent
+        # notification setting and acts as a wrapper.
         pm_email_notify = user_id not in pm_mention_email_disabled_user_ids and private_message
         mention_email_notify = (
             user_id not in pm_mention_email_disabled_user_ids and "mentioned" in flags
+        )
+        wildcard_mention_email_notify = (
+            user_id in wildcard_mention_user_ids
+            and user_id not in pm_mention_email_disabled_user_ids
+            and "wildcard_mentioned" in flags
         )
 
         pm_push_notify = user_id not in pm_mention_push_disabled_user_ids and private_message
         mention_push_notify = (
             user_id not in pm_mention_push_disabled_user_ids and "mentioned" in flags
         )
+        wildcard_mention_push_notify = (
+            user_id in wildcard_mention_user_ids
+            and user_id not in pm_mention_push_disabled_user_ids
+            and "wildcard_mentioned" in flags
+        )
         return cls(
             user_id=user_id,
             pm_email_notify=pm_email_notify,
             mention_email_notify=mention_email_notify,
+            wildcard_mention_email_notify=wildcard_mention_email_notify,
             pm_push_notify=pm_push_notify,
             mention_push_notify=mention_push_notify,
+            wildcard_mention_push_notify=wildcard_mention_push_notify,
             online_push_enabled=(user_id in online_push_user_ids),
             stream_push_notify=(user_id in stream_push_user_ids),
             stream_email_notify=(user_id in stream_email_user_ids),
-            wildcard_mention_notify=wildcard_mention_notify,
             sender_is_muted=(user_id in muted_sender_user_ids),
         )
 
@@ -95,7 +107,7 @@ class UserMessageNotificationsData:
             return NotificationTriggers.PRIVATE_MESSAGE
         elif self.mention_push_notify:
             return NotificationTriggers.MENTION
-        elif self.wildcard_mention_notify:
+        elif self.wildcard_mention_push_notify:
             return NotificationTriggers.WILDCARD_MENTION
         elif self.stream_push_notify:
             return NotificationTriggers.STREAM_PUSH
@@ -122,7 +134,7 @@ class UserMessageNotificationsData:
             return NotificationTriggers.PRIVATE_MESSAGE
         elif self.mention_email_notify:
             return NotificationTriggers.MENTION
-        elif self.wildcard_mention_notify:
+        elif self.wildcard_mention_email_notify:
             return NotificationTriggers.WILDCARD_MENTION
         elif self.stream_email_notify:
             return NotificationTriggers.STREAM_EMAIL
