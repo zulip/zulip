@@ -3,15 +3,12 @@
 const {media_breakpoints} = require("./static/js/css_variables");
 
 module.exports = {
-    plugins: {
-        // Warning: despite appearances, order is significant
-        "postcss-nested": {},
-        "postcss-extend-rule": {},
-        "postcss-simple-vars": {
-            variables: media_breakpoints,
-        },
-        "postcss-calc": {},
-        "postcss-media-minmax": {},
-        autoprefixer: {},
-    },
+    plugins: [
+        require("postcss-nested"),
+        require("postcss-extend-rule"),
+        require("postcss-simple-vars")({variables: media_breakpoints}),
+        require("postcss-calc"),
+        require("postcss-media-minmax"),
+        require("autoprefixer"),
+    ],
 };
