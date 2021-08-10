@@ -1285,7 +1285,7 @@ def _check_key_metadata(
         if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
             email_gateway_bot.id
         ):
-            raise AssertionError(f"Key metadata problem: {key.name} {key.metadata} / {realm.id}")
+            raise AssertionError(f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}")
         # Email gateway bot sends messages, potentially including attachments, cross-realm.
         print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
     elif processing_avatars:
