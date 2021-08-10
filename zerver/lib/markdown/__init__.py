@@ -1482,7 +1482,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if db_data is not None:
             active_realm_emoji = db_data["active_realm_emoji"]
 
-        if self.md.zulip_message and name in active_realm_emoji:
+        if name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
         elif name == "zulip":
             return make_realm_emoji(
@@ -1790,7 +1790,7 @@ class UserMentionPattern(CompiledInlineProcessor):
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data = self.md.zulip_db_data
-        if self.md.zulip_message and db_data is not None:
+        if db_data is not None:
             wildcard = mention.user_mention_matches_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
@@ -1845,7 +1845,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         silent = m.group("silent") == "_"
         db_data = self.md.zulip_db_data
 
-        if self.md.zulip_message and db_data is not None:
+        if db_data is not None:
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
                 if not silent:
@@ -1883,24 +1883,22 @@ class StreamPattern(CompiledInlineProcessor):
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
-        if self.md.zulip_message:
-            stream = self.find_stream_by_name(name)
-            if stream is None:
-                return None, None, None
-            el = Element("a")
-            el.set("class", "stream")
-            el.set("data-stream-id", str(stream["id"]))
-            # TODO: We should quite possibly not be specifying the
-            # href here and instead having the browser auto-add the
-            # href when it processes a message with one of these, to
-            # provide more clarity to API clients.
-            # Also do the same for StreamTopicPattern.
-            stream_url = encode_stream(stream["id"], name)
-            el.set("href", f"/#narrow/stream/{stream_url}")
-            text = f"#{name}"
-            el.text = markdown.util.AtomicString(text)
-            return el, m.start(), m.end()
-        return None, None, None
+        stream = self.find_stream_by_name(name)
+        if stream is None:
+            return None, None, None
+        el = Element("a")
+        el.set("class", "stream")
+        el.set("data-stream-id", str(stream["id"]))
+        # TODO: We should quite possibly not be specifying the
+        # href here and instead having the browser auto-add the
+        # href when it processes a message with one of these, to
+        # provide more clarity to API clients.
+        # Also do the same for StreamTopicPattern.
+        stream_url = encode_stream(stream["id"], name)
+        el.set("href", f"/#narrow/stream/{stream_url}")
+        text = f"#{name}"
+        el.text = markdown.util.AtomicString(text)
+        return el, m.start(), m.end()
 
 
 class StreamTopicPattern(CompiledInlineProcessor):
@@ -1917,21 +1915,19 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
-        if self.md.zulip_message:
-            stream = self.find_stream_by_name(stream_name)
-            if stream is None or topic_name is None:
-                return None, None, None
-            el = Element("a")
-            el.set("class", "stream-topic")
-            el.set("data-stream-id", str(stream["id"]))
-            stream_url = encode_stream(stream["id"], stream_name)
-            topic_url = hash_util_encode(topic_name)
-            link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
-            el.set("href", link)
-            text = f"#{stream_name} > {topic_name}"
-            el.text = markdown.util.AtomicString(text)
-            return el, m.start(), m.end()
-        return None, None, None
+        stream = self.find_stream_by_name(stream_name)
+        if stream is None or topic_name is None:
+            return None, None, None
+        el = Element("a")
+        el.set("class", "stream-topic")
+        el.set("data-stream-id", str(stream["id"]))
+        stream_url = encode_stream(stream["id"], stream_name)
+        topic_url = hash_util_encode(topic_name)
+        link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+        el.set("href", link)
+        text = f"#{stream_name} > {topic_name}"
+        el.text = markdown.util.AtomicString(text)
+        return el, m.start(), m.end()
 
 
 def possible_linked_stream_names(content: str) -> Set[str]:
@@ -1973,7 +1969,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         db_data = self.md.zulip_db_data
-        if self.md.zulip_message and db_data is not None:
+        if db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
             #
