@@ -22,7 +22,10 @@ run_test("all_notifications", () => {
     // is passed. In this case, we articulate that with
     // wildcard_mentions_notify being undefined, which will be
     // the case, if a wrong setting_name is passed.
-    assert.throws(settings_config.all_notifications, "Incorrect setting_name passed");
+    assert.throws(settings_config.all_notifications, {
+        name: "TypeError",
+        message: "Incorrect setting_name passed: wildcard_mentions_notify",
+    });
 
     user_settings.wildcard_mentions_notify = false;
     const notifications = settings_config.all_notifications();

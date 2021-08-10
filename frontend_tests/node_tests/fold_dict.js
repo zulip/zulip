@@ -94,9 +94,8 @@ run_test("clear", () => {
 run_test("undefined_keys", () => {
     const d = new FoldDict();
 
-    assert.throws(
-        () => d.has(undefined),
-        TypeError,
-        "Tried to call a FoldDict method with an undefined key.",
-    );
+    assert.throws(() => d.has(undefined), {
+        name: "TypeError",
+        message: "Tried to call a FoldDict method with an undefined key.",
+    });
 });
