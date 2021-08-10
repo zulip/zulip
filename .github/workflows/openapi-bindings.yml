@@ -39,33 +39,6 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Create cache directories
-        run: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
-          sudo mkdir -p "${dirs[@]}"
-          sudo chown -R github "${dirs[@]}"
-
-      - name: Restore node_modules cache
-        uses: actions/cache@v2
-        with:
-          path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-bionic-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: v1-yarn-deps-bionic
-
-      - name: Restore python cache
-        uses: actions/cache@v2
-        with:
-          path: /srv/zulip-venv-cache
-          key: v1-venv-bionic-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-bionic
-
-      - name: Restore emoji cache
-        uses: actions/cache@v2
-        with:
-          path: /srv/zulip-emoji-cache
-          key: v1-emoji-bionic-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-          restore-keys: v1-emoji-bionic
-
       - name: Do Bionic hack
         run: |
           # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
