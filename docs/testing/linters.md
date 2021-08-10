@@ -60,15 +60,14 @@ note are:
 Finally, you can rely on our continuous integration setup to run linters for you,
 but it is good practice to run lint checks locally.
 
-```eval_rst
-.. important::
-    We provide a
-    `Git pre-commit hook <../git/zulip-tools.html#set-up-git-repo-script>`_
-    that can automatically run ``tools/lint`` on just the files that
-    changed (in a few 100ms) whenever you make a commit.  This can save
-    you a lot of time, by automatically detecting linter errors as you
-    make them.
-```
+:::{important}
+We provide a
+[Git pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script)
+that can automatically run `tools/lint` on just the files that
+changed (in a few 100ms) whenever you make a commit.  This can save
+you a lot of time, by automatically detecting linter errors as you
+make them.
+:::
 
 **Note:** The linters only check files that git tracks. Remember to `git add`
 new files before running lint checks.

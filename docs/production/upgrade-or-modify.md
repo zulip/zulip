@@ -212,12 +212,11 @@ the version corresponding to the `restart-server` path you call.
 
 ## Preserving local changes to service configuration files
 
-```eval_rst
-.. warning::
-    If you have modified service configuration files installed by
-    Zulip (e.g. the nginx configuration), the Zulip upgrade process will
-    overwrite your configuration when it does the ``puppet apply``.
-```
+:::{warning}
+If you have modified service configuration files installed by
+Zulip (e.g. the nginx configuration), the Zulip upgrade process will
+overwrite your configuration when it does the `puppet apply`.
+:::
 
 You can test whether this will happen assuming no upstream changes to
 the configuration using `scripts/zulip-puppet-apply` (without the

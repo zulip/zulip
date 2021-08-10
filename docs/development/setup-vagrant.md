@@ -162,10 +162,9 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 #### Windows 10
 
-```eval_rst
-.. note::
-    We recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2>`_.
-```
+:::{note}
+We recommend using [WSL 2 for Windows development](../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
+:::
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
 2. Install [VirtualBox][vbox-dl] (latest).

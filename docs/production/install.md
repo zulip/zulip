@@ -121,9 +121,7 @@ server.
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
 
-```eval_rst
-.. _installer-details:
-```
+(installer-details)=
 ## Details: What the installer does
 
 The install script does several things:

@@ -144,15 +144,14 @@ problems and how to resolve them:
 
 ### Restrict unattended upgrades
 
-```eval_rst
-.. important::
-    We recommend that you disable or limit Ubuntu's unattended-upgrades
-    to skip some server packages.  With unattended upgrades enabled but
-    not limited, the moment a new PostgreSQL release is published, your
-    Zulip server will have its PostgreSQL server upgraded (and thus
-    restarted).  If you do disable unattended-upgrades, do not forget to
-    regularly install apt upgrades manually!
-```
+:::{important}
+We recommend that you disable or limit Ubuntu's unattended-upgrades
+to skip some server packages.  With unattended upgrades enabled but
+not limited, the moment a new PostgreSQL release is published, your
+Zulip server will have its PostgreSQL server upgraded (and thus
+restarted).  If you do disable unattended-upgrades, do not forget to
+regularly install apt upgrades manually!
+:::
 
 Restarting one of the system services that Zulip uses (PostgreSQL,
 memcached, Redis, or Rabbitmq) will drop the connections that

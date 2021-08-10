@@ -29,14 +29,13 @@ polling option is convenient for testing/developing this feature
 because it doesn't require a public IP address or setting up MX
 records in DNS.
 
-```eval_rst
-.. note::
-    Incoming emails are rate-limited, with the following limits:
+:::{note}
+Incoming emails are rate-limited, with the following limits:
 
-    * 50 emails per minute.
-    * 120 emails per 5 minutes.
-    * 600 emails per hour.
-```
+* 50 emails per minute.
+* 120 emails per 5 minutes.
+* 600 emails per hour.
+:::
 
 ## Local delivery setup
 
