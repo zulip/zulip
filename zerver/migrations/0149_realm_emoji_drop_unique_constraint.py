@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from mypy_boto3_s3.type_defs import CopySourceTypeDef
 
 
 class Uploader:
@@ -66,8 +67,8 @@ class S3Uploader(Uploader):
         ).Bucket(self.bucket_name)
 
     def copy_files(self, src_key: str, dst_key: str) -> None:
-        source = dict(Bucket=self.bucket_name, Key=src_key)
-        self.bucket.copy(source, dst_key)
+        source = CopySourceTypeDef(Bucket=self.bucket_name, Key=src_key)
+        self.bucket.copy(CopySource=source, Key=dst_key)
 
 
 def get_uploader() -> Uploader:

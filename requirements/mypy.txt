@@ -10,6 +10,14 @@
 backoff-stubs==1.10.0 \
     --hash=sha256:03e995de0a70016c6fe758498e1ca811f1db517c00cbd06e3039c9e4f6ea2566
     # via -r requirements/mypy.in
+boto3-stubs[s3]==1.18.17 \
+    --hash=sha256:97aef3a2173bedd95b75aafaa1a6a85e321af107a11855f30afded7a1e2462bc \
+    --hash=sha256:b5bd2f3f54f06eecb9f6a085643c4c02a057c5fbbad4256c4e4a02a0744758df
+    # via -r requirements/mypy.in
+botocore-stubs==1.21.17 \
+    --hash=sha256:6fca2ff326532e8ad8b74c1e5ef6e0457f409ebe38cb8b4aa6cb50b534ee3ee3 \
+    --hash=sha256:b754cb23471948b8cbe50d24d4a74c617672905e4ae170b01bcfcae6496d7cb6
+    # via boto3-stubs
 lxml-stubs==0.2.0 \
     --hash=sha256:78f1bfb31b1f2af9a5c9e9a602ab1b589a64a5a3cc444931a39cdfd02d6864b0 \
     --hash=sha256:f0b3621ec2a23bea4145f484490c8b27383ecb407b3f8b079199ad4a0af4180b
@@ -41,6 +49,10 @@ mypy==0.910 \
     # via
     #   -r requirements/mypy.in
     #   sqlalchemy-stubs
+mypy-boto3-s3==1.18.17 \
+    --hash=sha256:63a76e94df730984196fd46be3f541dacc8d162f6f70c210a4cd9a80d6775e3b \
+    --hash=sha256:af3699fb37614ff8044b7b6d3d7dd2211e5307bf018ac4f0a3591ec2011123c1
+    # via boto3-stubs
 mypy-extensions==0.4.3 \
     --hash=sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d \
     --hash=sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8
@@ -179,5 +191,6 @@ typing-extensions==3.10.0.0 \
     --hash=sha256:50b6f157849174217d0656f99dc82fe932884fb250826c18350e159ec6cdf342 \
     --hash=sha256:779383f6086d90c99ae41cf0ff39aac8a7937a9283ce0a414e5dd782f4c94a84
     # via
+    #   boto3-stubs
     #   mypy
     #   sqlalchemy-stubs

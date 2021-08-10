@@ -823,7 +823,7 @@ def import_uploads(
                     content_type = "application/octet-stream"
 
             key.upload_file(
-                os.path.join(import_dir, record["path"]),
+                Filename=os.path.join(import_dir, record["path"]),
                 ExtraArgs={"ContentType": content_type, "Metadata": metadata},
             )
         else:

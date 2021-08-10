@@ -101,6 +101,10 @@ boto3==1.17.105 \
     # via
     #   -r requirements/common.in
     #   moto
+boto3-stubs[s3]==1.18.17 \
+    --hash=sha256:97aef3a2173bedd95b75aafaa1a6a85e321af107a11855f30afded7a1e2462bc \
+    --hash=sha256:b5bd2f3f54f06eecb9f6a085643c4c02a057c5fbbad4256c4e4a02a0744758df
+    # via -r requirements/mypy.in
 botocore==1.20.105 \
     --hash=sha256:b0fda4edf8eb105453890700d49011ada576d0cc7326a0699dfabe9e872f552c \
     --hash=sha256:b5ba72d22212b0355f339c2a98b3296b3b2202a48e6a2b1366e866bc65a64b67
@@ -108,6 +112,10 @@ botocore==1.20.105 \
     #   boto3
     #   moto
     #   s3transfer
+botocore-stubs==1.21.17 \
+    --hash=sha256:6fca2ff326532e8ad8b74c1e5ef6e0457f409ebe38cb8b4aa6cb50b534ee3ee3 \
+    --hash=sha256:b754cb23471948b8cbe50d24d4a74c617672905e4ae170b01bcfcae6496d7cb6
+    # via boto3-stubs
 cachetools==4.2.2 \
     --hash=sha256:2cc0b89715337ab6dbba85b5b50effe2b0c74e035d83ee8ed637cf52f12ae001 \
     --hash=sha256:61b5ed1e22a0924aed1d23b478f37e8d52549ff8a961de2909c69bf950020cff
@@ -788,6 +796,12 @@ mypy==0.910 \
     # via
     #   -r requirements/mypy.in
     #   sqlalchemy-stubs
+mypy-boto3-s3==1.18.17 \
+    --hash=sha256:63a76e94df730984196fd46be3f541dacc8d162f6f70c210a4cd9a80d6775e3b \
+    --hash=sha256:af3699fb37614ff8044b7b6d3d7dd2211e5307bf018ac4f0a3591ec2011123c1
+    # via
+    #   -r requirements/common.in
+    #   boto3-stubs
 mypy-extensions==0.4.3 \
     --hash=sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d \
     --hash=sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8
@@ -1742,9 +1756,12 @@ typing-extensions==3.10.0.0 \
     #   arrow
     #   asgiref
     #   black
+    #   boto3-stubs
+    #   botocore-stubs
     #   importlib-metadata
     #   libcst
     #   mypy
+    #   mypy-boto3-s3
     #   pyre-check
     #   pyre-extensions
     #   sqlalchemy-stubs

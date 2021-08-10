@@ -494,6 +494,10 @@ more-itertools==8.8.0 \
     --hash=sha256:2cf89ec599962f2ddc4d568a05defc40e0a587fbc10d5989713638864c36be4d \
     --hash=sha256:83f0308e05477c68f56ea3a888172c78ed5d5b3c282addb67508e7ba6c8f813a
     # via openapi-core
+mypy-boto3-s3==1.18.17 \
+    --hash=sha256:63a76e94df730984196fd46be3f541dacc8d162f6f70c210a4cd9a80d6775e3b \
+    --hash=sha256:af3699fb37614ff8044b7b6d3d7dd2211e5307bf018ac4f0a3591ec2011123c1
+    # via -r requirements/common.in
 oauthlib==3.1.1 \
     --hash=sha256:42bf6354c2ed8c6acb54d971fce6f88193d97297e18602a3a886603f9d7730cc \
     --hash=sha256:8f0215fcc533dd8dd1bee6f4c412d4f0cd7297307d43ac61666389e3bc3198a3
@@ -1046,6 +1050,7 @@ typing-extensions==3.10.0.0 \
     #   -r requirements/common.in
     #   asgiref
     #   importlib-metadata
+    #   mypy-boto3-s3
     #   zulip-bots
 uhashring==2.1 \
     --hash=sha256:b21340d0d32497a67f34f5177a64908115fdc23264ed87fa7d1eca79ef9641fa
