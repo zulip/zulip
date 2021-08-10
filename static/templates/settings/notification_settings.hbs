@@ -66,7 +66,7 @@
         </label>
 
         <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-            <select name="notification_sound" class="notification_sound" data-setting-widget-type="string"
+            <select name="notification_sound" class="setting_notification_sound" data-setting-widget-type="string"
               {{#unless enable_sound_select}}
               disabled
               {{/unless}}>
@@ -82,7 +82,7 @@
 
         <div class="input-group">
             <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
-            <select name="desktop_icon_count_display" class="desktop_icon_count_display prop-element"
+            <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element"
               data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>

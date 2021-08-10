@@ -51,7 +51,7 @@ function change_notification_setting(setting, value, status_element) {
 }
 
 function update_desktop_icon_count_display() {
-    $("#user-notification-settings .desktop_icon_count_display").val(
+    $("#user-notification-settings .setting_desktop_icon_count_display").val(
         user_settings.desktop_icon_count_display,
     );
     unread_ui.update_unread_counts();
@@ -107,7 +107,7 @@ export function set_up() {
         }
     });
 
-    const notification_sound_dropdown = container.find(".notification_sound");
+    const notification_sound_dropdown = container.find(".setting_notification_sound");
     notification_sound_dropdown.val(user_settings.notification_sound);
 
     container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {

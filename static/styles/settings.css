@@ -128,7 +128,7 @@ h3 .fa-question-circle-o {
     padding: 0 20px;
 }
 
-.notification_sound,
+.setting_notification_sound,
 .play_notification_sound {
     display: inline;
     margin-right: 4px;
@@ -139,7 +139,7 @@ h3 .fa-question-circle-o {
     }
 }
 
-.notification_sound {
+.setting_notification_sound {
     text-transform: capitalize;
 }
 
@@ -1561,7 +1561,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 }
 
 /* These have enough space for "Admins and full members" in German. */
-.desktop_icon_count_display,
+.setting_desktop_icon_count_display,
 #id_realm_waiting_period_setting,
 #id_realm_create_stream_policy,
 #id_realm_invite_to_stream_policy,

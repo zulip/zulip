@@ -365,7 +365,7 @@ async function test_notifications_section(page: Page): Promise<void> {
     // At the beginning, "PMs, mentions, and alerts"(checkbox name=enable_sounds) audio will be on
     // and "Streams"(checkbox name=enable_stream_audible_notifications) audio will be off by default.
 
-    const notification_sound_enabled = ".notification_sound:enabled";
+    const notification_sound_enabled = ".setting_notification_sound:enabled";
     await page.waitForSelector(notification_sound_enabled, {visible: true});
 
     await common.fill_form(page, ".notification-settings-form", {
@@ -382,7 +382,7 @@ async function test_notifications_section(page: Page): Promise<void> {
     all audio notifications. But this seems flaky in tests.
     TODO: Find the right fix and enable this.
 
-    const notification_sound_disabled = ".notification_sound:disabled";
+    const notification_sound_disabled = ".setting_notification_sound:disabled";
     await page.waitForSelector(notification_sound_disabled);
     */
 }
