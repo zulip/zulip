@@ -169,7 +169,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.request.user = self.example_user("hamlet")
 
         # Now simulate a DisallowedHost exception
-        def get_host_error() -> None:
+        def get_host_error() -> str:
             raise Exception("Get host failure!")
 
         orig_get_host = record.request.get_host

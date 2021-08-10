@@ -372,8 +372,8 @@ class LogRequests(MiddlewareMixin):
         record_request_start_data(request_notes.log_data)
 
     def process_response(
-        self, request: HttpRequest, response: StreamingHttpResponse
-    ) -> StreamingHttpResponse:
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         if getattr(response, "asynchronous", False):
             # This special Tornado "asynchronous" response is
             # discarded after going through this code path as Tornado

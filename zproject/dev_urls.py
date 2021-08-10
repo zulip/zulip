@@ -4,7 +4,7 @@ from urllib.parse import urlsplit
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve as staticfiles_serve
-from django.http import HttpRequest
+from django.http.request import HttpRequest
 from django.http.response import FileResponse
 from django.urls import path
 from django.views.generic import TemplateView
