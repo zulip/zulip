@@ -1468,6 +1468,32 @@ class StripeTest(StripeTestCase):
             orjson.loads(response.content)["error_description"], "uncaught exception during upgrade"
         )
 
+    def test_request_sponsorship_form_with_invalid_url(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        data = {
+            "organization-type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "invalid-url",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+        }
+
+        response = self.client_post("/json/billing/sponsorship", data)
+
+        self.assert_json_error(response, "Enter a valid URL.")
+
+    def test_request_sponsorship_form_with_blank_url(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        data = {
+            "organization-type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
+        }
+
+        response = self.client_post("/json/billing/sponsorship", data)
+
+        self.assert_json_success(response)
+
     def test_request_sponsorship(self) -> None:
         user = self.example_user("hamlet")
         self.assertIsNone(get_customer_by_realm(user.realm))
