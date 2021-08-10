@@ -12,4 +12,4 @@ sphinx<4  # https://github.com/readthedocs/sphinx_rtd_theme/issues/1159
 sphinx-rtd-theme
 
 # Needed to build Markdown docs
-recommonmark
+myst-parser

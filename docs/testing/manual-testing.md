@@ -156,12 +156,11 @@ show up in the message pane.  And, finally, you should make sure
 that no messages outside the narrow show up in Cordelia's view.
 
 
-```eval_rst
-.. important::
-    Make sure that Cordelia is subscribed to Verona but not
-    subscribed to Denmark; if not, you should use different streams
-    for your testing.
-```
+:::{important}
+Make sure that Cordelia is subscribed to Verona but not
+subscribed to Denmark; if not, you should use different streams
+for your testing.
+:::
 
 When testing narrows, you want to have Hamlet send the same message
 several times in a row, while cycling Cordelia through various narrows.

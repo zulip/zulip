@@ -12,7 +12,7 @@
 # serve to show the default.
 import os
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -30,7 +30,13 @@ from version import ZULIP_VERSION
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions: List[str] = []
+extensions = [
+    "myst_parser",
+]
+
+myst_enable_extensions = [
+    "colon_fence",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -293,8 +299,6 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 # texinfo_no_detailmenu = False
 
-from recommonmark.transform import AutoStructify
-
 # The suffix(es) of source filenames. You can specify multiple suffix
 # as a dictionary mapping file extensions to file types
 # https://www.sphinx-doc.org/en/master/usage/markdown.html
@@ -303,39 +307,11 @@ source_suffix = {
     ".md": "markdown",
 }
 
-# Temporary workaround to remove multiple build warnings caused by upstream bug.
-# See https://github.com/zulip/zulip/issues/13263 for details.
-from commonmark.node import Node
-from recommonmark.parser import CommonMarkParser
-
-
-class CustomCommonMarkParser(CommonMarkParser):
-    def visit_document(self, node: Node) -> None:
-        pass
+suppress_warnings = [
+    "myst.header",
+]
 
 
 def setup(app: Any) -> None:
-
-    app.add_source_parser(CustomCommonMarkParser)
-    app.add_config_value(
-        "recommonmark_config",
-        {
-            "enable_eval_rst": True,
-            # Turn off recommonmark features we aren't using.
-            "enable_auto_doc_ref": False,
-            "auto_toc_tree_section": None,
-            "enable_auto_toc_tree": False,
-            "enable_math": False,
-            "enable_inline_math": False,
-            "url_resolver": lambda x: x,
-        },
-        True,
-    )
-
-    # Enable `eval_rst`, and any other features enabled in recommonmark_config.
-    # Docs: https://recommonmark.readthedocs.io/en/latest/auto_structify.html
-    # (But NB those docs are for master, not latest release.)
-    app.add_transform(AutoStructify)
-
     # overrides for wide tables in RTD theme
     app.add_css_file("theme_overrides.css")  # path relative to _static
