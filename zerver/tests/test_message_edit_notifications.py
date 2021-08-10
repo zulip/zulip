@@ -420,7 +420,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            wildcard_mention_notify=True,
+            wildcard_mention_email_notify=True,
+            wildcard_mention_push_notify=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)

@@ -310,7 +310,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             assert_maybe_enqueue_notifications_call_args(
                 args_dict=args_dict,
                 message_id=msg_id,
-                wildcard_mention_notify=True,
+                wildcard_mention_email_notify=True,
+                wildcard_mention_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -327,7 +328,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
             assert_maybe_enqueue_notifications_call_args(
                 args_dict=args_dict,
-                wildcard_mention_notify=False,
+                wildcard_mention_email_notify=False,
+                wildcard_mention_push_notify=False,
                 message_id=msg_id,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -348,7 +350,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             assert_maybe_enqueue_notifications_call_args(
                 args_dict=args_dict,
                 message_id=msg_id,
-                wildcard_mention_notify=False,
+                wildcard_mention_email_notify=False,
+                wildcard_mention_push_notify=False,
                 already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -372,7 +375,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             assert_maybe_enqueue_notifications_call_args(
                 args_dict=args_dict,
                 message_id=msg_id,
-                wildcard_mention_notify=True,
+                wildcard_mention_email_notify=True,
+                wildcard_mention_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
@@ -380,6 +384,35 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         sub.wildcard_mentions_notify = None
         user_profile.save()
         sub.save()
+
+        # If notifications for personal mentions themselves have been turned off,
+        # even turning on `wildcard_mentions_notify` should not send notifications
+        user_profile.enable_offline_email_notifications = False
+        user_profile.wildcard_mentions_notify = True
+        user_profile.save()
+        client_descriptor = allocate_event_queue()
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_stream_message(iago, "Denmark", content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            # We've turned off email notifications for personal mentions, but push notifications
+            # for personal mentions are still on.
+            # Because `wildcard_mentions_notify` is True, a message with `@all` should follow the
+            # personal mention settings
+            assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                wildcard_mention_email_notify=False,
+                wildcard_mention_push_notify=True,
+                already_notified={"email_notified": False, "push_notified": True},
+            )
+        destroy_event_queue(client_descriptor.event_queue.id)
+        user_profile.enable_offline_email_notifications = True
+        user_profile.wildcard_mentions_notify = True
+        user_profile.save()
 
         # Test with a user group mention
         hamlet_and_cordelia = create_user_group(

@@ -37,7 +37,7 @@ class TestNotificationData(ZulipTestCase):
 
         # Wildcard mention
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, wildcard_mention_notify=True
+            user_id=user_id, wildcard_mention_push_notify=True
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -79,11 +79,12 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(
             user_id=user_id,
             sender_is_muted=True,
-            wildcard_mention_notify=True,
             pm_push_notify=True,
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
+            wildcard_mention_push_notify=True,
+            wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -94,11 +95,12 @@ class TestNotificationData(ZulipTestCase):
         # Message sender is the user the object corresponds to.
         user_data = self.create_user_notifications_data_object(
             user_id=acting_user_id,
-            wildcard_mention_notify=True,
             pm_push_notify=True,
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
+            wildcard_mention_push_notify=True,
+            wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -140,7 +142,7 @@ class TestNotificationData(ZulipTestCase):
 
         # Wildcard mention
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, wildcard_mention_notify=True
+            user_id=user_id, wildcard_mention_email_notify=True
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -173,11 +175,12 @@ class TestNotificationData(ZulipTestCase):
         user_data = self.create_user_notifications_data_object(
             user_id=user_id,
             sender_is_muted=True,
-            wildcard_mention_notify=True,
             pm_push_notify=True,
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
+            wildcard_mention_push_notify=True,
+            wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -188,11 +191,12 @@ class TestNotificationData(ZulipTestCase):
         # Message sender is the user the object corresponds to.
         user_data = self.create_user_notifications_data_object(
             user_id=acting_user_id,
-            wildcard_mention_notify=True,
             pm_push_notify=True,
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
+            wildcard_mention_push_notify=True,
+            wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),

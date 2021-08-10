@@ -762,9 +762,10 @@ def missedmessage_hook(
             pm_email_notify=internal_data.get("pm_email_notify", False),
             mention_push_notify=internal_data.get("mention_push_notify", False),
             mention_email_notify=internal_data.get("mention_email_notify", False),
+            wildcard_mention_push_notify=internal_data.get("wildcard_mention_push_notify", False),
+            wildcard_mention_email_notify=internal_data.get("wildcard_mention_email_notify", False),
             stream_push_notify=internal_data.get("stream_push_notify", False),
             stream_email_notify=internal_data.get("stream_email_notify", False),
-            wildcard_mention_notify=internal_data.get("wildcard_mention_notify", False),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
         )
