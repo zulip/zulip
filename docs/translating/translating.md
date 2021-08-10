@@ -29,14 +29,13 @@ Zulip:
    project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
    to any languages that you'd like to contribute to (or add new ones).
 
-   ```eval_rst
-   .. note::
-       Unless you plan to contribute country-specific translations, do not
-       select a country-specific language in the **Languages** menu when you sign
-       up. E.g. use **English (United Kingdom)** if you plan to translate Zulip
-       into UK English, but select **Russian** rather than **Russian (Russia)** for
-       general Russian translations.
-   ```
+   :::{note}
+   Unless you plan to contribute country-specific translations, do not
+   select a country-specific language in the **Languages** menu when you sign
+   up. E.g. use **English (United Kingdom)** if you plan to translate Zulip
+   into UK English, but select **Russian** rather than **Russian (Russia)** for
+   general Russian translations.
+   :::
 
 1. Wait for a maintainer to approve your Transifex access; this
    usually takes less than a day. You should then be able to access

@@ -57,6 +57,7 @@ attrs==21.2.0 \
     # via
     #   automat
     #   jsonschema
+    #   markdown-it-py
     #   openapi-core
     #   semgrep
     #   service-identity
@@ -211,10 +212,6 @@ colorama==0.4.4 \
     --hash=sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b \
     --hash=sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2
     # via semgrep
-commonmark==0.9.1 \
-    --hash=sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60 \
-    --hash=sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9
-    # via recommonmark
 constantly==15.1.0 \
     --hash=sha256:586372eb92059873e29eba4f9dec8381541b4d3834660707faf8ba59146dfc35 \
     --hash=sha256:dd2fa9d6b1a51a83f0d7dd76293d734046aa176e384bf6e33b7e44880eb37c5d
@@ -397,7 +394,7 @@ docutils==0.16 \
     --hash=sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af \
     --hash=sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc
     # via
-    #   recommonmark
+    #   myst-parser
     #   sphinx
     #   sphinx-rtd-theme
 fakeldap==0.6.2 \
@@ -574,6 +571,7 @@ jinja2==2.11.3 \
     # via
     #   -r requirements/common.in
     #   moto
+    #   myst-parser
     #   sphinx
 jmespath==0.10.0 \
     --hash=sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9 \
@@ -704,6 +702,12 @@ lxml==4.6.3 \
 markdown-include==0.6.0 \
     --hash=sha256:6f5d680e36f7780c7f0f61dca53ca581bd50d1b56137ddcd6353efafa0c3e4a2
     # via -r requirements/common.in
+markdown-it-py==1.1.0 \
+    --hash=sha256:36be6bb3ad987bfdb839f5ba78ddf094552ca38ccbd784ae4f74a4e1419fc6e3 \
+    --hash=sha256:98080fc0bc34c4f2bcf0846a096a9429acbd9d5d8e67ed34026c03c61c464389
+    # via
+    #   mdit-py-plugins
+    #   myst-parser
 markdown==3.3.4 \
     --hash=sha256:31b5b491868dcc87d6c24b7e3d19a0d730d59d3e46f4eea6430a321bed387a49 \
     --hash=sha256:96c3ba1261de2f7547b46a00ea8463832c921d3f9d6aba3f255a6f71386db20c
@@ -780,6 +784,10 @@ matrix-client==0.3.2 \
     --hash=sha256:2855a2614a177db66f9bc3ba38cbd2876041456f663c334f72a160ab6bb11c49 \
     --hash=sha256:dce3ccb8665df0d519f08e07a16e6d3f9fab3a947df4b7a7c4bb26573d68f2d5
     # via zulip
+mdit-py-plugins==0.2.8 \
+    --hash=sha256:1833bf738e038e35d89cb3a07eb0d227ed647ce7dd357579b65343740c6d249c \
+    --hash=sha256:5991cef645502e80a5388ec4fc20885d2313d4871e8b8e320ca2de14ac0c015f
+    # via myst-parser
 more-itertools==8.7.0 \
     --hash=sha256:5652a9ac72209ed7df8d9c15daf4e1aa0e3d2ccd3c87f8265a0673cd9cbc9ced \
     --hash=sha256:c5d6da9ca3ff65220c3bfd2a8db06d698f05d4d2b9be57e1deb2be5a45019713
@@ -823,6 +831,10 @@ mypy==0.812 \
     # via
     #   -r requirements/mypy.in
     #   sqlalchemy-stubs
+myst-parser==0.15.1 \
+    --hash=sha256:7c3c78a36c4bc30ce6a67933ebd800a880c8d81f1688fad5c2ebd82cddbc1603 \
+    --hash=sha256:e8baa9959dac0bcf0f3ea5fc32a1a28792959471d8a8094e3ed5ee0de9733ade
+    # via -r requirements/docs.in
 oauthlib==3.1.0 \
     --hash=sha256:bee41cc35fcca6e988463cacc3bcb8a96224f470ca547e697b604cc697b2f889 \
     --hash=sha256:df884cd6cbe20e32633f1db1072e9356f53638e4361bef4e8b03c9127c9328ea
@@ -1198,6 +1210,7 @@ pyyaml==5.4.1 \
     # via
     #   libcst
     #   moto
+    #   myst-parser
     #   openapi-spec-validator
 qrcode==6.1 \
     --hash=sha256:3996ee560fc39532910603704c82980ff6d4d5d629f9c3f25f34174ce8606cf5 \
@@ -1207,10 +1220,6 @@ queuelib==1.6.1 \
     --hash=sha256:631d067c9be57e395c382d680d3653ca1452cd29e8da25c5e8d94b5c0c528c31 \
     --hash=sha256:90ee30ebb0b57112606358b63c09a681bbb9a7dd1120af09c836b475504cea85
     # via scrapy
-recommonmark==0.7.1 \
-    --hash=sha256:1b1db69af0231efce3fa21b94ff627ea33dee7079a01dd0a7f8482c3da148b3f \
-    --hash=sha256:bdb4db649f2222dcd8d2d844f0006b958d627f732415d399791ee436a3686d67
-    # via -r requirements/docs.in
 redis==3.5.3 \
     --hash=sha256:0e7e0cfca8660dea8b7d5cd8c4f6c5e29e11f31158c0b0ae91a397f00e5a05a2 \
     --hash=sha256:432b788c4530cfe16d8d943a09d40ca6c16149727e4afe8c2c9d5580c59d9f24
@@ -1419,7 +1428,7 @@ sphinx==3.5.4 \
     --hash=sha256:2320d4e994a191f4b4be27da514e46b3d6b420f2ff895d064f52415d342461e8
     # via
     #   -r requirements/docs.in
-    #   recommonmark
+    #   myst-parser
     #   sphinx-rtd-theme
 sphinxcontrib-applehelp==1.0.2 \
     --hash=sha256:806111e5e962be97c29ec4c1e7fe277bfd19e9652fb1a4392105b43e01af885a \
@@ -1598,6 +1607,7 @@ typing-extensions==3.10.0.0 \
     #   black
     #   importlib-metadata
     #   libcst
+    #   markdown-it-py
     #   mypy
     #   pyre-check
     #   pyre-extensions

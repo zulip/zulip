@@ -26,12 +26,11 @@ If you are using a [remote server](../development/remote.md), see
 the
 [section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
 
-```eval_rst
-.. warning::
-    There is no supported uninstallation process with this
-    method.  If you want that, use the Vagrant environment, where you can
-    just do ``vagrant destroy`` to clean up the development environment.
-```
+:::{warning}
+There is no supported uninstallation process with this
+method. If you want that, use the Vagrant environment, where you can
+just do `vagrant destroy` to clean up the development environment.
+:::
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
@@ -121,11 +120,10 @@ installation method described here.
    ./tools/run-dev.py
    ```
 
-   ```eval_rst
-   .. note::
-       If you shut down WSL, after starting it again, you will have to manually start
-       the services using ``./tools/wsl/start_services``.
-   ```
+   :::{note}
+   If you shut down WSL, after starting it again, you will have to manually start
+   the services using `./tools/wsl/start_services`.
+   :::
 
 1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
    you can try running `./tools/provision` again.
@@ -218,12 +216,11 @@ expected.
    Make sure you note down this down. This is where your zulip development web
    server can be accessed.
 
-   ```eval_rst
-   .. important::
-      The output of the above command changes every time you restart the Vagrant
-      development machine. Thus, it will have to be run every time you bring one up.
-      This quirk is one reason this method is marked experimental.
-   ```
+   :::{important}
+   The output of the above command changes every time you restart the Vagrant
+   development machine. Thus, it will have to be run every time you bring one up.
+   This quirk is one reason this method is marked experimental.
+   :::
 
 1. You should now be able to start the Zulip development server.
 

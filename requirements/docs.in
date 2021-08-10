@@ -12,4 +12,4 @@ sphinx
 sphinx-rtd-theme
 
 # Needed to build Markdown docs
-recommonmark
+myst-parser

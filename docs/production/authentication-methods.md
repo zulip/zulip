@@ -36,9 +36,7 @@ Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
 are documented in your `settings.py`.
 
-```eval_rst
-.. _ldap:
-```
+(ldap)=
 
 ## LDAP (including Active Directory)
 
@@ -332,12 +330,11 @@ organization list with multiple maps, that contain a map with an attribute, and 
 value for that attribute. If for any of the attribute maps, all user's
 LDAP attributes match what is configured, access is granted.
 
-```eval_rst
-.. warning::
-    Restricting access using these mechanisms only affects authentication via LDAP,
-    and won't prevent users from accessing the organization using any other
-    authentication backends that are enabled for the organization.
-```
+:::{warning}
+Restricting access using these mechanisms only affects authentication via LDAP,
+and won't prevent users from accessing the organization using any other
+authentication backends that are enabled for the organization.
+:::
 
 ### Troubleshooting
 

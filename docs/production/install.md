@@ -123,9 +123,7 @@ Learning more:
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
 
-```eval_rst
-.. _installer-details:
-```
+(installer-details)=
 
 ## Details: What the installer does
 
