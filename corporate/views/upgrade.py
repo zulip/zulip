@@ -203,7 +203,7 @@ def initial_upgrade(
 
 
 class SponsorshipRequestForm(forms.Form):
-    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH)
+    website = forms.URLField(max_length=ZulipSponsorshipRequest.MAX_ORG_URL_LENGTH, required=False)
     organization_type = forms.IntegerField()
     description = forms.CharField(widget=forms.Textarea)
 
@@ -235,8 +235,8 @@ def sponsorship(
     post_data.update(organization_type=organization_type)
     form = SponsorshipRequestForm(post_data)
 
-    with transaction.atomic():
-        if form.is_valid():
+    if form.is_valid():
+        with transaction.atomic():
             sponsorship_request = ZulipSponsorshipRequest(
                 realm=realm,
                 requested_by=user,
@@ -251,27 +251,34 @@ def sponsorship(
                 realm.org_type = org_type
                 realm.save(update_fields=["org_type"])
 
-        update_sponsorship_status(realm, True, acting_user=user)
-        do_make_user_billing_admin(user)
+            update_sponsorship_status(realm, True, acting_user=user)
+            do_make_user_billing_admin(user)
 
-    org_type_display_name = get_org_type_display_name(org_type)
+            org_type_display_name = get_org_type_display_name(org_type)
 
-    context = {
-        "requested_by": requested_by,
-        "user_role": user_role,
-        "string_id": realm.string_id,
-        "support_url": support_url,
-        "organization_type": org_type_display_name,
-        "website": website,
-        "description": description,
-    }
-    send_email(
-        "zerver/emails/sponsorship_request",
-        to_emails=[FromAddress.SUPPORT],
-        from_name="Zulip sponsorship",
-        from_address=FromAddress.tokenized_no_reply_address(),
-        reply_to_email=user.delivery_email,
-        context=context,
-    )
+        context = {
+            "requested_by": requested_by,
+            "user_role": user_role,
+            "string_id": realm.string_id,
+            "support_url": support_url,
+            "organization_type": org_type_display_name,
+            "website": website,
+            "description": description,
+        }
+        send_email(
+            "zerver/emails/sponsorship_request",
+            to_emails=[FromAddress.SUPPORT],
+            from_name="Zulip sponsorship",
+            from_address=FromAddress.tokenized_no_reply_address(),
+            reply_to_email=user.delivery_email,
+            context=context,
+        )
 
-    return json_success()
+        return json_success()
+    else:
+        messages = []
+        for error_list in form.errors.get_json_data().values():
+            for error in error_list:
+                messages.append(error["message"])
+        message = " ".join(messages)
+        raise BillingError("Form validation error", message=message)

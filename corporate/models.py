@@ -204,6 +204,6 @@ class ZulipSponsorshipRequest(models.Model):
     )
 
     MAX_ORG_URL_LENGTH: int = 200
-    org_website: str = models.URLField(max_length=MAX_ORG_URL_LENGTH)
+    org_website: str = models.URLField(max_length=MAX_ORG_URL_LENGTH, blank=True, null=True)
 
     org_description: str = models.TextField(default="")
