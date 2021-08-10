@@ -16,12 +16,12 @@ import tempfile
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import orjson
-from boto3.resources.base import ServiceResource
 from django.apps import apps
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import make_aware as timezone_make_aware
+from mypy_boto3_s3.service_resource import Object
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
@@ -1275,7 +1275,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
 def _check_key_metadata(
     email_gateway_bot: Optional[UserProfile],
-    key: ServiceResource,
+    key: Object,
     processing_avatars: bool,
     realm: Realm,
     user_ids: Set[int],
@@ -1298,10 +1298,10 @@ def _check_key_metadata(
 
 
 def _get_exported_s3_record(
-    bucket_name: str, key: ServiceResource, processing_emoji: bool
-) -> Dict[str, Union[str, int]]:
+    bucket_name: str, key: Object, processing_emoji: bool
+) -> Dict[str, Any]:
     # Helper function for export_files_from_s3
-    record = dict(
+    record: Dict[str, Any] = dict(
         s3_path=key.key,
         bucket=bucket_name,
         size=key.content_length,
@@ -1315,7 +1315,7 @@ def _get_exported_s3_record(
         record["file_name"] = os.path.basename(key.key)
 
     if "user_profile_id" in record:
-        user_profile = get_user_profile_by_id(record["user_profile_id"])
+        user_profile = get_user_profile_by_id(int(record["user_profile_id"]))
         record["user_profile_email"] = user_profile.email
 
         # Fix the record ids
@@ -1340,7 +1340,7 @@ def _get_exported_s3_record(
 
 
 def _save_s3_object_to_file(
-    key: ServiceResource,
+    key: Object,
     output_dir: str,
     processing_avatars: bool,
     processing_emoji: bool,
@@ -1365,7 +1365,7 @@ def _save_s3_object_to_file(
 
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    key.download_file(filename)
+    key.download_file(Filename=filename)
 
 
 def export_files_from_s3(

@@ -36,6 +36,7 @@ SQLAlchemy==1.3.*  # 1.4 has badly busted type annotations
 
 # Needed for S3 file uploads
 boto3
+mypy-boto3-s3
 
 # Needed for integrations
 defusedxml

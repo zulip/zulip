@@ -15,7 +15,6 @@ from typing import Any, Callable, Optional, Tuple
 
 import boto3
 import botocore
-from boto3.resources.base import ServiceResource
 from boto3.session import Session
 from botocore.client import Config
 from django.conf import settings
@@ -25,6 +24,8 @@ from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from jinja2.utils import Markup as mark_safe
+from mypy_boto3_s3.client import S3Client
+from mypy_boto3_s3.service_resource import Bucket, Object
 from PIL import Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
 from PIL.Image import DecompressionBombError
@@ -278,9 +279,7 @@ class ZulipUploadBackend:
 ### S3
 
 
-def get_bucket(bucket_name: str, session: Optional[Session] = None) -> ServiceResource:
-    # See https://github.com/python/typeshed/issues/2706
-    # for why this return type is a `ServiceResource`.
+def get_bucket(bucket_name: str, session: Optional[Session] = None) -> Bucket:
     if session is None:
         session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = session.resource(
@@ -290,8 +289,7 @@ def get_bucket(bucket_name: str, session: Optional[Session] = None) -> ServiceRe
 
 
 def upload_image_to_s3(
-    # See https://github.com/python/typeshed/issues/2706
-    bucket: ServiceResource,
+    bucket: Bucket,
     file_name: str,
     content_type: Optional[str],
     user_profile: UserProfile,
@@ -367,7 +365,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
-        self._boto_client = None
+        self._boto_client: Optional[S3Client] = None
         self.public_upload_url_base = self.construct_public_upload_url_base()
 
     def construct_public_upload_url_base(self) -> str:
@@ -410,7 +408,7 @@ class S3UploadBackend(ZulipUploadBackend):
         assert not key.startswith("/")
         return urllib.parse.urljoin(self.public_upload_url_base, key)
 
-    def get_boto_client(self) -> botocore.client.BaseClient:
+    def get_boto_client(self) -> S3Client:
         """
         Creating the client takes a long time so we need to cache it.
         """
@@ -424,7 +422,7 @@ class S3UploadBackend(ZulipUploadBackend):
             )
         return self._boto_client
 
-    def delete_file_from_s3(self, path_id: str, bucket: ServiceResource) -> bool:
+    def delete_file_from_s3(self, path_id: str, bucket: Bucket) -> bool:
         key = bucket.Object(path_id)
 
         try:
@@ -532,9 +530,7 @@ class S3UploadBackend(ZulipUploadBackend):
         self.delete_file_from_s3(path_id + "-medium.png", self.avatar_bucket)
         self.delete_file_from_s3(path_id, self.avatar_bucket)
 
-    def get_avatar_key(self, file_name: str) -> ServiceResource:
-        # See https://github.com/python/typeshed/issues/2706
-        # for why this return type is a `ServiceResource`.
+    def get_avatar_key(self, file_name: str) -> Object:
         key = self.avatar_bucket.Object(file_name)
         return key
 
@@ -693,7 +689,10 @@ class S3UploadBackend(ZulipUploadBackend):
             os.path.join("exports", secrets.token_hex(16), os.path.basename(tarball_path))
         )
 
-        key.upload_file(tarball_path, Callback=percent_callback)
+        if percent_callback is None:
+            key.upload_file(Filename=tarball_path)
+        else:
+            key.upload_file(Filename=tarball_path, Callback=percent_callback)
 
         public_url = self.get_public_upload_url(key.key)
         return public_url
