@@ -35,6 +35,9 @@ Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details
 are documented in your `settings.py`.
 
+```eval_rst
+.. _ldap:
+```
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and
@@ -490,10 +493,6 @@ If you're hosting multiple organizations and thus using the
 authenticate the user to when they visit your SSO URL from the IdP.
 (If the organization is on the root domain, use the empty string:
 `{"subdomain": ""}`.).
-
-```eval_rst
-.. _ldap:
-```
 
 ### Restricting access to specific organizations
 
