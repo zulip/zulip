@@ -338,7 +338,7 @@ td .button {
         display: inline-block;
     }
 
-    #user-display-settings .default_language {
+    #user-display-settings .setting_default_language {
         text-decoration: none;
     }
 
@@ -485,7 +485,7 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-#user-display-settings .default_language {
+#user-display-settings .setting_default_language {
     margin-left: 20px;
 }
 

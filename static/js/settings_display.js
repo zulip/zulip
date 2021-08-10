@@ -46,18 +46,18 @@ export function set_up() {
 
     container.find(".display-settings-status").hide();
 
-    container.find(".demote_inactive_streams").val(user_settings.demote_inactive_streams);
+    container.find(".setting_demote_inactive_streams").val(user_settings.demote_inactive_streams);
 
-    container.find(".color_scheme").val(user_settings.color_scheme);
+    container.find(".setting_color_scheme").val(user_settings.color_scheme);
 
-    container.find(".default_view").val(user_settings.default_view);
+    container.find(".setting_default_view").val(user_settings.default_view);
 
     container
-        .find(".twenty_four_hour_time")
+        .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(user_settings.twenty_four_hour_time));
 
     container
-        .find(`.emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`)
+        .find(`.setting_emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`)
         .prop("checked", true);
 
     $(`${CSS.escape(language_modal_elem)} [data-dismiss]`).on("click", () => {
@@ -121,23 +121,23 @@ export function set_up() {
             );
         });
 
-    container.find(".default_language").on("click", (e) => {
+    container.find(".setting_default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal(language_modal_elem);
     });
 
-    container.find(".demote_inactive_streams").on("change", function () {
+    container.find(".setting_demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
         change_display_setting(data, container, patch_url, ".display-settings-status");
     });
 
-    container.find(".color_scheme").on("change", function () {
+    container.find(".setting_color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
         change_display_setting(data, container, patch_url, ".display-settings-status");
     });
 
-    container.find(".default_view").on("change", function () {
+    container.find(".setting_default_view").on("change", function () {
         const data = {default_view: this.value};
         change_display_setting(data, container, patch_url, ".display-settings-status");
     });
@@ -146,12 +146,12 @@ export function set_up() {
         window.location.reload();
     });
 
-    container.find(".twenty_four_hour_time").on("change", function () {
+    container.find(".setting_twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};
         change_display_setting(data, container, patch_url, ".time-settings-status");
     });
 
-    container.find(".emojiset_choice").on("click", function () {
+    container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
         const current_emojiset = user_settings.emojiset;
         if (current_emojiset === data.emojiset) {
@@ -208,10 +208,10 @@ export function update_page() {
     container.find(".default_language_name").text(default_language_name);
     container.find(".translate_emoticons").prop("checked", user_settings.translate_emoticons);
     container
-        .find(".twenty_four_hour_time")
+        .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(user_settings.twenty_four_hour_time));
-    container.find(".color_scheme").val(JSON.stringify(user_settings.color_scheme));
-    container.find(".default_view").val(user_settings.default_view);
+    container.find(".setting_color_scheme").val(JSON.stringify(user_settings.color_scheme));
+    container.find(".setting_default_view").val(user_settings.default_view);
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function

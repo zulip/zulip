@@ -7,7 +7,7 @@
 
         <div class="input-group">
             <label class="inline-block title">{{t "Default language" }}</label>
-            <button type="button" class="default_language button btn-link rounded small inline-block">
+            <button type="button" class="setting_default_language button btn-link rounded small inline-block">
                 <span class="default_language_name">{{default_language_name}}</span>
                 <i class="fa fa-pencil"></i>
             </button>
@@ -24,7 +24,7 @@
             <label for="default_view" class="dropdown-title">{{t "Default view" }}
                 {{> ../help_link_widget link="/help/change-default-view" }}
             </label>
-            <select name="default_view" class="default_view">
+            <select name="default_view" class="setting_default_view">
                 {{> dropdown_options_widget option_values=default_view_values}}
             </select>
         </div>
@@ -32,7 +32,7 @@
         <div class="input-group">
             <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
             </label>
-            <select name="color_scheme" class="color_scheme">
+            <select name="color_scheme" class="setting_color_scheme">
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
         </div>
@@ -50,7 +50,7 @@
             <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
                 {{> ../help_link_widget link="/help/manage-inactive-streams" }}
             </label>
-            <select name="demote_inactive_streams" class="demote_inactive_streams">
+            <select name="demote_inactive_streams" class="setting_demote_inactive_streams">
                 {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
             </select>
         </div>
@@ -62,7 +62,7 @@
 
         <div class="input-group">
             <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
-            <select name="twenty_four_hour_time" class="twenty_four_hour_time">
+            <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time">
                 {{#each twenty_four_hour_time_values}}
                 <option value='{{ this.value }}'>{{ this.description }}</option>
                 {{/each}}
@@ -78,7 +78,7 @@
             <div class="emojiset_choices grey-box">
                 {{#each user_settings.emojiset_choices}}
                 <label>
-                    <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{this.key}}" />
+                    <input type="radio" class="setting_emojiset_choice" name="emojiset_group" value="{{this.key}}" />
                     <span>{{this.text}}</span>
                     <span class="right">
                         {{#if (eq this.key "text") }}
