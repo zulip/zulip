@@ -13,6 +13,7 @@ from jsonschema.exceptions import ValidationError
 from zerver.lib.request import _REQ, arguments_map
 from zerver.lib.rest import rest_dispatch
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.utils import assert_is_not_none
 from zerver.openapi.markdown_extension import (
     generate_curl_example,
     parse_language_and_options,
@@ -523,11 +524,11 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         for p in urlconf.v1_api_and_json_patterns + urlconf.v1_api_mobile_patterns:
             if p.callback is not rest_dispatch:
                 # Endpoints not using rest_dispatch don't have extra data.
-                methods_endpoints = dict(
+                methods_endpoints: Dict[str, Any] = dict(
                     GET=p.callback,
                 )
             else:
-                methods_endpoints = p.default_args
+                methods_endpoints = assert_is_not_none(p.default_args)
 
             # since the module was already imported and is now residing in
             # memory, we won't actually face any performance penalties here.

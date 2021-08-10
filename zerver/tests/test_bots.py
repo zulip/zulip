@@ -239,7 +239,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_add_bot_with_username_in_use(self) -> None:
         self.login("hamlet")
         self.assert_num_bots_equal(0)
-        result = self.create_bot()
+        self.create_bot()
         self.assert_num_bots_equal(1)
 
         # The short_name is used in the email, which we call
@@ -395,7 +395,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Create a bot.
         self.assert_num_bots_equal(0)
-        result = self.create_bot()
+        self.create_bot()
         self.assert_num_bots_equal(1)
 
         # A bot
