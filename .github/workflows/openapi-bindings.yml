@@ -1,0 +1,71 @@
+name: Update Zulip-openapi
+
+on: [push]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate-api-docs:
+    runs-on: ubuntu-latest
+    name: Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)
+    container: zulip/ci:bionic
+    env:
+      # GitHub Actions sets HOME to /github/home which causes
+      # problem later in provison and frontend test that runs
+      # tools/setup/postgresql-init-dev-db because of the .pgpass
+      # location. PostgreSQL (psql) expects .pgpass to be at
+      # /home/github/.pgpass and setting home to `/home/github/`
+      # ensures it written there because we write it to ~/.pgpass.
+      HOME: /home/github/
+
+    steps:
+      - name: Add required permissions
+        run: |
+          # The checkout actions doesn't clone to ~/zulip or allow
+          # us to use the path option to clone outside the current
+          # /__w/zulip/zulip directory. Since this directory is owned
+          # by root we need to change it's ownership to allow the
+          # github user to clone the code here.
+          # Note: /__w/ is a docker volume mounted to $GITHUB_WORKSPACE
+          # which is /home/runner/work/.
+          sudo chown -R github .
+
+          # This is the GitHub Actions specific cache directory the
+          # the current github user must be able to access for the
+          # cache action to work. It is owned by root currently.
+          sudo chmod -R 0777 /__w/_temp/
+
+      - uses: actions/checkout@v2
+
+      - name: Do Bionic hack
+        run: |
+          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
+
+      - name: Install dependencies
+        run: |
+          # This is the main setup job for the test suite
+          ./tools/ci/setup-backend --skip-dev-db-build
+
+          # Cleaning caches is mostly unnecessary in GitHub Actions, because
+          # most builds don't get to write to the cache.
+          # scripts/lib/clean_unused_caches.py --verbose --threshold 0
+
+      - name: creates output
+        run: bash ./tools/ci/openapi-generator
+
+      - name: Push documentation to zulip-openapi
+        id: push_directory
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: "openapi-output"
+          destination-github-username: "MSurfer20"
+          destination-repository-name: "test2"
+          user-email: suyash.mathur@research.iiit.ac.in
+          commit-message: Update docs from ORIGIN_COMMIT
+          target-branch: main

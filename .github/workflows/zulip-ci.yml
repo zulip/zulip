@@ -242,3 +242,6 @@ jobs:
         env:
           ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
         run: tools/ci/send-failure-message
+      - name: test openapi generator
+        run: |
+          npx @openapitools/openapi-generator-cli generate -i zerver/openapi/zulip.yaml -g python -o ./openapi-output/python
