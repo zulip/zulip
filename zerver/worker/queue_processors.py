@@ -659,7 +659,20 @@ class MissedMessageWorker(QueueProcessingWorker):
                         len(events),
                         user_profile_id,
                     )
-                    handle_missedmessage_emails(user_profile_id, events)
+                    try:
+                        # Because we process events in batches, an
+                        # escaped exception here would lead to
+                        # duplicate messages being sent for other
+                        # users in the same events_to_process batch,
+                        # and no guarantee of forward progress.
+                        handle_missedmessage_emails(user_profile_id, events)
+                    except Exception:
+                        logging.exception(
+                            "Failed to process %d missedmessage_emails for user %s",
+                            len(events),
+                            user_profile_id,
+                            stack_info=True,
+                        )
 
                 events_to_process.delete()
 
