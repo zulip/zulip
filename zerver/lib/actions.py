@@ -193,7 +193,11 @@ from zerver.lib.upload import (
     delete_message_image,
     upload_emoji_image,
 )
-from zerver.lib.user_groups import access_user_group_by_id, create_user_group
+from zerver.lib.user_groups import (
+    access_user_group_by_id,
+    create_system_user_groups_for_realm,
+    create_user_group,
+)
 from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
 from zerver.lib.user_topics import add_topic_mute, get_topic_mutes, remove_topic_mute
@@ -5533,6 +5537,8 @@ def do_create_realm(
         )
 
         RealmUserDefault.objects.create(realm=realm)
+
+        create_system_user_groups_for_realm(realm)
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(

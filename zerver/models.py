@@ -2108,6 +2108,31 @@ class UserGroup(models.Model):
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
 
+    # We do not have "Full members" and "Everyone on the internet" group here since there isn't a
+    # separate role value for full members and spectators.
+    SYSTEM_USER_GROUP_ROLE_MAP = {
+        UserProfile.ROLE_REALM_OWNER: {
+            "name": "@role:owners",
+            "description": "Owners of this organization",
+        },
+        UserProfile.ROLE_REALM_ADMINISTRATOR: {
+            "name": "@role:administrators",
+            "description": "Administrators of this organization, including owners",
+        },
+        UserProfile.ROLE_MODERATOR: {
+            "name": "@role:moderators",
+            "description": "Moderators of this organization, including administrators",
+        },
+        UserProfile.ROLE_MEMBER: {
+            "name": "@role:members",
+            "description": "Members of this organization, not including guests",
+        },
+        UserProfile.ROLE_GUEST: {
+            "name": "@role:everyone",
+            "description": "Everyone in this organization, including guests",
+        },
+    }
+
     class Meta:
         unique_together = (("realm", "name"),)
 

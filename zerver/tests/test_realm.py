@@ -34,6 +34,7 @@ from zerver.models import (
     RealmUserDefault,
     ScheduledEmail,
     Stream,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_realm,
@@ -887,6 +888,23 @@ class RealmTest(ZulipTestCase):
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             self.assertEqual(realm.web_public_streams_enabled(), False)
             self.assertEqual(realm.has_web_public_streams(), False)
+
+    def test_creating_realm_creates_system_groups(self) -> None:
+        realm = do_create_realm("realm_string_id", "realm name")
+        system_user_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
+
+        self.assert_length(system_user_groups, 7)
+        user_group_names = [group.name for group in system_user_groups]
+        expected_system_group_names = [
+            "@role:owners",
+            "@role:administrators",
+            "@role:moderators",
+            "@role:fullmembers",
+            "@role:members",
+            "@role:everyone",
+            "@role:internet",
+        ]
+        self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
 
 
 class RealmAPITest(ZulipTestCase):

@@ -2428,12 +2428,11 @@ class MarkdownTest(ZulipTestCase):
     def test_system_user_group_mention(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
-        shiva = self.example_user("shiva")
         hamlet = self.example_user("hamlet")
-        moderators_group = create_user_group(
-            "Moderators", [iago, shiva], get_realm("zulip"), is_system_group=True
+        moderators_group = UserGroup.objects.get(
+            realm=iago.realm, name="@role:moderators", is_system_group=True
         )
-        content = "@*Moderators* @**King Hamlet** test message"
+        content = "@*role:moderators* @**King Hamlet** test message"
 
         # Owner cannot mention a system user group.
         msg = Message(sender=desdemona, sending_client=get_client("test"))
