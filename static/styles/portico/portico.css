@@ -235,14 +235,15 @@ html {
             list-style-type: none;
             font-size: 0.95em;
             font-weight: 400;
-            line-height: 1.7;
-
+            line-height: 1.8;
             cursor: pointer;
 
             a {
                 color: inherit;
                 display: block;
-            }
+            	padding: 1px 4px;
+
+			}
         }
 
         a {
@@ -701,6 +702,33 @@ input.text-error {
 .portico-page-container .portico-header .dropdown-pill .realm-name {
     margin-left: -3px;
 }
+
+.skip-link {
+	background: #68b190 ;
+	top : -100px;
+	left : 300px;
+	position : absolute;
+	margin-left: 5px;
+	overflow : hidden;
+	border-radius : 6px;
+	padding : 6px 10px;
+	cursor : pointer;
+	color : #ffffff;
+	font-size : 18px;
+	font-weight: bold;
+	outline : 5px auto #40966e;
+	&:focus{
+		z-index : 5000;
+		transition : ease-in-out 0.3s;
+		top : -3px;
+		width : auto;
+		height : 25px;
+		outline : 5px auto #40966e;	
+		color : #FFFFFF;
+	}
+
+}
+
 
 .app {
     width: 100%;
