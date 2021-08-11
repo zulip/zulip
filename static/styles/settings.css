@@ -1545,10 +1545,6 @@ input[type="checkbox"] {
     }
 }
 
-body:not(.night-mode) #settings_page .custom_user_field .datepicker {
-    background-color: hsl(0, 0%, 100%);
-}
-
 /* Dialog widgets should be centered, which this roughly achieves. */
 #dialog_widget_modal {
     top: calc(50% - 120px);
