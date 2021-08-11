@@ -1443,11 +1443,8 @@ def check_user_settings_update(
     assert isinstance(setting_name, str)
     if setting_name == "timezone":
         assert isinstance(value, str)
-    elif setting_name in UserProfile.property_types:
-        setting_type = UserProfile.property_types[setting_name]
-        assert isinstance(value, setting_type)
     else:
-        setting_type = UserProfile.notification_setting_types[setting_name]
+        setting_type = UserProfile.property_types[setting_name]
         assert isinstance(value, setting_type)
 
     if setting_name == "default_language":

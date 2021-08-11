@@ -2204,7 +2204,10 @@ class UserDisplayActionTest(BaseAction):
 
     def test_set_user_display_settings(self) -> None:
         for prop in UserProfile.property_types:
-            self.do_set_user_display_settings_test(prop)
+            # Notification settings have a separate test suite, which
+            # handles their separate legacy event type.
+            if prop not in UserProfile.notification_settings_legacy:
+                self.do_set_user_display_settings_test(prop)
 
     def test_set_user_timezone(self) -> None:
         values = ["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""]

@@ -1362,8 +1362,7 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
-    # Define the types of the various automatically managed properties
-    property_types = dict(
+    display_settings_legacy = dict(
         color_scheme=int,
         default_language=str,
         default_view=str,
@@ -1380,7 +1379,7 @@ class UserBaseSettings(models.Model):
         twenty_four_hour_time=bool,
     )
 
-    notification_setting_types = dict(
+    notification_settings_legacy = dict(
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
@@ -1402,6 +1401,13 @@ class UserBaseSettings(models.Model):
         realm_name_in_notifications=bool,
         presence_enabled=bool,
     )
+
+    notification_setting_types = {
+        **notification_settings_legacy
+    }  # Add new notifications settings here.
+
+    # Define the types of the various automatically managed properties
+    property_types = {**display_settings_legacy, **notification_setting_types}
 
     class Meta:
         abstract = True

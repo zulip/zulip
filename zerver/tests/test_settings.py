@@ -319,7 +319,7 @@ class ChangeSettingsTest(ZulipTestCase):
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
-    def do_test_change_user_display_setting(self, setting_name: str) -> None:
+    def do_test_change_user_setting(self, setting_name: str) -> None:
 
         test_changes: Dict[str, Any] = dict(
             default_language="de",
@@ -366,14 +366,19 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)
 
-    def test_change_user_display_setting(self) -> None:
+    def test_change_user_setting(self) -> None:
         """Test updating each non-boolean setting in UserProfile property_types"""
         user_settings = (
-            s for s in UserProfile.property_types if UserProfile.property_types[s] is not bool
+            s
+            for s in UserProfile.property_types
+            if UserProfile.property_types[s] is not bool
+            # Legacy notification settings have a separate test suite, though
+            # we can likely merge that test suite with this one in the future.
+            and s not in UserProfile.notification_settings_legacy
         )
         for setting in user_settings:
-            self.do_test_change_user_display_setting(setting)
-        self.do_test_change_user_display_setting("timezone")
+            self.do_test_change_user_setting(setting)
+        self.do_test_change_user_setting("timezone")
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")
