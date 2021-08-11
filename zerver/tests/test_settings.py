@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict
 from unittest import mock
 
@@ -11,7 +12,13 @@ from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.users import get_all_api_keys
-from zerver.models import Draft, UserProfile, get_user_profile_by_api_key
+from zerver.models import (
+    Draft,
+    NotificationTriggers,
+    ScheduledMessageNotificationEmail,
+    UserProfile,
+    get_user_profile_by_api_key,
+)
 
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -135,6 +142,8 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_change_email_batching_period(self) -> None:
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
         self.login_user(hamlet)
 
         # Default is two minutes
@@ -156,6 +165,55 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.email_notifications_batching_period_seconds, 300)
+
+        # Test that timestamps get updated for existing ScheduledMessageNotificationEmail rows
+        hamlet_msg_id1 = self.send_stream_message(sender=cordelia, stream_name="Verona")
+        hamlet_msg_id2 = self.send_stream_message(sender=cordelia, stream_name="Verona")
+        othello_msg_id1 = self.send_stream_message(sender=cordelia, stream_name="Verona")
+
+        def create_entry(user_profile_id: int, message_id: int, timestamp: datetime) -> int:
+            # The above messages don't actually mention anyone. We just fill up the trigger
+            # because we need to.
+            entry = ScheduledMessageNotificationEmail.objects.create(
+                user_profile_id=user_profile_id,
+                message_id=message_id,
+                trigger=NotificationTriggers.MENTION,
+                scheduled_timestamp=timestamp,
+            )
+            return entry.id
+
+        def get_datetime_object(minutes: int) -> datetime:
+            return datetime(
+                year=2021, month=8, day=10, hour=10, minute=minutes, second=15, tzinfo=timezone.utc
+            )
+
+        hamlet_timestamp = get_datetime_object(10)
+        othello_timestamp = get_datetime_object(20)
+
+        hamlet_entry1_id = create_entry(hamlet.id, hamlet_msg_id1, hamlet_timestamp)
+        hamlet_entry2_id = create_entry(hamlet.id, hamlet_msg_id2, hamlet_timestamp)
+        othello_entry1_id = create_entry(othello.id, othello_msg_id1, othello_timestamp)
+
+        # Update Hamlet's setting from 300 seconds (5 minutes) to 600 seconds (10 minutes)
+        self.assertEqual(hamlet.email_notifications_batching_period_seconds, 300)
+        result = self.client_patch(
+            "/json/settings", {"email_notifications_batching_period_seconds": 10 * 60}
+        )
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.email_notifications_batching_period_seconds, 10 * 60)
+
+        def check_scheduled_timestamp(entry_id: int, expected_timestamp: datetime) -> None:
+            entry = ScheduledMessageNotificationEmail.objects.get(id=entry_id)
+            self.assertEqual(entry.scheduled_timestamp, expected_timestamp)
+
+        # For Hamlet, the new scheduled timestamp should have been updated
+        expected_hamlet_timestamp = get_datetime_object(15)
+        check_scheduled_timestamp(hamlet_entry1_id, expected_hamlet_timestamp)
+        check_scheduled_timestamp(hamlet_entry2_id, expected_hamlet_timestamp)
+
+        # Nothing should have changed for Othello
+        check_scheduled_timestamp(othello_entry1_id, othello_timestamp)
 
     def test_toggling_boolean_user_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""

@@ -214,6 +214,7 @@ from zerver.models import (
     Recipient,
     ScheduledEmail,
     ScheduledMessage,
+    ScheduledMessageNotificationEmail,
     Service,
     Stream,
     SubMessage,
@@ -5064,6 +5065,22 @@ def do_create_realm(
     return realm
 
 
+def update_scheduled_email_notifications_time(
+    user_profile: UserProfile, old_batching_period: int, new_batching_period: int
+) -> None:
+    existing_scheduled_emails = ScheduledMessageNotificationEmail.objects.filter(
+        user_profile=user_profile
+    )
+
+    scheduled_timestamp_change = datetime.timedelta(
+        seconds=new_batching_period
+    ) - datetime.timedelta(seconds=old_batching_period)
+
+    existing_scheduled_emails.update(
+        scheduled_timestamp=F("scheduled_timestamp") + scheduled_timestamp_change
+    )
+
+
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
@@ -5107,6 +5124,11 @@ def do_change_user_setting(
     # Disabling digest emails should clear a user's email queue
     if setting_name == "enable_digest_emails" and not setting_value:
         clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
+
+    if setting_name == "email_notifications_batching_period_seconds":
+        assert isinstance(old_value, int)
+        assert isinstance(setting_value, int)
+        update_scheduled_email_notifications_time(user_profile, old_value, setting_value)
 
     event = {
         "type": "user_settings",
