@@ -17,7 +17,8 @@ export function is_in_focus() {
         !popovers.any_active() &&
         !overlays.is_active() &&
         !overlays.is_modal_open() &&
-        !$(".home-page-input").is(":focus")
+        !$(".home-page-input").is(":focus") &&
+        $("#recent_topics_table table tbody tr").length
     );
 }
 
