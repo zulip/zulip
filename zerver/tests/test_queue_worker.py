@@ -26,6 +26,7 @@ from zerver.models import (
     PreregistrationUser,
     ScheduledMessageNotificationEmail,
     UserActivity,
+    UserProfile,
     get_client,
     get_realm,
     get_stream,
@@ -344,6 +345,33 @@ class WorkerTest(ZulipTestCase):
             {m["message"].content for m in othello_info["missed_messages"]},
             {"where art thou, othello?"},
         )
+
+        with send_mock as sm, timer_mock as tm:
+            with simulated_queue_client(lambda: fake_client):
+                time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+                # Verify that we make forward progress if one of the messages throws an exception
+                fake_client.enqueue("missedmessage_emails", hamlet_event1)
+                fake_client.enqueue("missedmessage_emails", hamlet_event2)
+                fake_client.enqueue("missedmessage_emails", othello_event)
+                with patch("zerver.worker.queue_processors.timezone_now", return_value=time_zero):
+                    mmw.setup()
+                    mmw.start()
+
+                def fail_some(user: UserProfile, *args: Any) -> None:
+                    if user.id == hamlet.id:
+                        raise RuntimeError
+
+                sm.side_effect = fail_some
+                one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+                with patch(
+                    "zerver.worker.queue_processors.timezone_now", return_value=one_minute_overdue
+                ), self.assertLogs(level="ERROR") as error_logs:
+                    mmw.maybe_send_batched_emails()
+                    self.assertIn(
+                        "ERROR:root:Failed to process 2 missedmessage_emails for user 10",
+                        error_logs.output[0],
+                    )
+                    self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
 
     def test_push_notifications_worker(self) -> None:
         """
