@@ -2609,7 +2609,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        # add
+        # add with stream name
         request = {
             "add": orjson.dumps([{"name": "my_test_stream_1"}]).decode(),
         }
@@ -2618,7 +2618,26 @@ class SubscriptionRestApiTest(ZulipTestCase):
         streams = self.get_streams(user)
         self.assertTrue("my_test_stream_1" in streams)
 
-        # now delete the same stream
+        # add with stream id
+        new_stream = self.make_stream(
+            stream_name="test_stream", realm=user.realm, is_web_public=True
+        )
+        request = {
+            "add": orjson.dumps([{"id": new_stream.id}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        streams = self.get_streams(user)
+        self.assertTrue(new_stream.name in streams)
+
+        # add with neither stream name or id should raise error
+        request = {
+            "add": orjson.dumps([{}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_error(result, "Stream name or id must be passed.")
+
+        # now delete the same stream with name
         request = {
             "delete": orjson.dumps(["my_test_stream_1"]).decode(),
         }
@@ -2627,22 +2646,48 @@ class SubscriptionRestApiTest(ZulipTestCase):
         streams = self.get_streams(user)
         self.assertTrue("my_test_stream_1" not in streams)
 
+        # now delete the same stream with id
+        request = {
+            "delete": orjson.dumps([new_stream.id]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        streams = self.get_streams(user)
+        self.assertTrue(new_stream.name not in streams)
+
     def test_add_with_color(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        # add with color proposition
+        # add with color proposition using stream name
         request = {
             "add": orjson.dumps([{"name": "my_test_stream_2", "color": "#afafaf"}]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
         self.assert_json_success(result)
 
-        # incorrect color format
+        # add with color proposition using stream id
+        new_stream = self.make_stream(
+            stream_name="test_stream2", realm=user.realm, is_web_public=True
+        )
+        request = {
+            "add": orjson.dumps([{"id": new_stream.id, "color": "#a2d39b"}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        # incorrect color format using stream name
         request = {
             "subscriptions": orjson.dumps(
                 [{"name": "my_test_stream_3", "color": "#0g0g0g"}]
             ).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_error(result, 'subscriptions[0]["color"] is not a valid hex color code')
+
+        # incorrect color format using stream id
+        request = {
+            "subscriptions": orjson.dumps([{"id": new_stream.id, "color": "#0g0g0g"}]).decode(),
         }
         result = self.api_post(user, "/api/v1/users/me/subscriptions", request)
         self.assert_json_error(result, 'subscriptions[0]["color"] is not a valid hex color code')
@@ -2704,7 +2749,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             self.assert_json_error(result, expected_message)
 
         check_for_error(["foo"], "add[0] is not a dict")
-        check_for_error([{"bogus": "foo"}], "name key is missing from add[0]")
+        check_for_error([{"bogus": "foo"}], "Stream name or id must be passed.")
         check_for_error([{"name": {}}], 'add[0]["name"] is not a string')
 
     def test_bad_principals(self) -> None:
@@ -2726,7 +2771,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([{"name": "my_test_stream_1"}]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "delete[0] is not a string")
+        self.assert_json_error(result, "delete[0] is not a string or integer")
 
     def test_add_or_delete_not_specified(self) -> None:
         user = self.example_user("hamlet")
@@ -2929,6 +2974,25 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.streams + add_streams,
                 self.test_realm,
             )
+
+    def test_unsuccessful_subscriptions_add(self) -> None:
+        """
+        Calling POST /json/users/me/subscriptions should raise error
+        as stream id does not exists.
+        This error occurs because it tries to fetch stream with some
+        stream id which is not present in database.
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        invalid_stream_id = 992
+        valid_stream = self.get_streams(user)[0]
+        result = self.common_subscribe_to_streams(
+            user,
+            [self.get_stream_id(valid_stream), invalid_stream_id],
+            dict(principals=orjson.dumps([user.id]).decode()),
+            allow_fail=True,
+        )
+        self.assert_json_error(result, f"No stream with id '{invalid_stream_id}' found.")
 
     def test_successful_subscriptions_add_with_announce(self) -> None:
         """

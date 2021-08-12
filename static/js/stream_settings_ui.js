@@ -848,7 +848,7 @@ function hide_subscribe_toggle_spinner(stream_row) {
     loading.destroy_indicator(spinner);
 }
 
-function ajaxSubscribe(stream, color, stream_row) {
+function ajaxSubscribe(stream_id, color, stream_row) {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
@@ -857,7 +857,7 @@ function ajaxSubscribe(stream, color, stream_row) {
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream, color}])},
+        data: {subscriptions: JSON.stringify([{id: stream_id, color}])},
         success(resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
@@ -894,14 +894,14 @@ function ajaxSubscribe(stream, color, stream_row) {
     });
 }
 
-function ajaxUnsubscribe(sub, stream_row) {
+function ajaxUnsubscribe(stream_id, stream_row) {
     // TODO: use stream_id when backend supports it
     if (stream_row !== undefined) {
         display_subscribe_toggle_spinner(stream_row);
     }
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([sub.name])},
+        data: {subscriptions: JSON.stringify([stream_id])},
         success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
@@ -932,7 +932,7 @@ export function do_open_create_stream() {
     if (!should_list_all_streams()) {
         // Realms that don't allow listing streams should simply be subscribed to.
         stream_create.set_name(stream);
-        ajaxSubscribe($("#search_stream_name").val());
+        ajaxSubscribe(stream_data.get_stream_id($("#search_stream_name").val()));
         return;
     }
 
@@ -960,7 +960,7 @@ export function unsubscribe_from_private_stream(sub, from_stream_popover) {
             );
         }
 
-        ajaxUnsubscribe(sub, stream_row);
+        ajaxUnsubscribe(sub.stream_id, stream_row);
     }
 
     confirm_dialog.launch({
@@ -982,9 +982,9 @@ export function sub_or_unsub(sub, from_stream_popover, stream_row) {
             unsubscribe_from_private_stream(sub, from_stream_popover);
             return;
         }
-        ajaxUnsubscribe(sub, stream_row);
+        ajaxUnsubscribe(sub.stream_id, stream_row);
     } else {
-        ajaxSubscribe(sub.name, sub.color, stream_row);
+        ajaxSubscribe(sub.stream_id, sub.color, stream_row);
     }
 }
 

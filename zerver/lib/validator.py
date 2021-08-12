@@ -192,6 +192,36 @@ def check_none_or(sub_validator: Validator[ResultT]) -> Validator[Optional[Resul
     return f
 
 
+# It'd first check if dict contains stream name or id and then procceds to other checks.
+def check_dict_for_add_subscription_schema(
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = []
+) -> Validator[Dict[str, ResultT]]:
+    def f(var_name: str, val: object) -> Dict[str, ResultT]:
+        if not isinstance(val, dict):
+            raise ValidationError(_("{var_name} is not a dict").format(var_name=var_name))
+        for k in val:
+            check_string(f"{var_name} key", k)
+
+        either_required_keys = [("name", check_string), ("id", check_int)]
+        required_keys = []
+        for k, sub_validator in either_required_keys:
+            if k in val:
+                vname = f'{var_name}["{k}"]'
+                sub_validator(vname, val[k])
+                required_keys.append((k, sub_validator))
+                break
+
+        if not required_keys:
+            raise ValidationError(_("Stream name or id must be passed."))
+
+        return cast(
+            Validator[Dict[str, ResultT]],
+            check_dict(required_keys, optional_keys, _allow_only_listed_keys=True),
+        )(var_name, val)
+
+    return f
+
+
 def check_list(
     sub_validator: Validator[ResultT], length: Optional[int] = None
 ) -> Validator[List[ResultT]]:

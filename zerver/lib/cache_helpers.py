@@ -16,7 +16,7 @@ from zerver.lib.cache import (
     cache_set_many,
     get_remote_cache_requests,
     get_remote_cache_time,
-    get_stream_cache_key,
+    get_stream_cache_key_for_stream_name,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
     user_profile_cache_key,
@@ -70,7 +70,9 @@ def user_cache_items(
 
 
 def stream_cache_items(items_for_remote_cache: Dict[str, Tuple[Stream]], stream: Stream) -> None:
-    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
+    items_for_remote_cache[get_stream_cache_key_for_stream_name(stream.name, stream.realm_id)] = (
+        stream,
+    )
 
 
 def client_cache_items(items_for_remote_cache: Dict[str, Tuple[Client]], client: Client) -> None:

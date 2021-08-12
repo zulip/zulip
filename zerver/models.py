@@ -55,7 +55,8 @@ from zerver.lib.cache import (
     flush_used_upload_space_cache,
     flush_user_profile,
     get_realm_used_upload_space_cache_key,
-    get_stream_cache_key,
+    get_stream_cache_key_for_stream_id,
+    get_stream_cache_key_for_stream_name,
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
     realm_user_dict_fields,
@@ -94,6 +95,7 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
+STREAM_IDS = TypeVar("STREAM_IDS", Sequence[int], AbstractSet[int])
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
@@ -2207,7 +2209,7 @@ def get_client_remote_cache(name: str) -> Client:
     return client
 
 
-@cache_with_key(get_stream_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(get_stream_cache_key_for_stream_name, timeout=3600 * 24 * 7)
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
     return Stream.objects.select_related().get(name__iexact=stream_name.strip(), realm_id=realm_id)
 
@@ -2234,7 +2236,7 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related().get(id=stream_id, realm=realm)
 
 
-def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
+def bulk_get_streams_by_names(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
     def fetch_streams_by_name(stream_names: List[str]) -> Sequence[Stream]:
         #
         # This should be just
@@ -2254,7 +2256,7 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         )
 
     def stream_name_to_cache_key(stream_name: str) -> str:
-        return get_stream_cache_key(stream_name, realm.id)
+        return get_stream_cache_key_for_stream_name(stream_name, realm.id)
 
     def stream_to_lower_name(stream: Stream) -> str:
         return stream.name.lower()
@@ -2264,6 +2266,24 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         fetch_streams_by_name,
         [stream_name.lower() for stream_name in stream_names],
         id_fetcher=stream_to_lower_name,
+    )
+
+
+def bulk_get_streams_by_ids(realm: Realm, stream_ids: STREAM_IDS) -> Dict[int, Any]:
+    def fetch_streams_by_id(stream_ids: List[int]) -> Sequence[Stream]:
+        return get_active_streams(realm).select_related().filter(id__in=stream_ids)
+
+    def stream_id_to_cache_key(stream_id: int) -> str:
+        return get_stream_cache_key_for_stream_id(stream_id, realm.id)
+
+    def stream_to_stream_id(stream: Stream) -> int:
+        return stream.id
+
+    return bulk_cached_fetch(
+        stream_id_to_cache_key,
+        fetch_streams_by_id,
+        [int(stream_id) for stream_id in stream_ids],
+        id_fetcher=stream_to_stream_id,
     )
 
 

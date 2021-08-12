@@ -70,7 +70,7 @@ from zerver.lib.cache import (
     delete_user_profile_caches,
     display_recipient_cache_key,
     flush_user_profile,
-    get_stream_cache_key,
+    get_stream_cache_key_for_stream_name,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
     user_profile_delivery_email_cache_key,
@@ -1304,7 +1304,7 @@ def do_deactivate_stream(
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
     # Remove the old stream information from remote cache.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
+    old_cache_key = get_stream_cache_key_for_stream_name(old_name, stream.realm_id)
     cache_delete(old_cache_key)
 
     stream_dict = stream.to_dict()
@@ -3747,7 +3747,7 @@ def bulk_add_subscriptions(
     realm: Realm,
     streams: Collection[Stream],
     users: Iterable[UserProfile],
-    color_map: Mapping[str, str] = {},
+    color_map: Mapping[Union[int, str], str] = {},
     from_user_creation: bool = False,
     *,
     acting_user: Optional[UserProfile],
@@ -3795,6 +3795,8 @@ def bulk_add_subscriptions(
 
             if stream.name in color_map:
                 color = color_map[stream.name]
+            elif stream.id in color_map:
+                color = color_map[stream.id]
             else:
                 color = pick_color(user_profile, used_colors)
             used_colors.add(color)
@@ -4834,8 +4836,8 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
 
     # Update the display recipient and stream, which are easy single
     # items to set.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
-    new_cache_key = get_stream_cache_key(stream.name, stream.realm_id)
+    old_cache_key = get_stream_cache_key_for_stream_name(old_name, stream.realm_id)
+    new_cache_key = get_stream_cache_key_for_stream_name(stream.name, stream.realm_id)
     if old_cache_key != new_cache_key:
         cache_delete(old_cache_key)
         cache_set(new_cache_key, stream)
