@@ -293,7 +293,7 @@ export class Filter {
     // Parse a string into a list of operators (see below).
     static parse(str) {
         const operators = [];
-        const search_term = [];
+        let search_term = [];
         let negated;
         let operator;
         let operand;
@@ -305,6 +305,7 @@ export class Filter {
                 const _operand = search_term.join(" ");
                 term = {operator, operand: _operand, negated: false};
                 operators.push(term);
+                search_term = [];
             }
         }
 
@@ -340,12 +341,16 @@ export class Filter {
                     search_term.push(token);
                     continue;
                 }
+                // If any search query was present and it is followed by some other filters
+                // then we must add that search filter in its current position in the
+                // operators list. This is done so that the last active filter is correctly
+                // detected by the `get_search_result` function (in search_suggestions.js).
+                maybe_add_search_terms();
                 term = {negated, operator, operand};
                 operators.push(term);
             }
         }
 
-        // NB: Callers of 'parse' can assume that the 'search' operator is last.
         maybe_add_search_terms();
         return operators;
     }
