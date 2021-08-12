@@ -122,6 +122,7 @@
 * [Export your organization](/help/export-your-organization)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
+* [Delete your organization's data](/help/delete-all-organization-data)
 * [GDPR compliance](/help/gdpr-compliance)
 
 ## Organization settings
