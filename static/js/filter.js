@@ -299,6 +299,15 @@ export class Filter {
         let operand;
         let term;
 
+        function maybe_add_search_terms() {
+            if (search_term.length > 0) {
+                operator = "search";
+                const _operand = search_term.join(" ");
+                term = {operator, operand: _operand, negated: false};
+                operators.push(term);
+            }
+        }
+
         // Match all operands that either have no spaces, or are surrounded by
         // quotes, preceded by an optional operator that may have a space after it.
         const matches = str.match(/([^\s:]+: ?)?("[^"]+"?|\S+)/g);
@@ -337,12 +346,7 @@ export class Filter {
         }
 
         // NB: Callers of 'parse' can assume that the 'search' operator is last.
-        if (search_term.length > 0) {
-            operator = "search";
-            operand = search_term.join(" ");
-            term = {operator, operand, negated: false};
-            operators.push(term);
-        }
+        maybe_add_search_terms();
         return operators;
     }
 
