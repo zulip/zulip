@@ -841,7 +841,7 @@ class NormalActionsTest(BaseAction):
                 acting_user=None,
             ),
             state_change_expected=True,
-            num_events=5,
+            num_events=7,
         )
 
         check_invites_changed("events[3]", events[3])
@@ -1029,8 +1029,8 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_register_events(self) -> None:
-        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
-        self.assert_length(events, 3)
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=5)
+        self.assert_length(events, 5)
 
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
@@ -1044,6 +1044,9 @@ class NormalActionsTest(BaseAction):
             events[2]["message"]["content"],
         )
 
+        check_user_group_add_members("events[3]", events[3])
+        check_user_group_add_members("events[4]", events[4])
+
     def test_register_events_email_address_visibility(self) -> None:
         do_set_realm_property(
             self.user_profile.realm,
@@ -1052,8 +1055,8 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
 
-        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
-        self.assert_length(events, 3)
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=5)
+        self.assert_length(events, 5)
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
@@ -1065,6 +1068,9 @@ class NormalActionsTest(BaseAction):
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
             events[2]["message"]["content"],
         )
+
+        check_user_group_add_members("events[3]", events[3])
+        check_user_group_add_members("events[4]", events[4])
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -1491,10 +1497,19 @@ class NormalActionsTest(BaseAction):
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                num_events=4,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
+
+            check_user_group_remove_members("events[1]", events[1])
+            check_user_group_add_members("events[2]", events[2])
+
+            if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
+                check_user_group_remove_members("events[3]", events[3])
+            else:
+                check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_billing_admin(self) -> None:
         reset_emails_in_zulip_realm()
@@ -1519,10 +1534,19 @@ class NormalActionsTest(BaseAction):
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                num_events=4,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
+
+            check_user_group_remove_members("events[1]", events[1])
+            check_user_group_add_members("events[2]", events[2])
+
+            if role == UserProfile.ROLE_REALM_OWNER:
+                check_user_group_remove_members("events[3]", events[3])
+            else:
+                check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_moderator(self) -> None:
         reset_emails_in_zulip_realm()
@@ -1535,10 +1559,19 @@ class NormalActionsTest(BaseAction):
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                num_events=4,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
+
+            check_user_group_remove_members("events[1]", events[1])
+            check_user_group_add_members("events[2]", events[2])
+
+            if role == UserProfile.ROLE_MODERATOR:
+                check_user_group_remove_members("events[3]", events[3])
+            else:
+                check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_guest(self) -> None:
         stream = Stream.objects.get(name="Denmark")
@@ -1554,10 +1587,19 @@ class NormalActionsTest(BaseAction):
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                num_events=4,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
+
+            check_user_group_remove_members("events[1]", events[1])
+            check_user_group_add_members("events[2]", events[2])
+
+            if role == UserProfile.ROLE_GUEST:
+                check_user_group_remove_members("events[3]", events[3])
+            else:
+                check_user_group_add_members("events[3]", events[3])
 
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
@@ -1734,7 +1776,7 @@ class NormalActionsTest(BaseAction):
 
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot("test")
-        events = self.verify_action(action, num_events=2)
+        events = self.verify_action(action, num_events=4)
         check_realm_bot_add("events[1]", events[1])
 
         action = lambda: self.create_bot(
@@ -1744,7 +1786,7 @@ class NormalActionsTest(BaseAction):
             interface_type=Service.GENERIC,
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
         )
-        events = self.verify_action(action, num_events=2)
+        events = self.verify_action(action, num_events=4)
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
         check_realm_bot_add("events[1]", events[1])
@@ -1756,7 +1798,7 @@ class NormalActionsTest(BaseAction):
             config_data=orjson.dumps({"foo": "bar"}).decode(),
             bot_type=UserProfile.EMBEDDED_BOT,
         )
-        events = self.verify_action(action, num_events=2)
+        events = self.verify_action(action, num_events=4)
         check_realm_bot_add("events[1]", events[1])
 
     def test_change_bot_full_name(self) -> None:

@@ -867,19 +867,21 @@ class LoginTest(ZulipTestCase):
         ContentType.objects.clear_cache()
 
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
-            self.register(self.nonreg_email("test"), "test")
+            with self.captureOnCommitCallbacks(execute=True):
+                self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 89)
+        self.assert_length(queries, 95)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assert_length(cache_tries, 21)
+        self.assert_length(cache_tries, 23)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
+        self.check_user_added_in_system_group(user_profile)
 
     def test_register_deactivated(self) -> None:
         """
@@ -1325,6 +1327,7 @@ class InviteUserTest(InviteUserBase):
         invitee_profile = self.nonreg_user("alice")
         self.assertTrue(invitee_profile.is_realm_owner)
         self.assertFalse(invitee_profile.is_guest)
+        self.check_user_added_in_system_group(invitee_profile)
 
     def test_invite_user_as_owner_from_admin_account(self) -> None:
         self.login("iago")
@@ -1348,6 +1351,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(invitee_profile.is_realm_admin)
         self.assertFalse(invitee_profile.is_realm_owner)
         self.assertFalse(invitee_profile.is_guest)
+        self.check_user_added_in_system_group(invitee_profile)
 
     def test_invite_user_as_admin_from_normal_account(self) -> None:
         self.login("hamlet")
@@ -1371,6 +1375,7 @@ class InviteUserTest(InviteUserBase):
         self.assertFalse(invitee_profile.is_realm_admin)
         self.assertTrue(invitee_profile.is_moderator)
         self.assertFalse(invitee_profile.is_guest)
+        self.check_user_added_in_system_group(invitee_profile)
 
     def test_invite_user_as_moderator_from_normal_account(self) -> None:
         self.login("hamlet")
@@ -1410,6 +1415,7 @@ class InviteUserTest(InviteUserBase):
         invitee_profile = self.nonreg_user("alice")
         self.assertFalse(invitee_profile.is_realm_admin)
         self.assertTrue(invitee_profile.is_guest)
+        self.check_user_added_in_system_group(invitee_profile)
 
     def test_successful_invite_user_as_guest_from_admin_account(self) -> None:
         self.login("iago")
@@ -1423,6 +1429,7 @@ class InviteUserTest(InviteUserBase):
         invitee_profile = self.nonreg_user("alice")
         self.assertFalse(invitee_profile.is_realm_admin)
         self.assertTrue(invitee_profile.is_guest)
+        self.check_user_added_in_system_group(invitee_profile)
 
     def test_successful_invite_user_with_name(self) -> None:
         """

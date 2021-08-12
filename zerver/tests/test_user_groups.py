@@ -57,8 +57,10 @@ class UserGroupTestCase(ZulipTestCase):
         othello = self.example_user("othello")
         self.create_user_group_for_test("support")
         user_groups = get_direct_user_groups(othello)
-        self.assert_length(user_groups, 1)
-        self.assertEqual(user_groups[0].name, "support")
+        self.assert_length(user_groups, 3)
+        # othello is a direct member of two role-based system groups also.
+        user_group_names = [group.name for group in user_groups]
+        self.assertEqual(set(user_group_names), {"support", "@role:members", "@role:fullmembers"})
 
     def test_recursive_queries_for_user_groups(self) -> None:
         realm = get_realm("zulip")
@@ -92,14 +94,14 @@ class UserGroupTestCase(ZulipTestCase):
             list(get_recursive_group_members(everyone_group)), [desdemona, iago, shiva]
         )
 
-        self.assertCountEqual(
-            list(get_recursive_membership_groups(desdemona)),
-            [leadership_group, staff_group, everyone_group],
-        )
-        self.assertCountEqual(
-            list(get_recursive_membership_groups(iago)), [staff_group, everyone_group]
-        )
-        self.assertCountEqual(list(get_recursive_membership_groups(shiva)), [everyone_group])
+        self.assertIn(leadership_group, list(get_recursive_membership_groups(desdemona)))
+        self.assertIn(staff_group, list(get_recursive_membership_groups(desdemona)))
+        self.assertIn(everyone_group, list(get_recursive_membership_groups(desdemona)))
+
+        self.assertIn(staff_group, list(get_recursive_membership_groups(iago)))
+        self.assertIn(everyone_group, list(get_recursive_membership_groups(iago)))
+
+        self.assertIn(everyone_group, list(get_recursive_membership_groups(shiva)))
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
@@ -268,11 +270,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         user_group = UserGroup.objects.get(name="support")
         # Test success
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
-        self.assertEqual(UserGroupMembership.objects.count(), 3)
+        self.assertEqual(UserGroupMembership.objects.count(), 19)
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 8)
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        self.assertEqual(UserGroupMembership.objects.count(), 18)
         # Test when invalid user group is supplied
         result = self.client_delete("/json/user_groups/1111")
         self.assert_json_error(result, "Invalid user group")

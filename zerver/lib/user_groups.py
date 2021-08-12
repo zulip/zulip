@@ -129,6 +129,10 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[User
 
 
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
+    """Any changes to this function likely require a migration to adjust
+    existing realms.  See e.g. migration 0375_create_role_based_system_groups.py,
+    which is a copy of this function from when we introduced system groups.
+    """
     role_system_groups_dict: Dict[int, UserGroup] = {}
     for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP.keys():
         user_group_params = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]
@@ -174,3 +178,12 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     GroupGroupMembership.objects.bulk_create(subgroup_objects)
 
     return role_system_groups_dict
+
+
+def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
+    system_user_group_name = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
+
+    system_user_group = UserGroup.objects.get(
+        name=system_user_group_name, realm=user_profile.realm, is_system_group=True
+    )
+    return system_user_group
