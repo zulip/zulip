@@ -73,7 +73,8 @@ exports.test_realm_emojis = {
     101: {
         id: "101",
         name: "spain",
-        source_url: "/some/path/to/spain.png",
+        source_url: "/some/path/to/spain.gif",
+        still_url: "/some/path/to/spain.png",
         deactivated: false,
         author_id: test_user.user_id,
     },

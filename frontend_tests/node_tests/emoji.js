@@ -45,7 +45,7 @@ run_test("get_emoji_* API", () => {
     assert.equal(emoji.get_emoji_codepoint("holiday_tree"), "1f384");
     assert.equal(emoji.get_emoji_codepoint("bogus"), undefined);
 
-    assert.equal(emoji.get_realm_emoji_url("spain"), "/some/path/to/spain.png");
+    assert.equal(emoji.get_realm_emoji_url("spain"), "/some/path/to/spain.gif");
 });
 
 run_test("get_emoji_details_by_name", () => {
@@ -87,7 +87,17 @@ run_test("get_emoji_details_by_name", () => {
         emoji_name: "spain",
         reaction_type: "realm_emoji",
         emoji_code: "101",
-        url: "/some/path/to/spain.png",
+        url: "/some/path/to/spain.gif",
+        still_url: "/some/path/to/spain.png",
+    });
+
+    emoji_name = "green_tick";
+    emoji_name = emoji.get_emoji_details_by_name(emoji_name);
+    assert.deepEqual(emoji_name, {
+        emoji_name: "green_tick",
+        reaction_type: "realm_emoji",
+        emoji_code: "102",
+        url: "/some/path/to/emoji",
     });
 
     // Test sending without emoji name.

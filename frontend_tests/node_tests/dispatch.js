@@ -511,7 +511,7 @@ run_test("realm_emoji", ({override}) => {
     dispatch(event);
 
     // Now emoji.js knows about the spain emoji.
-    assert_same(emoji.get_realm_emoji_url("spain"), "/some/path/to/spain.png");
+    assert_same(emoji.get_realm_emoji_url("spain"), "/some/path/to/spain.gif");
 
     // Make sure our UI modules all got dispatched the same simple way.
     for (const stub of ui_stubs) {

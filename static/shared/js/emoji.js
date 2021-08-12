@@ -157,6 +157,7 @@ export function update_emojis(realm_emojis) {
             id: data.id,
             emoji_name: data.name,
             emoji_url: data.source_url,
+            still_url: data.still_url,
             deactivated: data.deactivated,
         });
         if (data.deactivated !== true) {
@@ -164,6 +165,7 @@ export function update_emojis(realm_emojis) {
                 id: data.id,
                 emoji_name: data.name,
                 emoji_url: data.source_url,
+                still_url: data.still_url,
             });
         }
     }
@@ -193,6 +195,9 @@ export function get_emoji_details_by_name(emoji_name) {
         const emoji_code_info = active_realm_emojis.get(emoji_name);
         emoji_info.emoji_code = emoji_code_info.id;
         emoji_info.url = emoji_code_info.emoji_url;
+        if (emoji_code_info.still_url) {
+            emoji_info.still_url = emoji_code_info.still_url;
+        }
     } else {
         const codepoint = get_emoji_codepoint(emoji_name);
         if (codepoint === undefined) {
