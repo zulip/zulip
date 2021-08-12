@@ -216,6 +216,9 @@ class Realm(models.Model):
     string_id: str = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
 
     date_created: datetime.datetime = models.DateTimeField(default=timezone_now)
+    demo_organization_scheduled_deletion_date: datetime.datetime = models.DateTimeField(
+        default=None, null=True
+    )
     deactivated: bool = models.BooleanField(default=False)
 
     # Redirect URL if the Realm has moved to another server
