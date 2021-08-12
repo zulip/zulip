@@ -28,6 +28,6 @@
 
 {generate_response_description(API_ENDPOINT_NAME)}
 
-#### Example response
+#### Example responses
 
 {generate_code_example|API_ENDPOINT_NAME|fixture}
