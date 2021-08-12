@@ -226,21 +226,21 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.client_post("/json/user_groups/create", info=params)
         user_group = UserGroup.objects.get(name="support")
         # Test add members
-        self.assertEqual(UserGroupMembership.objects.count(), 3)
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
 
         othello = self.example_user("othello")
         add = [othello.id]
         params = {"add": orjson.dumps(add).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 4)
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 2)
         members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
 
         # Test adding a member already there.
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"User {othello.id} is already a member of this group")
-        self.assertEqual(UserGroupMembership.objects.count(), 4)
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 2)
         members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
 
@@ -253,7 +253,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"delete": orjson.dumps([othello.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.count(), 3)
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
         members = get_direct_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assert_length(members, 1)
 
@@ -261,7 +261,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"delete": orjson.dumps([othello.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"There is no member '{othello.id}' in this user group")
-        self.assertEqual(UserGroupMembership.objects.count(), 3)
+        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
         members = get_direct_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assert_length(members, 1)
 
@@ -532,7 +532,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assertEqual(UserGroupMembership.objects.count(), 4)
+                self.assertEqual(
+                    UserGroupMembership.objects.filter(user_group=user_group).count(), 2
+                )
                 members = get_direct_memberships_of_users(user_group, [aaron, othello])
                 self.assert_length(members, 2)
             else:
@@ -546,7 +548,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assertEqual(UserGroupMembership.objects.count(), 3)
+                self.assertEqual(
+                    UserGroupMembership.objects.filter(user_group=user_group).count(), 1
+                )
                 members = get_direct_memberships_of_users(user_group, [aaron, othello])
                 self.assert_length(members, 1)
             else:
