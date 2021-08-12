@@ -84,12 +84,14 @@ This import tool is currently beta and does not support importing
 the following data:
 
 -   User avatars
--   Uploaded files
 -   Default channels for new users
 -   Wildcard mentions such as `@all` and `@here` are not converted.
 -   Starred messages
 -   Threads as separate topics
 -   Messages longer than Zulip's limit of 10,000 characters.
+-   Messages from Rocket.Chat Discussions are imported as topics
+    inside the Zulip stream corresponding to the parent channel of the
+    Rocket.Chat Discussion.
 
 Additionally, because Rocket.Chat does not provide a stable data
 export API, the import tool may require small changes from time to
