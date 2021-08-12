@@ -458,13 +458,15 @@ def process_raw_message_batch(
 
         return content
 
-    mention_map: Dict[int, Set[int]] = {}
+    user_mention_map: Dict[int, Set[int]] = {}
+    wildcard_mention_map: Dict[int, bool] = {}
     zerver_message: List[ZerverFieldsT] = []
 
     for raw_message in raw_messages:
         message_id = NEXT_ID("message")
         mention_user_ids = raw_message["mention_user_ids"]
-        mention_map[message_id] = mention_user_ids
+        user_mention_map[message_id] = mention_user_ids
+        wildcard_mention_map[message_id] = raw_message["wildcard_mention"]
 
         content = fix_mentions(
             content=raw_message["content"],
@@ -530,7 +532,8 @@ def process_raw_message_batch(
         zerver_message=zerver_message,
         subscriber_map=subscriber_map,
         is_pm_data=is_pm_data,
-        mention_map=mention_map,
+        mention_map=user_mention_map,
+        wildcard_mention_map=wildcard_mention_map,
     )
 
     message_json = dict(
@@ -642,13 +645,16 @@ def process_messages(
 
         # Add user mentions to message_dict
         mention_user_ids = set()
+        wildcard_mention = False
         for mention in message.get("mentions", []):
             mention_id = mention["_id"]
             if mention_id in ["all", "here"]:
+                wildcard_mention = True
                 continue
             user_id = user_id_mapper.get(mention_id)
             mention_user_ids.add(user_id)
         message_dict["mention_user_ids"] = mention_user_ids
+        message_dict["wildcard_mention"] = wildcard_mention
 
         # Add channel mentions to message_dict
         rc_channel_mention_data: List[Dict[str, str]] = []

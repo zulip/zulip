@@ -85,7 +85,6 @@ the following data:
 
 -   User avatars
 -   Default channels for new users
--   Wildcard mentions such as `@all` and `@here` are not converted.
 -   Starred messages
 -   Threads as separate topics
 -   Messages longer than Zulip's limit of 10,000 characters.
