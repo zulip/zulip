@@ -11,6 +11,14 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 97**
+
+* `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
+  /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Custom emoji objects may now contain a `still_url` field, with the
+  URL of a PNG still image version of the emoji. This field will only be
+  present for animated emoji.
+
 **Feature level 96**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):

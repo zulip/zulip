@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock, patch
 
 from django.conf import settings
@@ -99,7 +100,43 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
         with get_test_image_file("img.png") as image_file:
             image_data = image_file.read()
-        resized_image_data = resize_emoji(image_data)
+        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
 
+        self.assertEqual(is_animated, False)
+        self.assertEqual(still_image_data, None)
         self.assertEqual(image_data, original_key.get()["Body"].read())
         self.assertEqual(resized_image_data, resized_key.get()["Body"].read())
+
+        with get_test_image_file("animated_img.gif") as image_file:
+            emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
+        if not emoji:
+            raise AssertionError("Unable to add emoji.")
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=othello.realm_id,
+            emoji_file_name=emoji.file_name,
+        )
+
+        with self.assertLogs(level="INFO"):
+            transfer_emoji_to_s3(1)
+
+        self.assert_length(list(bucket.objects.all()), 5)
+        original_key = bucket.Object(emoji_path + ".original")
+        resized_key = bucket.Object(emoji_path)
+        assert emoji.file_name
+        still_key = bucket.Object(
+            RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+                realm_id=othello.realm_id,
+                emoji_filename_without_extension=os.path.splitext(emoji.file_name)[0],
+            )
+        )
+
+        with get_test_image_file("animated_img.gif") as image_file:
+            image_data = image_file.read()
+        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
+
+        self.assertEqual(is_animated, True)
+        self.assertEqual(type(still_image_data), bytes)
+        self.assertEqual(image_data, original_key.get()["Body"].read())
+        self.assertEqual(resized_image_data, resized_key.get()["Body"].read())
+        self.assertEqual(still_image_data, still_key.get()["Body"].read())

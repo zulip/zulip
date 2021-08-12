@@ -7214,8 +7214,9 @@ def check_add_realm_emoji(
     emoji_file_name = mark_sanitized(emoji_file_name)
 
     emoji_uploaded_successfully = False
+    is_animated = False
     try:
-        upload_emoji_image(image_file, emoji_file_name, author)
+        is_animated = upload_emoji_image(image_file, emoji_file_name, author)
         emoji_uploaded_successfully = True
     finally:
         if not emoji_uploaded_successfully:
@@ -7223,7 +7224,8 @@ def check_add_realm_emoji(
             return None
         else:
             realm_emoji.file_name = emoji_file_name
-            realm_emoji.save(update_fields=["file_name"])
+            realm_emoji.is_animated = is_animated
+            realm_emoji.save(update_fields=["file_name", "is_animated"])
             notify_realm_emoji(realm_emoji.realm)
     return realm_emoji
 

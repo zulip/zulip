@@ -1271,9 +1271,15 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         # Test unequal width and height of animated GIF image
         with get_test_image_file("animated_unequal_img.gif") as f:
             animated_unequal_img_data = f.read()
-        resized_img_data = resize_emoji(animated_unequal_img_data, size=50)
+        resized_img_data, is_animated, still_img_data = resize_emoji(
+            animated_unequal_img_data, size=50
+        )
         im = Image.open(io.BytesIO(resized_img_data))
         self.assertEqual((50, 50), im.size)
+        self.assertTrue(is_animated)
+        assert still_img_data is not None
+        still_image = Image.open(io.BytesIO(still_img_data))
+        self.assertEqual((50, 50), still_image.size)
 
         # Test corrupt image exception
         with get_test_image_file("corrupt.gif") as f:
@@ -1285,25 +1291,45 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         with get_test_image_file("animated_large_img.gif") as f:
             animated_large_img_data = f.read()
         with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
-            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            resized_img_data, is_animated, still_img_data = resize_emoji(
+                animated_large_img_data, size=50
+            )
             im = Image.open(io.BytesIO(resized_img_data))
             self.assertEqual((50, 50), im.size)
+            self.assertTrue(is_animated)
+            assert still_img_data
+            still_image = Image.open(io.BytesIO(still_img_data))
+            self.assertEqual((50, 50), still_image.size)
 
         # Test an image file larger than max is resized
         with get_test_image_file("animated_large_img.gif") as f:
             animated_large_img_data = f.read()
         with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
-            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            resized_img_data, is_animated, still_img_data = resize_emoji(
+                animated_large_img_data, size=50
+            )
             im = Image.open(io.BytesIO(resized_img_data))
             self.assertEqual((50, 50), im.size)
+            self.assertTrue(is_animated)
+            assert still_img_data is not None
+            still_image = Image.open(io.BytesIO(still_img_data))
+            self.assertEqual((50, 50), still_image.size)
 
         # Test an image smaller than max and smaller than file size max is not resized
         with get_test_image_file("animated_large_img.gif") as f:
             animated_large_img_data = f.read()
         with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
-            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            resized_img_data, is_animated, still_img_data = resize_emoji(
+                animated_large_img_data, size=50
+            )
             im = Image.open(io.BytesIO(resized_img_data))
             self.assertEqual((256, 256), im.size)
+            self.assertTrue(is_animated)
+
+            # We unconditionally resize the still_image
+            assert still_img_data is not None
+            still_image = Image.open(io.BytesIO(still_img_data))
+            self.assertEqual((50, 50), still_image.size)
 
     def tearDown(self) -> None:
         destroy_uploads()
@@ -1714,12 +1740,41 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             upload_emoji_image(image_file, file_name, user_profile)
         url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
 
+        # Verify the assert statement for trying to fetch the still
+        # version of a non-GIF image, since we only support animated GIFs.
+        with self.assertRaises(AssertionError):
+            still_url = zerver.lib.upload.upload_backend.get_emoji_url(
+                file_name, user_profile.realm_id, still=True
+            )
+
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=file_name,
         )
         expected_url = f"/user_avatars/{emoji_path}"
         self.assertEqual(expected_url, url)
+
+        file_name = "emoji.gif"
+        with get_test_image_file("animated_img.gif") as image_file:
+            upload_emoji_image(image_file, file_name, user_profile)
+        url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+        still_url = zerver.lib.upload.upload_backend.get_emoji_url(
+            file_name, user_profile.realm_id, still=True
+        )
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+
+        still_emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_filename_without_extension=os.path.splitext(file_name)[0],
+        )
+        expected_url = f"/user_avatars/{emoji_path}"
+        self.assertEqual(expected_url, url)
+        expected_still_url = f"/user_avatars/{still_emoji_path}"
+        self.assertEqual(expected_still_url, still_url)
 
     def test_tarball_upload_and_deletion_local(self) -> None:
         user_profile = self.example_user("iago")
@@ -2074,6 +2129,23 @@ class S3Test(ZulipTestCase):
 
         expected_url = f"https://{bucket}.s3.amazonaws.com/{path}"
         self.assertEqual(expected_url, url)
+
+        emoji_name = "animated_image.gif"
+
+        path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_name)
+        still_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
+            realm_id=realm_id, emoji_filename_without_extension=os.path.splitext(emoji_name)[0]
+        )
+
+        url = zerver.lib.upload.upload_backend.get_emoji_url("animated_image.gif", realm_id)
+        still_url = zerver.lib.upload.upload_backend.get_emoji_url(
+            "animated_image.gif", realm_id, still=True
+        )
+
+        expected_url = f"https://{bucket}.s3.amazonaws.com/{path}"
+        self.assertEqual(expected_url, url)
+        expected_still_url = f"https://{bucket}.s3.amazonaws.com/{still_path}"
+        self.assertEqual(expected_still_url, still_url)
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:

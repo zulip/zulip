@@ -971,9 +971,13 @@ class RealmEmoji(models.Model):
     # The basename of the custom emoji's filename; see PATH_ID_TEMPLATE for the full path.
     file_name: Optional[str] = models.TextField(db_index=True, null=True, blank=True)
 
+    # Whether this custom emoji is an animated image.
+    is_animated: bool = models.BooleanField(default=False)
+
     deactivated: bool = models.BooleanField(default=False)
 
     PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
+    STILL_PATH_ID_TEMPLATE = "{realm_id}/emoji/images/still/{emoji_filename_without_extension}.png"
 
     def __str__(self) -> str:
         return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
@@ -993,13 +997,26 @@ def get_realm_emoji_dicts(
         if realm_emoji.author:
             author_id = realm_emoji.author_id
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
-        d[str(realm_emoji.id)] = dict(
+
+        emoji_dict = dict(
             id=str(realm_emoji.id),
             name=realm_emoji.name,
             source_url=emoji_url,
             deactivated=realm_emoji.deactivated,
             author_id=author_id,
         )
+
+        if realm_emoji.is_animated:
+            # For animated emoji, we include still_url with a static
+            # version of the image, so that clients can display the
+            # emoji in a less distracting (not animated) fashion when
+            # desired.
+            emoji_dict["still_url"] = get_emoji_url(
+                realm_emoji.file_name, realm_emoji.realm_id, still=True
+            )
+
+        d[str(realm_emoji.id)] = emoji_dict
+
     return d
 
 

@@ -712,7 +712,10 @@ realm_emoji_type = DictType(
         ("source_url", str),
         ("deactivated", bool),
         ("author_id", int),
-    ]
+    ],
+    optional_keys=[
+        ("still_url", str),
+    ],
 )
 
 realm_emoji_update_event = event_dict_type(
