@@ -6,11 +6,12 @@ import * as common from "../common";
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
+
+
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
 	const $skiplink = $codeSection.find(".skip-link");
-	console.log("Here");
 	$skiplink.addClass("active");
 
     $li.on("click", function () {
@@ -26,7 +27,7 @@ function registerCodeSection($codeSection) {
     $li.on("keydown", (e) => {
         if (e.key === "Enter") {
             e.target.click();
-        }
+		}
     });
 }
 
@@ -54,10 +55,11 @@ function highlight_current_article() {
 }
 
 function render_code_sections() {
-    $(".code-section").each(function () {
+	if(parent.location.hash !== "") parent.location.hash = "";
+	$(".code-section").each(function () {
         activate_correct_tab($(this));
         registerCodeSection($(this));
-    });
+	});
 
     highlight_current_article();
 
@@ -119,7 +121,7 @@ new SimpleBar($(".sidebar")[0]);
 
 $(".sidebar a").on("click", function (e) {
     const path = $(this).attr("href");
-    const path_dir = path.split("/")[1];
+	const path_dir = path.split("/")[1];
     const current_dir = window.location.pathname.split("/")[1];
 
     // Do not block redirecting to external URLs
@@ -183,5 +185,4 @@ window.addEventListener("popstate", () => {
 });
 
 $("body").addClass("noscroll");
-
 $(".highlighted")[0].scrollIntoView({block: "center"});

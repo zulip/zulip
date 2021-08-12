@@ -237,12 +237,10 @@ html {
             font-weight: 400;
             line-height: 1.8;
             cursor: pointer;
-
             a {
                 color: inherit;
                 display: block;
             	padding: 1px 4px;
-
 			}
         }
 
