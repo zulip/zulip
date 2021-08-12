@@ -695,6 +695,11 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 2.1.x series
 
+### 2.1.8 -- 2021-08-11
+
+- Fixed possible `0257_fix_has_link_attribute.py` database migration
+  failure, which would cause errors during the upgrade process.
+
 ### 2.1.7 -- 2020-06-25
 
 - CVE-2020-15070: Fix privilege escalation vulnerability with custom
