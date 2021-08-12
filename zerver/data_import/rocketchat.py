@@ -134,6 +134,13 @@ def process_users(
             bot_user["bot_owner"] = realm_owners[0]
 
 
+def get_stream_name(rc_channel: Dict[str, Any]) -> str:
+    if rc_channel.get("teamMain"):
+        return f'[TEAM] {rc_channel["name"]}'
+    else:
+        return rc_channel["name"]
+
+
 def convert_channel_data(
     room_id_to_room_map: Dict[str, Dict[str, Any]],
     team_id_to_team_map: Dict[str, Dict[str, Any]],
@@ -149,19 +156,13 @@ def convert_channel_data(
         stream_id = stream_id_mapper.get(rc_room_id)
         invite_only = channel_dict["t"] == "p"
 
-        stream_name = channel_dict["name"]
+        stream_name = get_stream_name(channel_dict)
+
         stream_desc = channel_dict.get("description", "")
-        if channel_dict.get("teamId"):
-            if channel_dict.get("teamMain") is True:
-                # In case you change this, please also change the stream name
-                # used while adding the Rocket.Chat channel mention data to
-                # message_dict in `message_to_dict` inner-function of
-                # `process_messages` function below.
-                stream_name = "[TEAM] " + stream_name
-            else:
-                stream_desc = "[Team {} channel]. {}".format(
-                    team_id_to_team_map[channel_dict["teamId"]]["name"], stream_desc
-                )
+        if channel_dict.get("teamId") and not channel_dict.get("teamMain"):
+            stream_desc = "[Team {} channel]. {}".format(
+                team_id_to_team_map[channel_dict["teamId"]]["name"], stream_desc
+            )
 
         # If the channel is read-only, then only admins and moderators
         # should be allowed to post in the converted Zulip stream.
@@ -542,6 +543,18 @@ def process_raw_message_batch(
     create_converted_data_files(message_json, output_dir, message_file)
 
 
+def get_topic_name(
+    message: Dict[str, Any], dsc_id_to_dsc_map: Dict[str, Dict[str, Any]], is_pm_data: bool = False
+) -> str:
+    if is_pm_data:
+        return ""
+    elif message["rid"] in dsc_id_to_dsc_map:
+        dsc_channel_name = dsc_id_to_dsc_map[message["rid"]]["fname"]
+        return f"{dsc_channel_name} (Imported from Rocket.Chat)"
+    else:
+        return "Imported from Rocket.Chat"
+
+
 def process_messages(
     realm_id: int,
     messages: List[Dict[str, Any]],
@@ -599,7 +612,7 @@ def process_messages(
             has_link=True if message.get("urls") else False,
         )
 
-        # Add recipient_id and topic to message_dict
+        # Add recipient_id to message_dict
         if is_pm_data:
             # Message is in a PM or a huddle.
             rc_channel_id = message["rid"]
@@ -614,23 +627,18 @@ def process_messages(
                 else:
                     zulip_member_id = user_id_mapper.get(rc_member_ids[0])
                     message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
-            # PMs and huddles don't have topics, but topic_name field is required in `build_message`.
-            message_dict["topic_name"] = ""
         elif message["rid"] in dsc_id_to_dsc_map:
             # Message is in a discussion
             dsc_channel = dsc_id_to_dsc_map[message["rid"]]
             parent_channel_id = dsc_channel["prid"]
             stream_id = stream_id_mapper.get(parent_channel_id)
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
-
-            # In case you change this, please also change the topic name used
-            # in discussion mention to topic mention conversion below, while
-            # adding the Rocket.Chat channel mention data to message_dict.
-            message_dict["topic_name"] = f'{dsc_channel["fname"]} (Imported from Rocket.Chat)'
         else:
             stream_id = stream_id_mapper.get(message["rid"])
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
-            message_dict["topic_name"] = "Imported from Rocket.Chat"
+
+        # Add topic name to message_dict
+        message_dict["topic_name"] = get_topic_name(message, dsc_id_to_dsc_map, is_pm_data)
 
         # Add user mentions to message_dict
         mention_user_ids = set()
@@ -651,26 +659,20 @@ def process_messages(
 
             if mention_rc_channel_id in room_id_to_room_map:
                 # Channel is converted to a stream.
-                converted_stream_name = mention_rc_channel_name
-
                 rc_channel = room_id_to_room_map[mention_rc_channel_id]
-                if rc_channel.get("teamMain") is True:
-                    # Channel is a team's main channel
-                    converted_stream_name = "[TEAM] " + converted_stream_name
+                converted_stream_name = get_stream_name(rc_channel)
 
                 zulip_mention = f"#**{converted_stream_name}**"
             elif mention_rc_channel_id in dsc_id_to_dsc_map:
                 # Channel is a discussion and is converted to a topic.
+                converted_topic_name = get_topic_name(
+                    message={"rid": mention_rc_channel_id}, dsc_id_to_dsc_map=dsc_id_to_dsc_map
+                )
+
                 dsc_channel = dsc_id_to_dsc_map[mention_rc_channel_id]
                 parent_channel_id = dsc_channel["prid"]
                 parent_rc_channel = room_id_to_room_map[parent_channel_id]
-
-                converted_topic_name = f'{dsc_channel["fname"]} (Imported from Rocket.Chat)'
-                parent_stream_name = parent_rc_channel["name"]
-
-                if parent_rc_channel.get("teamMain") is True:
-                    # Parent channel is a team's main channel
-                    parent_stream_name = "[TEAM] " + parent_stream_name
+                parent_stream_name = get_stream_name(parent_rc_channel)
 
                 zulip_mention = f"#**{parent_stream_name}>{converted_topic_name}**"
 
@@ -785,7 +787,7 @@ def categorize_channels_and_map_with_id(
                 direct_id_to_direct_map[channel["_id"]] = channel
         else:
             room_id_to_room_map[channel["_id"]] = channel
-            if channel.get("teamMain") is True:
+            if channel.get("teamMain"):
                 team_id_to_team_map[channel["teamId"]] = channel
 
 
