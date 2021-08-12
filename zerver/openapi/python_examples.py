@@ -1224,6 +1224,56 @@ def get_stream_topics(client: Client, stream_id: int) -> None:
     validate_against_openapi_schema(result, "/users/me/{stream_id}/topics", "get", "200")
 
 
+@openapi_test_function("/users/me/apns_device_token:post")
+def add_apns_device_token(client: Client) -> None:
+
+    # {code_example|start}
+    request = {"token": "apple-tokenbb", "appid": "org.zulip.Zulip"}
+    result = client.call_endpoint(url="/users/me/apns_device_token", method="POST", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/apns_device_token", "post", "200")
+
+
+@openapi_test_function("/users/me/apns_device_token:delete")
+def remove_apns_device_token(client: Client) -> None:
+
+    # {code_example|start}
+    request = {
+        "token": "apple-tokenbb",
+    }
+    result = client.call_endpoint(
+        url="/users/me/apns_device_token", method="DELETE", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/apns_device_token", "delete", "200")
+
+
+@openapi_test_function("/users/me/android_gcm_reg_id:post")
+def add_android_reg_id(client: Client) -> None:
+
+    # {code_example|start}
+    request = {"token": "android-token"}
+    result = client.call_endpoint(
+        url="/users/me/android_gcm_reg_id", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "post", "200")
+
+
+@openapi_test_function("/users/me/android_gcm_reg_id:delete")
+def remove_android_reg_id(client: Client) -> None:
+
+    # {code_example|start}
+    request = {
+        "token": "android-token",
+    }
+    result = client.call_endpoint(
+        url="/users/me/android_gcm_reg_id", method="DELETE", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "delete", "200")
+
+
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
@@ -1534,6 +1584,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     deactivate_own_user(client, owner_client)
     add_user_mute(client)
     remove_user_mute(client)
+    add_apns_device_token(client)
+    remove_apns_device_token(client)
+    add_android_reg_id(client)
+    remove_android_reg_id(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

@@ -242,9 +242,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/dev_fetch_api_key",
         # Mobile interface for development environment login
         "/dev_list_users",
-        # Registration for iOS/Android mobile push notifications.
-        "/users/me/android_gcm_reg_id",
-        "/users/me/apns_device_token",
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
         "/users/me/api_key/regenerate",
