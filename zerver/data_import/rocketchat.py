@@ -671,12 +671,27 @@ def process_messages(
                 zulip_mention = f"#**{converted_stream_name}**"
             elif mention_rc_channel_id in dsc_id_to_dsc_map:
                 # Channel is a discussion and is converted to a topic.
+                dsc_channel = dsc_id_to_dsc_map[mention_rc_channel_id]
+                parent_channel_id = dsc_channel["prid"]
+                if (
+                    parent_channel_id in direct_id_to_direct_map
+                    or parent_channel_id in huddle_id_to_huddle_map
+                ):
+                    # Discussion belongs to a direct channel and thus, should not be
+                    # linked.
+
+                    # This logging statement serves the side benefit of avoiding the
+                    # CPython optimization for `continue` so that the coverage reports
+                    # aren't misleading.
+                    logging.info(
+                        "skipping direct messages discussion mention: %s", dsc_channel["fname"]
+                    )
+                    continue
+
                 converted_topic_name = get_topic_name(
                     message={"rid": mention_rc_channel_id}, dsc_id_to_dsc_map=dsc_id_to_dsc_map
                 )
 
-                dsc_channel = dsc_id_to_dsc_map[mention_rc_channel_id]
-                parent_channel_id = dsc_channel["prid"]
                 parent_rc_channel = room_id_to_room_map[parent_channel_id]
                 parent_stream_name = get_stream_name(parent_rc_channel)
 
@@ -740,6 +755,7 @@ def map_upload_id_to_upload_data(
 
 def separate_channel_and_private_messages(
     messages: List[Dict[str, Any]],
+    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     channel_messages: List[Dict[str, Any]],
@@ -753,6 +769,13 @@ def separate_channel_and_private_messages(
             # Message does not belong to any channel (might be
             # related to livechat), so ignore all such messages.
             continue
+        if message["rid"] in dsc_id_to_dsc_map:
+            parent_channel_id = dsc_id_to_dsc_map[message["rid"]]["prid"]
+            if parent_channel_id in private_channels_list:
+                # Messages in discussions originating from direct channels
+                # are treated as if they were posted in the parent direct
+                # channel only.
+                message["rid"] = parent_channel_id
         if message["rid"] in private_channels_list:
             private_messages.append(message)
         else:
@@ -1005,6 +1028,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
     separate_channel_and_private_messages(
         messages=rocketchat_data["message"],
+        dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         channel_messages=channel_messages,

@@ -91,6 +91,9 @@ the following data:
 -   Messages from Rocket.Chat Discussions are imported as topics
     inside the Zulip stream corresponding to the parent channel of the
     Rocket.Chat Discussion.
+-   Messages from Rocket.Chat Discussions having direct channels
+    (i.e. private messages) as their parent are imported as normal
+    private messages in Zulip.
 
 Additionally, because Rocket.Chat does not provide a stable data
 export API, the import tool may require small changes from time to
