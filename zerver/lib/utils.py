@@ -4,8 +4,7 @@ import itertools
 import re
 import secrets
 from itertools import zip_longest
-from time import sleep
-from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple, TypeVar
+from typing import Any, Callable, Iterator, List, Optional, Set, Tuple, TypeVar
 
 from django.conf import settings
 
@@ -57,33 +56,6 @@ class StatsDWrapper:
 
 
 statsd = StatsDWrapper()
-
-# Runs the callback with slices of all_list of a given batch_size
-def run_in_batches(
-    all_list: Sequence[T],
-    batch_size: int,
-    callback: Callable[[Sequence[T]], None],
-    sleep_time: int = 0,
-    logger: Optional[Callable[[str], None]] = None,
-) -> None:
-    if len(all_list) == 0:
-        return
-
-    limit = (len(all_list) // batch_size) + 1
-    for i in range(limit):
-        start = i * batch_size
-        end = (i + 1) * batch_size
-        if end >= len(all_list):
-            end = len(all_list)
-        batch = all_list[start:end]
-
-        if logger:
-            logger(f"Executing {end-start} in batch {i+1} of {limit}")
-
-        callback(batch)
-
-        if i != limit - 1:
-            sleep(sleep_time)
 
 
 def make_safe_digest(string: str, hash_func: Callable[[bytes], Any] = hashlib.sha1) -> str:

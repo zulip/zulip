@@ -90,7 +90,7 @@ else:
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
 
-from scripts.lib.zulip_tools import CYAN, ENDC, FAIL
+from scripts.lib.zulip_tools import CYAN, ENDC
 
 proxy_port = base_port
 django_port = base_port + 1
@@ -310,15 +310,6 @@ class TornadoHandler(BaseHandler):
     target_port = tornado_port
 
 
-class ErrorHandler(BaseHandler):
-    @web.asynchronous
-    def prepare(self) -> None:
-        print(FAIL + "Unexpected request: " + ENDC, self.request.path)
-        self.set_status(500)
-        self.write("path not supported")
-        self.finish()
-
-
 class Application(web.Application):
     def __init__(self, enable_logging: bool = False) -> None:
         handlers = [
@@ -332,10 +323,6 @@ class Application(web.Application):
     def log_request(self, handler: BaseHandler) -> None:
         if self.settings["enable_logging"]:
             super().log_request(handler)
-
-
-def on_shutdown() -> None:
-    IOLoop.instance().stop()
 
 
 def shutdown_handler(*args: Any, **kwargs: Any) -> None:

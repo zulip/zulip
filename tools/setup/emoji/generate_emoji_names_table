@@ -15,7 +15,6 @@ from emoji_setup_utils import EMOJISETS, emoji_is_universal, get_emoji_code
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
-EMOJI_MAP_FILE = os.path.join(TOOLS_DIR, "setup", "emoji", "emoji_map.json")
 UNIFIED_REACTIONS_FILE = os.path.join(
     ZULIP_PATH, "zerver", "management", "data", "unified_reactions.json"
 )
@@ -27,8 +26,6 @@ with open(EMOJI_DATA_FILE, "rb") as fp:
     EMOJI_DATA = orjson.loads(fp.read())
 with open(UNIFIED_REACTIONS_FILE, "rb") as fp:
     UNIFIED_REACTIONS_MAP = orjson.loads(fp.read())
-with open(EMOJI_MAP_FILE, "rb") as fp:
-    EMOJI_MAP = orjson.loads(fp.read())
 
 EMOJI_IMAGE_TEMPLATE = """
     <img class="emoji" src="images-{emojiset}-64/{emoji_code}.png" title={emojiset}>

@@ -1,10 +1,10 @@
 import importlib
 import json
-import os
 from typing import Any, Callable, Dict, Optional
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from zulip_bots.lib import BotIdentity, RateLimit
 
 from zerver.lib.actions import (
     internal_send_huddle_message,
@@ -21,10 +21,6 @@ from zerver.lib.bot_storage import (
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import UserProfile, get_active_user
-
-our_dir = os.path.dirname(os.path.abspath(__file__))
-
-from zulip_bots.lib import BotIdentity, RateLimit
 
 
 def get_bot_handler(service_name: str) -> Any:

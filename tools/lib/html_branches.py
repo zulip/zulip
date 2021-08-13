@@ -5,11 +5,6 @@ from typing import Dict, List, Optional, Sequence, Set
 from .template_parser import FormattedException, Token, tokenize
 
 
-class HtmlBranchesException(Exception):
-    # TODO: Have callers pass in line numbers.
-    pass
-
-
 class HtmlTreeBranch:
     """
     For <p><div id='yo'>bla<span class='bar'></span></div></p>, store a

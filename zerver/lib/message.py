@@ -53,8 +53,6 @@ from zerver.models import (
     query_for_ids,
 )
 
-RealmAlertWord = Dict[int, List[str]]
-
 
 class RawReactionRow(TypedDict):
     emoji_code: str

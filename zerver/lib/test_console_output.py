@@ -11,7 +11,6 @@ class ExtraConsoleOutputInTestException(Exception):
 
 class ExtraConsoleOutputFinder:
     def __init__(self) -> None:
-        self.latest_test_name = ""
         valid_line_patterns = [
             # Example: Running zerver.tests.test_attachments.AttachmentsTests.test_delete_unauthenticated
             "^Running ",

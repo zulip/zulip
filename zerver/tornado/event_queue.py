@@ -182,10 +182,6 @@ class ClientDescriptor:
         ret.last_connection_time = d["last_connection_time"]
         return ret
 
-    def prepare_for_pickling(self) -> None:
-        self.current_handler_id = None
-        self._timeout_handle = None
-
     def add_event(self, event: Mapping[str, Any]) -> None:
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
@@ -707,11 +703,6 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
 
     client.connect_handler(handler_id, client_type_name)
     return dict(type="async")
-
-
-# Send email notifications to idle users
-# after they are idle for 1 hour
-NOTIFY_AFTER_IDLE_HOURS = 1
 
 
 def build_offline_notification(user_profile_id: int, message_id: int) -> Dict[str, Any]:

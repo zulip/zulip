@@ -16,11 +16,10 @@ import json
 import os
 import sys
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, TypeVar, cast
+from typing import Any, Callable, Dict, List, Set, TypeVar, cast
 
 from zulip import Client
 
-from zerver.lib import mdiff
 from zerver.models import get_realm, get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
@@ -1428,58 +1427,6 @@ def test_invalid_stream_error(client: Client) -> None:
 
 
 # SETUP METHODS FOLLOW
-def test_against_fixture(
-    result: Dict[str, Any],
-    fixture: Dict[str, Any],
-    check_if_equal: Optional[Iterable[str]] = None,
-    check_if_exists: Optional[Iterable[str]] = None,
-) -> None:
-    assertLength(result, fixture)
-
-    if check_if_equal is None and check_if_exists is None:
-        for key, value in fixture.items():
-            assertEqual(key, result, fixture)
-
-    if check_if_equal is not None:
-        for key in check_if_equal:
-            assertEqual(key, result, fixture)
-
-    if check_if_exists is not None:
-        for key in check_if_exists:
-            assertIn(key, result)
-
-
-def assertEqual(key: str, result: Dict[str, Any], fixture: Dict[str, Any]) -> None:
-    if result[key] != fixture[key]:
-        first = f"{key} = {result[key]}"
-        second = f"{key} = {fixture[key]}"
-        raise AssertionError(
-            "Actual and expected outputs do not match; showing diff:\n"
-            + mdiff.diff_strings(first, second)
-        )
-    else:
-        assert result[key] == fixture[key]
-
-
-def assertLength(result: Dict[str, Any], fixture: Dict[str, Any]) -> None:
-    if len(result) != len(fixture):
-        result_string = json.dumps(result, indent=4, sort_keys=True)
-        fixture_string = json.dumps(fixture, indent=4, sort_keys=True)
-        raise AssertionError(
-            "The lengths of the actual and expected outputs do not match; showing diff:\n"
-            + mdiff.diff_strings(result_string, fixture_string)
-        )
-    else:
-        assert len(result) == len(fixture)
-
-
-def assertIn(key: str, result: Dict[str, Any]) -> None:
-    if key not in result.keys():
-        raise AssertionError(
-            f"The actual output does not contain the the key `{key}`.",
-        )
-    else:
-        assert key in result
 
 
 def test_messages(client: Client, nonadmin_client: Client) -> None:

@@ -122,13 +122,6 @@ def verbose_compile(pattern: str) -> Pattern[str]:
     )
 
 
-def normal_compile(pattern: str) -> Pattern[str]:
-    return re.compile(
-        fr"^(.*?){pattern}(.*)$",
-        re.DOTALL | re.UNICODE,
-    )
-
-
 STREAM_LINK_REGEX = r"""
                      (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
                      \#\*\*                       # and after hash sign followed by double asterisks

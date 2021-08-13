@@ -192,42 +192,6 @@ def build_subscription(recipient_id: int, user_id: int, subscription_id: int) ->
     return subscription_dict
 
 
-def build_public_stream_subscriptions(
-    zerver_userprofile: List[ZerverFieldsT],
-    zerver_recipient: List[ZerverFieldsT],
-    zerver_stream: List[ZerverFieldsT],
-) -> List[ZerverFieldsT]:
-    """
-    This function was only used for HipChat, but it may apply to
-    future conversions.  We often did't get full subscriber data in
-    the HipChat export, so this function just autosubscribes all
-    users to every public stream.  This returns a list of Subscription
-    dicts.
-    """
-    subscriptions: List[ZerverFieldsT] = []
-
-    public_stream_ids = {stream["id"] for stream in zerver_stream if not stream["invite_only"]}
-
-    public_stream_recipient_ids = {
-        recipient["id"]
-        for recipient in zerver_recipient
-        if recipient["type"] == Recipient.STREAM and recipient["type_id"] in public_stream_ids
-    }
-
-    user_ids = [user["id"] for user in zerver_userprofile]
-
-    for recipient_id in public_stream_recipient_ids:
-        for user_id in user_ids:
-            subscription = build_subscription(
-                recipient_id=recipient_id,
-                user_id=user_id,
-                subscription_id=NEXT_ID("subscription"),
-            )
-            subscriptions.append(subscription)
-
-    return subscriptions
-
-
 class GetUsers(Protocol):
     def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]:
         ...
@@ -616,37 +580,6 @@ def process_avatars(
 
     logging.info("######### GETTING AVATARS FINISHED #########\n")
     return avatar_list + avatar_original_list
-
-
-def write_avatar_png(avatar_folder: str, realm_id: int, user_id: int, bits: bytes) -> ZerverFieldsT:
-    """
-    Use this function for conversions like HipChat where
-    the bits for the .png file come in something like
-    a users.json file, and where we don't have to
-    fetch avatar images externally.
-    """
-    avatar_hash = user_avatar_path_from_ids(
-        user_profile_id=user_id,
-        realm_id=realm_id,
-    )
-
-    image_fn = avatar_hash + ".original"
-    image_path = os.path.join(avatar_folder, image_fn)
-
-    with open(image_path, "wb") as image_file:
-        image_file.write(bits)
-
-    # Return metadata that eventually goes in records.json.
-    metadata = dict(
-        path=image_path,
-        s3_path=image_path,
-        realm_id=realm_id,
-        user_profile_id=user_id,
-        # We only write the .original file; ask the importer to do the thumbnailing.
-        importer_should_thumbnail=True,
-    )
-
-    return metadata
 
 
 ListJobData = TypeVar("ListJobData")

@@ -2,7 +2,6 @@
 
 import html
 import os
-import pprint
 import sys
 from collections import defaultdict
 from typing import Any, Dict, List, Set
@@ -38,25 +37,6 @@ def clean_up_pattern(s: str) -> str:
             in_braces = False
         prior_char = c
     return result
-
-
-def encode_info(info: Any) -> str:
-    try:
-        result = ""
-        try:
-            info = orjson.loads(info)
-            result = "(stringified)\n"
-        except orjson.JSONDecodeError:
-            pass
-        result += html.escape(pprint.pformat(info, indent=4))
-        return "<pre>" + result + "</pre>"
-    except Exception:
-        pass
-    try:
-        return html.escape(str(info))
-    except Exception:
-        pass
-    return "NOT ENCODABLE"
 
 
 def fix_test_name(s: str) -> str:

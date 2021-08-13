@@ -77,13 +77,11 @@ FilterArgs = Dict[str, Any]
 IdSource = Tuple[TableName, Field]
 SourceFilter = Callable[[Record], bool]
 
-# These next two types are callbacks, which mypy does not
+# This next type is a callback, which mypy does not
 # support well, because PEP 484 says "using callbacks
 # with keyword arguments is not perceived as a common use case."
 # CustomFetch = Callable[[TableData, Config, Context], None]
-# PostProcessData = Callable[[TableData, Config, Context], None]
 CustomFetch = Any  # TODO: make more specific, see above
-PostProcessData = Any  # TODO: make more specific
 
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get

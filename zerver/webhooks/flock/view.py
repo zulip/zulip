@@ -9,8 +9,6 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-CHECK_IS_REPLY = "in reply to"
-
 
 @webhook_view("Flock")
 @has_request_variables

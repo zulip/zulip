@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
-from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
 # This file needs to be different from cache.py because cache.py
@@ -17,44 +16,19 @@ from zerver.lib.cache import (
     get_remote_cache_requests,
     get_remote_cache_time,
     get_stream_cache_key,
-    to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.message import MessageDict
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
 from zerver.models import (
     Client,
     Huddle,
-    Message,
     Stream,
     UserProfile,
     get_client_cache_key,
     huddle_hash_cache_key,
 )
-
-MESSAGE_CACHE_SIZE = 75000
-
-
-def message_fetch_objects() -> List[Any]:
-    try:
-        max_id = Message.objects.only("id").order_by("-id")[0].id
-    except IndexError:
-        return []
-    return Message.objects.select_related().filter(
-        ~Q(sender__email="tabbott/extra@mit.edu"), id__gt=max_id - MESSAGE_CACHE_SIZE
-    )
-
-
-def message_cache_items(items_for_remote_cache: Dict[str, Tuple[bytes]], message: Message) -> None:
-    """
-    Note: this code is untested, and the caller has been
-    commented out for a while.
-    """
-    key = to_dict_cache_key_id(message.id)
-    value = MessageDict.to_dict_uncached([message])[message.id]
-    items_for_remote_cache[key] = (value,)
 
 
 def user_cache_items(
@@ -142,10 +116,6 @@ cache_fillers: Dict[
         10000,
     ),
     "stream": (get_streams, stream_cache_items, 3600 * 24 * 7, 10000),
-    # Message cache fetching disabled until we can fix the fact that it
-    # does a bunch of inefficient memcached queries as part of filling
-    # the display_recipient cache
-    #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     "huddle": (
         lambda: Huddle.objects.select_related().all(),
         huddle_cache_items,

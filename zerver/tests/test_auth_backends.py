@@ -819,7 +819,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     SIGNUP_URL: str
     AUTHORIZATION_URL: str
     AUTH_FINISH_URL: str
-    CONFIG_ERROR_URL: str
     ACCESS_TOKEN_URL: str
     USER_INFO_URL: str
     CLIENT_KEY_SETTING: str
@@ -1780,7 +1779,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
     SIGNUP_URL = "/accounts/register/social/saml/test_idp"
     AUTHORIZATION_URL = "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO"
     AUTH_FINISH_URL = "/complete/saml/"
-    CONFIG_ERROR_URL = "/config-error/saml"
 
     # We have to define our own social_auth_test as the flow of SAML authentication
     # is different from the other social backends.
@@ -2651,7 +2649,6 @@ class AppleAuthMixin:
     AUTHORIZATION_URL = "https://appleid.apple.com/auth/authorize"
     ACCESS_TOKEN_URL = "https://appleid.apple.com/auth/token"
     AUTH_FINISH_URL = "/complete/apple/"
-    CONFIG_ERROR_URL = "/config-error/apple"
 
     def generate_id_token(
         self, account_data_dict: Dict[str, str], audience: Optional[str] = None
@@ -3033,7 +3030,6 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     JWKS_URL = f"{BASE_OIDC_URL}/jwks"
     USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
     AUTH_FINISH_URL = "/complete/oidc/"
-    CONFIG_ERROR_URL = "/config-error/oidc"
 
     def social_auth_test(
         self,
@@ -3215,7 +3211,6 @@ class GitHubAuthBackendTest(SocialAuthBase):
     ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
     USER_INFO_URL = "https://api.github.com/user"
     AUTH_FINISH_URL = "/complete/github/"
-    CONFIG_ERROR_URL = "/config-error/github"
     email_data: List[Dict[str, Any]] = []
 
     def social_auth_test_finish(
@@ -3737,7 +3732,6 @@ class GitLabAuthBackendTest(SocialAuthBase):
     ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"
     USER_INFO_URL = "https://gitlab.com/api/v4/user"
     AUTH_FINISH_URL = "/complete/gitlab/"
-    CONFIG_ERROR_URL = "/config-error/gitlab"
 
     def test_gitlab_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.GitLabAuthBackend",)):
@@ -3759,7 +3753,6 @@ class GoogleAuthBackendTest(SocialAuthBase):
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
     USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
     AUTH_FINISH_URL = "/complete/google/"
-    CONFIG_ERROR_URL = "/config-error/google"
 
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)

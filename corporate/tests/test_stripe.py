@@ -352,15 +352,8 @@ def mock_stripe(
     return _mock_stripe
 
 
-# A Kandra is a fictional character that can become anything. Used as a
-# wildcard when testing for equality.
-class Kandra:  # nocoverage: TODO
-    def __eq__(self, other: Any) -> bool:
-        return True
-
-
 class StripeTestCase(ZulipTestCase):
-    def setUp(self, *mocks: Mock) -> None:
+    def setUp(self) -> None:
         super().setUp()
         realm = get_realm("zulip")
 
@@ -2381,7 +2374,7 @@ class StripeTest(StripeTestCase):
                 invoice_plans_as_needed(self.next_year)
             mocked.assert_not_called()
 
-    def test_reupgrade_by_billing_admin_after_downgrade(self, *mocks: Mock) -> None:
+    def test_reupgrade_by_billing_admin_after_downgrade(self) -> None:
         user = self.example_user("hamlet")
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
@@ -2557,7 +2550,7 @@ class StripeTest(StripeTestCase):
         for key, value in line_item_params.items():
             self.assertEqual(renewal_item.get(key), value)
 
-    def test_update_licenses_of_automatic_plan_from_billing_page(self, *mocks: Mock) -> None:
+    def test_update_licenses_of_automatic_plan_from_billing_page(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
 

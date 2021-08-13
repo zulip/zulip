@@ -8,7 +8,6 @@ from premailer import Premailer
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, "templates", "zerver", "emails")
-COMPILED_EMAIL_TEMPLATES_PATH = os.path.join(EMAIL_TEMPLATES_PATH, "compiled")
 CSS_SOURCE_PATH = os.path.join(EMAIL_TEMPLATES_PATH, "email.css")
 
 

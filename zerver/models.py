@@ -1550,9 +1550,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # API rate limits, formatted as a comma-separated list of range:max pairs
     rate_limits: str = models.CharField(default="", max_length=100)
 
-    # Hours to wait before sending another email to a user
-    EMAIL_REMINDER_WAITPERIOD = 24
-
     # Default streams for some deprecated/legacy classes of bot users.
     default_sending_stream: Optional["Stream"] = models.ForeignKey(
         "zerver.Stream",

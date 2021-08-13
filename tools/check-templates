@@ -34,7 +34,7 @@ EXCLUDED_FILES = [
 def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
     by_lang = lister.list_files(
         targets=targets,
-        modified_only=args.modified,
+        modified_only=modified_only,
         ftypes=["hbs", "html"],
         group_by_ftype=True,
         exclude=EXCLUDED_FILES,

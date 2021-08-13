@@ -19,7 +19,6 @@ from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
 METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
-FLAGS = "override_api_url_scheme"
 
 
 def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:

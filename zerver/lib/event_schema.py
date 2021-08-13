@@ -85,14 +85,6 @@ subscription_fields: Sequence[Tuple[str, object]] = [
 ]
 
 
-equals_add_or_remove = UnionType(
-    [
-        # force vertical
-        Equals("add"),
-        Equals("remove"),
-    ]
-)
-
 value_type = UnionType(
     [
         # force vertical formatting

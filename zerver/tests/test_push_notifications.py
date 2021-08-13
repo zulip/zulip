@@ -2,7 +2,6 @@ import asyncio
 import base64
 import datetime
 import itertools
-import os
 import re
 import uuid
 from contextlib import contextmanager
@@ -86,8 +85,6 @@ if settings.ZILENCER_ENABLED:
         RemoteRealmCount,
         RemoteZulipServer,
     )
-
-ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")

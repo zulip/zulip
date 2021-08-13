@@ -76,18 +76,6 @@ except OSError:
     )
     sys.exit(1)
 
-if platform.architecture()[0] == "64bit":
-    arch = "amd64"
-elif platform.architecture()[0] == "32bit":
-    arch = "i386"
-else:
-    logging.critical(
-        "Only x86 is supported; ask on chat.zulip.org if you want another architecture."
-    )
-    # Note: It's probably actually not hard to add additional
-    # architectures.
-    sys.exit(1)
-
 distro_info = parse_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]

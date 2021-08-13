@@ -6,7 +6,6 @@ import subprocess
 from typing import NoReturn
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
-STATIC_PATH = "static/"
 
 
 def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:

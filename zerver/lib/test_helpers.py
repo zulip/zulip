@@ -311,7 +311,6 @@ class HostRequestMock(HttpRequest):
             self.POST[key] = str(post_data[key])
             self.method = "POST"
 
-        self._log_data: Dict[str, Any] = {}
         if meta_data is None:
             self.META = {"PATH_INFO": "test"}
         else:
