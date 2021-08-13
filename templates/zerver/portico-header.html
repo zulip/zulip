@@ -1,7 +1,12 @@
 <div class="header portico-header">
     <div class="header-main" id="top_navbar">
         
-		<!-- Adding skip link for better navigation and less scrolling -->
+		<!-- 
+	  	Adding skip link for better navigation and less scrolling 
+		On the press of tab a button will appear and on the press of enter 
+		it will take to the top of the page.
+		in /help and /api
+		-->
 		{% if page_is_help_center or page_is_api_center %}
 		<a class="skip-link" href="#skip-link-nav" tabindex="0">Skip To Main Content </a>	
 		{% endif %}

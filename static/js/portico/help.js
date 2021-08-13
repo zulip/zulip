@@ -11,6 +11,8 @@ import {activate_correct_tab} from "./tabbed-instructions";
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
+	
+	// Activating skip-link 
 	const $skiplink = $codeSection.find(".skip-link");
 	$skiplink.addClass("active");
 
@@ -55,7 +57,7 @@ function highlight_current_article() {
 }
 
 function render_code_sections() {
-	if(parent.location.hash !== "") parent.location.hash = "";
+	if(parent.location.hash !== "") parent.location.hash = ""; // Removing the hash after the string
 	$(".code-section").each(function () {
         activate_correct_tab($(this));
         registerCodeSection($(this));
