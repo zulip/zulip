@@ -1,3 +1,5 @@
+import random
+import string
 from typing import Any
 
 from django.conf import settings
@@ -22,6 +24,13 @@ def modify_postdata(request: HttpRequest, **kwargs: Any) -> None:
     for key, value in kwargs.items():
         request.POST[key] = value
     request.POST._mutable = False
+
+
+def generate_demo_realm_name() -> str:
+    letters = "".join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(4))
+    digits = "".join(random.SystemRandom().choice(string.digits) for _ in range(4))
+    demo_realm_name = f"demo-{letters}{digits}"
+    return demo_realm_name
 
 
 @csrf_exempt
@@ -64,6 +73,34 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
         password="test",
         realm_subdomain=realm_name,
         terms="true",
+    )
+
+    return accounts_register(request)
+
+
+@csrf_exempt
+def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
+    count = UserProfile.objects.count()
+    name = f"user-{count}"
+    email = f"{name}@zulip.com"
+    realm_name = generate_demo_realm_name()
+    realm_type = Realm.ORG_TYPES["business"]["id"]
+    prereg = create_preregistration_user(
+        email, request, realm_creation=True, password_required=False
+    )
+    activation_url = create_confirmation_link(prereg, Confirmation.REALM_CREATION)
+    key = activation_url.split("/")[-1]
+    # Need to add test data to POST request as it doesn't originally contain the required parameters
+    modify_postdata(
+        request,
+        key=key,
+        realm_name=realm_name,
+        realm_type=realm_type,
+        full_name=name,
+        password="test",
+        realm_subdomain=realm_name,
+        terms="true",
+        is_demo_organization="true",
     )
 
     return accounts_register(request)

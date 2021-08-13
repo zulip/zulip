@@ -324,7 +324,10 @@ def accounts_register(
             string_id = form.cleaned_data["realm_subdomain"]
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
-            realm = do_create_realm(string_id, realm_name, org_type=realm_type)
+            is_demo_org = form.cleaned_data["is_demo_organization"]
+            realm = do_create_realm(
+                string_id, realm_name, org_type=realm_type, is_demo_organization=is_demo_org
+            )
             setup_realm_internal_bots(realm)
         assert realm is not None
 

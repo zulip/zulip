@@ -26,6 +26,7 @@ from zerver.views.development.integrations import (
 )
 from zerver.views.development.registration import (
     confirmation_key,
+    register_demo_development_realm,
     register_development_realm,
     register_development_user,
 )
@@ -70,6 +71,11 @@ urls = [
     # Register new user and realm
     path("devtools/register_user/", register_development_user, name="register_dev_user"),
     path("devtools/register_realm/", register_development_realm, name="register_dev_realm"),
+    path(
+        "devtools/register_demo_realm/",
+        register_demo_development_realm,
+        name="register_demo_dev_realm",
+    ),
     # Have easy access for error pages
     path("errors/404/", TemplateView.as_view(template_name="404.html")),
     path("errors/5xx/", TemplateView.as_view(template_name="500.html")),

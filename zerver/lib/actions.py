@@ -4930,6 +4930,7 @@ def do_create_realm(
     plan_type: Optional[int] = None,
     org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
+    is_demo_organization: Optional[bool] = False,
 ) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
@@ -4959,6 +4960,10 @@ def do_create_realm(
 
     with transaction.atomic():
         realm = Realm(string_id=string_id, name=name, **kwargs)
+        if is_demo_organization:
+            realm.demo_organization_scheduled_deletion_date = (
+                realm.date_created + datetime.timedelta(days=30)
+            )
         realm.save()
 
         RealmAuditLog.objects.create(

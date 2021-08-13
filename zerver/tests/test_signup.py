@@ -5000,6 +5000,28 @@ class UserSignUpTest(InviteUserBase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
+    @override_settings(TERMS_OF_SERVICE=False)
+    def test_dev_user_registration_create_demo_realm(self) -> None:
+        result = self.client_post("/devtools/register_demo_realm/")
+        self.assertEqual(result.status_code, 302)
+
+        realm = Realm.objects.latest("date_created")
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+
+        user_profile = UserProfile.objects.all().order_by("id").last()
+        assert user_profile is not None
+        self.assert_logged_in_user_id(user_profile.id)
+
+        expected_deletion_date = realm.date_created + datetime.timedelta(days=30)
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+
 
 class DeactivateUserTest(ZulipTestCase):
     def test_deactivate_user(self) -> None:
