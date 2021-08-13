@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import do_set_user_display_setting
+from zerver.lib.actions import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile
 
@@ -18,7 +18,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
                 switch_command=switch_command,
             )
         )
-        do_set_user_display_setting(
+        do_change_user_setting(
             user_profile=user_profile, setting_name=setting, setting_value=setting_value
         )
         return msg

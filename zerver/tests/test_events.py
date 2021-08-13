@@ -49,6 +49,7 @@ from zerver.lib.actions import (
     do_change_subscription_property,
     do_change_user_delivery_email,
     do_change_user_role,
+    do_change_user_setting,
     do_create_default_stream_group,
     do_create_multiuse_invite_link,
     do_create_user,
@@ -82,7 +83,6 @@ from zerver.lib.actions import (
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
-    do_set_user_display_setting,
     do_set_zoom_token,
     do_unmute_topic,
     do_unmute_user,
@@ -2061,7 +2061,7 @@ class NormalActionsTest(BaseAction):
 
     def test_display_setting_event_not_sent(self) -> None:
         events = self.verify_action(
-            lambda: do_set_user_display_setting(
+            lambda: do_change_user_setting(
                 self.user_profile,
                 "default_view",
                 "all_messages",
@@ -2169,7 +2169,7 @@ class RealmPropertyActionTest(BaseAction):
 
 
 class UserDisplayActionTest(BaseAction):
-    def do_set_user_display_settings_test(self, setting_name: str) -> None:
+    def do_change_user_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
 
         test_changes: Dict[str, Any] = dict(
@@ -2195,19 +2195,19 @@ class UserDisplayActionTest(BaseAction):
 
         for value in values:
             events = self.verify_action(
-                lambda: do_set_user_display_setting(self.user_profile, setting_name, value),
+                lambda: do_change_user_setting(self.user_profile, setting_name, value),
                 num_events=num_events,
             )
 
             check_user_settings_update("events[0]", events[0])
             check_update_display_settings("events[1]", events[1])
 
-    def test_set_user_display_settings(self) -> None:
+    def test_change_user_settings(self) -> None:
         for prop in UserProfile.property_types:
             # Notification settings have a separate test suite, which
             # handles their separate legacy event type.
             if prop not in UserProfile.notification_settings_legacy:
-                self.do_set_user_display_settings_test(prop)
+                self.do_change_user_settings_test(prop)
 
     def test_set_user_timezone(self) -> None:
         values = ["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""]
@@ -2215,7 +2215,7 @@ class UserDisplayActionTest(BaseAction):
 
         for value in values:
             events = self.verify_action(
-                lambda: do_set_user_display_setting(self.user_profile, "timezone", value),
+                lambda: do_change_user_setting(self.user_profile, "timezone", value),
                 num_events=num_events,
             )
 
@@ -2347,7 +2347,7 @@ class SubscribeActionTest(BaseAction):
 
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
-        do_set_user_display_setting(user_profile, "enable_drafts_synchronization", True)
+        do_change_user_setting(user_profile, "enable_drafts_synchronization", True)
 
     def test_draft_create_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)

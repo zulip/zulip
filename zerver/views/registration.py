@@ -38,9 +38,9 @@ from zerver.lib.actions import (
     do_activate_mirror_dummy_user,
     do_change_full_name,
     do_change_password,
+    do_change_user_setting,
     do_create_realm,
     do_create_user,
-    do_set_user_display_setting,
     lookup_default_stream_groups,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
@@ -420,7 +420,7 @@ def accounts_register(
             do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
-            do_set_user_display_setting(user_profile, "timezone", timezone)
+            do_change_user_setting(user_profile, "timezone", timezone)
             # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 

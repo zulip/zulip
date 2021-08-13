@@ -5082,7 +5082,7 @@ def do_change_notification_settings(
         send_event(user_profile.realm, legacy_event, [user_profile.id])
 
 
-def do_set_user_display_setting(
+def do_change_user_setting(
     user_profile: UserProfile, setting_name: str, setting_value: Union[bool, str, int]
 ) -> None:
     if setting_name == "timezone":
