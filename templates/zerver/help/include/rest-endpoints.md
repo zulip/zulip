@@ -48,6 +48,8 @@
 * [Update a user](/api/update-user)
 * [Update your status](/api/update-status)
 * [Create a user](/api/create-user)
+* [Send invites to users](/api/send-invites)
+* [Get user invites](/api/get-invites)
 * [Deactivate a user](/api/deactivate-user)
 * [Reactivate a user](/api/reactivate-user)
 * [Deactivate own user](/api/deactivate-own-user)
