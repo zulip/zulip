@@ -76,7 +76,6 @@ class Command(ZulipBaseCommand):
             bulk_remove_subscriptions(
                 [sub.user_profile for sub in subs_to_deactivate],
                 [stream_to_destroy],
-                self.get_client(),
                 acting_user=None,
             )
         do_deactivate_stream(stream_to_destroy, acting_user=None)

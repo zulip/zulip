@@ -88,7 +88,6 @@ from zerver.models import (
     UserProfile,
     clear_supported_auth_backends_cache,
     flush_per_request_caches,
-    get_client,
     get_display_recipient,
     get_realm,
     get_realm_stream,
@@ -1003,9 +1002,8 @@ Output:
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
-        client = get_client("website")
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream], client, acting_user=None)
+        bulk_remove_subscriptions([user_profile], [stream], acting_user=None)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(

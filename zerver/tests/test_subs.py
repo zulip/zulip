@@ -79,7 +79,6 @@ from zerver.models import (
     UserProfile,
     active_non_guest_user_ids,
     flush_per_request_caches,
-    get_client,
     get_default_stream_groups,
     get_realm,
     get_stream,
@@ -3679,12 +3678,11 @@ class SubscriptionAPITest(ZulipTestCase):
                     bulk_remove_subscriptions(
                         [user1, user2],
                         [stream1, stream2, stream3, private],
-                        get_client("website"),
                         acting_user=None,
                     )
 
-        self.assert_length(query_count, 28)
-        self.assert_length(cache_count, 4)
+        self.assert_length(query_count, 27)
+        self.assert_length(cache_count, 3)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
 
@@ -3747,7 +3745,6 @@ class SubscriptionAPITest(ZulipTestCase):
             bulk_remove_subscriptions(
                 users=[mit_user],
                 streams=streams,
-                acting_client=get_client("website"),
                 acting_user=None,
             )
 

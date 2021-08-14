@@ -46,7 +46,6 @@ from zerver.models import (
     Recipient,
     Subscription,
     UserProfile,
-    get_client,
     get_realm,
     get_stream,
 )
@@ -294,7 +293,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(modified_stream.id, stream.id)
         self.assertEqual(subscription_creation_logs[0].modified_user, user)
 
-        bulk_remove_subscriptions([user], [stream], get_client("website"), acting_user=acting_user)
+        bulk_remove_subscriptions([user], [stream], acting_user=acting_user)
         subscription_deactivation_logs = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
             event_time__gte=now,

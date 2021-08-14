@@ -50,7 +50,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     ResourceNotFoundError,
 )
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import (
@@ -405,10 +405,8 @@ def remove_subscriptions_backend(
         people_to_unsub = {user_profile}
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
-    client = get_request_notes(request).client
-    assert client is not None
     (removed, not_subscribed) = bulk_remove_subscriptions(
-        people_to_unsub, streams, client, acting_user=user_profile
+        people_to_unsub, streams, acting_user=user_profile
     )
 
     for (subscriber, removed_stream) in removed:

@@ -4061,7 +4061,6 @@ SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile,
 def bulk_remove_subscriptions(
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
-    acting_client: Client,
     *,
     acting_user: Optional[UserProfile],
 ) -> SubAndRemovedT:
