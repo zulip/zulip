@@ -36,9 +36,11 @@ Usage: ./manage.py deliver_scheduled_emails
         while True:
             found_rows = False
             with transaction.atomic():
-                email_jobs_to_deliver = ScheduledEmail.objects.filter(
-                    scheduled_timestamp__lte=timezone_now()
-                ).select_for_update()
+                email_jobs_to_deliver = (
+                    ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
+                    .prefetch_related("users")
+                    .select_for_update()
+                )
                 if email_jobs_to_deliver:
                     found_rows = True
                     for job in email_jobs_to_deliver:

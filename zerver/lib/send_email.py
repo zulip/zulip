@@ -420,15 +420,15 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> No
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
-    items = ScheduledEmail.objects.filter(users__in=[user_id]).select_for_update()
+    items = (
+        ScheduledEmail.objects.filter(users__in=[user_id])
+        .prefetch_related("users")
+        .select_for_update()
+    )
     if email_type is not None:
         items = items.filter(type=email_type)
 
     for item in items:
-        # Now we want a FOR UPDATE lock on the item.users rows
-        # to prevent a concurrent transaction from mutating them
-        # simultaneously.
-        item.users.all().select_for_update()
         item.users.remove(user_id)
         if item.users.all().count() == 0:
             # Due to our transaction holding the row lock we have a guarantee
