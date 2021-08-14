@@ -1,61 +1,39 @@
-from enum import Enum
-from typing import Any, Dict, List, NoReturn, Optional, Tuple, Type, TypeVar
+from enum import Enum, auto
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-T = TypeVar("T", bound="AbstractEnum")
 
-
-class AbstractEnum(Enum):
-    """An enumeration whose members are used strictly for their names."""
-
-    def __new__(cls: Type[T]) -> T:
-        obj = object.__new__(cls)
-        obj._value_ = len(cls.__members__) + 1
-        return obj
-
-    # Override all the `Enum` methods that use `_value_`.
-
-    def __repr__(self) -> str:
-        return str(self)  # nocoverage
-
-    def value(self) -> None:
-        raise AssertionError("Not implemented")
-
-    def __reduce_ex__(self, proto: object) -> NoReturn:
-        raise AssertionError("Not implemented")
-
-
-class ErrorCode(AbstractEnum):
-    BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
-    REQUEST_VARIABLE_MISSING = ()
-    REQUEST_VARIABLE_INVALID = ()
-    INVALID_JSON = ()
-    BAD_IMAGE = ()
-    REALM_UPLOAD_QUOTA = ()
-    BAD_NARROW = ()
-    CANNOT_DEACTIVATE_LAST_USER = ()
-    MISSING_HTTP_EVENT_HEADER = ()
-    STREAM_DOES_NOT_EXIST = ()
-    UNAUTHORIZED_PRINCIPAL = ()
-    UNSUPPORTED_WEBHOOK_EVENT_TYPE = ()
-    BAD_EVENT_QUEUE_ID = ()
-    CSRF_FAILED = ()
-    INVITATION_FAILED = ()
-    INVALID_ZULIP_SERVER = ()
-    INVALID_MARKDOWN_INCLUDE_STATEMENT = ()
-    REQUEST_CONFUSING_VAR = ()
-    INVALID_API_KEY = ()
-    INVALID_ZOOM_TOKEN = ()
-    UNAUTHENTICATED_USER = ()
-    NONEXISTENT_SUBDOMAIN = ()
-    RATE_LIMIT_HIT = ()
-    USER_DEACTIVATED = ()
-    REALM_DEACTIVATED = ()
-    PASSWORD_AUTH_DISABLED = ()
-    PASSWORD_RESET_REQUIRED = ()
-    AUTHENTICATION_FAILED = ()
+class ErrorCode(Enum):
+    BAD_REQUEST = auto()  # Generic name, from the name of HTTP 400.
+    REQUEST_VARIABLE_MISSING = auto()
+    REQUEST_VARIABLE_INVALID = auto()
+    INVALID_JSON = auto()
+    BAD_IMAGE = auto()
+    REALM_UPLOAD_QUOTA = auto()
+    BAD_NARROW = auto()
+    CANNOT_DEACTIVATE_LAST_USER = auto()
+    MISSING_HTTP_EVENT_HEADER = auto()
+    STREAM_DOES_NOT_EXIST = auto()
+    UNAUTHORIZED_PRINCIPAL = auto()
+    UNSUPPORTED_WEBHOOK_EVENT_TYPE = auto()
+    BAD_EVENT_QUEUE_ID = auto()
+    CSRF_FAILED = auto()
+    INVITATION_FAILED = auto()
+    INVALID_ZULIP_SERVER = auto()
+    INVALID_MARKDOWN_INCLUDE_STATEMENT = auto()
+    REQUEST_CONFUSING_VAR = auto()
+    INVALID_API_KEY = auto()
+    INVALID_ZOOM_TOKEN = auto()
+    UNAUTHENTICATED_USER = auto()
+    NONEXISTENT_SUBDOMAIN = auto()
+    RATE_LIMIT_HIT = auto()
+    USER_DEACTIVATED = auto()
+    REALM_DEACTIVATED = auto()
+    PASSWORD_AUTH_DISABLED = auto()
+    PASSWORD_RESET_REQUIRED = auto()
+    AUTHENTICATION_FAILED = auto()
 
 
 class JsonableError(Exception):
