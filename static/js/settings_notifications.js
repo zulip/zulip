@@ -122,6 +122,12 @@ export function set_up() {
             notification_sound_dropdown.parent().addClass("control-label-disabled");
         }
     });
+
+    const email_notifications_batching_period_dropdown = $("#email_notifications_batching_period");
+    email_notifications_batching_period_dropdown.val(
+        user_settings.email_notifications_batching_period_seconds,
+    );
+
     set_enable_digest_emails_visibility();
     set_enable_marketing_emails_visibility();
     rerender_ui();

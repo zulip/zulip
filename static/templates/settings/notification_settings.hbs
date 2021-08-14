@@ -101,6 +101,18 @@
 
         <h5>{{t "Email" }}</h5>
 
+        <label for="email_notifications_batching_period">
+            {{t "Batching period for email notifications" }}
+        </label>
+
+        <div class="input-group">
+            <select name="email_notifications_batching_period_seconds" id="email_notifications_batching_period" data-setting-widget-type="number">
+                {{#each email_notifications_batching_period_values}}
+                <option value="{{ this.value }}">{{ this.description }}</option>
+                {{/each}}
+            </select>
+        </div>
+
         {{#each notification_settings.email_notification_settings}}
         {{> settings_checkbox
           setting_name=this
