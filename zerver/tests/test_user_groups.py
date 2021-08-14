@@ -127,7 +127,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "Invalid user ID: 1111")
         self.assert_length(UserGroup.objects.all(), 2)
 
-        # Test we cannot add hamlet again
+        # Test we cannot create group with same name again
         params = {
             "name": "support",
             "members": orjson.dumps([hamlet.id]).decode(),
