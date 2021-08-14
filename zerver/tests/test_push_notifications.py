@@ -57,6 +57,7 @@ from zerver.lib.remote_server import (
     send_analytics_to_remote_server,
     send_to_push_bouncer,
 )
+from zerver.lib.response import json_response_from_error
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
@@ -1948,8 +1949,8 @@ class TestSendToPushBouncer(ZulipTestCase):
         from zerver.decorator import InvalidZulipServerError
 
         # This is the exception our decorator uses for an invalid Zulip server
-        error_obj = InvalidZulipServerError("testRole")
-        self.add_mock_response(body=orjson.dumps(error_obj.to_json()), status=400)
+        error_response = json_response_from_error(InvalidZulipServerError("testRole"))
+        self.add_mock_response(body=error_response.content, status=error_response.status_code)
         with self.assertRaises(PushNotificationBouncerException) as exc:
             send_to_push_bouncer("POST", "register", {"msg": "true"})
         self.assertEqual(

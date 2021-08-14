@@ -118,11 +118,6 @@ class JsonableError(Exception):
     def data(self) -> Dict[str, Any]:
         return dict(((f, getattr(self, f)) for f in self.data_fields), code=self.code.name)
 
-    def to_json(self) -> Dict[str, Any]:
-        d = {"result": "error", "msg": self.msg}
-        d.update(self.data)
-        return d
-
     def __str__(self) -> str:
         return self.msg
 
