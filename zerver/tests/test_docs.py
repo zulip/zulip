@@ -15,7 +15,6 @@ from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
-from zerver.lib.utils import split_by
 from zerver.models import Realm, get_realm
 from zerver.views.documentation import add_api_uri_context
 
@@ -373,12 +372,6 @@ class AboutPageTest(ZulipTestCase):
             result = self.client_get("/team/")
             self.assertEqual(result.status_code, 301)
             self.assertEqual(result["Location"], "https://zulip.com/team/")
-
-    def test_split_by(self) -> None:
-        """Utility function primarily used in authors page"""
-        flat_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        expected_result = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        self.assertEqual(split_by(flat_list, 3, None), expected_result)
 
 
 class SmtpConfigErrorTest(ZulipTestCase):
