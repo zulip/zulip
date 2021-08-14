@@ -22,7 +22,6 @@ from zerver.lib.actions import (
     do_mute_user,
     do_reactivate_user,
     do_set_realm_property,
-    get_emails_from_user_ids,
     get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
@@ -969,13 +968,6 @@ class AdminCreateUserTest(ZulipTestCase):
 
 
 class UserProfileTest(ZulipTestCase):
-    def test_get_emails_from_user_ids(self) -> None:
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        dct = get_emails_from_user_ids([hamlet.id, othello.id])
-        self.assertEqual(dct[hamlet.id], hamlet.email)
-        self.assertEqual(dct[othello.id], othello.email)
-
     def test_valid_user_id(self) -> None:
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")

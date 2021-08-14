@@ -7285,11 +7285,6 @@ def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: 
     notify_linkifiers(realm)
 
 
-def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:
-    # We may eventually use memcached to speed this up, but the DB is fast.
-    return UserProfile.emails_from_ids(user_ids)
-
-
 def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (RealmDomain):
     realm_domain = RealmDomain.objects.create(
         realm=realm, domain=domain, allow_subdomains=allow_subdomains

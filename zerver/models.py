@@ -1744,11 +1744,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES
         ]
 
-    @staticmethod
-    def emails_from_ids(user_ids: Sequence[int]) -> Dict[int, str]:
-        rows = UserProfile.objects.filter(id__in=user_ids).values("id", "email")
-        return {row["id"]: row["email"] for row in rows}
-
     def email_address_is_realm_public(self) -> bool:
         if self.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
             return True
