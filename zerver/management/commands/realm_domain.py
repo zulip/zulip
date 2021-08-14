@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, Union
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
@@ -24,7 +24,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument("domain", metavar="<domain>", nargs="?", help="domain to add or remove")
         self.add_realm_args(parser, required=True)
 
-    def handle(self, *args: Any, **options: str) -> None:
+    def handle(self, *args: Any, **options: Union[str, bool]) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
@@ -36,12 +36,14 @@ class Command(ZulipBaseCommand):
                     print(realm_domain["domain"] + " (subdomains not allowed)")
             sys.exit(0)
 
+        assert isinstance(options["domain"], str)
         domain = options["domain"].strip().lower()
         try:
             validate_domain(domain)
         except ValidationError as e:
             raise CommandError(e.messages[0])
         if options["op"] == "add":
+            assert isinstance(options["allow_subdomains"], bool)
             try:
                 RealmDomain.objects.create(
                     realm=realm, domain=domain, allow_subdomains=options["allow_subdomains"]

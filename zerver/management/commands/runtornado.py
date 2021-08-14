@@ -47,8 +47,10 @@ class Command(BaseCommand):
             help="[port number or ipaddr:port]",
         )
 
-    def handle(self, addrport: str, **options: bool) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         interactive_debug_listen()
+        addrport = options["addrport"]
+        assert isinstance(addrport, str)
 
         import django
         from tornado import httpserver

@@ -17,7 +17,10 @@ class Command(ZulipBaseCommand):
         )
         group.add_argument("--email", "-e", required=True, help="a contact email address")
 
-    def handle(self, uuid: str, key: str, hostname: str, email: str, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         RemoteZulipServer.objects.create(
-            uuid=uuid, api_key=key, hostname=hostname, contact_email=email
+            uuid=options["uuid"],
+            api_key=options["key"],
+            hostname=options["hostname"],
+            contact_email=options["email"],
         )

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from zerver.models import Client, Realm, UserProfile, get_client
 
@@ -33,8 +33,8 @@ def check_config() -> None:
 class ZulipBaseCommand(BaseCommand):
 
     # Fix support for multi-line usage
-    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
-        parser = super().create_parser(*args, **kwargs)
+    def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
+        parser = super().create_parser(prog_name, subcommand, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 

@@ -1,12 +1,16 @@
 import cProfile
 import logging
 import tempfile
+from os import path
 from typing import Any, Dict
 
+from django.contrib.sessions.backends.base import SessionBase
 from django.core.management.base import CommandParser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.request import get_request_notes
+from zerver.lib.test_helpers import HostRequestMock
 from zerver.middleware import LogRequests
 from zerver.models import UserMessage, UserProfile
 from zerver.views.message_fetch import get_messages_backend

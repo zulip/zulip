@@ -5,6 +5,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 
 from django.conf import settings
+from django.core.management.base import CommandParser
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 
@@ -16,8 +17,8 @@ from zerver.logging_handlers import try_git_describe
 
 class Command(ZulipBaseCommand):
     # Fix support for multi-line usage strings
-    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
-        parser = super().create_parser(*args, **kwargs)
+    def create_parser(self, prog_name: str, subcommand: str, **kwargs: Any) -> CommandParser:
+        parser = super().create_parser(prog_name, subcommand, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 

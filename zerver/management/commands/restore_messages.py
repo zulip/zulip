@@ -49,7 +49,7 @@ To restore a specific ArchiveTransaction:
             "(Does not restore manually deleted messages.)",
         )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         if realm:
             restore_data_from_archive_by_realm(realm)

@@ -12,7 +12,7 @@ from django.core.management.base import CommandParser
 from django.core.management.commands import compilemessages
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation.trans_real import to_language
+from django.utils.translation import to_language
 from pyuca import Collator
 
 

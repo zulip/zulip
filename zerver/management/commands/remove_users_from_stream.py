@@ -18,7 +18,7 @@ class Command(ZulipBaseCommand):
             parser, all_users_help="Remove all users in realm from this stream."
         )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         user_profiles = self.get_users(options, realm)

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Iterable
 
 from django.core.management.base import CommandParser
 
@@ -24,7 +24,7 @@ class Command(ZulipBaseCommand):
         target_realm = self.get_realm(options)
 
         if target_realm is None:
-            realms = Realm.objects.all()
+            realms: Iterable[Realm] = Realm.objects.all()
         else:
             realms = [target_realm]
 

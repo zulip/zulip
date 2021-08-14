@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import orjson
 from django.conf import settings
@@ -61,7 +61,7 @@ approach shown above.
             )
         return standardize_headers(custom_headers_dict)
 
-    def handle(self, **options: Optional[str]) -> None:
+    def handle(self, *args: Any, **options: Optional[str]) -> None:
         if options["fixture"] is None or options["url"] is None:
             self.print_help("./manage.py", "send_webhook_fixture_message")
             raise CommandError
@@ -84,7 +84,7 @@ approach shown above.
                 json,
                 content_type="application/json",
                 HTTP_HOST=realm.host,
-                **headers,
+                extra=headers,
             )
         else:
             result = client.post(

@@ -42,6 +42,19 @@ logger.addHandler(file_handler)
 
 
 def get_imap_messages() -> Generator[EmailMessage, None, None]:
+    # We're probably running from cron, try to batch-process mail
+    if (
+        not settings.EMAIL_GATEWAY_BOT
+        or not settings.EMAIL_GATEWAY_LOGIN
+        or not settings.EMAIL_GATEWAY_PASSWORD
+        or not settings.EMAIL_GATEWAY_IMAP_SERVER
+        or not settings.EMAIL_GATEWAY_IMAP_PORT
+        or not settings.EMAIL_GATEWAY_IMAP_FOLDER
+    ):
+        raise CommandError(
+            "Please configure the email mirror gateway in /etc/zulip/, "
+            "or specify $ORIGINAL_RECIPIENT if piping a single mail."
+        )
     mbox = IMAP4_SSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT)
     mbox.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
     try:
@@ -68,18 +81,5 @@ class Command(BaseCommand):
     help = __doc__
 
     def handle(self, *args: Any, **options: str) -> None:
-        # We're probably running from cron, try to batch-process mail
-        if (
-            not settings.EMAIL_GATEWAY_BOT
-            or not settings.EMAIL_GATEWAY_LOGIN
-            or not settings.EMAIL_GATEWAY_PASSWORD
-            or not settings.EMAIL_GATEWAY_IMAP_SERVER
-            or not settings.EMAIL_GATEWAY_IMAP_PORT
-            or not settings.EMAIL_GATEWAY_IMAP_FOLDER
-        ):
-            raise CommandError(
-                "Please configure the email mirror gateway in /etc/zulip/, "
-                "or specify $ORIGINAL_RECIPIENT if piping a single mail."
-            )
         for message in get_imap_messages():
             process_message(message)

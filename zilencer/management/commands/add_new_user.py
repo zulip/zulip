@@ -15,7 +15,7 @@ and will otherwise fall back to the zulip realm."""
     def add_arguments(self, parser: CommandParser) -> None:
         self.add_realm_args(parser)
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         if realm is None:
             realm = (

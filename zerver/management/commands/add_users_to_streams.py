@@ -17,7 +17,7 @@ class Command(ZulipBaseCommand):
             "-s", "--streams", required=True, help="A comma-separated list of stream names."
         )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

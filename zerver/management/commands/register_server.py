@@ -30,7 +30,7 @@ class Command(ZulipBaseCommand):
             help="Automatically rotate your server's zulip_org_key",
         )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         if not settings.DEVELOPMENT:
             check_config()
 

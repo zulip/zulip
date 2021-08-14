@@ -37,9 +37,9 @@ import json
 import os
 import re
 import subprocess
-from argparse import ArgumentParser
 from typing import Any, Collection, Dict, Iterator, List, Mapping
 
+from django.core.management.base import CommandParser
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
@@ -80,7 +80,7 @@ class Command(makemessages.Command):
     for func, tag in tags:
         xgettext_options += [f'--keyword={func}:1,"{tag}"']
 
-    def add_arguments(self, parser: ArgumentParser) -> None:
+    def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
         parser.add_argument(
             "--frontend-source",
