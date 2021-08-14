@@ -547,14 +547,26 @@ def process_raw_message_batch(
 
 
 def get_topic_name(
-    message: Dict[str, Any], dsc_id_to_dsc_map: Dict[str, Dict[str, Any]], is_pm_data: bool = False
+    message: Dict[str, Any],
+    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
+    thread_id_mapper: IdMapper,
+    is_pm_data: bool = False,
 ) -> str:
     if is_pm_data:
         return ""
     elif message["rid"] in dsc_id_to_dsc_map:
         dsc_channel_name = dsc_id_to_dsc_map[message["rid"]]["fname"]
         return f"{dsc_channel_name} (Imported from Rocket.Chat)"
+    elif message.get("replies"):
+        # Message is the start of a thread
+        thread_id = thread_id_mapper.get(message["_id"])
+        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+    elif message.get("tmid"):
+        # Message is a part of a thread
+        thread_id = thread_id_mapper.get(message["tmid"])
+        return f"Thread {thread_id} (Imported from Rocket.Chat)"
     else:
+        # Normal channel message
         return "Imported from Rocket.Chat"
 
 
@@ -571,6 +583,7 @@ def process_messages(
     stream_id_to_recipient_id: Dict[int, int],
     huddle_id_mapper: IdMapper,
     huddle_id_to_recipient_id: Dict[int, int],
+    thread_id_mapper: IdMapper,
     room_id_to_room_map: Dict[str, Dict[str, Any]],
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
@@ -641,7 +654,9 @@ def process_messages(
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
 
         # Add topic name to message_dict
-        message_dict["topic_name"] = get_topic_name(message, dsc_id_to_dsc_map, is_pm_data)
+        message_dict["topic_name"] = get_topic_name(
+            message, dsc_id_to_dsc_map, thread_id_mapper, is_pm_data
+        )
 
         # Add user mentions to message_dict
         mention_user_ids = set()
@@ -689,7 +704,9 @@ def process_messages(
                     continue
 
                 converted_topic_name = get_topic_name(
-                    message={"rid": mention_rc_channel_id}, dsc_id_to_dsc_map=dsc_id_to_dsc_map
+                    message={"rid": mention_rc_channel_id},
+                    dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                    thread_id_mapper=thread_id_mapper,
                 )
 
                 parent_rc_channel = room_id_to_room_map[parent_channel_id]
@@ -923,6 +940,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     user_id_mapper = IdMapper()
     stream_id_mapper = IdMapper()
     huddle_id_mapper = IdMapper()
+    thread_id_mapper = IdMapper()
 
     process_users(
         user_id_to_user_map=user_id_to_user_map,
@@ -1055,6 +1073,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         stream_id_to_recipient_id=stream_id_to_recipient_id,
         huddle_id_mapper=huddle_id_mapper,
         huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        thread_id_mapper=thread_id_mapper,
         room_id_to_room_map=room_id_to_room_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
@@ -1080,6 +1099,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         stream_id_to_recipient_id=stream_id_to_recipient_id,
         huddle_id_mapper=huddle_id_mapper,
         huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        thread_id_mapper=thread_id_mapper,
         room_id_to_room_map=room_id_to_room_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
