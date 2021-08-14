@@ -476,22 +476,6 @@ def validate_schema(schema: Dict[str, Any]) -> None:
             validate_schema(schema["additionalProperties"])
 
 
-def to_python_type(py_type: str) -> type:
-    """Transform an OpenAPI-like type to a Python one.
-    https://swagger.io/docs/specification/data-models/data-types
-    """
-    TYPES = {
-        "string": str,
-        "number": float,
-        "integer": int,
-        "boolean": bool,
-        "array": list,
-        "object": dict,
-    }
-
-    return TYPES[py_type]
-
-
 def likely_deprecated_parameter(parameter_description: str) -> bool:
     if "**Changes**: Deprecated" in parameter_description:
         return True

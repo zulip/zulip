@@ -27,7 +27,6 @@ from zerver.openapi.openapi import (
     get_openapi_parameters,
     get_openapi_paths,
     openapi_spec,
-    to_python_type,
     validate_against_openapi_schema,
     validate_request,
     validate_schema,
@@ -166,19 +165,6 @@ class OpenAPIToolsTest(ZulipTestCase):
                 )
         finally:
             openapi_spec.openapi()["paths"].pop("testing", None)
-
-    def test_to_python_type(self) -> None:
-        TYPES = {
-            "string": str,
-            "number": float,
-            "integer": int,
-            "boolean": bool,
-            "array": list,
-            "object": dict,
-        }
-
-        for oa_type, py_type in TYPES.items():
-            self.assertEqual(to_python_type(oa_type), py_type)
 
     def test_live_reload(self) -> None:
         # Force the reload by making the last update date < the file's last
