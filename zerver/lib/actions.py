@@ -1214,7 +1214,7 @@ def do_deactivate_user(
         change_user_is_active(user_profile, False)
 
         delete_user_sessions(user_profile)
-        clear_scheduled_emails([user_profile.id])
+        clear_scheduled_emails(user_profile.id)
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -5036,7 +5036,7 @@ def do_change_notification_settings(
 
     # Disabling digest emails should clear a user's email queue
     if name == "enable_digest_emails" and not value:
-        clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
+        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[name])
     event = {
