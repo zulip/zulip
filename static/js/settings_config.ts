@@ -406,6 +406,41 @@ const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
 const mobile_notification_settings = ["enable_online_push_notifications"];
 
+export const email_notifications_batching_period_values = [
+    {
+        value: 60 * 2,
+        description: $t({defaultMessage: "2 minutes"}),
+    },
+    {
+        value: 60 * 5,
+        description: $t({defaultMessage: "5 minutes"}),
+    },
+    {
+        value: 60 * 10,
+        description: $t({defaultMessage: "10 minutes"}),
+    },
+    {
+        value: 60 * 30,
+        description: $t({defaultMessage: "30 minutes"}),
+    },
+    {
+        value: 60 * 60,
+        description: $t({defaultMessage: "1 hour"}),
+    },
+    {
+        value: 60 * 60 * 6,
+        description: $t({defaultMessage: "6 hours"}),
+    },
+    {
+        value: 60 * 60 * 24,
+        description: $t({defaultMessage: "1 day"}),
+    },
+    {
+        value: 60 * 60 * 24 * 7,
+        description: $t({defaultMessage: "1 week"}),
+    },
+];
+
 const email_notification_settings = [
     "enable_digest_emails",
     "enable_login_emails",
@@ -418,6 +453,7 @@ const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
     mobile_notification_settings,
     email_notification_settings,
+    ["email_notifications_batching_period"],
     ["notification_sound"],
 );
 
