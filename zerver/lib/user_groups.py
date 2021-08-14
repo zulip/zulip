@@ -22,11 +22,6 @@ def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> Us
     return user_group
 
 
-def user_groups_in_realm(realm: Realm) -> List[UserGroup]:
-    user_groups = UserGroup.objects.filter(realm=realm)
-    return list(user_groups)
-
-
 def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
