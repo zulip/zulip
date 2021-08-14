@@ -1,6 +1,5 @@
 from datetime import timedelta
 from typing import Optional
-from unittest import mock
 
 import orjson
 from django.utils.timezone import now as timezone_now
@@ -9,7 +8,6 @@ from zerver.lib.actions import do_set_realm_property, ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
-    check_remove_user_from_user_group,
     create_user_group,
     get_memberships_of_users,
     get_user_groups,
@@ -51,17 +49,6 @@ class UserGroupTestCase(ZulipTestCase):
         user_groups = get_user_groups(othello)
         self.assert_length(user_groups, 1)
         self.assertEqual(user_groups[0].name, "support")
-
-    def test_check_remove_user_from_user_group(self) -> None:
-        user_group = self.create_user_group_for_test("support")
-        othello = self.example_user("othello")
-        self.assertTrue(check_remove_user_from_user_group(othello, user_group))
-        self.assertFalse(check_remove_user_from_user_group(othello, user_group))
-
-        with mock.patch(
-            "zerver.lib.user_groups.remove_user_from_user_group", side_effect=Exception
-        ):
-            self.assertFalse(check_remove_user_from_user_group(othello, user_group))
 
 
 class UserGroupAPITestCase(UserGroupTestCase):

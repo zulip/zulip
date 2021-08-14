@@ -60,14 +60,6 @@ def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup
     return num_deleted
 
 
-def check_remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> bool:
-    try:
-        num_deleted = remove_user_from_user_group(user_profile, user_group)
-        return bool(num_deleted)
-    except Exception:
-        return False
-
-
 def create_user_group(
     name: str, members: List[UserProfile], realm: Realm, description: str = ""
 ) -> UserGroup:
