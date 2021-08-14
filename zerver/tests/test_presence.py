@@ -7,7 +7,6 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import do_deactivate_user
 from zerver.lib.presence import get_status_dict_by_realm
-from zerver.lib.statistics import seconds_usage_between
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, reset_emails_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -246,44 +245,6 @@ class UserPresenceTests(ZulipTestCase):
         ]
         self.assertEqual(interval.start, third_time)
         self.assertEqual(interval.end, third_time + UserActivityInterval.MIN_INTERVAL_LENGTH)
-
-        self.assertEqual(
-            seconds_usage_between(user_profile, time_zero, third_time).total_seconds(), 1500
-        )
-        self.assertEqual(
-            seconds_usage_between(
-                user_profile, time_zero, third_time + timedelta(seconds=10)
-            ).total_seconds(),
-            1510,
-        )
-        self.assertEqual(
-            seconds_usage_between(
-                user_profile, time_zero, third_time + timedelta(seconds=1000)
-            ).total_seconds(),
-            2400,
-        )
-        self.assertEqual(
-            seconds_usage_between(
-                user_profile, time_zero, third_time - timedelta(seconds=100)
-            ).total_seconds(),
-            1500,
-        )
-        self.assertEqual(
-            seconds_usage_between(
-                user_profile,
-                time_zero + timedelta(seconds=100),
-                third_time - timedelta(seconds=100),
-            ).total_seconds(),
-            1400,
-        )
-        self.assertEqual(
-            seconds_usage_between(
-                user_profile,
-                time_zero + timedelta(seconds=1200),
-                third_time - timedelta(seconds=100),
-            ).total_seconds(),
-            300,
-        )
 
         # Now test /activity with actual data
         user_profile.is_staff = True
