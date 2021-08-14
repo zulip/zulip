@@ -17,7 +17,7 @@ def user_uploads_or_external(url: str) -> bool:
     )
 
 
-def generate_thumbnail_url(path: str, size: str = "0x0", is_camo_url: bool = False) -> str:
+def generate_thumbnail_url(path: str, size: str = "0x0") -> str:
     path = urljoin("/", path)
 
     if url_has_allowed_host_and_scheme(path, allowed_hosts=None):
