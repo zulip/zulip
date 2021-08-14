@@ -1420,7 +1420,7 @@ class ActivateTest(ZulipTestCase):
         email = ScheduledEmail.objects.all().first()
         self.assertEqual(email.users.count(), 2)
 
-    def test_clear_scheduled_emails_with_multiple_user_ids(self) -> None:
+    def test_clear_schedule_emails(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
@@ -1430,20 +1430,7 @@ class ActivateTest(ZulipTestCase):
             delay=datetime.timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        clear_scheduled_emails([hamlet.id, iago.id])
-        self.assertEqual(ScheduledEmail.objects.count(), 0)
-
-    def test_clear_schedule_emails_with_one_user_id(self) -> None:
-        hamlet = self.example_user("hamlet")
-        iago = self.example_user("iago")
-        send_future_email(
-            "zerver/emails/followup_day1",
-            iago.realm,
-            to_user_ids=[hamlet.id, iago.id],
-            delay=datetime.timedelta(hours=1),
-        )
-        self.assertEqual(ScheduledEmail.objects.count(), 1)
-        clear_scheduled_emails([hamlet.id])
+        clear_scheduled_emails(hamlet.id)
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         self.assertEqual(ScheduledEmail.objects.filter(users=hamlet).count(), 0)
         self.assertEqual(ScheduledEmail.objects.filter(users=iago).count(), 1)
