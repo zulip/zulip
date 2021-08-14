@@ -44,7 +44,6 @@ from zerver.lib.push_notifications import (
     handle_remove_push_notification,
     hex_to_b64,
     modernize_apns_payload,
-    num_push_devices_for_user,
     parse_gcm_options,
     send_android_push_notification_to_user,
     send_apple_push_notification,
@@ -1973,17 +1972,6 @@ class TestSendToPushBouncer(ZulipTestCase):
         self.assertEqual(
             str(exc.exception), "Push notification bouncer returned unexpected status code 300"
         )
-
-
-class TestNumPushDevicesForUser(PushNotificationTest):
-    def test_when_kind_is_none(self) -> None:
-        self.setup_apns_tokens()
-        self.assertEqual(num_push_devices_for_user(self.user_profile), 2)
-
-    def test_when_kind_is_not_none(self) -> None:
-        self.setup_apns_tokens()
-        count = num_push_devices_for_user(self.user_profile, kind=PushDeviceToken.APNS)
-        self.assertEqual(count, 2)
 
 
 class TestPushApi(BouncerTestCase):
