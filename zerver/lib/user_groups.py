@@ -53,13 +53,6 @@ def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.usergroup_set.all())
 
 
-def check_add_user_to_user_group(user_profile: UserProfile, user_group: UserGroup) -> bool:
-    member_obj, created = UserGroupMembership.objects.get_or_create(
-        user_group=user_group, user_profile=user_profile
-    )
-    return created
-
-
 def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> int:
     num_deleted, _ = UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=user_group
