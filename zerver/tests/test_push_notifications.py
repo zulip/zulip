@@ -5,7 +5,7 @@ import itertools
 import re
 import uuid
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from unittest import mock, skipUnless
 from urllib import parse
 
@@ -14,6 +14,7 @@ import responses
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
+from django.http.response import ResponseHeaders
 from django.test import override_settings
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
@@ -104,7 +105,7 @@ class BouncerTestCase(ZulipTestCase):
         RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
         super().tearDown()
 
-    def request_callback(self, request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
         assert isinstance(request.body, str) or request.body is None
         params: Dict[str, List[str]] = parse.parse_qs(request.body)
         # In Python 3, the values of the dict from `parse_qs` are
@@ -113,6 +114,7 @@ class BouncerTestCase(ZulipTestCase):
         # we can safely pick the first value.
         data = {k: v[0] for k, v in params.items()}
         assert request.url is not None  # allow mypy to infer url is present.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         if request.method == "POST":
             result = self.uuid_post(self.server_uuid, local_url, data, subdomain="")
@@ -122,6 +124,7 @@ class BouncerTestCase(ZulipTestCase):
 
     def add_mock_response(self) -> None:
         # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + ".*")
         responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
         responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
@@ -338,6 +341,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             )
             self.assert_json_error(result, "Token does not exist")
 
+            assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
             URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/register"
             with responses.RequestsMock() as resp, self.assertLogs(level="ERROR") as error_log:
                 resp.add(responses.POST, URL, body=ConnectionError(), status=502)
@@ -431,6 +435,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         """This is a variant of the below test_push_api, but using the full
         push notification bouncer flow
         """
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         ANALYTICS_URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/analytics"
         ANALYTICS_STATUS_URL = ANALYTICS_URL + "/status"
         user = self.example_user("hamlet")
@@ -642,6 +647,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "version": '"2.0.6+git"',
             },
         )
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         ANALYTICS_URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/analytics"
         self.assertTrue(responses.assert_call_count(ANALYTICS_URL, 1))
         self.assertEqual(RemoteRealmCount.objects.count(), 1)
@@ -792,8 +798,9 @@ class PushNotificationTest(BouncerTestCase):
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
 
-    def request_callback(self, request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+    def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
         assert request.url is not None  # allow mypy to infer url is present.
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
         result = self.uuid_post(
             self.server_uuid, local_url, request.body, content_type="application/json"
@@ -912,6 +919,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             "message_id": message.id,
             "trigger": "private_message",
         }
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/notify"
         responses.add(responses.POST, URL, body=ConnectionError())
         with mock.patch("zerver.lib.push_notifications.gcm_client") as mock_gcm:
@@ -1291,11 +1299,13 @@ class TestAPNs(PushNotificationTest):
         )
 
     def send(
-        self, devices: Optional[List[PushDeviceToken]] = None, payload_data: Dict[str, Any] = {}
+        self,
+        devices: Optional[List[Union[PushDeviceToken, RemotePushDeviceToken]]] = None,
+        payload_data: Dict[str, Any] = {},
     ) -> None:
-        if devices is None:
-            devices = self.devices()
-        send_apple_push_notification(self.user_profile.id, devices, payload_data)
+        send_apple_push_notification(
+            self.user_profile.id, devices if devices is not None else self.devices(), payload_data
+        )
 
     def test_get_apns_context(self) -> None:
         """This test is pretty hacky, and needs to carefully reset the state
@@ -1925,6 +1935,7 @@ class TestSendToPushBouncer(ZulipTestCase):
     def add_mock_response(
         self, body: bytes = orjson.dumps({"msg": "error"}), status: int = 200
     ) -> None:
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/register"
         responses.add(responses.POST, URL, body=body, status=status)
 
@@ -2007,6 +2018,7 @@ class TestPushApi(BouncerTestCase):
             with self.settings(
                 PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com"
             ), responses.RequestsMock() as resp:
+                assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
                 URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/unregister"
                 resp.add_callback(responses.POST, URL, callback=self.request_callback)
                 result = self.client_delete(endpoint, {"token": "abcd1234"})
@@ -2056,20 +2068,22 @@ class TestPushApi(BouncerTestCase):
                 self.assert_length(tokens, 1)
                 self.assertEqual(tokens[0].token, token)
 
-                tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token))
-                self.assert_length(tokens, 1)
-                self.assertEqual(tokens[0].token, token)
+                remote_tokens = list(
+                    RemotePushDeviceToken.objects.filter(user_id=user.id, token=token)
+                )
+                self.assert_length(remote_tokens, 1)
+                self.assertEqual(remote_tokens[0].token, token)
 
         # PushDeviceToken will include all the device tokens.
-        tokens = list(PushDeviceToken.objects.values_list("token", flat=True))
+        token_values = list(PushDeviceToken.objects.values_list("token", flat=True))
         self.assertEqual(
-            tokens, ["apple-tokenaa", "android-token-1", "apple-tokenbb", "android-token-2"]
+            token_values, ["apple-tokenaa", "android-token-1", "apple-tokenbb", "android-token-2"]
         )
 
         # RemotePushDeviceToken will only include tokens of
         # the devices using push notification bouncer.
-        remote_tokens = list(RemotePushDeviceToken.objects.values_list("token", flat=True))
-        self.assertEqual(remote_tokens, ["apple-tokenbb", "android-token-2"])
+        remote_token_values = list(RemotePushDeviceToken.objects.values_list("token", flat=True))
+        self.assertEqual(remote_token_values, ["apple-tokenbb", "android-token-2"])
 
         # Test removing tokens without using push notification bouncer.
         for endpoint, token in no_bouncer_requests:
@@ -2277,6 +2291,7 @@ class TestClearOnRead(ZulipTestCase):
         ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
 
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as mock_publish:
+            assert stream.recipient_id is not None
             do_mark_stream_messages_as_read(hamlet, stream.recipient_id)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
             groups = [item["message_ids"] for item in queue_items]

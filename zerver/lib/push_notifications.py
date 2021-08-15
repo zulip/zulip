@@ -6,7 +6,7 @@ import logging
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 import gcm
 import lxml.html
@@ -26,6 +26,7 @@ from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bou
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
+    AbstractPushDeviceToken,
     ArchivedMessage,
     Message,
     NotificationTriggers,
@@ -149,7 +150,7 @@ def send_apple_push_notification(
 
     if remote:
         assert settings.ZILENCER_ENABLED
-        DeviceTokenClass = RemotePushDeviceToken
+        DeviceTokenClass: Type[AbstractPushDeviceToken] = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
 
@@ -336,7 +337,7 @@ def send_android_push_notification(
 
     if remote:
         assert settings.ZILENCER_ENABLED
-        DeviceTokenClass = RemotePushDeviceToken
+        DeviceTokenClass: Type[AbstractPushDeviceToken] = RemotePushDeviceToken
     else:
         DeviceTokenClass = PushDeviceToken
 
