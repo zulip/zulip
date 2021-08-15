@@ -1,4 +1,5 @@
 import os
+from typing import List, Union
 
 from django.conf import settings
 from django.conf.urls import include
@@ -10,6 +11,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
 )
 from django.urls import path
+from django.urls.resolvers import URLPattern, URLResolver
 from django.utils.module_loading import import_string
 from django.views.generic import RedirectView, TemplateView
 
@@ -634,7 +636,7 @@ i18n_urls = [
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
-urls = list(i18n_urls)
+urls: List[Union[URLPattern, URLResolver]] = list(i18n_urls)
 
 # Include the dual-use patterns twice
 urls += [

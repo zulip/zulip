@@ -65,7 +65,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 # Detailed docs in zproject/dev_settings.py.
 FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
-AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = None
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL: Optional[Dict[str, Any]] = None
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
@@ -138,8 +138,8 @@ DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
 DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
-S3_REGION = None
-S3_ENDPOINT_URL = None
+S3_REGION: Optional[str] = None
+S3_ENDPOINT_URL: Optional[str] = None
 LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 

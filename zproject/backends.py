@@ -301,7 +301,7 @@ class ZulipAuthMixin:
     """
 
     name = "undefined"
-    _logger = None
+    _logger: Optional[logging.Logger] = None
 
     @property
     def logger(self) -> logging.Logger:

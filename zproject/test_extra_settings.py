@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
@@ -215,7 +215,7 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
-PUSH_NOTIFICATION_BOUNCER_URL = None
+PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 
 THUMBNAIL_IMAGES = True
 
@@ -269,4 +269,4 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "password_reset_form_by_email": [],
 }
 
-FREE_TRIAL_DAYS = None
+FREE_TRIAL_DAYS: Optional[int] = None

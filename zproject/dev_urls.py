@@ -4,7 +4,8 @@ from urllib.parse import urlsplit
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.views import serve as staticfiles_serve
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
+from django.http.response import FileResponse
 from django.urls import path
 from django.views.generic import TemplateView
 from django.views.static import serve
@@ -110,7 +111,7 @@ if use_prod_static:
     ]
 else:
 
-    def serve_static(request: HttpRequest, path: str) -> HttpResponse:
+    def serve_static(request: HttpRequest, path: str) -> FileResponse:
         response = staticfiles_serve(request, path)
         response["Access-Control-Allow-Origin"] = "*"
         return response

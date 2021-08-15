@@ -1,11 +1,13 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
-from typing import List
+from email.message import Message
+from typing import List, MutableSequence, Union
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
+from django.core.mail.message import EmailMessage
 from django.template import loader
 
 
@@ -34,7 +36,7 @@ class EmailLogBackEnd(EmailBackend):
     @staticmethod
     def log_email(email: EmailMultiAlternatives) -> None:
         """Used in development to record sent emails in a nice HTML log"""
-        html_message = "Missing HTML message"
+        html_message: Union[bytes, EmailMessage, Message, str] = "Missing HTML message"
         if len(email.alternatives) > 0:
             html_message = email.alternatives[0][0]
 
@@ -68,12 +70,14 @@ class EmailLogBackEnd(EmailBackend):
 
         for email_message in email_messages:
             html_alternative = list(email_message.alternatives[0])
+            assert isinstance(html_alternative[0], str)
             # Here, we replace the email addresses used in development
             # with chat.zulip.org, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
             html_alternative[0] = html_alternative[0].replace(
                 localhost_email_images_base_uri, czo_email_images_base_uri
             )
+            assert isinstance(email_message.alternatives, MutableSequence)
             email_message.alternatives[0] = tuple(html_alternative)
 
             email_message.to = [get_forward_address()]

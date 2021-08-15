@@ -160,7 +160,7 @@ THUMBNAIL_IMAGES = True
 SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))
 
 BILLING_ENABLED = True
-LANDING_PAGE_NAVBAR_MESSAGE = None
+LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
 
 # Test custom TOS template rendering
 TERMS_OF_SERVICE = "corporate/terms.md"
@@ -175,4 +175,4 @@ USE_X_FORWARDED_PORT = True
 # Override the default SAML entity ID
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 
-MEMCACHED_USERNAME = None
+MEMCACHED_USERNAME: Optional[str] = None
