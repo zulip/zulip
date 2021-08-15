@@ -44,9 +44,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "addrport",
-            nargs="?",
-            help="[optional port number or ipaddr:port]\n "
-            "(use multiple ports to start multiple servers)",
+            help="[port number or ipaddr:port]",
         )
 
     def handle(self, addrport: str, **options: bool) -> None:
