@@ -249,6 +249,14 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endif %}
                 </div>
                 {% endif %}
+                <div class="input-group">
+                    <label for="id_enable_marketing_emails" class="inline-block checkbox marketing_emails_checkbox">
+                        <input id="id_enable_marketing_emails" type="checkbox" name="enable_marketing_emails"
+                          checked="checked" />
+                        <span></span>
+                        {% trans %}Send me occasional marketing emails about Zulip (a few times a year).{% endtrans %}
+                    </label>
+                </div>
                 <div class="register-button-box">
                     <button class="register-button" type="submit">
                         <span>{{ _('Sign up') }}</span>

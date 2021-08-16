@@ -920,6 +920,11 @@ button#register_auth_button_gitlab {
             &.inline-block {
                 margin-top: -1px;
             }
+
+            &.marketing_emails_checkbox {
+                text-indent: -24px;
+                margin-left: 24px;
+            }
         }
 
         &.radio {

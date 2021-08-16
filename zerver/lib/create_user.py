@@ -128,6 +128,7 @@ def create_user(
     default_all_public_streams: Optional[bool] = None,
     source_profile: Optional[UserProfile] = None,
     force_id: Optional[int] = None,
+    enable_marketing_emails: bool = True,
 ) -> UserProfile:
     user_profile = create_user_profile(
         realm,
@@ -146,6 +147,7 @@ def create_user(
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
     user_profile.default_events_register_stream = default_events_register_stream
+    user_profile.enable_marketing_emails = enable_marketing_emails
     if role is not None:
         user_profile.role = role
     # Allow the ORM default to be used if not provided

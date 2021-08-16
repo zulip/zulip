@@ -332,6 +332,7 @@ def accounts_register(
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
+        enable_marketing_emails = form.cleaned_data["enable_marketing_emails"]
         default_stream_group_names = request.POST.getlist("default_stream_group")
         default_stream_groups = lookup_default_stream_groups(default_stream_group_names, realm)
 
@@ -437,6 +438,7 @@ def accounts_register(
                 source_profile=source_profile,
                 realm_creation=realm_creation,
                 acting_user=None,
+                enable_marketing_emails=enable_marketing_emails,
             )
 
         if realm_creation:

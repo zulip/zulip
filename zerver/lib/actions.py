@@ -648,6 +648,7 @@ def do_create_user(
     realm_creation: bool = False,
     *,
     acting_user: Optional[UserProfile],
+    enable_marketing_emails: bool = True,
 ) -> UserProfile:
 
     user_profile = create_user(
@@ -665,6 +666,7 @@ def do_create_user(
         default_events_register_stream=default_events_register_stream,
         default_all_public_streams=default_all_public_streams,
         source_profile=source_profile,
+        enable_marketing_emails=enable_marketing_emails,
     )
 
     event_time = user_profile.date_joined

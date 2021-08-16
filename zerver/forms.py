@@ -116,6 +116,7 @@ class RegistrationForm(forms.Form):
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
     realm_type = forms.IntegerField(required=False)
     is_demo_organization = forms.BooleanField(required=False)
+    enable_marketing_emails = forms.BooleanField(required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we
