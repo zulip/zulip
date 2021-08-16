@@ -174,16 +174,19 @@ const events = function () {
             setTimeout(() => {
                 $("nav ul").removeClass("show");
                 $("nav ul").css("transform", "");
+                $("body").removeClass("noscroll");
             }, 500);
         }
 
         if ($("nav ul.show") && !$e.closest("nav ul.show").length && !$e.is("nav ul.show")) {
             $("nav ul").removeClass("show");
+            $("body").removeClass("noscroll");
         }
     });
 
     $(".hamburger").on("click", (e) => {
         $("nav ul").addClass("show");
+        $("body").addClass("noscroll");
         e.stopPropagation();
     });
 
