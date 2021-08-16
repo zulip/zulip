@@ -82,6 +82,9 @@
                                 <span id="compose-globe-icon">
                                     <i class="zulip-icon zulip-icon-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
                                 </span>
+                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0">
+                                    <template id="narrow_to_compose_recipients_tooltip">{{t 'Go to conversation' }} <span class="hotkey-hint">({{narrow_to_compose_recipients_key_html}})</span></template>
+                                </a>
                                 <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
                                 <i class="fa fa-angle-right" aria-hidden="true"></i>
                                 <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />

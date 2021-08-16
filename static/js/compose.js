@@ -17,6 +17,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
+import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -103,6 +104,7 @@ export function update_fade() {
 
 function update_on_recipient_change() {
     update_fade();
+    compose_actions.update_narrow_to_recipient_visibility();
 }
 
 export function abort_xhr() {
@@ -702,6 +704,11 @@ export function initialize() {
         e.stopPropagation();
 
         compose_ui.make_compose_box_full_size();
+    });
+
+    $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
+        e.preventDefault();
+        narrow.to_compose_target();
     });
 
     $("#compose").on("click", ".collapse_composebox_button", (e) => {

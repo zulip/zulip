@@ -88,6 +88,7 @@ function test_helper() {
     stub(message_view_header, "initialize");
     stub(top_left_corner, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
+    stub(compose_actions, "update_narrow_to_recipient_visibility");
     stub(ui_util, "change_tab_to");
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream");
@@ -199,6 +200,7 @@ run_test("basics", () => {
         [stream_list, "handle_narrow_activated"],
         [typing_events, "render_notifications_for_narrow"],
         [message_view_header, "initialize"],
+        [compose_actions, "update_narrow_to_recipient_visibility"],
     ]);
 
     message_lists.current.selected_id = () => -1;

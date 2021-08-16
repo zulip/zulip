@@ -229,6 +229,7 @@ export function initialize() {
             ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
             "#compose_top_right [data-tooltip-template-id]",
+            ".narrow_to_compose_recipients",
         ],
         appendTo: () => document.body,
         onHidden(instance) {

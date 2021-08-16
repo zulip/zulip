@@ -509,6 +509,7 @@ body.dark-theme {
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
     #message_edit_tooltip,
@@ -526,6 +527,7 @@ body.dark-theme {
         color: hsl(236, 33%, 80%);
     }
 
+    .narrow_to_compose_recipients:hover,
     .expand_composebox_button:hover,
     .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,

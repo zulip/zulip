@@ -109,6 +109,22 @@
             position: relative;
             margin: 0 5px;
         }
+
+        a.narrow_to_compose_recipients {
+            background: transparent;
+            font-size: 18px;
+            padding: 1px;
+            line-height: 20px;
+            opacity: 0.7;
+            border: 0;
+            margin-left: 3px;
+            text-decoration: none;
+            color: inherit;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 
     .pm_recipient {

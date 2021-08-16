@@ -655,6 +655,7 @@ export function show() {
     narrow_state.reset_current_filter();
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
+    narrow.handle_middle_pane_transition();
 
     complete_rerender();
 }
