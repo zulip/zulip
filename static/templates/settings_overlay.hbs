@@ -75,6 +75,13 @@
                     <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     {{/unless}}
                 </li>
+                <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-level-user-defaults">
+                    <i class="icon fa fa-cog" aria-hidden="true"></i>
+                    <div class="text">{{t "Default user settings" }}</div>
+                    {{#unless is_admin}}
+                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                    {{/unless}}
+                </li>
                 <li tabindex="0" data-section="emoji-settings">
                     <i class="icon fa fa-smile-o" aria-hidden="true"></i>
                     <div class="text">{{t "Custom emoji" }}</div>

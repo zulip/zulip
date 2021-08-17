@@ -16,6 +16,7 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
 import * as settings_users from "./settings_users";
@@ -54,7 +55,7 @@ export function initialize() {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
     load_func_dict.set("display-settings", () => {
-        settings_display.set_up($("#user-display-settings"), user_settings);
+        settings_display.set_up($("#user-display-settings"), user_settings, false);
     });
     load_func_dict.set("notifications", settings_notifications.set_up);
     load_func_dict.set("your-bots", settings_bots.set_up);
@@ -75,6 +76,10 @@ export function initialize() {
     load_func_dict.set("user-groups-admin", settings_user_groups.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);
     load_func_dict.set("data-exports-admin", settings_exports.set_up);
+    load_func_dict.set(
+        "organization-level-user-defaults",
+        settings_realm_user_settings_defaults.set_up,
+    );
 }
 
 export function load_settings_section(section) {

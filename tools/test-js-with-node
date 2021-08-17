@@ -142,6 +142,7 @@ EXEMPT_FILES = {
     "static/js/settings_org.js",
     "static/js/settings_panel_menu.js",
     "static/js/settings_profile_fields.js",
+    "static/js/settings_realm_user_settings_defaults.js",
     "static/js/settings_sections.js",
     "static/js/settings_streams.js",
     "static/js/settings_toggle.js",

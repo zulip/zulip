@@ -6,6 +6,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 import {$t, language_list} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
@@ -123,6 +124,12 @@ export function build_page() {
         can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         policy_values: settings_config.common_policy_values,
         ...settings_org.get_organization_settings_options(),
+        demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
+        color_scheme_values: settings_config.color_scheme_values,
+        default_view_values: settings_config.default_view_values,
+        settings_object: realm_user_settings_defaults,
+        display_settings: settings_config.get_all_display_settings(),
+        settings_label: settings_config.display_settings_labels,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {

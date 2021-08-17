@@ -38,10 +38,14 @@ function change_display_setting(data, container, url, status_element, success_ms
     settings_ui.do_settings_change(channel.patch, url, data, $status_el, opts);
 }
 
-export function set_up(container, settings_object) {
+export function set_up(container, settings_object, for_realm_settings) {
     meta.loaded = true;
-    const language_modal_elem = "#user_default_language_modal";
-    const patch_url = "/json/settings";
+    let language_modal_elem = "#user_default_language_modal";
+    let patch_url = "/json/settings";
+    if (for_realm_settings) {
+        language_modal_elem = "#realm_default_language_modal";
+        patch_url = "/json/realm/user_settings_defaults";
+    }
 
     container.find(".display-settings-status").hide();
 
@@ -90,41 +94,48 @@ export function set_up(container, settings_object) {
         });
     }
 
-    $(language_modal_elem)
-        .find(".language")
-        .on("click", (e) => {
+    if (!for_realm_settings) {
+        $(language_modal_elem)
+            .find(".language")
+            .on("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                overlays.close_modal(language_modal_elem);
+
+                const $link = $(e.target).closest("a[data-code]");
+                const setting_value = $link.attr("data-code");
+                const data = {default_language: setting_value};
+
+                const new_language = $link.attr("data-name");
+                container.find(".default_language_name").text(new_language);
+
+                change_display_setting(
+                    data,
+                    container,
+                    patch_url,
+                    ".language-settings-status",
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                        },
+                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                    ),
+                    true,
+                );
+            });
+
+        container.find(".setting_default_language").on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            overlays.close_modal(language_modal_elem);
-
-            const $link = $(e.target).closest("a[data-code]");
-            const setting_value = $link.attr("data-code");
-            const data = {default_language: setting_value};
-
-            const new_language = $link.attr("data-name");
-            container.find(".default_language_name").text(new_language);
-
-            change_display_setting(
-                data,
-                container,
-                patch_url,
-                ".language-settings-status",
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                ),
-                true,
-            );
+            overlays.open_modal(language_modal_elem);
         });
 
-    container.find(".setting_default_language").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        overlays.open_modal(language_modal_elem);
-    });
+        container.find(".setting_twenty_four_hour_time").on("change", function () {
+            const data = {twenty_four_hour_time: this.value};
+            change_display_setting(data, container, patch_url, ".time-settings-status");
+        });
+    }
 
     container.find(".setting_demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
@@ -143,11 +154,6 @@ export function set_up(container, settings_object) {
 
     $("body").on("click", ".reload_link", () => {
         window.location.reload();
-    });
-
-    container.find(".setting_twenty_four_hour_time").on("change", function () {
-        const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, container, patch_url, ".time-settings-status");
     });
 
     container.find(".setting_emojiset_choice").on("click", function () {
