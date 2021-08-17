@@ -132,6 +132,9 @@ There are dozens of useful management commands under
   For most purposes, deactivating users is preferred, since that does not
   alter message history for other users.
   See the `./manage.py delete_user --help` documentation for details.
+* `./manage.py clear_auth_rate_limit_history`: If a user failed authenticaton
+  attempts too many times and further attempts are disallowed by the rate limiter,
+  this can be used to reset the limit.
 
 All of our management commands have internal documentation available
 via `manage.py command_name --help`.
