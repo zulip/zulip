@@ -363,7 +363,7 @@ def send_future_email(
                 assert to_emails is not None
                 assert len(to_emails) == 1
                 email.address = parseaddr(to_emails[0])[1]
-            email.save()
+                email.save()
         except Exception as e:
             email.delete()
             raise e
