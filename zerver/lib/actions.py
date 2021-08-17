@@ -870,16 +870,27 @@ def update_users_in_full_members_system_group(
         realm=realm, name="@role:members", is_system_group=True
     )
 
-    full_member_group_users = list(
-        full_members_system_group.direct_members.filter(id__in=affected_user_ids).values(
-            "id", "role", "date_joined"
+    full_member_group_users: List[Dict[str, Union[int, datetime.datetime]]] = list()
+    member_group_users: List[Dict[str, Union[int, datetime.datetime]]] = list()
+
+    if affected_user_ids:
+        full_member_group_users = list(
+            full_members_system_group.direct_members.filter(id__in=affected_user_ids).values(
+                "id", "role", "date_joined"
+            )
         )
-    )
-    member_group_users = list(
-        members_system_group.direct_members.filter(id__in=affected_user_ids).values(
-            "id", "role", "date_joined"
+        member_group_users = list(
+            members_system_group.direct_members.filter(id__in=affected_user_ids).values(
+                "id", "role", "date_joined"
+            )
         )
-    )
+    else:
+        full_member_group_users = list(
+            full_members_system_group.direct_members.all().values("id", "role", "date_joined")
+        )
+        member_group_users = list(
+            members_system_group.direct_members.all().values("id", "role", "date_joined")
+        )
 
     def is_provisional_member(user: Dict[str, Union[int, datetime.datetime]]) -> bool:
         diff = (timezone_now() - user["date_joined"]).days
@@ -970,6 +981,9 @@ def do_set_realm_property(
             )
             # TODO: Design a bulk event for this or force-reload all clients
             send_user_email_update_event(user_profile)
+
+    if name == "waiting_period_threshold":
+        update_users_in_full_members_system_group(realm)
 
 
 def do_set_realm_authentication_methods(
