@@ -345,27 +345,28 @@ def send_future_email(
         # For logging the email
 
     assert (to_user_ids is None) ^ (to_emails is None)
-    email = ScheduledEmail.objects.create(
-        type=EMAIL_TYPES[template_name],
-        scheduled_timestamp=timezone_now() + delay,
-        realm=realm,
-        data=orjson.dumps(email_fields).decode(),
-    )
+    with transaction.atomic():
+        email = ScheduledEmail.objects.create(
+            type=EMAIL_TYPES[template_name],
+            scheduled_timestamp=timezone_now() + delay,
+            realm=realm,
+            data=orjson.dumps(email_fields).decode(),
+        )
 
-    # We store the recipients in the ScheduledEmail object itself,
-    # rather than the JSON data object, so that we can find and clear
-    # them using clear_scheduled_emails.
-    try:
-        if to_user_ids is not None:
-            email.users.add(*to_user_ids)
-        else:
-            assert to_emails is not None
-            assert len(to_emails) == 1
-            email.address = parseaddr(to_emails[0])[1]
-        email.save()
-    except Exception as e:
-        email.delete()
-        raise e
+        # We store the recipients in the ScheduledEmail object itself,
+        # rather than the JSON data object, so that we can find and clear
+        # them using clear_scheduled_emails.
+        try:
+            if to_user_ids is not None:
+                email.users.add(*to_user_ids)
+            else:
+                assert to_emails is not None
+                assert len(to_emails) == 1
+                email.address = parseaddr(to_emails[0])[1]
+            email.save()
+        except Exception as e:
+            email.delete()
+            raise e
 
 
 def send_email_to_admins(
