@@ -101,6 +101,10 @@ export function update_fade() {
     compose_fade.update_all();
 }
 
+function update_on_recipient_change() {
+    update_fade();
+}
+
 export function abort_xhr() {
     $("#compose-send-button").prop("disabled", false);
     uppy.cancelAll();
@@ -393,10 +397,10 @@ export function initialize() {
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("keyup", update_fade);
+    ).on("keyup", update_on_recipient_change);
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", update_fade);
+    ).on("change", update_on_recipient_change);
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });
