@@ -277,10 +277,9 @@ def generate_openapi_fixture(endpoint: str, method: str) -> List[str]:
             else:
                 subschema_status_code = status_code
             fixture_dict = get_openapi_fixture(endpoint, method, subschema_status_code)
-            fixture_description = (
-                get_openapi_fixture_description(endpoint, method, subschema_status_code).strip()
-                + ":"
-            )
+            fixture_description = get_openapi_fixture_description(
+                endpoint, method, subschema_status_code
+            ).strip()
             fixture_json = json.dumps(
                 fixture_dict, indent=4, sort_keys=True, separators=(",", ": ")
             )
