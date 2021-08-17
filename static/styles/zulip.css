@@ -1313,6 +1313,13 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
+.actions_hover {
+    i {
+        /* Additional padding to increase click-able area */
+        padding: 2px 6px;
+    }
+}
+
 .on_hover_topic_edit,
 .on_hover_topic_read {
     opacity: 0.2;
