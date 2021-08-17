@@ -92,7 +92,8 @@ paths:
       security: []
       responses:
         "200":
-          description: Valid credentials the client can use to access the Zulip API.
+          description: |
+            Valid credentials the client can use to access the Zulip API:
           content:
             application/json:
               schema:
@@ -4058,7 +4059,7 @@ paths:
                       See [the /register endpoint docs](/api/register-queue) for details on how to
                       handle these correctly.
 
-                      The following is the error response in such case
+                      The following is the error response in such case:
     delete:
       operationId: delete-queue
       summary: Delete an event queue
@@ -4087,7 +4088,7 @@ paths:
                   - $ref: "#/components/schemas/BadEventQueueIdError"
                   - description: |
                       A typical JSON response for when the `queue_id` is non-existent or the
-                      associated queue has already been deleted
+                      associated queue has already been deleted:
   /get_stream_id:
     get:
       operationId: get-stream-id
@@ -4137,7 +4138,8 @@ paths:
                         "msg": "Invalid stream name 'nonexistent'",
                         "result": "error",
                       }
-                    description: An example JSON response for when the supplied stream does not exist
+                    description: |
+                      An example JSON response for when the supplied stream does not exist:
   /mark_all_as_read:
     post:
       operationId: mark-all-as-read
@@ -4379,7 +4381,7 @@ paths:
                       an array of the IDs for the drafts that were just created in the same
                       order as they were requested. If any of the drafts failed the validation
                       step, then none of the drafts will be created and we would not get this
-                      status code.
+                      status code. The typical JSON response in such a case is:
                     properties:
                       ids:
                         type: array
@@ -4398,7 +4400,7 @@ paths:
                   - $ref: "#/components/schemas/CodedError"
                   - description: |
                       JSON response for when a draft targeted towards a stream does not specify
-                      exactly one stream ID.
+                      exactly one stream ID:
                     example:
                       {
                         "code": "BAD_REQUEST",
@@ -4638,7 +4640,7 @@ paths:
                       When a request is successful, this endpoint returns a dictionary
                       containing the following (in addition to the `msg` and `result` keys
                       present in all Zulip API responses).
-                      A typical successful JSON response may look like
+                      A typical successful JSON response may look like:
                     properties:
                       result: {}
                       msg: {}
@@ -4865,7 +4867,7 @@ paths:
                       - $ref: "#/components/schemas/NonExistingStreamError"
                       - description: |
                           A typical failed JSON response for when a stream message is sent to a stream
-                          that does not exist
+                          that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -4876,7 +4878,7 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for when a private message is sent to a user
-                          that does not exist
+                          that does not exist:
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
@@ -4997,7 +4999,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/InvalidMessageError"
-                  - description: An example JSON response for when the specified message does not exist
+                  - description: |
+                      An example JSON response for when the specified message does not exist:
   /messages/flags:
     post:
       operationId: update-message-flags
@@ -5222,7 +5225,8 @@ paths:
                         "msg": "Invalid emoji code",
                         "code": "BAD_REQUEST",
                       }
-                    description: An example JSON error response for when the emoji code is invalid
+                    description: |
+                      An example JSON error response for when the emoji code is invalid:
 
     delete:
       operationId: remove-reaction
@@ -5272,7 +5276,8 @@ paths:
                         "msg": "Invalid message(s)",
                         "code": "BAD_REQUEST",
                       }
-                    description: An example JSON error response for when the emoji code is invalid
+                    description: |
+                      An example JSON error response for when the emoji code is invalid:
   /messages/matches_narrow:
     get:
       operationId: check-messages-match-narrow
@@ -5420,7 +5425,7 @@ paths:
                   - description: |
                       An example JSON response for when the specified message does not exist or it
                       is not visible to the user making the query (e.g. it was a PM between other
-                      two users)
+                      two users):
     patch:
       operationId: update-message
       summary: Edit a message
@@ -5551,7 +5556,7 @@ paths:
                       }
                     description: |
                       A typical JSON response for when one doesn't have the permission to
-                      edit a particular message
+                      edit a particular message:
     delete:
       operationId: delete-message
       summary: Delete a message
@@ -5586,12 +5591,13 @@ paths:
                 oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/InvalidMessageError"
-                      - description: An example JSON response for when the specified message does not exist
+                      - description: |
+                          An example JSON response for when the specified message does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - description: |
                           An example JSON response for when the user making the query does not
-                          have permission to delete the message
+                          have permission to delete the message:
                         example:
                           {
                             "code": "BAD_REQUEST",
@@ -5908,7 +5914,7 @@ paths:
                       }
                     description: |
                       A typical JSON response for when another user with the same
-                      email address already exists in the realm
+                      email address already exists in the realm:
   /users/{user_id}/reactivate:
     post:
       operationId: reactivate-user
@@ -6253,7 +6259,7 @@ paths:
                       }
                     description: |
                       An example JSON error response when attempting to deactivate the only
-                      organization owner in an organization
+                      organization owner in an organization:
   /users/me/status:
     post:
       operationId: update-status
@@ -6352,7 +6358,7 @@ paths:
                             "code": "BAD_REQUEST",
                           }
                         description: |
-                          An example JSON error response when no changes were requested
+                          An example JSON error response when no changes were requested:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -6364,7 +6370,7 @@ paths:
                         description: |
                           An example JSON error response when the
                           `status_text` message exceeds the limit of
-                          60 characters
+                          60 characters:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -6375,7 +6381,7 @@ paths:
                           }
                         description: |
                           An example JSON error response when `emoji_name` is not specified
-                          but `emoji_code` or `reaction_type` is specified
+                          but `emoji_code` or `reaction_type` is specified:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -6385,7 +6391,7 @@ paths:
                             "code": "BAD_REQUEST",
                           }
                         description: |
-                          An example JSON error response when the emoji name does not exist
+                          An example JSON error response when the emoji name does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -6395,7 +6401,7 @@ paths:
                             "code": "BAD_REQUEST",
                           }
                         description: |
-                          An example JSON error response when the emoji name is invalid
+                          An example JSON error response when the emoji name is invalid:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -6405,7 +6411,7 @@ paths:
                             "code": "BAD_REQUEST",
                           }
                         description: |
-                          An example JSON error response when the custom emoji is invalid
+                          An example JSON error response when the custom emoji is invalid:
   /users/me/{stream_id}/topics:
     get:
       operationId: get-stream-topics
@@ -6472,7 +6478,7 @@ paths:
                       }
                     description: |
                       An example JSON response for when the user is attempting to fetch the topics
-                      of a non-existing stream (or also a private stream they don't have access to)
+                      of a non-existing stream (or also a private stream they don't have access to):
   /users/me/subscriptions:
     get:
       operationId: get-subscriptions
@@ -6689,7 +6695,7 @@ paths:
                           }
                         description: |
                           A typical response for when the requesting user does not have access to
-                          a private stream and `authorization_errors_fatal` is `True`
+                          a private stream and `authorization_errors_fatal` is `True`:
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
                       - example:
@@ -6702,7 +6708,7 @@ paths:
                           }
                         description: |
                           A typical response for when the requesting user does not have access to
-                          a private stream and `authorization_errors_fatal` is `False`
+                          a private stream and `authorization_errors_fatal` is `False`:
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
@@ -6900,7 +6906,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/NonExistingStreamError"
-                  - description: A typical failed JSON response for when the target stream does not exist
+                  - description: |
+                      A typical failed JSON response for when the target stream does not exist:
   /users/me/subscriptions/muted_topics:
     patch:
       operationId: mute-topic
@@ -6977,14 +6984,14 @@ paths:
                           {"msg": "Topic already muted", "result": "error"}
                         description: |
                           An example JSON response for when an `add` operation is requested for a topic
-                          that has already been muted
+                          that has already been muted:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic is not muted", "result": "error"}
                         description: |
                           An example JSON response for when a `remove` operation is requested for a
-                          topic that had not been previously muted
+                          topic that had not been previously muted:
   /users/me/muted_users/{muted_user_id}:
     post:
       operationId: mute-user
@@ -7042,16 +7049,19 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "Cannot mute self", "result": "error"}
-                        description: An example JSON response for when the user is yourself
+                        description: |
+                          An example JSON response for when the user is yourself:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "No such user", "result": "error"}
-                        description: An example JSON response for when the user is nonexistent or inaccessible
+                        description: |
+                          An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "User already muted", "result": "error"}
-                        description: An example JSON response for when the user is already muted
+                        description: |
+                          An example JSON response for when the user is already muted:
     delete:
       operationId: unmute-user
       summary: Unmute a user
@@ -7083,11 +7093,13 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "No such user", "result": "error"}
-                        description: An example JSON response for when the user is nonexistent or inaccessible
+                        description: |
+                          An example JSON response for when the user is nonexistent or inaccessible:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "User is not muted", "result": "error"}
-                        description: An example JSON response for when the user is not previously muted
+                        description: |
+                          An example JSON response for when the user is not previously muted:
 
   /users/{user_id}/subscriptions/{stream_id}:
     get:
@@ -7857,7 +7869,8 @@ paths:
                         "msg": "Guests cannot be organization administrators",
                         "code": "BAD_REQUEST",
                       }
-                    description: A typical unsuccessful JSON response
+                    description: |
+                      A typical unsuccessful JSON response:
 
     delete:
       operationId: deactivate-user
@@ -7896,7 +7909,7 @@ paths:
                       }
                     description: |
                       An example JSON error response when attempting to deactivate the only
-                      organization owner in an organization
+                      organization owner in an organization:
   /realm/linkifiers:
     get:
       operationId: get-linkifiers
@@ -10872,7 +10885,8 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
-                    description: A typical successful JSON response for a single-organization server may look like
+                    description: |
+                      A typical successful JSON response for a single-organization server may look like:
                     properties:
                       result: {}
                       msg: {}
@@ -11865,7 +11879,7 @@ paths:
                     description: |
                       An example JSON response for when the user is not authorized to use the
                       `include_all_active` parameter (i.e. because they are not an organization
-                      administrator)
+                      administrator):
   /streams/{stream_id}:
     delete:
       operationId: archive-stream
@@ -11900,7 +11914,8 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
-                    description: An example JSON response for when the supplied stream does not exist
+                    description: |
+                      An example JSON response for when the supplied stream does not exist:
     patch:
       operationId: update-stream
       summary: Update a stream
@@ -11995,7 +12010,8 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
-                    description: An example JSON response for when the supplied stream does not exist
+                    description: |
+                      An example JSON response for when the supplied stream does not exist:
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic
@@ -12043,7 +12059,7 @@ paths:
                       }
                     description: |
                       Error when the user does not have permission
-                      to delete topics in this organization.
+                      to delete topics in this organization:
   /typing:
     post:
       operationId: set-typing-status
@@ -12160,7 +12176,8 @@ paths:
                         "msg": "Cannot send to multiple streams",
                         "result": "error",
                       }
-                    description: An example JSON error response for when user sends to multiple streams
+                    description: |
+                      An example JSON error response for when user sends to multiple streams:
 
   /user_groups/create:
     post:
@@ -12224,7 +12241,8 @@ paths:
                         "code": "BAD_REQUEST",
                         "msg": "Invalid user ID: 500",
                       }
-                    description: An example JSON error response for when the one of the users does not exist
+                    description: |
+                      An example JSON error response for when the one of the users does not exist:
   /user_groups/{user_group_id}/members:
     post:
       operationId: update-user-group-members
@@ -12313,7 +12331,8 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error",
                       }
-                    description: An example JSON response when the user group ID is invalid
+                    description: |
+                      An example JSON response when the user group ID is invalid:
     delete:
       operationId: remove-user-group
       summary: Delete a user group
@@ -12348,7 +12367,8 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error",
                       }
-                    description: An example JSON error response for an invalid user group id
+                    description: |
+                      An example JSON error response for an invalid user group id:
 
   /user_groups:
     get:
@@ -12492,7 +12512,7 @@ paths:
                 additionalProperties: false
                 description: |
                   This is an example of the JSON payload that the Zulip server will `POST`
-                  to your server
+                  to your server:
                 properties:
                   bot_email:
                     type: string
@@ -13982,7 +14002,8 @@ components:
         result:
           type: string
     SuccessDescription:
-      description: A typical successful JSON response may look like
+      description: |
+        A typical successful JSON response may look like:
     JsonSuccess:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -14167,7 +14188,7 @@ components:
           description: |
             ## Invalid API key
 
-            A typical failed JSON response for when the API key is invalid
+            A typical failed JSON response for when the API key is invalid:
     MissingArgumentError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
@@ -14175,7 +14196,7 @@ components:
           description: |
             ## Missing request parameter(s)
 
-            A typical failed JSON response for when a required request parameter
+            A typical failed JSON response for when a required request parameter:
             is not supplied
           properties:
             result: {}
@@ -14205,7 +14226,7 @@ components:
             ## User not authorized for query
 
             A typical failed JSON response for when the user is not authorized for
-            a query
+            a query:
     UserDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -14221,7 +14242,7 @@ components:
             **Changes**: These errors used the HTTP 403 status code
               before Zulip 5.0 (feature level 76).
 
-            A typical failed json response for when user's account is deactivated
+            A typical failed json response for when user's account is deactivated:
     RateLimitedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
@@ -14251,7 +14272,7 @@ components:
             **Changes**: These errors used the HTTP 403 status code
               before Zulip 5.0 (feature level 76).
 
-            A typical failed json response for when user's organization is deactivated
+            A typical failed json response for when user's organization is deactivated:
 
   ###################
   # Shared responses
