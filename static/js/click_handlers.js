@@ -137,6 +137,11 @@ export function initialize() {
             return true;
         }
 
+        // Don't select message on clicking message control buttons.
+        if (target.parents(".message_controls").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
