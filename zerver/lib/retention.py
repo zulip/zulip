@@ -29,7 +29,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -92,7 +92,7 @@ models_with_message_key: List[Dict[str, Any]] = [
 
 @transaction.atomic(savepoint=False)
 def move_rows(
-    base_model: Model,
+    base_model: Type[Model],
     raw_query: SQL,
     *,
     src_db_table: Optional[str] = None,

@@ -1,4 +1,4 @@
-from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 from django.db.models import Model
 
@@ -97,7 +97,7 @@ def bulk_create_users(
 
 
 def bulk_set_users_or_streams_recipient_fields(
-    model: Model,
+    model: Type[Model],
     objects: Union[Collection[UserProfile], Collection[Stream]],
     recipients: Optional[Iterable[Recipient]] = None,
 ) -> None:
