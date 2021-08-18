@@ -1,13 +1,10 @@
 import logging
 import time
-from typing import Callable, List, TypeVar
-
-from psycopg2.extensions import cursor
-from psycopg2.sql import SQL
-
-CursorObj = TypeVar("CursorObj", bound=cursor)
+from typing import Callable, List
 
 from django.db import connection
+from django.db.backends.utils import CursorWrapper
+from psycopg2.sql import SQL
 
 from zerver.models import UserProfile
 
@@ -23,7 +20,7 @@ logger.setLevel(logging.WARNING)
 
 
 def build_topic_mute_checker(
-    cursor: CursorObj, user_profile: UserProfile
+    cursor: CursorWrapper, user_profile: UserProfile
 ) -> Callable[[int, str], bool]:
     """
     This function is similar to the function of the same name
@@ -52,7 +49,7 @@ def build_topic_mute_checker(
     return is_muted
 
 
-def update_unread_flags(cursor: CursorObj, user_message_ids: List[int]) -> None:
+def update_unread_flags(cursor: CursorWrapper, user_message_ids: List[int]) -> None:
     query = SQL(
         """
         UPDATE zerver_usermessage
@@ -72,7 +69,7 @@ def get_timing(message: str, f: Callable[[], None]) -> None:
     logger.info("elapsed time: %.03f\n", elapsed)
 
 
-def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
+def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
 
     recipient_ids = []
 

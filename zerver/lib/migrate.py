@@ -1,14 +1,12 @@
 import time
-from typing import List, TypeVar
+from typing import List
 
-from psycopg2.extensions import cursor
+from django.db.backends.utils import CursorWrapper
 from psycopg2.sql import SQL, Composable, Identifier
-
-CursorObj = TypeVar("CursorObj", bound=cursor)
 
 
 def do_batch_update(
-    cursor: CursorObj,
+    cursor: CursorWrapper,
     table: str,
     assignments: List[Composable],
     batch_size: int = 10000,
