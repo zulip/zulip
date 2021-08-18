@@ -485,22 +485,34 @@ To upgrade the version of PostgreSQL on the Zulip server:
 
 1. Upgrade your server to the latest Zulip release (at least 3.0).
 
-2. Stop the server and take a backup:
+1. Stop the server, as the `zulip` user:
 
+    ```bash
+    # On Zulip before 4.0, use `supervisor stop all` instead
+    /home/zulip/deployments/current/scripts/stop-server
     ```
-    supervisorctl stop all
+
+1. Take a backup, in case of any problems:
+
+    ```bash
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/postgresql-upgrade.backup.tar.gz
     ```
 
-3. As root, run the database upgrade tool:
+1. As root, run the database upgrade tool:
 
-    ```
+    ```bash
     /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
     ```
 
-`upgrade-postgresql` will have finished by restarting your Zulip server;
-you should now be able to navigate to its URL and confirm everything
-is working correctly.
+1. As the `zulip` user, start the server again:
+
+    ```bash
+    # On Zulip before 4.0, use `restart-server` instead of `start-server` instead
+    /home/zulip/deployments/current/scripts/start-server
+    ```
+
+You should now be able to navigate to the Zulip server's URL and
+confirm everything is working correctly.
 
 
 ## Modifying Zulip

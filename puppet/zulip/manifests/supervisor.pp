@@ -12,12 +12,15 @@ class zulip::supervisor {
   }
 
   $conf_dir = $zulip::common::supervisor_conf_dir
+  # lint:ignore:quoted_booleans
+  $should_purge = $facts['leave_supervisor'] != 'true'
+  # lint:endignore
   file { $conf_dir:
     ensure  => 'directory',
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
-    purge   => true,
+    purge   => $should_purge,
     recurse => true,
     notify  => Service[$supervisor_service],
   }
