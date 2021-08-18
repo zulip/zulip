@@ -41,6 +41,8 @@ function change_display_setting(data, status_element, success_msg_html, sticky) 
 export function set_up() {
     meta.loaded = true;
     const container = $("#user-display-settings");
+    const language_modal_elem = "#user_default_language_modal";
+
     container.find(".display-settings-status").hide();
 
     container.find(".demote_inactive_streams").val(user_settings.demote_inactive_streams);
@@ -57,8 +59,8 @@ export function set_up() {
         .find(`.emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`)
         .prop("checked", true);
 
-    $("#default_language_modal [data-dismiss]").on("click", () => {
-        overlays.close_modal("#default_language_modal");
+    $(`${CSS.escape(language_modal_elem)} [data-dismiss]`).on("click", () => {
+        overlays.close_modal(language_modal_elem);
     });
 
     const all_display_settings = settings_config.get_all_display_settings();
@@ -86,36 +88,38 @@ export function set_up() {
         });
     }
 
-    $("#default_language_modal .language").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        overlays.close_modal("#default_language_modal");
+    $(language_modal_elem)
+        .find(".language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            overlays.close_modal(language_modal_elem);
 
-        const $link = $(e.target).closest("a[data-code]");
-        const setting_value = $link.attr("data-code");
-        const data = {default_language: setting_value};
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const data = {default_language: setting_value};
 
-        const new_language = $link.attr("data-name");
-        container.find(".default_language_name").text(new_language);
+            const new_language = $link.attr("data-name");
+            container.find(".default_language_name").text(new_language);
 
-        change_display_setting(
-            data,
-            "#user-display-settings .language-settings-status",
-            $t_html(
-                {
-                    defaultMessage:
-                        "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                },
-                {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-            ),
-            true,
-        );
-    });
+            change_display_setting(
+                data,
+                "#user-display-settings .language-settings-status",
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
+        });
 
     container.find(".default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal("#default_language_modal");
+        overlays.open_modal(language_modal_elem);
     });
 
     container.find(".demote_inactive_streams").on("change", function () {

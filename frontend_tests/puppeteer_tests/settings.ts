@@ -301,7 +301,7 @@ async function test_alert_words_section(page: Page): Promise<void> {
 async function change_language(page: Page, language_data_code: string): Promise<void> {
     await page.waitForSelector("#user-display-settings .default_language", {visible: true});
     await page.click("#user-display-settings .default_language");
-    await page.waitForSelector("#default_language_modal", {visible: true});
+    await page.waitForSelector("#user_default_language_modal", {visible: true});
     const language_selector = `a[data-code="${CSS.escape(language_data_code)}"]`;
     await page.click(language_selector);
 }
