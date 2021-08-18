@@ -1,8 +1,7 @@
 import cProfile
 import logging
 import tempfile
-from os import path
-from typing import Any, Dict
+from typing import Any
 
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.management.base import CommandParser
@@ -12,37 +11,15 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.request import get_request_notes
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.middleware import LogRequests
-from zerver.models import UserMessage, UserProfile
+from zerver.models import UserMessage
 from zerver.views.message_fetch import get_messages_backend
 
 request_logger = LogRequests()
 
 
-class MockSession:
+class MockSession(SessionBase):
     def __init__(self) -> None:
         self.modified = False
-
-
-class MockRequest(HttpRequest):
-    def __init__(self, user: UserProfile) -> None:
-        self.user = user
-        self.path = "/"
-        self.method = "POST"
-        self.META = {"REMOTE_ADDR": "127.0.0.1"}
-        anchor = (
-            UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id
-        )
-        self.REQUEST = {
-            "anchor": anchor,
-            "num_before": 1200,
-            "num_after": 200,
-        }
-        self.POST = self.REQUEST
-        self.GET: Dict[Any, Any] = {}
-        self.session = MockSession()
-
-    def get_full_path(self) -> str:
-        return self.path
 
 
 def profile_request(request: HttpRequest) -> HttpResponse:
@@ -66,4 +43,18 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         user = self.get_user(options["email"], realm)
-        profile_request(MockRequest(user))
+        anchor = UserMessage.objects.filter(user_profile=user).order_by("-message")[200].message_id
+        mock_request = HostRequestMock(
+            post_data={
+                "anchor": anchor,
+                "num_before": 1200,
+                "num_after": 200,
+            },
+            user_profile=user,
+            meta_data={"REMOTE_ADDR": "127.0.0.1"},
+            path="/",
+        )
+        mock_request.session = MockSession()
+        get_request_notes(mock_request).log_data = None
+
+        profile_request(mock_request)

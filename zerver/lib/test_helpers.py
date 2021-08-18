@@ -297,6 +297,7 @@ class HostRequestMock(HttpRequest):
         client_name: Optional[str] = None,
         meta_data: Optional[Dict[str, Any]] = None,
         tornado_handler: Optional[AsyncDjangoHandler] = DummyHandler(),
+        path: str = "",
     ) -> None:
         self.host = host
         self.GET = QueryDict(mutable=True)
@@ -315,7 +316,7 @@ class HostRequestMock(HttpRequest):
             self.META = {"PATH_INFO": "test"}
         else:
             self.META = meta_data
-        self.path = ""
+        self.path = path
         self.user = user_profile
         self._body = b""
         self.content_type = ""
