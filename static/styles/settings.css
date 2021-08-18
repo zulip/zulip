@@ -1613,10 +1613,26 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         }
     }
 
-    button.multiselect_btn {
-        /* Matches the dropdown input margin so as to keep it aligned */
-        margin-left: 9px;
-        margin-top: 4px;
+    .disabled-list-item {
+        opacity: 0.2;
+    }
+
+    i.multiselect-icon {
+        font-size: 28px !important;
+        opacity: 0.5;
+        padding: 2px;
+        outline: 0;
+        position: relative;
+        top: -2px;
+
+        &:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        &:focus {
+            opacity: 1;
+        }
     }
 
     a.dropdown_list_reset_button {
@@ -1627,6 +1643,53 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 
         &:disabled {
             display: none;
+        }
+    }
+
+    .dropdown-pill-container {
+        display: inline-flex;
+        position: relative;
+        top: -6px;
+        flex-wrap: wrap;
+        padding: 2px;
+        align-items: center;
+        cursor: text;
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+
+            height: 26px;
+            margin: 1px 3px;
+
+            color: inherit;
+            border: 1px solid hsla(0, 0%, 0%, 0.15);
+
+            border-radius: 4px;
+            background-color: hsla(0, 0%, 0%, 0.07);
+            cursor: pointer;
+
+            &:focus {
+                color: hsl(0, 0%, 100%);
+                border: 1px solid hsl(176, 78%, 28%);
+                background-color: hsl(176, 49%, 42%);
+                outline: none;
+            }
+
+            .pill-value {
+                margin: 0 5px;
+                font-size: 15px;
+            }
+
+            .exit {
+                opacity: 0.5;
+                font-size: 1.4em;
+                margin-right: 3px;
+            }
+
+            &:hover .exit {
+                opacity: 1;
+            }
         }
     }
 

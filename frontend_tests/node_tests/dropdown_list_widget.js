@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, zrequire, set_global} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -13,14 +13,6 @@ mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
 
-mock_esm("tippy.js", {
-    default: (arg) => {
-        arg._tippy = {setContent: noop, placement: noop, destroy: noop};
-        return arg._tippy;
-    },
-});
-
-set_global("document", {});
 const {DropdownListWidget, MultiSelectDropdownListWidget} = zrequire("dropdown_list_widget");
 
 // For DropdownListWidget
@@ -97,72 +89,57 @@ const setup_multiselect_dropdown_zjquery_data = function (name) {
     return setup_dropdown_zjquery_data(name);
 };
 
-run_test("basic MDLW functions", () => {
-    let updated_value;
+run_test("basic MDLW functions", ({mock_template}) => {
     const opts = {
         widget_name: "my_setting",
         data: ["one", "two", "three", "four"].map((x) => ({name: x, value: x})),
         value: ["one"],
-        limit: 2,
-        on_update: (val) => {
-            updated_value = val;
-        },
-        default_text: $t({defaultMessage: "not set"}),
     };
+    const {$widget} = setup_multiselect_dropdown_zjquery_data(opts.widget_name);
 
-    const {reset_button, $widget} = setup_multiselect_dropdown_zjquery_data(opts.widget_name);
+    mock_template("multiselect_dropdown_pills.hbs", true, (data, html) => {
+        assert.deepEqual(data, {
+            display_value: "one",
+        });
+
+        return html;
+    });
+
     const widget = new MultiSelectDropdownListWidget(opts);
 
-    function set_dropdown_variables(widget, value) {
+    function set_dropdown_variable(widget, value) {
         widget.data_selected = value;
-        widget.checked_items = value;
     }
 
     assert.deepEqual(widget.value(), ["one"]);
-    assert.equal(updated_value, undefined);
     assert.equal($widget.text(), "one");
-    assert.ok(reset_button.visible());
 
-    set_dropdown_variables(widget, ["one", "two"]);
+    set_dropdown_variable(widget, ["one", "two"]);
     widget.update(widget.data_selected);
 
-    assert.equal($widget.text(), "one,two");
     assert.deepEqual(widget.value(), ["one", "two"]);
-    assert.deepEqual(updated_value, ["one", "two"]);
-    assert.ok(reset_button.visible());
 
-    set_dropdown_variables(widget, ["one", "two", "three"]);
+    set_dropdown_variable(widget, ["one", "two", "three"]);
     widget.update(widget.data_selected);
 
-    assert.equal($widget.text(), "translated: 3 selected");
     assert.deepEqual(widget.value(), ["one", "two", "three"]);
-    assert.deepEqual(updated_value, ["one", "two", "three"]);
-    assert.ok(reset_button.visible());
 
-    set_dropdown_variables(widget, null);
+    set_dropdown_variable(widget, null);
     widget.update(widget.data_selected);
 
-    assert.equal($widget.text(), "translated: not set");
     assert.equal(widget.value(), null);
-    assert.equal(updated_value, null);
-    assert.ok(!reset_button.visible());
 
-    set_dropdown_variables(widget, ["one"]);
+    set_dropdown_variable(widget, ["one"]);
     widget.update(widget.data_selected);
 
-    assert.equal($widget.text(), "one");
     assert.deepEqual(widget.value(), ["one"]);
-    assert.deepEqual(updated_value, ["one"]);
-    assert.ok(reset_button.visible());
 });
 
 run_test("MDLW no_default_value", () => {
     const opts = {
         widget_name: "my_setting",
         data: ["one", "two", "three", "four"].map((x) => ({name: x, value: x})),
-        limit: 2,
         null_value: "null-value",
-        default_text: $t({defaultMessage: "not set"}),
     };
 
     blueslip.expect(
@@ -176,35 +153,61 @@ run_test("MDLW no_default_value", () => {
     assert.equal(widget.value(), "null-value");
 });
 
-run_test("MDLW no_limit_set", () => {
+run_test("MDLW callback functions", ({mock_template}) => {
+    function setup_callback_zjquery_data(name, value) {
+        const element = $.create(".whatever");
+        $(`#${CSS.escape(name)}_widget .dropdown-list-body`).set_find_results(
+            `li[data-value = ${value}]`,
+            element,
+        );
+    }
+
+    let pill_removed;
+    let pill_added;
+
     const opts = {
         widget_name: "my_setting",
         data: ["one", "two", "three", "four"].map((x) => ({name: x, value: x})),
         value: ["one"],
-        default_text: $t({defaultMessage: "not set"}),
+        on_pill_remove: (item) => {
+            pill_removed = item;
+        },
+        on_pill_add: (item) => {
+            pill_added = item;
+        },
     };
 
-    blueslip.expect(
-        "warn",
-        "Multiselect dropdown-list-widget: Called without limit value; using 2 as the limit",
-    );
+    setup_multiselect_dropdown_zjquery_data(opts.widget_name);
 
-    function set_dropdown_variables(widget, value) {
-        widget.data_selected = value;
-        widget.checked_items = value;
-    }
+    mock_template("multiselect_dropdown_pills.hbs", true, (data, html) => {
+        assert.deepEqual(data, {
+            display_value: "one",
+        });
 
-    const {$widget} = setup_multiselect_dropdown_zjquery_data(opts.widget_name);
+        return html;
+    });
     const widget = new MultiSelectDropdownListWidget(opts);
 
-    set_dropdown_variables(widget, ["one", "two", "three"]);
-    widget.update(widget.data_selected);
+    // Testing on_pill_remove callback.
+    assert.equal(pill_removed, undefined);
 
-    // limit is set to 2 (Default value).
-    assert.equal($widget.text(), "translated: 3 selected");
+    setup_callback_zjquery_data(opts.widget_name, widget.value().toString());
+    widget.enable_list_item({
+        text: () => widget.value().toString(),
+    });
 
-    set_dropdown_variables(widget, ["one"]);
-    widget.update(widget.data_selected);
+    assert.equal(pill_removed, "one");
 
-    assert.equal($widget.text(), "one");
+    // Testing on_pill_add callback.
+    assert.equal(pill_added, undefined);
+
+    widget.disable_list_item(
+        {
+            length: 1, // Mocking the element to be a valid jquery element.
+            addClass: noop,
+        },
+        "one",
+    );
+
+    assert.equal(pill_added, "one");
 });

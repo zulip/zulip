@@ -5,10 +5,8 @@
             {{ label }}
         </label>
         {{/if}}
-        <button class="button rounded dropdown-toggle" type="button" data-toggle="dropdown">
-            <span id="{{widget_name}}_name"></span>
-            <i class="fa fa-pencil"></i>
-        </button>
+        <i class="dropdown-toggle multiselect-icon fa fa-filter" type="button" data-toggle="dropdown" aria-hidden="true" tabindex="0"></i>
+        <div class="dropdown-pill-container" id="pill-container"></div>
         <ul class="dropdown-menu modal-bg" role="menu">
             <li class="dropdown-search" role="presentation">
                 <input class="no-input-change-detection" type="text" role="menuitem" placeholder="{{list_placeholder}}" autofocus/>
@@ -18,9 +16,4 @@
             </div>
         </ul>
     </span>
-    {{#if reset_button_text}}
-    <a class="dropdown_list_reset_button" role="button">
-        {{reset_button_text}}
-    </a>
-    {{/if}}
 </div>
