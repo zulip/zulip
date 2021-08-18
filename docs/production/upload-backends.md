@@ -127,7 +127,6 @@ need a block like this:
     "Action": "s3:GetObject",
     "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
 }
-
 ```
 
 The file-uploads bucket should not be world-readable.  See the
