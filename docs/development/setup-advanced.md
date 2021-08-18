@@ -30,7 +30,7 @@ the
 .. warning::
     There is no supported uninstallation process with this
     method.  If you want that, use the Vagrant environment, where you can
-    just do `vagrant destroy` to clean up the development environment.
+    just do ``vagrant destroy`` to clean up the development environment.
 ```
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
