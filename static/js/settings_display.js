@@ -20,8 +20,8 @@ export function set_default_language_name(name) {
     default_language_name = name;
 }
 
-function change_display_setting(data, status_element, success_msg_html, sticky) {
-    const $status_el = $(status_element);
+function change_display_setting(data, container, status_element, success_msg_html, sticky) {
+    const $status_el = container.find(`${status_element}`);
     const status_is_sticky = $status_el.data("is_sticky");
     const display_message_html = status_is_sticky
         ? $status_el.data("sticky_msg_html")
@@ -35,7 +35,7 @@ function change_display_setting(data, status_element, success_msg_html, sticky) 
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
-    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element, opts);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
 }
 
 export function set_up() {
@@ -72,7 +72,8 @@ export function set_up() {
             if (["left_side_userlist"].includes(setting)) {
                 change_display_setting(
                     data,
-                    "#user-display-settings .display-settings-status",
+                    container,
+                    ".display-settings-status",
                     $t_html(
                         {
                             defaultMessage:
@@ -83,7 +84,7 @@ export function set_up() {
                     true,
                 );
             } else {
-                change_display_setting(data, "#user-display-settings .display-settings-status");
+                change_display_setting(data, container, ".display-settings-status");
             }
         });
     }
@@ -104,7 +105,8 @@ export function set_up() {
 
             change_display_setting(
                 data,
-                "#user-display-settings .language-settings-status",
+                container,
+                ".language-settings-status",
                 $t_html(
                     {
                         defaultMessage:
@@ -124,17 +126,17 @@ export function set_up() {
 
     container.find(".demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, "#user-display-settings .display-settings-status");
+        change_display_setting(data, container, ".display-settings-status");
     });
 
     container.find(".color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
-        change_display_setting(data, "#user-display-settings .display-settings-status");
+        change_display_setting(data, container, ".display-settings-status");
     });
 
     container.find(".default_view").on("change", function () {
         const data = {default_view: this.value};
-        change_display_setting(data, "#user-display-settings .display-settings-status");
+        change_display_setting(data, container, ".display-settings-status");
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -143,7 +145,7 @@ export function set_up() {
 
     container.find(".twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, "#user-display-settings .time-settings-status");
+        change_display_setting(data, container, ".time-settings-status");
     });
 
     container.find(".emojiset_choice").on("click", function () {
@@ -171,7 +173,7 @@ export function set_up() {
 
     container.find(".translate_emoticons").on("change", function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, "#user-display-settings .emoji-settings-status");
+        change_display_setting(data, container, ".emoji-settings-status");
     });
 }
 
