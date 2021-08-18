@@ -34,7 +34,7 @@ fi
     crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgresql_base
     touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
 
-    "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
+    FACTER_LEAVE_SUPERVISOR=true "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
     rm -rf "$TEMP_CONF_DIR"
 )
 
