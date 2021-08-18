@@ -111,7 +111,7 @@ export function build_page() {
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
-        default_language_name: settings_display.default_language_name,
+        default_language_name: settings_display.user_default_language_name,
         language_list_dbl_col: get_language_list_columns(user_settings.default_language),
         settings_object: user_settings,
     });

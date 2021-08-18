@@ -568,6 +568,8 @@ export function dispatch_normal_event(event) {
                 "translate_emoticons",
                 "starred_message_counts",
             ];
+
+            const container_elem = $("#user-display-settings");
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -632,7 +634,7 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_display.report_emojiset_change();
+                settings_display.report_emojiset_change(container_elem, user_settings);
 
                 // Rerender the whole message list UI
                 message_lists.home.rerender();
@@ -648,7 +650,7 @@ export function dispatch_normal_event(event) {
                 compose.toggle_enter_sends_ui();
                 break;
             }
-            settings_display.update_page();
+            settings_display.update_page(container_elem, user_settings);
             break;
         }
 

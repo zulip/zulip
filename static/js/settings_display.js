@@ -14,10 +14,10 @@ const meta = {
     loaded: false,
 };
 
-export let default_language_name;
+export let user_default_language_name;
 
 export function set_default_language_name(name) {
-    default_language_name = name;
+    user_default_language_name = name;
 }
 
 function change_display_setting(data, container, url, status_element, success_msg_html, sticky) {
@@ -38,12 +38,10 @@ function change_display_setting(data, container, url, status_element, success_ms
     settings_ui.do_settings_change(channel.patch, url, data, $status_el, opts);
 }
 
-export function set_up() {
+export function set_up(container, settings_object) {
     meta.loaded = true;
-    const container = $("#user-display-settings");
     const language_modal_elem = "#user_default_language_modal";
     const patch_url = "/json/settings";
-    const settings_object = user_settings;
 
     container.find(".display-settings-status").hide();
 
@@ -181,18 +179,16 @@ export function set_up() {
     });
 }
 
-export async function report_emojiset_change() {
+export async function report_emojiset_change(container, settings_object) {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-
-    const settings_object = user_settings;
     await emojisets.select(settings_object.emojiset);
 
-    const spinner = $("#user-display-settings").find(".emoji-settings-status");
+    const spinner = container.find(".emoji-settings-status");
     if (spinner.length) {
         loading.destroy_indicator(spinner);
         ui_report.success(
@@ -204,9 +200,9 @@ export async function report_emojiset_change() {
     }
 }
 
-export function update_page() {
-    const container = $("#user-display-settings");
-    const settings_object = user_settings;
+export function update_page(container, settings_object) {
+    const default_language_name = user_default_language_name;
+
     container.find(".left_side_userlist").prop("checked", settings_object.left_side_userlist);
     container.find(".default_language_name").text(default_language_name);
     container.find(".translate_emoticons").prop("checked", settings_object.translate_emoticons);
@@ -221,6 +217,6 @@ export function update_page() {
 }
 
 export function initialize() {
-    const language_name = get_language_name(user_settings.default_language);
-    set_default_language_name(language_name);
+    const user_language_name = get_language_name(user_settings.default_language);
+    set_default_language_name(user_language_name);
 }

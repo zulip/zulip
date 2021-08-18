@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
@@ -17,6 +19,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
 import * as settings_users from "./settings_users";
+import {user_settings} from "./user_settings";
 
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
@@ -50,7 +53,9 @@ export function get_group(section) {
 export function initialize() {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
-    load_func_dict.set("display-settings", settings_display.set_up);
+    load_func_dict.set("display-settings", () => {
+        settings_display.set_up($("#user-display-settings"), user_settings);
+    });
     load_func_dict.set("notifications", settings_notifications.set_up);
     load_func_dict.set("your-bots", settings_bots.set_up);
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
