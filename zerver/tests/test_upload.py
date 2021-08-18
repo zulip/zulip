@@ -75,6 +75,7 @@ from zerver.models import (
 
 
 def destroy_uploads() -> None:
+    assert settings.LOCAL_UPLOADS_DIR is not None
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
@@ -833,6 +834,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 fp_path = os.path.split(fp_path_id)[0]
                 response = self.client_get(uri)
                 _get_sendfile.cache_clear()
+                assert settings.LOCAL_UPLOADS_DIR is not None
                 test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
                 self.assertEqual(
                     response["X-Accel-Redirect"],
@@ -1679,6 +1681,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             emoji_file_name=file_name,
         )
 
+        assert settings.LOCAL_UPLOADS_DIR is not None
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
         with get_test_image_file("img.png") as image_file, open(
             file_path + ".original", "rb"

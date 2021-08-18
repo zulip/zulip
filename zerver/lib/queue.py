@@ -17,7 +17,7 @@ from pika.channel import Channel
 from pika.spec import Basic
 from tornado import ioloop
 
-from zerver.lib.utils import statsd
+from zerver.lib.utils import assert_is_not_none, statsd
 
 MAX_REQUEST_RETRIES = 3
 ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
@@ -50,7 +50,9 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         raise NotImplementedError
 
     def _get_parameters(self) -> pika.ConnectionParameters:
-        credentials = pika.PlainCredentials(settings.RABBITMQ_USERNAME, settings.RABBITMQ_PASSWORD)
+        credentials = pika.PlainCredentials(
+            settings.RABBITMQ_USERNAME, assert_is_not_none(settings.RABBITMQ_PASSWORD)
+        )
 
         # With BlockingConnection, we are passed
         # self.rabbitmq_heartbeat=0, which asks to explicitly disable

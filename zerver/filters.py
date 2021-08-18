@@ -7,7 +7,9 @@ from django.views.debug import SafeExceptionReporterFilter
 
 class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
     def get_post_parameters(self, request: HttpRequest) -> Dict[str, Any]:
-        filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()
+        post_data = SafeExceptionReporterFilter.get_post_parameters(self, request)
+        assert isinstance(post_data, dict)
+        filtered_post = post_data.copy()
         filtered_vars = [
             "content",
             "secret",

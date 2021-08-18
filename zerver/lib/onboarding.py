@@ -105,6 +105,7 @@ def send_initial_pms(user: UserProfile) -> None:
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
     human_recipient_id = send_request.message.sender.recipient_id
+    assert human_recipient_id is not None
     if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
         content = (
             _("Congratulations on your first reply!") + " "

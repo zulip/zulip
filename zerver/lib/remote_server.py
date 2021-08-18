@@ -45,6 +45,7 @@ def send_to_push_bouncer(
       vs. client-side errors like an invalid token.
 
     """
+    assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
     url = urllib.parse.urljoin(
         settings.PUSH_NOTIFICATION_BOUNCER_URL, "/api/v1/remotes/" + endpoint
     )

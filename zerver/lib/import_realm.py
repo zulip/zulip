@@ -827,6 +827,7 @@ def import_uploads(
                 ExtraArgs={"ContentType": content_type, "Metadata": metadata},
             )
         else:
+            assert settings.LOCAL_UPLOADS_DIR is not None
             if processing_avatars or processing_emojis or processing_realm_icons:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
             else:

@@ -46,6 +46,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
     InvalidFakeEmailDomain,
@@ -324,7 +325,7 @@ class PermissionTest(ZulipTestCase):
             "zerver.lib.events.request_event_queue", return_value=None
         ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                result = do_events_register(user, get_client("website"), client_gravatar=True)
+                do_events_register(user, get_client("website"), client_gravatar=True)
             self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], False)
 
         # client_gravatar is still turned off for admins.  In theory,
@@ -1410,7 +1411,7 @@ class ActivateTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
-        deliver_scheduled_emails(email)
+        deliver_scheduled_emails(assert_is_not_none(email))
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -1741,7 +1742,7 @@ class BulkUsersTest(ZulipTestCase):
         """
         self.assertIn(
             "gravatar.com",
-            get_hamlet_avatar(client_gravatar=False),
+            assert_is_not_none(get_hamlet_avatar(client_gravatar=False)),
         )
 
 

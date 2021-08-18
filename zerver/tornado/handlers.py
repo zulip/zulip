@@ -172,6 +172,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 # Mark this handler ID as finished for Zulip's own tracking.
                 clear_handler_by_id(self.handler_id)
 
+                assert isinstance(response, HttpResponse)
                 self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django that we're done processing this request on
@@ -261,6 +262,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # Explicitly mark requests as varying by cookie, since the
             # middleware will not have seen a session access
             patch_vary_headers(response, ("Cookie",))
+            assert isinstance(response, HttpResponse)
             self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django we're done processing this request

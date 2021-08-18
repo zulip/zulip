@@ -234,6 +234,7 @@ def build_page_params_for_home_page_load(
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = max_message_id
+        assert isinstance(page_params["user_settings"], dict)
         page_params["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
