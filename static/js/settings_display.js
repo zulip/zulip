@@ -20,7 +20,7 @@ export function set_default_language_name(name) {
     default_language_name = name;
 }
 
-function change_display_setting(data, container, status_element, success_msg_html, sticky) {
+function change_display_setting(data, container, url, status_element, success_msg_html, sticky) {
     const $status_el = container.find(`${status_element}`);
     const status_is_sticky = $status_el.data("is_sticky");
     const display_message_html = status_is_sticky
@@ -35,13 +35,14 @@ function change_display_setting(data, container, status_element, success_msg_htm
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
-    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
+    settings_ui.do_settings_change(channel.patch, url, data, $status_el, opts);
 }
 
 export function set_up() {
     meta.loaded = true;
     const container = $("#user-display-settings");
     const language_modal_elem = "#user_default_language_modal";
+    const patch_url = "/json/settings";
 
     container.find(".display-settings-status").hide();
 
@@ -73,6 +74,7 @@ export function set_up() {
                 change_display_setting(
                     data,
                     container,
+                    patch_url,
                     ".display-settings-status",
                     $t_html(
                         {
@@ -84,7 +86,7 @@ export function set_up() {
                     true,
                 );
             } else {
-                change_display_setting(data, container, ".display-settings-status");
+                change_display_setting(data, container, patch_url, ".display-settings-status");
             }
         });
     }
@@ -106,6 +108,7 @@ export function set_up() {
             change_display_setting(
                 data,
                 container,
+                patch_url,
                 ".language-settings-status",
                 $t_html(
                     {
@@ -126,17 +129,17 @@ export function set_up() {
 
     container.find(".demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, container, ".display-settings-status");
+        change_display_setting(data, container, patch_url, ".display-settings-status");
     });
 
     container.find(".color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
-        change_display_setting(data, container, ".display-settings-status");
+        change_display_setting(data, container, patch_url, ".display-settings-status");
     });
 
     container.find(".default_view").on("change", function () {
         const data = {default_view: this.value};
-        change_display_setting(data, container, ".display-settings-status");
+        change_display_setting(data, container, patch_url, ".display-settings-status");
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -145,7 +148,7 @@ export function set_up() {
 
     container.find(".twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, container, ".time-settings-status");
+        change_display_setting(data, container, patch_url, ".time-settings-status");
     });
 
     container.find(".emojiset_choice").on("click", function () {
@@ -158,7 +161,7 @@ export function set_up() {
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
-            url: "/json/settings",
+            url: patch_url,
             data,
             success() {},
             error(xhr) {
@@ -173,7 +176,7 @@ export function set_up() {
 
     container.find(".translate_emoticons").on("change", function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, container, ".emoji-settings-status");
+        change_display_setting(data, container, patch_url, ".emoji-settings-status");
     });
 }
 
