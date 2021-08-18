@@ -746,8 +746,8 @@ default: SSH auth method: private key
 default: Error: Connection timeout. Retrying...
 default: Error: Connection timeout. Retrying...
 default: Error: Connection timeout. Retrying...
-
 ```
+
 A likely cause is that hardware virtualization is not enabled for your
 computer. This must be done via your computer's BIOS settings. Look for a
 setting called VT-x (Intel) or (AMD-V).

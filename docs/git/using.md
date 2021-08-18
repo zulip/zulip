@@ -413,7 +413,6 @@ hint: Updates were rejected because the tip of your current branch is behind
 hint: its remote counterpart. Integrate the remote changes (e.g.
 hint: 'git pull ...') before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-
 ```
 
 Re-running the command with `+<branch>` allows the push to continue by
@@ -429,7 +428,6 @@ Total 12 (delta 8), reused 0 (delta 0)
 remote: Resolving deltas: 100% (8/8), completed with 2 local objects.
 To git@github.com:christi3k/zulip.git
  + 2d49e2d...bfb2433 1754-docs-add-git-workflow -> 1754-docs-add-git-workflow (forced update)
-
 ```
 
 This is perfectly okay to do on your own feature branches, especially if you're
