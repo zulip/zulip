@@ -43,21 +43,22 @@ export function set_up() {
     const container = $("#user-display-settings");
     const language_modal_elem = "#user_default_language_modal";
     const patch_url = "/json/settings";
+    const settings_object = user_settings;
 
     container.find(".display-settings-status").hide();
 
-    container.find(".setting_demote_inactive_streams").val(user_settings.demote_inactive_streams);
+    container.find(".setting_demote_inactive_streams").val(settings_object.demote_inactive_streams);
 
-    container.find(".setting_color_scheme").val(user_settings.color_scheme);
+    container.find(".setting_color_scheme").val(settings_object.color_scheme);
 
-    container.find(".setting_default_view").val(user_settings.default_view);
+    container.find(".setting_default_view").val(settings_object.default_view);
 
     container
         .find(".setting_twenty_four_hour_time")
-        .val(JSON.stringify(user_settings.twenty_four_hour_time));
+        .val(JSON.stringify(settings_object.twenty_four_hour_time));
 
     container
-        .find(`.setting_emojiset_choice[value="${CSS.escape(user_settings.emojiset)}"]`)
+        .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
 
     $(`${CSS.escape(language_modal_elem)} [data-dismiss]`).on("click", () => {
@@ -153,7 +154,7 @@ export function set_up() {
 
     container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
-        const current_emojiset = user_settings.emojiset;
+        const current_emojiset = settings_object.emojiset;
         if (current_emojiset === data.emojiset) {
             return;
         }
@@ -188,7 +189,8 @@ export async function report_emojiset_change() {
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
 
-    await emojisets.select(user_settings.emojiset);
+    const settings_object = user_settings;
+    await emojisets.select(settings_object.emojiset);
 
     const spinner = $("#user-display-settings").find(".emoji-settings-status");
     if (spinner.length) {
@@ -204,14 +206,15 @@ export async function report_emojiset_change() {
 
 export function update_page() {
     const container = $("#user-display-settings");
-    container.find(".left_side_userlist").prop("checked", user_settings.left_side_userlist);
+    const settings_object = user_settings;
+    container.find(".left_side_userlist").prop("checked", settings_object.left_side_userlist);
     container.find(".default_language_name").text(default_language_name);
-    container.find(".translate_emoticons").prop("checked", user_settings.translate_emoticons);
+    container.find(".translate_emoticons").prop("checked", settings_object.translate_emoticons);
     container
         .find(".setting_twenty_four_hour_time")
-        .val(JSON.stringify(user_settings.twenty_four_hour_time));
-    container.find(".setting_color_scheme").val(JSON.stringify(user_settings.color_scheme));
-    container.find(".setting_default_view").val(user_settings.default_view);
+        .val(JSON.stringify(settings_object.twenty_four_hour_time));
+    container.find(".setting_color_scheme").val(JSON.stringify(settings_object.color_scheme));
+    container.find(".setting_default_view").val(settings_object.default_view);
 
     // TODO: Set emoji set selector here.
     // Longer term, we'll want to automate this function
