@@ -154,6 +154,10 @@ export class DropdownListWidget {
                     }
                     break;
                 }
+                case "Escape": {
+                    $dropdown_menu.dropdown("toggle");
+                    break;
+                }
             }
         });
     }
