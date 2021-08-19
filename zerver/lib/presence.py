@@ -2,7 +2,7 @@ import datetime
 import itertools
 import time
 from collections import defaultdict
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, Mapping, Sequence, Set
 
 from django.utils.timezone import now as timezone_now
 
@@ -11,7 +11,7 @@ from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, que
 
 
 def get_status_dicts_for_rows(
-    all_rows: List[Dict[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
+    all_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
 ) -> Dict[str, Dict[str, Any]]:
 
     # Note that datetime values have sub-second granularity, which is
@@ -46,7 +46,7 @@ def get_status_dicts_for_rows(
 
 
 def get_modern_user_info(
-    presence_rows: List[Dict[str, Any]], mobile_user_ids: Set[int]
+    presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
 ) -> Dict[str, Any]:
 
     active_timestamp = None
@@ -76,7 +76,7 @@ def get_modern_user_info(
 
 
 def get_legacy_user_info(
-    presence_rows: List[Dict[str, Any]], mobile_user_ids: Set[int]
+    presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
 ) -> Dict[str, Any]:
 
     # The format of data here is for legacy users of our API,

@@ -3,6 +3,7 @@ from typing import Dict
 from unittest.mock import MagicMock, patch
 
 from django.http import HttpRequest
+from django.http.response import HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.actions import do_rename_stream
@@ -61,11 +62,11 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
     def test_notify_bot_owner_on_invalid_json(self) -> None:
         @webhook_view("ClientName", notify_bot_owner_on_invalid_json=False)
-        def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             raise InvalidJSONError("Malformed JSON")
 
         @webhook_view("ClientName", notify_bot_owner_on_invalid_json=True)
-        def my_webhook_notify(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_notify(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
             raise InvalidJSONError("Malformed JSON")
 
         webhook_bot_email = "webhook-bot@zulip.com"

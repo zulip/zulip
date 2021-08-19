@@ -2924,7 +2924,7 @@ def check_update_message(
     message_id: int,
     stream_id: Optional[int] = None,
     topic_name: Optional[str] = None,
-    propagate_mode: Optional[str] = "change_one",
+    propagate_mode: str = "change_one",
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
     content: Optional[str] = None,

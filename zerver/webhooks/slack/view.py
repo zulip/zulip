@@ -1,4 +1,5 @@
 from django.http import HttpRequest
+from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
@@ -22,7 +23,7 @@ def api_slack_webhook(
     channel_name: str = REQ(),
     stream: str = REQ(default="slack"),
     channels_map_to_topics: str = REQ(default="1"),
-) -> HttpRequest:
+) -> HttpResponse:
 
     if channels_map_to_topics not in list(VALID_OPTIONS.values()):
         raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))

@@ -297,7 +297,7 @@ class Runner(DiscoverRunner):
         self.shallow_tested_templates: Set[str] = set()
         template_rendered.connect(self.on_template_rendered)
 
-    def get_resultclass(self) -> Type[TestResult]:
+    def get_resultclass(self) -> Optional[Type[TextTestResult]]:
         return TextTestResult
 
     def on_template_rendered(self, sender: Any, context: Dict[str, Any], **kwargs: Any) -> None:
