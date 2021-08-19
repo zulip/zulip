@@ -42,7 +42,8 @@
           setting_name=this
           is_checked=(lookup ../user_settings this)
           label=(lookup ../settings_label this)
-          render_only=(lookup ../display_settings.render_only this)}}
+          render_only=(lookup ../display_settings.render_only this)
+          prefix=../prefix}}
         {{/each}}
 
         <div class="input-group">
@@ -97,6 +98,7 @@
         {{> settings_checkbox
           setting_name="translate_emoticons"
           is_checked=user_settings.translate_emoticons
-          label=settings_label.translate_emoticons}}
+          label=settings_label.translate_emoticons
+          prefix=prefix}}
     </div>
 </form>
