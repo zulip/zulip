@@ -44,10 +44,7 @@ from zerver.models import (
 )
 
 
-def relative_to_full_url(base_url: str, content: str) -> str:
-    # Convert relative URLs to absolute URLs.
-    fragment = lxml.html.fromstring(content)
-
+def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None:
     # We handle narrow URLs separately because of two reasons:
     # 1: 'lxml' seems to be having an issue in dealing with URLs that begin
     # `#` due to which it doesn't add a `/` before joining the base_url to
@@ -81,15 +78,14 @@ def relative_to_full_url(base_url: str, content: str) -> str:
         image_link = fragment.find("a").get("href")
         image_title = fragment.find("a").get("title")
         title_attr = {} if image_title is None else {"title": image_title}
-        fragment = E.P(E.A(image_link, href=image_link, target="_blank", **title_attr))
+        fragment.clear()
+        fragment.tag = "p"
+        fragment.append(E.A(image_link, href=image_link, target="_blank", **title_attr))
 
     fragment.make_links_absolute(base_url)
-    content = lxml.html.tostring(fragment, encoding="unicode")
-
-    return content
 
 
-def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
+def fix_emojis(fragment: lxml.html.HtmlElement, base_url: str, emojiset: str) -> None:
     def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get("class")
@@ -106,7 +102,6 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
-    fragment = lxml.html.fromstring(content)
     for elem in fragment.cssselect("span.emoji"):
         parent = elem.getparent()
         img_elem = make_emoji_img_elem(elem)
@@ -116,14 +111,10 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         del realm_emoji.attrib["class"]
         realm_emoji.set("style", "height: 20px;")
 
-    content = lxml.html.tostring(fragment, encoding="unicode")
-    return content
 
-
-def fix_spoilers_in_html(content: str, language: str) -> str:
+def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None:
     with override_language(language):
         spoiler_title: str = _("Open Zulip to see the spoiler content")
-    fragment = lxml.html.fromstring(content)
     spoilers = fragment.find_class("spoiler-block")
     for spoiler in spoilers:
         header = spoiler.find_class("spoiler-header")[0]
@@ -141,8 +132,6 @@ def fix_spoilers_in_html(content: str, language: str) -> str:
         header_content.append(span_elem)
         header.drop_tag()
         spoiler_content.drop_tree()
-    content = lxml.html.tostring(fragment, encoding="unicode")
-    return content
 
 
 def fix_spoilers_in_text(content: str, language: str) -> str:
@@ -199,7 +188,9 @@ def build_message_list(
         message_soup = BeautifulSoup(message_html, "html.parser")
         sender_name_soup = BeautifulSoup(f"<b>{sender}</b>: ", "html.parser")
         first_tag = message_soup.find()
-        if first_tag.name == "p":
+        if first_tag and first_tag.name == "div":
+            first_tag = first_tag.find()
+        if first_tag and first_tag.name == "p":
             first_tag.insert(0, sender_name_soup)
         else:
             message_soup.insert(0, sender_name_soup)
@@ -217,10 +208,11 @@ def build_message_list(
         plain = fix_spoilers_in_text(plain, user.default_language)
 
         assert message.rendered_content is not None
-        html = message.rendered_content
-        html = relative_to_full_url(user.realm.uri, html)
-        html = fix_emojis(html, user.realm.uri, user.emojiset)
-        html = fix_spoilers_in_html(html, user.default_language)
+        fragment = lxml.html.fragment_fromstring(message.rendered_content, create_parent=True)
+        relative_to_full_url(fragment, user.realm.uri)
+        fix_emojis(fragment, user.realm.uri, user.emojiset)
+        fix_spoilers_in_html(fragment, user.default_language)
+        html = lxml.html.tostring(fragment, encoding="unicode")
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
         return {"plain": plain, "html": html}
