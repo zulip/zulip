@@ -3,6 +3,7 @@ import secrets
 import urllib
 from functools import wraps
 from typing import Any, Dict, List, Mapping, Optional, cast
+from urllib.parse import urlencode
 
 import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -959,6 +960,12 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
+    if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
+        redirect_url = add_query_to_redirect_url(
+            reverse("realm_redirect"), urlencode({"next": reverse("password_reset")})
+        )
+        return HttpResponseRedirect(redirect_url)
+
     response = DjangoPasswordResetView.as_view(
         template_name="zerver/reset.html",
         form_class=ZulipPasswordResetForm,

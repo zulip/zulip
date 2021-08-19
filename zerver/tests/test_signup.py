@@ -426,6 +426,81 @@ class PasswordResetTest(ZulipTestCase):
             # make sure old password no longer works
             self.assert_login_failure(email, password=old_password)
 
+    @patch("django.http.HttpRequest.get_host")
+    def test_password_reset_page_redirects_for_root_alias_when_root_domain_landing_page_is_enabled(
+        self, mock_get_host: MagicMock
+    ) -> None:
+        mock_get_host.return_value = "alias.testserver"
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True, ROOT_SUBDOMAIN_ALIASES=["alias"]):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+
+        mock_get_host.return_value = "www.testserver"
+        with self.settings(
+            ROOT_DOMAIN_LANDING_PAGE=True,
+        ):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+
+    @patch("django.http.HttpRequest.get_host")
+    def test_password_reset_page_redirects_for_root_domain_when_root_domain_landing_page_is_enabled(
+        self, mock_get_host: MagicMock
+    ) -> None:
+        mock_get_host.return_value = "testserver"
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+
+        mock_get_host.return_value = "www.testserver.com"
+        with self.settings(
+            ROOT_DOMAIN_LANDING_PAGE=True,
+            EXTERNAL_HOST="www.testserver.com",
+        ):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+
+    @patch("django.http.HttpRequest.get_host")
+    def test_password_reset_page_works_for_root_alias_when_root_domain_landing_page_is_not_enabled(
+        self, mock_get_host: MagicMock
+    ) -> None:
+        mock_get_host.return_value = "alias.testserver"
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=["alias"]):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 200)
+
+        mock_get_host.return_value = "www.testserver"
+        result = self.client_get("/accounts/password/reset/")
+        self.assertEqual(result.status_code, 200)
+
+    @patch("django.http.HttpRequest.get_host")
+    def test_password_reset_page_works_for_root_domain_when_root_domain_landing_page_is_not_enabled(
+        self, mock_get_host: MagicMock
+    ) -> None:
+        mock_get_host.return_value = "testserver"
+        result = self.client_get("/accounts/password/reset/")
+        self.assertEqual(result.status_code, 200)
+
+        mock_get_host.return_value = "www.testserver.com"
+        with self.settings(EXTERNAL_HOST="www.testserver.com", ROOT_SUBDOMAIN_ALIASES=[]):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 200)
+
+    @patch("django.http.HttpRequest.get_host")
+    def test_password_reset_page_works_always_for_subdomains(
+        self, mock_get_host: MagicMock
+    ) -> None:
+        mock_get_host.return_value = "lear.testserver"
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get("/accounts/password/reset/")
+            self.assertEqual(result.status_code, 200)
+
+        result = self.client_get("/accounts/password/reset/")
+        self.assertEqual(result.status_code, 200)
+
     def test_password_reset_for_non_existent_user(self) -> None:
         email = "nonexisting@mars.com"
 
