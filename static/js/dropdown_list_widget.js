@@ -154,6 +154,10 @@ DropdownListWidget.prototype.dropdown_focus_events = function () {
                 }
                 break;
             }
+            case "Escape": {
+                dropdown_menu.dropdown("toggle");
+                break;
+            }
         }
     });
 };
