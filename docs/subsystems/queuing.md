@@ -75,14 +75,14 @@ processor's code path, but it isn't always possible.
 If you need to clear a queue (delete all the events in it), run
 `./manage.py purge_queue <queue_name>`, for example:
 
-```
+```bash
 ./manage.py purge_queue user_activity
 ```
 
 You can also use the amqp tools directly.  Install `amqp-tools` from
 apt and then run:
 
-```
+```bash
 amqp-delete-queue --username=zulip --password='...' --server=localhost \
    --queue=user_presence
 ```

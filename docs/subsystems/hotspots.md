@@ -17,7 +17,7 @@ In `zerver/lib/hotspots.py`, add your content to the `ALL_HOTSPOTS` dictionary.
 Each key-value pair in `ALL_HOTSPOTS` associates the name of the hotspot with the
 content displayed to the user.
 
-```
+```python
 ALL_HOTSPOTS = {
     ...
     'new_hotspot_name': {
@@ -67,8 +67,8 @@ a target element on a sidebar or overlay, the icon's z-index may need to
 be increased to 101, 102, or 103.
 
 This adjustment can be made at the bottom of `static/styles/hotspots.css`:
-```
-\#hotspot_new_hotspot_name_icon {
+```css
+#hotspot_new_hotspot_name_icon {
     z-index: 103;
 }
 ```

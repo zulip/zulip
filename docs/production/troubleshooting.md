@@ -37,13 +37,13 @@ and restart various services.
 ### Checking status with `supervisorctl status`
 
 You can check if the Zulip application is running using:
-```
+```bash
 supervisorctl status
 ```
 
 When everything is running as expected, you will see something like this:
 
-```
+```console
 process-fts-updates                                             RUNNING   pid 2194, uptime 1:13:11
 zulip-django                                                    RUNNING   pid 2192, uptime 1:13:11
 zulip-tornado                                                   RUNNING   pid 2193, uptime 1:13:11
@@ -75,7 +75,7 @@ After you change configuration in `/etc/zulip/settings.py` or fix a
 misconfiguration, you will often want to restart the Zulip application.
 You can restart Zulip using:
 
-```
+```bash
 supervisorctl restart all
 ```
 
@@ -83,7 +83,7 @@ supervisorctl restart all
 
 Similarly, you can stop Zulip using:
 
-```
+```bash
 supervisorctl stop all
 ```
 
@@ -111,13 +111,13 @@ problems and how to resolve them:
   nginx will fail to start if you configured SSL incorrectly or did
   not provide SSL certificates.  To fix this, configure them properly
   and then run:
-  ```
+  ```bash
   service nginx restart
   ```
 
 * If your host is being port scanned by unauthorized users, you may see
   messages in `/var/log/zulip/server.log` like
-  ```
+  ```text
   2017-02-22 14:11:33,537 ERROR Invalid HTTP_HOST header: '10.2.3.4'. You may need to add u'10.2.3.4' to ALLOWED_HOSTS.
   ```
   Django uses the hostnames configured in `ALLOWED_HOSTS` to identify
@@ -128,7 +128,7 @@ problems and how to resolve them:
 
 * An AMQPConnectionError traceback or error running rabbitmqctl
   usually means that RabbitMQ is not running; to fix this, try:
-  ```
+  ```bash
   service rabbitmq-server restart
   ```
   If RabbitMQ fails to start, the problem is often that you are using
@@ -176,7 +176,7 @@ You can ensure that the `unattended-upgrades` package never upgrades
 PostgreSQL, memcached, Redis, or RabbitMQ, by configuring in
 `/etc/apt/apt.conf.d/50unattended-upgrades`:
 
-```
+```text
 // Python regular expressions, matching packages to exclude from upgrading
 Unattended-Upgrade::Package-Blacklist {
     "libc\d+";

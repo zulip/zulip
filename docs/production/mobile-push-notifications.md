@@ -34,7 +34,7 @@ You can enable this for your Zulip server as follows:
 
 1. If you're running Zulip 1.8.1 or newer, you can run the
     registration command:
-    ```
+    ```bash
     # As root:
     su zulip -c '/home/zulip/deployments/current/manage.py register_server'
     # Or as the zulip user, you can skip the `su zulip -c`:

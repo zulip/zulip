@@ -68,7 +68,7 @@ organization in Zulip). The following files are involved in the process:
 **Create and run the migration:** To create and apply a migration, run the
 following commands:
 
-```
+```bash
 ./manage.py makemigrations
 ./manage.py migrate
 ```
@@ -168,14 +168,13 @@ boolean field, `mandatory_topics`, to the Realm model in
 `zerver/models.py`.
 
 ``` diff
+ # zerver/models.py
 
-# zerver/models.py
-
-class Realm(models.Model):
-    # ...
-    emails_restricted_to_domains: bool = models.BooleanField(default=True)
-    invite_required: bool = models.BooleanField(default=False)
-+   mandatory_topics: bool = models.BooleanField(default=False)
+ class Realm(models.Model):
+     # ...
+     emails_restricted_to_domains: bool = models.BooleanField(default=True)
+     invite_required: bool = models.BooleanField(default=False)
++    mandatory_topics: bool = models.BooleanField(default=False)
 ```
 
 The Realm model also contains an attribute, `property_types`, which
@@ -186,18 +185,17 @@ is the field's type. Add the new field to the `property_types`
 dictionary.
 
 ``` diff
+ # zerver/models.py
 
-# zerver/models.py
-
-class Realm(models.Model)
-  # ...
-  # Define the types of the various automatically managed properties
-    property_types = dict(
-        add_emoji_by_admins_only=bool,
-        allow_edit_history=bool,
-        # ...
-+       mandatory_topics=bool,
-        # ...
+ class Realm(models.Model)
+     # ...
+     # Define the types of the various automatically managed properties
+     property_types = dict(
+         add_emoji_by_admins_only=bool,
+         allow_edit_history=bool,
+         # ...
++        mandatory_topics=bool,
+         # ...
 ```
 
 **The majority of realm settings can be included in
@@ -231,7 +229,7 @@ is helpful.
 Apply the migration using Django's `migrate` command: `./manage.py migrate`.
 
 Output:
-```
+```console
 shell $ ./manage.py migrate
 Operations to perform:
   Synchronize unmigrated apps: staticfiles, analytics, pipeline
@@ -291,50 +289,54 @@ argument can be a single user (if the setting is a personal one, like
 time display format), members in a particular stream only or all
 active users in a realm.
 
-    # zerver/lib/actions.py
+```python
+# zerver/lib/actions.py
 
-    def do_set_realm_property(
-        realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
-    ) -> None:
-      """Takes in a realm object, the name of an attribute to update, the
-         value to update and and the user who initiated the update.
-      """
-      property_type = Realm.property_types[name]
-      assert isinstance(value, property_type), (
-          'Cannot update %s: %s is not an instance of %s' % (
-              name, value, property_type,))
+def do_set_realm_property(
+    realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
+) -> None:
+    """Takes in a realm object, the name of an attribute to update, the
+       value to update and and the user who initiated the update.
+    """
+    property_type = Realm.property_types[name]
+    assert isinstance(value, property_type), (
+        'Cannot update %s: %s is not an instance of %s' % (
+            name, value, property_type,))
 
-      setattr(realm, name, value)
-      realm.save(update_fields=[name])
-      event = dict(
-          type='realm',
-          op='update',
-          property=name,
-          value=value,
-      )
-      send_event(realm, event, active_user_ids(realm))
+    setattr(realm, name, value)
+    realm.save(update_fields=[name])
+    event = dict(
+        type='realm',
+        op='update',
+        property=name,
+        value=value,
+    )
+    send_event(realm, event, active_user_ids(realm))
+```
 
 If the new realm property being added does not fit into the
 `property_types` framework (such as the `authentication_methods`
 field), you'll need to create a new function to explicitly update this
 field and send an event. For example:
 
-    # zerver/lib/actions.py
+```python
+# zerver/lib/actions.py
 
-    def do_set_realm_authentication_methods(
-        realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
-    ) -> None:
-        for key, value in list(authentication_methods.items()):
-            index = getattr(realm.authentication_methods, key).number
-            realm.authentication_methods.set_bit(index, int(value))
-        realm.save(update_fields=['authentication_methods'])
-        event = dict(
-            type="realm",
-            op="update_dict",
-            property='default',
-            data=dict(authentication_methods=realm.authentication_methods_dict())
-        )
-        send_event(realm, event, active_user_ids(realm))
+def do_set_realm_authentication_methods(
+    realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
+) -> None:
+    for key, value in list(authentication_methods.items()):
+        index = getattr(realm.authentication_methods, key).number
+        realm.authentication_methods.set_bit(index, int(value))
+    realm.save(update_fields=['authentication_methods'])
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property='default',
+        data=dict(authentication_methods=realm.authentication_methods_dict())
+    )
+    send_event(realm, event, active_user_ids(realm))
+```
 
 ### Update application state
 
@@ -351,27 +353,29 @@ apps). The `apply_event` function in `zerver/lib/events.py` is important for
 making sure the `state` is always correct, even in the event of rare
 race conditions.
 
-    # zerver/lib/events.py
+```python
+# zerver/lib/events.py
 
-    def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
-      # ...
-      if want('realm'):
+def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
+    # ...
+    if want('realm'):
         for property_name in Realm.property_types:
             state['realm_' + property_name] = getattr(user_profile.realm, property_name)
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         # ...
 
-    def apply_event
-        user_profile: UserProfile,
-        # ...
-    ) -> None:
-      for event in events:
+def apply_event
+    user_profile: UserProfile,
+    # ...
+) -> None:
+    for event in events:
         # ...
         elif event['type'] == 'realm':
            field = 'realm_' + event['property']
            state[field] = event['value']
            # ...
+```
 
 If your new realm property fits the `property_types`
 framework, you don't need to change `fetch_initial_state_data` or
@@ -380,14 +384,16 @@ property that is handled separately, you will need to explicitly add
 the property to the `state` dictionary in the `fetch_initial_state_data`
 function. E.g., for `authentication_methods`:
 
-    # zerver/lib/events.py
+```python
+# zerver/lib/events.py
 
-    def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
-      # ...
-      if want('realm'):
-          # ...
-          state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
-          # ...
+def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
+    # ...
+    if want('realm'):
+        # ...
+        state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
+        # ...
+```
 
 For this setting, one won't need to change `apply_event` since its
 default code for `realm` event types handles this case correctly, but
@@ -409,8 +415,7 @@ function in `zerver/views/realm.py` (and add the appropriate mypy type
 annotation).
 
 ``` diff
-
-# zerver/views/realm.py
+ # zerver/views/realm.py
 
  def update_realm(
      request: HttpRequest,
@@ -430,15 +435,17 @@ to `zerver/views/realm.py`.
 Text fields or other realm properties that need additional validation
 can be handled at the beginning of `update_realm`.
 
-    # zerver/views/realm.py
+```python
+# zerver/views/realm.py
 
-    # Additional validation/error checking beyond types go here, so
-    # the entire request can succeed or fail atomically.
-    if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
-    if description is not None and len(description) > 100:
-        return json_error(_("Realm description cannot exceed 100 characters."))
-    # ...
+# Additional validation/error checking beyond types go here, so
+# the entire request can succeed or fail atomically.
+if default_language is not None and default_language not in get_available_language_codes():
+    raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+if description is not None and len(description) > 100:
+    return json_error(_("Realm description cannot exceed 100 characters."))
+# ...
+```
 
 The code in `update_realm` loops through the `property_types` dictionary
 and calls `do_set_realm_property` on any property to be updated from
@@ -449,20 +456,22 @@ to call the function you wrote in `actions.py` that updates the database
 with the new value. E.g., for `authentication_methods`, we created
 `do_set_realm_authentication_methods`, which we will call here:
 
-    # zerver/views/realm.py
+```python
+# zerver/views/realm.py
 
-    # import do_set_realm_authentication_methods from actions.py
-    from zerver.lib.actions import (
-        do_set_realm_message_editing,
-        do_set_realm_authentication_methods,
-        # ...
-    )
+# import do_set_realm_authentication_methods from actions.py
+from zerver.lib.actions import (
+    do_set_realm_message_editing,
+    do_set_realm_authentication_methods,
     # ...
-    # ...
-    if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
-            do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
-            data['authentication_methods'] = authentication_methods
-    # ...
+)
+# ...
+# ...
+if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
+    do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
+    data['authentication_methods'] = authentication_methods
+# ...
+```
 
 This completes the backend implementation. A great next step is to
 write automated backend tests for your new feature.
@@ -508,18 +517,17 @@ template.
 Then add the new form control in `static/js/admin.js`.
 
 ``` diff
+ // static/js/admin.js
 
-// static/js/admin.js
-
-function _setup_page() {
-    var options = {
-        realm_name: page_params.realm_name,
-        realm_description: page_params.realm_description,
-        realm_emails_restricted_to_domains: page_params.realm_emails_restricted_to_domains,
-        realm_invite_required: page_params.realm_invite_required,
-        // ...
-+       realm_mandatory_topics: page_params.mandatory_topics,
-        // ...
+ function _setup_page() {
+     var options = {
+         realm_name: page_params.realm_name,
+         realm_description: page_params.realm_description,
+         realm_emails_restricted_to_domains: page_params.realm_emails_restricted_to_domains,
+         realm_invite_required: page_params.realm_invite_required,
+         // ...
++        realm_mandatory_topics: page_params.mandatory_topics,
+         // ...
 ```
 
 The JavaScript code for organization settings and permissions can be found in
@@ -582,20 +590,19 @@ setting has changed, your function should be referenced in the
 `settings_emoji.update_custom_emoji_ui`.
 
 ``` diff
+ // static/js/server_events_dispatch.js
 
-// static/js/server_events_dispatch.js
-
-function dispatch_normal_event(event) {
-    switch (event.type) {
-    // ...
-    case 'realm':
-      var realm_settings = {
-          add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
-          allow_edit_history: noop,
-          // ...
-+         mandatory_topics: noop,
-          // ...
-      };
+ function dispatch_normal_event(event) {
+     switch (event.type) {
+     // ...
+     case 'realm':
+         var realm_settings = {
+             add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
+             allow_edit_history: noop,
+             // ...
++            mandatory_topics: noop,
+             // ...
+         };
 ```
 
 Checkboxes and other common input elements handle the UI updates
@@ -638,12 +645,14 @@ At the minimum, if you created a new function to update UI in
 `frontend_tests/node_tests/dispatch.js`. Add the name of the UI
 function you created to the following object with `noop` as the value:
 
-    # frontend_tests/node_tests/dispatch.js
+```js
+// frontend_tests/node_tests/dispatch.js
 
-    set_global('settings_org', {
-        update_email_change_display: noop,
-        update_name_change_display: noop,
-    });
+set_global('settings_org', {
+    update_email_change_display: noop,
+    update_name_change_display: noop,
+});
+```
 
 Beyond that, you should add any applicable tests that verify the
 behavior of the setting you just created.

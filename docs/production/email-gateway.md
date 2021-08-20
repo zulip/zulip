@@ -57,7 +57,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
    configuring email for `emaildomain.example.com` to be processed by
    `hostname.example.com`.  You can check your work using this command:
 
-    ```
+    ```console
     $ dig +short emaildomain.example.com -t MX
     1 hostname.example.com
     ```
@@ -66,7 +66,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 
 1. Add `, zulip::postfix_localmail` to `puppet_classes` in
    `/etc/zulip/zulip.conf`.  A typical value after this change is:
-   ```
+   ```ini
    puppet_classes = zulip::profile::standalone, zulip::postfix_localmail
    ```
 
@@ -74,7 +74,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
    `emaildomain.example.com`, add a section to `/etc/zulip/zulip.conf`
    on your Zulip server like this:
 
-    ```
+    ```ini
     [postfix]
     mailname = emaildomain.example.com
     ```
@@ -117,7 +117,7 @@ Congratulations!  The integration should be fully operational.
     * Password in `/etc/zulip/zulip-secrets.conf` as `email_gateway_password`.
 
 1. Install a cron job to poll the inbox every minute for new messages:
-    ```
+    ```bash
     cd /home/zulip/deployments/current/
     sudo cp puppet/zulip/files/cron.d/email-mirror /etc/cron.d/
     ```

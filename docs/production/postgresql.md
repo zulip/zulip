@@ -53,13 +53,13 @@ PostgreSQL documentation):
 Then you should specify the password of the user zulip for the
 database in /etc/zulip/zulip-secrets.conf:
 
-```
+```ini
 postgres_password = xxxx
 ```
 
 Finally, you can stop your database on the Zulip server via:
 
-```
+```bash
 sudo service postgresql stop
 sudo update-rc.d postgresql disable
 ```
@@ -76,7 +76,7 @@ can give you some tips.
 When debugging PostgreSQL issues, in addition to the standard `pg_top`
 tool, often it can be useful to use this query:
 
-```
+```postgresql
 SELECT procpid,waiting,query_start,current_query FROM pg_stat_activity ORDER BY procpid;
 ```
 
@@ -97,7 +97,7 @@ and enter recovery mode.
 
 To start or stop PostgreSQL manually, use the pg_ctlcluster command:
 
-```
+```bash
 pg_ctlcluster 9.1 [--force] main {start|stop|restart|reload}
 ```
 
@@ -128,7 +128,7 @@ database failed to start. It may tell you to check the logs, but you
 won't find any information there. pg_ctlcluster runs the following
 command underneath when it actually goes to start PostgreSQL:
 
-```
+```bash
 /usr/lib/postgresql/9.1/bin/pg_ctl start -D /var/lib/postgresql/9.1/main -s -o \
     '-c config_file="/etc/postgresql/9.1/main/postgresql.conf"'
 ```

@@ -26,7 +26,7 @@ zulip.com](https://zulip.com)).
 Copy your existing nginx configuration to a backup and then merge the
 one created by Zulip into it:
 
-```shell
+```bash
 sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
 sudo wget -O /etc/nginx/nginx.conf.zulip \
     https://raw.githubusercontent.com/zulip/zulip/master/puppet/zulip/templates/nginx.conf.template.erb
@@ -43,7 +43,7 @@ installs.
 After the Zulip installation completes, then you can overwrite (or
 merge) your new nginx.conf with the installed one:
 
-```shell
+```console
 $ sudo meld /etc/nginx/nginx.conf.zulip /etc/nginx/nginx.conf  # be sure to merge to the right
 $ sudo service nginx restart
 ```
@@ -58,13 +58,13 @@ If you have a Puppet server running on your server, you will get an
 error message about not being able to connect to the client during the
 install process:
 
-```shell
+```console
 puppet-agent[29873]: Could not request certificate: Failed to open TCP connection to puppet:8140
 ```
 
 So you'll need to shut down any Puppet servers.
 
-```shell
+```console
 $ sudo service puppet-agent stop
 $ sudo service puppet stop
 ```

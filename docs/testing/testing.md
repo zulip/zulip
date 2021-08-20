@@ -23,7 +23,7 @@ you're using Vagrant, you may need to enter it with `vagrant ssh`.
 You can run all of the test suites (similar to our continuous integration)
 as follows:
 
-```
+```bash
 ./tools/test-all
 ```
 
@@ -31,7 +31,7 @@ However, you will rarely want to do this while actively developing,
 because it takes a long time.  Instead, your edit/refresh cycle will
 typically involve running subsets of the tests with commands like these:
 
-```
+```bash
 ./tools/lint zerver/lib/actions.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
 ./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
@@ -140,7 +140,7 @@ depending on Internet access.
 
 This enforcement code results in the following exception:
 
-  ```
+  ```pytb
   File "tools/test-backend", line 120, in internet_guard
     raise Exception("Outgoing network requests are not allowed in the Zulip tests."
   Exception: Outgoing network requests are not allowed in the Zulip tests.

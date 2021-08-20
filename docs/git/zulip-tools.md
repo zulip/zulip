@@ -16,7 +16,7 @@ notices or warnings it displays.
 
 It's simple to use. Make sure you're in the clone of zulip and run the following:
 
-```
+```console
 $ ./tools/setup-git-repo
 ```
 
@@ -24,7 +24,7 @@ The script doesn't produce any output if successful. To check that the hook has
 been installed, print a directory listing for `.git/hooks` and you should see
 something similar to:
 
-```
+```console
 $ ls -l .git/hooks
 pre-commit -> ../../tools/pre-commit
 ```
@@ -47,7 +47,7 @@ First, make sure you are working in a branch you want to move (in this
 example, we'll use the local `master` branch). Then run the script
 with the ID number of the pull request as the first argument.
 
-```
+```console
 $ git checkout master
 Switched to branch 'master'
 Your branch is up-to-date with 'origin/master'.
@@ -74,7 +74,7 @@ changes from upstream/master with `git rebase`.
 
 Run the script with the ID number of the pull request as the first argument.
 
-```
+```console
 $ tools/fetch-rebase-pull-request 1913
 + request_id=1913
 + git fetch upstream pull/1913/head
@@ -101,7 +101,7 @@ exactly the same repository state as the commit author had.
 
 Run the script with the ID number of the pull request as the first argument.
 
-```
+```console
 $ tools/fetch-pull-request 5156
 + git diff-index --quiet HEAD
 + request_id=5156
@@ -155,7 +155,7 @@ arguments for default behavior. Since removing review branches can inadvertently
 feature branches whose names are like `review-*`, it is not done by default. To
 use it, run `tools/clean-branches --reviews`.
 
-```
+```console
 $ tools/clean-branches --reviews
 Deleting local branch review-original-5156 (was 5a1e982)
 ```
@@ -167,7 +167,7 @@ regenerate the file. *Important* don't delete the yarn.lock file. Check out the
 latest one from origin/master so that yarn knows the previous asset versions.
 
 Run the following commands
-```
+```bash
 git checkout origin/master -- yarn.lock
 yarn install
 git add yarn.lock

@@ -8,20 +8,20 @@ on reviewing changes by other contributors.
 
 Display changes between index and working tree (what is not yet staged for commit):
 
-```
+```console
 $ git diff
 ```
 
 Display changes between index and last commit (what you have staged for commit):
 
-```
+```console
 $ git diff --cached
 ```
 
 Display changes in working tree since last commit (changes that are staged as
 well as ones that are not):
 
-```
+```console
 $ git diff HEAD
 ```
 
@@ -31,13 +31,13 @@ Use any git-ref to compare changes between two commits on the current branch.
 
 Display changes between commit before last and last commit:
 
-```
+```console
 $ git diff HEAD^ HEAD
 ```
 
 Display changes between two commits using their hashes:
 
-```
+```console
 $ git diff e2f404c 7977169
 ```
 
@@ -45,19 +45,19 @@ $ git diff e2f404c 7977169
 
 Display changes between tip of topic branch and tip of master branch:
 
-```
+```console
 $ git diff topic master
 ```
 
 Display changes that have occurred on master branch since topic branch was created:
 
-```
+```console
 $ git diff topic...master
 ```
 
 Display changes you've committed so far since creating a branch from upstream/master:
 
-```
+```console
 $ git diff upstream/master...HEAD
 ```
 

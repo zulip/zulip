@@ -90,7 +90,7 @@ following keys in `zproject/dev-secrets.conf`
 Here is an example of how `zproject/dev-secrets.conf` might look if
 you are using Gmail.
 
-```
+```ini
 email_host = smtp.gmail.com
 email_port = 587
 email_host_user = username@gmail.com

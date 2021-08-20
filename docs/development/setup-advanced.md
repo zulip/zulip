@@ -36,13 +36,13 @@ the
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-```
+```bash
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
 cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
-```
+```bash
 # On CentOS/RHEL, you must first install epel-release, and then python36,
 # and finally you must run `sudo ln -nsf /usr/bin/python36 /usr/bin/python3`
 # On Fedora, you must first install python3
@@ -71,20 +71,20 @@ installation method described here.
 
 1. Launch the `Ubuntu 18.04` shell and run the following commands:
 
-   ```
+   ```bash
    sudo apt update && sudo apt upgrade
    sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
 1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
-   ```
+   ```bash
    sudo vim /etc/rabbitmq/rabbitmq-env.conf
    ```
 
    Add the following lines at the end of your file and save:
 
-   ```
+   ```ini
    NODE_IP_ADDRESS=127.0.0.1
    NODE_PORT=5672
    ```
@@ -92,14 +92,14 @@ installation method described here.
 1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
    You will run into permission issues if you run `provision` from `zulip`
    in a Windows mounted disk.
-   ```
+   ```bash
    cd ~  # or cd /home/USERNAME
    ```
 
 1. [Clone your fork of the Zulip repository][zulip-rtd-git-cloning]
    and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-   ```
+   ```bash
    git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
    cd zulip
    git remote add -f upstream https://github.com/zulip/zulip.git
@@ -109,7 +109,7 @@ installation method described here.
    start it (click `Allow access` if you get popups for Windows Firewall
    blocking some services)
 
-   ```
+   ```bash
    # Start database, cache, and other services
    ./tools/wsl/start_services
    # Install/update the Zulip development environment
@@ -154,7 +154,7 @@ expected.
 1. Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
    and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
-   ```
+   ```bash
    git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
    cd zulip
    git remote add -f upstream https://github.com/zulip/zulip.git
@@ -169,7 +169,7 @@ expected.
 
    You should get output like this:
 
-   ```text
+   ```console
    Bringing machine 'default' up with 'hyperv' provider...
    ==> default: Verifying Hyper-V is enabled...
    ==> default: Verifying Hyper-V is accessible...
@@ -203,14 +203,14 @@ expected.
 
 1. Set the `EXTERNAL_HOST` environment variable.
 
-   ```bash
+   ```console
    (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ export EXTERNAL_HOST="$(hostname -I | xargs):9991"
    (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ echo $EXTERNAL_HOST
    ```
 
    The output will be like:
 
-   ```text
+   ```console
    172.28.122.156:9991
    ```
 
@@ -226,13 +226,13 @@ expected.
 
 1. You should now be able to start the Zulip development server.
 
-   ```bash
+   ```console
    (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev.py
    ```
 
    The output will look like:
 
-   ```text
+   ```console
    Starting Zulip on:
 
         http://172.30.24.235:9991/

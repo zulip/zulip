@@ -71,7 +71,7 @@ If you'd like to use hostnames that are not subdomains of each other,
 you can set the `REALM_HOSTS` setting in `/etc/zulip/settings.py` to a
 Python dictionary, like this:
 
-```
+```python
 REALM_HOSTS = {
     'mysubdomain': 'hostname.example.com',
 }

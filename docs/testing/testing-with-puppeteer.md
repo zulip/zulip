@@ -10,8 +10,8 @@ keyboard shortcuts, etc.).
 ## Running tests
 
 You can run this test suite as follows:
-```
-    tools/test-js-with-puppeteer
+```bash
+tools/test-js-with-puppeteer
 ```
 
 See `tools/test-js-with-puppeteer --help` for useful options,
@@ -34,7 +34,7 @@ appears/disappears", or "Click on this HTML element".
 For example, this function might test the `x` keyboard shortcut to
 open the compose box for a new private message:
 
-```
+```js
 async function test_private_message_compose_shortcut(page) {
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private_message_recipient", {visible: true});

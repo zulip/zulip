@@ -15,7 +15,7 @@ This page discusses additional configuration that a system
 administrator can do.  To change any of the following settings, edit
 the `/etc/zulip/settings.py` file on your Zulip server, and then
 restart the server with the following command:
-```
+```bash
 su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 ```
 

@@ -91,7 +91,7 @@ the default context available to all Jinja2 templates.
 renders the template. For example, if you want to find the context
 passed to `index.html`, you can do:
 
-```
+```console
 $ git grep zerver/app/index.html '*.py'
 zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 ```
@@ -101,7 +101,7 @@ The next line in the code being the context definition.
 * `zproject/urls.py` for some fairly static pages that are rendered
 using `TemplateView`, for example:
 
-```
+```python
 path('config-error/google', TemplateView.as_view(
     template_name='zerver/config_error.html',),
     {'google_error': True},),

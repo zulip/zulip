@@ -18,7 +18,7 @@ Download and unpack [the latest built server
 tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
-```
+```bash
 cd $(mktemp -d)
 wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
@@ -35,7 +35,7 @@ using code from our [repository on GitHub](https://github.com/zulip/zulip/).
 To set up Zulip with the most common configuration, you can run the
 installer as follows:
 
-```
+```bash
 sudo -s  # If not already root
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME

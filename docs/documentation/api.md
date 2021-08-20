@@ -101,7 +101,7 @@ defined using a special Markdown extension
 (`zerver/openapi/markdown_extension.py`).  To use this extension, one
 writes a Markdown file block that looks something like this:
 
-```
+```md
 {start_tabs}
 {tab|python}
 
@@ -169,7 +169,7 @@ an API endpoint supports.  You'll see this in files like
 directive (implemented in
 `zerver/lib/markdown/api_arguments_table_generator.py`):
 
-```
+```md
 {generate_api_arguments_table|zulip.yaml|/messages/render:post}
 ```
 
@@ -186,7 +186,7 @@ You can use the following Markdown directive to render the fixtures
 defined in the OpenAPI `zulip.yaml` for a given endpoint and status
 code:
 
-```
+```md
 {generate_code_example|/messages/render:post|fixture(200)}
 ```
 

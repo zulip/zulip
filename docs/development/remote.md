@@ -21,7 +21,7 @@ The best way to connect to your server is using the command line tool `ssh`.
 
 Open *Terminal* or *Bash for Git*, and connect with the following:
 
-```
+```console
 $ ssh username@host
 ```
 
@@ -75,7 +75,7 @@ Once you have set up the development environment, you can start up the
 development server with the following command in the directory where
 you cloned Zulip:
 
-```
+```bash
 ./tools/run-dev.py --interface=''
 ```
 
@@ -98,7 +98,7 @@ such as a DigitalOcean Droplet or an AWS EC2 instance, you can set up
 port-forwarding to access Zulip by running the following command in
 your terminal:
 
-```
+```bash
 ssh -L 3000:127.0.0.1:9991 <username>@<remote_server_ip> -N
 ```
 
@@ -202,7 +202,7 @@ developing locally.
 1. Install the extension
    [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
-   ```
+   ```console
    $ mkdir -p ~/bin
    $ curl -Lo ~/bin/rmate https://raw.githubusercontent.com/textmate/rmate/master/bin/rmate
    $ chmod a+x ~/bin/rmate
@@ -210,11 +210,11 @@ developing locally.
 3. Make sure the remote server is running in VS Code (you can
    force-start through the Command Palette).
 4. SSH to your remote machine using
-   ```
+   ```console
    $ ssh -R 52698:localhost:52698 user@example.org
    ```
 5. On your remote machine, run
-   ```
+   ```console
    $ rmate [options] file
    ```
    and the file should open up in VS Code. Any changes you make now will be saved remotely.
@@ -292,7 +292,7 @@ different.
 1. First, get an SSL certificate; you can use
     [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
     by running the following commands as root:
-    ```
+    ```bash
     # apt install -y crudini
     mkdir -p /var/lib/zulip/certbot-webroot/
     # if nginx running this will fail and you need to run `service nginx stop`
@@ -303,7 +303,7 @@ different.
 
 1. Install nginx configuration:
 
-    ```
+    ```bash
     apt install -y nginx-full
     cp -a /home/zulipdev/zulip/tools/droplets/zulipdev /etc/nginx/sites-available/
     ln -nsf /etc/nginx/sites-available/zulipdev /etc/nginx/sites-enabled/
@@ -316,6 +316,6 @@ different.
    will be HTTPS.
 
 1. Start the Zulip development environment with the following command:
-   ```
+   ```bash
    env EXTERNAL_HOST="hostname.example.com" ./tools/run-dev.py --interface=''
    ```

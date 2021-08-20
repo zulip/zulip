@@ -40,7 +40,7 @@ types of authentication, and configure other settings. Once defined,
 information in this section rarely changes.
 
 For example, the `swagger` and `info` objects look like this:
-```
+```yaml
 # Basic Swagger UI info
 openapi: 3.0.1
 info:
@@ -79,7 +79,7 @@ expects a GET request with one
 Basic authentication, and returns a JSON response containing `msg`,
 `result`, and `presence` values.
 
-```
+```yaml
 /users/{user}/presence:
   get:
     description: Get presence data for another user.
@@ -119,7 +119,7 @@ contains schemas referenced by other objects. For example,
 contains three required parameters.  Two are strings, and one is an
 integer.
 
-```
+```yaml
 MessageResponse:
   type: object
   required:
@@ -183,7 +183,7 @@ correct.
 
 ### Examples:
 
-```
+```yaml
 Description: |
              This description has multiple lines.
              Sometimes descriptions can go on for
