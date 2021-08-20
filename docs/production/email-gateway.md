@@ -35,6 +35,7 @@ Incoming emails are rate-limited, with the following limits:
 * 50 emails per minute.
 * 120 emails per 5 minutes.
 * 600 emails per hour.
+
 :::
 
 ## Local delivery setup
