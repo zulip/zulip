@@ -2,22 +2,22 @@
 
 Contents:
 
-* [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-* [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
-* [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
-* [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
-* [Installing directly on cloud9](#installing-on-cloud9)
+- [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+- [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
+- [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
+- [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
+- [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
-* Ubuntu 20.04 Focal, 18.04 Bionic
-* Debian 10 Buster, 11 Bullseye (beta)
-* CentOS 7 (beta)
-* Fedora 33 (beta)
-* RHEL 7 (beta)
+- Ubuntu 20.04 Focal, 18.04 Bionic
+- Debian 10 Buster, 11 Bullseye (beta)
+- CentOS 7 (beta)
+- Fedora 33 (beta)
+- RHEL 7 (beta)
 
 You can just run the Zulip provision script on your machine.
 
@@ -294,16 +294,16 @@ This section documents how to set up the Zulip development environment
 in a Cloud9 workspace.  If you don't have an existing Cloud9 account,
 you can sign up [here](https://aws.amazon.com/cloud9/).
 
-* Create a Workspace, and select the blank template.
-* Resize the workspace to be 1GB of memory and 4GB of disk
+- Create a Workspace, and select the blank template.
+- Resize the workspace to be 1GB of memory and 4GB of disk
   space. (This is under free limit for both the old Cloud9 and the AWS
   Free Tier).
-* Clone the zulip repo:
+- Clone the zulip repo:
   `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
-* Restart rabbitmq-server since its broken on Cloud9:
+- Restart rabbitmq-server since its broken on Cloud9:
   `sudo service rabbitmq-server restart`.
-* And run provision `cd zulip && ./tools/provision`, once this is done.
-* Activate the Zulip virtual environment by
+- And run provision `cd zulip && ./tools/provision`, once this is done.
+- Activate the Zulip virtual environment by
   `source /srv/zulip-py3-venv/bin/activate` or by opening a new
   terminal.
 

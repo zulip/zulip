@@ -144,7 +144,7 @@ You can find more examples, including GET requests and nested objects, in
 We're collecting decisions we've made on how our Swagger YAML files
 should be organized here:
 
-* Use shared definitions and YAML anchors to avoid duplicating content
+- Use shared definitions and YAML anchors to avoid duplicating content
   where possible.
 
 ## Tips for working with YAML:
@@ -169,13 +169,13 @@ correct.
 
 ### Formatting help:
 
-* Comments begin with a # character.
+- Comments begin with a # character.
 
-* Descriptions do not need to be in quotes, and may use common
+- Descriptions do not need to be in quotes, and may use common
   Markdown format options like inline code \` (backtick) and `#`
   headings.
 
-* A single `|` (pipe) character begins a multi-line description on the
+- A single `|` (pipe) character begins a multi-line description on the
   next line.  Single spaced lines (one newline at the end of each) are
   joined. Use an extra blank line for a paragraph break.  We prefer
   to use this format for all descriptions because it doesn't require

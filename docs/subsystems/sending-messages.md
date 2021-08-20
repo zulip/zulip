@@ -17,13 +17,13 @@ and we generally don't repeat the content discussed there.
 This is just a bit of terminology: A "message list" is what Zulip
 calls the frontend concept of a (potentially narrowed) message feed.
 There are 3 related structures:
-* A `message_list_data` just has the sequencing data of which message
+- A `message_list_data` just has the sequencing data of which message
 IDs go in what order.
-* A `message_list` is built on top of `message_list_data` and
+- A `message_list` is built on top of `message_list_data` and
 additionally contains the data for a visible-to-the-user message list
 (E.g. where trailing bookends should appear, a selected message,
 etc.).
-* A `message_list_view` is built on top of `message_list` and
+- A `message_list_view` is built on top of `message_list` and
 additionally contains rendering details like a window of up to 400
 messages that is present in the DOM at the time, scroll position
 controls, etc.
@@ -48,10 +48,10 @@ process described in our
 [new application feature tutorial](../tutorials/new-feature-tutorial.md).
 This section details the ways in which it is different:
 
-* There is significant custom code inside the `process_message_event`
+- There is significant custom code inside the `process_message_event`
 function in `zerver/tornado/event_queue.py`.  This custom code has a
 number of purposes:
-   * Triggering [email and mobile push
+   - Triggering [email and mobile push
      notifications](../subsystems/notifications.md) for any users who
      do not have active clients and have settings of the form "push
      notifications when offline".  In order to avoid doing any real
@@ -61,41 +61,41 @@ number of purposes:
      [queue](../subsystems/queuing.md) to actually send the message.
      See `maybe_enqueue_notifications` and related code for this part
      of the logic.
-   * Splicing user-dependent data (E.g. `flags` such as when the user
+   - Splicing user-dependent data (E.g. `flags` such as when the user
    was `mentioned`) into the events.
-   * Handling the [local echo details](#local-echo).
-   * Handling certain client configuration options that affect
+   - Handling the [local echo details](#local-echo).
+   - Handling certain client configuration options that affect
      messages.  E.g. determining whether to send the
      plaintext/Markdown raw content or the rendered HTML (e.g. the
      `apply_markdown` and `client_gravatar` features in our
      [events API docs](https://zulip.com/api/register-queue)).
-* Following our standard naming convention, input validation is done
+- Following our standard naming convention, input validation is done
   inside the `check_message` function in `zerver/lib/actions.py`, which is responsible for
   validating the user can send to the recipient,
   [rendering the Markdown](../subsystems/markdown.md), etc. --
   basically everything that can fail due to bad user input.
-* The core `do_send_messages` function (which handles actually sending
+- The core `do_send_messages` function (which handles actually sending
   the message) in `zerver/lib/actions.py` is one of the most optimized and thus complex parts of
   the system.  But in short, its job is to atomically do a few key
   things:
-   * Store a `Message` row in the database.
-   * Store one `UserMessage` row in the database for each user who is
+   - Store a `Message` row in the database.
+   - Store one `UserMessage` row in the database for each user who is
      a recipient of the message (including the sender), with
      appropriate `flags` for whether the user was mentioned, an alert
      word appears, etc.  See
      [the section on soft deactivation](#soft-deactivation) for
      a clever optimization we use here that is important for large
      open organizations.
-   * Do all the database queries to fetch relevant data for and then
+   - Do all the database queries to fetch relevant data for and then
      send a `message` event to the
      [events system](../subsystems/events-system.md) containing the
      data it will need for the calculations described above.  This
      step adds a lot of complexity, because the events system cannot
      make queries to the database directly.
-   * Trigger any other deferred work caused by the current message,
+   - Trigger any other deferred work caused by the current message,
      e.g. [outgoing webhooks](https://zulip.com/api/outgoing-webhooks)
      or embedded bots.
-   * Every query is designed to be a bulk query; we carefully
+   - Every query is designed to be a bulk query; we carefully
      unit-test this system for how many database and memcached queries
      it makes when sending messages with large numbers of recipients,
      to ensure its performance.
@@ -123,12 +123,12 @@ details on how that works and is tested.
 The rest of this section details how Zulip manages locally echoed
 messages.
 
-* The core function in the frontend codebase
+- The core function in the frontend codebase
   `echo.try_deliver_locally`.  This checks whether correct local echo
   is possible (via `markdown.contains_backend_only_syntax`) and useful
   (whether the message would appear in the current view), and if so,
   causes Zulip to insert the message into the relevant feed(s).
-* Since the message hasn't been confirmed by the server yet, it
+- Since the message hasn't been confirmed by the server yet, it
   doesn't have a message ID.  The frontend makes one up, via
   `local_message.next_local_id`, by taking the highest message ID it
   has seen and adding the decimal `0.01`.  The use of a floating point
@@ -141,14 +141,14 @@ messages.
   resort it to its proper place once it is confirmed by the server.
   We do it this way to minimize messages jumping around/reordering
   visually).
-* The `POST /messages` API request to the server to send the message
+- The `POST /messages` API request to the server to send the message
   is passed two special parameters that clients not implementing local
   echo don't use: `queue_id` and `local_id`.  The `queue_id` is the ID
   of the client's event queue; here, it is used just as a unique
   identifier for the specific client (e.g. a browser tab) that sent
   the message.  And the `local_id` is, by the construction above, a
   unique value within that namespace identifying the message.
-* The `do_send_messages` backend code path includes the `queue_id` and
+- The `do_send_messages` backend code path includes the `queue_id` and
   `local_id` in the data it passes to the
   [events system](../subsystems/events-system.md).  The events
   system will extend the `message` event dictionary it delivers to
@@ -156,7 +156,7 @@ messages.
   containing the `local_id` that the relevant client used when sending
   the message.  This allows the client to know that the `message`
   event it is receiving is the same message it itself had sent.
-* Using that information, rather than adding the "new message" to the
+- Using that information, rather than adding the "new message" to the
   relevant message feed, it updates the (locally echoed) message's
   properties (at the very least, message ID and timestamp) and
   rerenders it in any message lists where it appears.  This is
@@ -176,30 +176,30 @@ implementation was under 150 lines of code.
 
 This section just has a brief review of the sequence of steps all in
 one place:
-* User hits send in the compose box.
-* Compose box validation runs; if it passes, the browser locally
+- User hits send in the compose box.
+- Compose box validation runs; if it passes, the browser locally
   echoes the message and then sends a request to the `POST /messages`
   API endpoint.
-* The Django URL routes and middleware run, and eventually call the
+- The Django URL routes and middleware run, and eventually call the
   `send_message_backend` view function in `zerver/views/messages.py`.
   (Alternatively, for an API request to send a message via Zulip's
    REST API, things start here).
-* `send_message_backend` does some validation before triggering the
+- `send_message_backend` does some validation before triggering the
   `check_message` + `do_send_messages` backend flow.
-* That backend flow saves the data to the database and triggers a
+- That backend flow saves the data to the database and triggers a
   `message` event in the `notify_tornado` queue (part of the events
   system).
-* The events system processes, and dispatches that event to all
+- The events system processes, and dispatches that event to all
   clients subscribed to receive notifications for users who should
   receive the message (including the sender).  As a side effect, it
   adds queue items to the email and push notification queues (which,
   in turn, may trigger those notifications).
-  * Other clients receive the event and display the new message.
-  * For the client that sent the message, it instead replaces its
+  - Other clients receive the event and display the new message.
+  - For the client that sent the message, it instead replaces its
     locally echoed message with the final message it received back
     from the server (it indicates this to the sender by adding a
     display timestamp to the message).
-* The `send_message_backend` view function returns
+- The `send_message_backend` view function returns
   a 200 `HTTP` response; the client receives that response and mostly
   does nothing with it other than update some logging details.  (This
   may happen before or after the client receives the event notifying
@@ -210,17 +210,17 @@ one place:
 Message editing uses a very similar principle to how sending messages
 works.  A few details are worth mentioning:
 
-* `maybe_enqueue_notifications_for_message_update` is an analogue of
+- `maybe_enqueue_notifications_for_message_update` is an analogue of
   `maybe_enqueue_notifications`, and exists to handle cases like a
   user was newly mentioned after the message is edited (since that
   should trigger email/push notifications, even if the original
   message didn't have one).
-* We use a similar technique to what's described in the local echo
+- We use a similar technique to what's described in the local echo
   section for doing client-side rerendering to update the message feed.
-* In the default configuration, Zulip stores the message edit history
+- In the default configuration, Zulip stores the message edit history
   (which is useful for forensics but also exposed in the UI), in the
   `message.edit_history` attribute.
-* We support topic editing, including bulk-updates moving several
+- We support topic editing, including bulk-updates moving several
   messages between topics.
 
 ### Inline URL previews
@@ -232,16 +232,16 @@ from the target URL, and for slow websites, this could result in a
 significant delay in rendering the message and delivering it to other
 users.
 
-* For this case, Zulip's backend Markdown processor will render the
+- For this case, Zulip's backend Markdown processor will render the
 message without including the URL embeds/previews, but it will add a
 deferred work item into the `embed_links` queue.
 
-* The [queue processor](../subsystems/queuing.md) for the
+- The [queue processor](../subsystems/queuing.md) for the
 `embed_links` queue will fetch the URLs, and then if they return
 results, rerun the Markdown processor and notify clients of the
 updated message `rendered_content`.
 
-* We reuse the `update_message` framework (used for
+- We reuse the `update_message` framework (used for
 Zulip's message editing feature) in order to avoid needing custom code
 to implement the notification-and-rerender part of this implementation.
 
@@ -327,10 +327,10 @@ organization for a few weeks, they are tagged as soft-deactivated.
 
 The way this works internally is:
 
-* We (usually) skip creating UserMessage rows for soft-deactivated
+- We (usually) skip creating UserMessage rows for soft-deactivated
 users when a message is sent to a stream where they are subscribed.
 
-* If/when the user ever returns to Zulip, we can at that time
+- If/when the user ever returns to Zulip, we can at that time
 reconstruct the UserMessage rows that they missed, and create the rows
 at that time (or, to avoid a latency spike if/when the user returns to
 Zulip, this work can be done in a nightly cron job).  We can construct
@@ -342,7 +342,7 @@ that the messages have not been marked as read by the user).  This is
 done in the `add_missing_messages` function, which is the core of the
 soft-deactivation implementation.
 
-* The “usually” above is because there are a few flags that result
+- The “usually” above is because there are a few flags that result
 from content in the message (e.g., a message that mentions a user
 results in a “mentioned” flag in the UserMessage row), that we need to
 keep track of.  Since parsing a message can be expensive (>10ms of
@@ -356,13 +356,13 @@ time they were sent without any material performance impact.  And then
 
 The end result is the best of both worlds:
 
-* Nobody's view of the world is different because the user was
+- Nobody's view of the world is different because the user was
 soft-deactivated (resulting in no visible user-experience impact), at
 least if one is running the cron job.  If one does not run the cron
 job, then users returning after being away for a very long time will
 potentially have a (very) slow loading experience as potentially
 100,000s of UserMessage rows might need to be reconstructed at once.
-* On the latency-sensitive message sending and fanout code path, the
+- On the latency-sensitive message sending and fanout code path, the
 server only needs to do work for users who are currently interacting
 with Zulip.
 
@@ -374,13 +374,13 @@ it’ll arrive in the couple hundred milliseconds one would expect if
 the extra 4500 inactive subscribers didn’t exist.
 
 There are a few details that require special care with this system:
-* [Email and mobile push
+- [Email and mobile push
   notifications](../subsystems/notifications.md).  We need to make
   sure these are still correctly delivered to soft-deactivated users;
   making this work required careful work for those code paths that
   assumed a `UserMessage` row would always exist for a message that
   triggers a notification to a given user.
-* Digest emails, which use the `UserMessage` table extensively to
+- Digest emails, which use the `UserMessage` table extensively to
   determine what has happened in streams the user can see.  We can use
   the user's subscriptions to construct what messages they should have
   access to for this feature.

@@ -4,10 +4,10 @@ Zulip's incoming email gateway integration makes it possible to send
 messages into Zulip by sending an email.  It's highly recommended
 because it enables:
 
-* When users reply to one of Zulip's message notification emails
+- When users reply to one of Zulip's message notification emails
   from their email client, the reply can go directly
   into Zulip.
-* Integrating third-party services that can send email notifications
+- Integrating third-party services that can send email notifications
   into Zulip.  See the [integration
   documentation](https://zulip.com/integrations/doc/email) for
   details.
@@ -112,9 +112,9 @@ Congratulations!  The integration should be fully operational.
   ([Here's how it works with Gmail](https://support.google.com/mail/answer/7126229?hl=en))
 
 1. Configure IMAP access in the appropriate Zulip settings:
-    * Login and server connection details in `/etc/zulip/settings.py`
+    - Login and server connection details in `/etc/zulip/settings.py`
       in the email gateway integration section (`EMAIL_GATEWAY_LOGIN` and others).
-    * Password in `/etc/zulip/zulip-secrets.conf` as `email_gateway_password`.
+    - Password in `/etc/zulip/zulip-secrets.conf` as `email_gateway_password`.
 
 1. Install a cron job to poll the inbox every minute for new messages:
     ```bash

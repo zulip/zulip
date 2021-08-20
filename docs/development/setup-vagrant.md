@@ -10,16 +10,16 @@ or a Linux container (for Ubuntu) inside which the Zulip server and
 all related services will run.
 
 Contents:
-* [Requirements](#requirements)
-* [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
-* [Step 1: Install prerequisites](#step-1-install-prerequisites)
-* [Step 2: Get Zulip code](#step-2-get-zulip-code)
-* [Step 3: Start the development environment](#step-3-start-the-development-environment)
-* [Step 4: Developing](#step-4-developing)
-* [Troubleshooting and common errors](#troubleshooting-and-common-errors)
-* [Specifying an Ubuntu mirror](#specifying-an-ubuntu-mirror)
-* [Specifying a proxy](#specifying-a-proxy)
-* [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
+- [Requirements](#requirements)
+- [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
+- [Step 1: Install prerequisites](#step-1-install-prerequisites)
+- [Step 2: Get Zulip code](#step-2-get-zulip-code)
+- [Step 3: Start the development environment](#step-3-start-the-development-environment)
+- [Step 4: Developing](#step-4-developing)
+- [Troubleshooting and common errors](#troubleshooting-and-common-errors)
+- [Specifying an Ubuntu mirror](#specifying-an-ubuntu-mirror)
+- [Specifying a proxy](#specifying-a-proxy)
+- [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
 **If you encounter errors installing the Zulip development
 environment,** check [troubleshooting and common
@@ -32,10 +32,10 @@ server](../contributing/chat-zulip-org.md) for real-time help or
 
 When reporting your issue, please include the following information:
 
-* host operating system
-* installation method (Vagrant or direct)
-* whether or not you are using a proxy
-* a copy of Zulip's `vagrant` provisioning logs, available in
+- host operating system
+- installation method (Vagrant or direct)
+- whether or not you are using a proxy
+- a copy of Zulip's `vagrant` provisioning logs, available in
   `/var/log/provision.log` on your virtual machine
 
 ### Requirements
@@ -73,10 +73,10 @@ GitHub account using
 
 Jump to:
 
-* [macOS](#macos)
-* [Ubuntu](#ubuntu)
-* [Debian](#debian)
-* [Windows](#windows-10)
+- [macOS](#macos)
+- [Ubuntu](#ubuntu)
+- [Debian](#debian)
+- [Windows](#windows-10)
 
 #### macOS
 
@@ -534,9 +534,9 @@ $ ./tools/run-dev.py
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub guide][rtd-git-guide]
-* [Using the development environment][rtd-using-dev-env]
-* [Testing][rtd-testing] (and [Configuring CI][ci] to
+- [Git & GitHub guide][rtd-git-guide]
+- [Using the development environment][rtd-using-dev-env]
+- [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
 
@@ -550,16 +550,16 @@ equivalently `vagrant provision` from outside).
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+- Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
   in the [Zulip development community server](../contributing/chat-zulip-org.md).
-* [File an issue](https://github.com/zulip/zulip/issues).
+- [File an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
 
-* host operating system
-* installation method (Vagrant or direct)
-* whether or not you are using a proxy
-* a copy of Zulip's `vagrant` provisioning logs, available in
+- host operating system
+- installation method (Vagrant or direct)
+- whether or not you are using a proxy
+- a copy of Zulip's `vagrant` provisioning logs, available in
   `/var/log/provision.log` on your virtual machine.  If you choose to
   post just the error output, please include the **beginning of the
   error output**, not just the last few lines.
@@ -790,8 +790,8 @@ by rebooting the guest via `vagrant halt; vagrant up`.
 
 The `vagrant up` command basically does the following:
 
-* Downloads an Ubuntu image and starts it using a Vagrant provider.
-* Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
+- Downloads an Ubuntu image and starts it using a Vagrant provider.
+- Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
   `tools/provision`, which has a lot of subcommands that are
   executed via Python's `subprocess` module.  These errors mean that
   one of those subcommands failed.

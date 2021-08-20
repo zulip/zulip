@@ -16,8 +16,8 @@ need to.
 
 The best way to connect to your server is using the command line tool `ssh`.
 
-* On macOS and Linux/UNIX, `ssh` is a part of Terminal.
-* On Windows, `ssh` comes with [Bash for Git][git-bash].
+- On macOS and Linux/UNIX, `ssh` is a part of Terminal.
+- On Windows, `ssh` comes with [Bash for Git][git-bash].
 
 Open *Terminal* or *Bash for Git*, and connect with the following:
 
@@ -37,13 +37,13 @@ to the next section.
 
 You can create a new user with sudo privileges by running the
 following commands as root:
-* You can create a `zulipdev` user by running the command
+- You can create a `zulipdev` user by running the command
 `adduser zulipdev`. Run through the prompts to assign a password and
 user information.  (You can pick any username you like for this user
 account.)
-* You can add the user to the sudo group by running the command
+- You can add the user to the sudo group by running the command
 `usermod -aG sudo zulipdev`.
-* Finally, you can switch to the user by running the command
+- Finally, you can switch to the user by running the command
 `su - zulipdev` (or just log in to that user using `ssh`).
 
 ## Setting up the development environment
@@ -112,10 +112,10 @@ environment][rtd-using-dev-env].
 
 To see changes on your remote development server, you need to do one of the following:
 
-* [Edit locally](#editing-locally): Clone Zulip code to your computer and
+- [Edit locally](#editing-locally): Clone Zulip code to your computer and
   then use your favorite editor to make changes. When you want to see changes
   on your remote Zulip development instance, sync with Git.
-* [Edit remotely](#editing-remotely): Edit code directly on your remote
+- [Edit remotely](#editing-remotely): Edit code directly on your remote
   Zulip development instance using a [Web-based IDE](#web-based-ide) (recommended for
   beginners) or a [command line editor](#command-line-editors), or a
   [desktop IDE](#desktop-gui-editors) using a plugin to sync your
@@ -126,12 +126,12 @@ To see changes on your remote development server, you need to do one of the foll
 If you want to edit code locally install your favorite text editor. If you
 don't have a favorite, here are some suggestions:
 
-* [atom](https://atom.io/)
-* [emacs](https://www.gnu.org/software/emacs/)
-* [vim](https://www.vim.org/)
-* [spacemacs](https://github.com/syl20bnr/spacemacs)
-* [sublime](https://www.sublimetext.com/)
-* [PyCharm](https://www.jetbrains.com/pycharm/)
+- [atom](https://atom.io/)
+- [emacs](https://www.gnu.org/software/emacs/)
+- [vim](https://www.vim.org/)
+- [spacemacs](https://github.com/syl20bnr/spacemacs)
+- [sublime](https://www.sublimetext.com/)
+- [PyCharm](https://www.jetbrains.com/pycharm/)
 
 Next, follow our [Git and GitHub guide](../git/index.md) to clone and configure
 your fork of zulip on your local computer.
@@ -172,10 +172,10 @@ from your remote development instance:
 There are a few good ways to edit code in your remote development
 environment:
 
-* With a command-line editor like vim or emacs run over SSH.
-* With a desktop GUI editor like VS Code or Atom and a plugin for
+- With a command-line editor like vim or emacs run over SSH.
+- With a desktop GUI editor like VS Code or Atom and a plugin for
   syncing your changes to the remote server.
-* With a web-based IDE like CodeAnywhere.
+- With a web-based IDE like CodeAnywhere.
 
 We document these options below; we recommend using whatever editor
 you prefer for development in general.
@@ -226,20 +226,20 @@ a command line text editor on the remote machine.
 
 Two editors often available by default on Linux systems are:
 
-* **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
+- **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
   features useful for programming, such as syntax highlighting, so we only
   recommended it for quick edits to things like configuration files. Launch by
   running command `nano <filename>`. Exit by pressing *Ctrl-X*.
 
-* **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
+- **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
   to learn. Launch by running `vim <filename>`. Quit Vim by pressing *Esc*,
   typing `:q`, and then pressing *Enter*. Vim comes with a program to learn it
   called `vimtutor` (just run that command to start it).
 
 Other options include:
 
-* [emacs](https://www.gnu.org/software/emacs/)
-* [spacemacs](https://github.com/syl20bnr/spacemacs)
+- [emacs](https://www.gnu.org/software/emacs/)
+- [spacemacs](https://github.com/syl20bnr/spacemacs)
 
 ##### Web-based IDE
 
@@ -264,9 +264,9 @@ Now your workspace should look similar this:
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub guide][rtd-git-guide]
-* [Using the development environment][rtd-using-dev-env]
-* [Testing][rtd-testing]
+- [Git & GitHub guide][rtd-git-guide]
+- [Using the development environment][rtd-using-dev-env]
+- [Testing][rtd-testing]
 
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
 [install-vagrant]: ../development/setup-vagrant.md

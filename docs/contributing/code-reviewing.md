@@ -10,8 +10,8 @@ When you send a PR, try to think of a good person to review it --
 outside of the handful of people who do a ton of reviews -- and
 `@`-mention them with something like "`@person`, would you review
 this?". Good choices include
-* someone based in your timezone or a nearby timezone
-* people working on similar things, or in a loosely related area
+- someone based in your timezone or a nearby timezone
+- people working on similar things, or in a loosely related area
 
 Alternatively, posting a message in
 [#code-review](https://chat.zulip.org/#narrow/stream/91-code-review) on [the Zulip
@@ -28,14 +28,14 @@ to dive right into reviewing the PR's core functionality.
 Once you've received a review and resolved any feedback, it's critical
 to update the GitHub thread to reflect that.  Best practices are to:
 
-* Make sure that CI passes and the PR is rebased onto recent `main`.
-* Post comments on each feedback thread explaining at least how you
+- Make sure that CI passes and the PR is rebased onto recent `main`.
+- Post comments on each feedback thread explaining at least how you
   resolved the feedback, as well as any other useful information
   (problems encountered, reasoning for why you picked one of several
   options, a test you added to make sure the bug won't recur, etc.).
-* Mark any resolved threads as "resolved" in the GitHub UI, if
+- Mark any resolved threads as "resolved" in the GitHub UI, if
   appropriate.
-* Post a summary comment in the main feed for the PR, explaining that
+- Post a summary comment in the main feed for the PR, explaining that
   this is ready for another review, and summarizing any changes from
   the previous version, details on how you tested the changes, new
   screenshots/etc.  More detail is better than less, as long as you
@@ -60,10 +60,10 @@ Anyone can do a code review -- you don't have to have a ton of
 experience, and you don't have to have the power to ultimately merge
 the PR. If you
 
-* read the code, see if you understand what the change is
+- read the code, see if you understand what the change is
   doing and why, and ask questions if you don't; or
 
-* fetch the code (for Zulip server code,
+- fetch the code (for Zulip server code,
   [tools/fetch-rebase-pull-request][git tool] is super handy), play around
   with it in your dev environment, and say what you think about how
   the feature works
@@ -106,7 +106,7 @@ sooner is better.
 
 ## Things to look for
 
-* *The CI build.* The tests need to pass. One can investigate
+- *The CI build.* The tests need to pass. One can investigate
   any failures and figure out what to fix by clicking on a red X next
   to the commit hash or the Detail links on a pull request. (Example:
   in [#17584](https://github.com/zulip/zulip/pull/17584),
@@ -120,25 +120,25 @@ sooner is better.
   See our docs on [continuous integration](../testing/continuous-integration.md)
   to learn more.
 
-* *Technical design.* There are a lot of considerations here:
+- *Technical design.* There are a lot of considerations here:
   security, migration paths/backwards compatibility, cost of new
   dependencies, interactions with features, speed of performance, API
   changes.  Security is especially important and worth thinking about
   carefully with any changes to security-sensitive code like views.
 
-* *User interface and visual design.* If frontend changes are
+- *User interface and visual design.* If frontend changes are
   involved, the reviewer will check out the code, play with the new
   UI, and verify it for both quality and consistency with the rest of
   the Zulip UI.  We highly encourage posting screenshots to save
   reviewers time in getting a feel for what the feature looks like --
   you'll get a quicker response that way.
 
-* *Error handling.* The code should always check for invalid user
+- *Error handling.* The code should always check for invalid user
   input.  User-facing error messages should be clear and when possible
   be actionable (it should be obvious to the user what they need to do
   in order to correct the problem).
 
-* *Testing.* The tests should validate that the feature works
+- *Testing.* The tests should validate that the feature works
   correctly, and specifically test for common error conditions, bad
   user input, and potential bugs that are likely for the type of
   change being made.  Tests that exclude whole classes of potential
@@ -147,16 +147,16 @@ sooner is better.
   Markdown processors](../subsystems/markdown.md), or the `GetEventsTest` test for
   buggy race condition handling).
 
-* *Translation.* Make sure that the strings are marked for
+- *Translation.* Make sure that the strings are marked for
   [translation].
 
-* *Clear function, argument, variable, and test names.* Every new
+- *Clear function, argument, variable, and test names.* Every new
   piece of Zulip code will be read many times by other developers, and
   future developers will grep for relevant terms when researching a
   problem, so it's important that variable names communicate clearly
   the purpose of each piece of the codebase.
 
-* *Duplicated code.* Code duplication is a huge source of bugs in
+- *Duplicated code.* Code duplication is a huge source of bugs in
   large projects and makes the codebase difficult to understand, so we
   avoid significant code duplication wherever possible.  Sometimes
   avoiding code duplication involves some refactoring of existing
@@ -169,27 +169,27 @@ sooner is better.
   conflicts) if there are still user experience issues under
   discussion for the feature itself.
 
-* *Completeness.* For refactorings, verify that the changes are
+- *Completeness.* For refactorings, verify that the changes are
   complete.  Usually one can check that efficiently using `git grep`,
   and it's worth it, as we very frequently find issues by doing so.
 
-* *Documentation updates.*  If this changes how something works, does it
+- *Documentation updates.*  If this changes how something works, does it
   update the documentation in a corresponding way?  If it's a new
   feature, is it documented, and documented in the right place?
 
-* *Good comments.* It's often worth thinking about whether explanation
+- *Good comments.* It's often worth thinking about whether explanation
   in a commit message or pull request discussion should be included in
   a comment, `/docs`, or other documentation. But it's better yet if
   verbose explanation isn't needed. We prefer writing code that is
   readable without explanation over a heavily commented codebase using
   lots of clever tricks.
 
-* *Coding style.* See the Zulip [code-style] documentation for
+- *Coding style.* See the Zulip [code-style] documentation for
   details.  Our goal is to have as much of this as possible verified
   via the linters and tests, but there's always going to be unusual
   forms of Python/JavaScript style that our tools don't check for.
 
-* *Clear commit messages.* See the [Zulip version
+- *Clear commit messages.* See the [Zulip version
   control][commit-messages] documentation for details on what we look
   for.
 
@@ -197,15 +197,15 @@ sooner is better.
 
 Some points specific to the Zulip server codebase:
 
-* *Testing -- Backend.* We are trying to maintain ~100% test coverage
+- *Testing -- Backend.* We are trying to maintain ~100% test coverage
   on the backend, so backend changes should have negative tests for
   the various error conditions.
 
-* *Testing -- Frontend.* If the feature involves frontend changes,
+- *Testing -- Frontend.* If the feature involves frontend changes,
   there should be frontend tests.  See the [test
   writing][test-writing] documentation for more details.
 
-* *mypy annotations.* New functions should be annotated using [mypy]
+- *mypy annotations.* New functions should be annotated using [mypy]
   and existing annotations should be updated.  Use of `Any`, `ignore`,
   and unparameterized containers should be limited to cases where a
   more precise type cannot be specified.
@@ -226,14 +226,14 @@ the maintainer time and get the PR merged quicker.
 
 We also strongly recommend reviewers to go through the following resources.
 
-* [The Gentle Art of Patch Review](https://sage.thesharps.us/2014/09/01/the-gentle-art-of-patch-review/)
+- [The Gentle Art of Patch Review](https://sage.thesharps.us/2014/09/01/the-gentle-art-of-patch-review/)
   article by Sarah Sharp
-* [Zulip & Good Code Review](https://www.harihareswara.net/sumana/2016/05/17/0)
+- [Zulip & Good Code Review](https://www.harihareswara.net/sumana/2016/05/17/0)
   article by Sumana Harihareswara
-* [Code Review - A consolidation of advice and stuff from the
+- [Code Review - A consolidation of advice and stuff from the
   internet](https://gist.github.com/porterjamesj/002fb27dd70df003646df46f15e898de)
   article by James J. Porter
-* [Zulip code of conduct](../code-of-conduct.md)
+- [Zulip code of conduct](../code-of-conduct.md)
 
 [code-style]: ../contributing/code-style.md
 [commit-messages]: ../contributing/version-control.html#commit-messages

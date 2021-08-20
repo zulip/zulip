@@ -61,14 +61,14 @@ services) have free options.  Once you've signed up, you'll want to
 find the service's provided "SMTP credentials", and configure Zulip as
 follows:
 
-* The hostname like `EMAIL_HOST = 'smtp.mailgun.org'` in `/etc/zulip/settings.py`
-* The username like `EMAIL_HOST_USER = 'username@example.com'` in
+- The hostname like `EMAIL_HOST = 'smtp.mailgun.org'` in `/etc/zulip/settings.py`
+- The username like `EMAIL_HOST_USER = 'username@example.com'` in
   `/etc/zulip/settings.py`.
-* The TLS setting as `EMAIL_USE_TLS = True` in
+- The TLS setting as `EMAIL_USE_TLS = True` in
   `/etc/zulip/settings.py`, for most providers
-* The port as `EMAIL_PORT = 587` in `/etc/zulip/settings.py`, for most
+- The port as `EMAIL_PORT = 587` in `/etc/zulip/settings.py`, for most
   providers
-* The password like `email_password = abcd1234` in `/etc/zulip/zulip-secrets.conf`.
+- The password like `email_password = abcd1234` in `/etc/zulip/zulip-secrets.conf`.
 
 ### Using system email
 
@@ -100,16 +100,16 @@ We don't recommend using an inbox product like Gmail for outgoing
 email, because Gmail's anti-spam measures make this annoying.  But if
 you want to use a Gmail account to send outgoing email anyway, here's
 how to make it work:
-* Create a totally new Gmail account for your Zulip server; you don't
+- Create a totally new Gmail account for your Zulip server; you don't
   want Zulip's automated emails to come from your personal email address.
-* If you're using 2-factor authentication on the Gmail account, you'll
+- If you're using 2-factor authentication on the Gmail account, you'll
   need to use an
   [app-specific password](https://support.google.com/accounts/answer/185833).
-* If you're not using 2-factor authentication, read this Google
+- If you're not using 2-factor authentication, read this Google
   support answer and configure that account as
   ["less secure"](https://support.google.com/accounts/answer/6010255);
   Gmail doesn't allow servers to send outgoing email by default.
-* Note also that the rate limits for Gmail are also quite low
+- Note also that the rate limits for Gmail are also quite low
   (e.g. 100 / day), so it's easy to get rate-limited if your server
   has significant traffic.  For more active servers, we recommend
   moving to a free account on a transactional email service.
@@ -148,11 +148,11 @@ default From address for your Zulip server, and one sent by the
 
 If it doesn't work, check these common failure causes:
 
-* Your hosting provider may block outgoing SMTP traffic in its default
+- Your hosting provider may block outgoing SMTP traffic in its default
   firewall rules.  Check whether the port `EMAIL_PORT` is blocked in
   your hosting provider's firewall.
 
-* Your SMTP server's permissions might not allow the email account
+- Your SMTP server's permissions might not allow the email account
   you're using to send email from the `noreply` email addresses used
   by Zulip when sending confirmation emails.
 
@@ -170,11 +170,11 @@ If it doesn't work, check these common failure causes:
   the security issue with helpdesk software that
   `ADD_TOKENS_TO_NOREPLY_ADDRESS` helps protect against.
 
-* Make sure you set the password in `/etc/zulip/zulip-secrets.conf`.
+- Make sure you set the password in `/etc/zulip/zulip-secrets.conf`.
 
-* Check the username and password for typos.
+- Check the username and password for typos.
 
-* Be sure to restart your Zulip server after editing either
+- Be sure to restart your Zulip server after editing either
   `settings.py` or `zulip-secrets.conf`, using
   `/home/zulip/deployments/current/scripts/restart-server` .
   Note that the `manage.py` command above will read the latest
@@ -186,24 +186,24 @@ If it doesn't work, check these common failure causes:
 Here are a few final notes on what to look at when debugging why you
 aren't receiving emails from Zulip:
 
-* Most transactional email services have an "outgoing email" log where
+- Most transactional email services have an "outgoing email" log where
   you can inspect the emails that reached the service, whether an
   email was flagged as spam, etc.
 
-* Starting with Zulip 1.7, Zulip logs an entry in
+- Starting with Zulip 1.7, Zulip logs an entry in
   `/var/log/zulip/send_email.log` whenever it attempts to send an
   email.  The log entry includes whether the request succeeded or failed.
 
-* If attempting to send an email throws an exception, a traceback
+- If attempting to send an email throws an exception, a traceback
   should be in `/var/log/zulip/errors.log`, along with any other
   exceptions Zulip encounters.
 
-* If your SMTP provider uses SSL on port 465 (and not TLS on port
+- If your SMTP provider uses SSL on port 465 (and not TLS on port
   587), you need to set `EMAIL_PORT = 465` as well as replacing
   `EMAIL_USE_TLS = True` with `EMAIL_USE_SSL = True`; otherwise, Zulip
   will try to use the TLS protocol on port 465, which won't work.
 
-* Zulip's email sending configuration is based on the standard Django
+- Zulip's email sending configuration is based on the standard Django
   [SMTP backend](https://docs.djangoproject.com/en/2.0/topics/email/#smtp-backend)
   configuration.  So if you're having trouble getting your email
   provider working, you may want to search for documentation related

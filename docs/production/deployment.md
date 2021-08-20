@@ -51,21 +51,21 @@ The Zulip installer supports the following advanced installer options
 as well as those mentioned in the
 [install](../production/install.html#installer-options) documentation:
 
-* `--postgresql-version`: Sets the version of PostgreSQL that will be
+- `--postgresql-version`: Sets the version of PostgreSQL that will be
   installed.  We currently support PostgreSQL 10, 11, 12, and 13.
 
-* `--postgresql-missing-dictionaries`: Set
+- `--postgresql-missing-dictionaries`: Set
   `postgresql.missing_dictionaries` ([docs][doc-settings]) in the
   Zulip settings, which omits some configuration needed for full-text
   indexing. This should be used with [cloud managed databases like
   RDS](#using-zulip-with-amazon-rds-as-the-database). This option
   conflicts with `--no-overwrite-settings`.
 
-* `--no-init-db`: This option instructs the installer to not do any
+- `--no-init-db`: This option instructs the installer to not do any
   database initialization. This should be used when you already have a
   Zulip database.
 
-* `--no-overwrite-settings`: This option preserves existing
+- `--no-overwrite-settings`: This option preserves existing
   `/etc/zulip` configuration files.
 
 ## Running Zulip's service dependencies on different machines
@@ -142,9 +142,9 @@ This complication will be removed in a future version.
 Access an administrative `psql` shell on your PostgreSQL database, and
 run the commands in `scripts/setup/create-db.sql` to:
 
-* Create a database called `zulip`.
-* Create a user called `zulip`.
-* Now log in with the `zulip` user to create a schema called
+- Create a database called `zulip`.
+- Create a user called `zulip`.
+- Now log in with the `zulip` user to create a schema called
   `zulip` in the `zulip` database. You might have to grant `create`
   privileges first for the `zulip` user to do this.
 
@@ -159,9 +159,9 @@ In `/etc/zulip/settings.py` on your Zulip server, configure the
 following settings with details for how to connect to your PostgreSQL
 server.  Your database provider should provide these details.
 
-* `REMOTE_POSTGRES_HOST`: Name or IP address of the PostgreSQL server.
-* `REMOTE_POSTGRES_PORT`: Port on the PostgreSQL server.
-* `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server.
+- `REMOTE_POSTGRES_HOST`: Name or IP address of the PostgreSQL server.
+- `REMOTE_POSTGRES_PORT`: Port on the PostgreSQL server.
+- `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server.
 
 If you're using password authentication, you should specify the
 password of the `zulip` user in /etc/zulip/zulip-secrets.conf as
@@ -296,11 +296,11 @@ instead of HTTPS.
 ### nginx configuration
 
 For `nginx` configuration, there's two things you need to set up:
-* The root `nginx.conf` file.  We recommend using
+- The root `nginx.conf` file.  We recommend using
   `/etc/nginx/nginx.conf` from your Zulip server for our recommended
   settings.  E.g. if you don't set `client_max_body_size`, it won't be
   possible to upload large files to your Zulip server.
-* The `nginx` site-specific configuration (in
+- The `nginx` site-specific configuration (in
   `/etc/nginx/sites-available`) for the Zulip app.  The following
   example is a good starting point:
 
@@ -430,9 +430,9 @@ does this.
 The key configuration options are, for the `/json/events` and
 `/api/1/events` endpoints:
 
-* `proxy_read_timeout 1200;`.  It's critical that this be
+- `proxy_read_timeout 1200;`.  It's critical that this be
   significantly above 60s, but the precise value isn't important.
-* `proxy_buffering off`.  If you don't do this, your `nginx` proxy may
+- `proxy_buffering off`.  If you don't do this, your `nginx` proxy may
   return occasional 502 errors to clients using Zulip's events API.
 
 3. The other tricky failure mode we've seen with `nginx` reverse

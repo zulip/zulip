@@ -3,24 +3,24 @@
 Zulip uses RabbitMQ to manage a system of internal queues.  These are
 used for a variety of purposes:
 
-* Asynchronously doing expensive operations like sending email
+- Asynchronously doing expensive operations like sending email
   notifications which can take seconds per email and thus would
   otherwise time out when 100s are triggered at once (E.g. inviting a
   lot of new users to a realm).
 
-* Asynchronously doing non-time-critical somewhat expensive operations
+- Asynchronously doing non-time-critical somewhat expensive operations
   like updating analytics tables (e.g. UserActivityInternal) which
   don't have any immediate runtime effect.
 
-* Communicating events to push to clients (browsers, etc.) from the
+- Communicating events to push to clients (browsers, etc.) from the
   main Zulip Django application process to the Tornado-based events
   system.  Example events might be that a new message was sent, a user
   has changed their subscriptions, etc.
 
-* Processing mobile push notifications and email mirroring system
+- Processing mobile push notifications and email mirroring system
   messages.
 
-* Processing various errors, frontend tracebacks, and slow database
+- Processing various errors, frontend tracebacks, and slow database
   queries in a batched fashion.
 
 Needless to say, the RabbitMQ-based queuing system is an important
@@ -35,7 +35,7 @@ custom integration defined in `zerver/lib/queue.py`.
 
 To add a new queue processor:
 
-* Define the processor in `zerver/worker/queue_processors.py` using
+- Define the processor in `zerver/worker/queue_processors.py` using
   the `@assign_queue` decorator; it's pretty easy to get the template
   for an existing similar queue processor.  This suffices to test your
   queue worker in the Zulip development environment
@@ -44,7 +44,7 @@ To add a new queue processor:
   a single queue processor manually using e.g.
   `./manage.py process_queue --queue=user_activity`.
 
-* So that supervisord will know to run the queue processor in
+- So that supervisord will know to run the queue processor in
   production, you will need to add to the `queues` variable in
   `puppet/zulip/manifests/app_frontend_base.pp`; the list there is
   used to generate `/etc/supervisor/conf.d/zulip.conf`.

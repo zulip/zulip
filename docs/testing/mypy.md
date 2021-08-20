@@ -16,7 +16,7 @@ def get_user(email: str, realm: Realm) -> UserProfile:
 
 You can learn more about it at:
 
-* The
+- The
   [mypy cheat sheet for Python 3](https://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html)
   is the best resource for quickly understanding how to write the PEP
   484 type annotations used by mypy correctly.  The
@@ -24,12 +24,12 @@ You can learn more about it at:
   is useful for understanding the type comment syntax needed for our
   few modules that need to support both Python 2 and 3.
 
-* The
+- The
   [Python type annotation spec in PEP 484](https://www.python.org/dev/peps/pep-0484/).
 
-* Our [blog post on being an early adopter of mypy][mypy-blog-post] from 2016.
+- Our [blog post on being an early adopter of mypy][mypy-blog-post] from 2016.
 
-* Our [best practices](#best-practices) section below.
+- Our [best practices](#best-practices) section below.
 
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process in the `backend` build.
@@ -76,12 +76,12 @@ errors, it's important to get to the bottom of the issue, not just do
 something quick to silence the warnings, before we merge the changes.
 Possible explanations include:
 
-* A bug in any new type annotations you added.
-* A bug in the existing type annotations.
-* A bug in Zulip!
-* Some Zulip code is correct but confusingly reuses variables with
+- A bug in any new type annotations you added.
+- A bug in the existing type annotations.
+- A bug in Zulip!
+- Some Zulip code is correct but confusingly reuses variables with
   different types.
-* A bug in mypy (though this is increasingly rare as mypy is now
+- A bug in mypy (though this is increasingly rare as mypy is now
   fairly mature as a project).
 
 Each explanation has its own solution, but in every case the result
@@ -260,27 +260,27 @@ print(y.strip())  # runtime error
 If you think you need to use `Any`, consider the following safer
 alternatives first:
 
-* To annotate a dictionary where different keys correspond to values
+- To annotate a dictionary where different keys correspond to values
   of different types, instead of writing `Dict[str, Any]`, try
   declaring a
   [**`dataclass`**](https://mypy.readthedocs.io/en/stable/additional_features.html#dataclasses)
   or a
   [**`TypedDict`**](https://mypy.readthedocs.io/en/stable/more_types.html#typeddict).
 
-* If you're annotating a class or function that might be used with
+- If you're annotating a class or function that might be used with
   different data types at different call sites, similar to the builtin
   `List` type or the `sorted` function, [**generic
   types**](https://mypy.readthedocs.io/en/stable/generics.html) with
   `TypeVar` might be what you need.
 
-* If you need to accept data of several specific possible types at a
+- If you need to accept data of several specific possible types at a
   single site, you may want a [**`Union`
   type**](https://mypy.readthedocs.io/en/stable/kinds_of_types.html#union-types).
   `Union` is checked: before using `value: Union[str, int]` as a
   `str`, mypy requires that you validate it with an
   `instance(value, str)` test.
 
-* If you really have no information about the type of a value, use the
+- If you really have no information about the type of a value, use the
   **`object` type**.  Since every type is a subtype of `object`, you
   can correctly annotate any value as `object`.  The [difference
   between `Any` and
@@ -289,7 +289,7 @@ alternatives first:
   `isinstance` before using it in a way that expects a more specific
   type.
 
-* A common way for `Any` annotations to sneak into your code is the
+- A common way for `Any` annotations to sneak into your code is the
   interaction with untyped third-party libraries.  Mypy treats any
   value imported from an untyped library as annotated with `Any`, and
   treats any type imported from an untyped library as equivalent to
@@ -310,7 +310,7 @@ print(x.strip())  # runtime error
 
 Instead of using `cast`:
 
-* You can use a [variable
+- You can use a [variable
   annotation](https://mypy.readthedocs.io/en/stable/type_inference_and_annotations.html#explicit-types-for-variables)
   to be explicit or to disambiguate types that mypy can check but
   cannot infer.
@@ -319,7 +319,7 @@ Instead of using `cast`:
   l: List[int] = []
   ```
 
-* You can use an [`isinstance`
+- You can use an [`isinstance`
   test](https://mypy.readthedocs.io/en/stable/common_issues.html#complex-type-tests)
   to safely verify that a value really has the type you expect.
 
@@ -341,12 +341,12 @@ issue.
 
 ### Avoid other unchecked constructs
 
-* As mentioned
+- As mentioned
   [above](#using-overload-to-accurately-describe-variations), we
   **discourage writing overloaded functions** because their bodies are
   not checked against the `@overload` signatures.
 
-* **Avoid `Callable[..., T]`** (with literal ellipsis `...`), since
+- **Avoid `Callable[..., T]`** (with literal ellipsis `...`), since
   mypy cannot check the types of arguments passed to it.  Provide the
   specific argument types (`Callable[[int, str], T]`) in simple cases,
   or use [callback
@@ -373,9 +373,9 @@ A collection such as `List` should only be `Optional` if `None` would
 have a different meaning than the natural meaning of an empty
 collection.  For example:
 
-* An include list where the default is to include everything should be
+- An include list where the default is to include everything should be
   `Optional` with default `None`.
-* An exclude list where the default is to exclude nothing should be
+- An exclude list where the default is to exclude nothing should be
   non-`Optional` with default `[]`.
 
 Don't test an `Optional` value using truthiness (`if value:`,
@@ -401,11 +401,11 @@ that was passed to it as an argument, especially by accident.  To
 avoid this, prefer annotating function parameters with read-only
 types:
 
-* [`Sequence`](https://docs.python.org/3/library/typing.html#typing.Sequence)
+- [`Sequence`](https://docs.python.org/3/library/typing.html#typing.Sequence)
   instead of `List`,
-* [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)
+- [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)
   instead of `Dict`,
-* [`AbstractSet`](https://docs.python.org/3/library/typing.html#typing.AbstractSet)
+- [`AbstractSet`](https://docs.python.org/3/library/typing.html#typing.AbstractSet)
   instead of `Set`.
 
 This is especially important for parameters with default arguments,

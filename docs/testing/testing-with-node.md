@@ -191,15 +191,15 @@ These instructions assume you're using the Vagrant development environment.
 2. In WebStorm, navigate to `Preferences -> Tools -> Vagrant` and
    configure the following:
 
-    * `Instance folder` should be the root of the `zulip` repository on
+    - `Instance folder` should be the root of the `zulip` repository on
       your host (where the Vagrantfile is located).
-    * `Provider` should be `virtualbox` on macOS and Docker on Linux
-    * In `Boxes`, choose the one used for Zulip (unless you use
+    - `Provider` should be `virtualbox` on macOS and Docker on Linux
+    - In `Boxes`, choose the one used for Zulip (unless you use
       Virtualbox for other things, there should only be one option).
 
     You shouldn't need to set these additional settings:
-    * `Vagrant executable` should already be correctly `vagrant`.
-    * `Environment Variables` is not needed.
+    - `Vagrant executable` should already be correctly `vagrant`.
+    - `Environment Variables` is not needed.
 
 3. You'll now need to set up a WebStorm "Debug Configuration".  Open
    the `Run/Debug Configuration` menu and create a new `Node.js` config:

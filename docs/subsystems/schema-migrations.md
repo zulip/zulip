@@ -8,53 +8,53 @@ tutorial](../tutorials/new-feature-tutorial.md).
 This page documents some important issues related to writing schema
 migrations.
 
-* If your database migration is just to reflect new fields in
+- If your database migration is just to reflect new fields in
   `models.py`, you'll typically want to just:
-  * Rebase your branch before you start (this may save work later).
-  * Update the model class definitions in `zerver/models.py`.
-  * Run `./manage.py makemigrations` to generate a migration file
-  * Rename the migration file to have a descriptive name if Django
+  - Rebase your branch before you start (this may save work later).
+  - Update the model class definitions in `zerver/models.py`.
+  - Run `./manage.py makemigrations` to generate a migration file
+  - Rename the migration file to have a descriptive name if Django
     generated used a date-based name like `0089_auto_20170710_1353.py`
     (which happens when the changes are to multiple models and Django).
-  * `git add` the new migration file
-  * Run `tools/provision` to update your local database to apply the
+  - `git add` the new migration file
+  - Run `tools/provision` to update your local database to apply the
     migrations.
-  * Commit your changes.
-* For more complicated migrations where you need to run custom Python
+  - Commit your changes.
+- For more complicated migrations where you need to run custom Python
   code as part of the migration, it's best to read past migrations to
   understand how to write them well.
   `git grep RunPython zerver/migrations/02*` will find many good
   examples.  Before writing migrations of this form, you should read
   Django's docs and the sections below.
-* **Numbering conflicts across branches**: If you've done your schema
+- **Numbering conflicts across branches**: If you've done your schema
   change in a branch, and meanwhile another schema change has taken
   place, Django will now have two migrations with the same
   number. There are two easy way to fix this:
-  * If your migrations were automatically generated using
+  - If your migrations were automatically generated using
     `manage.py makemigrations`, a good option is to just remove your
     migration and rerun the command after rebasing.  Remember to
     `git rebase` to do this in the the commit that changed `models.py`
     if you have a multi-commit branch.
-  * If you wrote code as part of preparing your migrations, or prefer
+  - If you wrote code as part of preparing your migrations, or prefer
     this workflow, you can use run `./tools/renumber-migrations`,
     which renumbers your migration(s) and fixes up the "dependencies"
     entries in your migration(s).  The tool could use a bit of work to
     prompt unnecessarily less, but it will update the working tree for
     you automatically (you still need to do all the `git add`
     commands, etc.).
-* **Large tables**: For our very largest tables (e.g. Message and
+- **Large tables**: For our very largest tables (e.g. Message and
   UserMessage), we often need to take precautions when adding columns
   to the table, performing data backfills, or building indexes. We
   have a `zerver/lib/migrate.py` library to help with adding columns
   and backfilling data.
-* **Adding indexes** Regular `CREATE INDEX` SQL (corresponding to Django's
+- **Adding indexes** Regular `CREATE INDEX` SQL (corresponding to Django's
   `AddIndex` operation) locks writes to the affected table. This can be
   problematic when dealing with larger tables in particular and we've
   generally preferred to use `CREATE INDEX CONCURRENTLY` to allow the index
   to be built while the server is active. While in historical migrations
   we've used `RunSQL` directly, newer versions of Django add the corresponding
   operation `AddIndexConcurrently` and thus that's what should normally be used.
-* **Atomicity**.  By default, each Django migration is run atomically
+- **Atomicity**.  By default, each Django migration is run atomically
   inside a transaction.  This can be problematic if one wants to do
   something in a migration that touches a lot of data and would best
   be done in batches of e.g. 1000 objects (e.g. a `Message` or
@@ -65,7 +65,7 @@ migrations.
   to use the batch update tools in `zerver/lib/migrate.py` (originally
   written to work with South) for doing larger database migrations.
 
-* **Accessing code and models in RunPython migrations**. When writing
+- **Accessing code and models in RunPython migrations**. When writing
   a migration that includes custom python code (aka `RunPython`), you
   almost never want to import code from `zerver` or anywhere else in
   the codebase. If you imagine the process of upgrading a Zulip
@@ -101,25 +101,25 @@ migrations.
   non-atomic, splitting it into two migration files (recommended), or replacing the
   `RunPython` logic with pure SQL (though this can generally be difficult).
 
-* **Making large migrations work**.  Major migrations should have a
+- **Making large migrations work**.  Major migrations should have a
 few properties:
 
-  * **Unit tests**.  You'll want to carefully test these, so you might
+  - **Unit tests**.  You'll want to carefully test these, so you might
     as well write some unit tests to verify the migration works
     correctly, rather than doing everything by hand.  This often saves
     a lot of time in re-testing the migration process as we make
     adjustments to the plan.
-  * **Run in batches**.  Updating more than 1K-10K rows (depending on
+  - **Run in batches**.  Updating more than 1K-10K rows (depending on
     type) in a single transaction can lock up a database.  It's best
     to do lots of small batches, potentially with a brief sleep in
     between, so that we don't block other operations from finishing.
-  * **Rerunnability/idempotency**.  Good migrations are ones where if
+  - **Rerunnability/idempotency**.  Good migrations are ones where if
     operational concerns (e.g. it taking down the Zulip server for
     users) interfere with it finishing, it's easy to restart the
     migration without doing a bunch of hand investigation.  Ideally,
     the migration can even continue where it left off, without needing
     to redo work.
-  * **Multi-step migrations**.  For really big migrations, one wants
+  - **Multi-step migrations**.  For really big migrations, one wants
   to split the transition into into several commits that are each
   individually correct, and can each be deployed independently:
 
