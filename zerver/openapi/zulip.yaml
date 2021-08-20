@@ -10065,11 +10065,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The default [message retention policy](/help/message-retention-policy)
-                          for this organization.  Pass `"unlimited"` to request that messages
-                          by retained forever (the default).
+                          for this organization. It can have one special value:
 
-                          **Changes**: Prior to Zulip 5.0 (feature level 91), no limit was encoded
-                          by passing `"forever"`.
+                          * `-1` denoting that the messages will be retained forever for this realm, by default.
+
+                          **Changes**: Prior to Zulip 3.0 (feature level 22), no limit was
+                          encoded as `null` instead of `-1`. Clients can correctly handle all
+                          server versions by treating both `-1` and `null` as indicating
+                          unlimited message retention.
                       realm_name:
                         type: string
                         description: |

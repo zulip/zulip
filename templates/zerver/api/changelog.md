@@ -530,6 +530,9 @@ No changes; feature level used for Zulip 3.0 release.
 * `GET /invites`: Now encodes the user ID of the person who created
    the invitation as `invited_by_user_id`, replacing the previous
    `ref` field (which had that user's Zulip display email address).
+* [`POST /register`](/api/register-queue): The encoding of an
+  unlimited `realm_message_retention_days` in the response was changed
+  from `null` to `-1`.
 
 **Feature level 21**
 
