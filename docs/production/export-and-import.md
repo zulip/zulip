@@ -167,17 +167,17 @@ daily incremental backups using
 storing the backups, edit `/etc/zulip/zulip-secrets.conf` on the
 PostgreSQL server to add:
 
-    ```ini
-    s3_backups_key = # aws public key
-    s3_backups_secret_key =  # aws secret key
-    s3_backups_bucket = # name of S3 backup
-    ```
+  ```ini
+  s3_backups_key = # aws public key
+  s3_backups_secret_key =  # aws secret key
+  s3_backups_bucket = # name of S3 backup
+  ```
 
-    After adding the secrets, run
-    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  You
-    can (and should) monitor that backups are running regularly via
-    the Nagios plugin installed into
-    `/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
+  After adding the secrets, run
+  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  You
+  can (and should) monitor that backups are running regularly via
+  the Nagios plugin installed into
+  `/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
 
 * Any user-uploaded files.  If you're using S3 as storage for file
 uploads, this is backed up in S3. But if you have instead set
@@ -300,25 +300,25 @@ archive of all the organization's uploaded files.
 1. [Install a new Zulip server](../production/install.md),
 **skipping Step 3** (you'll create your Zulip organization via the data
  import tool instead).
-    * Ensure that the Zulip server you're importing into is running the same
-      version of Zulip as the server you're exporting from.
+   * Ensure that the Zulip server you're importing into is running the same
+     version of Zulip as the server you're exporting from.
 
-    * For exports from Zulip Cloud (zulip.com), you need to [upgrade to
-      master][upgrade-zulip-from-git], since we run run master on
-      Zulip Cloud:
+   * For exports from Zulip Cloud (zulip.com), you need to [upgrade to
+     master][upgrade-zulip-from-git], since we run run master on
+     Zulip Cloud:
 
-      ```bash
-      /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
-      ```
+     ```bash
+     /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
+     ```
 
-      It is not sufficient to be on the latest stable release, as
-      zulip.com runs pre-release versions of Zulip that are often
-      several months of development ahead of the latest release.
+     It is not sufficient to be on the latest stable release, as
+     zulip.com runs pre-release versions of Zulip that are often
+     several months of development ahead of the latest release.
 
-    * Note that if your server has limited free RAM, you'll want to
-      shut down the Zulip server with `./scripts/stop-server` while
-      you run the import, since our minimal system requirements do not
-      budget extra RAM for running the data import tool.
+   * Note that if your server has limited free RAM, you'll want to
+     shut down the Zulip server with `./scripts/stop-server` while
+     you run the import, since our minimal system requirements do not
+     budget extra RAM for running the data import tool.
 
 2. If your new Zulip server is meant to fully replace a previous Zulip
 server, you may want to copy some settings from `/etc/zulip` to your

@@ -17,28 +17,28 @@ model GitHub supports).
 to claim; **@zulipbot** will assign you to the issue and label the issue as
 **in progress**.
 
-    * If you're a new contributor, **@zulipbot** will give you read-only
+  * If you're a new contributor, **@zulipbot** will give you read-only
     collaborator access to the repository and leave a welcome message on the
     issue you claimed.
 
-    * You can also claim an issue that you've opened by including
+  * You can also claim an issue that you've opened by including
     `@zulipbot claim` in the body of your issue.
 
-    * If you accidentally claim an issue you didn't want to claim, comment
+  * If you accidentally claim an issue you didn't want to claim, comment
     `@zulipbot abandon` to abandon an issue.
 
 * **Label your issues** — Add appropriate labels to issues that you opened by
 including `@zulipbot add` in an issue comment or the body of your issue
 followed by the desired labels enclosed within double quotes (`""`).
 
-    * For example, to add the **bug** and **help wanted** labels to your
+  * For example, to add the **bug** and **help wanted** labels to your
     issue, comment or include `@zulipbot add "bug" "help wanted"` in the
     issue body.
 
-    * You'll receive an error message if you try to add any labels to your issue
+  * You'll receive an error message if you try to add any labels to your issue
     that don't exist in your repository.
 
-    * If you accidentally added the wrong labels, you can remove them by commenting
+  * If you accidentally added the wrong labels, you can remove them by commenting
     `@zulipbot remove` followed by the desired labels enclosed with double quotes
     (`""`).
 
@@ -46,12 +46,12 @@ followed by the desired labels enclosed within double quotes (`""`).
 feature](https://help.github.com/en/articles/using-search-to-filter-issues-and-pull-requests)
 to find unclaimed issues by adding one of the following filters to your search:
 
-    * `-label: "in progress"` (excludes issues labeled with the **in progress** label)
+  * `-label: "in progress"` (excludes issues labeled with the **in progress** label)
 
-    * `no:assignee` (shows issues without assignees)
+  * `no:assignee` (shows issues without assignees)
 
-    Issues labeled with the **in progress** label and/or assigned to other users have
-    already been claimed.
+  Issues labeled with the **in progress** label and/or assigned to other users have
+  already been claimed.
 
 * **Collaborate in area label teams** — Receive notifications on
 issues and pull requests within your fields of expertise on the
@@ -68,22 +68,22 @@ to the
 [Server message view](https://github.com/orgs/zulip/teams/server-message-view)
 team.  Feel free to join as many area label teams as as you'd like!
 
-    After your request to join an area label team is approved, you'll receive
-    notifications for any issues labeled with the team's corresponding area
-    label as well as any pull requests that reference issues labeled with your
-    team's area label.
+  After your request to join an area label team is approved, you'll receive
+  notifications for any issues labeled with the team's corresponding area
+  label as well as any pull requests that reference issues labeled with your
+  team's area label.
 
 * **Track inactive claimed issues** — If a claimed issue has not been updated
 for a week, **@zulipbot** will post a comment on the inactive issue to ask the
 assignee(s) if they are still working on the issue.
 
-    If you see this comment on an issue you claimed, you should post a comment
-    on the issue to notify **@zulipbot** that you're still working on it.
+  If you see this comment on an issue you claimed, you should post a comment
+  on the issue to notify **@zulipbot** that you're still working on it.
 
-    If **@zulipbot** does not receive a response from the assignee within 3 days
-    of an inactive issue prompt, **@zulipbot** will automatically remove the
-    issue's current assignee(s) and the "in progress" label to allow others to
-    work on an inactive issue.
+  If **@zulipbot** does not receive a response from the assignee within 3 days
+  of an inactive issue prompt, **@zulipbot** will automatically remove the
+  issue's current assignee(s) and the "in progress" label to allow others to
+  work on an inactive issue.
 
 ### Contributing
 
