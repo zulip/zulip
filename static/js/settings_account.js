@@ -683,13 +683,13 @@ export function set_up() {
         );
     });
 
-    $("#presence_enabled").val(user_settings.presence_enabled);
+    $("#user_presence_enabled").val(user_settings.presence_enabled);
 
-    $("#presence_enabled").on("change", (e) => {
+    $("#user_presence_enabled").on("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const data = {presence_enabled: $("#presence_enabled").prop("checked")};
+        const data = {presence_enabled: $("#user_presence_enabled").prop("checked")};
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",
