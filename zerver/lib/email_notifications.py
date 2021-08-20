@@ -192,7 +192,7 @@ def build_message_list(
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
-    def append_sender_to_message(
+    def prepend_sender_to_message(
         message_plain: str, message_html: str, sender: str
     ) -> Tuple[str, str]:
         message_plain = f"{sender}: {message_plain}"
@@ -222,7 +222,7 @@ def build_message_list(
         html = fix_emojis(html, user.realm.uri, user.emojiset)
         html = fix_spoilers_in_html(html, user.default_language)
         if sender:
-            plain, html = append_sender_to_message(plain, html, sender)
+            plain, html = prepend_sender_to_message(plain, html, sender)
         return {"plain": plain, "html": html}
 
     def build_sender_payload(message: Message) -> Dict[str, Any]:
