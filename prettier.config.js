@@ -11,5 +11,11 @@ module.exports = {
                 quoteProps: "preserve",
             },
         },
+        {
+            files: ["*.md"],
+            options: {
+                embeddedLanguageFormatting: "off",
+            },
+        },
     ],
 };
