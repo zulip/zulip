@@ -562,16 +562,19 @@ def get_story_update_batch_body(payload: Dict[str, Any], action: Dict[str, Any])
         )
 
     if "label_ids" in changes:
-        last_change = "label"
-        labels = get_story_joined_label_list(payload, action, changes["label_ids"].get("adds"))
-        templates.append(
-            STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE.format(
-                operation="{} added".format("was" if len(templates) == 0 else "and"),
-                entity="the new label{plural} {labels}".format(
-                    plural="s" if len(changes["label_ids"]) > 1 else "", labels=labels
-                ),
+        label_ids_added = changes["label_ids"].get("adds")
+        # If this is a payload for when no label is added, ignore it
+        if label_ids_added is not None:
+            last_change = "label"
+            labels = get_story_joined_label_list(payload, action, label_ids_added)
+            templates.append(
+                STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE.format(
+                    operation="{} added".format("was" if len(templates) == 0 else "and"),
+                    entity="the new label{plural} {labels}".format(
+                        plural="s" if len(changes["label_ids"]) > 1 else "", labels=labels
+                    ),
+                )
             )
-        )
 
     if "workflow_state_id" in changes:
         last_change = "state"

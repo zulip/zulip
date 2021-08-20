@@ -334,6 +334,48 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
 
     @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
+    def test_story_update_batch_skip_removed_labels(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("story_update_everything_at_once_skip_removed_labels")
+        self.client_post(self.url, payload, content_type="application/json")
+        expected_message = "The story [{name}]({url}) was moved from Epic **epic** to **testeipc**, Project **Product Development** to **test2**, and changed from type **feature** to **bug** (In Development -> Ready for Review)."
+        request, user_profile = (
+            check_send_webhook_message_mock.call_args_list[0][0][0],
+            check_send_webhook_message_mock.call_args_list[0][0][1],
+        )
+        expected_list = [
+            call(
+                request,
+                user_profile,
+                "asd4",
+                expected_message.format(
+                    name="asd4", url="https://app.clubhouse.io/pig208/story/17"
+                ),
+                "story_update_batch",
+            ),
+            call(
+                request,
+                user_profile,
+                "new1",
+                expected_message.format(
+                    name="new1", url="https://app.clubhouse.io/pig208/story/26"
+                ),
+                "story_update_batch",
+            ),
+            call(
+                request,
+                user_profile,
+                "new2",
+                expected_message.format(
+                    name="new2", url="https://app.clubhouse.io/pig208/story/27"
+                ),
+                "story_update_batch",
+            ),
+        ]
+        self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
+
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_story_update_batch_each_with_one_change(
         self, check_send_webhook_message_mock: MagicMock
     ) -> None:
