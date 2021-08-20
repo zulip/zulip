@@ -40,6 +40,7 @@ types of authentication, and configure other settings. Once defined,
 information in this section rarely changes.
 
 For example, the `swagger` and `info` objects look like this:
+
 ```yaml
 # Basic Swagger UI info
 openapi: 3.0.1

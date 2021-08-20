@@ -7,6 +7,7 @@ system since it is much (>100x) faster and also easier to do correctly
 than the Puppeteer system.
 
 You can run this test suite as follows:
+
 ```bash
 tools/test-js-with-node
 ```
@@ -101,10 +102,10 @@ code you're trying to test. For that reason, each unit test file
 explicitly declares all of the modules it depends on, with a few
 different types of declarations depending on whether we want to:
 
--   Exercise the module's real code for deeper, more realistic testing?
--   Stub out the module's interface for more control, speed, and
-    isolation?
--   Do some combination of the above?
+- Exercise the module's real code for deeper, more realistic testing?
+- Stub out the module's interface for more control, speed, and
+  isolation?
+- Do some combination of the above?
 
 For all the modules where you want to run actual code, add statements
 like the following toward the top of your test file:
@@ -164,7 +165,7 @@ tools/test-js-with-node --coverage
 If tests pass, you will get instructions to view coverage reports
 in your browser.
 
-Note that modules that we don't test *at all* aren't listed in the
+Note that modules that we don't test _at all_ aren't listed in the
 report, so this tends to overstate how good our overall coverage is,
 but it's accurate for individual files. You can also click a filename
 to see the specific statements and branches not tested. 100% branch
@@ -191,31 +192,32 @@ These instructions assume you're using the Vagrant development environment.
 2. In WebStorm, navigate to `Preferences -> Tools -> Vagrant` and
    configure the following:
 
-    - `Instance folder` should be the root of the `zulip` repository on
-      your host (where the Vagrantfile is located).
-    - `Provider` should be `virtualbox` on macOS and Docker on Linux
-    - In `Boxes`, choose the one used for Zulip (unless you use
-      Virtualbox for other things, there should only be one option).
+   - `Instance folder` should be the root of the `zulip` repository on
+     your host (where the Vagrantfile is located).
+   - `Provider` should be `virtualbox` on macOS and Docker on Linux
+   - In `Boxes`, choose the one used for Zulip (unless you use
+     Virtualbox for other things, there should only be one option).
 
-    You shouldn't need to set these additional settings:
-    - `Vagrant executable` should already be correctly `vagrant`.
-    - `Environment Variables` is not needed.
+   You shouldn't need to set these additional settings:
+
+   - `Vagrant executable` should already be correctly `vagrant`.
+   - `Environment Variables` is not needed.
 
 3. You'll now need to set up a WebStorm "Debug Configuration". Open
    the `Run/Debug Configuration` menu and create a new `Node.js` config:
-    1. Under `Node interpreter:` click the 3 dots to the right side and
+   1. Under `Node interpreter:` click the 3 dots to the right side and
       click on the little plus in the bottom left of the
       `Node.js Interpreters` window.
-    1. Select `Add Remote...`.
-        1. In the `Configure Node.js Remote Interpreter`, window select `Vagrant`
-        1. Wait for WebStorm to connect to Vagrant. This will be displayed
-           by the `Vagrant Host URL` section updating to contain the Vagrant
-           SSH URL, e.g. `ssh://vagrant@127.0.0.1:2222`.
-        1. **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
-        1. Hit `OK` 2 times to get back to the `Run/Debug Configurations` window.
-    1. Under `Working Directory` select the root `zulip` directory.
-    1. Under `JavaScript file`, enter `frontend_tests/zjsunit/index.js`
-     -- this is the root script for Zulip's node unit tests.
+   1. Select `Add Remote...`.
+      1. In the `Configure Node.js Remote Interpreter`, window select `Vagrant`
+      1. Wait for WebStorm to connect to Vagrant. This will be displayed
+         by the `Vagrant Host URL` section updating to contain the Vagrant
+         SSH URL, e.g. `ssh://vagrant@127.0.0.1:2222`.
+      1. **Set the `Node.js interpreter path` to `/usr/local/bin/node`**
+      1. Hit `OK` 2 times to get back to the `Run/Debug Configurations` window.
+   1. Under `Working Directory` select the root `zulip` directory.
+   1. Under `JavaScript file`, enter `frontend_tests/zjsunit/index.js`
+      -- this is the root script for Zulip's node unit tests.
 
 Congratulations! You've now set up the integration.
 

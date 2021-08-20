@@ -93,16 +93,18 @@ migrations.
   Another important note is that making changes to the data in a table
   via `RunPython` code and `ALTER TABLE` operations within a single,
   atomic migration don't mix well. If you encounter an error such as
+
   ```text
   django.db.utils.OperationalError: cannot ALTER TABLE "table_name" because it has pending trigger events
   ```
+
   when testing the migration, the reason is often that these operations
   were incorrectly mixed. To resolve this, consider making the migration
   non-atomic, splitting it into two migration files (recommended), or replacing the
   `RunPython` logic with pure SQL (though this can generally be difficult).
 
 - **Making large migrations work**. Major migrations should have a
-few properties:
+  few properties:
 
   - **Unit tests**. You'll want to carefully test these, so you might
     as well write some unit tests to verify the migration works
@@ -120,13 +122,13 @@ few properties:
     the migration can even continue where it left off, without needing
     to redo work.
   - **Multi-step migrations**. For really big migrations, one wants
-  to split the transition into into several commits that are each
-  individually correct, and can each be deployed independently:
+    to split the transition into into several commits that are each
+    individually correct, and can each be deployed independently:
 
     1. First, do a migration to add the new column to the Message table
-      and start writing to that column (but don't use it for anything)
+       and start writing to that column (but don't use it for anything)
     2. Second, do a migration to copy values from the old column to
-    the new column, to ensure that the two data stores agree.
+       the new column, to ensure that the two data stores agree.
     3. Third, a commit that stops writing to the old field.
     4. Any cleanup work, e.g. if the old field were a column, we'd do
        a migration to remove it entirely here.

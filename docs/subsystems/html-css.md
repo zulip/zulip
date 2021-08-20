@@ -63,15 +63,15 @@ browsers to make sure things look the same.
 ### Behavior
 
 - Templates are automatically recompiled in development when the file
-is saved; a refresh of the page should be enough to display the latest
-version. You might need to do a hard refresh, as some browsers cache
-webpages.
+  is saved; a refresh of the page should be enough to display the latest
+  version. You might need to do a hard refresh, as some browsers cache
+  webpages.
 
 - Variables can be used in templates. The variables available to the
-template are called the **context**. Passing the context to the HTML
-template sets the values of those variables to the value they were
-given in the context. The sections below contain specifics on how the
-context is defined and where it can be found.
+  template are called the **context**. Passing the context to the HTML
+  template sets the values of those variables to the value they were
+  given in the context. The sections below contain specifics on how the
+  context is defined and where it can be found.
 
 ### Backend templates
 
@@ -85,11 +85,11 @@ found [here][jconditionals].
 The context for Jinja2 templates is assembled from a few places:
 
 - `zulip_default_context` in `zerver/context_processors.py`. This is
-the default context available to all Jinja2 templates.
+  the default context available to all Jinja2 templates.
 
 - As an argument in the `render` call in the relevant function that
-renders the template. For example, if you want to find the context
-passed to `index.html`, you can do:
+  renders the template. For example, if you want to find the context
+  passed to `index.html`, you can do:
 
 ```console
 $ git grep zerver/app/index.html '*.py'
@@ -99,7 +99,7 @@ zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 The next line in the code being the context definition.
 
 - `zproject/urls.py` for some fairly static pages that are rendered
-using `TemplateView`, for example:
+  using `TemplateView`, for example:
 
 ```python
 path('config-error/google', TemplateView.as_view(
@@ -224,9 +224,10 @@ If you want to test minified files in development, look for the
 ### How it works in production
 
 A few useful notes are:
+
 - Zulip installs static assets in production in
-`/home/zulip/prod-static`. When a new version is deployed, before the
-server is restarted, files are copied into that directory.
+  `/home/zulip/prod-static`. When a new version is deployed, before the
+  server is restarted, files are copied into that directory.
 - We use the VFL (versioned file layout) strategy, where each file in
   the codebase (e.g. `favicon.ico`) gets a new name
   (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it. Each
@@ -281,8 +282,8 @@ production browser console. If you need to access a variable or
 function in those scenarios, add it to `zulip_test`. This is also
 **not** a stable API.
 
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html

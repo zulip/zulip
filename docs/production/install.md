@@ -25,10 +25,10 @@ tar -xf zulip-server-latest.tar.gz
 ```
 
 - If you'd like to verify the download, we
-[publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
+  [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 - You can also
-[install a pre-release version of Zulip](../production/deployment.html#installing-zulip-from-git)
-using code from our [repository on GitHub](https://github.com/zulip/zulip/).
+  [install a pre-release version of Zulip](../production/deployment.html#installing-zulip-from-git)
+  using code from our [repository on GitHub](https://github.com/zulip/zulip/).
 
 ## Step 2: Install Zulip
 
@@ -100,6 +100,7 @@ do.
 
 To really see Zulip in action, you'll need to get the people you work
 together with using it with you.
+
 - [Set up outgoing email](email.md) so Zulip can confirm new users'
   email addresses and send notifications.
 - Learn how to [get your organization started][realm-admin-docs] using
@@ -108,36 +109,38 @@ together with using it with you.
 Learning more:
 
 - Subscribe to the [Zulip announcements email
-list](https://groups.google.com/forum/#!forum/zulip-announce) for
-server administrators. This extremely low-traffic list is for
-important announcements, including [new
-releases](../overview/release-lifecycle.md) and security issues. You
-can also use the [RSS
-feed](https://groups.google.com/forum/#!aboutgroup/zulip-announce).
+  list](https://groups.google.com/forum/#!forum/zulip-announce) for
+  server administrators. This extremely low-traffic list is for
+  important announcements, including [new
+  releases](../overview/release-lifecycle.md) and security issues. You
+  can also use the [RSS
+  feed](https://groups.google.com/forum/#!aboutgroup/zulip-announce).
 - Follow [Zulip on Twitter](https://twitter.com/zulip).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](../production/export-and-import.md)
-and [upgrading](../production/upgrade-or-modify.md) a production Zulip
-server.
+  and [upgrading](../production/upgrade-or-modify.md) a production Zulip
+  server.
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
 
 ```eval_rst
 .. _installer-details:
 ```
+
 ## Details: What the installer does
 
 The install script does several things:
+
 - Creates the `zulip` user, which the various Zulip servers will run as.
 - Creates `/home/zulip/deployments/`, which the Zulip code for this
-deployment (and future deployments when you upgrade) goes into. At the
-very end of the install process, the script moves the Zulip code tree
-it's running from (which you unpacked from a tarball above) to a
-directory there, and makes `/home/zulip/deployments/current` as a
-symbolic link to it.
+  deployment (and future deployments when you upgrade) goes into. At the
+  very end of the install process, the script moves the Zulip code tree
+  it's running from (which you unpacked from a tarball above) to a
+  directory there, and makes `/home/zulip/deployments/current` as a
+  symbolic link to it.
 - Installs Zulip's various dependencies.
 - Configures the various third-party services Zulip uses, including
-PostgreSQL, RabbitMQ, Memcached and Redis.
+  PostgreSQL, RabbitMQ, Memcached and Redis.
 - Initializes Zulip's database.
 
 If you'd like to deploy Zulip with these services on different

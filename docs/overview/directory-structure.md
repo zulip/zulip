@@ -30,8 +30,7 @@ paths will be familiar to Django developers.
 
 - `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
 
-- `zerver/webhooks/` Webhook views and tests for [Zulip's incoming webhook integrations](
-  https://zulip.com/api/incoming-webhooks-overview).
+- `zerver/webhooks/` Webhook views and tests for [Zulip's incoming webhook integrations](https://zulip.com/api/incoming-webhooks-overview).
 
 - `zerver/tornado/views.py` Tornado views.
 
@@ -41,7 +40,7 @@ paths will be familiar to Django developers.
 
 - `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
 
--------------------------------------------------------------------
+---
 
 ### HTML templates
 
@@ -53,7 +52,7 @@ templating systems.
 
 - `static/templates/` [Handlebars](https://handlebarsjs.com/) templates for the frontend.
 
-----------------------------------------
+---
 
 ### JavaScript, TypeScript, and other static assets
 
@@ -68,9 +67,9 @@ templating systems.
 - `node_modules/` Third-party JavaScript installed via `yarn`.
 
 - `static/assets/` For assets not to be served to the web (e.g. the system to
-                   generate our favicons).
+  generate our favicons).
 
------------------------------------------------------------------------
+---
 
 ### Tests
 
@@ -82,7 +81,7 @@ templating systems.
 
 - `tools/test-*` Developer-facing test runner scripts.
 
------------------------------------------------------
+---
 
 ### Management commands
 
@@ -95,10 +94,10 @@ Django context (i.e. with database access).
   deactivate a user properly).
 
 - `zilencer/management/commands/` includes some dev-specific
-   commands such as `populate_db`, which are not included in
-   the production distribution.
+  commands such as `populate_db`, which are not included in
+  the production distribution.
 
----------------------------------------------------------------
+---
 
 ### Scripts
 
@@ -124,7 +123,7 @@ Django context (i.e. with database access).
   set up and run our tests in CI. Actual test suites should
   go in `tools/`.
 
----------------------------------------------------------
+---
 
 ### API and bots
 
@@ -136,7 +135,7 @@ Django context (i.e. with database access).
 - `templates/zerver/integrations/` (within `templates/zerver/`, above).
   Documentation for these integrations.
 
--------------------------------------------------------------------------
+---
 
 ### Production Puppet configuration
 
@@ -146,7 +145,7 @@ This is used to deploy essentially all configuration in production.
 
 - `puppet/zulip/manifests/profile/standalone.pp` Main manifest for Zulip standalone deployments.
 
------------------------------------------------------------------------
+---
 
 ### Additional Django apps
 
@@ -161,25 +160,25 @@ This is used to deploy essentially all configuration in production.
 - `zilencer` Primarily used to hold management commands that aren't
   used in production. Not included in production distribution.
 
------------------------------------------------------------------------
+---
 
 ### Jinja2 compatibility files
 
 - `zproject/jinja2/__init__.py` Jinja2 environment.
 
------------------------------------------------------------------------
+---
 
 ### Translation files
 
 - `locale/` Backend (Django) and frontend translation data files.
 
------------------------------------------------------------------------
+---
 
 ### Documentation
 
--  `docs/` Source for this documentation.
+- `docs/` Source for this documentation.
 
---------------------------------------------------------------
+---
 
 You can consult the repository's `.gitattributes` file to see exactly
 which components are excluded from production releases (release

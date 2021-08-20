@@ -29,7 +29,7 @@ There are three main components:
 
 The next several sections will dive into the details of these components.
 
-## The *Count database tables
+## The \*Count database tables
 
 The Zulip analytics system is built around collecting time series data in a
 set of database tables. Each of these tables has the following fields:
@@ -76,7 +76,7 @@ by the system and with what data.
 ## The FillState table
 
 The default Zulip production configuration runs a cron job once an hour that
-updates the *Count tables for each of the CountStats in the COUNT_STATS
+updates the \*Count tables for each of the CountStats in the COUNT_STATS
 dictionary. The FillState table simply keeps track of the last end_time that
 we successfully updated each stat. It also enables the analytics system to
 recover from errors (by retrying) and to monitor that the cron job is
@@ -103,7 +103,7 @@ There are a few important principles that we use to make the system
 efficient:
 
 - Not repeating work to keep things up to date (via FillState)
-- Storing data in the *Count tables to avoid our endpoints hitting the core
+- Storing data in the \*Count tables to avoid our endpoints hitting the core
   Message/UserMessage tables is key, because some queries could take minutes
   to calculate. This allows any expensive operations to run offline, and
   then the endpoints to server data to users can be fast.

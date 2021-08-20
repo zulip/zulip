@@ -46,9 +46,9 @@ details worth understanding:
 ### Google
 
 - Visit [the Google developer
-console](https://console.developers.google.com) and navigate to "APIs
-& services" > "Credentials". Create a "Project", which will correspond
-to your dev environment.
+  console](https://console.developers.google.com) and navigate to "APIs
+  & services" > "Credentials". Create a "Project", which will correspond
+  to your dev environment.
 
 - Navigate to "APIs & services" > "Library", and find the "Identity
   Toolkit API". Choose "Enable".
@@ -96,12 +96,12 @@ to your dev environment.
 - [Create a Sign in with Apple private key](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
 
 - In `dev-secrets.conf`, set
-    - `social_auth_apple_services_id` to your
-      "Services ID" (eg. com.application.your).
-    - `social_auth_apple_app_id` to "App ID" or "Bundle ID".
-      This is only required if you are testing Apple auth on iOS.
-    - `social_auth_apple_key` to your "Key ID".
-    - `social_auth_apple_team` to your "Team ID".
+  - `social_auth_apple_services_id` to your
+    "Services ID" (eg. com.application.your).
+  - `social_auth_apple_app_id` to "App ID" or "Bundle ID".
+    This is only required if you are testing Apple auth on iOS.
+  - `social_auth_apple_key` to your "Key ID".
+  - `social_auth_apple_team` to your "Team ID".
 - Put the private key file you got from apple at the path
   `zproject/dev_apple.key`.
 
@@ -111,21 +111,21 @@ to your dev environment.
 - Set up SAML authentication by following
   [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
   Specify:
-    - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
-    - `http://localhost:9991` for the "Audience URI (SP Entity ID)".
-    - Skip "Default RelayState".
-    - Skip "Name ID format".
-    - Set 'Email` for "Application username format".
-    - Provide "Attribute statements" of `email` to `user.email`,
-      `first_name` to `user.firstName`, and `last_name` to `user.lastName`.
+  - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
+  - `http://localhost:9991` for the "Audience URI (SP Entity ID)".
+  - Skip "Default RelayState".
+  - Skip "Name ID format".
+  - Set 'Email` for "Application username format".
+  - Provide "Attribute statements" of `email` to `user.email`,
+    `first_name` to `user.firstName`, and `last_name` to `user.lastName`.
 - Assign at least one account in the "Assignments" tab. You'll use it for
   signing up / logging in to Zulip.
 - Visit the big "Setup instructions" button on the "Sign on" tab.
 - Edit `zproject/dev-secrets.conf` to add the two values provided:
-    - Set `saml_url = http...` from "Identity Provider Single Sign-On
-      URL".
-    - Set `saml_entity_id = http://...` from "Identity Provider Issuer".
-    - Download the certificate and put it at the path `zproject/dev_saml.cert`.
+  - Set `saml_url = http...` from "Identity Provider Single Sign-On
+    URL".
+  - Set `saml_entity_id = http://...` from "Identity Provider Issuer".
+  - Download the certificate and put it at the path `zproject/dev_saml.cert`.
 - Now you should have working SAML authentication!
 - You can sign up to the target realm with the account that you've "assigned"
   in the previous steps (if the account's email address is allowed in the realm,
@@ -159,12 +159,13 @@ development environment as well, so that you can go through all the
 actual flows for LDAP configuration.
 
 - To enable fakeldap, set `FAKE_LDAP_MODE` in
-`zproject/dev_settings.py` to one of the following options. For more
-information on these modes, refer to
-[our production docs](../production/authentication-methods.html#ldap-including-active-directory):
+  `zproject/dev_settings.py` to one of the following options. For more
+  information on these modes, refer to
+  [our production docs](../production/authentication-methods.html#ldap-including-active-directory):
+
   - `a`: If users' email addresses are in LDAP and used as username.
   - `b`: If LDAP only has usernames but email addresses are of the form
-  username@example.com
+    username@example.com
   - `c`: If LDAP usernames are completely unrelated to email addresses.
 
 - To disable fakeldap, set `FAKE_LDAP_MODE` back to `None`.
@@ -174,8 +175,8 @@ information on these modes, refer to
   `ldapuser1`).
 
 - `FAKE_LDAP_NUM_USERS` in `zproject/dev_settings.py` can be used to
-specify the number of LDAP users to be added. The default value for
-the number of LDAP users is 8.
+  specify the number of LDAP users to be added. The default value for
+  the number of LDAP users is 8.
 
 ### Testing avatar and custom profile field synchronization
 

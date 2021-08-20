@@ -204,10 +204,12 @@ and `>>>>>>>`) markers to indicate where in files there are conflicts.
 
 Tip: You can see recent changes made to a file by running the following
 commands:
+
 ```bash
 git fetch upstream
 git log -p upstream/main -- /path/to/file
 ```
+
 You can use this to compare the changes that you have made to a file with the
 ones in upstream, helping you avoid undoing changes from a previous commit when
 you are rebasing.
@@ -234,8 +236,8 @@ pay attention and do a bit of work to ensure all of your work is readily
 available.
 
 Recall that most Git operations are local. When you commit your changes with
-`git commit` they are safely stored in your *local* Git database only. That is,
-until you *push* the commits to GitHub, they are only available on the computer
+`git commit` they are safely stored in your _local_ Git database only. That is,
+until you _push_ the commits to GitHub, they are only available on the computer
 where you committed them.
 
 So, before you stop working for the day, or before you switch computers, push

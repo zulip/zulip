@@ -21,7 +21,7 @@ written for a range of purposes:
 - The actual scripts run by supervisord to run the persistent
   processes in a Zulip server, e.g. `runtornado` and `process_queue`.
 - For a sysadmin to verify a Zulip server's configuration during
-installation, e.g. `checkconfig`, `send_test_email`.
+  installation, e.g. `checkconfig`, `send_test_email`.
 - As the interface for doing those rare operations that don't have a
   UI yet, e.g. `deactivate_realm`, `reactivate_realm`,
   `change_user_email` (for the case where the user doesn't control the

@@ -64,7 +64,7 @@ the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
 installation method described here.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
-[here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+   [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
 
 1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
    Store.
@@ -92,6 +92,7 @@ installation method described here.
 1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
    You will run into permission issues if you run `provision` from `zulip`
    in a Windows mounted disk.
+
    ```bash
    cd ~  # or cd /home/USERNAME
    ```

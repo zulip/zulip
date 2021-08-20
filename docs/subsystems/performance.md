@@ -29,6 +29,7 @@ important to understand the load profiles for production uses.
 
 Zulip servers typically involve a mixture of two very different types
 of load profiles:
+
 - Open communities like open source projects, online classes,
   etc. have large numbers of users, many of whom are idle. (Many of
   the others likely stopped by to ask a question, got it answered, and
@@ -83,7 +84,7 @@ substantial oscillation within a 24 hour period), we expect the rough
 sense of them (as well as the list of important endpoints) is not
 likely to vary dramatically over time.
 
-``` eval_rst
+```eval_rst
 =======================   ============  ==============  ===============
 Endpoint                  Average time  Request volume  Average impact
 =======================   ============  ==============  ===============
@@ -181,7 +182,7 @@ Zulip is somewhat unusual among webapps in sending essentially all of the
 data required for the entire Zulip webapp in this single request,
 which is part of why the Zulip webapp loads very quickly -- one only
 needs a single round trip aside from cacheable assets (avatars, images, JS,
-CSS).  Data on other users in the organization, streams, supported
+CSS). Data on other users in the organization, streams, supported
 emoji, custom profile fields, etc., is all included. The nice thing
 about this model is that essentially every UI element in the Zulip
 client can be rendered immediately without paying latency to the

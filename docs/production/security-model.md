@@ -70,10 +70,10 @@ strength allowed is controlled by two settings in
   Estimating the guessability of a password is a complex problem and
   impossible to efficiently do perfectly. For background or when
   considering an alternate value for this setting, the article
-  ["Passwords and the Evolution of Imperfect Authentication"][BHOS15]
+  ["Passwords and the Evolution of Imperfect Authentication"][bhos15]
   is recommended. The [2016 zxcvbn paper][zxcvbn-paper] adds useful
   information about the performance of zxcvbn, and [a large 2012 study
-  of Yahoo users][Bon12] is informative about the strength of the
+  of Yahoo users][bon12] is informative about the strength of the
   passwords users choose.
 
 <!---
@@ -86,9 +86,9 @@ strength allowed is controlled by two settings in
 -->
 
 [zxcvbn]: https://github.com/dropbox/zxcvbn
-[BHOS15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[bhos15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
 [zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
-[Bon12]: http://ieeexplore.ieee.org/document/6234435/
+[bon12]: http://ieeexplore.ieee.org/document/6234435/
 
 ## Messages and history
 
@@ -97,6 +97,7 @@ strength allowed is controlled by two settings in
   attacks.
 
 - Zulip supports both public streams and private streams.
+
   - Any non-guest user can join any public stream in the organization,
     and can view the complete message history of any public stream
     without joining the stream. Guests can only access streams that
@@ -258,11 +259,11 @@ strength allowed is controlled by two settings in
   the Zulip server to make HTTP requests on their behalf. As a result,
   Zulip supports routing all outgoing outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
-  used to execute [SSRF attacks][SSRF] against other systems on an
+  used to execute [SSRF attacks][ssrf] against other systems on an
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
-[SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+[ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-setup]: ../production/deployment.html#using-an-outgoing-http-proxy
 
 ## Final notes and security response

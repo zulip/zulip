@@ -135,7 +135,7 @@ Recall that files tracked with Git have possible three states:
 committed, modified, and staged.
 
 To prepare a commit, first add the files with changes that you want
-to include in your commit to your staging area. You *add* both new files and
+to include in your commit to your staging area. You _add_ both new files and
 existing ones. You can also remove files from staging when necessary.
 
 ### Get status of working directory
@@ -168,7 +168,7 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 To add changes to your staging area, use `git add <filename>`. Because
 `git add` is all about staging the changes you want to commit, you use
-it to add *new files* as well as *files with changes* to your staging
+it to add _new files_ as well as _files with changes_ to your staging
 area.
 
 Continuing our example from above, after we run `git add newfile.py`, we'll see
@@ -187,7 +187,6 @@ view changes to files you haven't yet staged, just use `git diff`.
 
 If you want to add all changes in the working directory, use `git add -A`
 ([documentation][gitbook-add]).
-
 
 You can also stage changes using your graphical Git client.
 

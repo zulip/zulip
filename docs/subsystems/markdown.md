@@ -255,7 +255,6 @@ accurate.
 
 - Enable linking to other streams using `#**streamName**`.
 
-
 ### Code
 
 - Enable fenced code block extension, with syntax highlighting.

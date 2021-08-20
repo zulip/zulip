@@ -32,6 +32,7 @@ with only a few things you need to know to get started.
 
 One slightly complicated decision you may have to make when adding an email
 is figuring out how to schedule it. There are 3 ways to schedule email.
+
 - Send it immediately, in the current Django process, e.g. by calling
   `send_email` directly. An example of this is the `confirm_registration`
   email.

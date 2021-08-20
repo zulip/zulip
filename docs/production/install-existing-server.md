@@ -11,7 +11,7 @@ configuration files in /etc, so we recommend against installing it on
 a server running other nginx or django apps.
 
 But if you do, here are some things you can do that may make it
-possible to retain your existing site. However, this is *NOT*
+possible to retain your existing site. However, this is _NOT_
 recommended, and you may break your server. Make sure you have backups
 and a provisioning script ready to go to wipe and restore your
 existing services if (when) your server goes down.

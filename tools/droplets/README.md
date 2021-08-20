@@ -60,6 +60,7 @@ $ python3 create.py <username>
 $ python3 create.py <username> --tags <tag>
 $ python3 create.py <username> --tags <tag1> <tag2> <tag3>
 ```
+
 Assigning tags to droplets like `GCI` can be later useful for
 listing all the droplets created during GCI.
 [Tags](https://www.digitalocean.com/community/tutorials/how-to-tag-digitalocean-droplets)
@@ -75,6 +76,7 @@ user. If you want to recreate a droplet for a user you can pass the
 ```
 $ python3 create.py <username> --recreate
 ```
+
 This will destroy the old droplet and create a new droplet for
 the user.
 
@@ -147,6 +149,7 @@ Rough steps:
 1. Open a PR with the updated template_id in zulip/zulip!
 
 ## Creating a new base image
+
 Creating a new base image happens rarely since updating the base image is good enough most of the time.
 Check out https://chat.zulip.org/#narrow/stream/3-backend/topic/new.20base.20dev.20droplet to view the
 discussion when we attempted to do upgrade last time.
@@ -210,7 +213,6 @@ They can remove your SSH keys by running:
 ```
 $ python3 ~/zulip/tools/droplets/add_mentor.py <your username> --remove
 ```
-
 
 # Creating a production droplet
 

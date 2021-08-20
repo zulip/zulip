@@ -14,7 +14,7 @@ detail how we set the default threshold (`PASSWORD_MIN_GUESSES`) we use.
 First, read the doc section there. (It's short.)
 
 Then, the CACM article ["Passwords and the Evolution of Imperfect
-Authentication"][BHOS15] is comprehensive, educational, and readable,
+Authentication"][bhos15] is comprehensive, educational, and readable,
 and is especially recommended.
 
 The CACM article is convincing that password requirements should be
@@ -36,7 +36,7 @@ overestimation (allowing a weak password) sharply degrades at 100k
 guesses, while underestimation (rejecting a strong password) jumps up
 just after 10k guesses, and grows steadily thereafter.
 
-Moreover, the [Yahoo study][Bon12] shows that resistance to even 1M
+Moreover, the [Yahoo study][bon12] shows that resistance to even 1M
 guesses is more than nearly half of users accomplish with a freely
 chosen password, and 100k is too much for about 20%. (See Figure 6.)
 It doesn't make sense for a Zulip server to try to educate or push so
@@ -54,6 +54,6 @@ zxcvbn rarely underestimates the strength of a password too severely,
 and only about 10% of users do worse than this without prompting.
 
 [zxcvbn]: https://github.com/dropbox/zxcvbn
-[BHOS15]: https://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[bhos15]: https://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
 [zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
-[Bon12]: https://ieeexplore.ieee.org/document/6234435
+[bon12]: https://ieeexplore.ieee.org/document/6234435

@@ -2,22 +2,22 @@
 
 Whether you're new to Git or have experience with another version control
 system (VCS), it's a good idea to learn a bit about how Git works. We recommend
-this excellent presentation *[Understanding Git][understanding-git]* from
+this excellent presentation _[Understanding Git][understanding-git]_ from
 Nelson Elhage and Anders Kaseorg and the [Git Basics][gitbook-basics] chapter
-from *Pro Git* by Scott Chacon and Ben Straub.
+from _Pro Git_ by Scott Chacon and Ben Straub.
 
 Here are the top things to know:
 
 - **Git works on snapshots.** Unlike other version control systems (e.g.,
   Subversion, Perforce, Bazaar), which track files and changes to those files
-  made over time, Git tracks *snapshots* of your project. Each time you commit
+  made over time, Git tracks _snapshots_ of your project. Each time you commit
   or otherwise make a change to your repository, Git takes a snapshot of your
   project and stores a reference to that snapshot. If a file hasn't changed,
   Git creates a link to the identical file rather than storing it again.
 
 - **Most Git operations are local.** Git is a distributed version control
   system, so once you've cloned a repository, you have a complete copy of that
-  repository's *entire history*. Staging, committing, branching, and browsing
+  repository's _entire history_. Staging, committing, branching, and browsing
   history are all things you can do locally without network access and without
   immediately affecting any remote repositories. To make or receive changes
   from remote repositories, you need to `git fetch`, `git pull`, or `git push`.
@@ -45,9 +45,9 @@ Here are the top things to know:
 
 - **Cloning a repository creates a working copy.** Every working copy has a
   `.git` subdirectory, which contains its own Git repository. The `.git`
-  subdirectory also tracks the *index*, a staging area for changes that will
-  become part of the next commit. All files outside of `.git` is the *working
-  tree*.
+  subdirectory also tracks the _index_, a staging area for changes that will
+  become part of the next commit. All files outside of `.git` is the _working
+  tree_.
 
 - **Files tracked with Git have possible three states: committed, modified, and
   staged.** Committed files are those safely stored in your local `.git`
@@ -56,8 +56,8 @@ Here are the top things to know:
   changes but have not yet been marked for inclusion in the next commit; they
   have not been added to the index.
 
-- **Git commit workflow is as follows.** Edit files in your *working tree*. Add
-  to the *index* (that is *stage*) with `git add`. *Commit* to the HEAD of the
+- **Git commit workflow is as follows.** Edit files in your _working tree_. Add
+  to the _index_ (that is _stage_) with `git add`. _Commit_ to the HEAD of the
   current branch with `git commit`.
 
 [gitbook-basics]: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics

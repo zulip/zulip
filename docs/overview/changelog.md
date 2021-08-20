@@ -749,26 +749,26 @@ details.
 #### Upgrade notes for 2.1.0
 
 - The defaults for Zulip's now beta inline URL preview setting have changed.
-Previously, the server-level `INLINE_URL_EMBED_PREVIEW` setting was
-disabled, and organization-level setting was enabled. Now, the
-server-level setting is enabled by default, and the organization-level
-setting is disabled. As a result, organization administrators can
-configure this feature entirely in the UI. However, servers that had
-previously [enabled previews of linked
-websites](https://zulip.com/help/allow-image-link-previews) will
-lose the setting and need to re-enable it.
+  Previously, the server-level `INLINE_URL_EMBED_PREVIEW` setting was
+  disabled, and organization-level setting was enabled. Now, the
+  server-level setting is enabled by default, and the organization-level
+  setting is disabled. As a result, organization administrators can
+  configure this feature entirely in the UI. However, servers that had
+  previously [enabled previews of linked
+  websites](https://zulip.com/help/allow-image-link-previews) will
+  lose the setting and need to re-enable it.
 - We rewrote the Google authentication backend to use the
   `python-social-auth` system we use for other third-party
   authentication systems. For this release, the old variable names
   still work, but users should update the following setting names in
   their configuration as we will desupport the old names in a future
   release:
-    - In `/etc/zulip/zulip-secrets.conf`, `google_oauth2_client_secret`
-      is now called with `social_auth_google_secret`.
-    - In `/etc/zulip/settings.py`, `GOOGLE_OAUTH2_CLIENT_ID` should be
-      replaced with `SOCIAL_AUTH_GOOGLE_KEY`.
-    - In `/etc/zulip/settings.py`, `GoogleMobileOauth2Backend` should
-      be replaced with called `GoogleAuthBackend`.
+  - In `/etc/zulip/zulip-secrets.conf`, `google_oauth2_client_secret`
+    is now called with `social_auth_google_secret`.
+  - In `/etc/zulip/settings.py`, `GOOGLE_OAUTH2_CLIENT_ID` should be
+    replaced with `SOCIAL_AUTH_GOOGLE_KEY`.
+  - In `/etc/zulip/settings.py`, `GoogleMobileOauth2Backend` should
+    be replaced with called `GoogleAuthBackend`.
 - Installations using Zulip's LDAP integration without
   `LDAP_APPEND_DOMAIN` will need to configure two new settings telling
   Zulip how to look up a user in LDAP given their email address:
@@ -807,6 +807,7 @@ lose the setting and need to re-enable it.
   downtime, and then upgrade to the new release.
 
 #### Full feature changelog
+
 - Added sortable columns to all tables in settings pages.
 - Added webapp support for self-service public data exports.
 - Added 'e' keyboard shortcut for editing currently selected message.
@@ -1014,6 +1015,7 @@ lose the setting and need to re-enable it.
 ### 2.0.0 -- 2019-03-01
 
 #### Highlights
+
 - Added automation for synchronizing user avatars, custom profile
   fields, disabled status, and more from LDAP/active directory.
 - Added support for explicitly setting oneself as "away" and "user
@@ -1035,14 +1037,15 @@ lose the setting and need to re-enable it.
 #### Upgrade notes for 2.0.0
 
 - This release adds support for submitting basic usage statistics to
-help the Zulip core team. This feature can be enabled only if a server
-is using the [Mobile Push Notification Service][mpns-statistics-docs],
-and is enabled by default in that case. To disable it, set
-`SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
+  help the Zulip core team. This feature can be enabled only if a server
+  is using the [Mobile Push Notification Service][mpns-statistics-docs],
+  and is enabled by default in that case. To disable it, set
+  `SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
 
 [mpns-statistics-docs]: ../production/mobile-push-notifications.html#submitting-statistics
 
 #### Full feature changelog
+
 - Added support for CentOS 7 in the development environment
   provisioning process. This is an important step towards production
   CentOS/RHEL 7 support.
@@ -1190,6 +1193,7 @@ Zulip installations; it has minimal changes for existing servers.
   doing an apt upgrade first.
 
 #### Full feature changelog
+
 - Added an organization setting for message deletion time limits.
 - Added an organization setting to control who can edit topics.
 - Added Ctrl+K keyboard shortcut for getting to search (same as /, but
@@ -1285,6 +1289,7 @@ Zulip installations; it has minimal changes for existing servers.
 ### 1.8.0 -- 2018-04-17
 
 #### Highlights
+
 - Dramatically simplified the server installation process; it's now possible
   to install Zulip without first setting up outgoing email.
 - Added experimental support for importing an organization's history
@@ -1294,8 +1299,8 @@ Zulip installations; it has minimal changes for existing servers.
 - Lots of visual polish improvements.
 - Countless small bugfixes both in the backend and the UI.
 
-
 **Security and privacy:**
+
 - Several important security fixes since 1.7.0, which were released
   already in 1.7.1 and 1.7.2.
 - The security model for private streams has changed. Now
@@ -1312,8 +1317,8 @@ Zulip installations; it has minimal changes for existing servers.
 - Added a user setting to control whether email notifications include
   message content (or just the fact that there are new messages).
 
-
 **Visual and UI:**
+
 - Added a user setting to translate emoticons/smileys to emoji.
 - Added a user setting to choose the emoji set used in Zulip: Google,
   Twitter, Apple, or Emoji One.
@@ -1329,8 +1334,8 @@ Zulip installations; it has minimal changes for existing servers.
 - Improved the descriptions and UI for many settings.
 - Improved visual design of the help center (/help/).
 
-
 **Core chat experience:**
+
 - Added support for mentioning groups of users.
 - Added a setting to allow users to delete their messages.
 - Added support for uploading files in the message-edit UI.
@@ -1390,8 +1395,8 @@ Zulip installations; it has minimal changes for existing servers.
   included in email subject lines.
 - Fixed uploading user avatars encoded using the CMYK mode.
 
-
 **User accounts and invites:**
+
 - Added support for users in multiple realms having the same email.
 - Added a display for whether the user is logged-in in logged-out
   pages.
@@ -1406,8 +1411,8 @@ Zulip installations; it has minimal changes for existing servers.
 - Split the Notifications Stream setting in two settings, one for new
   users, the other for new streams.
 
-
 **Stream subscriptions and settings:**
+
 - Added traffic statistics (messages/week) to the "Manage streams" UI.
 - Fixed numerous issues in the "stream settings" UI.
 - Fixed numerous subtle bugs with the stream creation UI.
@@ -1415,8 +1420,8 @@ Zulip installations; it has minimal changes for existing servers.
   so that they can be robust to streams being renamed. The change is
   backwards-compatible; existing narrow URLs still work.
 
-
 **API, bots, and integrations:**
+
 - Rewrote our API documentation to be much more friendly and
   expansive; it now covers most important endpoints, with nice examples.
 - New integrations: ErrBot, GoCD, Google Code-In, Opbeat, Groove,
@@ -1434,8 +1439,8 @@ Zulip installations; it has minimal changes for existing servers.
   numbered-list format.
 - APIs for fetching messages now provide more metadata to help clients.
 
-
 **Keyboard shortcuts:**
+
 - Added new "basics" section to keyboard shortcuts documentation.
 - Added a new ">" keyboard shortcut for quote-and-reply.
 - Added a new "p" keyboard shortcut to jump to next unread PM thread.
@@ -1443,16 +1448,16 @@ Zulip installations; it has minimal changes for existing servers.
 - Changed the hotkey for compose-private-message from "C" to "x".
 - Improve keyboard navigation of left and right sidebars with arrow keys.
 
-
 **Mobile apps backend:**
+
 - Added support for logging into the mobile apps with RemoteUserBackend.
 - Improved mobile notifications to support narrowing when one clicks a
   mobile push notification.
 - Statistics on the fraction of strings that are translated now
   include strings in the mobile apps as well.
 
-
 **For server admins:**
+
 - Added certbot support to the installer for getting certificates.
 - Added support for hosting multiple domains, not all as subdomains of
   the same base domain.
@@ -1465,8 +1470,8 @@ Zulip installations; it has minimal changes for existing servers.
 - Improved Tornado retry logic for connecting to RabbitMQ.
 - Added a server setting to control whether digest emails are sent.
 
-
 **For Zulip developers:**
+
 - Migrated the codebase to use the nice Python 3 typing syntax.
 - Added a new /team/ page explaining the team, with a nice
   visualization of our contributors.
@@ -1708,28 +1713,28 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 #### Highlights
 
 - A complete visual redesign of the logged-out pages, including login,
-registration, integrations, etc.
+  registration, integrations, etc.
 - New visual designs for numerous UI elements, including the emoji
-picker, user profile popovers, sidebars, compose, and many more.
+  picker, user profile popovers, sidebars, compose, and many more.
 - A complete redesign of the Zulip settings interfaces to look a lot
-nicer and be easier to navigate.
+  nicer and be easier to navigate.
 - Organization admins can now configure the login and registration
-pages to show visitors a nice organization profile with custom text
-and images, written in Markdown.
+  pages to show visitors a nice organization profile with custom text
+  and images, written in Markdown.
 - Massively improved performance for presence and settings pages,
-especially for very large organizations (1000+ users).
+  especially for very large organizations (1000+ users).
 - A dozen useful new keyboard shortcuts, from editing messages to
-emoji reactions to drafts and managing streams.
+  emoji reactions to drafts and managing streams.
 - Typing notifications for private message threads.
 - Users can now change their own email address.
 - New saved-drafts feature.
 - The server can now run on a machine with as little as 2GB of RAM.
 - The new [Electron desktop app][electron-app] and new
-[React Native mobile app for iOS][ios-app] are now the recommended
-Zulip apps.
+  [React Native mobile app for iOS][ios-app] are now the recommended
+  Zulip apps.
 - Mobile web now works much better, especially on iOS.
 - Support for sending mobile push notifications via
-[a new forwarding service][mobile-push]
+  [a new forwarding service][mobile-push]
 - Complete translations for Spanish, German, and Czech (and
   expanded partial translations for Japanese, Chinese, French,
   Hungarian, Polish, Dutch, Russian, Bulgarian, Portuguese,
@@ -2068,6 +2073,7 @@ Zulip apps.
   open source.
 
 ### 1.3.13 - 2016-06-21
+
 - Added nearly complete internationalization of the Zulip UI.
 - Added warning when using @all/@everyone.
 - Added button offering to subscribe at bottom of narrows to streams
@@ -2105,6 +2111,7 @@ Zulip apps.
 - Removed most of the remaining JavaScript global variables.
 
 ### 1.3.12 - 2016-05-10
+
 - CVE-2016-4426: Bot API keys were accessible to other users in the same realm.
 - CVE-2016-4427: Deactivated users could access messages if SSO was enabled.
 - Fixed a RabbitMQ configuration bug that resulted in reordered messages.
@@ -2112,6 +2119,7 @@ Zulip apps.
 - Added an option to logout_all_users to delete only sessions for deactivated users.
 
 ### 1.3.11 - 2016-05-02
+
 - Moved email digest support into the default Zulip production configuration.
 - Added options for configuring PostgreSQL, RabbitMQ, Redis, and memcached
   in settings.py.
@@ -2140,6 +2148,7 @@ Zulip apps.
 - Fixed Jira integration incorrectly not @-mentioning assignee.
 
 ### 1.3.10 - 2016-01-21
+
 - Added new integration for Travis CI.
 - Added settings option to control maximum file upload size.
 - Added support for running Zulip development environment in Docker.
@@ -2162,9 +2171,11 @@ Zulip apps.
 - Substantially cleaned up console logging from run-dev.py.
 
 ### 1.3.9 - 2015-11-16
+
 - Fixed buggy #! lines in upgrade scripts.
 
 ### 1.3.8 - 2015-11-15
+
 - Added options to the Python API for working with untrusted server certificates.
 - Added a lot of documentation on the development environment and testing.
 - Added partial support for translating the Zulip UI.
@@ -2180,6 +2191,7 @@ Zulip apps.
 - Major preliminary progress towards supporting Python 3.
 
 ### 1.3.7 - 2015-10-19
+
 - Turn off desktop and audible notifications for streams by default.
 - Added support for the LDAP authentication integration creating new users.
 - Added new endpoint to support Google auth on mobile.
