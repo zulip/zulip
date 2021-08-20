@@ -19,12 +19,12 @@ paths will be familiar to Django developers.
 
 - `zerver/models.py` Main
   [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/)
-  file.  Defines Zulip's database tables.
+  file. Defines Zulip's database tables.
 
 - `zerver/lib/*.py` Most library code.
 
 - `zerver/lib/actions.py` Most code doing writes to user-facing
-  database tables lives here.  In particular, we have a policy that
+  database tables lives here. In particular, we have a policy that
   all code calling `send_event` to trigger [pushing data to
   clients](../subsystems/events-system.md) must live here.
 
@@ -121,7 +121,7 @@ Django context (i.e. with database access).
   the development environment setup process.
 
 - `tools/ci/` Subdirectory of `tools/` for things only used to
-  set up and run our tests in CI.  Actual test suites should
+  set up and run our tests in CI. Actual test suites should
   go in `tools/`.
 
 ---------------------------------------------------------
@@ -155,11 +155,11 @@ This is used to deploy essentially all configuration in production.
 - `analytics` Analytics for the Zulip server administrator (needs work to
   be useful to normal Zulip sites).
 
-- `corporate` The old Zulip.com website.  Not included in production
+- `corporate` The old Zulip.com website. Not included in production
   distribution.
 
 - `zilencer` Primarily used to hold management commands that aren't
-  used in production.  Not included in production distribution.
+  used in production. Not included in production distribution.
 
 -----------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ This is used to deploy essentially all configuration in production.
 
 ### Documentation
 
--  `docs/`        Source for this documentation.
+-  `docs/` Source for this documentation.
 
 --------------------------------------------------------------
 

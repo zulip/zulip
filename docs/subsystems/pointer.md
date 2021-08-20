@@ -21,7 +21,7 @@ First a bit of terminology:
   the messages the user has access to.
 
 - The blue cursor box (the "pointer") is around is called the
-  "selected" message.  Zulip ensures that the currently selected
+  "selected" message. Zulip ensures that the currently selected
   message is always in-view.
 
 ## Pointer logic
@@ -53,7 +53,7 @@ streams.)
 
 ### Unnarrow: previous sequence
 
-When you unnarrow using e.g. the `a`  key, you will automatically be
+When you unnarrow using e.g. the `a` key, you will automatically be
 taken to the same message that was selected in the All messages view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted
@@ -76,10 +76,10 @@ see [the architectural overview](../overview/architecture-overview.md).
 
 How does Zulip decide whether a message has been read by the user?
 The algorithm needs to correctly handle a range of ways people might
-use the product.  The algorithm is as follows:
+use the product. The algorithm is as follows:
 
 - Any message which is selected or above a message which is selected
-  is marked as read.  So messages are marked as read as you scroll
+  is marked as read. So messages are marked as read as you scroll
   down the keyboard when the pointer passes over them.
 
 - If the whitespace at the very bottom of the feed is in view, all

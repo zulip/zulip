@@ -65,7 +65,7 @@ to GitHub working on your machine.
 
 Follow our [Git guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
-efficiently, etc.  Be sure to create an SSH key and add it to your
+efficiently, etc. Be sure to create an SSH key and add it to your
 GitHub account using
 [these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
 
@@ -117,7 +117,7 @@ Adding user christie to group docker
 Done.
 ```
 
-You will need to reboot for this change to take effect.  If it worked,
+You will need to reboot for this change to take effect. If it worked,
 you will see `docker` in your list of groups:
 
 ```console
@@ -132,7 +132,7 @@ If you had previously installed and removed an older version of
 Docker, an [Ubuntu
 bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
 may prevent Docker from being automatically enabled and started after
-installation.  You can check using the following:
+installation. You can check using the following:
 
 ```console
 $ systemctl status docker
@@ -236,7 +236,7 @@ Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 (Note: The **GitHub Desktop client** for Windows has a bug where it
 will automatically set `git config core.symlink false` on a repository
 if you use it to clone a repository, which will break the Zulip
-development environment, because we use symbolic links.  For that
+development environment, because we use symbolic links. For that
 reason, we recommend avoiding using GitHub Desktop client to clone
 projects and to instead follow these instructions exactly.)
 
@@ -305,24 +305,24 @@ does the following:
 - runs the `tools/provision` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test
-  database.  We call this process "provisioning", and it is documented
+  database. We call this process "provisioning", and it is documented
   in some detail in our [dependencies documentation](../subsystems/dependencies.md).
 
 You will need an active internet connection during the entire
 process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
 proxy to access the internet.) `vagrant up` can fail while
-provisioning if your Internet connection is unreliable.  To retry, you
+provisioning if your Internet connection is unreliable. To retry, you
 can use `vagrant provision` (`vagrant up` will just boot the guest
-without provisioning after the first time).  Other common issues are
+without provisioning after the first time). Other common issues are
 documented in the
 [Troubleshooting and common errors](#troubleshooting-and-common-errors)
-section.  If that doesn't help, please visit
+section. If that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](https://zulip.com/developer-community/) for
 real-time help.
 
 On Windows, you will see the message
-`The system cannot find the path specified.` several times.  This is
+`The system cannot find the path specified.` several times. This is
 normal and is not a problem.
 
 Once `vagrant up` has completed, connect to the development
@@ -342,7 +342,7 @@ Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.15.0-54-generic x86_64)
 Congrats, you're now inside the Zulip development environment!
 
 You can confirm this by looking at the command prompt, which starts
-with `(zulip-py3-venv)vagrant@`.  If it just starts with `vagrant@`, your
+with `(zulip-py3-venv)vagrant@`. If it just starts with `vagrant@`, your
 provisioning failed and you should look at the
 [troubleshooting section](#troubleshooting-and-common-errors).
 
@@ -417,7 +417,7 @@ development environment on the virtual machine/container.
 Each component of the Zulip development server will automatically
 restart itself or reload data appropriately when you make changes. So,
 to see your changes, all you usually have to do is reload your
-browser.  More details on how this works are available below.
+browser. More details on how this works are available below.
 
 Zulip's whitespace rules are all enforced by linters, so be sure to
 run `tools/lint` often to make sure you're following our coding style
@@ -446,10 +446,10 @@ guide][rtd-git-guide].
 
 If after rebasing onto a new version of the Zulip server, you receive
 new errors while starting the Zulip server or running tests, this is
-probably not because Zulip's `main` branch is broken.  Instead, this
+probably not because Zulip's `main` branch is broken. Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
-development environment.  To update your environment, you'll need to
+development environment. To update your environment, you'll need to
 re-provision your vagrant machine using `vagrant provision` (this just
 runs `tools/provision` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
@@ -468,16 +468,16 @@ help.
 If you ever want to recreate your development environment again from
 scratch (e.g. to test a change you've made to the provisioning
 process, or because you think something is broken), you can do so
-using `vagrant destroy` and then `vagrant up`.  This will usually be
+using `vagrant destroy` and then `vagrant up`. This will usually be
 much faster than the original `vagrant up` since the base image is
 already cached on your machine (it takes about 5 minutes to run with a
 fast Internet connection).
 
 Any additional programs (e.g. Zsh, emacs, etc.) or configuration that
 you may have installed in the development environment will be lost
-when you recreate it.  To address this, you can create a script called
+when you recreate it. To address this, you can create a script called
 `tools/custom_provision` in your Zulip Git checkout; and place any
-extra setup commands there.  Vagrant will run `tools/custom_provision`
+extra setup commands there. Vagrant will run `tools/custom_provision`
 every time you run `vagrant provision` (or create a Vagrant guest via
 `vagrant up`).
 
@@ -549,7 +549,7 @@ which can help you optimize your development workflow).
 
 ### Troubleshooting and common errors
 
-Below you'll find a list of common errors and their solutions.  Most
+Below you'll find a list of common errors and their solutions. Most
 issues are resolved by just provisioning again (by running
 `./tools/provision` (from `/srv/zulip`) inside the Vagrant guest or
 equivalently `vagrant provision` from outside).
@@ -567,7 +567,7 @@ When reporting your issue, please include the following information:
 - installation method (Vagrant or direct)
 - whether or not you are using a proxy
 - a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/provision.log` on your virtual machine.  If you choose to
+  `/var/log/provision.log` on your virtual machine. If you choose to
   post just the error output, please include the **beginning of the
   error output**, not just the last few lines.
 
@@ -576,7 +576,7 @@ usually helpful.
 
 #### Vagrant guest doesn't show (zulip-py3-venv) at start of prompt
 
-This is caused by provisioning failing to complete successfully.  You
+This is caused by provisioning failing to complete successfully. You
 can see the errors in `var/log/provision.log`; it should end with
 something like this:
 
@@ -616,7 +616,7 @@ vagrant halt
 vagrant up
 ```
 
-to reboot the guest.  After this, you can do `vagrant provision` and
+to reboot the guest. After this, you can do `vagrant provision` and
 `vagrant ssh`.
 
 #### ssl read error
@@ -655,7 +655,7 @@ ssh_exchange_identification: Connection closed by remote host
 ```
 
 It usually means the Vagrant guest is not running, which is usually
-solved by rebooting the Vagrant guest via `vagrant halt; vagrant up`.  See
+solved by rebooting the Vagrant guest via `vagrant halt; vagrant up`. See
 [Vagrant was unable to communicate with the guest machine](#vagrant-was-unable-to-communicate-with-the-guest-machine)
 for more details.
 
@@ -677,9 +677,9 @@ Then Vagrant was not able to create a symbolic link.
 
 First, if you are using Windows, **make sure you have run Git BASH (or
 Cygwin) as an administrator**. By default, only administrators can
-create symbolic links on Windows.  Additionally [UAC][windows-uac], a
+create symbolic links on Windows. Additionally [UAC][windows-uac], a
 Windows feature intended to limit the impact of malware, can prevent
-even administrator accounts from creating symlinks.  [Turning off
+even administrator accounts from creating symlinks. [Turning off
 UAC][disable-uac] will allow you to create symlinks. You can also try
 some of the solutions mentioned
 [here](https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user).
@@ -689,7 +689,7 @@ some of the solutions mentioned
 
 If you ran Git BASH as administrator but you already had VirtualBox
 running, you might still get this error because VirtualBox is not
-running as administrator.  In that case: close the Zulip VM with
+running as administrator. In that case: close the Zulip VM with
 `vagrant halt`; close any other VirtualBox VMs that may be running;
 exit VirtualBox; and try again with `vagrant up --provision` from a
 Git BASH running as administrator.
@@ -735,7 +735,7 @@ The virtual machine needs to be shut down when you run this command.
 If you get an error message on Windows about lack of Windows Home
 support for Hyper-V when running `vagrant up`, the problem is that
 Windows is incorrectly attempting to use Hyper-V rather than
-Virtualbox as the virtualization provider.  You can fix this by
+Virtualbox as the virtualization provider. You can fix this by
 explicitly passing the virtualbox provider to `vagrant up`:
 
 ```console
@@ -790,7 +790,7 @@ the timeout ("config.vm.boot_timeout") value.
 ```
 
 This has a range of possible causes, that usually amount to a bug in
-Virtualbox or Vagrant.  If you see this error, you usually can fix it
+Virtualbox or Vagrant. If you see this error, you usually can fix it
 by rebooting the guest via `vagrant halt; vagrant up`.
 
 #### Vagrant up fails with subprocess.CalledProcessError
@@ -800,14 +800,14 @@ The `vagrant up` command basically does the following:
 - Downloads an Ubuntu image and starts it using a Vagrant provider.
 - Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
   `tools/provision`, which has a lot of subcommands that are
-  executed via Python's `subprocess` module.  These errors mean that
+  executed via Python's `subprocess` module. These errors mean that
   one of those subcommands failed.
 
 To debug such errors, you can log in to the Vagrant guest machine by
 running `vagrant ssh`, which should present you with a standard shell
-prompt.  You can debug interactively by using e.g.
+prompt. You can debug interactively by using e.g.
 `cd zulip && ./tools/provision`, and then running the individual
-subcommands that failed.  Once you've resolved the problem, you can
+subcommands that failed. Once you've resolved the problem, you can
 rerun `tools/provision` to proceed; the provisioning system is
 designed to recover well from failures.
 
@@ -824,11 +824,11 @@ Zulip development environment setup succeeded!
 
 If the `(zulip-py3-venv)` part is missing, this is because your
 installation failed the first time before the Zulip virtualenv was
-created.  You can fix this by just closing the shell and running
+created. You can fix this by just closing the shell and running
 `vagrant ssh` again, or using `source /srv/zulip-py3-venv/bin/activate`.
 
 Finally, if you encounter any issues that weren't caused by your
-Internet connection, please report them!  We try hard to keep Zulip
+Internet connection, please report them! We try hard to keep Zulip
 development environment provisioning free of bugs.
 
 ##### `pip install` fails during `vagrant up` on Ubuntu
@@ -883,9 +883,9 @@ First, ensure that hardware virtualization support (VT-x or AMD-V) is
 enabled in your BIOS.
 
 If the error persists, you may have run into an incompatibility
-between VirtualBox and Hyper-V on Windows.  To disable Hyper-V, open
+between VirtualBox and Hyper-V on Windows. To disable Hyper-V, open
 command prompt as administrator, run
-`bcdedit /set hypervisorlaunchtype off`, and reboot.  If you need to
+`bcdedit /set hypervisorlaunchtype off`, and reboot. If you need to
 enable it later, run `bcdedit /deletevalue hypervisorlaunchtype`, and
 reboot.
 
@@ -901,7 +901,7 @@ default: OSError: [Errno 26] Text file busy: 'baremetrics'
 
 This error is caused by a
 [bug](https://www.virtualbox.org/ticket/19004) in recent versions of
-the VirtualBox Guest Additions for Linux on Windows hosts.  You can
+the VirtualBox Guest Additions for Linux on Windows hosts. You can
 check the running version of VirtualBox Guest Additions with this
 command:
 
@@ -911,7 +911,7 @@ vagrant ssh -- 'modinfo -F version vboxsf'
 
 The bug has not been fixed upstream as of this writing, but you may be
 able to work around it by downgrading VirtualBox Guest Additions to
-6.0.4.  To do this, create a `~/.zulip-vagrant-config` file and add
+6.0.4. To do this, create a `~/.zulip-vagrant-config` file and add
 this line:
 
 ```text
@@ -929,10 +929,10 @@ vagrant reload --provision
 ### Specifying an Ubuntu mirror
 
 Bringing up a development environment for the first time involves
-downloading many packages from the Ubuntu archive.  The Ubuntu cloud
+downloading many packages from the Ubuntu archive. The Ubuntu cloud
 images use the global mirror `http://archive.ubuntu.com/ubuntu/` by
 default, but you may find that you can speed up the download by using
-a local mirror closer to your location.  To do this, create
+a local mirror closer to your location. To do this, create
 `~/.zulip-vagrant-config` and add a line like this, replacing the URL
 as appropriate:
 
@@ -969,7 +969,7 @@ NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
 ```
 
 You'll want to **double-check** your work for mistakes (a common one
-is using `https://` when your proxy expects `http://`).  Invalid proxy
+is using `https://` when your proxy expects `http://`). Invalid proxy
 configuration can cause confusing/weird exceptions; if you're using a
 proxy and get an error, the first thing you should investigate is
 whether you entered your proxy configuration correctly.
@@ -985,7 +985,7 @@ then do a `vagrant reload`.
 ### Using a different port for Vagrant
 
 You can also change the port on the host machine that Vagrant uses by
-adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
+adding to your `~/.zulip-vagrant-config` file. E.g. if you set:
 
 ```text
 HOST_PORT 9971
@@ -1016,7 +1016,7 @@ described here are ignored).
 
 Our default Vagrant settings allocate 2 cpus with 2GiB of memory for
 the guest, which is sufficient to run everything in the development
-environment.  If your host system has more CPUs, or you have enough
+environment. If your host system has more CPUs, or you have enough
 RAM that you'd like to allocate more than 2GiB to the guest, you can
 improve performance of the Zulip development environment by allocating
 more resources.

@@ -3,7 +3,7 @@
 ## Guidelines
 
 In order to accommodate all users, Zulip strives to implement accessibility
-best practices in its user interface.  There are many aspects to accessibility;
+best practices in its user interface. There are many aspects to accessibility;
 here are some of the more important ones to keep in mind.
 
 - All images should have alternative text attributes for the benefit of users
@@ -20,7 +20,7 @@ here are some of the more important ones to keep in mind.
 
 There are many different standards for accessibility, but the most relevant
 one for Zulip is the W3C's [WCAG](https://www.w3.org/TR/WCAG20/) (Web Content
-Accessibility Guidelines), currently at version 2.0.  Whenever practical, we
+Accessibility Guidelines), currently at version 2.0. Whenever practical, we
 should strive for compliance with the AA level of this specification.
 (The W3C itself
 [recommends not trying](https://www.w3.org/TR/UNDERSTANDING-WCAG20/conformance.html#uc-conf-req1-head)
@@ -30,11 +30,11 @@ as it is not possible for some content.)
 ## Tools
 
 There are tools available to automatically audit a web page for compliance
-with many of the WCAG guidelines.  Here are some of the more useful ones:
+with many of the WCAG guidelines. Here are some of the more useful ones:
 
 - [Accessibility Developer Tools][chrome-webstore]
   This open source Chrome extension from Google adds an accessibility audit to
-  the "Audits" tab of the Chrome Developer Tools.  The audit is performed
+  the "Audits" tab of the Chrome Developer Tools. The audit is performed
   against the page's DOM via JavaScript, allowing it to identify some issues
   that a static HTML inspector would miss.
 - [aXe](https://www.deque.com/products/axe/) An open source Chrome and Firefox
@@ -42,14 +42,14 @@ with many of the WCAG guidelines.  Here are some of the more useful ones:
   extension.
 - [Wave](https://wave.webaim.org/) This web application takes a URL and loads
   it in a frame, reporting on all the issues it finds with links to more
-  information.  Has the advantage of not requiring installation, but requires
+  information. Has the advantage of not requiring installation, but requires
   a URL which can be directly accessed by an external site.
 - [Web Developer](https://chrispederick.com/work/web-developer/) This browser
   extension has many useful features, including a convenient link for opening
   the current URL in Wave to get an accessibility report.
 
 Note that these tools cannot catch all possible accessibility problems, and
-sometimes report false positives as well.  They are a useful aid in quickly
+sometimes report false positives as well. They are a useful aid in quickly
 identifying potential problems and checking for regressions, but their
 recommendations should not be blindly obeyed.
 
@@ -57,7 +57,7 @@ recommendations should not be blindly obeyed.
 
 Problems with Zulip's accessibility should be reported as
 [GitHub issues](https://github.com/zulip/zulip/issues) with the "accessibility"
-label.  This label can be added by entering the following text in a separate
+label. This label can be added by entering the following text in a separate
 comment on the issue:
 
 > @zulipbot add "area: accessibility"

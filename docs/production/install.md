@@ -59,7 +59,7 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
   settings.
 
 - `--self-signed-cert`: With this option, the Zulip installer
-  generates a self-signed SSL certificate for the server.  This isn't
+  generates a self-signed SSL certificate for the server. This isn't
   suitable for production use, but may be convenient for testing.
 
 - `--certbot`: With this option, the Zulip installer automatically
@@ -77,7 +77,7 @@ documentation.
 
 ## Step 3: Create a Zulip organization, and log in
 
-On success, the install script prints a link.  If you're [restoring a
+On success, the install script prints a link. If you're [restoring a
 backup][zulip-backups] or importing your data from [Slack][slack-import],
 or another Zulip server, you should stop here
 and return to the import instructions.
@@ -85,13 +85,13 @@ and return to the import instructions.
 [slack-import]: https://zulip.com/help/import-from-slack
 [zulip-backups]: ../production/export-and-import.html#backups
 
-Otherwise, open the link in a browser.  Follow the prompts to set up
+Otherwise, open the link in a browser. Follow the prompts to set up
 your organization, and your own user account as an administrator.
 Then, log in!
 
-The link is a secure one-time-use link.  If you need another
+The link is a secure one-time-use link. If you need another
 later, you can generate a new one by running
-`manage.py generate_realm_creation_link` on the server.  See also our
+`manage.py generate_realm_creation_link` on the server. See also our
 doc on running [multiple organizations on the same
 server](multiple-organizations.md) if that's what you're planning to
 do.
@@ -109,7 +109,7 @@ Learning more:
 
 - Subscribe to the [Zulip announcements email
 list](https://groups.google.com/forum/#!forum/zulip-announce) for
-server administrators.  This extremely low-traffic list is for
+server administrators. This extremely low-traffic list is for
 important announcements, including [new
 releases](../overview/release-lifecycle.md) and security issues. You
 can also use the [RSS
@@ -128,7 +128,7 @@ server.
 The install script does several things:
 - Creates the `zulip` user, which the various Zulip servers will run as.
 - Creates `/home/zulip/deployments/`, which the Zulip code for this
-deployment (and future deployments when you upgrade) goes into.  At the
+deployment (and future deployments when you upgrade) goes into. At the
 very end of the install process, the script moves the Zulip code tree
 it's running from (which you unpacked from a tarball above) to a
 directory there, and makes `/home/zulip/deployments/current` as a
@@ -144,20 +144,20 @@ machines, check out our [deployment options documentation](deployment.md).
 ## Troubleshooting
 
 **Install script.**
-The Zulip install script is designed to be idempotent.  This means
+The Zulip install script is designed to be idempotent. This means
 that if it fails, then once you've corrected the cause of the failure,
 you can just rerun the script.
 
 The install script automatically logs a transcript to
-`/var/log/zulip/install.log`.  In case of failure, you might find the
-log handy for resolving the issue.  Please include a copy of this log
+`/var/log/zulip/install.log`. In case of failure, you might find the
+log handy for resolving the issue. Please include a copy of this log
 file in any bug reports.
 
 **The `zulip` user's password.**
 By default, the `zulip` user doesn't
 have a password, and is intended to be accessed by `su zulip` from the
 `root` user (or via SSH keys or a password, if you want to set those
-up, but that's up to you as the system administrator).  Most people
+up, but that's up to you as the system administrator). Most people
 who are prompted for a password when running `su zulip` turn out to
 already have switched to the `zulip` user earlier in their session,
 and can just skip that step.
@@ -171,7 +171,7 @@ how to debug.
 **Community.** If the tips above don't help, please visit [#production
 help][production-help] in the [Zulip development community
 server][chat-zulip-org] for realtime help, and we'll try to help you
-out!  Please provide details like the full traceback from the bottom
+out! Please provide details like the full traceback from the bottom
 of `/var/log/zulip/errors.log` in your report (ideally in a [code
 block][code-block]).
 

@@ -12,7 +12,7 @@ administrators][realm-admin-docs].
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
 
 This page discusses additional configuration that a system
-administrator can do.  To change any of the following settings, edit
+administrator can do. To change any of the following settings, edit
 the `/etc/zulip/settings.py` file on your Zulip server, and then
 restart the server with the following command:
 ```bash
@@ -42,12 +42,12 @@ if there's something you'd like to do but can't figure out how to.
 `EXTERNAL_HOST`: the user-accessible domain name for your Zulip
 installation (i.e., what users will type in their web browser). This
 should of course match the DNS name you configured to point to your
-server and for which you configured SSL certificates.  If you passed
+server and for which you configured SSL certificates. If you passed
 `--hostname` to the installer, this will be prefilled with that value.
 
 `ZULIP_ADMINISTRATOR`: the email address of the person or team
 maintaining this installation and who will get support and error
-emails.  If you passed `--email` to the installer, this will be
+emails. If you passed `--email` to the installer, this will be
 prefilled with that value.
 
 ### Authentication backends
@@ -68,14 +68,14 @@ them.
 
 The Zulip apps expect to be talking to servers with a properly
 signed SSL certificate, in most cases and will not accept a
-self-signed certificate.  You should get a proper SSL certificate
+self-signed certificate. You should get a proper SSL certificate
 before testing the apps.
 
 Because of how Google and Apple have architected the security model of
 their push notification protocols, the Zulip mobile apps for
 [iOS](https://itunes.apple.com/us/app/zulip/id1203036395) and
 [Android](https://play.google.com/store/apps/details?id=com.zulipmobile)
-can only receive push notifications from a single Zulip server.  We
+can only receive push notifications from a single Zulip server. We
 have configured that server to be `push.zulipchat.com`, and offer a
 [push notification forwarding service](mobile-push-notifications.md) that
 forwards push notifications through our servers to mobile devices.
@@ -85,10 +85,10 @@ and configure this service.
 ### Terms of Service and Privacy policy
 
 Zulip allows you to configure your server's Terms of Service and
-Privacy Policy pages (`/terms` and `/privacy`, respectively).  You can
+Privacy Policy pages (`/terms` and `/privacy`, respectively). You can
 use the `TERMS_OF_SERVICE` and `PRIVACY_POLICY` settings to configure
-the path to your server's policies.  The syntax is Markdown (with
-support for included HTML).  A good approach is to use paths like
+the path to your server's policies. The syntax is Markdown (with
+support for included HTML). A good approach is to use paths like
 `/etc/zulip/terms.md`, so that it's easy to back up your policy
 configuration along with your other Zulip server configuration.
 

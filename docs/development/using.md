@@ -2,9 +2,9 @@ Using the development environment
 =================================
 
 This page describes the basic edit/refresh workflows for working with
-the Zulip development environment.  Generally, the development
+the Zulip development environment. Generally, the development
 environment will automatically update as soon as you save changes
-using your editor.  Details for work on the [server](#server),
+using your editor. Details for work on the [server](#server),
 [web app](#web), and [mobile apps](#mobile) are below.
 
 If you're working on authentication methods or need to use the [Zulip
@@ -23,7 +23,7 @@ the development environment][authentication-dev-server].
   if no changes are required.
 - After making changes, you'll often want to run the
   [linters](../testing/linters.md) and relevant [test
-  suites](../testing/testing.md).  Consider using our [Git pre-commit
+  suites](../testing/testing.md). Consider using our [Git pre-commit
   hook](../git/zulip-tools.html#set-up-git-repo-script) to
   automatically lint whenever you make a commit.
 - All of our test suites are designed to support quickly testing just
@@ -43,7 +43,7 @@ the development environment][authentication-dev-server].
     - The main Django/Tornado server processes are run on top of
     Django's [manage.py runserver][django-runserver], which will
     automatically restart them when you save changes to Python code
-    they use.  You can watch this happen in the `run-dev.py` console
+    they use. You can watch this happen in the `run-dev.py` console
     to make sure the backend has reloaded.
    - The Python queue workers will also automatically restart when you
     save changes, as long as they haven't crashed (which can happen if
@@ -73,7 +73,7 @@ the development environment][authentication-dev-server].
     something other than the login process.
     - You can test the login or registration process by clicking the
     links for the normal login page.
-- Most changes will take effect automatically.  Details:
+- Most changes will take effect automatically. Details:
   - If you change CSS files, your changes will appear immediately via
     webpack hot module replacement.
   - If you change JavaScript code (`static/js`) or Handlebars

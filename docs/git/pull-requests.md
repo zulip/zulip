@@ -20,7 +20,7 @@ requests early and often. This allows you to share your code to make
 it easier to get feedback and help with your changes. Prefix the
 titles of work-in-progress pull requests with **[WIP]**, which in our
 project means that you don't think your pull request is ready to be
-merged (e.g. it might not work or pass tests).  This sets expectations
+merged (e.g. it might not work or pass tests). This sets expectations
 correctly for any feedback from other developers, and prevents your
 work from being merged before you're confident in it.
 
@@ -30,7 +30,7 @@ work from being merged before you're confident in it.
 
 It is important to [work on a feature
 branch](using.html#work-on-a-feature-branch) when creating a pull
-request.  Your new pull request will be inextricably linked with your
+request. Your new pull request will be inextricably linked with your
 branch while it is open, so you will need to reserve your branch only
 for changes related to your issue, and avoid introducing extraneous
 changes for other issues or from upstream.

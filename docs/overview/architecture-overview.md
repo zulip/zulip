@@ -4,7 +4,7 @@ Zulip architectural overview
 Key codebases
 -------------
 
-The main Zulip codebase is at <https://github.com/zulip/zulip>.  It
+The main Zulip codebase is at <https://github.com/zulip/zulip>. It
 contains the Zulip backend (written in Python 3.x and Django), the
 web app (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulip.com/integrations)
@@ -43,7 +43,7 @@ Usage assumptions and concepts
 Zulip is a real-time team chat application meant to provide a great
 experience for a wide range of organizations, from companies to
 volunteer projects to groups of friends, ranging in size from a small
-team to 10,000s of users.  It has [hundreds of
+team to 10,000s of users. It has [hundreds of
 features](https://zulip.com/features) both larger and small, and
 supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
 all modern web browsers, several cross-protocol chat clients, and
@@ -51,8 +51,8 @@ numerous dedicated [Zulip API](https://zulip.com/api) clients
 (e.g. bots).
 
 A server can host multiple Zulip *realms* (organizations), each on its
-own (sub)domain.  While most installations host only one organization, some
-such as zulip.com host thousands.  Each organization is a private
+own (sub)domain. While most installations host only one organization, some
+such as zulip.com host thousands. Each organization is a private
 chamber with its own users, streams, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
@@ -69,7 +69,7 @@ Components
 ### Django and Tornado
 
 Zulip is primarily implemented in the
-[Django](https://www.djangoproject.com/) Python web framework.  We
+[Django](https://www.djangoproject.com/) Python web framework. We
 also make use of [Tornado](https://www.tornadoweb.org) for the
 real-time push system.
 
@@ -86,10 +86,10 @@ connection from every running client. For this reason, it's
 responsible for event (message) delivery, but not much else. We try to
 avoid any blocking calls in Tornado because we don't want to delay
 delivery to thousands of other connections (as this would make Zulip
-very much not real-time).  For instance, we avoid doing cache or
+very much not real-time). For instance, we avoid doing cache or
 database queries inside the Tornado code paths, since those blocking
 requests carry a very high performance penalty for a single-threaded,
-asynchronous server system.  (In principle, we could do non-blocking
+asynchronous server system. (In principle, we could do non-blocking
 requests to those services, but the Django-based database libraries we
 use in most of our codebase using don't support that, and in any case,
 our architecture doesn't require Tornado to do that).
@@ -142,7 +142,7 @@ from outside.
     `uWSGI` via `unix:/home/zulip/deployments/uwsgi-socket`.
 - By default (i.e. if `LOCAL_UPLOADS_DIR` is set), nginx will serve
   user-uploaded content like avatars, custom emoji, and uploaded
-  files.  However, one can configure Zulip to store these in a cloud
+  files. However, one can configure Zulip to store these in a cloud
   storage service like Amazon S3 instead.
 
 Note that we do not use `nginx` in the development environment, opting
@@ -168,7 +168,7 @@ memcached is used to cache database model
 objects. `zerver/lib/cache.py` and `zerver/lib/cache_helpers.py`
 manage putting things into memcached, and invalidating the cache when
 values change. The memcached configuration is in
-`puppet/zulip/files/memcached.conf`.  See our
+`puppet/zulip/files/memcached.conf`. See our
 [caching guide](../subsystems/caching.md) to learn how this works in
 detail.
 
@@ -191,7 +191,7 @@ replace RabbitMQ with Redis, with some loss of functionality).
 
 The answer is likely yes, but it wouldn't improve Zulip.
 Operationally, our current setup is likely easier to develop and run
-in production than a pure Redis system would be.  Meanwhile, the
+in production than a pure Redis system would be. Meanwhile, the
 perceived benefit for using Redis is usually to reduce memory
 consumption by running fewer services, and no such benefit would
 materialize:
@@ -221,7 +221,7 @@ and the Tornado push system.
 
 Two simple wrappers around `pika` (the Python RabbitMQ client) are in
 `zulip/zerver/lib/queue.py`. There's an asynchronous client for use in
-Tornado and a more general client for use elsewhere.  Most of the
+Tornado and a more general client for use elsewhere. Most of the
 processes started by Supervisor are queue processors that continually
 pull things out of a RabbitMQ queue and handle them; they are defined
 in `zerver/worker/queue_processors.py`.
@@ -243,7 +243,7 @@ list of stopwords used by a PostgreSQL extension.
 
 In a development environment, configuration of that PostgreSQL
 extension is handled by `tools/postgresql-init-dev-db` (invoked by
-`tools/provision`).  That file also manages setting up the
+`tools/provision`). That file also manages setting up the
 development PostgreSQL user.
 
 `tools/provision` also invokes `tools/rebuild-dev-database`
@@ -267,13 +267,13 @@ component of the Zulip server (e.g.
 ## Glossary
 
 This section gives names for some of the elements in the Zulip UI used
-in Zulip development conversations.  In general, our goal is to
+in Zulip development conversations. In general, our goal is to
 minimize the set of terminology listed here by giving elements
 self-explanatory names.
 
 - **bankruptcy**: When a user has been off Zulip for several days and
     has hundreds of unread messages, they are prompted for whether
-    they want to mark all their unread messages as read.  This is
+    they want to mark all their unread messages as read. This is
     called "declaring bankruptcy" (in reference to the concept in
     finance).
 

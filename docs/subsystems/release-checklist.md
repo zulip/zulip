@@ -11,7 +11,7 @@ preparing a new release.
     `pip list --outdated`).
   - [Upload strings to
     Transifex](../translating/internationalization.html#translation-process)
-    using `push-translations`.  Post a Transifex
+    using `push-translations`. Post a Transifex
     [Announcement](https://www.transifex.com/zulip/zulip/announcements/)
     notifying translators that we're approaching a release.
   - Merge draft updates to the [changelog](../overview/changelog.md)
@@ -22,7 +22,7 @@ preparing a new release.
     remove any backwards-compatibility code in this release.
 - Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
-- Draft the release blog post (a.k.a. the release notes) in Paper.  In
+- Draft the release blog post (a.k.a. the release notes) in Paper. In
   it, list the important changes in the release, from most to least
   notable.
 
@@ -36,9 +36,9 @@ preparing a new release.
   release, on both Bionic and Focal.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
-- Move the blog post draft to Ghost.  (For a draft in Dropbox Paper,
+- Move the blog post draft to Ghost. (For a draft in Dropbox Paper,
   use "··· > Export > Markdown" to get a pretty good markup
-  conversion.)  Proofread the post, especially for formatting.  Tag
+  conversion.) Proofread the post, especially for formatting. Tag
   the post with "Release announcements" in Ghost.
 
 ### Executing the release
@@ -80,8 +80,8 @@ preparing a new release.
   - On the release branch, update `ZULIP_VERSION` in `version.py` to
     the present release with a `+git` suffix, e.g. `4.0+git`.
   - On `main`, update `ZULIP_VERSION` to the future major release with
-    a `-dev+git` suffix, e.g. `5.0-dev+git`.  Make a Git tag for this
-    update commit with a `-dev` suffix, e.g. `5.0-dev`.  Push the tag
+    a `-dev+git` suffix, e.g. `5.0-dev+git`. Make a Git tag for this
+    update commit with a `-dev` suffix, e.g. `5.0-dev`. Push the tag
     to both zulip.git and zulip-internal.git to get a correct version
     number for future Cloud deployments.
   - Consider removing a few old releases from ReadTheDocs; we keep about

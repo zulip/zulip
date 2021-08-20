@@ -5,7 +5,7 @@ time when working with Git on the Zulip project.
 
 ## Set up Git repo script
 
-**Extremely useful**.  In the `tools` directory of
+**Extremely useful**. In the `tools` directory of
 [zulip/zulip][github-zulip-zulip] you'll find a bash script
 `setup-git-repo`. This script installs a pre-commit hook, which will
 run each time you `git commit` to automatically run
@@ -41,7 +41,7 @@ described above in that it does not create a branch for the pull request
 checkout.
 
 **This tool checks for uncommitted changes, but it will move the
-  current branch using `git reset --hard`.  Use with caution.**
+  current branch using `git reset --hard`. Use with caution.**
 
 First, make sure you are working in a branch you want to move (in this
 example, we'll use the local `main` branch). Then run the script
@@ -118,10 +118,10 @@ HEAD is now at 5a1e982 tools: Update clean-branches to clean review branches.
 ## Push to a pull request
 
 `tools/push-to-pull-request` is primarily useful for maintainers who
-are merging other users' commits into a Zulip repository.  After doing
+are merging other users' commits into a Zulip repository. After doing
 `reset-to-pull-request` or `fetch-pull-request` and making some
 changes, you can push a branch back to a pull request with e.g.
-`tools/push-to-pull-request 1234`.  This is useful for a few things:
+`tools/push-to-pull-request 1234`. This is useful for a few things:
 
 - Getting CI to run and enabling you to use the GitHub "Merge" buttons
   to merge a PR after you make some corrections to a PR, without
@@ -139,7 +139,7 @@ next batch of changes.
 
 Note that in order to do this you need permission to do such a push,
 which GitHub offers by default to users with write access to the
-repository.  For multiple developers collaborating on a PR, you can
+repository. For multiple developers collaborating on a PR, you can
 achieve this by granting other users permission to write to your fork.
 
 ## Delete unimportant branches

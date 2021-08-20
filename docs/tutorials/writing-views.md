@@ -84,7 +84,7 @@ valid session cookie) before providing the view for this route, or
 redirects the browser to a login page. This is used in the root path
 (`/`) of the website for the web client. If a request comes from a
 browser without a valid session cookie, they are redirected to a login
-page.  It is a small fork of Django's
+page. It is a small fork of Django's
 [login_required][login-required-link], adding a few extra checks
 specific to Zulip.
 
@@ -104,7 +104,7 @@ Templates for the main website are found in
 ## Writing API REST endpoints
 
 These are code-parseable views that take x-www-form-urlencoded or JSON
-request bodies, and return JSON-string responses.  Almost all Zulip
+request bodies, and return JSON-string responses. Almost all Zulip
 view code is in the implementations of API REST endpoints.
 
 The REST API does authentication of the user through `rest_dispatch`,
@@ -124,9 +124,9 @@ string given via HTTP basic auth for API clients.
 ### Request variables
 
 Most API views will have some arguments that are passed as part of the
-request to control the behavior of the view.  In any well-engineered
+request to control the behavior of the view. In any well-engineered
 view, you need to write code to parse and validate that the arguments
-exist and have the correct form.  For many applications, this leads to
+exist and have the correct form. For many applications, this leads to
 one of several bad outcomes:
 
 - The code isn't written, so arguments aren't validated, leading to
@@ -139,7 +139,7 @@ one of several bad outcomes:
 In Zulip, we solve this problem with a the special decorator called
 `has_request_variables` which allows a developer to declare the
 arguments a view function takes and validate their types all within
-the `def` line of the function.  We like this framework because we
+the `def` line of the function. We like this framework because we
 have found it makes the validation code compact, readable, and
 conveniently located in the same place as the method it is validating
 arguments for.
@@ -158,11 +158,11 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
 ```
 
 You will notice the special `REQ()` in the keyword arguments to
-`create_user_backend`.  `has_request_variables` parses the declared
+`create_user_backend`. `has_request_variables` parses the declared
 keyword arguments of the decorated function, and for each that has an
 instance of `REQ` as the default value, it extracts the HTTP parameter
 with that name from the request, parses it as JSON, and passes it to
-the function.  It will return an nicely JSON formatted HTTP 400 error
+the function. It will return an nicely JSON formatted HTTP 400 error
 in the event that an argument is missing, doesn't parse as JSON, or
 otherwise is invalid.
 
@@ -194,7 +194,7 @@ REQ also helps us with request variable validation. For example:
   not automatically marshall the input from JSON).
 
 - Since there is no need to JSON-encode strings, usually simply
-  `my_string=REQ()` is correct.  One can pass e.g.
+  `my_string=REQ()` is correct. One can pass e.g.
   `str_validator=check_string_in(...)` where one wants to run a
   validator on the value of a string.
 
@@ -205,7 +205,7 @@ for more validators and their documentation.
 ### Deciding which HTTP verb to use
 
 When writing a new API view, you should writing a view to do just one
-type of thing.  Usually that's either a read or write operation.
+type of thing. Usually that's either a read or write operation.
 
 If you're reading data, GET is the best option. Other read-only verbs
 are HEAD, which should be used for testing if a resource is available to
@@ -243,18 +243,18 @@ change the server more than once or cause unwanted side effects.
 ### Making changes to the database
 
 If the view does any modification to the database, that change is done
-in a helper function in `zerver/lib/actions.py`.  Those functions are
+in a helper function in `zerver/lib/actions.py`. Those functions are
 responsible for doing a complete update to the state of the server,
 which often entails both updating the database and sending any events
-to notify clients about the state change.  When possible, we prefer to
+to notify clients about the state change. When possible, we prefer to
 design a clean boundary between the view function and the actions
 function is such that all user input validation happens in the view
 code (i.e. all 400 type errors are thrown there), and the actions code
 is responsible for atomically executing the change (this is usually
 signalled by having the actions function have a name starting with
-`do_`.  So in most cases, errors in an actions function will be the
+`do_`. So in most cases, errors in an actions function will be the
 result of an operational problem (e.g. lost connection to the
-database) and lead to a 500 error.  If an actions function is
+database) and lead to a 500 error. If an actions function is
 responsible for validation as well, it should have a name starting
 with `check_`.
 

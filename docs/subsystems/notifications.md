@@ -36,9 +36,9 @@ as follows:
   in the main event dictionary.
   - The `presence_idle_user_ids` set, containing the subset of
   recipient users who can potentially receive notifications, but have not
-  interacted with a Zulip client in the last few minutes.  (Users who
+  interacted with a Zulip client in the last few minutes. (Users who
   have generally will not receive a notification unless the
-  `enable_online_push_notifications` flag is enabled).  This data
+  `enable_online_push_notifications` flag is enabled). This data
   structure ignores users for whom the message is not notifiable,
   which is important to avoid this being thousands of `user_ids` for
   messages to large streams with few currently active users.
@@ -102,7 +102,7 @@ as follows:
 - The queue processors for those queues make the final determination
   for whether to send a notification, and do the work to generate an
   email (`zerver/lib/email_notifications.py`) or mobile
-  (`zerver/lib/push_notifications.py`) notification.  We'll detail
+  (`zerver/lib/push_notifications.py`) notification. We'll detail
   this process in more detail for each system below, but it's
   important to know that it's normal for a message to sit in these
   queues for minutes (and in the future, possibly hours).
@@ -120,7 +120,7 @@ as follows:
   messages into a single email. These features are unnecessary
   for mobile push notifications, because we can live-update those
   details with a future notification, whereas emails cannot be readily
-  updated once sent.  Zulip's email notifications are styled similarly
+  updated once sent. Zulip's email notifications are styled similarly
   to GitHub's email notifications, with a clean, simple design that
   makes replying from an email client possible (using the [incoming
   email integration](../production/email-gateway.md)).
@@ -144,7 +144,7 @@ structure of the system, when thinking about changes to it:
   to Tornado via RabbitMQ for scalability reasons.
 - **Tornado doesn't do database queries**. Because the Tornado system
   is an asynchronous event-driven framework, and our Django database
-  library is synchronous, database queries are very expensive.  So
+  library is synchronous, database queries are very expensive. So
   these queries need to be done in either `do_send_messages` or the
   queue processor logic. (For example, this means `presence` data
   should be checked in either `do_send_messages` or the queue
