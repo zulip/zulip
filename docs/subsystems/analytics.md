@@ -119,7 +119,7 @@ efficient:
   each user, we just query for each user, and then add up the numbers for
   the users to get the totals for the realm.
 - Not storing rows when the value is 0. An hourly user stat would otherwise
-  collect 24 * 365 * roughly .5MB per db row = 4GB of data per user per
+  collect 24 \* 365 \* roughly .5MB per db row = 4GB of data per user per
   year, most of whose values are 0. A related note is to be cautious about
   adding queries that are typically non-0 instead of being typically 0.
 
