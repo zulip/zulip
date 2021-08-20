@@ -66,7 +66,6 @@ export function filter_taken_users(items, pill_widget) {
 You can get notifications from the pill code that pills have been
 created/remove.
 
-
 ```js
 pills.onPillCreate(function () {
     update_save_state();

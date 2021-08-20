@@ -63,8 +63,8 @@ All steps in this section should be run as the `root` user; on most installs, th
    su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
    ```
 
-    Note that the migration may take a long time, and users will be
-    unable to send new messages until the migration finishes.
+   Note that the migration may take a long time, and users will be
+   unable to send new messages until the migration finishes.
 
 1. Once the migrations are complete, restart Zulip:
 
@@ -80,9 +80,9 @@ All steps in this section should be run as the `root` user; on most installs, th
    su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga zero'
    ```
 
-    If you intend to re-enable PGroonga later, you can skip this step,
-    at the cost of your Message table being slightly larger than it would
-    be otherwise.
+   If you intend to re-enable PGroonga later, you can skip this step,
+   at the cost of your Message table being slightly larger than it would
+   be otherwise.
 
 1. Edit `/etc/zulip/settings.py`, editing the line containing `USING_PGROONGA` to read:
 

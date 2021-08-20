@@ -124,11 +124,12 @@ Here are some example action methods that tests may use for data setup:
 Some tests need to access the filesystem (e.g. `test_upload.py` tests
 for `LocalUploadBackend` and the data import tests). Doing
 this correctly requires care to avoid problems like:
+
 - Leaking files after every test (which are clutter and can eventually
-run the development environment out of disk) or
+  run the development environment out of disk) or
 - Interacting with other parallel processes of this `test-backend` run
-(or another `test-backend` run), or with later tests run by this
-process.
+  (or another `test-backend` run), or with later tests run by this
+  process.
 
 To avoid these problems, you can do the following:
 
@@ -155,8 +156,8 @@ techniques.
 
 #### What is mocking?
 
-When writing tests, *mocks allow you to replace methods or objects with fake entities
-suiting your testing requirements*. Once an object is mocked, **its original code does not
+When writing tests, _mocks allow you to replace methods or objects with fake entities
+suiting your testing requirements_. Once an object is mocked, **its original code does not
 get executed anymore**.
 
 Rather, you can think of a mocked object as an initially empty shell:
@@ -205,12 +206,12 @@ def greet(name_key: str) -> str:
   ```
 
 -> **You have a problem**: `greet()` calls `fetch_database()`. `fetch_database()` does some look-ups in
-   a database. *You haven't created that database for your tests, so your test would fail, even though
-   the code is correct.*
+a database. _You haven't created that database for your tests, so your test would fail, even though
+the code is correct._
 
 - Luckily, you know that `fetch_database("Mario")` should return "Mr. Mario Mario".
 
-  - *Hint*: Sometimes, you might not know the exact return value, but one that is equally valid and works
+  - _Hint_: Sometimes, you might not know the exact return value, but one that is equally valid and works
     with the rest of the code. In that case, just use this one.
 
 -> **Solution**: You mock `fetch_database()`. This is also referred to as "mocking out" `fetch_database()`.
@@ -237,7 +238,7 @@ It also implements `MagicMock`, which is the same as `Mock`, but contains many d
 those are the ones starting with with a dunder `__`). From the docs:
 
 > In most of these examples the Mock and MagicMock classes are interchangeable. As the MagicMock is the more capable class
-  it makes a sensible one to use by default.
+> it makes a sensible one to use by default.
 
 `Mock` itself is a class that principally accepts and records any and all calls. A piece of code like
 
@@ -250,7 +251,7 @@ foo.baz
 foo.qux = 42
 ```
 
-is *not* going to throw any errors. Our mock silently accepts all these calls and records them.
+is _not_ going to throw any errors. Our mock silently accepts all these calls and records them.
 `Mock` also implements methods for us to access and assert its records, e.g.
 
 ```python
@@ -259,8 +260,8 @@ foo.bar.assert_called_with('quux')
 
 Finally, `unittest.mock` also provides a method to mock objects only within a scope: `patch()`. We can use `patch()` either
 as a decorator or as a context manager. In both cases, the mock created by `patch()` will apply for the scope of the decorator /
-context manager. `patch()` takes only one required argument `target`. `target` is a string in dot notation that *refers to
-the name of the object you want to mock*. It will then assign a `MagicMock()` to that object.
+context manager. `patch()` takes only one required argument `target`. `target` is a string in dot notation that _refers to
+the name of the object you want to mock_. It will then assign a `MagicMock()` to that object.
 As an example, look at the following code:
 
 ```python
@@ -273,7 +274,7 @@ with mock.patch('__main__.urandom', return_value=42):
 print(urandom(1)) # We exited the context manager, so the mock doesn't apply anymore. Will return a random byte.
 ```
 
-*Note that calling `mock.patch('os.urandom', return_value=42)` wouldn't work here*: `os.urandom` would be the name of our patched
+_Note that calling `mock.patch('os.urandom', return_value=42)` wouldn't work here_: `os.urandom` would be the name of our patched
 object. However, we imported `urandom` with `from os import urandom`; hence, we bound the `urandom` name to our current module
 `__main__`.
 
@@ -464,28 +465,28 @@ to verify that the endpoint is properly failing.
 Here are some things to consider when writing new tests:
 
 - **Duplication** We try to avoid excessive duplication in tests.
-If you have several tests repeating the same type of test setup,
-consider making a setUp() method or a test helper.
+  If you have several tests repeating the same type of test setup,
+  consider making a setUp() method or a test helper.
 
 - **Network independence** Our tests should still work if you don't
-have an internet connection. For third party clients, you can simulate
-their behavior using fixture data. For third party servers, you can
-typically simulate their behavior using mocks.
+  have an internet connection. For third party clients, you can simulate
+  their behavior using fixture data. For third party servers, you can
+  typically simulate their behavior using mocks.
 
 - **Coverage** We have 100% line coverage on several of our backend
-modules. You can use the `--coverage` option to generate coverage
-reports, and new code should have 100% coverage, which generally
-requires testing not only the "happy path" but also error handling
-code and edge cases. It will generate a nice HTML report that you can
-view right from your browser (the tool prints the URL where the report
-is exposed in your development environment).
+  modules. You can use the `--coverage` option to generate coverage
+  reports, and new code should have 100% coverage, which generally
+  requires testing not only the "happy path" but also error handling
+  code and edge cases. It will generate a nice HTML report that you can
+  view right from your browser (the tool prints the URL where the report
+  is exposed in your development environment).
 
 - **Console output** A properly written test should print nothing to
-the console; use `with self.assertLogs` to capture and verify any
-logging output. Note that we reconfigure various loggers in
-`zproject/test_extra_settings.py` where the output is unlikely to be
-interesting when running our test suite.
-`test-backend --ban-console-output` checks for stray print statements.
+  the console; use `with self.assertLogs` to capture and verify any
+  logging output. Note that we reconfigure various loggers in
+  `zproject/test_extra_settings.py` where the output is unlikely to be
+  interesting when running our test suite.
+  `test-backend --ban-console-output` checks for stray print statements.
 
 Note that `test-backend --coverage` will assert that
 various specific files in the project have 100% test coverage and

@@ -14,7 +14,7 @@ Some examples are:
   "announce") selected.
 - `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
   "android" and topic "fun". (The `42` represents the id of the
-   stream.
+  stream.
 
 The main module in the frontend that manages this all is
 `static/js/hashchange.js` (plus `hash_util.js` for all the parsing
@@ -28,7 +28,7 @@ different flows:
   `/#streams`. This makes it easy to have simple links around the app
   without custom click handlers for each one.
 - The user uses the "back" button in their browser (basically
-  equivalent to the previous one, as a *link* out of the browser history
+  equivalent to the previous one, as a _link_ out of the browser history
   will be visited).
 - The user clicking some in-app click handler (e.g. "Stream settings"
   for an individual stream), that potentially does

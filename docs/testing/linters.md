@@ -52,6 +52,7 @@ You can also run them individually or pass specific files:
 `./tools/lint` has many useful options; you can read about them in its
 internal documentation using `./tools/lint --help`. Of particular
 note are:
+
 - `--fix`: Several of our linters support automatically fixing basic
   issues; this option will ask `tools/lint` to run those.
 - `--verbose`: Provides detailed information on how to fix many common
@@ -196,6 +197,7 @@ that we exempt may be deemed not worthwhile to fix.
 #### JavaScript code
 
 We check our JavaScript code in a few different ways:
+
 - We run eslint.
 - We check code formatting with Prettier.
 - We perform custom Zulip regex checks on the code.

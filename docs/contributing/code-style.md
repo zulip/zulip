@@ -48,15 +48,15 @@ The Vagrant setup process runs this for you.
 
 `lint` runs many lint checks in parallel, including
 
--   JavaScript ([ESLint](https://eslint.org/),
-    [Prettier](https://prettier.io/))
--   Python ([mypy](http://mypy-lang.org/),
-    [Pyflakes](https://pypi.python.org/pypi/pyflakes),
-    [Black](https://github.com/psf/black),
-    [isort](https://pycqa.github.io/isort/))
--   templates
--   Puppet configuration
--   custom checks (e.g. trailing whitespace and spaces-not-tabs)
+- JavaScript ([ESLint](https://eslint.org/),
+  [Prettier](https://prettier.io/))
+- Python ([mypy](http://mypy-lang.org/),
+  [Pyflakes](https://pypi.python.org/pypi/pyflakes),
+  [Black](https://github.com/psf/black),
+  [isort](https://pycqa.github.io/isort/))
+- templates
+- Puppet configuration
+- custom checks (e.g. trailing whitespace and spaces-not-tabs)
 
 ## Secrets
 
@@ -143,9 +143,9 @@ some_objs = UserProfile.objects.get(id=17)
 assert obj.id in set([o.id for i in some_objs])
 ```
 
-### user\_profile.save()
+### user_profile.save()
 
-You should always pass the update\_fields keyword argument to .save()
+You should always pass the update_fields keyword argument to .save()
 when modifying an existing Django model object. By default, .save() will
 overwrite every value in the column, which results in lots of race
 conditions where unrelated changes made by one thread can be
@@ -155,7 +155,7 @@ object before the first thread wrote out its change.
 ### Using raw saves to update important model objects
 
 In most cases, we already have a function in zerver/lib/actions.py with
-a name like do\_activate\_user that will correctly handle lookups,
+a name like do_activate_user that will correctly handle lookups,
 caching, and notifying running browsers via the event system about your
 change. So please check whether such a function exists before writing
 new code to modify a model object, since your new code has a good chance
@@ -172,6 +172,7 @@ libraries as `from datetime import datetime, timezone` and
 `from django.utils.timezone import now as timezone_now`.
 
 Use:
+
 - `timezone_now()` to get a datetime when Django is available, such as
   in `zerver/`.
 - `datetime.now(tz=timezone.utc)` when Django is not available, such as
@@ -189,6 +190,7 @@ parameter, `datetime.utcnow()` and `datetime.utcfromtimestamp()`, and
 the end.
 
 Additional notes:
+
 - Especially in scripts and puppet configuration where Django is not
   available, using `time.time()` to get timestamps can be cleaner than
   dealing with datetimes.
@@ -295,11 +297,11 @@ We used to favor attaching behaviors in templates like so:
 
 but there are some reasons to prefer attaching events using jQuery code:
 
--   Potential huge performance gains by using delegated events where
-    possible
--   When calling a function from an `onclick` attribute, `this` is not
-    bound to the element like you might think
--   jQuery does event normalization
+- Potential huge performance gains by using delegated events where
+  possible
+- When calling a function from an `onclick` attribute, `this` is not
+  bound to the element like you might think
+- jQuery does event normalization
 
 Either way, avoid complicated JavaScript code inside HTML attributes;
 call a helper function instead.
@@ -322,34 +324,34 @@ type changes in the future.
 
 ### Python
 
--   Our Python code is formatted with
-    [Black](https://github.com/psf/black) and
-    [isort](https://pycqa.github.io/isort/). The [linter
-    tool](../testing/linters.md) enforces this by running Black and
-    isort in check mode, or in write mode with
-    `tools/lint --only=black,isort --fix`. You may find it helpful to
-    [integrate
-    Black](https://black.readthedocs.io/en/stable/editor_integration.html)
-    and
-    [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
-    with your editor.
--   Don't put a shebang line on a Python file unless it's meaningful to
-    run it as a script. (Some libraries can also be run as scripts, e.g.
-    to run a test suite.)
--   Scripts should be executed directly (`./script.py`), so that the
-    interpreter is implicitly found from the shebang line, rather than
-    explicitly overridden (`python script.py`).
--   Put all imports together at the top of the file, absent a compelling
-    reason to do otherwise.
--   Unpacking sequences doesn't require list brackets:
+- Our Python code is formatted with
+  [Black](https://github.com/psf/black) and
+  [isort](https://pycqa.github.io/isort/). The [linter
+  tool](../testing/linters.md) enforces this by running Black and
+  isort in check mode, or in write mode with
+  `tools/lint --only=black,isort --fix`. You may find it helpful to
+  [integrate
+  Black](https://black.readthedocs.io/en/stable/editor_integration.html)
+  and
+  [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
+  with your editor.
+- Don't put a shebang line on a Python file unless it's meaningful to
+  run it as a script. (Some libraries can also be run as scripts, e.g.
+  to run a test suite.)
+- Scripts should be executed directly (`./script.py`), so that the
+  interpreter is implicitly found from the shebang line, rather than
+  explicitly overridden (`python script.py`).
+- Put all imports together at the top of the file, absent a compelling
+  reason to do otherwise.
+- Unpacking sequences doesn't require list brackets:
 
-    ```python
-    [x, y] = xs    # unnecessary
-    x, y = xs      # better
-    ```
+  ```python
+  [x, y] = xs    # unnecessary
+  x, y = xs      # better
+  ```
 
--   For string formatting, use `x % (y,)` rather than `x % y`, to avoid
-    ambiguity if `y` happens to be a tuple.
+- For string formatting, use `x % (y,)` rather than `x % y`, to avoid
+  ambiguity if `y` happens to be a tuple.
 
 ### Tests
 

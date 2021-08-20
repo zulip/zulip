@@ -140,12 +140,12 @@ depending on Internet access.
 
 This enforcement code results in the following exception:
 
-  ```pytb
-  File "tools/test-backend", line 120, in internet_guard
-    raise Exception("Outgoing network requests are not allowed in the Zulip tests."
-  Exception: Outgoing network requests are not allowed in the Zulip tests.
-  ...
-  ```
+```pytb
+File "tools/test-backend", line 120, in internet_guard
+  raise Exception("Outgoing network requests are not allowed in the Zulip tests."
+Exception: Outgoing network requests are not allowed in the Zulip tests.
+...
+```
 
 #### Documentation tests
 

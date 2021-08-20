@@ -18,11 +18,11 @@ Zulip has three major documentation systems:
   several hundred pages written using this system. There are 3
   branches of this documentation:
   - User documentation (with a target audience of individual Zulip
-  users),
+    users),
   - Integrations documentation (with a target audience of IT folks
-  setting up integrations), and
+    setting up integrations), and
   - API documentation (with a target audience of developers writing
-  code to extend Zulip).
+    code to extend Zulip).
 
 These three systems are documented in detail.
 
@@ -132,21 +132,21 @@ Zulip has several automated test suites that we run in CI and
 recommend running locally when making significant edits:
 
 - `tools/lint` catches a number of common mistakes, and we highly
-recommend
-[using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
-See the [main linter doc](../testing/linters.md) for more details.
+  recommend
+  [using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
+  See the [main linter doc](../testing/linters.md) for more details.
 
 - The ReadTheDocs docs are built and the links tested by
-`tools/test-documentation`, which runs `build-docs` and then checks
-all the links.
+  `tools/test-documentation`, which runs `build-docs` and then checks
+  all the links.
 
 There's an exclude list for the link testing at this horrible path:
 `tools/documentation_crawler/documentation_crawler/spiders/common/spiders.py`,
 which is relevant for flaky links.
 
 - The API docs are tested by `tools/test-api`, which does some basic
-payload verification. Note that this test does not check for broken
-links (those are checked by `test-help-documentation`).
+  payload verification. Note that this test does not check for broken
+  links (those are checked by `test-help-documentation`).
 
 - `tools/test-help-documentation` checks `/help/`, `/api/`,
   `/integrations/`, and the core website ("portico") documentation for

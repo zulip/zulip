@@ -45,7 +45,5 @@ Zulip server. Your users can now use the integration as described in
 [the help center article][help-center-giphy]. (A browser reload may
 be required).
 
-
-
 [help-center-giphy]: https://zulip.com/help/animated-gifs-from-giphy
 [giphy-dashboard]: https://developers.giphy.com/dashboard/

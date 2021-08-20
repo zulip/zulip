@@ -14,8 +14,8 @@ model GitHub supports).
 ## Usage
 
 - **Claim an issue** — Comment `@zulipbot claim` on the issue you want
-to claim; **@zulipbot** will assign you to the issue and label the issue as
-**in progress**.
+  to claim; **@zulipbot** will assign you to the issue and label the issue as
+  **in progress**.
 
   - If you're a new contributor, **@zulipbot** will give you read-only
     collaborator access to the repository and leave a welcome message on the
@@ -28,8 +28,8 @@ to claim; **@zulipbot** will assign you to the issue and label the issue as
     `@zulipbot abandon` to abandon an issue.
 
 - **Label your issues** — Add appropriate labels to issues that you opened by
-including `@zulipbot add` in an issue comment or the body of your issue
-followed by the desired labels enclosed within double quotes (`""`).
+  including `@zulipbot add` in an issue comment or the body of your issue
+  followed by the desired labels enclosed within double quotes (`""`).
 
   - For example, to add the **bug** and **help wanted** labels to your
     issue, comment or include `@zulipbot add "bug" "help wanted"` in the
@@ -43,8 +43,8 @@ followed by the desired labels enclosed within double quotes (`""`).
     (`""`).
 
 - **Find unclaimed issues** — Use the [GitHub search
-feature](https://help.github.com/en/articles/using-search-to-filter-issues-and-pull-requests)
-to find unclaimed issues by adding one of the following filters to your search:
+  feature](https://help.github.com/en/articles/using-search-to-filter-issues-and-pull-requests)
+  to find unclaimed issues by adding one of the following filters to your search:
 
   - `-label: "in progress"` (excludes issues labeled with the **in progress** label)
 
@@ -54,19 +54,19 @@ to find unclaimed issues by adding one of the following filters to your search:
   already been claimed.
 
 - **Collaborate in area label teams** — Receive notifications on
-issues and pull requests within your fields of expertise on the
-[Zulip server repository](https://github.com/zulip/zulip) by joining
-the Zulip server
-[area label teams](https://github.com/orgs/zulip/teams?utf8=✓&query=Server)
-(Note: this link only works for members of the Zulip organization;
-we'll happily add you if you're interested). These teams correspond
-to the repository's
-[area labels](https://github.com/zulip/zulip/labels), although some
-teams are associated with multiple labels; for example, the **area:
-message-editing** and **area: message view** labels are both related
-to the
-[Server message view](https://github.com/orgs/zulip/teams/server-message-view)
-team. Feel free to join as many area label teams as as you'd like!
+  issues and pull requests within your fields of expertise on the
+  [Zulip server repository](https://github.com/zulip/zulip) by joining
+  the Zulip server
+  [area label teams](https://github.com/orgs/zulip/teams?utf8=✓&query=Server)
+  (Note: this link only works for members of the Zulip organization;
+  we'll happily add you if you're interested). These teams correspond
+  to the repository's
+  [area labels](https://github.com/zulip/zulip/labels), although some
+  teams are associated with multiple labels; for example, the **area:
+  message-editing** and **area: message view** labels are both related
+  to the
+  [Server message view](https://github.com/orgs/zulip/teams/server-message-view)
+  team. Feel free to join as many area label teams as as you'd like!
 
   After your request to join an area label team is approved, you'll receive
   notifications for any issues labeled with the team's corresponding area
@@ -74,8 +74,8 @@ team. Feel free to join as many area label teams as as you'd like!
   team's area label.
 
 - **Track inactive claimed issues** — If a claimed issue has not been updated
-for a week, **@zulipbot** will post a comment on the inactive issue to ask the
-assignee(s) if they are still working on the issue.
+  for a week, **@zulipbot** will post a comment on the inactive issue to ask the
+  assignee(s) if they are still working on the issue.
 
   If you see this comment on an issue you claimed, you should post a comment
   on the issue to notify **@zulipbot** that you're still working on it.

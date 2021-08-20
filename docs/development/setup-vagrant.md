@@ -10,6 +10,7 @@ or a Linux container (for Ubuntu) inside which the Zulip server and
 all related services will run.
 
 Contents:
+
 - [Requirements](#requirements)
 - [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
 - [Step 1: Install prerequisites](#step-1-install-prerequisites)
@@ -166,11 +167,11 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 We recommend using [WSL 2 for Windows development](../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
 :::
 
-1. Install [Git for Windows][git-bash], which installs *Git BASH*.
+1. Install [Git for Windows][git-bash], which installs _Git BASH_.
 2. Install [VirtualBox][vbox-dl] (latest).
 3. Install [Vagrant][vagrant-dl] (latest).
 
-(Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
+(Note: While _Git BASH_ is recommended, you may also use [Cygwin][cygwin-dl].
 If you do, make sure to **install default required packages** along with
 **git**, **curl**, **openssh**, and **rsync** binaries.)
 
@@ -370,6 +371,7 @@ Quit the server with CTRL-C.
 2016-05-04 18:20:40,722 INFO     Tornado  95.5% busy over the past  0.0 seconds
 Performing system checks...
 ```
+
 And ending with something similar to:
 
 ```console
@@ -501,6 +503,7 @@ logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
 ```
+
 Now you can suspend the development environment:
 
 ```console
@@ -544,8 +547,8 @@ Next, read the following to learn more about developing for Zulip:
 - [Git & GitHub guide][rtd-git-guide]
 - [Using the development environment][rtd-using-dev-env]
 - [Testing][rtd-testing] (and [Configuring CI][ci] to
-run the full test suite against any branches you push to your fork,
-which can help you optimize your development workflow).
+  run the full test suite against any branches you push to your fork,
+  which can help you optimize your development workflow).
 
 ### Troubleshooting and common errors
 
@@ -597,6 +600,7 @@ shell and run `vagrant ssh` again to get the virtualenv setup properly.
 #### Vagrant was unable to mount VirtualBox shared folders
 
 For the following error:
+
 ```console
 Vagrant was unable to mount VirtualBox shared folders. This is usually
 because the filesystem "vboxsf" is not available. This filesystem is
@@ -817,6 +821,7 @@ proxy to access the Internet and haven't [configured the development
 environment to use it](#specifying-a-proxy).
 
 Once you've provisioned successfully, you'll get output like this:
+
 ```console
 Zulip development environment setup succeeded!
 (zulip-py3-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
@@ -837,10 +842,10 @@ Likely causes are:
 
 1. Networking issues
 2. Insufficient RAM. Check whether you've allotted at least two
-gigabytes of RAM, which is the minimum Zulip
-[requires](../development/setup-vagrant.html#requirements). If
-not, go to your VM settings and increase the RAM, then restart
-the VM.
+   gigabytes of RAM, which is the minimum Zulip
+   [requires](../development/setup-vagrant.html#requirements). If
+   not, go to your VM settings and increase the RAM, then restart
+   the VM.
 
 ##### yarn install warnings
 

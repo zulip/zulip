@@ -75,7 +75,7 @@ HEAD is now at 13bea0e test commit for docs.
 :::{important}
 `git reset --hard <commit>` will discard all changes in your
 working directory and index since the commit you're resetting to with
-`<commit>`. *This is the main way you can lose work in Git*. If you need
+`<commit>`. _This is the main way you can lose work in Git_. If you need
 to keep any changes that are in your working directory or that you have
 committed, use `git reset --merge <commit>` instead.
 :::
@@ -203,10 +203,12 @@ and `>>>>>>>`) markers to indicate where in files there are conflicts.
 
 Tip: You can see recent changes made to a file by running the following
 commands:
+
 ```bash
 git fetch upstream
 git log -p upstream/main -- /path/to/file
 ```
+
 You can use this to compare the changes that you have made to a file with the
 ones in upstream, helping you avoid undoing changes from a previous commit when
 you are rebasing.
@@ -233,8 +235,8 @@ pay attention and do a bit of work to ensure all of your work is readily
 available.
 
 Recall that most Git operations are local. When you commit your changes with
-`git commit` they are safely stored in your *local* Git database only. That is,
-until you *push* the commits to GitHub, they are only available on the computer
+`git commit` they are safely stored in your _local_ Git database only. That is,
+until you _push_ the commits to GitHub, they are only available on the computer
 where you committed them.
 
 So, before you stop working for the day, or before you switch computers, push

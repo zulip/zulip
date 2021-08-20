@@ -208,15 +208,15 @@ configure that as follows:
    with `/home/zulip/deployments/current/scripts/restart-server`.
 1. Add the following block to `/etc/zulip/zulip.conf`:
 
-    ```ini
-    [application_server]
-    nginx_listen_port = 12345
-    ```
+   ```ini
+   [application_server]
+   nginx_listen_port = 12345
+   ```
 
 1. As root, run
-  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
-  will convert Zulip's main `nginx` configuration file to use your new
-  port.
+   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
+   will convert Zulip's main `nginx` configuration file to use your new
+   port.
 
 We also have documentation for a Zulip server [using HTTP][using-http] for use
 behind reverse proxies.
@@ -236,23 +236,24 @@ To use Smokescreen:
 
 1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
    in `/etc/zulip/zulip.conf`. A typical value after this change is:
-    ```ini
-    puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
-    ```
+
+   ```ini
+   puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
+   ```
 
 1. Optionally, configure the [smokescreen ACLs][smokescreen-acls]. By
-  default, Smokescreen denies access to all [non-public IP
-  addresses](https://en.wikipedia.org/wiki/Private_network), including
-  127.0.0.1.
+   default, Smokescreen denies access to all [non-public IP
+   addresses](https://en.wikipedia.org/wiki/Private_network), including
+   127.0.0.1.
 
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
 
-    ```ini
-    [http_proxy]
-    host = 127.0.0.1
-    port = 4750
-    ```
+   ```ini
+   [http_proxy]
+   host = 127.0.0.1
+   port = 4750
+   ```
 
 1. If you intend to also make the Smokescreen install available to
    other hosts, set `listen_address` in the same block. Note that you
@@ -297,22 +298,23 @@ HTTP as follows:
 
 1. Add the following block to `/etc/zulip/zulip.conf`:
 
-    ```ini
-    [application_server]
-    http_only = true
-    ```
+   ```ini
+   [application_server]
+   http_only = true
+   ```
 
 1. As root, run
-`/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
-will convert Zulip's main `nginx` configuration file to allow HTTP
-instead of HTTPS.
+   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
+   will convert Zulip's main `nginx` configuration file to allow HTTP
+   instead of HTTPS.
 
 1. Finally, restart the Zulip server, using
-`/home/zulip/deployments/current/scripts/restart-server`.
+   `/home/zulip/deployments/current/scripts/restart-server`.
 
 ### nginx configuration
 
 For `nginx` configuration, there's two things you need to set up:
+
 - The root `nginx.conf` file. We recommend using
   `/etc/nginx/nginx.conf` from your Zulip server for our recommended
   settings. E.g. if you don't set `client_max_body_size`, it won't be
@@ -358,12 +360,12 @@ make the following changes in two configuration files.
 1. Follow the instructions for [Configure Zulip to allow HTTP](#configuring-zulip-to-allow-http).
 
 2. Add the following to `/etc/zulip/settings.py`:
-    ```python
-    EXTERNAL_HOST = 'zulip.example.com'
-    ALLOWED_HOSTS = ['zulip.example.com', '127.0.0.1']
-    USE_X_FORWARDED_HOST = True
-    ```
 
+   ```python
+   EXTERNAL_HOST = 'zulip.example.com'
+   ALLOWED_HOSTS = ['zulip.example.com', '127.0.0.1']
+   USE_X_FORWARDED_HOST = True
+   ```
 
 3. Restart your Zulip server with `/home/zulip/deployments/current/scripts/restart-server`.
 
@@ -374,41 +376,41 @@ make the following changes in two configuration files.
    and then run
    `a2ensite zulip.example.com && systemctl reload apache2`):
 
-    ```apache
-    <VirtualHost *:80>
-        ServerName zulip.example.com
-        RewriteEngine On
-        RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
-    </VirtualHost>
+   ```apache
+   <VirtualHost *:80>
+       ServerName zulip.example.com
+       RewriteEngine On
+       RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+   </VirtualHost>
 
-    <VirtualHost *:443>
-      ServerName zulip.example.com
+   <VirtualHost *:443>
+     ServerName zulip.example.com
 
-      RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
-      RequestHeader set "X-Forwarded-SSL" expr=%{HTTPS}
+     RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+     RequestHeader set "X-Forwarded-SSL" expr=%{HTTPS}
 
-      RewriteEngine On
-      RewriteRule /(.*)           http://localhost:5080/$1 [P,L]
+     RewriteEngine On
+     RewriteRule /(.*)           http://localhost:5080/$1 [P,L]
 
-      <Location />
-        Require all granted
-        ProxyPass  http://localhost:5080/  timeout=300
-        ProxyPassReverse  http://localhost:5080/
-        ProxyPassReverseCookieDomain  127.0.0.1  zulip.example.com
-      </Location>
+     <Location />
+       Require all granted
+       ProxyPass  http://localhost:5080/  timeout=300
+       ProxyPassReverse  http://localhost:5080/
+       ProxyPassReverseCookieDomain  127.0.0.1  zulip.example.com
+     </Location>
 
-      SSLEngine on
-      SSLProxyEngine on
-      SSLCertificateFile /etc/letsencrypt/live/zulip.example.com/fullchain.pem
-      SSLCertificateKeyFile /etc/letsencrypt/live/zulip.example.com/privkey.pem
-      SSLOpenSSLConfCmd DHParameters "/etc/nginx/dhparam.pem"
-      SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
-      SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
-      SSLHonorCipherOrder off
-      SSLSessionTickets off
-      Header set Strict-Transport-Security "max-age=31536000"
-    </VirtualHost>
-    ```
+     SSLEngine on
+     SSLProxyEngine on
+     SSLCertificateFile /etc/letsencrypt/live/zulip.example.com/fullchain.pem
+     SSLCertificateKeyFile /etc/letsencrypt/live/zulip.example.com/privkey.pem
+     SSLOpenSSLConfCmd DHParameters "/etc/nginx/dhparam.pem"
+     SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+     SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+     SSLHonorCipherOrder off
+     SSLSessionTickets off
+     Header set Strict-Transport-Security "max-age=31536000"
+   </VirtualHost>
+   ```
 
 ### HAProxy configuration
 
@@ -433,16 +435,16 @@ If you're using another reverse proxy implementation, there are few
 things you need to be careful about when configuring it:
 
 1. Configure your reverse proxy (or proxies) to correctly maintain the
-`X-Forwarded-For` HTTP header, which is supposed to contain the series
-of IP addresses the request was forwarded through. You can verify
-your work by looking at `/var/log/zulip/server.log` and checking it
-has the actual IP addresses of clients, not the IP address of the
-proxy server.
+   `X-Forwarded-For` HTTP header, which is supposed to contain the series
+   of IP addresses the request was forwarded through. You can verify
+   your work by looking at `/var/log/zulip/server.log` and checking it
+   has the actual IP addresses of clients, not the IP address of the
+   proxy server.
 
 2. Ensure your proxy doesn't interfere with Zulip's use of
-long-polling for real-time push from the server to your users'
-browsers. This [nginx code snippet][nginx-proxy-longpolling-config]
-does this.
+   long-polling for real-time push from the server to your users'
+   browsers. This [nginx code snippet][nginx-proxy-longpolling-config]
+   does this.
 
 The key configuration options are, for the `/json/events` and
 `/api/1/events` endpoints:
@@ -453,14 +455,13 @@ The key configuration options are, for the `/json/events` and
   return occasional 502 errors to clients using Zulip's events API.
 
 3. The other tricky failure mode we've seen with `nginx` reverse
-proxies is that they can load-balance between the IPv4 and IPv6
-addresses for a given hostname. This can result in mysterious errors
-that can be quite difficult to debug. Be sure to declare your
-`upstreams` equivalent in a way that won't do load-balancing
-unexpectedly (e.g. pointing to a DNS name that you haven't configured
-with multiple IPs for your Zulip machine; sometimes this happens with
-IPv6 configuration).
-
+   proxies is that they can load-balance between the IPv4 and IPv6
+   addresses for a given hostname. This can result in mysterious errors
+   that can be quite difficult to debug. Be sure to declare your
+   `upstreams` equivalent in a way that won't do load-balancing
+   unexpectedly (e.g. pointing to a DNS name that you haven't configured
+   with multiple IPs for your Zulip machine; sometimes this happens with
+   IPv6 configuration).
 
 ## System and deployment configuration
 
@@ -478,11 +479,12 @@ The most common is **`zulip::profile::standalone`**, used for a
 stand-alone single-host deployment.
 [Components](../overview/architecture-overview.html#components) of
 that include:
- - **`zulip::profile::app_frontend`**
- - **`zulip::profile::memcached`**
- - **`zulip::profile::postgresql`**
- - **`zulip::profile::redis`**
- - **`zulip::profile::rabbitmq`**
+
+- **`zulip::profile::app_frontend`**
+- **`zulip::profile::memcached`**
+- **`zulip::profile::postgresql`**
+- **`zulip::profile::redis`**
+- **`zulip::profile::rabbitmq`**
 
 If you are using a [Apache as a single-sign-on
 authenticator](../production/authentication-methods.html#apache-based-sso-with-remote-user),
@@ -494,8 +496,6 @@ Set to the string `enabled` if enabling the [multi-language PGroonga
 search
 extension](../subsystems/full-text-search.html#multi-language-full-text-search).
 
-
-
 ### `[deployment]`
 
 #### `deploy_options`
@@ -503,12 +503,12 @@ extension](../subsystems/full-text-search.html#multi-language-full-text-search).
 Options passed by `upgrade-zulip` and `upgrade-zulip-from-git` into
 `upgrade-zulip-stage-2`. These might be any of:
 
- - **`--skip-puppet`** skips doing Puppet/apt upgrades. The user will need
-   to run `zulip-puppet-apply` manually after the upgrade.
- - **`--skip-migrations`** skips running database migrations. The
-   user will need to run `./manage.py migrate` manually after the upgrade.
- - **`--skip-purge-old-deployments`** skips purging old deployments;
-   without it, only deployments with the last two weeks are kept.
+- **`--skip-puppet`** skips doing Puppet/apt upgrades. The user will need
+  to run `zulip-puppet-apply` manually after the upgrade.
+- **`--skip-migrations`** skips running database migrations. The
+  user will need to run `./manage.py migrate` manually after the upgrade.
+- **`--skip-purge-old-deployments`** skips purging old deployments;
+  without it, only deployments with the last two weeks are kept.
 
 Generally installations will not want to set any of these options; the
 `--skip-*` options are primarily useful for reducing upgrade downtime
@@ -518,8 +518,6 @@ for servers that are upgraded frequently by core Zulip developers.
 
 Default repository URL used when [upgrading from a Git
 repository](../production/upgrade-or-modify.html#upgrading-from-a-git-repository).
-
-
 
 ### `[application_server]`
 
@@ -570,8 +568,6 @@ Override the default uwsgi backlog of 128 connections.
 Override the default `uwsgi` (Django) process count of 6 on hosts with
 more than 3.5GiB of RAM, 4 on hosts with less.
 
-
-
 ### `[certbot]`
 
 #### `auto_renew`
@@ -579,8 +575,6 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 If set to the string `yes`, [Certbot will attempt to automatically
 renew its certificate](../production/ssl-certificates.html#certbot-recommended). Do
 no set by hand; use `scripts/setup/setup-certbot` to configure this.
-
-
 
 ### `[postfix]`
 
@@ -632,15 +626,11 @@ connections.
 The version of PostgreSQL that is in use. Do not set by hand; use the
 [PostgreSQL upgrade tool](../production/upgrade-or-modify.html#upgrading-postgresql).
 
-
-
 ### `[rabbitmq]`
 
 #### `nodename`
 
 The name used to identify the local RabbitMQ server; do not modify.
-
-
 
 ### `[memcached]`
 
@@ -649,16 +639,12 @@ The name used to identify the local RabbitMQ server; do not modify.
 Override the number of megabytes of memory that memcached should be
 configured to consume; defaults to 1/8th of the total server memory.
 
-
-
 ### `[loadbalancer]`
 
 #### `ips`
 
 Comma-separated list of IP addresses or netmasks of external
 load balancers whose `X-Forwarded-For` should be respected.
-
-
 
 ### `[http_proxy]`
 

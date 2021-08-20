@@ -1,5 +1,4 @@
-PostgreSQL database details
-=========================
+# PostgreSQL database details
 
 Starting with Zulip 3.0, Zulip supports a range of PostgreSQL
 versions. PostgreSQL 13 is the current default for new installations;
@@ -139,7 +138,6 @@ give you better diagnostic information. However, you might want to
 stop PostgreSQL and restart it using pg_ctlcluster after you've debugged
 with this approach, since it does bypass some of the work that
 pg_ctlcluster does.
-
 
 #### PostgreSQL vacuuming alerts
 

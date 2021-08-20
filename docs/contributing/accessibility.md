@@ -79,7 +79,6 @@ possible, the following resources may be useful.
 - The [MDN page on accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
 - The [Open edX Accessibility Guidelines][openedx-guidelines] for developers
 
-
 [chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb
 [openedx-guidelines]: https://edx.readthedocs.io/projects/edx-developer-guide/en/latest/conventions/accessibility.html
 [accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A%20accessibility%22

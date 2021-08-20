@@ -3,6 +3,7 @@
 ## What is a widget?
 
 Widgets are special kinds of messages. These include:
+
 - polls
 - TODO lists
 - `/me` messages
@@ -15,7 +16,6 @@ are very different. Slash commands have nothing to do with message sending.
 The trivia_quiz_bot does not use `/`'s. Instead, it sends "extra_data"
 in messages to invoke **zforms** (which enable button-based UIs in the
 messages).
-
 
 ## `/me` messages
 
@@ -186,7 +186,7 @@ inside a `choices` list inside of the JSON payload.
 
 Here is what an example payload looks like:
 
-~~~ json
+```json
 {
     "extra_data": {
         "type": "choices",
@@ -220,7 +220,7 @@ Here is what an example payload looks like:
     },
     "widget_type": "zform"
 }
-~~~
+```
 
 When users click on the buttons, **generic** click
 handlers automatically simulate a client reply using
@@ -238,12 +238,11 @@ are completely generic.
 We can walk through the steps from the bot generating
 the **zform** to the client rendering it.
 
-
 First,
 [here](https://github.com/zulip/python-zulip-api/blob/main/zulip_bots/zulip_bots/bots/trivia_quiz/trivia_quiz.py)
 is the code that produces the JSON.
 
-``` py
+```py
 def format_quiz_for_widget(quiz_id: str, quiz: Dict[str, Any]) -> str:
     widget_type = 'zform'
     question = quiz['question']
@@ -303,16 +302,16 @@ sibling of **poll** and **zform** just has a somewhat more
 generic job to do.) In `static/js/widgetize.js` you will see
 where this code converges, with snippets like this:
 
-~~~ js
+```js
 widgets.poll = poll_widget;
 widgets.todo = todo_widget;
 widgets.zform = zform;
-~~~
+```
 
 The code in `static/js/zform.js` renders the form (not
 shown here) and then sets up a click handler like below:
 
-~~~ js
+```js
     elem.find('button').on('click', function (e) {
         e.stopPropagation();
 
@@ -328,6 +327,6 @@ shown here) and then sets up a click handler like below:
             content: reply_content,
         });
     });
-~~~
+```
 
 And then we are basically done!

@@ -11,6 +11,7 @@ chore (nor expense) that it used to be.
 
 If you already have an SSL certificate, just install (or symlink) its
 files into place at the following paths:
+
 - `/etc/ssl/private/zulip.key` for the private key
 - `/etc/ssl/certs/zulip.combined-chain.crt` for the certificate.
 
@@ -55,6 +56,7 @@ SSL certificates from Let's Encrypt and renew them automatically.
 
 We recommend most Zulip servers use Certbot. You'll want something
 else if:
+
 - you have an existing workflow for managing SSL certificates
   that you prefer;
 - you need wildcard certificates (support from Let's Encrypt released
@@ -85,10 +87,12 @@ one as described in the section below after installing Zulip.
 
 To enable the Certbot automation on an already-installed Zulip
 server, run the following commands:
+
 ```bash
 sudo -s  # If not already root
 /home/zulip/deployments/current/scripts/setup/setup-certbot --email=EMAIL HOSTNAME [HOSTNAME2...]
 ```
+
 where HOSTNAME is the domain name users see in their browser when
 using the server (e.g., `zulip.example.com`), and EMAIL is a contact
 address for the server admins. Additional hostnames can also be
@@ -109,7 +113,6 @@ checks if any certificates are due for renewal, and if they are (so
 approximately once every 60 days), repeats the process of request,
 prove, get a fresh certificate.
 
-
 ## Self-signed certificate
 
 If you aren't able to use Certbot, you can generate a self-signed SSL
@@ -126,21 +129,23 @@ just pass the `--self-signed-cert` flag when
 
 To generate a self-signed certificate for an already-installed Zulip
 server, run the following commands:
+
 ```bash
 sudo -s  # If not already root
 /home/zulip/deployments/current/scripts/setup/generate-self-signed-cert HOSTNAME
 ```
+
 where HOSTNAME is the domain name (or IP address) to use on the
 generated certificate.
 
 After replacing the certificates, you need to reload `nginx` by
 running the following as `root`:
+
 ```bash
 service nginx reload
 ```
 
 [desktop-certs]: https://zulip.com/help/custom-certificates
-
 
 ## Troubleshooting
 
@@ -149,7 +154,6 @@ service nginx reload
 This is most often caused by an incomplete certificate chain. See
 discussion in the [Manual install](#manual-install) section above.
 
-
 ### The iOS app can't connect to the server
 
 This can be caused by a server set up to support only TLS 1.1 or
@@ -157,7 +161,7 @@ older (including TLS 1.0, SSL 3, or SSL 2.)
 
 TLS 1.2 has been a standard for over 10 years, and all modern web
 server software supports it. Starting in early 2020, all major
-browsers [will *require* TLS 1.2 or later][tls12-required-news], and
+browsers [will _require_ TLS 1.2 or later][tls12-required-news], and
 will refuse to connect over TLS 1.1 or older. And on iOS, Apple [has
 since iOS 9][apple-ats] required TLS 1.2 for all connections made by
 apps, unless the app specifically opts into lower security.
@@ -174,7 +178,6 @@ and preferably also TLS 1.3. For nginx, see [the `ssl_protocols`
 directive][nginx-doc-protocols] in your configuration.
 
 [nginx-doc-protocols]: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
-
 
 ### The Android app connects to the server on some devices but not others
 

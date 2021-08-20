@@ -29,6 +29,7 @@ important to understand the load profiles for production uses.
 
 Zulip servers typically involve a mixture of two very different types
 of load profiles:
+
 - Open communities like open source projects, online classes,
   etc. have large numbers of users, many of whom are idle. (Many of
   the others likely stopped by to ask a question, got it answered, and
@@ -83,16 +84,16 @@ substantial oscillation within a 24 hour period), we expect the rough
 sense of them (as well as the list of important endpoints) is not
 likely to vary dramatically over time.
 
-Endpoint                | Average time | Request volume | Average impact
------------------------ | ------------ | -------------- | --------------
-POST /users/me/presence | 25ms         | 36%            | 9000
-GET /messages           | 70ms         | 3%             | 2100
-GET /                   | 300ms        | 0.3%           | 900
-GET /events             | 2ms          | 44%            | 880
-GET /user_uploads/*     | 12ms         | 5%             | 600
-POST /messages/flags    | 25ms         | 1.5%           | 375
-POST /messages          | 40ms         | 0.5%           | 200
-POST /users/me/*        | 50ms         | 0.04%          | 20
+| Endpoint                | Average time | Request volume | Average impact |
+| ----------------------- | ------------ | -------------- | -------------- |
+| POST /users/me/presence | 25ms         | 36%            | 9000           |
+| GET /messages           | 70ms         | 3%             | 2100           |
+| GET /                   | 300ms        | 0.3%           | 900            |
+| GET /events             | 2ms          | 44%            | 880            |
+| GET /user_uploads/\*    | 12ms         | 5%             | 600            |
+| POST /messages/flags    | 25ms         | 1.5%           | 375            |
+| POST /messages          | 40ms         | 0.5%           | 200            |
+| POST /users/me/\*       | 50ms         | 0.04%          | 20             |
 
 The "Average impact" above is computed by multiplying request volume
 by average time; this tells you roughly that endpoint's **relative**

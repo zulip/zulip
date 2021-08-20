@@ -100,6 +100,7 @@ We don't recommend using an inbox product like Gmail for outgoing
 email, because Gmail's anti-spam measures make this annoying. But if
 you want to use a Gmail account to send outgoing email anyway, here's
 how to make it work:
+
 - Create a totally new Gmail account for your Zulip server; you don't
   want Zulip's automated emails to come from your personal email address.
 - If you're using 2-factor authentication on the Gmail account, you'll
