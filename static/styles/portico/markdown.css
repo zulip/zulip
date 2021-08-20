@@ -102,11 +102,6 @@
         left: calc(30px);
     }
 
-    ul,
-    ol {
-        margin-left: 30px;
-    }
-
     li {
         line-height: 150%;
     }
@@ -191,6 +186,14 @@
 
         ol li p:not(:first-child) {
             display: block;
+        }
+
+        & > ol {
+            margin: 15px 10px;
+
+            & > li {
+                margin: 5px 0;
+            }
         }
 
         i.zulip-icon {
