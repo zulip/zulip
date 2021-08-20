@@ -14,232 +14,126 @@ Some titles have been shortened for organizational purposes.
 
 ## General programming/IT
 
-*Book* - [Clean Code: A Handbook of Agile Software Craftsmanship][] *(Not free!)*
+*Book* - [Clean Code: A Handbook of Agile Software Craftsmanship](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882) *(Not free!)*
 
-[Clean Code: A Handbook of Agile Software Craftsmanship]: https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882
+*Books* - [Free programming books list](https://github.com/vhf/free-programming-books)
 
-*Books* - [Free programming books list][]
+*Blog* - [Free Code Camp blog](https://medium.freecodecamp.com)
 
-[Free programming books list]: https://github.com/vhf/free-programming-books
+*Blog* - [Idle Words talks transcripts](https://idlewords.com/talks)
 
-*Blog* - [Free Code Camp blog][]
+*Tutorial* - [HTTP Can Do That?!, by Sumana Harihareswara (PyCon 2016)](https://youtu.be/HsLrXt2l-kg)
 
-[Free Code Camp blog]: https://medium.freecodecamp.com
+*Video* - [Minimum Viable Documentation, by Matthew Lyon (WriteTheDocs 2014)](https://youtu.be/bEZcodengwk)
 
-*Blog* - [Idle Words talks transcripts][]
+*Video* - [NoOps, by Kelsey Hightower (DepOpsDays 2016)](https://youtu.be/ajT90pC3ris)
 
-[Idle Words talks transcripts]: https://idlewords.com/talks
+*Video* - [The mind behind Linux (TED interview)](https://youtu.be/o8NPllzkFhE)
 
-*Tutorial* - [HTTP Can Do That?!, by Sumana Harihareswara (PyCon 2016)][]
+*Tutorial* - [Learn code the hard way](https://learncodethehardway.org)
 
-[HTTP Can Do That?!, by Sumana Harihareswara (PyCon 2016)]: https://youtu.be/HsLrXt2l-kg
+*Tutorial* - [What happens when...](https://github.com/alex/what-happens-when)
 
-*Video* - [Minimum Viable Documentation, by Matthew Lyon (WriteTheDocs 2014)][]
+*Article* - [An Interview With Linus Torvalds](https://techcrunch.com/2012/04/19/an-interview-with-millenium-technology-prize-finalist-linus-torvalds)
 
-[Minimum Viable Documentation, by Matthew Lyon (WriteTheDocs 2014)]: https://youtu.be/bEZcodengwk
+*Article* - [Effective Learning Strategies for Programmers](https://akaptur.com/blog/2015/10/10/effective-learning-strategies-for-programmers/)
 
-*Video* - [NoOps, by Kelsey Hightower (DepOpsDays 2016)][]
+*Article* - [Readme Driven Development](https://tom.preston-werner.com/2010/08/23/readme-driven-development.html)
 
-[NoOps, by Kelsey Hightower (DepOpsDays 2016)]: https://youtu.be/ajT90pC3ris
+*Article* - [Systematic Debugging](https://akaptur.com/blog/2013/07/24/systematic-debugging)
 
-*Video* - [The mind behind Linux (TED interview)][]
-
-[The mind behind Linux (TED interview)]: https://youtu.be/o8NPllzkFhE
-
-*Tutorial* - [Learn code the hard way][]
-
-[Learn code the hard way]: https://learncodethehardway.org
-
-*Tutorial* - [What happens when...][]
-
-[What happens when...]: https://github.com/alex/what-happens-when
-
-*Article* - [An Interview With Linus Torvalds][]
-
-[An Interview With Linus Torvalds]: https://techcrunch.com/2012/04/19/an-interview-with-millenium-technology-prize-finalist-linus-torvalds
-
-*Article* - [Effective Learning Strategies for Programmers][]
-
-[Effective Learning Strategies for Programmers]: https://akaptur.com/blog/2015/10/10/effective-learning-strategies-for-programmers/
-
-*Article* - [Readme Driven Development][]
-
-[Readme Driven Development]: https://tom.preston-werner.com/2010/08/23/readme-driven-development.html
-
-*Article* - [Systematic Debugging][]
-
-[Systematic Debugging]: https://akaptur.com/blog/2013/07/24/systematic-debugging
-
-*Paper* - [Floating-Point Arithmetic][]
-
-[Floating-Point Arithmetic]: https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+*Paper* - [Floating-Point Arithmetic](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html)
 
 ## Python
 
-*Video* - [Intro to Python for beginners, by Jessica McKellar (PyCon 2013)][]
+*Video* - [Intro to Python for beginners, by Jessica McKellar (PyCon 2013)](https://youtu.be/rkx5_MRAV3A)
 
-[Intro to Python for beginners, by Jessica McKellar (PyCon 2013)]: https://youtu.be/rkx5_MRAV3A
+*Video* - [Breaking the rules, by Jessica McKellar (PyCon Sweden)](https://youtu.be/C0fnHhY9UOc)
 
-*Video* - [Breaking the rules, by Jessica McKellar (PyCon Sweden)][]
+*Video* - [Build & break a Python sandbox, by Jessica McKellar (PyCon 2014)](https://pyvideo.org/pycon-us-2014/building-and-breaking-a-python-sandbox.html)
 
-[Breaking the rules, by Jessica McKellar (PyCon Sweden)]: https://youtu.be/C0fnHhY9UOc
+*Video* - [Cache me if you can, by Guillaume Ardaud (PyCon 2014)](https://pyvideo.org/pycon-us-2014/cache-me-if-you-can-memcached-caching-patterns.html)
 
-*Video* - [Build & break a Python sandbox, by Jessica McKellar (PyCon 2014)][]
+*Video* - [Loop like a native, by Ned Batchelder (PyCon 2013)](https://youtu.be/EnSu9hHGq5o)
 
-[Build & break a Python sandbox, by Jessica McKellar (PyCon 2014)]: https://pyvideo.org/pycon-us-2014/building-and-breaking-a-python-sandbox.html
+*Video* - [Modern Dictionaries, by Raymond Hettinger (SF Python)](https://youtu.be/p33CVV29OG8)
 
-*Video* - [Cache me if you can, by Guillaume Ardaud (PyCon 2014)][]
+*Video* - [Python Language, by Guido van Rossum (PyCon 2016)](https://youtu.be/YgtL4S7Hrwo)
 
-[Cache me if you can, by Guillaume Ardaud (PyCon 2014)]: https://pyvideo.org/pycon-us-2014/cache-me-if-you-can-memcached-caching-patterns.html
+*Video* - [The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)](https://pyvideo.org/pycon-us-2010/the-mighty-dictionary-55.html)
 
-*Video* - [Loop like a native, by Ned Batchelder (PyCon 2013)][]
+*Article* - [Static types in Python, oh my(py)!](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy)
 
-[Loop like a native, by Ned Batchelder (PyCon 2013)]: https://youtu.be/EnSu9hHGq5o
-
-*Video* - [Modern Dictionaries, by Raymond Hettinger (SF Python)][]
-
-[Modern Dictionaries, by Raymond Hettinger (SF Python)]: https://youtu.be/p33CVV29OG8
-
-*Video* - [Python Language, by Guido van Rossum (PyCon 2016)][]
-
-[Python Language, by Guido van Rossum (PyCon 2016)]: https://youtu.be/YgtL4S7Hrwo
-
-*Video* - [The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)][]
-
-[The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)]: https://pyvideo.org/pycon-us-2010/the-mighty-dictionary-55.html
-
-*Article* - [Static types in Python, oh my(py)!][]
-
-[Static types in Python, oh my(py)!]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy
-
-*Guide* - [The Hitchhiker’s Guide to Python!][]
-
-[The Hitchhiker’s Guide to Python!]: https://docs.python-guide.org/
+*Guide* - [The Hitchhiker’s Guide to Python!](https://docs.python-guide.org/)
 
 ## Java/Android
 
-*Course* - [Android Development for Beginners][]
+*Course* - [Android Development for Beginners](https://www.udacity.com/course/android-development-for-beginners--ud837)
 
-[Android Development for Beginners]: https://www.udacity.com/course/android-development-for-beginners--ud837
-
-*Blog* - [Java Tutorials for Beginners][]
-
-[Java Tutorials for Beginners]: https://www.geeksforgeeks.org/java/
+*Blog* - [Java Tutorials for Beginners](https://www.geeksforgeeks.org/java/)
 
 ## JavaScript/ECMAScript
 
-*Tutorial* - [clean-code-javascript Software engineering principles][]
+*Tutorial* - [clean-code-javascript Software engineering principles](https://github.com/ryanmcdermott/clean-code-javascript)
 
-[clean-code-javascript Software engineering principles]: https://github.com/ryanmcdermott/clean-code-javascript
+*Course* - [React native and redux course](https://www.udemy.com/course/the-complete-react-native-and-redux-course/)  (*Not free!*)
 
-*Course* - [React native and redux course][]  (*Not free!*)
-
-[React native and redux course]: https://www.udemy.com/course/the-complete-react-native-and-redux-course/
-
-*Slides* - [TypeScript vs. CoffeeScript vs. ES6][]
-
-[TypeScript vs. CoffeeScript vs. ES6]: https://www.slideshare.net/NeilGreen1/type-script-vs-coffeescript-vs-es6
+*Slides* - [TypeScript vs. CoffeeScript vs. ES6](https://www.slideshare.net/NeilGreen1/type-script-vs-coffeescript-vs-es6)
 
 ## TypeScript
 
-*Tutorial* - [TypeScript handbook section on base types][typescript-handbook]
+*Tutorial* - [TypeScript handbook section on base types](https://www.typescriptlang.org/docs/handbook/basic-types.html)
 
-[typescript-handbook]: https://www.typescriptlang.org/docs/handbook/basic-types.html
+*Book* - [TypeScript Deep Dive](https://basarat.gitbooks.io/typescript/)
 
-*Book* - [TypeScript Deep Dive][]
-
-[TypeScript Deep Dive]: https://basarat.gitbooks.io/typescript/
-
-*Guide* - [TypeScript Declaration Files Introduction][]
-
-[TypeScript Declaration Files Introduction]: https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html
+*Guide* - [TypeScript Declaration Files Introduction](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
 ## Git/version control systems (VCS)
 
-You may want to take a look first at our [Git and GitHub guide][].
-
-[Git and GitHub guide]: ../git/index.md
+You may want to take a look first at our [Git and GitHub guide](../git/index.md).
 
 ## Computer science/algorithms
 
-*Blog* - [GeeksforGeeks][]
+*Blog* - [GeeksforGeeks](https://www.geeksforgeeks.org)
 
-[GeeksforGeeks]: https://www.geeksforgeeks.org
+*Book* [Introduction to Algorithms](https://mitpress.mit.edu/books/introduction-algorithms) (*Not free!*)
 
-*Book* [Introduction to Algorithms][] (*Not free!*)
+*Blog* - [Setosa data visualization and visual explanations](https://setosa.io)
 
-[Introduction to Algorithms]: https://mitpress.mit.edu/books/introduction-algorithms
+*Course* - [Algorithms, Part I](https://www.coursera.org/learn/algorithms-part1)
 
-*Blog* - [Setosa data visualization and visual explanations][]
+*Course* - [Open Source Society University](https://ossu.firebaseapp.com)
 
-[Setosa data visualization and visual explanations]: https://setosa.io
-
-*Course* - [Algorithms, Part I][]
-
-[Algorithms, Part I]: https://www.coursera.org/learn/algorithms-part1
-
-*Course* - [Open Source Society University][]
-
-[Open Source Society University]: https://ossu.firebaseapp.com
-
-*Course* - [MIT CSAIL 6.828: Operative Systems Engineering][]
-
-[MIT CSAIL 6.828: Operative Systems Engineering]: https://pdos.csail.mit.edu/6.828/2016
+*Course* - [MIT CSAIL 6.828: Operative Systems Engineering](https://pdos.csail.mit.edu/6.828/2016)
 
 ## Community experience
 
-*Book* - [Producing Open Source Software][]
+*Book* - [Producing Open Source Software](https://producingoss.com/en/)
 
-[Producing Open Source Software]: https://producingoss.com/en/
+*Article* - [Advice on Starting And Running A New Open Source Project](https://www.harihareswara.net/sumana/2016/08/04/1)
 
-*Article* - [Advice on Starting And Running A New Open Source Project][]
+*Article* - [How to ask good questions](https://jvns.ca/blog/good-questions)
 
-[Advice on Starting And Running A New Open Source Project]: https://www.harihareswara.net/sumana/2016/08/04/1
+*Article* - [Notes for New FLOSS Contributors](https://www.harihareswara.net/sumana/2016/10/12/0)
 
-*Article* - [How to ask good questions][]
+*Article* - [To be mentored](https://trueskawka.github.io/zulip/outreachy/blog/2017/01/02/to-be-mentored.html)
 
-[How to ask good questions]: https://jvns.ca/blog/good-questions
+*Article* - [To mentor](https://trueskawka.github.io/zulip/outreachy/gci/blog/2017/01/03/to-mentor.html)
 
-*Article* - [Notes for New FLOSS Contributors][]
-
-[Notes for New FLOSS Contributors]: https://www.harihareswara.net/sumana/2016/10/12/0
-
-*Article* - [To be mentored][]
-
-[To be mentored]: https://trueskawka.github.io/zulip/outreachy/blog/2017/01/02/to-be-mentored.html
-
-*Article* - [To mentor][]
-
-[To mentor]: https://trueskawka.github.io/zulip/outreachy/gci/blog/2017/01/03/to-mentor.html
-
-[List of good projects for new contributors][]
-
-[List of good projects for new contributors]: https://github.com/MunGell/awesome-for-beginners
+[List of good projects for new contributors](https://github.com/MunGell/awesome-for-beginners)
 
 ## Competitions/camps
 
-[CodeForces][]
+[CodeForces](https://codeforces.com)
 
-[CodeForces]: https://codeforces.com
-
-[Free Code Camp][]
-
-[Free Code Camp]: https://www.freecodecamp.com
+[Free Code Camp](https://www.freecodecamp.com)
 
 ## Massive open online courses (MOOC) platforms
 
-[Coursera][]
+[Coursera](https://www.coursera.org)
 
-[Coursera]: https://www.coursera.org
+[edX](https://www.edx.org)
 
-[edX][]
+[MIT OpenCourseWare](https://ocw.mit.edu)
 
-[edX]: https://www.edx.org
-
-[MIT OpenCourseWare][]
-
-[MIT OpenCourseWare]: https://ocw.mit.edu
-
-[Udacity][]
-
-[Udacity]: https://www.udacity.com
+[Udacity](https://www.udacity.com)
