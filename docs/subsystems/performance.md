@@ -7,13 +7,13 @@ workload of usage without performance materially degrading.
 
 First, a few notes on philosophy.
 
-* We consider it an important technical goal for Zulip to be fast,
+- We consider it an important technical goal for Zulip to be fast,
   because that's an important part of user experience for a real-time
   collaboration tool like Zulip.  Many UI features in the Zulip webapp
   are designed to load instantly, because all the data required for
   them is present in the initial HTTP response, and both the Zulip
   API and webapp are architected around that strategy.
-* The Zulip database model and server implementation are carefully
+- The Zulip database model and server implementation are carefully
   designed to ensure that every common operation is efficient, with
   automated tests designed to prevent the accidental introductions of
   inefficient or excessive database queries.  We much prefer doing
@@ -29,7 +29,7 @@ important to understand the load profiles for production uses.
 
 Zulip servers typically involve a mixture of two very different types
 of load profiles:
-* Open communities like open source projects, online classes,
+- Open communities like open source projects, online classes,
   etc. have large numbers of users, many of whom are idle.  (Many of
   the others likely stopped by to ask a question, got it answered, and
   then didn't need the community again for the next year).  Our own
@@ -40,7 +40,7 @@ of load profiles:
   deactivation](../subsystems/sending-messages.html#soft-deactivation)
   to ensure idle users have minimal impact on both server-side
   scalability and request latency.
-* Fulltime teams, like your typical corporate Zulip installation,
+- Fulltime teams, like your typical corporate Zulip installation,
   have users who are mostly active for multiple hours a day and sending a
   high volume of messages each.  This load profile is most important
   for self-hosted servers, since many of those are used exclusively by
@@ -191,13 +191,13 @@ who have a lot of latency to the server.
 There are only a few exceptions where we fetch data in a separate AJAX
 request after page load:
 
-* Message history is managed separately; this is why the Zulip webapp will
+- Message history is managed separately; this is why the Zulip webapp will
   first render the entire site except for the middle panel, and then a
   moment later render the middle panel (showing the message history).
-* A few very rarely accessed data sets like [message edit
+- A few very rarely accessed data sets like [message edit
   history](https://zulip.com/help/view-a-messages-edit-history) are
   only fetched on demand.
-* A few data sets that are only required for administrative settings
+- A few data sets that are only required for administrative settings
   pages are fetched only when loading those parts of the UI.
 
 Requests to `GET /` and `/api/v1/register` that fetch `page_params`
@@ -237,16 +237,16 @@ Bulk requests for message content and metadata
 ~3% of total HTTP requests.  The zulip webapp has a few major reasons
 it does a large number of these requests:
 
-* Most of these requests are from users clicking into different views
+- Most of these requests are from users clicking into different views
   -- to avoid certain subtle bugs, Zulip's webapp currently fetches
   content from the server even when it has the history for the
   relevant stream/topic cached locally.
-* When a browser opens the Zulip webapp, it will eventually fetch and
+- When a browser opens the Zulip webapp, it will eventually fetch and
   cache in the browser all messages newer than the oldest unread
   message in a non-muted context.  This can be in total extremely
   expensive for users with 10,000s of unread messages, resulting in a
   single browser doing 100 of these requests.
-* When a new version of the Zulip server is deployed, every browser
+- When a new version of the Zulip server is deployed, every browser
   will reload within 30 minutes to ensure they are running the latest
   code.  For installations that deploy often like chat.zulip.org and
   zulip.com, this can result in a thundering herd effect for both `/`
@@ -269,11 +269,11 @@ per-request basis.  However, we have technical designs for optimizing
 the overall frequency with which clients need to make these requests
 in two major ways:
 
-* Improving [client-side
+- Improving [client-side
   caching](https://github.com/zulip/zulip/issues/15131) to allow
   caching of narrows that the user has viewed in the current session,
   avoiding repeat fetches of message content during a given session.
-* Adjusting the behavior for clients with 10,000s of unread messages
+- Adjusting the behavior for clients with 10,000s of unread messages
   to not fetch as much old message history into the cache.  See [this
   issue](https://github.com/zulip/zulip/issues/16697) for relevant
   design work.

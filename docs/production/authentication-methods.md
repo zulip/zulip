@@ -26,10 +26,10 @@ creating the initial realm and user.  You can disable it after that.
 With just a few lines of configuration, your Zulip server can
 authenticate users with any of several single-sign-on (SSO)
 authentication providers:
-* Google accounts, with `GoogleAuthBackend`
-* GitHub accounts, with `GitHubAuthBackend`
-* GitLab accounts, with `GitLabAuthBackend`
-* Microsoft Azure Active Directory, with `AzureADAuthBackend`
+- Google accounts, with `GoogleAuthBackend`
+- GitHub accounts, with `GitHubAuthBackend`
+- GitLab accounts, with `GitLabAuthBackend`
+- Microsoft Azure Active Directory, with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details
@@ -51,9 +51,9 @@ In either configuration, you will need to do the following:
    organization using LDAP authentication.
 
 1. Tell Zulip how to connect to your LDAP server:
-   * Fill out the section of your `/etc/zulip/settings.py` headed "LDAP
+   - Fill out the section of your `/etc/zulip/settings.py` headed "LDAP
      integration, part 1: Connecting to the LDAP server".
-   * If a password is required, put it in
+   - If a password is required, put it in
      `/etc/zulip/zulip-secrets.conf` by setting
      `auth_ldap_bind_password`.  For example:
      `auth_ldap_bind_password = abcd1234`.
@@ -61,10 +61,10 @@ In either configuration, you will need to do the following:
 1. Decide how you want to map the information in your LDAP database to
    users' account data in Zulip.  For each Zulip user, two closely
    related concepts are:
-   * their **email address**.  Zulip needs this in order to send, for
+   - their **email address**.  Zulip needs this in order to send, for
      example, a notification when they're offline and another user
      sends a PM.
-   * their **Zulip username**.  This means the name the user types into the
+   - their **Zulip username**.  This means the name the user types into the
      Zulip login form.  You might choose for this to be the user's
      email address (`sam@example.com`), or look like a traditional
      "username" (`sam`), or be something else entirely, depending on
@@ -79,30 +79,30 @@ In either configuration, you will need to do the following:
 
    (A) Using email addresses as Zulip usernames, if LDAP has each
       user's email address:
-      * Make `AUTH_LDAP_USER_SEARCH` a query by email address.
-      * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to the same query with
+      - Make `AUTH_LDAP_USER_SEARCH` a query by email address.
+      - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to the same query with
         `%(email)s` rather than `%(user)s` as the search parameter.
-      * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+      - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
         attribute for the user's LDAP username in the search result
         for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
 
    (B) Using LDAP usernames as Zulip usernames, with email addresses
       formed consistently like `sam` -> `sam@example.com`:
-      * Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
-      * Set `LDAP_APPEND_DOMAIN = "example.com"`.
+      - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
+      - Set `LDAP_APPEND_DOMAIN = "example.com"`.
 
    (C) Using LDAP usernames as Zulip usernames, with email addresses
       taken from some other attribute in LDAP (for example, `mail`):
-      * Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
-      * Set `LDAP_EMAIL_ATTR = "mail"`.
-      * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
+      - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
+      - Set `LDAP_EMAIL_ATTR = "mail"`.
+      - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
         an LDAP user given their email address (i.e. a search by
         `LDAP_EMAIL_ATTR`).  For example:
         ```python
         AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                                     ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
         ```
-      * Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+      - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
         attribute for the user's LDAP username in that search result.
 
 You can quickly test whether your configuration works by running:
@@ -118,7 +118,7 @@ email address, if it isn't the same as the "Zulip username").
 **Active Directory**: Most Active Directory installations will use one
 of the following configurations:
 
-* To access by Active Directory username:
+- To access by Active Directory username:
     ```python
     AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
@@ -127,7 +127,7 @@ of the following configurations:
     AUTH_LDAP_USERNAME_ATTR = "sAMAccountName"
     ```
 
-* To access by Active Directory email address:
+- To access by Active Directory email address:
     ```python
     AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
@@ -168,11 +168,11 @@ We recommend running this command in a **regular cron job**, to pick
 up changes made on your LDAP server.
 
 All of these data synchronization options have the same model:
-* New users will be populated automatically with the
+- New users will be populated automatically with the
   name/avatar/etc. from LDAP (as configured) on account creation.
-* The `manage.py sync_ldap_user_data` cron job will automatically
+- The `manage.py sync_ldap_user_data` cron job will automatically
   update existing users with any changes that were made in LDAP.
-* You can easily test your configuration using `manage.py query_ldap`.
+- You can easily test your configuration using `manage.py query_ldap`.
   Once you're happy with the configuration, remember to restart the
   Zulip server with
   `/home/zulip/deployments/current/scripts/restart-server` so that
@@ -245,7 +245,7 @@ the next time your `manage.py sync_ldap_user_data` cron job runs.
 
 Other fields you may want to sync from LDAP include:
 
-* Boolean flags; `is_realm_admin` (the organization's administrator
+- Boolean flags; `is_realm_admin` (the organization's administrator
   permission) is the main one.  You can use the
   [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
   `django-auth-ldap` to configure a group to get this permissions.
@@ -253,9 +253,9 @@ Other fields you may want to sync from LDAP include:
   `is_active` because deactivating a user this way would not disable
   any active sessions the user might have; see the above discussion of
   automatic deactivation for how to do that properly).
-* String fields like `default_language` (e.g. `en`) or `timezone`, if
+- String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
-* [Coming soon][custom-profile-fields-ldap]: Support for syncing
+- [Coming soon][custom-profile-fields-ldap]: Support for syncing
   [custom profile fields](https://zulip.com/help/add-custom-profile-fields)
   from your LDAP database.
 
@@ -334,16 +334,16 @@ Most issues with LDAP authentication are caused by misconfigurations of
 the user and email search settings.  Some things you can try to get to
 the bottom of the problem:
 
-* Review the instructions for the LDAP configuration type you're
+- Review the instructions for the LDAP configuration type you're
   using: (A), (B) or (C) (described above), and that you have
   configured all of the required settings documented in the
   instructions for that configuration type.
-* Use the `manage.py query_ldap` tool to verify your configuration.
+- Use the `manage.py query_ldap` tool to verify your configuration.
   The output of the command will usually indicate the cause of any
   configuration problem.  For the LDAP integration to work, this
   command should be able to successfully fetch a complete, correct set
   of data for the queried user.
-* You can find LDAP-specific logs in `/var/log/zulip/ldap.log`. If
+- You can find LDAP-specific logs in `/var/log/zulip/ldap.log`. If
   you're asking for help with your setup, please provide logs from
   this file (feel free to anonymize any email addresses to
   `username@example.com`) in your report.
@@ -364,14 +364,14 @@ it as follows:
 
 1. Tell your IdP how to find your Zulip server:
 
-    * **SP Entity ID**: `https://yourzulipdomain.example.com`.
+    - **SP Entity ID**: `https://yourzulipdomain.example.com`.
 
       The `Entity ID` should match the value of
       `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
       You can get the correct value by running the following:
       `/home/zulip/deployments/current/scripts/get-django-setting SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
 
-    * **SSO URL**:
+    - **SSO URL**:
       `https://yourzulipdomain.example.com/complete/saml/`.  This is
       the "SAML ACS url" in SAML terminology.
 
@@ -384,10 +384,10 @@ it as follows:
 2. Tell Zulip how to connect to your SAML provider(s) by filling
    out the section of `/etc/zulip/settings.py` on your Zulip server
    with the heading "SAML Authentication".
-   * You will need to update `SOCIAL_AUTH_SAML_ORG_INFO` with your
+   - You will need to update `SOCIAL_AUTH_SAML_ORG_INFO` with your
      organization name (`displayname` may appear in the IdP's
      authentication flow; `name` won't be displayed to humans).
-   * Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
+   - Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
      your identity provider.  You may find [the python-social-auth
      SAML
      docs](https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
@@ -514,10 +514,10 @@ straightforward way to deploy that SSO solution with Zulip.
 
 1. In `/etc/zulip/settings.py`, configure two settings:
 
-   * `AUTHENTICATION_BACKENDS`: `'zproject.backends.ZulipRemoteUserBackend'`,
+   - `AUTHENTICATION_BACKENDS`: `'zproject.backends.ZulipRemoteUserBackend'`,
      and no other entries.
 
-   * `SSO_APPEND_DOMAIN`: see documentation in `settings.py`.
+   - `SSO_APPEND_DOMAIN`: see documentation in `settings.py`.
 
    Make sure that you've restarted the Zulip server since making this
    configuration change.
@@ -564,23 +564,23 @@ Most issues with this setup tend to be subtle issues with the
 hostname/DNS side of the configuration.  Suggestions for how to
 improve this SSO setup documentation are very welcome!
 
-* For example, common issues have to do with `/etc/hosts` not mapping
+- For example, common issues have to do with `/etc/hosts` not mapping
   `settings.EXTERNAL_HOST` to the Apache listening on
   `127.0.0.1`/`localhost`.
 
-* While debugging, it can often help to temporarily change the Apache
+- While debugging, it can often help to temporarily change the Apache
   config in `/etc/apache2/sites-available/zulip-sso` to listen on all
   interfaces rather than just `127.0.0.1`.
 
-* While debugging, it can also be helpful to change `proxy_pass` in
+- While debugging, it can also be helpful to change `proxy_pass` in
   `/etc/nginx/zulip-include/app.d/external-sso.conf` to point to a
   more explicit URL, possibly not over HTTPS.
 
-* The following log files can be helpful when debugging this setup:
+- The following log files can be helpful when debugging this setup:
 
-   * `/var/log/zulip/{errors.log,server.log}` (the usual places)
-   * `/var/log/nginx/access.log` (nginx access logs)
-   * `/var/log/apache2/zulip_auth_access.log` (from the
+   - `/var/log/zulip/{errors.log,server.log}` (the usual places)
+   - `/var/log/nginx/access.log` (nginx access logs)
+   - `/var/log/apache2/zulip_auth_access.log` (from the
      `zulip-sso.conf` Apache config file; you may want to change
      `LogLevel` in that file to "debug" to make this more verbose)
 
@@ -591,7 +591,7 @@ assuming you're using the example configuration with HTTP basic auth.
 This summary should help with understanding what's going on as you try
 to debug.
 
-* Since you've configured `/etc/zulip/settings.py` to only define the
+- Since you've configured `/etc/zulip/settings.py` to only define the
   `zproject.backends.ZulipRemoteUserBackend`,
   `zproject/computed_settings.py` configures `/accounts/login/sso/` as
   `HOME_NOT_LOGGED_IN`.  This makes `https://zulip.example.com/`
@@ -599,12 +599,12 @@ to debug.
   nginx) redirect to `/accounts/login/sso/` for a user that isn't
   logged in.
 
-* nginx proxies requests to `/accounts/login/sso/` to an Apache
+- nginx proxies requests to `/accounts/login/sso/` to an Apache
   instance listening on `localhost:8888`, via the config in
   `/etc/nginx/zulip-include/app.d/external-sso.conf` (using the
   upstream `localhost_sso`, defined in `/etc/nginx/zulip-include/upstreams`).
 
-* The Apache `zulip-sso` site which you've enabled listens on
+- The Apache `zulip-sso` site which you've enabled listens on
   `localhost:8888` and (in the example config) presents the `htpasswd`
   dialogue.  (In a real configuration, it takes the user through
   whatever more complex interaction your SSO solution performs.)  The
@@ -615,7 +615,7 @@ to debug.
   variable and either logs the user in or, if they don't have an
   account already, registers them.  The login sets a cookie.
 
-* After succeeding, that redirects the user back to `/` on port 443.
+- After succeeding, that redirects the user back to `/` on port 443.
   This request is sent by nginx to the main Zulip Django app, which
   sees the cookie, treats them as logged in, and proceeds to serve
   them the main app page normally.
@@ -642,17 +642,17 @@ domain for your server).
    ```
 
 1. Configure Apple authentication in `/etc/zulip/settings.py`:
-   * `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
+   - `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
      string like "A1B2C3D4E5".
-   * `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
+   - `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in
      step 1, which might look like "com.example.services".
-   * `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
+   - `SOCIAL_AUTH_APPLE_APP_ID`: The App ID, or Bundle ID, of your
      app that you used in step 1 to configure your Services ID.
      This might look like "com.example.app".
-   * `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
+   - `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
      rather the Key ID of the key you created in step 2.  This looks
      like "F6G7H8I9J0".
-   * `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
+   - `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
      `'zproject.backends.AppleAuthBackend',` to enable Apple auth
      using the created configuration.
 

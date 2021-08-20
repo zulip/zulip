@@ -172,14 +172,14 @@ libraries as `from datetime import datetime, timezone` and
 `from django.utils.timezone import now as timezone_now`.
 
 Use:
-* `timezone_now()` to get a datetime when Django is available, such as
+- `timezone_now()` to get a datetime when Django is available, such as
   in `zerver/`.
-* `datetime.now(tz=timezone.utc)` when Django is not available, such as
+- `datetime.now(tz=timezone.utc)` when Django is not available, such as
   for bots and scripts.
-* `datetime.fromtimestamp(timestamp, tz=timezone.utc)` if creating a
+- `datetime.fromtimestamp(timestamp, tz=timezone.utc)` if creating a
   datetime from a timestamp. This is also available as
   `zerver.lib.timestamp.timestamp_to_datetime`.
-* `datetime.strptime(date_string, format).replace(tzinfo=timezone.utc)` if
+- `datetime.strptime(date_string, format).replace(tzinfo=timezone.utc)` if
   creating a datetime from a formatted string that is in UTC.
 
 Idioms that result in timezone-naive datetimes, and should be avoided, are
@@ -189,10 +189,10 @@ parameter, `datetime.utcnow()` and `datetime.utcfromtimestamp()`, and
 the end.
 
 Additional notes:
-* Especially in scripts and puppet configuration where Django is not
+- Especially in scripts and puppet configuration where Django is not
   available, using `time.time()` to get timestamps can be cleaner than
   dealing with datetimes.
-* All datetimes on the backend should be in UTC, unless there is a good
+- All datetimes on the backend should be in UTC, unless there is a good
   reason to do otherwise.
 
 ### `x.attr('zid')` vs. `rows.id(x)`

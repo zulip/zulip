@@ -17,10 +17,10 @@ make to the model.
 
 First a bit of terminology:
 
-* "Narrowing" is the process of filtering to a particular subset of
+- "Narrowing" is the process of filtering to a particular subset of
   the messages the user has access to.
 
-* The blue cursor box (the "pointer") is around is called the
+- The blue cursor box (the "pointer") is around is called the
   "selected" message.  Zulip ensures that the currently selected
   message is always in-view.
 
@@ -78,11 +78,11 @@ How does Zulip decide whether a message has been read by the user?
 The algorithm needs to correctly handle a range of ways people might
 use the product.  The algorithm is as follows:
 
-* Any message which is selected or above a message which is selected
+- Any message which is selected or above a message which is selected
   is marked as read.  So messages are marked as read as you scroll
   down the keyboard when the pointer passes over them.
 
-* If the whitespace at the very bottom of the feed is in view, all
+- If the whitespace at the very bottom of the feed is in view, all
   messages in view are marked as read.
 
 These two simple rules, combined with the pointer logic above, end up

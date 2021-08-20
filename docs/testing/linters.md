@@ -46,12 +46,12 @@ You can also run them individually or pass specific files:
 `./tools/lint` has many useful options; you can read about them in its
 internal documentation using `./tools/lint --help`.  Of particular
 note are:
-* `--fix`: Several of our linters support automatically fixing basic
+- `--fix`: Several of our linters support automatically fixing basic
   issues; this option will ask `tools/lint` to run those.
-* `--verbose`: Provides detailed information on how to fix many common
+- `--verbose`: Provides detailed information on how to fix many common
   linter errors not covered by `--fix`.
-* `--skip` and `--only`: Only run certain linters.
-* `-m`: Only check modified files.
+- `--skip` and `--only`: Only run certain linters.
+- `-m`: Only check modified files.
 
 Finally, you can rely on our continuous integration setup to run linters for you,
 but it is good practice to run lint checks locally.

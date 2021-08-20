@@ -100,17 +100,17 @@ make contributions, and make a good proposal.
 
 Your application should include the following:
 
-* Details on any experience you have related to the technologies that
+- Details on any experience you have related to the technologies that
   Zulip has, or related to our product approach.
-* Links to materials to help us evaluate your level of experience and
+- Links to materials to help us evaluate your level of experience and
   how you work, such as personal projects of yours, including any
   existing open source or open culture contributions you've made and
   any bug reports you've submitted to open source projects.
-* Some notes on what you are hoping to get out of your project.
-* A description of the project you'd like to do, and why you're
+- Some notes on what you are hoping to get out of your project.
+- A description of the project you'd like to do, and why you're
   excited about it.
-* Some notes on why you're excited about working on Zulip.
-* A link to the initial contribution(s) you did.
+- Some notes on why you're excited about working on Zulip.
+- A link to the initial contribution(s) you did.
 
 We expect applicants to either have experience with the technologies
 relevant to their project or have strong general programming

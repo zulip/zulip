@@ -6,14 +6,14 @@ In order to accommodate all users, Zulip strives to implement accessibility
 best practices in its user interface.  There are many aspects to accessibility;
 here are some of the more important ones to keep in mind.
 
-* All images should have alternative text attributes for the benefit of users
+- All images should have alternative text attributes for the benefit of users
   who cannot see them (this includes users who are utilizing a voice interface
   to free up their eyes to look at something else instead).
-* The entire application should be usable via a keyboard (many users are unable
+- The entire application should be usable via a keyboard (many users are unable
   to use a mouse, and many accessibility aids emulate a keyboard).
-* Text should have good enough contrast against the background to enable
+- Text should have good enough contrast against the background to enable
   even users with moderate visual impairment to be able to read it.
-* [ARIA](https://www.w3.org/WAI/intro/aria) (Accessible Rich Internet
+- [ARIA](https://www.w3.org/WAI/intro/aria) (Accessible Rich Internet
   Application) attributes should be used appropriately to enable screen
   readers and other alternative interfaces to navigate the application
   effectively.
@@ -32,19 +32,19 @@ as it is not possible for some content.)
 There are tools available to automatically audit a web page for compliance
 with many of the WCAG guidelines.  Here are some of the more useful ones:
 
-* [Accessibility Developer Tools][chrome-webstore]
+- [Accessibility Developer Tools][chrome-webstore]
   This open source Chrome extension from Google adds an accessibility audit to
   the "Audits" tab of the Chrome Developer Tools.  The audit is performed
   against the page's DOM via JavaScript, allowing it to identify some issues
   that a static HTML inspector would miss.
-* [aXe](https://www.deque.com/products/axe/) An open source Chrome and Firefox
+- [aXe](https://www.deque.com/products/axe/) An open source Chrome and Firefox
   extension which runs a somewhat different set of checks than Google's Chrome
   extension.
-* [Wave](https://wave.webaim.org/) This web application takes a URL and loads
+- [Wave](https://wave.webaim.org/) This web application takes a URL and loads
   it in a frame, reporting on all the issues it finds with links to more
   information.  Has the advantage of not requiring installation, but requires
   a URL which can be directly accessed by an external site.
-* [Web Developer](https://chrispederick.com/work/web-developer/) This browser
+- [Web Developer](https://chrispederick.com/work/web-developer/) This browser
   extension has many useful features, including a convenient link for opening
   the current URL in Wave to get an accessibility report.
 
@@ -70,14 +70,14 @@ If you want to help make Zulip more accessible, here is a list of the
 For more information about making Zulip accessible to as many users as
 possible, the following resources may be useful.
 
-* [Font Awesome accessibility guide](https://fontawesome.com/how-to-use/on-the-web/other-topics/accessibility),
+- [Font Awesome accessibility guide](https://fontawesome.com/how-to-use/on-the-web/other-topics/accessibility),
   which is especially helpful since Zulip uses Font Awesome for its icons.
-* [Web Content Accessibility Guidelines (WCAG) 2.0](https://www.w3.org/TR/WCAG/)
-* [WAI-ARIA](https://www.w3.org/WAI/intro/aria) - Web Accessibility Initiative
+- [Web Content Accessibility Guidelines (WCAG) 2.0](https://www.w3.org/TR/WCAG/)
+- [WAI-ARIA](https://www.w3.org/WAI/intro/aria) - Web Accessibility Initiative
   Accessible Rich Internet Application Suite
-* [WebAIM](https://webaim.org/) - Web Accessibility in Mind
-* The [MDN page on accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
-* The [Open edX Accessibility Guidelines][openedx-guidelines] for developers
+- [WebAIM](https://webaim.org/) - Web Accessibility in Mind
+- The [MDN page on accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
+- The [Open edX Accessibility Guidelines][openedx-guidelines] for developers
 
 
 [chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb

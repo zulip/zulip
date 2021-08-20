@@ -2,26 +2,26 @@
 
 Zulip has three major documentation systems:
 
-* Developer and sysadmin documentation: Documentation for people
+- Developer and sysadmin documentation: Documentation for people
   actually interacting with the Zulip codebase (either by developing
   it or installing it), and written in Markdown.
 
-* Core website documentation: Complete webpages for complex topics,
+- Core website documentation: Complete webpages for complex topics,
   written in HTML, JavaScript, and CSS (using the Django templating
   system).  These roughly correspond to the documentation someone
   might look at when deciding whether to use Zulip.  We don't expect
   to ever have more than about 10 pages written using this system.
 
-* User-facing documentation: Our scalable system for documenting
+- User-facing documentation: Our scalable system for documenting
   Zulip's huge collection of specific features without a lot of
   overhead or duplicated code/syntax, written in Markdown.  We have
   several hundred pages written using this system.  There are 3
   branches of this documentation:
-  * User documentation (with a target audience of individual Zulip
+  - User documentation (with a target audience of individual Zulip
   users),
-  * Integrations documentation (with a target audience of IT folks
+  - Integrations documentation (with a target audience of IT folks
   setting up integrations), and
-  * API documentation (with a target audience of developers writing
+  - API documentation (with a target audience of developers writing
   code to extend Zulip).
 
 These three systems are documented in detail.
@@ -123,12 +123,12 @@ details on how to contribute to this documentation.
 Zulip has several automated test suites that we run in CI and
 recommend running locally when making significant edits:
 
-* `tools/lint` catches a number of common mistakes, and we highly
+- `tools/lint` catches a number of common mistakes, and we highly
 recommend
 [using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
 See the [main linter doc](../testing/linters.md) for more details.
 
-* The ReadTheDocs docs are built and the links tested by
+- The ReadTheDocs docs are built and the links tested by
 `tools/test-documentation`, which runs `build-docs` and then checks
 all the links.
 
@@ -136,17 +136,17 @@ There's an exclude list for the link testing at this horrible path:
 `tools/documentation_crawler/documentation_crawler/spiders/common/spiders.py`,
 which is relevant for flaky links.
 
-* The API docs are tested by `tools/test-api`, which does some basic
+- The API docs are tested by `tools/test-api`, which does some basic
 payload verification.  Note that this test does not check for broken
 links (those are checked by `test-help-documentation`).
 
-* `tools/test-help-documentation` checks `/help/`, `/api/`,
+- `tools/test-help-documentation` checks `/help/`, `/api/`,
   `/integrations/`, and the core website ("portico") documentation for
   broken links.  Note that the "portico" documentation check has a
   manually maintained whitelist of pages, so if you add a new page to
   this site, you will need to edit `PorticoDocumentationSpider` to add it.
 
-* `tools/test-backend test_docs.py` tests various internal details of
+- `tools/test-backend test_docs.py` tests various internal details of
   the variable substitution logic, as well as rendering.  It's
   essential when editing the documentation framework, but not
   something you'll usually need to interact with when editing

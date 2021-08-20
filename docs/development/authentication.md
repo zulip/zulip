@@ -31,12 +31,12 @@ control over their email address, and then allowing them to set a
 password for their account.  There are two development environment
 details worth understanding:
 
-* All of our authentication flows in the development environment have
+- All of our authentication flows in the development environment have
   special links to the `/emails` page (advertised in `/devtools`),
   which shows all emails that the Zulip server has "sent" (emails are
   not actually sent by the development environment), to make it
   convenient to click through the UI of signup, password reset, etc.
-* There's a management command,
+- There's a management command,
   `manage.py print_initial_password username@example.com`, that prints
   out **default** passwords for the development environment users.
   Note that if you change a user's password in the development
@@ -45,89 +45,89 @@ details worth understanding:
 
 ### Google
 
-* Visit [the Google developer
+- Visit [the Google developer
 console](https://console.developers.google.com) and navigate to "APIs
 & services" > "Credentials". Create a "Project", which will correspond
 to your dev environment.
 
-* Navigate to "APIs & services" > "Library", and find the "Identity
+- Navigate to "APIs & services" > "Library", and find the "Identity
   Toolkit API".  Choose "Enable".
 
-* Return to "Credentials", and select "Create credentials".  Choose
+- Return to "Credentials", and select "Create credentials".  Choose
   "OAuth client ID", and follow prompts to create a consent screen, etc.
   For "Authorized redirect URIs", fill in
   `http://zulipdev.com:9991/complete/google/` .
 
-* You should get a client ID and a client secret. Copy them. In
+- You should get a client ID and a client secret. Copy them. In
   `dev-secrets.conf`, set `social_auth_google_key` to the client ID
   and `social_auth_google_secret` to the client secret.
 
 ### GitHub
 
-* Register an OAuth2 application with GitHub at one of
+- Register an OAuth2 application with GitHub at one of
   <https://github.com/settings/developers> or
   <https://github.com/organizations/ORGNAME/settings/developers>.
   Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
 
-* You should get a page with settings for your new application,
+- You should get a page with settings for your new application,
   showing a client ID and a client secret.  In `dev-secrets.conf`, set
   `social_auth_github_key` to the client ID and `social_auth_github_secret`
   to the client secret.
 
 ### GitLab
 
-* Register an OAuth application with GitLab at
+- Register an OAuth application with GitLab at
   <https://gitlab.com/oauth/applications>.
   Specify `http://zulipdev.com:9991/complete/gitlab` as the callback URL.
 
-* You should get a page containing the Application ID and Secret for
+- You should get a page containing the Application ID and Secret for
   your new application.  In `dev-secrets.conf`, enter the Application
   ID as `social_auth_gitlab_key` and the Secret as
   `social_auth_gitlab_secret`.
 
 ### Apple
 
-* Visit <https://developer.apple.com/account/resources/>,
+- Visit <https://developer.apple.com/account/resources/>,
   Enable App ID and Create a Services ID with the instructions in
   <https://help.apple.com/developer-account/?lang=en#/dev1c0e25352> .
   When prompted for a "Return URL", enter
   `http://zulipdev.com:9991/complete/apple/` .
 
-* [Create a Sign in with Apple private key](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
+- [Create a Sign in with Apple private key](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
 
-* In `dev-secrets.conf`, set
-    * `social_auth_apple_services_id` to your
+- In `dev-secrets.conf`, set
+    - `social_auth_apple_services_id` to your
       "Services ID" (eg. com.application.your).
-    * `social_auth_apple_app_id` to "App ID" or "Bundle ID".
+    - `social_auth_apple_app_id` to "App ID" or "Bundle ID".
       This is only required if you are testing Apple auth on iOS.
-    * `social_auth_apple_key` to your "Key ID".
-    * `social_auth_apple_team` to your "Team ID".
-* Put the private key file you got from apple at the path
+    - `social_auth_apple_key` to your "Key ID".
+    - `social_auth_apple_team` to your "Team ID".
+- Put the private key file you got from apple at the path
   `zproject/dev_apple.key`.
 
 ### SAML
 
-* Sign up for a [developer Okta account](https://developer.okta.com/).
-* Set up SAML authentication by following
+- Sign up for a [developer Okta account](https://developer.okta.com/).
+- Set up SAML authentication by following
   [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
   Specify:
-    * `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
-    * `http://localhost:9991` for the "Audience URI (SP Entity ID)".
-    * Skip "Default RelayState".
-    * Skip "Name ID format".
-    * Set 'Email` for "Application username format".
-    * Provide "Attribute statements" of `email` to `user.email`,
+    - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
+    - `http://localhost:9991` for the "Audience URI (SP Entity ID)".
+    - Skip "Default RelayState".
+    - Skip "Name ID format".
+    - Set 'Email` for "Application username format".
+    - Provide "Attribute statements" of `email` to `user.email`,
       `first_name` to `user.firstName`, and `last_name` to `user.lastName`.
-* Assign at least one account in the "Assignments" tab. You'll use it for
+- Assign at least one account in the "Assignments" tab. You'll use it for
   signing up / logging in to Zulip.
-* Visit the big "Setup instructions" button on the "Sign on" tab.
-* Edit `zproject/dev-secrets.conf` to add the two values provided:
-    * Set `saml_url = http...` from "Identity Provider Single Sign-On
+- Visit the big "Setup instructions" button on the "Sign on" tab.
+- Edit `zproject/dev-secrets.conf` to add the two values provided:
+    - Set `saml_url = http...` from "Identity Provider Single Sign-On
       URL".
-    * Set `saml_entity_id = http://...` from "Identity Provider Issuer".
-    * Download the certificate and put it at the path `zproject/dev_saml.cert`.
-* Now you should have working SAML authentication!
-* You can sign up to the target realm with the account that you've "assigned"
+    - Set `saml_entity_id = http://...` from "Identity Provider Issuer".
+    - Download the certificate and put it at the path `zproject/dev_saml.cert`.
+- Now you should have working SAML authentication!
+- You can sign up to the target realm with the account that you've "assigned"
   in the previous steps (if the account's email address is allowed in the realm,
   so you may have to change the realm settings to allow the appropriate email domain)
   and then you'll be able to log in freely. Alternatively, you can create an account
@@ -188,11 +188,11 @@ We also have configured `AUTH_LDAP_USER_ATTR_MAP` in
 `zproject/dev_settings.py` to sync several of those fields.  For
 example:
 
-* Modes `a` and `b` will set the user's avatar on account creation and
+- Modes `a` and `b` will set the user's avatar on account creation and
   update it when `manage.py sync_ldap_user_data` is run.
-* Mode `b` is configured to automatically have the `birthday` and
+- Mode `b` is configured to automatically have the `birthday` and
   `Phone number` custom profile fields populated/synced.
-* Mode `a` is configured to deactivate/reactivate users whose accounts
+- Mode `a` is configured to deactivate/reactivate users whose accounts
   are disabled in LDAP when `manage.py sync_ldap_user_data` is run.
   (Note that you'll likely need to edit
   `zerver/lib/dev_ldap_directory.py` to ensure there are some accounts

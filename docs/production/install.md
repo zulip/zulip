@@ -24,9 +24,9 @@ wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
 
-* If you'd like to verify the download, we
+- If you'd like to verify the download, we
 [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
-* You can also
+- You can also
 [install a pre-release version of Zulip](../production/deployment.html#installing-zulip-from-git)
 using code from our [repository on GitHub](https://github.com/zulip/zulip/).
 
@@ -48,21 +48,21 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 
 #### Installer options
 
-* `--email=you@example.com`: The email address of the person or team
+- `--email=you@example.com`: The email address of the person or team
   who should get support and error emails from this Zulip server.
   This becomes `ZULIP_ADMINISTRATOR` ([docs][doc-settings]) in the
   Zulip settings.
 
-* `--hostname=zulip.example.com`: The user-accessible domain name for
+- `--hostname=zulip.example.com`: The user-accessible domain name for
   this Zulip server, i.e., what users will type in their web browser.
   This becomes `EXTERNAL_HOST` ([docs][doc-settings]) in the Zulip
   settings.
 
-* `--self-signed-cert`: With this option, the Zulip installer
+- `--self-signed-cert`: With this option, the Zulip installer
   generates a self-signed SSL certificate for the server.  This isn't
   suitable for production use, but may be convenient for testing.
 
-* `--certbot`: With this option, the Zulip installer automatically
+- `--certbot`: With this option, the Zulip installer automatically
   obtains an SSL certificate for the server [using Certbot][doc-certbot].
   If you'd prefer to acquire an SSL certificate yourself in any other
   way, it's easy to [provide it to Zulip][doc-ssl-manual].
@@ -100,23 +100,23 @@ do.
 
 To really see Zulip in action, you'll need to get the people you work
 together with using it with you.
-* [Set up outgoing email](email.md) so Zulip can confirm new users'
+- [Set up outgoing email](email.md) so Zulip can confirm new users'
   email addresses and send notifications.
-* Learn how to [get your organization started][realm-admin-docs] using
+- Learn how to [get your organization started][realm-admin-docs] using
   Zulip at its best.
 
 Learning more:
 
-* Subscribe to the [Zulip announcements email
+- Subscribe to the [Zulip announcements email
 list](https://groups.google.com/forum/#!forum/zulip-announce) for
 server administrators.  This extremely low-traffic list is for
 important announcements, including [new
 releases](../overview/release-lifecycle.md) and security issues. You
 can also use the [RSS
 feed](https://groups.google.com/forum/#!aboutgroup/zulip-announce).
-* Follow [Zulip on Twitter](https://twitter.com/zulip).
-* Learn how to [configure your Zulip server settings](settings.md).
-* Learn about [Backups, export and import](../production/export-and-import.md)
+- Follow [Zulip on Twitter](https://twitter.com/zulip).
+- Learn how to [configure your Zulip server settings](settings.md).
+- Learn about [Backups, export and import](../production/export-and-import.md)
 and [upgrading](../production/upgrade-or-modify.md) a production Zulip
 server.
 
@@ -128,17 +128,17 @@ server.
 ## Details: What the installer does
 
 The install script does several things:
-* Creates the `zulip` user, which the various Zulip servers will run as.
-* Creates `/home/zulip/deployments/`, which the Zulip code for this
+- Creates the `zulip` user, which the various Zulip servers will run as.
+- Creates `/home/zulip/deployments/`, which the Zulip code for this
 deployment (and future deployments when you upgrade) goes into.  At the
 very end of the install process, the script moves the Zulip code tree
 it's running from (which you unpacked from a tarball above) to a
 directory there, and makes `/home/zulip/deployments/current` as a
 symbolic link to it.
-* Installs Zulip's various dependencies.
-* Configures the various third-party services Zulip uses, including
+- Installs Zulip's various dependencies.
+- Configures the various third-party services Zulip uses, including
 PostgreSQL, RabbitMQ, Memcached and Redis.
-* Initializes Zulip's database.
+- Initializes Zulip's database.
 
 If you'd like to deploy Zulip with these services on different
 machines, check out our [deployment options documentation](deployment.md).

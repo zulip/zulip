@@ -89,15 +89,15 @@ With the exception of incoming webhooks (which we do not usually control the
 format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
-* POST for creating something new where we don't have a unique
+- POST for creating something new where we don't have a unique
   ID. Also used as a catch-all if no other verb is appropriate.
-* PUT for creating something for which we have a unique ID.
-* DELETE for deleting something
-* PATCH for updating or editing attributes of something.
-* GET to get something (read-only)
-* HEAD to check the existence of something to GET, without getting it;
+- PUT for creating something for which we have a unique ID.
+- DELETE for deleting something
+- PATCH for updating or editing attributes of something.
+- GET to get something (read-only)
+- HEAD to check the existence of something to GET, without getting it;
   useful to check a link without downloading a potentially large link
-* OPTIONS (handled automatically, see more below)
+- OPTIONS (handled automatically, see more below)
 
 Of these, PUT, DELETE, HEAD, OPTIONS, and GET are *idempotent*, which
 means that we can send the request multiple times and get the same

@@ -15,18 +15,18 @@ installation, you'll need to register a custom Zoom app as follows:
 
 1. Create an app with the **OAuth** type.
 
-   * Choose an app name such as "ExampleCorp Zulip".
-   * Select **User-managed app**.
-   * Disable the option to publish the app on the Marketplace.
-   * Click **Create**.
+   - Choose an app name such as "ExampleCorp Zulip".
+   - Select **User-managed app**.
+   - Disable the option to publish the app on the Marketplace.
+   - Click **Create**.
 
 1. Inside of the Zoom app management page:
 
-   * On the **App Credentials** tab, set both the **Redirect URL for
+   - On the **App Credentials** tab, set both the **Redirect URL for
      OAuth** and the **Whitelist URL** to
      `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
-   * On the **Scopes** tab, add the `meeting:write` scope.
+   - On the **Scopes** tab, add the `meeting:write` scope.
 
 You can then configure your Zulip server to use that Zoom app as
 follows:

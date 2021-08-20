@@ -120,19 +120,19 @@ Here are some example action methods that tests may use for data setup:
 Some tests need to access the filesystem (e.g. `test_upload.py` tests
 for `LocalUploadBackend` and the data import tests).  Doing
 this correctly requires care to avoid problems like:
-* Leaking files after every test (which are clutter and can eventually
+- Leaking files after every test (which are clutter and can eventually
 run the development environment out of disk) or
-* Interacting with other parallel processes of this `test-backend` run
+- Interacting with other parallel processes of this `test-backend` run
 (or another `test-backend` run), or with later tests run by this
 process.
 
 To avoid these problems, you can do the following:
 
-* Use a subdirectory of `settings.TEST_WORKER_DIR`; this is a
+- Use a subdirectory of `settings.TEST_WORKER_DIR`; this is a
   subdirectory of `/var/<uuid>/test-backend` that is unique to the
   test worker thread and will be automatically deleted when the
   relevant `test-backend` process finishes.
-* Delete any files created by the test in the test class's `tearDown`
+- Delete any files created by the test in the test class's `tearDown`
   method (which runs even if the test fails); this is valuable to
   avoid conflicts with other tests run later by the same test process.
 
@@ -188,9 +188,9 @@ def greet(name_key: str) -> str:
     return "Hello" + name
 ```
 
-* You want to test `greet()`.
+- You want to test `greet()`.
 
-* In your test, you want to call `greet("Mario")` and verify that it returns the correct greeting:
+- In your test, you want to call `greet("Mario")` and verify that it returns the correct greeting:
 
   ```python
   from greetings import greet
@@ -204,9 +204,9 @@ def greet(name_key: str) -> str:
    a database. *You haven't created that database for your tests, so your test would fail, even though
    the code is correct.*
 
-* Luckily, you know that `fetch_database("Mario")` should return "Mr. Mario Mario".
+- Luckily, you know that `fetch_database("Mario")` should return "Mr. Mario Mario".
 
-  * *Hint*: Sometimes, you might not know the exact return value, but one that is equally valid and works
+  - *Hint*: Sometimes, you might not know the exact return value, but one that is equally valid and works
     with the rest of the code. In that case, just use this one.
 
 -> **Solution**: You mock `fetch_database()`. This is also referred to as "mocking out" `fetch_database()`.
@@ -277,13 +277,13 @@ On the other hand, if we had used `import os.urandom`, we would need to call `mo
 
 #### Boilerplate code
 
-* Including the Python mocking library:
+- Including the Python mocking library:
 
   ```python
   from unittest import mock
   ```
 
-* Mocking a class with a context manager:
+- Mocking a class with a context manager:
 
   ```python
   with mock.patch('module.ClassName', foo=42, return_value='I am a mock') as my_mock:
@@ -292,7 +292,7 @@ On the other hand, if we had used `import os.urandom`, we would need to call `mo
     # var = module.ClassName() will assign 'I am a mock' to var.
   ```
 
-* Mocking a class with a decorator:
+- Mocking a class with a decorator:
 
   ```python
   @mock.patch('module.ClassName', foo=42, return_value='I am a mock')
@@ -301,7 +301,7 @@ On the other hand, if we had used `import os.urandom`, we would need to call `mo
       # In here, 'module.ClassName' will behave as in the previous example.
   ```
 
-* Mocking a class attribute:
+- Mocking a class attribute:
 
   ```python
   with mock.patch.object(module.ClassName, 'class_method', return_value=42)
