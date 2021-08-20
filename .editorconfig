@@ -17,7 +17,7 @@ max_line_length = 100
 [*.{py,pyi}]
 max_line_length = 110
 
-[*.{svg,rb,pp,yaml,yml}]
+[*.{md,svg,rb,pp,yaml,yml}]
 indent_size = 2
 
 [package.json]
