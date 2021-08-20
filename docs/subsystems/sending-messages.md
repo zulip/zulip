@@ -17,16 +17,17 @@ and we generally don't repeat the content discussed there.
 This is just a bit of terminology: A "message list" is what Zulip
 calls the frontend concept of a (potentially narrowed) message feed.
 There are 3 related structures:
+
 - A `message_list_data` just has the sequencing data of which message
-IDs go in what order.
+  IDs go in what order.
 - A `message_list` is built on top of `message_list_data` and
-additionally contains the data for a visible-to-the-user message list
-(E.g. where trailing bookends should appear, a selected message,
-etc.).
+  additionally contains the data for a visible-to-the-user message list
+  (E.g. where trailing bookends should appear, a selected message,
+  etc.).
 - A `message_list_view` is built on top of `message_list` and
-additionally contains rendering details like a window of up to 400
-messages that is present in the DOM at the time, scroll position
-controls, etc.
+  additionally contains rendering details like a window of up to 400
+  messages that is present in the DOM at the time, scroll position
+  controls, etc.
 
 (This should later be expanded into a full article on message lists
 and narrowing).
@@ -49,26 +50,26 @@ process described in our
 This section details the ways in which it is different:
 
 - There is significant custom code inside the `process_message_event`
-function in `zerver/tornado/event_queue.py`. This custom code has a
-number of purposes:
-   - Triggering [email and mobile push
-     notifications](../subsystems/notifications.md) for any users who
-     do not have active clients and have settings of the form "push
-     notifications when offline". In order to avoid doing any real
-     computational work inside the Tornado codebase, this logic aims
-     to just do the check for whether a notification should be
-     generated, and then put an event into an appropriate
-     [queue](../subsystems/queuing.md) to actually send the message.
-     See `maybe_enqueue_notifications` and `zerver/lib/notification_data.py` for
-     this part of the logic.
-   - Splicing user-dependent data (E.g. `flags` such as when the user
-   was `mentioned`) into the events.
-   - Handling the [local echo details](#local-echo).
-   - Handling certain client configuration options that affect
-     messages. E.g. determining whether to send the
-     plaintext/Markdown raw content or the rendered HTML (e.g. the
-     `apply_markdown` and `client_gravatar` features in our
-     [events API docs](https://zulip.com/api/register-queue)).
+  function in `zerver/tornado/event_queue.py`. This custom code has a
+  number of purposes:
+  - Triggering [email and mobile push
+    notifications](../subsystems/notifications.md) for any users who
+    do not have active clients and have settings of the form "push
+    notifications when offline". In order to avoid doing any real
+    computational work inside the Tornado codebase, this logic aims
+    to just do the check for whether a notification should be
+    generated, and then put an event into an appropriate
+    [queue](../subsystems/queuing.md) to actually send the message.
+    See `maybe_enqueue_notifications` and `zerver/lib/notification_data.py` for
+    this part of the logic.
+  - Splicing user-dependent data (E.g. `flags` such as when the user
+    was `mentioned`) into the events.
+  - Handling the [local echo details](#local-echo).
+  - Handling certain client configuration options that affect
+    messages. E.g. determining whether to send the
+    plaintext/Markdown raw content or the rendered HTML (e.g. the
+    `apply_markdown` and `client_gravatar` features in our
+    [events API docs](https://zulip.com/api/register-queue)).
 - Following our standard naming convention, input validation is done
   inside the `check_message` function in `zerver/lib/actions.py`, which is responsible for
   validating the user can send to the recipient,
@@ -78,27 +79,27 @@ number of purposes:
   the message) in `zerver/lib/actions.py` is one of the most optimized and thus complex parts of
   the system. But in short, its job is to atomically do a few key
   things:
-   - Store a `Message` row in the database.
-   - Store one `UserMessage` row in the database for each user who is
-     a recipient of the message (including the sender), with
-     appropriate `flags` for whether the user was mentioned, an alert
-     word appears, etc. See
-     [the section on soft deactivation](#soft-deactivation) for
-     a clever optimization we use here that is important for large
-     open organizations.
-   - Do all the database queries to fetch relevant data for and then
-     send a `message` event to the
-     [events system](../subsystems/events-system.md) containing the
-     data it will need for the calculations described above. This
-     step adds a lot of complexity, because the events system cannot
-     make queries to the database directly.
-   - Trigger any other deferred work caused by the current message,
-     e.g. [outgoing webhooks](https://zulip.com/api/outgoing-webhooks)
-     or embedded bots.
-   - Every query is designed to be a bulk query; we carefully
-     unit-test this system for how many database and memcached queries
-     it makes when sending messages with large numbers of recipients,
-     to ensure its performance.
+  - Store a `Message` row in the database.
+  - Store one `UserMessage` row in the database for each user who is
+    a recipient of the message (including the sender), with
+    appropriate `flags` for whether the user was mentioned, an alert
+    word appears, etc. See
+    [the section on soft deactivation](#soft-deactivation) for
+    a clever optimization we use here that is important for large
+    open organizations.
+  - Do all the database queries to fetch relevant data for and then
+    send a `message` event to the
+    [events system](../subsystems/events-system.md) containing the
+    data it will need for the calculations described above. This
+    step adds a lot of complexity, because the events system cannot
+    make queries to the database directly.
+  - Trigger any other deferred work caused by the current message,
+    e.g. [outgoing webhooks](https://zulip.com/api/outgoing-webhooks)
+    or embedded bots.
+  - Every query is designed to be a bulk query; we carefully
+    unit-test this system for how many database and memcached queries
+    it makes when sending messages with large numbers of recipients,
+    to ensure its performance.
 
 ## Local echo
 
@@ -176,6 +177,7 @@ implementation was under 150 lines of code.
 
 This section just has a brief review of the sequence of steps all in
 one place:
+
 - User hits send in the compose box.
 - Compose box validation runs; if it passes, the browser locally
   echoes the message and then sends a request to the `POST /messages`
@@ -183,7 +185,7 @@ one place:
 - The Django URL routes and middleware run, and eventually call the
   `send_message_backend` view function in `zerver/views/messages.py`.
   (Alternatively, for an API request to send a message via Zulip's
-   REST API, things start here).
+  REST API, things start here).
 - `send_message_backend` does some validation before triggering the
   `check_message` + `do_send_messages` backend flow.
 - That backend flow saves the data to the database and triggers a
@@ -233,17 +235,17 @@ significant delay in rendering the message and delivering it to other
 users.
 
 - For this case, Zulip's backend Markdown processor will render the
-message without including the URL embeds/previews, but it will add a
-deferred work item into the `embed_links` queue.
+  message without including the URL embeds/previews, but it will add a
+  deferred work item into the `embed_links` queue.
 
 - The [queue processor](../subsystems/queuing.md) for the
-`embed_links` queue will fetch the URLs, and then if they return
-results, rerun the Markdown processor and notify clients of the
-updated message `rendered_content`.
+  `embed_links` queue will fetch the URLs, and then if they return
+  results, rerun the Markdown processor and notify clients of the
+  updated message `rendered_content`.
 
 - We reuse the `update_message` framework (used for
-Zulip's message editing feature) in order to avoid needing custom code
-to implement the notification-and-rerender part of this implementation.
+  Zulip's message editing feature) in order to avoid needing custom code
+  to implement the notification-and-rerender part of this implementation.
 
 ## Soft deactivation
 
@@ -328,43 +330,43 @@ organization for a few weeks, they are tagged as soft-deactivated.
 The way this works internally is:
 
 - We (usually) skip creating UserMessage rows for soft-deactivated
-users when a message is sent to a stream where they are subscribed.
+  users when a message is sent to a stream where they are subscribed.
 
 - If/when the user ever returns to Zulip, we can at that time
-reconstruct the UserMessage rows that they missed, and create the rows
-at that time (or, to avoid a latency spike if/when the user returns to
-Zulip, this work can be done in a nightly cron job). We can construct
-those rows later because we already have the data for when the user
-might have been subscribed or unsubscribed from streams by other
-users, and, importantly, we also know that the user didn’t interact
-with the UI since the message was sent (and thus we can safely assume
-that the messages have not been marked as read by the user). This is
-done in the `add_missing_messages` function, which is the core of the
-soft-deactivation implementation.
+  reconstruct the UserMessage rows that they missed, and create the rows
+  at that time (or, to avoid a latency spike if/when the user returns to
+  Zulip, this work can be done in a nightly cron job). We can construct
+  those rows later because we already have the data for when the user
+  might have been subscribed or unsubscribed from streams by other
+  users, and, importantly, we also know that the user didn’t interact
+  with the UI since the message was sent (and thus we can safely assume
+  that the messages have not been marked as read by the user). This is
+  done in the `add_missing_messages` function, which is the core of the
+  soft-deactivation implementation.
 
 - The “usually” above is because there are a few flags that result
-from content in the message (e.g., a message that mentions a user
-results in a “mentioned” flag in the UserMessage row), that we need to
-keep track of. Since parsing a message can be expensive (>10ms of
-work, depending on message content), it would be too inefficient to
-need to re-parse every message when a soft-deactivated user comes back
-to Zulip. Conveniently, those messages are rare, and so we can just
-create UserMessage rows which would have “interesting” flags at the
-time they were sent without any material performance impact. And then
-`add_missing_messages` skips any messages that already have a
-`UserMessage` row for that user when doing its backfill.
+  from content in the message (e.g., a message that mentions a user
+  results in a “mentioned” flag in the UserMessage row), that we need to
+  keep track of. Since parsing a message can be expensive (>10ms of
+  work, depending on message content), it would be too inefficient to
+  need to re-parse every message when a soft-deactivated user comes back
+  to Zulip. Conveniently, those messages are rare, and so we can just
+  create UserMessage rows which would have “interesting” flags at the
+  time they were sent without any material performance impact. And then
+  `add_missing_messages` skips any messages that already have a
+  `UserMessage` row for that user when doing its backfill.
 
 The end result is the best of both worlds:
 
 - Nobody's view of the world is different because the user was
-soft-deactivated (resulting in no visible user-experience impact), at
-least if one is running the cron job. If one does not run the cron
-job, then users returning after being away for a very long time will
-potentially have a (very) slow loading experience as potentially
-100,000s of UserMessage rows might need to be reconstructed at once.
+  soft-deactivated (resulting in no visible user-experience impact), at
+  least if one is running the cron job. If one does not run the cron
+  job, then users returning after being away for a very long time will
+  potentially have a (very) slow loading experience as potentially
+  100,000s of UserMessage rows might need to be reconstructed at once.
 - On the latency-sensitive message sending and fanout code path, the
-server only needs to do work for users who are currently interacting
-with Zulip.
+  server only needs to do work for users who are currently interacting
+  with Zulip.
 
 Empirically, we've found this technique completely resolved the "send
 latency" scaling problem. The latency of sending a message to a stream
@@ -374,6 +376,7 @@ it’ll arrive in the couple hundred milliseconds one would expect if
 the extra 4500 inactive subscribers didn’t exist.
 
 There are a few details that require special care with this system:
+
 - [Email and mobile push
   notifications](../subsystems/notifications.md). We need to make
   sure these are still correctly delivered to soft-deactivated users;

@@ -21,13 +21,13 @@ These are the steps you should follow if you want to help translate
 Zulip:
 
 1. Join [#translation][translation-stream] in the [Zulip development
-community server](https://zulip.com/developer-community/), and say hello.
-That stream is also the right place for any questions, updates on your
-progress, reporting problematic strings, etc.
+   community server](https://zulip.com/developer-community/), and say hello.
+   That stream is also the right place for any questions, updates on your
+   progress, reporting problematic strings, etc.
 
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
-project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
-to any languages that you'd like to contribute to (or add new ones).
+   project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
+   to any languages that you'd like to contribute to (or add new ones).
 
    :::{note}
    Unless you plan to contribute country-specific translations, do not
@@ -43,6 +43,7 @@ to any languages that you'd like to contribute to (or add new ones).
 
 1. Translate the strings for your language in Transifex. Zulip has
    several resource files:
+
    - `mobile.json` is for the iOS/Android mobile apps.
    - `desktop.json` is for the parts of the Zulip desktop apps that
      are not shared with the Zulip web app.
@@ -89,7 +90,7 @@ Some useful tips for your translating journey:
   the [Zulip development community server](https://zulip.com/developer-community/).
 
 - If there are multiple possible translations for a term, search for it in
-  the *Concordance* tool (the button with a magnet in the top right corner).
+  the _Concordance_ tool (the button with a magnet in the top right corner).
 
   It will show if anyone translated that term before, so we can achieve good
   consistency with all the translations, no matter who makes them.
@@ -113,11 +114,11 @@ if setting one up is a problem for you, ask in chat.zulip.org and we
 can usually just deploy the latest translations there.
 
 - First, download the updated resource files from Transifex using the
-`tools/i18n/sync-translations` command (it will require some [initial
-setup](../translating/internationalization.html#transifex-cli-setup)). This
-command will download the resource files from Transifex and replace
-your local resource files with them, and then compile them. You can
-now test your translation work in the Zulip UI.
+  `tools/i18n/sync-translations` command (it will require some [initial
+  setup](../translating/internationalization.html#transifex-cli-setup)). This
+  command will download the resource files from Transifex and replace
+  your local resource files with them, and then compile them. You can
+  now test your translation work in the Zulip UI.
 
 There are a few ways to see your translations in the Zulip UI:
 
@@ -186,15 +187,15 @@ properly capitalized in a way consistent with how Zulip does
 capitalization in general. This means that:
 
 - The first letter of a sentence or phrase should be capitalized.
-    - Correct: "Manage streams"
-    - Incorrect: "Manage Streams"
+  - Correct: "Manage streams"
+  - Incorrect: "Manage Streams"
 - All proper nouns should be capitalized.
-    - Correct: "This is Zulip"
-    - Incorrect: "This is zulip"
+  - Correct: "This is Zulip"
+  - Incorrect: "This is zulip"
 - All common words like URL, HTTP, etc. should be written in their
   standard forms.
-    - Correct: "URL"
-    - Incorrect: "Url"
+  - Correct: "URL"
+  - Incorrect: "Url"
 
 The Zulip test suite enforces these capitalization guidelines in the
 web app codebase [in our test

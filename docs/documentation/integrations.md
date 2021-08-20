@@ -84,12 +84,12 @@ Here are a few common macros used to document Zulip's integrations:
   This macro is usually used right after `{!create-stream!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
 
-    **Note:** If special configuration is
-    required to set up the URL and you can't use this macro, be sure to use the
-    `{{ api_url }}` template variable, so that your integration
-    documentation will provide the correct URL for whatever server it is
-    deployed on. If special configuration is required to set the `SITE`
-    variable, you should document that too.
+  **Note:** If special configuration is
+  required to set up the URL and you can't use this macro, be sure to use the
+  `{{ api_url }}` template variable, so that your integration
+  documentation will provide the correct URL for whatever server it is
+  deployed on. If special configuration is required to set the `SITE`
+  variable, you should document that too.
 
 - `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
   to a URL in cases where supplying a stream name in the URL is optional.
@@ -136,12 +136,12 @@ Here are a few common macros used to document Zulip's integrations:
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
 
-    ```text
-    https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
-    ```
+  ```text
+  https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
+  ```
 
-    For an example rendering, see
-    [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
+  For an example rendering, see
+  [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
 [github-integration]: https://zulip.com/integrations/doc/github
 [codebase]: https://zulip.com/integrations/doc/codebase
@@ -188,7 +188,6 @@ concrete guidelines.
 ##### Be easy to maintain
 
 - Follow the organization and wording of existing docs as much as possible.
-
 
 ### Guidelines for specific steps
 

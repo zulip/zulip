@@ -61,18 +61,19 @@ suite (`test-js-with-node`) to run in under 10 seconds.
 
 It'd be a long blog post to summarize everything we do to help achieve
 these goals, but a few techniques are worth highlighting:
+
 - Our test suites are designed to not access the Internet, since the
   Internet might be down or unreliable in the test environment. Where
   outgoing HTTP requests are required to test something, we mock the
   responses with libraries like `responses`.
 - We carefully avoid the potential for contamination of data inside
   services like PostgreSQL, Redis, and memcached from different tests.
-    - Every test case prepends a unique random prefix to all keys it
-      uses when accessing Redis and memcached.
-    - Every test case runs inside a database transaction, which is
-      aborted after the test completes. Each test process interacts
-      only with a fresh copy of a special template database used for
-      server tests that is destroyed after the process completes.
+  - Every test case prepends a unique random prefix to all keys it
+    uses when accessing Redis and memcached.
+  - Every test case runs inside a database transaction, which is
+    aborted after the test completes. Each test process interacts
+    only with a fresh copy of a special template database used for
+    server tests that is destroyed after the process completes.
 - We rigorously investigate non-deterministically failing tests as though
   they were priority bugs in the product.
 
@@ -141,6 +142,7 @@ Some examples of this philosophy:
   run, and produce this output".
 
 In the Zulip context:
+
 - Zulip uses the same API for our web app as for our mobile clients and
   third-party API clients, and most of our server tests are written
   against the Zulip API.
@@ -150,6 +152,7 @@ In the Zulip context:
   message as output, to test the actual interface.
 
 So, to summarize our approach to integration vs. unit testing:
+
 - While we aim to achieve test coverage of every significant code path
   in the Zulip server, which is commonly associated with unit testing,
   most of our tests are integration tests in the sense of sending a

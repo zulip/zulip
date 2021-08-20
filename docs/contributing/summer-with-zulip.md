@@ -225,7 +225,6 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
   your contributions to the open source world this summer will be something you
   can be proud of for the rest of your life.
 
-
 ## What makes a successful summer
 
 Success for the student means a few things, in order of importance:
@@ -246,7 +245,6 @@ Success for the student means a few things, in order of importance:
   area should feel more polished, and have several new major features the
   student has implemented. That section of code should be more readable,
   better-tested, and have clearer documentation.
-
 
 ## Extra notes for mentors
 

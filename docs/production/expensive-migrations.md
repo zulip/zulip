@@ -13,10 +13,10 @@ you'd like to watch the downtime phase of the upgrade closely, you
 can run them manually before starting the upgrade:
 
 1. Log in to your Zulip server as the `zulip` user (or as `root` and
-  then run `su zulip` to drop privileges), and
-  `cd /home/zulip/deployments/current`
+   then run `su zulip` to drop privileges), and
+   `cd /home/zulip/deployments/current`
 2. Run `./manage.py dbshell`. This will open a shell connected to the
-  PostgreSQL database.
+   PostgreSQL database.
 3. In the PostgreSQL shell, run the following commands:
 
    ```postgresql

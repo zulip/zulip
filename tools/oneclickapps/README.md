@@ -3,6 +3,7 @@
 This directory contains scripts for automating the release of Zulip one click apps.
 
 ## DigitalOcean 1-Click Application
+
 `prepare_digital_ocean_one_click_app_release.py` creates the image of DigitalOcean 1-Click
 app from the latest Zulip release (fetched from https://download.zulip.com/server/). It will
 also create a test droplet from the image and send the image and droplet
@@ -23,11 +24,13 @@ work correctly. These secrets are passed as environment variables to the GitHub 
 - `ONE_CLICK_ACTION_ZULIP_BOT_EMAIL` - The email of the Zulip bot.
 
 Also pass the following as environment variables in `.github/workflows/update-oneclick-apps.yml`.
--  `PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC` -  This configures the maximum number of seconds
+
+- `PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC` - This configures the maximum number of seconds
   to wait before the requests made by `python-digitalocean` time out. If not configured, it's
   common for the requests to take 20+ minutes before getting timed out.
 
 ### Verifying the one click app image
+
 - The action will send the image name and test droplet details to the stream configured in the
   above steps.
 - SSH into the test droplet by following the instructions in the message. In order to do this,
@@ -38,6 +41,7 @@ Also pass the following as environment variables in `.github/workflows/update-on
 
   This script checks whether the image created is valid. It is also run by the DigitalOcean team
   before they approve the image submission in the one click app marketplace.
+
 - If there are no errors (you can ignore most of the warnings), exit the SSH connection and
   reconnect.
 - Populate the details asked by the installer and verify that the installer completes successfully.
@@ -68,6 +72,7 @@ Also pass the following as environment variables in `.github/workflows/update-on
 **Errors**
 
 If there are any errors while setting up the one click app installer, you have three options
+
 - Include the fix in the Fabric script that setups the installer.
   [01-initial-setup](https://raw.githubusercontent.com/zulip/marketplace-partners/master/marketplace_docs/templates/Fabric/scripts/01-initial-setup)
   file should be a good place to include the fix. See

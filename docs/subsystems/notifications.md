@@ -25,23 +25,24 @@ sort of notifications system:
 
 As a reminder, the relevant part of the flow for sending messages is
 as follows:
+
 - `do_send_messages` is the synchronous message-sending code path,
   and passing the following data in its `send_event` call:
   - Data about the message's content (E.g. mentions, wildcard
-  mentions, and alert words) and encodes it into the `UserMessage`
-  table's `flags` structure, which is in turn passed into
-  `send_event` for each user receiving the message.
+    mentions, and alert words) and encodes it into the `UserMessage`
+    table's `flags` structure, which is in turn passed into
+    `send_event` for each user receiving the message.
   - Data about user configuration relevant to the message, such as
-  `online_push_user_ids` and `stream_notify_user_ids`, are included
-  in the main event dictionary.
+    `online_push_user_ids` and `stream_notify_user_ids`, are included
+    in the main event dictionary.
   - The `presence_idle_user_ids` set, containing the subset of
-  recipient users who can potentially receive notifications, but have not
-  interacted with a Zulip client in the last few minutes. (Users who
-  have generally will not receive a notification unless the
-  `enable_online_push_notifications` flag is enabled). This data
-  structure ignores users for whom the message is not notifiable,
-  which is important to avoid this being thousands of `user_ids` for
-  messages to large streams with few currently active users.
+    recipient users who can potentially receive notifications, but have not
+    interacted with a Zulip client in the last few minutes. (Users who
+    have generally will not receive a notification unless the
+    `enable_online_push_notifications` flag is enabled). This data
+    structure ignores users for whom the message is not notifiable,
+    which is important to avoid this being thousands of `user_ids` for
+    messages to large streams with few currently active users.
 - The Tornado [event queue system](../subsystems/events-system.md)
   processes that data, as well as data about each user's active event
   queues, to (1) push an event to each queue needing that message and
@@ -115,23 +116,23 @@ as follows:
     disabled are rechecked, as the user may have disabled one of these
     settings during the queuing period.
   - The **Email notifications queue processor**, `MissedMessageWorker`,
-  takes care to wait for 2 minutes (hopefully in the future this will be a
-  configuration setting) and starts a thread to batch together multiple
-  messages into a single email. These features are unnecessary
-  for mobile push notifications, because we can live-update those
-  details with a future notification, whereas emails cannot be readily
-  updated once sent. Zulip's email notifications are styled similarly
-  to GitHub's email notifications, with a clean, simple design that
-  makes replying from an email client possible (using the [incoming
-  email integration](../production/email-gateway.md)).
+    takes care to wait for 2 minutes (hopefully in the future this will be a
+    configuration setting) and starts a thread to batch together multiple
+    messages into a single email. These features are unnecessary
+    for mobile push notifications, because we can live-update those
+    details with a future notification, whereas emails cannot be readily
+    updated once sent. Zulip's email notifications are styled similarly
+    to GitHub's email notifications, with a clean, simple design that
+    makes replying from an email client possible (using the [incoming
+    email integration](../production/email-gateway.md)).
   - The **Push notifications queue processor**,
-  `PushNotificationsWorker`, is a simple wrapper around the
-  `push_notifications.py` code that actually sends the
-  notification. This logic is somewhat complicated by having to track
-  the number of unread push notifications to display on the mobile
-  apps' badges, as well as using the [mobile push notifications
-  service](../production/mobile-push-notifications.md) for self-hosted
-  systems.
+    `PushNotificationsWorker`, is a simple wrapper around the
+    `push_notifications.py` code that actually sends the
+    notification. This logic is somewhat complicated by having to track
+    the number of unread push notifications to display on the mobile
+    apps' badges, as well as using the [mobile push notifications
+    service](../production/mobile-push-notifications.md) for self-hosted
+    systems.
 
 The following important constraints are worth understanding about the
 structure of the system, when thinking about changes to it:

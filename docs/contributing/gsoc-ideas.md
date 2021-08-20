@@ -138,19 +138,19 @@ Also, you're going to find that people give you links to pages that
 answer your questions. Here's how that often works:
 
 1. you [try to solve your problem until you get stuck, including
-looking through our code and our documentation, then start formulating
-your request for
-help](https://blogs.akamai.com/2013/10/you-must-try-and-then-you-must-ask.html)
+   looking through our code and our documentation, then start formulating
+   your request for
+   help](https://blogs.akamai.com/2013/10/you-must-try-and-then-you-must-ask.html)
 1. you ask your question
 1. someone directs you to a document
 1. you go read that document, and try to use it to answer your question
 1. you find you are confused about a new thing
 1. you ask another question
 1. now that you have demonstrated that you have the ability to read,
-think, and learn new things, someone has a longer talk with you to
-answer your new specific question
+   think, and learn new things, someone has a longer talk with you to
+   answer your new specific question
 1. you and the other person collaborate to improve the document that you
-read in step 3 :-)
+   read in step 3 :-)
 
 This helps us make a balance between person-to-person discussion and
 documentation that everyone can read, so we save time answering common
@@ -484,17 +484,17 @@ CSS](https://github.com/zulip/zulip/).
   language and API design. Expert: Depends on language.
 
 - Develop [**@zulipbot**](https://github.com/zulip/zulipbot), the GitHub
-workflow bot for the Zulip organization and its repositories. By utilizing the
-[GitHub API](https://developer.github.com/v3/),
-[**@zulipbot**](https://github.com/zulipbot) improves the experience of Zulip
-contributors by managing the issues and pull requests in the Zulip repositories,
-such as assigning issues to contributors and appropriately labeling issues with
-their current status to help contributors gain a better understanding of which
-issues are being worked on. Since the project is in its early stages of
-development, there are a variety of possible tasks that can be done, including
-adding new features, writing unit tests and creating a testing framework, and
-writing documentation. **Skills required**: Node.js, ECMAScript 6, and API
-experience. Experts: Cynthia Lin, Joshua Pan.
+  workflow bot for the Zulip organization and its repositories. By utilizing the
+  [GitHub API](https://developer.github.com/v3/),
+  [**@zulipbot**](https://github.com/zulipbot) improves the experience of Zulip
+  contributors by managing the issues and pull requests in the Zulip repositories,
+  such as assigning issues to contributors and appropriately labeling issues with
+  their current status to help contributors gain a better understanding of which
+  issues are being worked on. Since the project is in its early stages of
+  development, there are a variety of possible tasks that can be done, including
+  adding new features, writing unit tests and creating a testing framework, and
+  writing documentation. **Skills required**: Node.js, ECMAScript 6, and API
+  experience. Experts: Cynthia Lin, Joshua Pan.
 
 ### React Native mobile app
 
@@ -522,11 +522,11 @@ summer. We'd love to have multiple students working on this area if
 we have enough strong applicants.
 
 **Skills required**: Strong programming experience, especially in
-  reading the documentation of unfamiliar projects and communicating
-  what you learned. JavaScript and React experience are great pluses,
-  as are iOS or Android development/design experience is useful as
-  well. You'll need to learn React Native as part of getting
-  involved. There's tons of good online tutorials, courses, etc.
+reading the documentation of unfamiliar projects and communicating
+what you learned. JavaScript and React experience are great pluses,
+as are iOS or Android development/design experience is useful as
+well. You'll need to learn React Native as part of getting
+involved. There's tons of good online tutorials, courses, etc.
 
 ### Electron desktop app
 
@@ -542,7 +542,7 @@ Experts: Anders Kaseorg, Akash Nimare, Abhighyan Khaund.
   the open issues and get involved!
 
 **Skills required**: JavaScript experience, Electron experience. You
-  can learn electron as part of your application!
+can learn electron as part of your application!
 
 Good preparation for desktop app projects is to (1) try out the app
 and see if you can find bugs or polish problems lacking open issues

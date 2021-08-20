@@ -20,6 +20,7 @@ $ git checkout -b <username>/<branchname>
 ```
 
 You can choose to rename the branch if you prefer:
+
 ```bash
 git checkout -b <custombranchname> <username>/<branchname>
 ```
@@ -31,8 +32,8 @@ pull request locally. GitHub provides a special syntax
 ([details][github-help-co-pr-locally]) for this since pull requests are
 specific to GitHub rather than Git.
 
-First, fetch and create a branch for the pull request, replacing *ID* and
-*BRANCHNAME* with the ID of the pull request and your desired branch name:
+First, fetch and create a branch for the pull request, replacing _ID_ and
+_BRANCHNAME_ with the ID of the pull request and your desired branch name:
 
 ```console
 $ git fetch upstream pull/ID/head:BRANCHNAME
@@ -47,11 +48,12 @@ $ git checkout BRANCHNAME
 Now you work on this branch as you would any other.
 
 Note: you can use the scripts provided in the tools/ directory to fetch pull
-requests. You can read more about what they do [here][tools-PR].
+requests. You can read more about what they do [here][tools-pr].
+
 ```bash
 tools/fetch-rebase-pull-request <PR-number>
 tools/fetch-pull-request <PR-number>
 ```
 
 [github-help-co-pr-locally]: https://help.github.com/en/articles/checking-out-pull-requests-locally
-[tools-PR]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase
+[tools-pr]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase

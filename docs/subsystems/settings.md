@@ -5,6 +5,7 @@ help you decide how to correctly implement new settings you're adding
 to Zulip.
 
 We have two types of administrative settings in Zulip:
+
 - **Server settings** are set via configuration files, and apply to
   the whole Zulip installation.
 - **Realm settings** (or **organization settings**) are usually
@@ -16,11 +17,11 @@ Philosophically, the goals of the settings system are to make it
 convenient for:
 
 - Zulip server administrators to configure
-Zulip's featureset for their server without needing to patch Zulip
+  Zulip's featureset for their server without needing to patch Zulip
 - Realm administrators to configure settings for their organization
-independently without needing to talk with the server administrator.
+  independently without needing to talk with the server administrator.
 - Secrets (passwords, API keys, etc.) to be stored in a separate place
-from shareable configuration.
+  from shareable configuration.
 
 ## Server settings
 

@@ -3,7 +3,7 @@
 When you're ready for feedback, submit a pull request. Pull requests
 are a feature specific to GitHub. They provide a simple, web-based way
 to submit your work (often called "patches") to a project. It's called
-a *pull request* because you're asking the project to *pull changes*
+a _pull request_ because you're asking the project to _pull changes_
 from your fork.
 
 If you're unfamiliar with how to create a pull request, you can check
@@ -44,7 +44,7 @@ The best way to update your branch is with `git fetch` and `git rebase`. Do not
 use `git pull` or `git merge` as this will create merge commits. See [keep your
 fork up to date][keep-up-to-date] for details.
 
-Here's an example (you would replace *issue-123* with the name of your feature branch):
+Here's an example (you would replace _issue-123_ with the name of your feature branch):
 
 ```console
 $ git checkout issue-123
@@ -117,7 +117,7 @@ pull request** button.
 Alternatively, if you've recently pushed to your fork, you will see a green
 **Compare & pull request** button.
 
-You'll see the *Open a pull request* page:
+You'll see the _Open a pull request_ page:
 
 ![images-create-pr]
 

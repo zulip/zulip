@@ -26,6 +26,7 @@ creating the initial realm and user. You can disable it after that.
 With just a few lines of configuration, your Zulip server can
 authenticate users with any of several single-sign-on (SSO)
 authentication providers:
+
 - Google accounts, with `GoogleAuthBackend`
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
@@ -36,6 +37,7 @@ Each of these requires one to a handful of lines of configuration in
 are documented in your `settings.py`.
 
 (ldap)=
+
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and
@@ -49,6 +51,7 @@ In either configuration, you will need to do the following:
    organization using LDAP authentication.
 
 1. Tell Zulip how to connect to your LDAP server:
+
    - Fill out the section of your `/etc/zulip/settings.py` headed "LDAP
      integration, part 1: Connecting to the LDAP server".
    - If a password is required, put it in
@@ -59,6 +62,7 @@ In either configuration, you will need to do the following:
 1. Decide how you want to map the information in your LDAP database to
    users' account data in Zulip. For each Zulip user, two closely
    related concepts are:
+
    - their **email address**. Zulip needs this in order to send, for
      example, a notification when they're offline and another user
      sends a PM.
@@ -76,32 +80,35 @@ In either configuration, you will need to do the following:
    ways to set up the username and/or email mapping:
 
    (A) Using email addresses as Zulip usernames, if LDAP has each
-      user's email address:
-      - Make `AUTH_LDAP_USER_SEARCH` a query by email address.
-      - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to the same query with
-        `%(email)s` rather than `%(user)s` as the search parameter.
-      - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
-        attribute for the user's LDAP username in the search result
-        for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
+   user's email address:
+
+   - Make `AUTH_LDAP_USER_SEARCH` a query by email address.
+   - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to the same query with
+     `%(email)s` rather than `%(user)s` as the search parameter.
+   - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+     attribute for the user's LDAP username in the search result
+     for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
 
    (B) Using LDAP usernames as Zulip usernames, with email addresses
-      formed consistently like `sam` -> `sam@example.com`:
-      - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
-      - Set `LDAP_APPEND_DOMAIN = "example.com"`.
+   formed consistently like `sam` -> `sam@example.com`:
+
+   - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
+   - Set `LDAP_APPEND_DOMAIN = "example.com"`.
 
    (C) Using LDAP usernames as Zulip usernames, with email addresses
-      taken from some other attribute in LDAP (for example, `mail`):
-      - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
-      - Set `LDAP_EMAIL_ATTR = "mail"`.
-      - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
-        an LDAP user given their email address (i.e. a search by
-        `LDAP_EMAIL_ATTR`). For example:
-        ```python
-        AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                                    ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
-        ```
-      - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
-        attribute for the user's LDAP username in that search result.
+   taken from some other attribute in LDAP (for example, `mail`):
+
+   - Set `AUTH_LDAP_USER_SEARCH` to query by LDAP username
+   - Set `LDAP_EMAIL_ATTR = "mail"`.
+   - Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
+     an LDAP user given their email address (i.e. a search by
+     `LDAP_EMAIL_ATTR`). For example:
+     ```python
+     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                                 ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+     ```
+   - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
+     attribute for the user's LDAP username in that search result.
 
 You can quickly test whether your configuration works by running:
 
@@ -117,22 +124,23 @@ email address, if it isn't the same as the "Zulip username").
 of the following configurations:
 
 - To access by Active Directory username:
-    ```python
-    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                       ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
-    AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                       ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
-    AUTH_LDAP_USERNAME_ATTR = "sAMAccountName"
-    ```
+
+  ```python
+  AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                     ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
+  AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                     ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+  AUTH_LDAP_USERNAME_ATTR = "sAMAccountName"
+  ```
 
 - To access by Active Directory email address:
-    ```python
-    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                       ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
-    AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                                ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
-    AUTH_LDAP_USERNAME_ATTR = "mail"
-    ```
+  ```python
+  AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                     ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
+  AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                              ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+  AUTH_LDAP_USERNAME_ATTR = "mail"
+  ```
 
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
@@ -166,6 +174,7 @@ We recommend running this command in a **regular cron job**, to pick
 up changes made on your LDAP server.
 
 All of these data synchronization options have the same model:
+
 - New users will be populated automatically with the
   name/avatar/etc. from LDAP (as configured) on account creation.
 - The `manage.py sync_ldap_user_data` cron job will automatically
@@ -262,6 +271,7 @@ the fields that would be useful to sync from your LDAP databases.
 ### Multiple LDAP searches
 
 To do the union of multiple LDAP searches, use `LDAPSearchUnion`. For example:
+
 ```python
 AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
     LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
@@ -292,6 +302,7 @@ For the root subdomain, `www` in the list will work, or any other of
 
 For example, with `org_membership` set to `department`, a user with
 the following attributes will have access to the root and `engineering` subdomains:
+
 ```text
 ...
 department: engineering
@@ -355,26 +366,27 @@ it as follows:
 
 1. Tell your IdP how to find your Zulip server:
 
-    - **SP Entity ID**: `https://yourzulipdomain.example.com`.
+   - **SP Entity ID**: `https://yourzulipdomain.example.com`.
 
-      The `Entity ID` should match the value of
-      `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
-      You can get the correct value by running the following:
-      `/home/zulip/deployments/current/scripts/get-django-setting SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
+     The `Entity ID` should match the value of
+     `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
+     You can get the correct value by running the following:
+     `/home/zulip/deployments/current/scripts/get-django-setting SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
 
-    - **SSO URL**:
-      `https://yourzulipdomain.example.com/complete/saml/`. This is
-      the "SAML ACS url" in SAML terminology.
+   - **SSO URL**:
+     `https://yourzulipdomain.example.com/complete/saml/`. This is
+     the "SAML ACS url" in SAML terminology.
 
-      If you're
-      [hosting multiple organizations](../production/multiple-organizations.html#authentication),
-      you need to use `SOCIAL_AUTH_SUBDOMAIN`. For example,
-      if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
-      this should be `https://auth.zulip.example.com/complete/saml/`.
+     If you're
+     [hosting multiple organizations](../production/multiple-organizations.html#authentication),
+     you need to use `SOCIAL_AUTH_SUBDOMAIN`. For example,
+     if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
+     this should be `https://auth.zulip.example.com/complete/saml/`.
 
 1. Tell Zulip how to connect to your SAML provider(s) by filling
    out the section of `/etc/zulip/settings.py` on your Zulip server
    with the heading "SAML Authentication".
+
    - You will need to update `SOCIAL_AUTH_SAML_ORG_INFO` with your
      organization name (`displayname` may appear in the IdP's
      authentication flow; `name` won't be displayed to humans).
@@ -403,31 +415,31 @@ it as follows:
         login attempts by users who don't have an account yet.
 
 1. Install the certificate(s) required for SAML authentication. You
-    will definitely need the public certificate of your IdP. Some IdP
-    providers also support the Zulip server (Service Provider) having
-    a certificate used for encryption and signing. We detail these
-    steps as optional below, because they aren't required for basic
-    setup, and some IdPs like Okta don't fully support Service
-    Provider certificates. You should install them as follows:
+   will definitely need the public certificate of your IdP. Some IdP
+   providers also support the Zulip server (Service Provider) having
+   a certificate used for encryption and signing. We detail these
+   steps as optional below, because they aren't required for basic
+   setup, and some IdPs like Okta don't fully support Service
+   Provider certificates. You should install them as follows:
 
-    1. On your Zulip server, `mkdir -p /etc/zulip/saml/idps/`
-    2. Put the IDP public certificate in `/etc/zulip/saml/idps/{idp_name}.crt`
-    3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
-       and the corresponding private key in `/etc/zulip/saml/zulip-private-key.key`. Note that
-       the certificate should be the single X.509 certificate for the server, not a full chain of
-       trust, which consists of multiple certificates. The private key cannot be encrypted
-       with a password, as then Zulip will not be able to load it. An example pair can be
-       generated using:
-       ```bash
-       openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key -out zulip-cert.crt -days 365 -nodes
-       ```
-    4. Set the proper permissions on these files and directories:
+   1. On your Zulip server, `mkdir -p /etc/zulip/saml/idps/`
+   2. Put the IDP public certificate in `/etc/zulip/saml/idps/{idp_name}.crt`
+   3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
+      and the corresponding private key in `/etc/zulip/saml/zulip-private-key.key`. Note that
+      the certificate should be the single X.509 certificate for the server, not a full chain of
+      trust, which consists of multiple certificates. The private key cannot be encrypted
+      with a password, as then Zulip will not be able to load it. An example pair can be
+      generated using:
+      ```bash
+      openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key -out zulip-cert.crt -days 365 -nodes
+      ```
+   4. Set the proper permissions on these files and directories:
 
-       ```bash
-       chown -R zulip.zulip /etc/zulip/saml/
-       find /etc/zulip/saml/ -type f -exec chmod 644 -- {} +
-       chmod 640 /etc/zulip/saml/zulip-private-key.key
-       ```
+      ```bash
+      chown -R zulip.zulip /etc/zulip/saml/
+      find /etc/zulip/saml/ -type f -exec chmod 644 -- {} +
+      chmod 640 /etc/zulip/saml/zulip-private-key.key
+      ```
 
 1. (Optional) If you configured the optional public and private server
    certificates above, you can enable the additional setting
@@ -439,7 +451,7 @@ it as follows:
    authenticated users.
 
 1. Enable the `zproject.backends.SAMLAuthBackend` auth backend, in
-`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
+   `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
 
 1. (Optional) New in Zulip 5.0: Zulip can synchronize [custom profile
    fields][custom-profile-fields] from the SAML provider. Just
@@ -461,14 +473,14 @@ it as follows:
    consider this [a bug](https://github.com/zulip/zulip/issues/18746).
 
 1. [Restart the Zulip server](../production/settings.md) to ensure
-your settings changes take effect. The Zulip login page should now
-have a button for SAML authentication that you can use to log in or
-create an account (including when creating a new organization).
+   your settings changes take effect. The Zulip login page should now
+   have a button for SAML authentication that you can use to log in or
+   create an account (including when creating a new organization).
 
 1. If the configuration was successful, the server's metadata can be
-found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
-can use this for verifying your configuration or provide it to your
-IdP.
+   found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
+   can use this for verifying your configuration or provide it to your
+   IdP.
 
 [saml-help-center]: https://zulip.com/help/saml-authentication
 
@@ -517,7 +529,6 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
-
 ## Apache-based SSO with `REMOTE_USER`
 
 If you have any existing SSO solution where a preferred way to deploy
@@ -557,6 +568,7 @@ straightforward way to deploy that SSO solution with Zulip.
    using the `htpasswd` example configuration and demonstrate that
    working end-to-end, before returning later to configure your SSO
    solution. You can do that with the following steps:
+
    ```bash
    /home/zulip/deployments/current/scripts/restart-server
    cd /etc/apache2/sites-available/
@@ -593,11 +605,11 @@ improve this SSO setup documentation are very welcome!
 
 - The following log files can be helpful when debugging this setup:
 
-   - `/var/log/zulip/{errors.log,server.log}` (the usual places)
-   - `/var/log/nginx/access.log` (nginx access logs)
-   - `/var/log/apache2/zulip_auth_access.log` (from the
-     `zulip-sso.conf` Apache config file; you may want to change
-     `LogLevel` in that file to "debug" to make this more verbose)
+  - `/var/log/zulip/{errors.log,server.log}` (the usual places)
+  - `/var/log/nginx/access.log` (nginx access logs)
+  - `/var/log/apache2/zulip_auth_access.log` (from the
+    `zulip-sso.conf` Apache config file; you may want to change
+    `LogLevel` in that file to "debug" to make this more verbose)
 
 ### Life of an Apache-based SSO login attempt
 
@@ -641,9 +653,9 @@ Zulip supports using the web flow for Sign in with Apple on
 self-hosted servers. To do so, you'll need to do the following:
 
 1. Visit [the Apple Developer site][apple-developer] and [Create a
-Services ID.][apple-create-services-id]. When prompted for a "Return
-URL", enter `https://zulip.example.com/complete/apple/` (using the
-domain for your server).
+   Services ID.][apple-create-services-id]. When prompted for a "Return
+   URL", enter `https://zulip.example.com/complete/apple/` (using the
+   domain for your server).
 
 1. Create a [Sign in with Apple private key][apple-create-private-key].
 
@@ -657,6 +669,7 @@ domain for your server).
    ```
 
 1. Configure Apple authentication in `/etc/zulip/settings.py`:
+
    - `SOCIAL_AUTH_APPLE_TEAM`: Your Team ID from Apple, which is a
      string like "A1B2C3D4E5".
    - `SOCIAL_AUTH_APPLE_SERVICES_ID`: The Services ID you created in

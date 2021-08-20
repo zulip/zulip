@@ -1,6 +1,6 @@
 # Realms in Zulip
 
-Zulip allows multiple *realms* to be hosted on a single instance.
+Zulip allows multiple _realms_ to be hosted on a single instance.
 Realms are the Zulip codebases's internal name for what we refer to in
 user documentation as an organization (the name "realm" comes from
 [Kerberos](https://web.mit.edu/kerberos/)).
@@ -77,7 +77,7 @@ will try to get the page on your behalf. Since zulipdev.com points
 to 127.0.0.1 the proxy server is likely to give you a 503 error. The
 workaround is to disable your proxy for `*.zulipdev.com`. The DNS
 lookup should still work even if you disable proxy for
-*.zulipdev.com. If it doesn't you can add zulipdev.com records in
+\*.zulipdev.com. If it doesn't you can add zulipdev.com records in
 `/etc/hosts` file. The file should look something like this.
 
 ```text

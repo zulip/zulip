@@ -26,6 +26,7 @@ To make a code or documentation contribution, read our
 [step-by-step guide](#your-first-codebase-contribution) to getting
 started with the Zulip codebase. A small sample of the type of work that
 needs doing:
+
 - Bug squashing and feature development on our Python/Django
   [backend](https://github.com/zulip/zulip), web
   [frontend](https://github.com/zulip/zulip), React Native
@@ -57,6 +58,7 @@ This section has a step by step guide to starting as a Zulip codebase
 contributor. It's long, but don't worry about doing all the steps perfectly;
 no one gets it right the first time, and there are a lot of people available
 to help.
+
 - First, make an account on the
   [Zulip community server](https://zulip.com/developer-community/),
   paying special attention to the community norms. If you'd like, introduce
@@ -119,6 +121,7 @@ have a new feature you'd like to add, we recommend you start by posting in
 feature idea and the problem that you're hoping to solve.
 
 Other notes:
+
 - For a first pull request, it's better to aim for a smaller contribution
   than a bigger one. Many first contributions have fewer than 10 lines of
   changes (not counting changes to tests).
@@ -215,9 +218,9 @@ and how to reproduce it if known, your browser/OS if relevant, and a
 if appropriate.
 
 **Reporting security issues**. Please do not report security issues
-  publicly, including on public streams on chat.zulip.org. You can
-  email security@zulip.com. We create a CVE for every security
-  issue in our released software.
+publicly, including on public streams on chat.zulip.org. You can
+email security@zulip.com. We create a CVE for every security
+issue in our released software.
 
 ## User feedback
 
@@ -252,6 +255,7 @@ summer interns from Harvard, MIT, and Stanford.
 While each third-party program has its own rules and requirements, the
 Zulip community's approaches all of these programs with these ideas in
 mind:
+
 - We try to make the application process as valuable for the applicant as
   possible. Expect high-quality code reviews, a supportive community, and
   publicly viewable patches you can link to from your resume, regardless of
@@ -307,6 +311,7 @@ for ZSoC, we'll contact you when the GSoC results are announced.
 perception of projects like Zulip. We've collected a few sites below
 where we know Zulip has been discussed. Doing everything in the following
 list typically takes about 15 minutes.
+
 - Star us on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
   [mobile](https://github.com/zulip/zulip-mobile),
