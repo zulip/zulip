@@ -8,8 +8,8 @@ from django.db import connection
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from sqlalchemy.sql import Select, and_, column, select, table
-from sqlalchemy.sql.elements import ClauseElement
+from sqlalchemy.sql import ClauseElement, Select, and_, column, select, table
+from sqlalchemy.types import Integer
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -99,8 +99,8 @@ class NarrowBuilderTest(ZulipTestCase):
         super().setUp()
         self.realm = get_realm("zulip")
         self.user_profile = self.example_user("hamlet")
-        self.builder = NarrowBuilder(self.user_profile, column("id"), self.realm)
-        self.raw_query = select([column("id")], None, table("zerver_message"))
+        self.builder = NarrowBuilder(self.user_profile, column("id", Integer), self.realm)
+        self.raw_query = select([column("id", Integer)], None, table("zerver_message"))
         self.hamlet_email = self.example_user("hamlet").email
         self.othello_email = self.example_user("othello").email
 
@@ -136,7 +136,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="streams", operand="public")
         self._do_add_term_test(
             term,
-            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)",
+            "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])",
         )
 
         # Add new streams
@@ -165,14 +165,14 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
-            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s",
+            "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])",
         )
 
     def test_add_term_using_streams_operator_and_public_stream_operand_negated(self) -> None:
         term = dict(operator="streams", operand="public", negated=True)
         self._do_add_term_test(
             term,
-            "WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s)",
+            "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))",
         )
 
         # Add new streams
@@ -201,7 +201,7 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
-            "WHERE recipient_id NOT IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s)",
+            "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))",
         )
 
     def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
@@ -398,7 +398,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
         # Test wtihout any such group PM threads existing
         term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE 1 != 1")
+        self._do_add_term_test(term, "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])")
 
         # Test with at least one such group PM thread existing
         self.send_huddle_message(
@@ -406,13 +406,13 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
         term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN (%(recipient_id_1)s)")
+        self._do_add_term_test(term, "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])")
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
         term = dict(operator="group-pm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(term, "WHERE 1 = 1")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
@@ -477,13 +477,13 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_in_operator(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
         term = dict(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE recipient_id NOT IN (%(recipient_id_1)s)")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_negated(self) -> None:
         # negated = True should not change anything
         mute_stream(self.realm, self.user_profile, "Verona")
         term = dict(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id NOT IN (%(recipient_id_1)s)")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
@@ -510,7 +510,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_non_web_public_stream_in_web_public_query(self) -> None:
         self.make_stream("non-web-public-stream", realm=self.realm)
         term = dict(operator="stream", operand="non-web-public-stream")
-        builder = NarrowBuilder(self.user_profile, column("id"), self.realm, True)
+        builder = NarrowBuilder(self.user_profile, column("id", Integer), self.realm, True)
 
         def _build_query(term: Dict[str, Any]) -> Select:
             return builder.add_term(self.raw_query, term)
@@ -3329,7 +3329,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id").label("message_id")], None, table("zerver_message"))
+        query = select([column("id", Integer).label("message_id")], None, table("zerver_message"))
         query = query.where(*muting_conditions)
         expected_query = """\
 SELECT id AS message_id \n\
@@ -3354,13 +3354,13 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id")], None, table("zerver_message"))
+        query = select([column("id", Integer)], None, table("zerver_message"))
         query = query.where(and_(*muting_conditions))
 
         expected_query = """\
 SELECT id \n\
 FROM zerver_message \n\
-WHERE recipient_id NOT IN (%(recipient_id_1)s) \
+WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1])) \
 AND NOT \
 (recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_1)s) OR \
 recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
@@ -3368,7 +3368,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         self.assertEqual(get_sqlalchemy_sql(query), expected_query)
         params = get_sqlalchemy_query_params(query)
         self.assertEqual(
-            params["recipient_id_1"], get_recipient_id_for_stream_name(realm, "Verona")
+            params["recipient_id_1"], [get_recipient_id_for_stream_name(realm, "Verona")]
         )
         self.assertEqual(
             params["recipient_id_2"], get_recipient_id_for_stream_name(realm, "Scotland")
@@ -3480,7 +3480,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["streams", "public"]]'}, sql
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id NOT IN ({public_streams_recipents}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (recipient_id NOT IN ({public_streams_recipents})) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -3542,9 +3542,9 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
 FROM (SELECT message_id, flags, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3 \n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5 \n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
 WHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n\
@@ -3558,9 +3558,9 @@ WHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zul
         sql_template = """\
 SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
 FROM (SELECT id AS message_id, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3 \n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5 \n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_message \n\
 WHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY zerver_message.id ASC \n\
@@ -3580,9 +3580,9 @@ WHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquer
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
 FROM (SELECT message_id, flags, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3 \n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5 \n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
 WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%') AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\

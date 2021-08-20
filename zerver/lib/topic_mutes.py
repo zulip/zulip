@@ -3,6 +3,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
+from sqlalchemy.types import Integer
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
@@ -119,7 +120,7 @@ def exclude_topic_mutes(
     def mute_cond(row: Dict[str, Any]) -> ClauseElement:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
-        stream_cond = column("recipient_id") == recipient_id
+        stream_cond = column("recipient_id", Integer) == recipient_id
         topic_cond = topic_match_sa(topic_name)
         return and_(stream_cond, topic_cond)
 
