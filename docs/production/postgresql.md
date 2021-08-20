@@ -107,15 +107,15 @@ prohibitively long. If you use the --force option with stop,
 pg_ctlcluster will try to use the "fast" mode for shutting
 down. "Fast" mode is described by the manpage thusly:
 
-  With the --force option the "fast" mode is used which rolls back all
-  active transactions, disconnects clients immediately and thus shuts
-  down cleanly. If that does not work, shutdown is attempted again in
-  "immediate" mode, which can leave the cluster in an inconsistent state
-  and thus will lead to a recovery run at the next start. If this still
-  does not help, the postmaster process is killed. Exits with 0 on
-  success, with 2 if the server is not running, and with 1 on other
-  failure conditions. This mode should only be used when the machine is
-  about to be shut down.
+> With the --force option the "fast" mode is used which rolls back all
+> active transactions, disconnects clients immediately and thus shuts
+> down cleanly. If that does not work, shutdown is attempted again in
+> "immediate" mode, which can leave the cluster in an inconsistent state
+> and thus will lead to a recovery run at the next start. If this still
+> does not help, the postmaster process is killed. Exits with 0 on
+> success, with 2 if the server is not running, and with 1 on other
+> failure conditions. This mode should only be used when the machine is
+> about to be shut down.
 
 Many database parameters can be adjusted while the database is
 running. Just modify /etc/postgresql/9.1/main/postgresql.conf and
