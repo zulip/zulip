@@ -17,10 +17,10 @@ in a more colloquial style, German translations should be rather informal as wel
 
 **Don't use slang or regional phrases in the German translation:**
 
-* Instead of *"So'n Dreck kann jedem mal passieren."*, you could
+- Instead of *"So'n Dreck kann jedem mal passieren."*, you could
 say *"Dieser Fehler tritt häufiger auf."*
 
-* "Das ist die Seite, wo der Quelltext steht." - the "*wo*" is regional,
+- "Das ist die Seite, wo der Quelltext steht." - the "*wo*" is regional,
 say *"Das ist die Seite, auf der der Quelltext steht."* instead.
 
 ### Form of address
@@ -60,10 +60,10 @@ concatenations whenever possible, since they can break the layout of the Zulip
 frontend. Try to stick to a maximum length of 20 characters and follow your
 intuition.
 
-* A term like *Tastaturkürzel* for *Keyboard shortcuts* is fine - it is
+- A term like *Tastaturkürzel* for *Keyboard shortcuts* is fine - it is
 shorter than 20 characters and commonly used in web applications.
 
-* A term like *Benachrichtigungsstichwörter* for *Alert words* should
+- A term like *Benachrichtigungsstichwörter* for *Alert words* should
 not be used, it sounds odd and is longer than 20 characters.
 You could use "*Stichwörter, die mich benachrichtigen*" instead.
 
@@ -76,10 +76,10 @@ This becomes even more evident in internet applications,
 so you should not be afraid of using them if they provide an advantage over
 the German equivalent. Take the following two examples as a reference:
 
-* Translating *Stream*: Use the German word *Kanal*, since it is just as short
+- Translating *Stream*: Use the German word *Kanal*, since it is just as short
 and used in other web apps.
 
-* Translating *Bot*: Use *Bot*, as a completely accurate German
+- Translating *Bot*: Use *Bot*, as a completely accurate German
 equivalent **doesn't** exist (e.g. *Roboter*) and the term *Bot* is not
 unknown to German speakers.
 
@@ -105,19 +105,19 @@ Make sure to not walk into such a trap.
 
 ### Other
 
-* Try to keep words and phrases short and understandable. The front-end
+- Try to keep words and phrases short and understandable. The front-end
 developers will thank you ;)
 
-* Be consistent. Use the same terms for the same things, even if that
+- Be consistent. Use the same terms for the same things, even if that
 means repeating. Have a look at other German translations on Zulip
 to get a feeling for the vocabulary.
 
-* Balance common verbs and nouns with specific IT-related translations
+- Balance common verbs and nouns with specific IT-related translations
 of English terms - this can be tricky, try to check how other resources
 were translated (e.g. Gmail, Microsoft websites, Facebook) to decide
 what wouldn't sound awkward / rude in German.
 
-* For additional translation information, feel free to check out
+- For additional translation information, feel free to check out
 [this](https://en.wikipedia.org/wiki/Wikipedia:Translating_German_WP) Wikipedia guide
 on translating German Wikipedia articles into English.
 
@@ -127,11 +127,11 @@ speakers in the community. It's all about making Zulip friendly and usable.
 
 ## Terms (Begriffe)
 
-* Message - **Nachricht**
+- Message - **Nachricht**
 
 *"Nachricht" (Facebook, WhatsApp, Transifex)*
 
-* Private Message (PM) - **Private Nachricht (PN)**
+- Private Message (PM) - **Private Nachricht (PN)**
 
 Since we try to avoid concatenating words whenever possible, don't use
 "Privatnachricht" . PN is the officially used abbreviation for
@@ -139,7 +139,7 @@ Since we try to avoid concatenating words whenever possible, don't use
 
 *"Private Nachricht" (YouTube, Transifex)*
 
-* Starred Message - **Markierte Nachricht**
+- Starred Message - **Markierte Nachricht**
 
 We go with "markiert" instead of "gesternt" (which is not even a proper
 German word) here, since it comes closer to the original meaning of "starred".
@@ -149,7 +149,7 @@ German word) here, since it comes closer to the original meaning of "starred".
 
 *"Bereich" (Transifex), "Community" (Google+)*
 
-* Stream - **Stream**
+- Stream - **Stream**
 
 Even though the term **Stream** is not commonly used in German web applications,
 it is both understood well enough by many Germans with only little English
@@ -161,11 +161,11 @@ no differentiation between streams and topics.
 *"Stream" (Transifex), "Kanal" (KDE IRC documentation, various
 small German forums)*
 
-* Topic - **Thema**
+- Topic - **Thema**
 
 *(Gmail - for email subjects, Transifex)*
 
-* Invite-Only Stream - **Geschlossener Stream**
+- Invite-Only Stream - **Geschlossener Stream**
 
 For users to be able to join to an "invite-only" stream, they must have been
 invited by some user in this stream. This type of stream is equivalent to
@@ -177,7 +177,7 @@ search returns only paraphrases of this term.
 *"Geschlossener Stream" (Transifex), "Geschlossene Gruppe" (Facebook),
 paraphrases (Linguee)*
 
-* Public Stream - **Öffentlicher Stream**
+- Public Stream - **Öffentlicher Stream**
 
 While some might find this direct translation a tad long, the alternative
 "Offener Stream" can be ambiguous - especially users who are inexperienced
@@ -185,14 +185,14 @@ with Zulip could think of this as streams that are online.
 
 *"Öffentlicher Stream" (Transifex)*
 
-* Bot - **Bot**
+- Bot - **Bot**
 
 Not only is "bot" a short and easily memorable term, it is also widely used
 in German technology magazines, forums, etc.
 
 *"Bot" (Transifex, Heise, Die Zeit)*
 
-* Integration - **Integration**
+- Integration - **Integration**
 
 While the German translation of "Integration" is spelled just like the English
 version, the translation is referring to the German term. For this reason,
@@ -202,14 +202,14 @@ translation, but "Integration" has the same meaning in German and English.
 
 *"Integration/-en" (Transifex)*
 
-* Notification - **Benachrichtigung**
+- Notification - **Benachrichtigung**
 
 Nice and easy. Other translations for "notification" like
 "Erwähnung", "Bescheid" or "Notiz" don't fit here.
 
 *"Benachrichtigung" (Facebook, Gmail, Transifex, Wikipedia)*
 
-* Alert Word - **Signalwort**
+- Alert Word - **Signalwort**
 
 This one is tricky, since one might initially think of "Alarmwort" as a proper
 translation. "Alarm", however, has a negative connotation, people link it to
@@ -220,7 +220,7 @@ shows that some websites misuse "Alarm" for the translation.
 
 *"Signalwort" (Transifex), "Wort-Alarm" (Linguee)*
 
-* View - **View** (Developer documentation)
+- View - **View** (Developer documentation)
 
 Since this is a Zulip-specific term for
 > every path that the Zulip server supports (doesn’t show a 404 page for),
@@ -229,7 +229,7 @@ and there is no German equivalent, talking of "Views" is preferable in the
 developer documentation and makes it easier to rely on parts of the German
 *and* parts of the English documentation.
 
-* View - **Ansicht** (User documentation)
+- View - **Ansicht** (User documentation)
 
 For the user documentation, we want to use "Ansicht" instead of "view", as
 "Ansicht" provides a translated description for what you think of when hearing
@@ -239,13 +239,13 @@ which Germans often link to IT-related definitions).
 
 *"Ansicht" (Transifex)*
 
-* Home - **Startseite**
+- Home - **Startseite**
 
 Nice and easy. "Zuhause" obviously doesn't fit here ;).
 
 *"Startseite" (Facebook, Transifex)*
 
-* Emoji - **Emoji**
+- Emoji - **Emoji**
 
 "Emoji" is the standard term for Emojis. Any other Germanized translation like
 "Bildschriftzeichen" (which exists!) would sound stiff and outdated. "Emoticon"
@@ -256,13 +256,13 @@ works as well, but is not that common in German.
 
 ## Phrases (Ausdrücke)
 
-* Subscribe/Unsubscribe - **Abonnieren/Deabonnieren**
+- Subscribe/Unsubscribe - **Abonnieren/Deabonnieren**
 
 This translation is unambiguous.
 
 *"Deabonnieren" (YouTube, Transifex)*
 
-* Narrow to - **Begrenzen auf**
+- Narrow to - **Begrenzen auf**
 
 Transifex has two different translations for "Narrow to" -
 "Schränke auf ... ein." and "Begrenze auf ... ." Both sound a bit strange to a
@@ -274,28 +274,28 @@ would be too long for many labels, the infinitive "begrenzen auf" is preferable.
 
 *"Schränke auf ... ein." (Transifex) "Begrenze auf ... ." (Transifex)*
 
-* Filter - **Filtern**
+- Filter - **Filtern**
 
 A direct translation is fine here. Watch out to to use the infinitive instead
 of the imperative, e.g. "Nachrichten filtern" instead of "Filtere Nachrichten".
 
 *"Filtern" (Thunderbird, LinkedIn)*
 
-* Mute/Unmute - **Stummschalten/Lautschalten**
+- Mute/Unmute - **Stummschalten/Lautschalten**
 
 "Lautschalten" is rarely used in German, but so is "Stummschaltung
 deaktivieren". Since anyone can understand the idea behind "Lautschalten", it is
 preferable due to its brevity.
 
-* Deactivate/Reactivate - **Deaktivieren/Reaktivieren**
+- Deactivate/Reactivate - **Deaktivieren/Reaktivieren**
 
 *"Deaktivieren/Reaktivieren" (Transifex)*
 
-* Search - **Suchen**
+- Search - **Suchen**
 
 *"Suchen" (YouTube, Google, Facebook, Transifex)*
 
-* Pin/Unpin - **Anpinnen/Loslösen**
+- Pin/Unpin - **Anpinnen/Loslösen**
 
 While "pinnen" is shorter than "anpinnen", "anpinnen" sweeps any amiguity out of
 the way. This term is not used too often on Zulip, so the length shouldn't be a
@@ -303,35 +303,35 @@ problem.
 
 *"Anpinnen/Ablösen" (Transifex), "Pinnen" (Pinterest)*
 
-* Mention/@mention - **Erwähnen/"@-Erwähnen**
+- Mention/@mention - **Erwähnen/"@-Erwähnen**
 
 Make sure to say "@-erwähnen", but "die @-Erwähnung" (capitalized).
 
 *"Erwähnen/@-Erwähnen" (Transifex)*
 
-* Invalid - **Ungültig**
+- Invalid - **Ungültig**
 
 *"Ungültig" (Transifex)*
 
-* Customization - **Anpassen**
+- Customization - **Anpassen**
 
 The literal translation "Anpassung" would sound weird in most cases, so we use
 the infinitive form "anpassen".
 
-* I want - **Ich möchte**
+- I want - **Ich möchte**
 
 "Ich möchte" is the polite form of "Ich will".
 
 *"Ich möchte" - (Transifex, general sense of politeness)*
 
-* User - **Nutzer**
+- User - **Nutzer**
 
 "Benutzer" would work as well, but "Nutzer" is shorter and more commonly
 used in web applications.
 
 *"Nutzer" (Facebook, Gmail), "Benutzer" (Transifex)*
 
-* Person/People - Nutzer/Personen
+- Person/People - Nutzer/Personen
 
 We use "Personen" instead of plural "Nutzer" for "people", as "Nutzer" stays
 the same in plural.
@@ -340,7 +340,7 @@ the same in plural.
 
 ## Other (Verschiedenes)
 
-* You - **Du**
+- You - **Du**
 
 Why not "Sie"? In brief, Zulip and other web applications tend to use a rather
 informal language. If you would like to read more about the reasoning behind
@@ -349,7 +349,7 @@ translating German.
 
 *"Du" (Google, Facebook), "Sie" (Transifex)*
 
-* We - **Wir** (rarely used)
+- We - **Wir** (rarely used)
 
 German guides don't use "wir" very often - they tend to reformulate the
 phrases instead.

@@ -62,12 +62,12 @@ browsers to make sure things look the same.
 
 ### Behavior
 
-* Templates are automatically recompiled in development when the file
+- Templates are automatically recompiled in development when the file
 is saved; a refresh of the page should be enough to display the latest
 version. You might need to do a hard refresh, as some browsers cache
 webpages.
 
-* Variables can be used in templates. The variables available to the
+- Variables can be used in templates. The variables available to the
 template are called the **context**. Passing the context to the HTML
 template sets the values of those variables to the value they were
 given in the context. The sections below contain specifics on how the
@@ -84,10 +84,10 @@ found [here][jconditionals].
 
 The context for Jinja2 templates is assembled from a few places:
 
-* `zulip_default_context` in `zerver/context_processors.py`.  This is
+- `zulip_default_context` in `zerver/context_processors.py`.  This is
 the default context available to all Jinja2 templates.
 
-* As an argument in the `render` call in the relevant function that
+- As an argument in the `render` call in the relevant function that
 renders the template. For example, if you want to find the context
 passed to `index.html`, you can do:
 
@@ -98,7 +98,7 @@ zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 
 The next line in the code being the context definition.
 
-* `zproject/urls.py` for some fairly static pages that are rendered
+- `zproject/urls.py` for some fairly static pages that are rendered
 using `TemplateView`, for example:
 
 ```python
@@ -203,14 +203,14 @@ For your asset to be included in a development/production bundle, it
 needs to be accessible from one of the entry points defined either in
 `tools/webpack.assets.json` or `tools/webpack.dev-assets.json`.
 
-* If you plan to only use the file within the app proper, and not on the login
+- If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
   in `static/js/bundles/app.js`.
-* If it needs to be available both in the app and all
+- If it needs to be available both in the app and all
   logged-out/portico pages, import it to
   `static/js/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
-* If it's just used on a single standalone page which is only used in
+- If it's just used on a single standalone page which is only used in
   a development environment (e.g. `/devlogin`) create a new entry
   point in `tools/webpack.dev-assets.json` or it's used in both
   production and development (e.g. `/stats`) create a new entry point
@@ -224,10 +224,10 @@ If you want to test minified files in development, look for the
 ### How it works in production
 
 A few useful notes are:
-* Zulip installs static assets in production in
+- Zulip installs static assets in production in
 `/home/zulip/prod-static`.  When a new version is deployed, before the
 server is restarted, files are copied into that directory.
-* We use the VFL (versioned file layout) strategy, where each file in
+- We use the VFL (versioned file layout) strategy, where each file in
   the codebase (e.g. `favicon.ico`) gets a new name
   (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it.  Each
   deployment, has a manifest file
@@ -239,7 +239,7 @@ server is restarted, files are copied into that directory.
   deployment can't find their static assets.  It also is necessary for
   any incremental rollout strategy where different clients get
   different versions of the site.
-* Some paths for files (e.g. emoji) are stored in the
+- Some paths for files (e.g. emoji) are stored in the
   `rendered_content` of past messages, and thus cannot be removed
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).

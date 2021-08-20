@@ -73,7 +73,7 @@ def get_user(email: str, realm: Realm) -> UserProfile:
 ```
 
 This decorator implements a pretty classic caching paradigm:
-* The `user_profile_cache_key` function defines a unique map from a
+- The `user_profile_cache_key` function defines a unique map from a
   canonical form of its arguments to a string.  These strings are
   namespaced (the `user_profile:` part) so that they won't overlap
   with other caches, and encode the arguments so that two uses of this
@@ -82,13 +82,13 @@ This decorator implements a pretty classic caching paradigm:
   is important to ensure we don't send special characters to
   memcached).  And we have two versions, depending whether the caller
   has access to a `Realm` or just a `realm_id`.
-* When `get_user` is called, `cache_with_key` will compute the key,
+- When `get_user` is called, `cache_with_key` will compute the key,
   and do a Django `cache_get` query for the key (which goes to
   memcached).  If the key is in the cache, it just returns the value.
   Otherwise, it fetches the value from the database (using the actual
   code in the body of `get_user`), and then stores the value back to
   that memcached key before returning the result to the caller.
-* Cache entries expire after the timeout; in this case, a week.
+- Cache entries expire after the timeout; in this case, a week.
   Though in frequently deployed environments like chat.zulip.org,
   often cache entries will stop being used long before that, because
   `KEY_PREFIX` is rotated every time we deploy to production; see
@@ -104,7 +104,7 @@ that if an item is in the cache, the body of `get_user` (above) is
 never called.  This means some things that might seem like clever code
 reuse are actually a really bad idea.  For example:
 
-* Don't add a `get_active_user` function that uses the same cache key
+- Don't add a `get_active_user` function that uses the same cache key
   function as `get_user` (but with a different query that filters our
   deactivated users).  If one called `get_active_user` to access a
   deactivated user, the right thing would happen, but if you called
@@ -237,11 +237,11 @@ objects to minimize data transfer between Django and memcached).
 We generally try to avoid in-process backend caching in Zulip's Django
 codebase, because every Zulip production installation involves
 multiple servers.  We do have a few, however:
-* `per_request_display_recipient_cache`: A cache flushed at the start
+- `per_request_display_recipient_cache`: A cache flushed at the start
   of every request; this simplifies correctly implementing our goal of
   not repeatedly fetching the "display recipient" (e.g. stream name)
   for each message in the `GET /messages` codebase.
-* Caches of various data, like the `SourceMap` object, that are
+- Caches of various data, like the `SourceMap` object, that are
   expensive to construct, not needed for most requests, and don't
   change once a Zulip server has been deployed in production.
 

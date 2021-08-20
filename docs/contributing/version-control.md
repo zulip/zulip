@@ -91,12 +91,12 @@ First, check out
 of commits with good commit messages.
 
 The first line of the commit message is the **summary**. The summary:
-* is written in the imperative (e.g., "Fix ...", "Add ...")
-* is kept short (max 76 characters, ideally less), while concisely
+- is written in the imperative (e.g., "Fix ...", "Add ...")
+- is kept short (max 76 characters, ideally less), while concisely
   explaining what the commit does
-* is clear about what part of the code is affected -- often by prefixing
+- is clear about what part of the code is affected -- often by prefixing
   with the name of the subsystem and a colon, like "zjsunit: ..." or "docs: ..."
-* is a complete sentence.
+- is a complete sentence.
 
 ### Good summaries:
 
@@ -124,13 +124,13 @@ Here are some more positive examples:
 
 Compare "*gather_subscriptions: Fix exception handling bad input.*" with:
 
-* "*gather_subscriptions was broken*", which doesn't explain how
+- "*gather_subscriptions was broken*", which doesn't explain how
   it was broken (and isn't in the imperative)
-* "*Fix exception when given bad input*", in which it's impossible to
+- "*Fix exception when given bad input*", in which it's impossible to
   tell from the summary what part of the codebase was changed
-* "*gather_subscriptions: Fixing exception when given bad input.*",
+- "*gather_subscriptions: Fixing exception when given bad input.*",
   not in the imperative
-* "*gather_subscriptions: Fixed exception when given bad input.*",
+- "*gather_subscriptions: Fixed exception when given bad input.*",
   not in the imperative
 
 The summary is followed by a blank line, and then the body of the

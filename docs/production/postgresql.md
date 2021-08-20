@@ -32,21 +32,21 @@ called "zulip" in your database server. You can configure these
 options in `/etc/zulip/settings.py` (the below descriptions are from the
 PostgreSQL documentation):
 
-* `REMOTE_POSTGRES_HOST`: Name or IP address of the remote host
-* `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server,
+- `REMOTE_POSTGRES_HOST`: Name or IP address of the remote host
+- `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server,
   different options you can use are:
-  * disable: I don't care about security, and I don't want to pay the
+  - disable: I don't care about security, and I don't want to pay the
     overhead of encryption.
-  * allow: I don't care about security, but I will pay the overhead of
+  - allow: I don't care about security, but I will pay the overhead of
     encryption if the server insists on it.
-  * prefer: I don't care about encryption, but I wish to pay the
+  - prefer: I don't care about encryption, but I wish to pay the
     overhead of encryption if the server supports it.
-  * require: I want my data to be encrypted, and I accept the
+  - require: I want my data to be encrypted, and I accept the
     overhead. I trust that the network will make sure I always connect
     to the server I want.
-  * verify-ca: I want my data encrypted, and I accept the overhead. I
+  - verify-ca: I want my data encrypted, and I accept the overhead. I
     want to be sure that I connect to a server that I trust.
-  * verify-full: I want my data encrypted, and I accept the
+  - verify-full: I want my data encrypted, and I accept the
     overhead. I want to be sure that I connect to a server I trust,
     and that it's the one I specify.
 

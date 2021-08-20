@@ -123,13 +123,13 @@ are merging other users' commits into a Zulip repository.  After doing
 changes, you can push a branch back to a pull request with e.g.
 `tools/push-to-pull-request 1234`.  This is useful for a few things:
 
-* Getting CI to run and enabling you to use the GitHub "Merge" buttons
+- Getting CI to run and enabling you to use the GitHub "Merge" buttons
   to merge a PR after you make some corrections to a PR, without
   waiting for an extra round trip with the PR author.
-* For commits that aren't ready to merge yet, communicating clearly
+- For commits that aren't ready to merge yet, communicating clearly
   any changes you'd like to see happen that are easier for you to
   explain by just editing the code than in words.
-* Saving a contributor from needing to duplicate any rebase work that
+- Saving a contributor from needing to duplicate any rebase work that
   you did as part of integrating parts of the PR.
 
 You'll likely want to comment on the PR after doing so, to ensure that

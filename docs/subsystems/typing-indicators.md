@@ -17,8 +17,8 @@ views.
 
 There are two major roles for users in this system:
 
-* The "writing user" is composing a message.
-* The "receiving user" is waiting to receive a message (or possibly
+- The "writing user" is composing a message.
+- The "receiving user" is waiting to receive a message (or possibly
   ready to shift their attention elsewhere).
 
 Any Zulip user can play either one of these roles, and sometimes
@@ -28,9 +28,9 @@ being composed by the "writing user."
 
 On a high level the typing indicators system works like this:
 
-* The client for the "writing user" sends requests to the server.
-* The server broadcasts events to other users.
-* The clients for "receiving users" receive events and conditionally
+- The client for the "writing user" sends requests to the server.
+- The server broadcasts events to other users.
+- The clients for "receiving users" receive events and conditionally
   show typing indicators, depending on where the clients are narrowed.
 
 ## Writing user
@@ -97,8 +97,8 @@ incoming "typing" events from the server, and the client will
 display typing notification only when both of these conditions are
 true:
 
-* The "writing user" is still likely typing.
-* The "receiving user" is in a view where they'd see the eventual
+- The "writing user" is still likely typing.
+- The "receiving user" is in a view where they'd see the eventual
   message.
 
 The client code starts by processing events, and it maintains data
@@ -118,10 +118,10 @@ The web app client maintains a list of incoming "typists" using
 code in `static/js/typing_data.js`.  The API here has functions
 like the following:
 
-* `add_typist`
-* `remove_typist`
-* `get_group_typists`
-* `get_all_typists`
+- `add_typist`
+- `remove_typist`
+- `get_group_typists`
+- `get_all_typists`
 
 One subtle thing that the client has to do here is to maintain
 timers for typing notifications.  The constant

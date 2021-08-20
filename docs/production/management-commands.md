@@ -104,35 +104,35 @@ access other functions, you'll need to import them yourself.
 There are dozens of useful management commands under
 `zerver/management/commands/`.  We detail a few here:
 
-* `./manage.py help`: Lists all available management commands.
-* `./manage.py dbshell`: If you're more comfortable with raw SQL than
+- `./manage.py help`: Lists all available management commands.
+- `./manage.py dbshell`: If you're more comfortable with raw SQL than
   Python, this will open a PostgreSQL SQL shell connected to the Zulip
   server's database.  Beware of changing data; editing data directly
   with SQL will often not behave correctly because PostgreSQL doesn't
   know to flush Zulip's caches or notify browsers of changes.
-* `./manage.py send_custom_email`: Can be used to send an email to a set
+- `./manage.py send_custom_email`: Can be used to send an email to a set
   of users.  The `--help` documents how to run it from a
   `manage.py shell` for use with more complex programmatically
   computed sets of users.
-* `./manage.py send_password_reset_email`: Sends password reset email(s)
+- `./manage.py send_password_reset_email`: Sends password reset email(s)
   to one or more users.
-* `./manage.py change_realm_subdomain`: Change subdomain of a realm.
-* `./manage.py change_user_email`: Change a user's email address.
-* `./manage.py change_user_role`: Can change are user's role
+- `./manage.py change_realm_subdomain`: Change subdomain of a realm.
+- `./manage.py change_user_email`: Change a user's email address.
+- `./manage.py change_user_role`: Can change are user's role
   (easier done [via the
   UI](https://zulip.com/help/change-a-users-role)) or give bots the
   `can_forge_sender` permission, which is needed for certain special API features.
-* `./manage.py export_single_user`: does a limited version of the [main
+- `./manage.py export_single_user`: does a limited version of the [main
   export tools](../production/export-and-import.md) containing just
   the messages accessible by a single user.
-* `./manage.py reactivate_realm`: Reactivates a realm.
-* `./manage.py deactivate_user`: Deactivates a user. This can be done
+- `./manage.py reactivate_realm`: Reactivates a realm.
+- `./manage.py deactivate_user`: Deactivates a user. This can be done
   more easily in Zulip's organization administrator UI.
-* `./manage.py delete_user`: Completely delete a user from the database.
+- `./manage.py delete_user`: Completely delete a user from the database.
   For most purposes, deactivating users is preferred, since that does not
   alter message history for other users.
   See the `./manage.py delete_user --help` documentation for details.
-* `./manage.py clear_auth_rate_limit_history`: If a user failed authenticaton
+- `./manage.py clear_auth_rate_limit_history`: If a user failed authenticaton
   attempts too many times and further attempts are disallowed by the rate limiter,
   this can be used to reset the limit.
 
@@ -144,13 +144,13 @@ via `manage.py command_name --help`.
 Zulip supports several mechanisms for running custom code on a
 self-hosted Zulip server:
 
-* Using an existing [integration][integrations] or writing your own
+- Using an existing [integration][integrations] or writing your own
   [webhook integration][webhook-integrations] or [bot][writing-bots].
-* Writing a program using the [Zulip API][zulip-api].
-* [Modifying the Zulip server][modifying-zulip].
-* Using the interactive [management shell](#manage-py-shell),
+- Writing a program using the [Zulip API][zulip-api].
+- [Modifying the Zulip server][modifying-zulip].
+- Using the interactive [management shell](#manage-py-shell),
   documented above, for one-time work or prototyping.
-* Writing a custom management command, detailed here.
+- Writing a custom management command, detailed here.
 
 Custom management commands are Python 3 programs that run inside
 Zulip's context, so that they can access its libraries, database, and

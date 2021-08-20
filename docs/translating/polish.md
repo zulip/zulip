@@ -2,33 +2,33 @@
 
 Use semi-formal Polish for translation, some specifics:
 
-* Informal "you" (*ty*) instead of more formal approaches (e.g. plural
+- Informal "you" (*ty*) instead of more formal approaches (e.g. plural
   "you" (*wy*), using any formal titles like *Państwo*, *Pan/Pani*).
 
-* Gender-neutral forms of verbs, e.g. *unsubscribed* - *odsubskrybowano*,
+- Gender-neutral forms of verbs, e.g. *unsubscribed* - *odsubskrybowano*,
   not *odsubskrybowałeś".
 
-* Imperative, active and continuous verbs, e.g. *manage streams* -
+- Imperative, active and continuous verbs, e.g. *manage streams* -
   *zarządzaj kanałami*, not *zarządź kanałami*.
 
-* Not using reflexive *się*, e.g. *log out* would be simply *wyloguj*,
+- Not using reflexive *się*, e.g. *log out* would be simply *wyloguj*,
   not *wyloguj się*.
 
-* Warm and friendly phrasing whenever appropriate.
+- Warm and friendly phrasing whenever appropriate.
 
-* No slang or regional phrases that could be unclear or too informal,
+- No slang or regional phrases that could be unclear or too informal,
   e.g. *zajawka*.
 
-* Consistent usage of Zulip-specific terms and common verbs for
+- Consistent usage of Zulip-specific terms and common verbs for
   actions, even if it means repeating - this is one of the key aspects
   of "semi-formal", as synonyms would be often more appropriate in
   written Polish.
 
-* Mindful usage of long words and phrases - it's sometimes hard to
+- Mindful usage of long words and phrases - it's sometimes hard to
   translate English to Polish concisely, be mindful of how it looks on
   the frontend after translating.
 
-* Balance common verbs and nouns with specific IT-related translations
+- Balance common verbs and nouns with specific IT-related translations
   of English terms - this can be tricky, try to check how other
   resources were translated (e.g. Gmail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward in Polish.

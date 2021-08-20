@@ -43,13 +43,13 @@ to any languages that you'd like to contribute to (or add new ones).
 
 1. Translate the strings for your language in Transifex.  Zulip has
    several resource files:
-   * `mobile.json` is for the iOS/Android mobile apps.
-   * `desktop.json` is for the parts of the Zulip desktop apps that
+   - `mobile.json` is for the iOS/Android mobile apps.
+   - `desktop.json` is for the parts of the Zulip desktop apps that
      are not shared with the Zulip web app.
-   * `django.po` and `translations.json` have strings for the next
+   - `django.po` and `translations.json` have strings for the next
      major release of the Zulip server and web app (which is what we
      run on chat.zulip.org and Zulip Cloud).
-   * The variants of `django.po` and `translations.json` with names
+   - The variants of `django.po` and `translations.json` with names
      starting with a version, like, `4-x--`, are strings for Zulip's
      current [stable release series](../overview/release-lifecycle.md).
 
@@ -112,7 +112,7 @@ This section assumes you have a
 if setting one up is a problem for you, ask in chat.zulip.org and we
 can usually just deploy the latest translations there.
 
-* First, download the updated resource files from Transifex using the
+- First, download the updated resource files from Transifex using the
 `tools/i18n/sync-translations` command (it will require some [initial
 setup](../translating/internationalization.html#transifex-cli-setup)). This
 command will download the resource files from Transifex and replace
@@ -121,19 +121,19 @@ now test your translation work in the Zulip UI.
 
 There are a few ways to see your translations in the Zulip UI:
 
-* You can insert the language code as a URL prefix.  For example, you
+- You can insert the language code as a URL prefix.  For example, you
   can view the login page in German using
   `http://localhost:9991/de/login/`.  This works for any part of the
   Zulip UI, including portico (logged-out) pages.
-* For Zulip's logged-in UI (i.e. the actual web app), you can [pick the
+- For Zulip's logged-in UI (i.e. the actual web app), you can [pick the
   language](https://zulip.com/help/change-your-language) in the
   Zulip UI.
-* If your system has languages configured in your OS/browser, Zulip's
+- If your system has languages configured in your OS/browser, Zulip's
   portico (logged-out) pages will automatically use your configured
   language.  Note that we only tag for translation strings in pages
   that individual users need to use (e.g. `/login/`, `/register/`,
   etc.), not marketing pages like `/features/`.
-* In case you need to understand how the above interact, Zulip figures
+- In case you need to understand how the above interact, Zulip figures
   out the language the user requests in a browser using the following
   prioritization (mostly copied from the Django docs):
 
@@ -143,7 +143,7 @@ There are a few ways to see your translations in the Zulip UI:
   1. It looks for the `Accept-Language` HTTP header in the HTTP request
      (this is how browsers tell Zulip about the OS/browser language).
 
-* Using an HTTP client library like `requests`, `cURL` or `urllib`,
+- Using an HTTP client library like `requests`, `cURL` or `urllib`,
   you can pass the `Accept-Language` header; here is some sample code to
   test `Accept-Language` header using Python and `requests`:
 
@@ -163,13 +163,13 @@ Zulip should be translated into specific languages (e.g. what word to
 translate words like "stream" to), with reasoning, so that future
 translators can understand and preserve those decisions:
 
-* [Chinese](chinese.md)
-* [French](french.md)
-* [German](german.md)
-* [Hindi](hindi.md)
-* [Polish](polish.md)
-* [Russian](russian.md)
-* [Spanish](spanish.md)
+- [Chinese](chinese.md)
+- [French](french.md)
+- [German](german.md)
+- [Hindi](hindi.md)
+- [Polish](polish.md)
+- [Russian](russian.md)
+- [Spanish](spanish.md)
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
@@ -185,13 +185,13 @@ We expect that all the English translatable strings in Zulip are
 properly capitalized in a way consistent with how Zulip does
 capitalization in general.  This means that:
 
-* The first letter of a sentence or phrase should be capitalized.
+- The first letter of a sentence or phrase should be capitalized.
     - Correct: "Manage streams"
     - Incorrect: "Manage Streams"
-* All proper nouns should be capitalized.
+- All proper nouns should be capitalized.
     - Correct: "This is Zulip"
     - Incorrect: "This is zulip"
-* All common words like URL, HTTP, etc. should be written in their
+- All common words like URL, HTTP, etc. should be written in their
   standard forms.
     - Correct: "URL"
     - Incorrect: "Url"

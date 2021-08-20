@@ -103,17 +103,17 @@ The Zulip application uses several major open source services to store
 and cache data, queue messages, and otherwise support the Zulip
 application:
 
-* PostgreSQL
-* RabbitMQ
-* Nginx
-* Redis
-* memcached
+- PostgreSQL
+- RabbitMQ
+- Nginx
+- Redis
+- memcached
 
 If one of these services is not installed or functioning correctly,
 Zulip will not work.  Below we detail some common configuration
 problems and how to resolve them:
 
-* If your browser reports no webserver is running, that is likely
+- If your browser reports no webserver is running, that is likely
   because nginx is not configured properly and thus failed to start.
   nginx will fail to start if you configured SSL incorrectly or did
   not provide SSL certificates.  To fix this, configure them properly
@@ -122,7 +122,7 @@ problems and how to resolve them:
   service nginx restart
   ```
 
-* If your host is being port scanned by unauthorized users, you may see
+- If your host is being port scanned by unauthorized users, you may see
   messages in `/var/log/zulip/server.log` like
   ```text
   2017-02-22 14:11:33,537 ERROR Invalid HTTP_HOST header: '10.2.3.4'. You may need to add u'10.2.3.4' to ALLOWED_HOSTS.
@@ -133,7 +133,7 @@ problems and how to resolve them:
   attempt. For more on this issue, see the [Django release notes on Host header
   poisoning](https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning)
 
-* An AMQPConnectionError traceback or error running rabbitmqctl
+- An AMQPConnectionError traceback or error running rabbitmqctl
   usually means that RabbitMQ is not running; to fix this, try:
   ```bash
   service rabbitmq-server restart
@@ -208,14 +208,14 @@ reporting/investigating any that you do see.
 Beyond that, the most important monitoring for a Zulip server is
 standard stuff:
 
-* Basic host health monitoring for issues running out of disk space,
+- Basic host health monitoring for issues running out of disk space,
   especially for the database and where uploads are stored.
-* Service uptime and standard monitoring for the [services Zulip
+- Service uptime and standard monitoring for the [services Zulip
   depends on](#troubleshooting-services).  Most monitoring software
   has standard plugins for Nginx, PostgreSQL, Redis, RabbitMQ,
   and memcached, and those will work well with Zulip.
-* `supervisorctl status` showing all services `RUNNING`.
-* Checking for processes being OOM killed.
+- `supervisorctl status` showing all services `RUNNING`.
+- Checking for processes being OOM killed.
 
 Beyond that, Zulip ships a few application-specific end-to-end health
 checks.  The Nagios plugins `check_send_receive_time`,
@@ -237,26 +237,26 @@ useful Nagios plugins included with Zulip and what they check:
 
 Application server and queue worker monitoring:
 
-* `check_send_receive_time`: Sends a test message through the system
+- `check_send_receive_time`: Sends a test message through the system
   between two bot users to check that end-to-end message sending
   works.  An effective end-to-end check for Zulip's Django and Tornado
   systems being healthy.
-* `check_rabbitmq_consumers` and `check_rabbitmq_queues`: Effective
+- `check_rabbitmq_consumers` and `check_rabbitmq_queues`: Effective
   checks for Zulip's RabbitMQ-based queuing systems being healthy.
-* `check_worker_memory`: Monitors for memory leaks in queue workers.
+- `check_worker_memory`: Monitors for memory leaks in queue workers.
 
 Database monitoring:
 
-* `check_fts_update_log`: Checks whether full-text search updates are
+- `check_fts_update_log`: Checks whether full-text search updates are
   being processed properly or getting backlogged.
-* `check_postgres`: General checks for database health.
-* `check_postgresql_backup`: Checks status of PostgreSQL backups.
-* `check_postgresql_replication_lag`: Checks whether PostgreSQL streaming
+- `check_postgres`: General checks for database health.
+- `check_postgresql_backup`: Checks status of PostgreSQL backups.
+- `check_postgresql_replication_lag`: Checks whether PostgreSQL streaming
   replication is up to date.
 
 Standard server monitoring:
 
-* `check_debian_packages`: Checks whether the system is behind on
+- `check_debian_packages`: Checks whether the system is behind on
   `apt upgrade`.
 
 If you're using these plugins, bug reports and pull requests to make

@@ -28,20 +28,20 @@ server at the same time.
 When you want to create a new organization, you need to do a few
 things:
 
-* If you're using Zulip older than 1.7, you'll need to set
+- If you're using Zulip older than 1.7, you'll need to set
   `REALMS_HAVE_SUBDOMAINS=True` in your `/etc/zulip/settings.py`
   file.  That setting is the default in 1.7 and later.
-* Make sure you have SSL certificates for all of the subdomains you're
+- Make sure you have SSL certificates for all of the subdomains you're
   going to use.  If you're using
   [our Let's Encrypt instructions](ssl-certificates.md), it's easy to
   just specify multiple subdomains in your certificate request.
-* If necessary, modify your `nginx` configuration to use your new
+- If necessary, modify your `nginx` configuration to use your new
   certificates.
-* Use `./manage.py generate_realm_creation_link` again to create your
+- Use `./manage.py generate_realm_creation_link` again to create your
   new organization.  Review
   [the install instructions](install.md) if you need a
   refresher on how this works.
-* If you're planning on using GitHub auth or another social
+- If you're planning on using GitHub auth or another social
   authentication method, review
   [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#authentication).
 

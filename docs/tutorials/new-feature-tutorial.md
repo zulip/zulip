@@ -202,9 +202,9 @@ dictionary.
 `property_types`.**  However, there are some properties that need custom
 logic and thus cannot use this framework.  For example:
 
-* The realm `authentication_methods` attribute is a bitfield and needs
+- The realm `authentication_methods` attribute is a bitfield and needs
 additional code for validation and updating.
-* The `allow_message_editing` and `message_content_edit_limit_seconds`
+- The `allow_message_editing` and `message_content_edit_limit_seconds`
 fields depend on one another, so they are also handled separately and
 not included in `property_types`.
 

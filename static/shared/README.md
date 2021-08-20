@@ -3,12 +3,12 @@ and are also incorporated by the Zulip mobile app.
 
 Note that the deployment cycles are different:
 
- * In the web app, this code is deployed in the same way as the rest of
+ - In the web app, this code is deployed in the same way as the rest of
    the web frontend: it's part of the server tree, and the browser
    gets it from the server, so the client is always running the same
    version the server just gave it.
 
- * In the mobile app, this code is deployed in the same way as the
+ - In the mobile app, this code is deployed in the same way as the
    rest of the mobile app: it's bundled up into the app binary which
    is uploaded to app stores and users install on their devices.  The
    client will be running the version built into their version of the
