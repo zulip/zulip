@@ -12446,7 +12446,7 @@ paths:
                               "is_system_group": false,
                             },
                             {
-                              "description": "Other users",
+                              "description": "Moderators",
                               "id": 2,
                               "name": "other users",
                               "members": [1, 2],
