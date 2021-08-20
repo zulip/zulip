@@ -132,7 +132,7 @@ you configure some code to run every time Django does something (for
 There's a handful of lines in `zerver/models.py` like these that
 configure this:
 
-```
+```python
 post_save.connect(flush_realm, sender=Realm)
 post_save.connect(flush_user_profile, sender=UserProfile)
 ```

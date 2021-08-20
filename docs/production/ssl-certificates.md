@@ -84,7 +84,7 @@ one as described in the section below after installing Zulip.
 
 To enable the Certbot automation on an already-installed Zulip
 server, run the following commands:
-```
+```bash
 sudo -s  # If not already root
 /home/zulip/deployments/current/scripts/setup/setup-certbot --email=EMAIL HOSTNAME [HOSTNAME2...]
 ```
@@ -125,7 +125,7 @@ just pass the `--self-signed-cert` flag when
 
 To generate a self-signed certificate for an already-installed Zulip
 server, run the following commands:
-```
+```bash
 sudo -s  # If not already root
 /home/zulip/deployments/current/scripts/setup/generate-self-signed-cert HOSTNAME
 ```
@@ -134,7 +134,7 @@ generated certificate.
 
 After replacing the certificates, you need to reload `nginx` by
 running the following as `root`:
-```
+```bash
 service nginx reload
 ```
 

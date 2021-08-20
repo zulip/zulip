@@ -12,7 +12,7 @@ state grouped by relevant conversation keys. This data is included in the
 `unread_msgs` key if both `update_message_flags` and `message` are required
 in the register call.
 
-```
+```json
 {
     "count": 4,
     "huddles": [

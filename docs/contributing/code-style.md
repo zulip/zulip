@@ -34,11 +34,15 @@ When in doubt, ask in [chat.zulip.org](https://chat.zulip.org).
 
 You can run them all at once with
 
-    ./tools/lint
+```bash
+./tools/lint
+```
 
 You can set this up as a local Git commit hook with
 
-    tools/setup-git-repo
+```bash
+tools/setup-git-repo
+```
 
 The Vagrant setup process runs this for you.
 
@@ -66,17 +70,21 @@ to read secrets from `/etc/zulip/secrets.conf`.
 
 Look out for Django code like this:
 
-    bars = Bar.objects.filter(...)
-    for bar in bars:
-        foo = bar.foo
-        # Make use of foo
+```python
+bars = Bar.objects.filter(...)
+for bar in bars:
+    foo = bar.foo
+    # Make use of foo
+```
 
 ...because it equates to:
 
-    bars = Bar.objects.filter(...)
-    for bar in bars:
-        foo = Foo.objects.get(id=bar.foo.id)
-        # Make use of foo
+```python
+bars = Bar.objects.filter(...)
+for bar in bars:
+    foo = Foo.objects.get(id=bar.foo.id)
+    # Make use of foo
+```
 
 ...which makes a database query for every Bar.  While this may be fast
 locally in development, it may be quite slow in production!  Instead,
@@ -84,10 +92,12 @@ tell Django's [QuerySet
 API](https://docs.djangoproject.com/en/dev/ref/models/querysets/) to
 _prefetch_ the data in the initial query:
 
-    bars = Bar.objects.filter(...).select_related()
-    for bar in bars:
-        foo = bar.foo  # This doesn't take another query, now!
-        # Make use of foo
+```python
+bars = Bar.objects.filter(...).select_related()
+for bar in bars:
+    foo = bar.foo  # This doesn't take another query, now!
+    # Make use of foo
+```
 
 If you can't rewrite it as a single query, that's a sign that something
 is wrong with the database schema. So don't defer this optimization when
@@ -118,7 +128,7 @@ different database queries:
 
 For example, the following will, surprisingly, fail:
 
-```
+```python
 # Bad example -- will raise!
 obj: UserProfile = get_user_profile_by_id(17)
 some_objs = UserProfile.objects.get(id=17)
@@ -127,7 +137,7 @@ assert obj in set([some_objs])
 
 You should work with the IDs instead:
 
-```
+```python
 obj: UserProfile = get_user_profile_by_id(17)
 some_objs = UserProfile.objects.get(id=17)
 assert obj.id in set([o.id for i in some_objs])
@@ -266,18 +276,24 @@ The best way to build complicated DOM elements is a Mustache template
 like `static/templates/message_reactions.hbs`. For simpler things
 you can use jQuery DOM building APIs like so:
 
-    var new_tr = $('<tr />').attr('id', object.id);
+```js
+var new_tr = $('<tr />').attr('id', object.id);
+```
 
 Passing a HTML string to jQuery is fine for simple hardcoded things
 that don't need internationalization:
 
-    foo.append('<p id="selected">/</p>');
+```js
+foo.append('<p id="selected">/</p>');
+```
 
 but avoid programmatically building complicated strings.
 
 We used to favor attaching behaviors in templates like so:
 
-    <p onclick="select_zerver({{id}})">
+```js
+<p onclick="select_zerver({{id}})">
+```
 
 but there are some reasons to prefer attaching events using jQuery code:
 
@@ -328,8 +344,10 @@ type changes in the future.
     reason to do otherwise.
 -   Unpacking sequences doesn't require list brackets:
 
-        [x, y] = xs    # unnecessary
-        x, y = xs      # better
+    ```python
+    [x, y] = xs    # unnecessary
+    x, y = xs      # better
+    ```
 
 -   For string formatting, use `x % (y,)` rather than `x % y`, to avoid
     ambiguity if `y` happens to be a tuple.

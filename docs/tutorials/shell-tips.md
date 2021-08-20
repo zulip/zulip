@@ -44,7 +44,7 @@ abbreviation for your home directory (`/home/YOUR_USERNAME` most of the times).
 That's why the following is exactly the same, if the user running it is
 `john`:
 
-```
+```console
 $ cd ~
 $ cd /home/john
 ```
@@ -58,7 +58,7 @@ directory, instead of writing the whole path.
 Imagine you have a file called `ideas.txt` inside `/home/john/notes/`, and
 you want to edit it using `nano`. You could use:
 
-```
+```console
 $ nano /home/john/notes/ideas.txt
 ```
 
@@ -69,7 +69,7 @@ That's why it's very useful to change the path where you are currently
 located (usually known as **working directory**). To do that, you use `cd`
 (**c**hange **d**irectory):
 
-```
+```console
 $ cd /home/john/notes/
 ~/notes$ nano ideas.txt
 ```
@@ -99,7 +99,7 @@ In case you were wondering, the name `sudo` comes from **s**uper **u**ser
 Some characters cannot be used directly in the shell, because they have a
 special meaning. Consider the following example:
 
-```
+```console
 $ echo "He said hello"
 He said hello
 ```
@@ -118,7 +118,7 @@ before it.
 
 Returning to our example:
 
-```
+```console
 $ echo "He said \"hello\""
 He said "hello"
 ```
@@ -138,7 +138,7 @@ the shell provides two different separators:
 - **Semicolon `;`**: runs a command, and once it has finished, runs the next
   one:
 
-  ```
+  ```console
   $ echo "Hello"; echo "World!"
   Hello
   World!
@@ -147,7 +147,7 @@ the shell provides two different separators:
 - **Double ampersand `&&`**: runs a command, and **only if** it finished
   without errors, it proceeds with the next one:
 
-  ```
+  ```console
   $ qwfvijwe && echo "Hello"
   qwfvijwe: command not found
   ```
@@ -158,7 +158,7 @@ the shell provides two different separators:
   When using an incorrect command with a semicolon, the `Hello` will still
   be printed:
 
-  ```
+  ```console
   $ qwfvijwe; echo "Hello"
   qwfvijwe: command not found
   Hello
@@ -176,7 +176,7 @@ shell "wait, there's more on the next line".
 This is an example, taken from the docs on how to install the Zulip development
 environment:
 
-```
+```bash
 sudo apt-get -y purge vagrant && \
 curl -fLO https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
@@ -204,7 +204,7 @@ Most commands need additional data to work, like a path or a file. That extra
 information is called an **argument**, and it's specified after the name of the
 command, like this:
 
-```
+```console
 $ cd /home/john/notes
 ```
 
@@ -221,7 +221,7 @@ different meanings.
 Sometimes, a command can accept arguments indicated with dashes. Here's another
 example of arguments usage:
 
-```
+```console
 $ nano -C /home/john/backups --mouse todo.txt
 ```
 
@@ -245,7 +245,7 @@ Note that the `todo.txt` is the file we want to open! It has nothing to do with
 the previous argument. This will probably clarify it (taken from `nano`'s
 help):
 
-```
+```console
 Usage: nano [OPTIONS] [FILE]...
 ```
 
@@ -263,13 +263,13 @@ them.
 That's why you may have seen cases, in the Zulip codebase or
 elsewhere, when some Python scripts are called with `python`:
 
-```
+```console
 $ python my_program.py
 ```
 
 While other times, `python` isn't used:
 
-```
+```console
 $ ./my_program.py
 ```
 
@@ -281,7 +281,7 @@ The note telling the OS how to interpret the file goes on the file's
 very first line, and it's called a **shebang**. In our Python scripts,
 it looks like this:
 
-```
+```python
 #!/usr/bin/env python3
 ```
 
@@ -294,7 +294,7 @@ added as a command-line argument. So, returning to our example with
 `my_program.py`, when you run `./my_program.py`, what happens under
 the hood is equivalent to:
 
-```
+```console
 $ /usr/bin/env python3 ./my_program.py
 ```
 

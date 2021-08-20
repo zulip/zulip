@@ -43,7 +43,7 @@ your changes), the dependencies are automatically installed as part of
 Zulip development environment provisioning, and you can build the
 documentation using:
 
-```
+```bash
 ./tools/build-docs
 ```
 

@@ -20,7 +20,7 @@ the main server app, this is [zulip/zulip][github-zulip-zulip].
 
 Next, clone your fork to your local machine:
 
-```
+```console
 $ git clone --config pull.rebase https://github.com/YOUR_USERNAME/zulip.git
 Cloning into 'zulip'
 remote: Counting objects: 86768, done.
@@ -56,7 +56,7 @@ your fork.
 
 First, show the currently configured remote repository:
 
-```
+```console
 $ git remote -v
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
 origin  git@github.com:YOUR_USERNAME/zulip.git (push)
@@ -68,7 +68,7 @@ have the upstream remote repository configured. For example, when you clone
 the remote repository `zulip` and you see the following output from `git remote
 -v`:
 
-```
+```console
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
 origin  git@github.com:YOUR_USERNAME/zulip.git (push)
 zulip    https://github.com/zulip/zulip.git (fetch)
@@ -78,13 +78,13 @@ zulip    https://github.com/zulip/zulip.git (push)
 If your client hasn't automatically configured a remote for zulip/zulip, you'll
 need to with:
 
-```
+```console
 $ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 Finally, confirm that the new remote repository, upstream, has been configured:
 
-```
+```console
 $ git remote -v
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
 origin  git@github.com:YOUR_USERNAME/zulip.git (push)

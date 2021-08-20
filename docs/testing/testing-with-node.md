@@ -7,8 +7,8 @@ system since it is much (>100x) faster and also easier to do correctly
 than the Puppeteer system.
 
 You can run this test suite as follows:
-```
-    tools/test-js-with-node
+```bash
+tools/test-js-with-node
 ```
 
 See `test-js-with-node --help` for useful options; even though the
@@ -19,7 +19,7 @@ The JS unit tests are written to work with node.  You can find them
 in `frontend_tests/node_tests`.  Here is an example test from
 `frontend_tests/node_tests/stream_data.js`:
 
-```
+```js
 (function test_get_by_id() {
     stream_data.clear_subscriptions();
     var id = 42;
@@ -109,19 +109,23 @@ different types of declarations depending on whether we want to:
 For all the modules where you want to run actual code, add statements
 like the following toward the top of your test file:
 
->     zrequire('util');
->     zrequire('stream_data');
->     zrequire('Filter', 'js/filter');
+```js
+zrequire('util');
+zrequire('stream_data');
+zrequire('Filter', 'js/filter');
+```
 
 For modules that you want to completely stub out, use a pattern like
 this:
 
->     const reminder = mock_esm("../../static/js/reminder", {
->         is_deferred_delivery: noop,
->     });
->
->     // then maybe further down
->     reminder.is_deferred_delivery = () => true;
+```js
+const reminder = mock_esm("../../static/js/reminder", {
+    is_deferred_delivery: noop,
+});
+
+// then maybe further down
+reminder.is_deferred_delivery = () => true;
+```
 
 One can similarly stub out functions in a module's exported interface
 with either `noop` functions or actual code.
@@ -132,13 +136,15 @@ this is a pretty strong code smell that the other module might be
 lacking in cohesion, but sometimes it's not worth going down the
 rabbit hole of trying to improve that. The pattern here is this:
 
->     // Import real code.
->     zrequire('narrow_state');
->
->     // And later...
->     narrow_state.stream = function () {
->         return 'office';
->     };
+```js
+// Import real code.
+zrequire('narrow_state');
+
+// And later...
+narrow_state.stream = function () {
+    return 'office';
+};
+```
 
 ## Creating new test modules
 
@@ -151,8 +157,8 @@ in that directory to create a new test.
 You can automatically generate coverage reports for the JavaScript unit
 tests like this:
 
-```
-    tools/test-js-with-node --coverage
+```bash
+tools/test-js-with-node --coverage
 ```
 
 If tests pass, you will get instructions to view coverage reports

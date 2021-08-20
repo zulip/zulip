@@ -30,14 +30,18 @@ on a fast machine.  When you are in iterative mode, you can run
 individual tests or individual modules, following the dotted.test.name
 convention below:
 
-    cd /srv/zulip
-    ./tools/test-backend zerver.tests.test_queue_worker.WorkerTest
+```bash
+cd /srv/zulip
+./tools/test-backend zerver.tests.test_queue_worker.WorkerTest
+```
 
 There are many command line options for running Zulip tests, such
 as a `--verbose` option.  The
 best way to learn the options is to use the online help:
 
-    ./tools/test-backend --help
+```bash
+./tools/test-backend --help
+```
 
 We also have ways to instrument our tests for finding code coverage,
 URL coverage, and slow tests.  Use the `-h` option to discover these
@@ -176,24 +180,28 @@ analyzed.
 
 Say you have a module `greetings` defining the following functions:
 
-    def fetch_database(key: str) -> str:
-        # ...
-        # Do some look-ups in a database
-        return data
+```python
+def fetch_database(key: str) -> str:
+    # ...
+    # Do some look-ups in a database
+    return data
 
-    def greet(name_key: str) -> str:
-        name = fetch_database(name_key)
-        return "Hello" + name
+def greet(name_key: str) -> str:
+    name = fetch_database(name_key)
+    return "Hello" + name
+```
 
 * You want to test `greet()`.
 
 * In your test, you want to call `greet("Mario")` and verify that it returns the correct greeting:
 
-        from greetings import greet
+  ```python
+  from greetings import greet
 
-        def test_greet() -> str:
-            greeting = greet("Mario")
-            assert greeting == "Hello Mr. Mario Mario"
+  def test_greet() -> str:
+      greeting = greet("Mario")
+      assert greeting == "Hello Mr. Mario Mario"
+  ```
 
 -> **You have a problem**: `greet()` calls `fetch_database()`. `fetch_database()` does some look-ups in
    a database. *You haven't created that database for your tests, so your test would fail, even though
@@ -206,15 +214,17 @@ Say you have a module `greetings` defining the following functions:
 
 -> **Solution**: You mock `fetch_database()`. This is also referred to as "mocking out" `fetch_database()`.
 
-    from unittest.mock import patch
+```python
+from unittest.mock import patch
 
-    def test_greet() -> None:
-        # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
-        # but doesn't do any database lookup. We "fill" the shell with a return value; This value will be returned on every
-        # call to `fetch_database()`.
-        with patch("greetings.fetch_database", return_value="Mr. Mario Mario"):
-            greeting = greetings.greet("Mario")
-            assert greeting == "Hello Mr. Mario Mario"
+def test_greet() -> None:
+    # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
+    # but doesn't do any database lookup. We "fill" the shell with a return value; This value will be returned on every
+    # call to `fetch_database()`.
+    with patch("greetings.fetch_database", return_value="Mr. Mario Mario"):
+        greeting = greetings.greet("Mario")
+        assert greeting == "Hello Mr. Mario Mario"
+```
 
 That's all. Note that **this mock is suitable for testing `greet()`, but not for testing `fetch_database()`**.
 More generally, you should only mock those functions you explicitly don't want to test.
@@ -230,17 +240,21 @@ those are the ones starting with with a dunder `__`). From the docs:
 
 `Mock` itself is a class that principally accepts and records any and all calls. A piece of code like
 
-    from unittest import mock
+```python
+from unittest import mock
 
-    foo = mock.Mock()
-    foo.bar('quux')
-    foo.baz
-    foo.qux = 42
+foo = mock.Mock()
+foo.bar('quux')
+foo.baz
+foo.qux = 42
+```
 
 is *not* going to throw any errors. Our mock silently accepts all these calls and records them.
 `Mock` also implements methods for us to access and assert its records, e.g.
 
-    foo.bar.assert_called_with('quux')
+```python
+foo.bar.assert_called_with('quux')
+```
 
 Finally, `unittest.mock` also provides a method to mock objects only within a scope: `patch()`. We can use `patch()` either
 as a decorator or as a context manager. In both cases, the mock created by `patch()` will apply for the scope of the decorator /
@@ -248,13 +262,15 @@ context manager. `patch()` takes only one required argument `target`. `target` i
 the name of the object you want to mock*. It will then assign a `MagicMock()` to that object.
 As an example, look at the following code:
 
-    from unittest import mock
-    from os import urandom
+```python
+from unittest import mock
+from os import urandom
 
-    with mock.patch('__main__.urandom', return_value=42):
-        print(urandom(1))
-        print(urandom(1)) # No matter what value we plug in for urandom, it will always return 42.
-    print(urandom(1)) # We exited the context manager, so the mock doesn't apply anymore. Will return a random byte.
+with mock.patch('__main__.urandom', return_value=42):
+    print(urandom(1))
+    print(urandom(1)) # No matter what value we plug in for urandom, it will always return 42.
+print(urandom(1)) # We exited the context manager, so the mock doesn't apply anymore. Will return a random byte.
+```
 
 *Note that calling `mock.patch('os.urandom', return_value=42)` wouldn't work here*: `os.urandom` would be the name of our patched
 object. However, we imported `urandom` with `from os import urandom`; hence, we bound the `urandom` name to our current module
@@ -266,27 +282,35 @@ On the other hand, if we had used `import os.urandom`, we would need to call `mo
 
 * Including the Python mocking library:
 
-      from unittest import mock
+  ```python
+  from unittest import mock
+  ```
 
 * Mocking a class with a context manager:
 
-      with mock.patch('module.ClassName', foo=42, return_value='I am a mock') as my_mock:
-        # In here, 'module.ClassName' is mocked with a MagicMock() object my_mock.
-        # my_mock has an attribute named foo with the value 42.
-        # var = module.ClassName() will assign 'I am a mock' to var.
+  ```python
+  with mock.patch('module.ClassName', foo=42, return_value='I am a mock') as my_mock:
+    # In here, 'module.ClassName' is mocked with a MagicMock() object my_mock.
+    # my_mock has an attribute named foo with the value 42.
+    # var = module.ClassName() will assign 'I am a mock' to var.
+  ```
 
 * Mocking a class with a decorator:
 
-      @mock.patch('module.ClassName', foo=42, return_value='I am a mock')
-      def my_function(my_mock):
-          # ...
-          # In here, 'module.ClassName' will behave as in the previous example.
+  ```python
+  @mock.patch('module.ClassName', foo=42, return_value='I am a mock')
+  def my_function(my_mock):
+      # ...
+      # In here, 'module.ClassName' will behave as in the previous example.
+  ```
 
 * Mocking a class attribute:
 
-      with mock.patch.object(module.ClassName, 'class_method', return_value=42)
-        # In here, 'module.ClassName' has the same properties as before, except for 'class_method'
-        # Calling module.ClassName.class_method() will now return 42.
+  ```python
+  with mock.patch.object(module.ClassName, 'class_method', return_value=42)
+    # In here, 'module.ClassName' has the same properties as before, except for 'class_method'
+    # Calling module.ClassName.class_method() will now return 42.
+  ```
 
   Note the missing quotes around module.ClassName in the patch.object() call.
 
@@ -296,11 +320,13 @@ For mocking we generally use the "mock" library and use `mock.patch` as
 a context manager or decorator.  We also take advantage of some context managers
 from Django as well as our own custom helpers.  Here is an example:
 
-    with self.settings(RATE_LIMITING=True):
-        with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
-            api_result = my_webhook(request)
+```python
+with self.settings(RATE_LIMITING=True):
+    with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+        api_result = my_webhook(request)
 
-    self.assertTrue(rate_limit_mock.called)
+self.assertTrue(rate_limit_mock.called)
+```
 
 Follow [this link](../subsystems/settings.html#testing-non-default-settings) for more
 information on the "settings" context manager.

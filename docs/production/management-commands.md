@@ -10,7 +10,7 @@ framework][django-management].
 Start by logging in as the `zulip` user on the Zulip server.  Then run
 them as follows:
 
-```
+```bash
 cd /home/zulip/deployments/current
 
 # Start by reading the help
@@ -39,7 +39,7 @@ string ID (usually the subdomain).
 You can see all the organizations on your Zulip server using
 `./manage.py list_realms`.
 
-```
+```console
 zulip@zulip:~$ /home/zulip/deployments/current/manage.py list_realms
 id    string_id                                name
 --    ---------                                ----
@@ -56,7 +56,7 @@ Unless you are
 your single Zulip organization on the root domain will have the empty
 string (`''`) as its `string_id`.  So you can run e.g.:
 
-```
+```console
 zulip@zulip:~$ /home/zulip/deployments/current/manage.py show_admins -r ''
 ```
 
@@ -73,7 +73,7 @@ You can get an IPython shell with full access to code within the Zulip
 project using `manage.py shell`, e.g., you can do the following to
 change a user's email address:
 
-```
+```console
 $ cd /home/zulip/deployments/current/
 $ ./manage.py shell
 In [1]: user_profile = get_user_profile_by_email("email@example.com")

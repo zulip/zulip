@@ -102,14 +102,14 @@ Mac](https://docs.docker.com/docker-for-mac/install/).
 
 ##### 1. Install Vagrant, Docker, and Git
 
-```
+```console
 christie@ubuntu-desktop:~
 $ sudo apt install vagrant docker.io git
 ```
 
 ##### 2. Add yourself to the `docker` group:
 
-```
+```console
 christie@ubuntu-desktop:~
 $ sudo adduser $USER docker
 Adding user `christie' to group `docker' ...
@@ -120,7 +120,7 @@ Done.
 You will need to reboot for this change to take effect.  If it worked,
 you will see `docker` in your list of groups:
 
-```
+```console
 christie@ubuntu-desktop:~
 $ groups | grep docker
 christie adm cdrom sudo dip plugdev lpadmin sambashare docker
@@ -134,7 +134,7 @@ bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
 may prevent Docker from being automatically enabled and started after
 installation.  You can check using the following:
 
-```
+```console
 $ systemctl status docker
 ● docker.service - Docker Application Container Engine
    Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
@@ -145,7 +145,7 @@ If the service is not running, you'll see `Active: inactive (dead)` on
 the second line, and will need to enable and start the Docker service
 using the following:
 
-```
+```bash
 sudo systemctl unmask docker
 sudo systemctl enable docker
 sudo systemctl start docker
@@ -196,13 +196,13 @@ In **Git for BASH**:
 
 Open **Git BASH as an administrator** and run:
 
-```
+```console
 $ git config --global core.symlinks true
 ```
 
 Now confirm the setting:
 
-```
+```console
 $ git config core.symlinks
 true
 ```
@@ -217,7 +217,7 @@ In **Cygwin**:
 
 Open a Cygwin window **as an administrator** and do this:
 
-```
+```console
 christie@win10 ~
 $ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
 ```
@@ -225,7 +225,7 @@ $ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
 Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
 should see:
 
-```
+```console
 christie@win10 ~
 $ echo $CYGWIN
 winsymlinks:native
@@ -251,7 +251,7 @@ projects and to instead follow these instructions exactly.)
    [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine) and
    [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
 
-```
+```bash
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
 cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
@@ -262,7 +262,7 @@ This will create a 'zulip' directory and download the Zulip code into it.
 Don't forget to replace YOURUSERNAME with your Git username. You will see
 something like:
 
-```
+```console
 christie@win10 ~
 $ git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
 Cloning into 'zulip'...
@@ -283,7 +283,7 @@ environment](#step-3-start-the-development-environment).
 Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`:
 
-```
+```bash
 # On Windows or macOS (Intel):
 cd zulip
 vagrant plugin install vagrant-vbguest
@@ -327,14 +327,14 @@ specified.` several times.  This is normal and is not a problem.
 Once `vagrant up` has completed, connect to the development
 environment with `vagrant ssh`:
 
-```
+```console
 christie@win10 ~/zulip
 $ vagrant ssh
 ```
 
 You should see output that starts like this:
 
-```
+```console
 Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.15.0-54-generic x86_64)
 ```
 
@@ -347,14 +347,14 @@ provisioning failed and you should look at the
 
 Next, start the Zulip server:
 
-```
+```console
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
 You will see several lines of output starting with something like:
 
-```
+```console
 2016-05-04 22:20:33,895 INFO: process_fts_updates starting
 Recompiling templates
 2016-05-04 18:20:34,804 INFO: Not in recovery; listening for FTS updates
@@ -371,7 +371,7 @@ Performing system checks...
 ```
 And ending with something similar to:
 
-```
+```console
 http://localhost:9994/webpack-dev-server/
 webpack result is served from http://localhost:9991/webpack/
 content is served from /srv/zulip
@@ -392,7 +392,7 @@ The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you
 should see something like:
 
-```
+```console
 2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (unauth@zulip via ?)
 [04/May/2016 18:21:57]"GET / HTTP/1.0" 302 0
 2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (unauth@zulip via ?)
@@ -491,7 +491,7 @@ can halt vagrant from another Terminal/Git BASH window.
 
 From the window where run-dev.py is running:
 
-```
+```console
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
 ^C
 KeyboardInterrupt
@@ -502,7 +502,7 @@ christie@win10 ~/zulip
 ```
 Now you can suspend the development environment:
 
-```
+```console
 christie@win10 ~/zulip
 $ vagrant suspend
 ==> default: Saving VM state and suspending execution...
@@ -510,7 +510,7 @@ $ vagrant suspend
 
 If `vagrant suspend` doesn't work, try `vagrant halt`:
 
-```
+```console
 christie@win10 ~/zulip
 $ vagrant halt
 ==> default: Attempting graceful shutdown of VM...
@@ -527,7 +527,7 @@ pass the `--provider` option required above). You will also need to
 connect to the virtual machine with `vagrant ssh` and re-start the
 Zulip server:
 
-```
+```console
 christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
@@ -579,7 +579,7 @@ This is caused by provisioning failing to complete successfully.  You
 can see the errors in `var/log/provision.log`; it should end with
 something like this:
 
-```
+```text
 ESC[94mZulip development environment setup succeeded!ESC[0m
 ```
 
@@ -596,7 +596,7 @@ shell and run `vagrant ssh` again to get the virtualenv setup properly.
 #### Vagrant was unable to mount VirtualBox shared folders
 
 For the following error:
-```
+```console
 Vagrant was unable to mount VirtualBox shared folders. This is usually
 because the filesystem "vboxsf" is not available. This filesystem is
 made available via the VirtualBox Guest Additions and kernel
@@ -610,7 +610,7 @@ was:
 
 If this error starts happening unexpectedly, then just run:
 
-```
+```bash
 vagrant halt
 vagrant up
 ```
@@ -622,7 +622,7 @@ to reboot the guest.  After this, you can do `vagrant provision` and
 
 If you receive the following error while running `vagrant up`:
 
-```
+```console
 SSL read: error:00000000:lib(0):func(0):reason(0), errno 104
 ```
 
@@ -634,14 +634,14 @@ better network connection).
 
 When running `vagrant up` or `provision`, if you see the following error:
 
-```
+```console
 ==> default: E:unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).
 ```
 
 It means that your local apt repository has been corrupted, which can
 usually be resolved by executing the command:
 
-```
+```bash
 apt-get -f install
 ```
 
@@ -649,7 +649,7 @@ apt-get -f install
 
 On running `vagrant ssh`, if you see the following error:
 
-```
+```console
 ssh_exchange_identification: Connection closed by remote host
 ```
 
@@ -662,7 +662,7 @@ for more details.
 
 If you receive the following error while running `vagrant up`:
 
-```
+```console
 ==> default: Traceback (most recent call last):
 ==> default: File "./emoji_dump.py", line 75, in <module>
 ==> default:
@@ -704,7 +704,7 @@ Get the name of your virtual machine by running `vboxmanage list vms` and
 then print out the custom settings for this virtual machine with
 `vboxmanage getextradata YOURVMNAME enumerate`:
 
-```
+```console
 christie@win10 ~/zulip
 $ vboxmanage list vms
 "zulip_default_1462498139595_55484" {5a65199d-8afa-4265-b2f6-6b1f162f157d}
@@ -723,7 +723,7 @@ If `vboxmanage enumerate` prints nothing, or shows a value of 0 for
 VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, then enable
 symbolic links by running this command in Terminal/Git BASH/Cygwin:
 
-```
+```bash
 vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
 ```
 
@@ -737,7 +737,7 @@ Windows is incorrectly attempting to use Hyper-V rather than
 Virtualbox as the virtualization provider.  You can fix this by
 explicitly passing the virtualbox provider to `vagrant up`:
 
-```
+```console
 christie@win10 ~/zulip
 $ vagrant up --provide=virtualbox
 ```
@@ -746,7 +746,7 @@ $ vagrant up --provide=virtualbox
 
 If you see the following error after running `vagrant up`:
 
-```
+```console
 default: SSH address: 127.0.0.1:2222
 default: SSH username: vagrant
 default: SSH auth method: private key
@@ -769,7 +769,7 @@ this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection
 
 If you see the following error when you run `vagrant up`:
 
-```
+```console
 Timed out while waiting for the machine to boot. This means that
 Vagrant was unable to communicate with the guest machine within
 the configured ("config.vm.boot_timeout" value) time period.
@@ -816,7 +816,7 @@ proxy to access the Internet and haven't [configured the development
 environment to use it](#specifying-a-proxy).
 
 Once you've provisioned successfully, you'll get output like this:
-```
+```console
 Zulip development environment setup succeeded!
 (zulip-py3-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
 ```
@@ -843,7 +843,7 @@ the VM.
 
 ##### yarn install warnings
 
-```
+```console
 $ yarn install
 yarn install v0.24.5
 [1/4] Resolving packages...
@@ -860,7 +860,7 @@ It is okay to proceed and start the Zulip server.
 
 #### VBoxManage errors related to VT-x or WHvSetupPartition
 
-```
+```console
 There was an error while executing `VBoxManage`, a CLI used by Vagrant
 for controlling VirtualBox. The command and stderr is shown below.
 
@@ -873,7 +873,7 @@ VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap,
 
 or
 
-```
+```console
 Stderr: VBoxManage.exe: error: Call to WHvSetupPartition failed: ERROR_SUCCESS (Last=0xc000000d/87) (VERR_NEM_VM_CREATE_FAILED)
 VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
 ```
@@ -889,7 +889,7 @@ later, run `bcdedit /deletevalue hypervisorlaunchtype`, and reboot.
 
 #### OSError: [Errno 26] Text file busy
 
-```
+```console
 default: Traceback (most recent call last):
 …
 default:   File "/srv/zulip-py3-venv/lib/python3.6/shutil.py", line 426, in _rmtree_safe_fd
@@ -903,7 +903,7 @@ the VirtualBox Guest Additions for Linux on Windows hosts.  You can
 check the running version of VirtualBox Guest Additions with this
 command:
 
-```
+```bash
 vagrant ssh -- 'modinfo -F version vboxsf'
 ```
 
@@ -912,13 +912,13 @@ able to work around it by downgrading VirtualBox Guest Additions to
 6.0.4.  To do this, create a `~/.zulip-vagrant-config` file and add
 this line:
 
-```
+```text
 VBOXADD_VERSION 6.0.4
 ```
 
 Then run these commands (yes, reload is needed twice):
 
-```
+```bash
 vagrant plugin install vagrant-vbguest
 vagrant reload
 vagrant reload --provision
@@ -934,7 +934,7 @@ a local mirror closer to your location.  To do this, create
 `~/.zulip-vagrant-config` and add a line like this, replacing the URL
 as appropriate:
 
-```
+```text
 UBUNTU_MIRROR http://us.archive.ubuntu.com/ubuntu/
 ```
 
@@ -944,14 +944,14 @@ If you need to use a proxy server to access the Internet, you will
 need to specify the proxy settings before running `Vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
-```
+```bash
 vagrant plugin install vagrant-proxyconf
 ```
 
 Then create `~/.zulip-vagrant-config` and add the following lines to
 it (with the appropriate values in it for your proxy):
 
-```
+```text
 HTTP_PROXY http://proxy_host:port
 HTTPS_PROXY http://proxy_host:port
 NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
@@ -960,7 +960,7 @@ NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
 For proxies that require authentication, the config will be a bit more
 complex, e.g.:
 
-```
+```text
 HTTP_PROXY http://userName:userPassword@192.168.1.1:8080
 HTTPS_PROXY http://userName:userPassword@192.168.1.1:8080
 NO_PROXY localhost,127.0.0.1,.example.com,.zulipdev.com
@@ -985,7 +985,7 @@ then do a `vagrant reload`.
 You can also change the port on the host machine that Vagrant uses by
 adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
 
-```
+```text
 HOST_PORT 9971
 ```
 
@@ -996,7 +996,7 @@ If you'd like to be able to connect to your development environment from other
 machines than the VM host, you can manually set the host IP address in the
 '~/.zulip-vagrant-config' file as well. For example, if you set:
 
-```
+```text
 HOST_IP_ADDR 0.0.0.0
 ```
 
@@ -1022,14 +1022,14 @@ more resources.
 To do so, create a `~/.zulip-vagrant-config` file containing the
 following lines:
 
-```
+```text
 GUEST_CPUS <number of cpus>
 GUEST_MEMORY_MB <system memory (in MB)>
 ```
 
 For example:
 
-```
+```text
 GUEST_CPUS 4
 GUEST_MEMORY_MB 8192
 ```

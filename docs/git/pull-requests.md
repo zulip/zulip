@@ -46,7 +46,7 @@ fork up to date][keep-up-to-date] for details.
 
 Here's an example (you would replace *issue-123* with the name of your feature branch):
 
-```
+```console
 $ git checkout issue-123
 Switched to branch 'issue-123'
 
@@ -68,7 +68,7 @@ Applying: troubleshooting tip about provisioning
 
 Once you've updated your local feature branch, push the changes to GitHub:
 
-```
+```console
 $ git push origin issue-123
 Counting objects: 6, done.
 Delta compression using up to 4 threads.
@@ -83,7 +83,7 @@ To git@github.com:christi3k/zulip.git
 If your push is rejected with error **failed to push some refs** then you need
 to prefix the name of your branch with a `+`:
 
-```
+```console
 $ git push origin +issue-123
 Counting objects: 6, done.
 Delta compression using up to 4 threads.

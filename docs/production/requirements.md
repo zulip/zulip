@@ -38,7 +38,7 @@ If you're using Ubuntu, the
 [Ubuntu universe repository][ubuntu-repositories] must be
 [enabled][enable-universe], which is usually just:
 
-```
+```bash
 sudo add-apt-repository universe
 sudo apt update
 ```

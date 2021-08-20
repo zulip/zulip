@@ -96,7 +96,7 @@ In either configuration, you will need to do the following:
       * Set `AUTH_LDAP_REVERSE_EMAIL_SEARCH` to a query that will find
         an LDAP user given their email address (i.e. a search by
         `LDAP_EMAIL_ATTR`).  For example:
-        ```
+        ```python
         AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                                     ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
         ```
@@ -105,7 +105,7 @@ In either configuration, you will need to do the following:
 
 You can quickly test whether your configuration works by running:
 
-```
+```bash
 /home/zulip/deployments/current/manage.py query_ldap username
 ```
 
@@ -117,7 +117,7 @@ email address, if it isn't the same as the "Zulip username").
 of the following configurations:
 
 * To access by Active Directory username:
-    ```
+    ```python
     AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
@@ -126,7 +126,7 @@ of the following configurations:
     ```
 
 * To access by Active Directory email address:
-    ```
+    ```python
     AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                        ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
@@ -155,7 +155,7 @@ Zulip can automatically synchronize data declared in
 `AUTH_LDAP_USER_ATTR_MAP` from LDAP into Zulip, via the following
 management command:
 
-```
+```bash
 /home/zulip/deployments/current/manage.py sync_ldap_user_data
 ```
 
@@ -262,7 +262,7 @@ the fields that would be useful to sync from your LDAP databases.
 ### Multiple LDAP searches
 
 To do the union of multiple LDAP searches, use `LDAPSearchUnion`.  For example:
-```
+```python
 AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
     LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
     LDAPSearch("ou=otherusers,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
@@ -292,7 +292,7 @@ For the root subdomain, `www` in the list will work, or any other of
 
 For example, with `org_membership` set to `department`, a user with
 the following attributes will have access to the root and `engineering` subdomains:
-```
+```text
 ...
 department: engineering
 department: www
@@ -419,12 +419,12 @@ it as follows:
        trust, which consists of multiple certificates. The private key cannot be encrypted
        with a password, as then Zulip will not be able to load it. An example pair can be
        generated using:
-       ```
+       ```bash
        openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key -out zulip-cert.crt -days 365 -nodes
        ```
     4. Set the proper permissions on these files and directories:
 
-    ```
+    ```bash
     chown -R zulip.zulip /etc/zulip/saml/
     find /etc/zulip/saml/ -type f -exec chmod 644 -- {} +
     chmod 640 /etc/zulip/saml/zulip-private-key.key
@@ -507,7 +507,7 @@ For example, with `attr_org_membership` set to `member`, a user with
 the following attribute in their `AttributeStatement` will have access
 to the root and `engineering` subdomains:
 
-```
+```xml
 <saml2:Attribute Name="member" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified">
   <saml2:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">
     www
@@ -540,7 +540,7 @@ straightforward way to deploy that SSO solution with Zulip.
 
 2. Edit `/etc/zulip/zulip.conf` and change the `puppet_classes` line to read:
 
-   ```
+   ```ini
    puppet_classes = zulip::profile::standalone, zulip::apache_sso
    ```
 
@@ -558,7 +558,7 @@ straightforward way to deploy that SSO solution with Zulip.
    using the `htpasswd` example configuration and demonstrate that
    working end-to-end, before returning later to configure your SSO
    solution.  You can do that with the following steps:
-   ```
+   ```bash
    /home/zulip/deployments/current/scripts/restart-server
    cd /etc/apache2/sites-available/
    cp zulip-sso.example zulip-sso.conf
@@ -652,7 +652,7 @@ domain for your server).
    `/etc/zulip/apple-auth-key.p8`.  Be sure to set
    permissions correctly:
 
-   ```
+   ```bash
    chown zulip:zulip /etc/zulip/apple-auth-key.p8
    chmod 640 /etc/zulip/apple-auth-key.p8
    ```

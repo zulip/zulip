@@ -46,7 +46,7 @@ Usually, this involves a few steps:
   If your new integration is an incoming webhook integration, you can generate
   the screenshot using `tools/generate-integration-docs-screenshot`:
 
-  ```sh
+  ```bash
   ./tools/generate-integration-docs-screenshot --integration integrationname
   ```
 
@@ -136,7 +136,7 @@ Here are a few common macros used to document Zulip's integrations:
 * `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
 
-    ```
+    ```text
     https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
     ```
 

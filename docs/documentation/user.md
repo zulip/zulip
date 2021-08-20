@@ -210,7 +210,7 @@ instructions. For instance, it may address a common problem users may
 encounter while following the instructions, or point to an option for power
 users.
 
-```
+```md
 !!! tip ""
     If you've forgotten your password, see the
     [Change your password](/help/change-your-password) page for
@@ -220,7 +220,7 @@ users.
 A **warning** is a note on what happens when there is some kind of problem.
 Tips are more common than warnings.
 
-```
+```md
 !!! warn ""
     **Note:** If you attempt to input a nonexistent stream name, an error
     message will appear.
@@ -237,14 +237,16 @@ design to easily show the instructions for different
 [platforms](https://zulip.com/help/logging-out) in user docs,
 languages in API docs, etc.  To create a tab switcher, write:
 
-    {start_tabs}
-    {tab|desktop-web}
-    # First tab's content
-    {tab|ios}
-    # Second tab's content
-    {tab|android}
-    # Third tab's content
-    {end_tabs}
+```md
+{start_tabs}
+{tab|desktop-web}
+# First tab's content
+{tab|ios}
+# Second tab's content
+{tab|android}
+# Third tab's content
+{end_tabs}
+```
 
 The tab identifiers (e.g. `desktop-web` above) and their mappings to
 the tabs' labels are declared in

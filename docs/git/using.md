@@ -8,7 +8,7 @@ determine the currently checked out branch several ways.
 
 One way is with [git status][gitbook-git-status]:
 
-```
+```console
 $ git status
 On branch issue-demo
 nothing to commit, working directory clean
@@ -17,7 +17,7 @@ nothing to commit, working directory clean
 Another is with [git branch][gitbook-git-branch] which will display all local
 branches, with a star next to the current branch:
 
-```
+```console
 $ git branch
 * issue-demo
   master
@@ -26,7 +26,7 @@ $ git branch
 To see even more information about your branches, including remote branches,
 use `git branch -vva`:
 
-```
+```console
 $ git branch -vva
 * issue-123                 517468b troubleshooting tip about provisioning
   master                    f0eaee6 [origin/master] bug: Fix traceback in get_missed_message_token_from_address().
@@ -53,14 +53,14 @@ and then `git rebase`.
 First, [fetch][gitbook-fetch] changes from Zulip's upstream repository you
 configured in the step above:
 
-```
+```console
 $ git fetch upstream
 ```
 
 Next, check out your `master` branch and [rebase][gitbook-git-rebase] it on top
 of `upstream/master`:
 
-```
+```console
 $ git checkout master
 Switched to branch 'master'
 
@@ -74,7 +74,7 @@ history clean and readable.
 When you're ready, [push your changes][github-help-push] to your remote fork.
 Make sure you're in branch `master` and then run `git push`:
 
-```
+```console
 $ git checkout master
 $ git push origin master
 ```
@@ -83,7 +83,7 @@ You can keep any branch up to date using this method. If you're working on a
 feature branch (see next section), which we recommend, you would change the
 command slightly, using the name of your `feature-branch` rather than `master`:
 
-```
+```console
 $ git checkout feature-branch
 Switched to branch 'feature-branch'
 
@@ -105,7 +105,7 @@ how][zulip-git-guide-up-to-date]).
 Next, from your master branch, create a new tracking branch, providing a
 descriptive name for your feature branch:
 
-```
+```console
 $ git checkout master
 Switched to branch 'master'
 
@@ -116,7 +116,7 @@ Switched to a new branch 'issue-1755-fail2ban'
 Alternatively, you can create a new branch explicitly based off
 `upstream/master`:
 
-```
+```console
 $ git checkout -b issue-1755-fail2ban upstream/master
 Switched to a new branch 'issue-1755-fail2ban'
 ```
@@ -146,7 +146,7 @@ staged, use `git status`.
 If you have no changes in the working directory, you'll see something like
 this:
 
-```
+```console
 $ git status
 On branch issue-123
 nothing to commit, working directory clean
@@ -154,7 +154,7 @@ nothing to commit, working directory clean
 
 If you have unstaged changes, you'll see something like this:
 
-```
+```console
 On branch issue-123
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
@@ -173,7 +173,7 @@ add` is all about staging the changes you want to commit, you use it to add
 Continuing our example from above, after we run `git add newfile.py`, we'll see
 the following from `git status`:
 
-```
+```console
 On branch issue-123
 Changes to be committed:
   (use "git reset HEAD <file>..." to unstage)
@@ -193,7 +193,7 @@ You can also stage changes using your graphical Git client.
 If you stage a file, you can undo it with `git reset HEAD <filename>`. Here's
 an example where we stage a file `test3.txt` and then unstage it:
 
-```
+```console
 $ git add test3.txt
 On branch issue-1234
 Changes to be committed:
@@ -222,7 +222,7 @@ stage the file for deletion and leave it in your working directory.
 To stage a file for deletion and **remove** it from your working directory, use
 `git rm <filename>`:
 
-```
+```console
 $ git rm test.txt
 rm 'test.txt'
 
@@ -240,7 +240,7 @@ ls: No such file or directory
 To stage a file for deletion and **keep** it in your working directory, use
 `git rm --cached <filename>`:
 
-```
+```console
 $ git rm --cached test2.txt
 rm 'test2.txt'
 
@@ -258,7 +258,7 @@ test2.txt
 If you stage a file for deletion with the `--cached` option, and haven't yet
 run `git commit`, you can undo it with `git reset HEAD <filename>`:
 
-```
+```console
 $ git reset HEAD test2.txt
 ```
 
@@ -273,7 +273,7 @@ with `git commit -m "My commit message."` to include a commit message.
 
 Here's an example of committing with the `-m` for a one-line commit message:
 
-```
+```console
 $ git commit -m "Add a test commit for docs."
 [issue-123 173e17a] Add a test commit for docs.
  1 file changed, 1 insertion(+)
@@ -295,7 +295,7 @@ messages][zulip-rtd-commit-messages] for details.
 
 Here's an example of a longer commit message that will be used for a pull request:
 
-```
+```text
 Integrate Fail2Ban.
 
 Updates Zulip logging to put an unambiguous entry into the logs such
@@ -337,7 +337,7 @@ machine and allows others to follow your progress. It also allows you to
 
 Pushing to a feature branch is just like pushing to master:
 
-```
+```console
 $ git push origin <branch-name>
 Counting objects: 6, done.
 Delta compression using up to 4 threads.
@@ -367,7 +367,7 @@ your commit history be able to clearly understand your progression of work?
 On the command line, you can use the `git log` command to display an easy to
 read list of your commits:
 
-```
+```console
 $ git log --all --graph --oneline --decorate
 
 * 4f8d75d (HEAD -> 1754-docs-add-git-workflow) docs: Add details about configuring Travis CI.
@@ -404,7 +404,7 @@ Any time you alter history for commits you have already pushed to GitHub,
 you'll need to prefix the name of your branch with a `+`. Without this, your
 updates will be rejected with a message such as:
 
-```
+```console
 $ git push origin 1754-docs-add-git-workflow
 To git@github.com:christi3k/zulip.git
  ! [rejected] 1754-docs-add-git-workflow -> 1754-docs-add-git-workflow (non-fast-forward)
@@ -418,7 +418,7 @@ hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 Re-running the command with `+<branch>` allows the push to continue by
 re-writing the history for the remote repository:
 
-```
+```console
 $ git push origin +1754-docs-add-git-workflow
 Counting objects: 12, done.
 Delta compression using up to 4 threads.

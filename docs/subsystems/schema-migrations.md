@@ -93,7 +93,7 @@ migrations.
   Another important note is that making changes to the data in a table
   via `RunPython` code and `ALTER TABLE` operations within a single,
   atomic migration don't mix well. If you encounter an error such as
-  ```
+  ```text
   django.db.utils.OperationalError: cannot ALTER TABLE "table_name" because it has pending trigger events
   ```
   when testing the migration, the reason is often that these operations

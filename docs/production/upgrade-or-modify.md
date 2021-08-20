@@ -27,7 +27,7 @@ to a new Zulip release:
     <https://www.zulip.org/dist/releases/> You can download the latest
     release with:
 
-    ```
+    ```bash
     curl -fLO https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
     ```
 
@@ -39,7 +39,7 @@ to a new Zulip release:
 
 1. Log in to your Zulip and run as root:
 
-    ```
+    ```bash
     /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
     ```
 
@@ -71,7 +71,7 @@ Git repository, which is great for [running pre-release changes from
 master](#applying-changes-from-master) or [maintaining a
 fork](#making-changes).  The process is simple:
 
-```
+```bash
 # Upgrade to an official release
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
 # Upgrade to a branch (or other Git ref)
@@ -95,7 +95,7 @@ By default, this uses the main upstream Zulip server repository, but
 you can configure any other Git repository by adding a section like
 this to `/etc/zulip/zulip.conf`:
 
-```
+```ini
 [deployment]
 git_repo_url = https://github.com/zulip/zulip.git
 ```
@@ -123,7 +123,7 @@ suggest using that updated template to update
    do not have a recent [complete backup][backups]), and make a copy
    of the current template:
 
-   ```
+   ```bash
    cp -a /etc/zulip/settings.py ~/zulip-settings-backup.py
    cp -a /home/zulip/deployments/current/zproject/prod_settings_template.py /etc/zulip/settings-new.py
    ```
@@ -137,7 +137,7 @@ suggest using that updated template to update
    the template that your `/etc/zulip/settings.py` was installed
    using, and the differences that your file has from that:
 
-   ```
+   ```bash
    /home/zulip/deployments/current/scripts/setup/compare-settings-to-template
    ```
 
@@ -149,7 +149,7 @@ suggest using that updated template to update
    the server to pick up the new file; this should be a no-op, but it
    is much better to discover immediately if it is not:
 
-   ```
+   ```bash
    cp -a /etc/zulip/settings-new.py /etc/zulip/settings.py
    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
    ```
@@ -260,7 +260,7 @@ instructions for other supported platforms.
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
 
-    ```
+    ```bash
     supervisorctl stop all
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
     ```
@@ -270,7 +270,7 @@ instructions for other supported platforms.
    `do-release-upgrade` and following the prompts until it completes
    successfully:
 
-    ```
+    ```bash
     sudo -i # Or otherwise get a root shell
     do-release-upgrade
     ```
@@ -283,7 +283,7 @@ instructions for other supported platforms.
 
 4. As root, upgrade the database to the latest version of PostgreSQL:
 
-    ```
+    ```bash
     /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
     ```
 
@@ -292,7 +292,7 @@ instructions for other supported platforms.
    "collations"); this corrupts database indexes that rely on
    collations.  Regenerate the affected indexes by running:
 
-   ```
+   ```bash
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
@@ -302,7 +302,7 @@ instructions for other supported platforms.
    full-text search indexes to work with the upgraded dictionary
    packages:
 
-    ```
+    ```bash
     rm -rf /srv/zulip-venv-cache/*
     /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
         /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
@@ -325,7 +325,7 @@ instructions for other supported platforms.
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
 
-    ```
+    ```bash
     touch /usr/share/postgresql/10/pgroonga_setup.sql.applied
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
     pg_dropcluster 10 main --stop
@@ -341,7 +341,7 @@ instructions for other supported platforms.
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python:
 
-    ```
+    ```bash
     rm -rf /srv/zulip-venv-cache/*
     /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
         /home/zulip/deployments/current/ --ignore-static-assets
@@ -356,7 +356,7 @@ instructions for other supported platforms.
 
 7. As root, finish by verifying the contents of the full-text indexes:
 
-    ```
+    ```bash
     /home/zulip/deployments/current/manage.py audit_fts_indexes
     ```
 
@@ -373,7 +373,7 @@ instructions for other supported platforms.
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
 
-    ```
+    ```bash
     apt remove upstart -y
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
     pg_dropcluster 9.5 main --stop
@@ -389,7 +389,7 @@ instructions for other supported platforms.
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python:
 
-    ```
+    ```bash
     rm -rf /srv/zulip-venv-cache/*
     /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
         /home/zulip/deployments/current/ --ignore-static-assets
@@ -424,7 +424,7 @@ instructions for other supported platforms.
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
 
-    ```
+    ```bash
     apt remove upstart -y
     /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
     pg_dropcluster 11 main --stop
@@ -440,7 +440,7 @@ instructions for other supported platforms.
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python:
 
-    ```
+    ```bash
     rm -rf /srv/zulip-venv-cache/*
     /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
         /home/zulip/deployments/current/ --ignore-static-assets
@@ -458,13 +458,13 @@ instructions for other supported platforms.
    "collations"); this corrupts database indexes that rely on
    collations.  Regenerate the affected indexes by running:
 
-   ```
+   ```bash
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 8. As root, finish by verifying the contents of the full-text indexes:
 
-    ```
+    ```bash
     /home/zulip/deployments/current/manage.py audit_fts_indexes
     ```
 
@@ -482,14 +482,14 @@ To upgrade the version of PostgreSQL on the Zulip server:
 
 2. Stop the server and take a backup:
 
-    ```
+    ```bash
     supervisorctl stop all
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/postgresql-upgrade.backup.tar.gz
     ```
 
 3. As root, run the database upgrade tool:
 
-    ```
+    ```bash
     /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
     ```
 
@@ -553,7 +553,7 @@ Git guide][git-guide] if you need a primer):
   [GitHub](https://github.com).
 * Create a branch (named `acme-branch` below) containing your changes:
 
-```
+```bash
 cd zulip
 git checkout -b acme-branch 2.0.4
 ```
@@ -561,7 +561,7 @@ git checkout -b acme-branch 2.0.4
 * Use your favorite code editor to modify Zulip.
 * Commit your changes and push them to GitHub:
 
-```
+```bash
 git commit -a
 
 # Use `git diff` to verify your changes are what you expect
@@ -597,7 +597,7 @@ Otherwise, you'll need to update your branch by rebasing your changes
 repository).  The example below assumes you have a branch off of 2.0.4
 and want to upgrade to 2.1.0.
 
-```
+```bash
 cd zulip
 git fetch --tags upstream
 git checkout acme-branch
@@ -640,7 +640,7 @@ fixes on your local Zulip server without waiting for an official release.
 Many bugs have small/simple fixes.  In this case, you can use the Git
 workflow [described above](#making-changes), using:
 
-```
+```bash
 git fetch upstream
 git cherry-pick abcd1234
 ```

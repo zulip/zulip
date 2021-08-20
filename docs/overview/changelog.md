@@ -526,7 +526,7 @@ log][commit-log] for an up-to-date list of raw changes.
   that will fix this bug.  The new migration will fail if any such
   duplicate accounts already exist; you can check whether this will
   happen be running the following in a [management shell][manage-shell]:
-  ```
+  ```python
   from django.db.models.functions import Lower
   UserProfile.objects.all().annotate(email_lower=Lower("delivery_email"))
       .values('realm_id', 'email_lower').annotate(Count('id')).filter(id__count__gte=2)
