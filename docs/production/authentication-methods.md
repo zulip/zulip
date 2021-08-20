@@ -428,11 +428,11 @@ it as follows:
        trust, which consists of multiple certificates.
     4. Set the proper permissions on these files and directories:
 
-    ```bash
-    chown -R zulip.zulip /etc/zulip/saml/
-    find /etc/zulip/saml/ -type f -exec chmod 644 -- {} +
-    chmod 640 /etc/zulip/saml/zulip-private-key.key
-    ```
+       ```bash
+       chown -R zulip.zulip /etc/zulip/saml/
+       find /etc/zulip/saml/ -type f -exec chmod 644 -- {} +
+       chmod 640 /etc/zulip/saml/zulip-private-key.key
+       ```
 
 4. (Optional) If you configured the optional public and private server
    certificates above, you can enable the additional setting

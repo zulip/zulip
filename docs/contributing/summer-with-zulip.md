@@ -268,9 +268,9 @@ Success for the student means a few things, in order of importance:
   plan it, you can get several round trips in per day even with big timezone
   differences like USA + India.
 
--  What exactly you focus on in your mentorship will vary from week to week and
-   depend somewhat on what the student needs. It might be any combination of
-   these things:
+- What exactly you focus on in your mentorship will vary from week to week and
+  depend somewhat on what the student needs. It might be any combination of
+  these things:
 
   - Helping the student plan, chunk, and prioritize their work.
 
