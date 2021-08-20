@@ -20,32 +20,32 @@ class GitHubTestCase(ZulipTestCase):
 
         responses.add(
             responses.HEAD,
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-Web-Setup-5.4.3.exe",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-Web-Setup-5.4.3.exe",
             status=302,
         )
         self.assertEqual(
             get_latest_github_release_download_link_for_platform("windows"),
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-Web-Setup-5.4.3.exe",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-Web-Setup-5.4.3.exe",
         )
 
         responses.add(
             responses.HEAD,
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3-x86_64.AppImage",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x86_64.AppImage",
             status=302,
         )
         self.assertEqual(
             get_latest_github_release_download_link_for_platform("linux"),
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3-x86_64.AppImage",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x86_64.AppImage",
         )
 
         responses.add(
             responses.HEAD,
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3-x64.dmg",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x64.dmg",
             status=302,
         )
         self.assertEqual(
             get_latest_github_release_download_link_for_platform("mac"),
-            "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-5.4.3-x64.dmg",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x64.dmg",
         )
 
         api_url = "https://api.github.com/repos/zulip/zulip-desktop/releases/latest"
@@ -67,7 +67,7 @@ class GitHubTestCase(ZulipTestCase):
             json={"tag_name": "5.4.4"},
             status=200,
         )
-        download_link = "https://github.com/zulip/zulip-desktop/releases/download/v5.4.4/Zulip-5.4.4-x86_64.AppImage"
+        download_link = "https://desktop-download.zulip.com/v5.4.4/Zulip-5.4.4-x86_64.AppImage"
         responses.add(responses.HEAD, download_link, status=404)
         cache_delete("download_link:linux")
         with self.assertLogs(logger_string, level="ERROR") as error_log:

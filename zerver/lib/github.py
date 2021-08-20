@@ -50,7 +50,7 @@ def get_latest_github_release_download_link_for_platform(platform: str) -> str:
         if latest_version[0] in ["v", "V"]:
             latest_version = latest_version[1:]
         setup_file = PLATFORM_TO_SETUP_FILE[platform].format(version=latest_version)
-        link = f"https://github.com/zulip/zulip-desktop/releases/download/v{latest_version}/{setup_file}"
+        link = f"https://desktop-download.zulip.com/v{latest_version}/{setup_file}"
         if verify_release_download_link(link):
             return link
     return "https://github.com/zulip/zulip-desktop/releases/latest"
