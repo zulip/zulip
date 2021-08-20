@@ -52,8 +52,8 @@ Now you're ready to use the script.
 
 `create.py` takes two arguments
 
-* GitHub username
-* Tags (Optional argument)
+- GitHub username
+- Tags (Optional argument)
 
 ```
 $ python3 create.py <username>

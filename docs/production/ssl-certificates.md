@@ -11,8 +11,8 @@ chore (nor expense) that it used to be.
 
 If you already have an SSL certificate, just install (or symlink) its
 files into place at the following paths:
-* `/etc/ssl/private/zulip.key` for the private key
-* `/etc/ssl/certs/zulip.combined-chain.crt` for the certificate.
+- `/etc/ssl/private/zulip.key` for the private key
+- `/etc/ssl/certs/zulip.combined-chain.crt` for the certificate.
 
 Your certificate file should contain not only your own certificate but
 its **full chain, including any intermediate certificates** used by
@@ -32,11 +32,11 @@ browsers ignore errors that others don't.
 
 Two good tests include:
 
-* If your server is accessible from the public Internet, use the [SSL
+- If your server is accessible from the public Internet, use the [SSL
   Labs tester][ssllabs-tester].  Be sure to check for "Chain issues";
   if any, your certificate file is missing intermediate certificates.
 
-* Alternatively, run a command like `curl -SsI https://zulip.example.com`
+- Alternatively, run a command like `curl -SsI https://zulip.example.com`
   (using your server's URL) from a machine that can reach your server.
   Make sure that on the same machine,
   `curl -SsI https://incomplete-chain.badssl.com` gives an error;
@@ -55,11 +55,11 @@ SSL certificates from Let's Encrypt and renew them automatically.
 
 We recommend most Zulip servers use Certbot.  You'll want something
 else if:
-* you have an existing workflow for managing SSL certificates
+- you have an existing workflow for managing SSL certificates
   that you prefer;
-* you need wildcard certificates (support from Let's Encrypt released
+- you need wildcard certificates (support from Let's Encrypt released
   in [March 2018][letsencrypt-wildcard]); or
-* your Zulip server is not on the public Internet. (In this case you
+- your Zulip server is not on the public Internet. (In this case you
   can [still use Certbot][certbot-manual-mode], but it's less
   convenient; and you'll want to ignore Zulip's automation.)
 
@@ -203,10 +203,10 @@ details.
 Two signs for diagnosing this issue in contrast to some other root
 cause:
 
-* This issue affects only Android 7.0; it's fixed in Android 7.1.1 and
+- This issue affects only Android 7.0; it's fixed in Android 7.1.1 and
   later.
 
-* If your server is reachable from the public Internet, use the [SSL
+- If your server is reachable from the public Internet, use the [SSL
   Labs tester][ssllabs-tester].  Under "Cipher Suites" you may see
   lines beginning with `TLS_ECDHE`, for cipher suites which use
   elliptic-curve cryptography.  These lines will have further text

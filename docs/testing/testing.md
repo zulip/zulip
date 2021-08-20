@@ -107,9 +107,9 @@ As a policy matter, the Zulip test suites should never make outgoing
 HTTP or other network requests.  This is important for 2 major
 reasons:
 
-* Tests that make outgoing Internet requests will fail when the user
+- Tests that make outgoing Internet requests will fail when the user
   isn't on the Internet.
-* Tests that make outgoing Internet requests often have a hidden
+- Tests that make outgoing Internet requests often have a hidden
   dependency on the uptime of a third-party service, and will fail
   nondeterministically if that service has a temporary outage.
   Nondeterministically failing tests can be a big waste of

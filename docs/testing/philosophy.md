@@ -61,19 +61,19 @@ suite (`test-js-with-node`) to run in under 10 seconds.
 
 It'd be a long blog post to summarize everything we do to help achieve
 these goals, but a few techniques are worth highlighting:
-* Our test suites are designed to not access the Internet, since the
+- Our test suites are designed to not access the Internet, since the
   Internet might be down or unreliable in the test environment.  Where
   outgoing HTTP requests are required to test something, we mock the
   responses with libraries like `responses`.
-* We carefully avoid the potential for contamination of data inside
+- We carefully avoid the potential for contamination of data inside
   services like PostgreSQL, Redis, and memcached from different tests.
-    * Every test case prepends a unique random prefix to all keys it
+    - Every test case prepends a unique random prefix to all keys it
       uses when accessing Redis and memcached.
-    * Every test case runs inside a database transaction, which is
+    - Every test case runs inside a database transaction, which is
       aborted after the test completes.  Each test process interacts
       only with a fresh copy of a special template database used for
       server tests that is destroyed after the process completes.
-* We rigorously investigate non-deterministically failing tests as though
+- We rigorously investigate non-deterministically failing tests as though
   they were priority bugs in the product.
 
 ## Integration testing or unit testing?
@@ -131,36 +131,36 @@ in any documentation for that interface.
 
 Some examples of this philosophy:
 
-* If you have a web service that's mainly an API, you want to write
+- If you have a web service that's mainly an API, you want to write
   your tests for that API.
-* If you have a CLI program, you want to write your tests against the
+- If you have a CLI program, you want to write your tests against the
   CLI.
-* If you have a compiler, an interpreter, etc., you want essentially
+- If you have a compiler, an interpreter, etc., you want essentially
   all your tests to be example programs, with a bit of metadata for
   things like "should give an error at this line" or "should build and
   run, and produce this output".
 
 In the Zulip context:
-* Zulip uses the same API for our web app as for our mobile clients and
+- Zulip uses the same API for our web app as for our mobile clients and
   third-party API clients, and most of our server tests are written
   against the Zulip API.
-* The tests for Zulip's incoming webhooks work by sending actual
+- The tests for Zulip's incoming webhooks work by sending actual
   payloads captured from the real third-party service to the webhook
   endpoints, and verifies that the webhook produces the expected Zulip
   message as output, to test the actual interface.
 
 So, to summarize our approach to integration vs. unit testing:
-* While we aim to achieve test coverage of every significant code path
+- While we aim to achieve test coverage of every significant code path
   in the Zulip server, which is commonly associated with unit testing,
   most of our tests are integration tests in the sense of sending a
   complete HTTP API query to the Zulip server and checking that the
   HTTP response and the internal state of the server following the request
   are both correct.
-* Following the end-to-end principle in system design, where possible
+- Following the end-to-end principle in system design, where possible
   we write tests that execute a complete flow (e.g. registering a new
   Zulip account) rather than testing the implementations of individual
   functions.
-* We invest in the performance of Zulip in part to give users a great
+- We invest in the performance of Zulip in part to give users a great
   experience, but just as much to make our test suite fast enough
   that we can write our tests this way.
 

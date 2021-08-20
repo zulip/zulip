@@ -11,32 +11,32 @@ our instructions for
 On to the documentation. Zulip's email system is fairly straightforward,
 with only a few things you need to know to get started.
 
-* All email templates are in `templates/zerver/emails/`. Each email has three
+- All email templates are in `templates/zerver/emails/`. Each email has three
   template files: `<template_prefix>.subject.txt`, `<template_prefix>.txt`, and
   `<template_prefix>.source.html`. Email templates, along with all other templates
   in the `templates/` directory, are Jinja2 templates.
-* Most of the CSS and HTML layout for emails is in `email_base.html`. Note
+- Most of the CSS and HTML layout for emails is in `email_base.html`. Note
   that email has to ship with all of its CSS and HTML, so nothing in
   `static/` is useful for an email. If you're adding new CSS or HTML for an
   email, there's a decent chance it should go in `email_base.html`.
-* All email is eventually sent by `zerver.lib.send_email.send_email`. There
+- All email is eventually sent by `zerver.lib.send_email.send_email`. There
   are several other functions in `zerver.lib.send_email`, but all of them
   eventually call the `send_email` function. The most interesting one is
   `send_future_email`. The `ScheduledEmail` entries are eventually processed
   by a supervisor job that runs `zerver/management/commands/deliver_scheduled_emails.py`.
-* Always use `user_profile.delivery_email`, not `user_profile.email`,
+- Always use `user_profile.delivery_email`, not `user_profile.email`,
   when passing data into the `send_email` library.  The
   `user_profile.email` field may not always be valid.
-* A good way to find a bunch of example email pathways is to `git grep` for
+- A good way to find a bunch of example email pathways is to `git grep` for
   `zerver/emails` in the `zerver/` directory.
 
 One slightly complicated decision you may have to make when adding an email
 is figuring out how to schedule it. There are 3 ways to schedule email.
-* Send it immediately, in the current Django process, e.g. by calling
+- Send it immediately, in the current Django process, e.g. by calling
   `send_email` directly. An example of this is the `confirm_registration`
   email.
-* Add it to a queue. An example is the `invitation` email.
-* Send it (approximately) at a specified time in the future, using
+- Add it to a queue. An example is the `invitation` email.
+- Send it (approximately) at a specified time in the future, using
   `send_future_email`. An example is the `followup_day2` email.
 
 Email takes about a quarter second per email to process and send. Generally
@@ -53,10 +53,10 @@ we've set the email backend (aka what happens when you call the email
 `.send()` method in Django) in the development environment to be our
 custom backend, `EmailLogBackEnd`.  It does the following:
 
-* Logs any sent emails to `var/log/email_content.log`. This log is
+- Logs any sent emails to `var/log/email_content.log`. This log is
   displayed by the `/emails` endpoint
   (e.g. http://zulip.zulipdev.com:9991/emails).
-* Print a friendly message on console advertising `/emails` to make
+- Print a friendly message on console advertising `/emails` to make
   this nice and discoverable.
 
 ### Testing in a real email client
@@ -81,11 +81,11 @@ Once you have the login credentials of the SMTP provider, since there
 is not `/etc/zulip/settings.py` in development, configure it using the
 following keys in `zproject/dev-secrets.conf`
 
-* `email_host` - SMTP hostname.
-* `email_port` - SMTP port.
-* `email_host_user` - Username of the SMTP user
-* `email_password` - Password of the SMTP user.
-* `email_use_tls` - Set to `true` for most providers. Else, don't set any value.
+- `email_host` - SMTP hostname.
+- `email_port` - SMTP port.
+- `email_host_user` - Username of the SMTP user
+- `email_password` - Password of the SMTP user.
+- `email_use_tls` - Set to `true` for most providers. Else, don't set any value.
 
 Here is an example of how `zproject/dev-secrets.conf` might look if
 you are using Gmail.
@@ -103,18 +103,18 @@ email_password = gmail_password
 
 ### Notes
 
-* After changing any HTML email or `email_base.html`, you need to run
+- After changing any HTML email or `email_base.html`, you need to run
   `scripts/setup/inline_email_css.py` for the changes to be reflected
   in the development environment. The script generates files like
   `templates/zerver/emails/compiled/<template_prefix>.html`.
 
-* Images won't be displayed in a real email client unless you change
+- Images won't be displayed in a real email client unless you change
   the `base_image_uri` used for emails to a public URL such as
   `https://chat.zulip.org/static/images/emails` (image links to
   `localhost:9991` aren't allowed by modern email providers). See
   `zproject/email_backends.py` for more details.
 
-* While running the backend test suite, we use
+- While running the backend test suite, we use
   `django.core.mail.backends.locmem.EmailBackend` as the email
   backend. The `locmem` backend stores messages in a special attribute
   of the django.core.mail module, "outbox". The outbox attribute is

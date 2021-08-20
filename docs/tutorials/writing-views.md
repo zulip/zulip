@@ -129,11 +129,11 @@ view, you need to write code to parse and validate that the arguments
 exist and have the correct form.  For many applications, this leads to
 one of several bad outcomes:
 
-* The code isn't written, so arguments aren't validated, leading to
+- The code isn't written, so arguments aren't validated, leading to
   bugs and confusing error messages for users of the API.
-* Every function starts with a long list of semi-redundant validation
+- Every function starts with a long list of semi-redundant validation
   code, usually with highly inconsistent error messages.
-* Every view function comes with another function that does the
+- Every view function comes with another function that does the
   validation that has the problems from the last bullet point.
 
 In Zulip, we solve this problem with a the special decorator called
@@ -178,22 +178,22 @@ in
 
 REQ also helps us with request variable validation. For example:
 
-* `msg_ids = REQ(json_validator=check_list(check_int))` will check
+- `msg_ids = REQ(json_validator=check_list(check_int))` will check
   that the `msg_ids` HTTP parameter is a list of integers, marshalled
   as JSON, and pass it into the function as the `msg_ids` Python
   keyword argument.
 
-* `streams_raw = REQ("subscriptions", json_validator=check_list(check_string))`
+- `streams_raw = REQ("subscriptions", json_validator=check_list(check_string))`
   will check that the "subscriptions" HTTP parameter is a list of
   strings, marshalled as JSON, and pass it into the function with the
   Python keyword argument `streams_raw`.
 
-* `message_id=REQ(converter=to_non_negative_int)` will check that the
+- `message_id=REQ(converter=to_non_negative_int)` will check that the
   `message_id` HTTP parameter is a string containing a non-negative
   integer (`converter` differs from `json_validator` in that it does
   not automatically marshall the input from JSON).
 
-* Since there is no need to JSON-encode strings, usually simply
+- Since there is no need to JSON-encode strings, usually simply
   `my_string=REQ()` is correct.  One can pass e.g.
   `str_validator=check_string_in(...)` where one wants to run a
   validator on the value of a string.

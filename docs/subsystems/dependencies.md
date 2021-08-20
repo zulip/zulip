@@ -6,15 +6,15 @@ this document, we discuss the various classes of dependencies that
 Zulip has, and how we manage them.  Zulip's dependency management has
 some really nice properties:
 
-* **Fast provisioning**.  When switching to a different commit in the
+- **Fast provisioning**.  When switching to a different commit in the
   Zulip project with the same dependencies, it takes under 5 seconds
   to re-provision a working Zulip development environment after
   switching.  If there are new dependencies, one only needs to wait to
   download the new ones, not all the pre-existing dependencies.
-* **Consistent provisioning**.  Every time a Zulip development or
+- **Consistent provisioning**.  Every time a Zulip development or
   production environment is provisioned/installed, it should end up
   using the exactly correct versions of all major dependencies.
-* **Low maintenance burden**.  To the extent possible, we want to
+- **Low maintenance burden**.  To the extent possible, we want to
   avoid manual work and keeping track of things that could be
   automated.  This makes it easy to keep running the latest versions
   of our various dependencies.
@@ -103,10 +103,10 @@ on specific versions of these packages wherever possible.
 
 The exact lists of `apt` packages needed by Zulip are maintained in a
 few places:
-* For production, in our Puppet configuration, `puppet/zulip/`, using
+- For production, in our Puppet configuration, `puppet/zulip/`, using
   the `Package` and `SafePackage` directives.
-* For development, in `SYSTEM_DEPENDENCIES` in `tools/lib/provision.py`.
-* The packages needed to build a Zulip virtualenv, in
+- For development, in `SYSTEM_DEPENDENCIES` in `tools/lib/provision.py`.
+- The packages needed to build a Zulip virtualenv, in
   `VENV_DEPENDENCIES` in `scripts/lib/setup_venv.py`.  These are
   separate from the rest because (1) we may need to install a
   virtualenv before running the more complex scripts that, in turn,
@@ -130,7 +130,7 @@ about how Zulip makes this system work well for us that are worth
 highlighting.  The system is largely managed by the code in
 `scripts/lib/setup_venv.py`
 
-* **Using `pip` to manage dependencies**.  This is standard in the
+- **Using `pip` to manage dependencies**.  This is standard in the
   Python ecosystem, and means we only need to record a list of
   versions in a `requirements.txt` file to declare what we're using.
   Since we have a few different installation targets, we maintain
@@ -140,7 +140,7 @@ highlighting.  The system is largely managed by the code in
   majority of packages common to prod and development, etc.).  We use
   `pip install --no-deps` to ensure we only install the packages we
   explicitly declare as dependencies.
-* **virtualenv with pinned versions**.  For a large application like
+- **virtualenv with pinned versions**.  For a large application like
   Zulip, it is important to ensure that we're always using consistent,
   predictable versions of all of our Python dependencies.  To ensure
   this, we install our dependencies in a [virtualenv][] that contains
@@ -151,7 +151,7 @@ highlighting.  The system is largely managed by the code in
   effect is that it's easy to debug problems caused by dependency
   upgrades, since we're always doing those upgrades with an explicit
   commit updating the `requirements/` directory.
-* **Pinning versions of indirect dependencies**.  We "pin" or "lock"
+- **Pinning versions of indirect dependencies**.  We "pin" or "lock"
   the versions of our indirect dependencies files with
   `tools/update-locked-requirements` (powered by `pip-compile`).  What
   this means is that we have some "source" requirements files, like
@@ -168,7 +168,7 @@ highlighting.  The system is largely managed by the code in
   direct dependency (or dependencies) needed that indirect dependency.
   The process for using this system is documented in more detail in
   `requirements/README.md`.
-* **Caching of virtualenvs and packages**.  To make updating the
+- **Caching of virtualenvs and packages**.  To make updating the
   dependencies of a Zulip installation efficient, we maintain a cache
   of virtualenvs named by the hash of the relevant `requirements.txt`
   file (`scripts/lib/hash_reqs.py`).  These caches live under
@@ -181,21 +181,21 @@ highlighting.  The system is largely managed by the code in
   needed, making small version upgrades extremely efficient.  And
   finally, we use `pip`'s built-in caching to ensure that a specific
   version of a specific package is only downloaded once.
-* **Garbage-collecting caches**.  We have a tool,
+- **Garbage-collecting caches**.  We have a tool,
   `scripts/lib/clean_venv_cache.py`, which will clean old cached
   virtualenvs that are no longer in use.  In production, the algorithm
   preserves recent virtualenvs as well as those in use by any current
   production deployment directory under `/home/zulip/deployments/`.
   This helps ensure that a Zulip installation doesn't leak large
   amounts of disk over time.
-* **Scripts**.  Often, we want a script running in production to use
+- **Scripts**.  Often, we want a script running in production to use
   the Zulip virtualenv.  To make that work without a lot of duplicated
   code, we have a helpful function,
   `scripts.lib.setup_path.setup_path`, which on import will put the
   currently running Python script into the Zulip virtualenv.  This is
   called by `./manage.py` to ensure that our Django code always uses
   the correct virtualenv as well.
-* **Mypy type checker**.  Because we're using mypy in a strict mode,
+- **Mypy type checker**.  Because we're using mypy in a strict mode,
   when you add use of a new Python dependency, you usually need to
   either adds stubs to the `stubs/` directory for the library, or edit
   `pyproject.toml` in the root of the Zulip project to configure
@@ -218,19 +218,19 @@ We use the same set of strategies described for Python dependencies
 for most of our JavaScript dependencies, so we won't repeat the
 reasoning here.
 
-* In a fashion very analogous to the Python codebase,
+- In a fashion very analogous to the Python codebase,
   `scripts/lib/node_cache.py` manages cached `node_modules`
   directories in `/srv/zulip-npm-cache`.  Each is named by its hash,
   computed by the `generate_sha1sum_node_modules` function.
   `scripts/lib/clean_node_cache.py` handles garbage-collection.
-* We use [yarn][], a `pip`-like tool for JavaScript, to download most
+- We use [yarn][], a `pip`-like tool for JavaScript, to download most
   JavaScript dependencies.  Yarn talks to standard the [npm][]
   repository.  We use the standard `package.json` file to declare our
   direct dependencies, with sections for development and
   production.  Yarn takes care of pinning the versions of indirect
   dependencies in the `yarn.lock` file; `yarn install` updates the
   `yarn.lock` files.
-* `tools/update-prod-static`.  This process is discussed in detail in
+- `tools/update-prod-static`.  This process is discussed in detail in
   the [static asset pipeline](../subsystems/html-css.html#static-asset-pipeline)
   article, but we don't use the `node_modules` directories directly in
   production.  Instead, static assets are compiled using our static
@@ -239,7 +239,7 @@ reasoning here.
   directory in a Zulip production release tarball, which is a good
   thing, because doing so would more than double the size of a Zulip
   release tarball.
-* **Checked-in packages**.  In contrast with Python, we have a few
+- **Checked-in packages**.  In contrast with Python, we have a few
   JavaScript dependencies that we have copied into the main Zulip
   repository under `static/third`, often with patches.  These date
   from an era before `npm` existed.  It is a project goal to eliminate
@@ -252,11 +252,11 @@ These are installed by `scripts/lib/install-node` (which in turn uses
 the standard third-party `nvm` installer to download `node` and pin
 its version) and `scripts/lib/install-yarn`.
 
-* `nvm` has its own system for installing each version of `node` at
+- `nvm` has its own system for installing each version of `node` at
 its own path, which we use, though we install a `/usr/local/bin/node`
 wrapper to access the desired version conveniently and efficiently
 (`nvm` has a lot of startup overhead).
-* We install `yarn` at `/srv/zulip-yarn`.  We don't do anything
+- We install `yarn` at `/srv/zulip-yarn`.  We don't do anything
 special to try to manage multiple versions of `yarn`.
 
 ## ShellCheck and shfmt
@@ -324,12 +324,12 @@ our JavaScript Markdown processor has access to the supported list.
 When making changes to Zulip's provisioning process or dependencies,
 usually one needs to think about making changes in 3 places:
 
-* `tools/lib/provision.py`.  This is the main provisioning script,
+- `tools/lib/provision.py`.  This is the main provisioning script,
   used by most developers to maintain their development environment.
-* `docs/development/dev-setup-non-vagrant.md`.  This is our "manual installation"
+- `docs/development/dev-setup-non-vagrant.md`.  This is our "manual installation"
   documentation.  Strategically, we'd like to move the support for more
   versions of Linux from here into `tools/lib/provision.py`.
-* Production.  Our tools for compiling/generating static assets need
+- Production.  Our tools for compiling/generating static assets need
   to be called from `tools/update-prod-static`, which is called by
   `tools/build-release-tarball` (for doing Zulip releases) as well as
   `tools/upgrade-zulip-from-git` (for deploying a Zulip server off of

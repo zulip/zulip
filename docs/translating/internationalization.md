@@ -9,22 +9,22 @@ internationalization and Zulip's tools for it so that they can make
 correct decisions about how to tag strings for translation.  A few
 principles are important in how we think about internationalization:
 
-* Our goal is for **all end-user facing strings** in Zulip to be
+- Our goal is for **all end-user facing strings** in Zulip to be
   tagged for translation in both [HTML templates](#html-templates) and
   code, and our linters attempt to enforce this.  There are some
   exceptions: we don't tag strings in Zulip's landing pages
   (e.g. /features) and other documentation (e.g. /help) for
   translation at this time (though we do aim for those pages to be
   usable with tools like Google Translate).
-* Translating all the strings in Zulip for a language and maintaining
+- Translating all the strings in Zulip for a language and maintaining
   that translation is a lot of work, and that work scales with the
   number of strings tagged for translation in Zulip.  For this reason,
   we put significant effort into only tagging for translation content
   that will actually be displayed to users, and minimizing unnecessary
   user-facing strings in the product.
-* In order for a translated user experience to be good, every UI
+- In order for a translated user experience to be good, every UI
   element needs to be built in a way that supports i18n.
-* This is more about string consistency in general, but we have a
+- This is more about string consistency in general, but we have a
   "Sentence case" [capitalization
   policy](../translating/translating.html#capitalization) that we enforce using linters
   that check all strings tagged for translation in Zulip.
@@ -41,22 +41,22 @@ their style guidelines.
 There are a few critical details about human language that are important
 to understand when implementing an internationalized application:
 
-* **Punctuation** varies between languages (e.g. Japanese doesn't use
+- **Punctuation** varies between languages (e.g. Japanese doesn't use
   `.`s at the end of sentences).  This means that you should always
   include end-of-sentence symbols like `.` and `?` inside the
   to-be-translated strings, so that translators can correctly
   translate the content.
-* **Word order** varies between languages (e.g. some languages put
+- **Word order** varies between languages (e.g. some languages put
   subjects before verbs, others the other way around).  This means
   that **concatenating translateable strings** produces broken results
   (more details with examples are below).
-* The **width of the string needed to express something** varies
+- The **width of the string needed to express something** varies
   dramatically between languages; this means you can't just hardcode a
   button or widget to look great for English and expect it to work in
   all languages.  German is a good test case, as it has a lot of long
   words, as is Japanese (as character-based languages use a lot less
   width).
-* This is more about how i18n tooling works, but in code, the
+- This is more about how i18n tooling works, but in code, the
   translation function must be passed the string to translate, not a
   variable containing the target string.  Otherwise, the parsers that
   extract the strings in a project to send to translators will not

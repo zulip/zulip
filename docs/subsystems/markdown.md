@@ -49,18 +49,18 @@ by both test suites; as a result, it is the preferred place to add new
 tests for Zulip's Markdown system.  Some important notes on reading
 this file:
 
-* `expected_output` is the expected output for the backend Markdown
+- `expected_output` is the expected output for the backend Markdown
   processor.
-* When the frontend processor doesn't support a feature and it should
+- When the frontend processor doesn't support a feature and it should
   just be rendered on the backend, we set `backend_only_rendering` to
   `true` in the fixtures; this will automatically verify that
   `markdown.contains_backend_only_syntax` rejects the syntax, ensuring
   it will be rendered only by the backend processor.
-* When the two processors disagree, we set `marked_expected_output` in
+- When the two processors disagree, we set `marked_expected_output` in
   the fixtures; this will ensure that the syntax stays that way.  If
   the differences are important (i.e. not just whitespace), we should
   also open an issue on GitHub to track the problem.
-* For mobile push notifications, we need a text version of the
+- For mobile push notifications, we need a text version of the
   rendered content, since the APNS and GCM push notification systems
   don't support richer markup.  Mostly, this involves stripping HTML,
   but there's some syntax we take special care with.  Tests for what
@@ -91,44 +91,44 @@ tests with `tools/test-js-with-node markdown` and backend tests with
 
 First, you will likely find these third-party resources helpful:
 
-* **[Python-Markdown](https://pypi.python.org/pypi/Markdown)** is the Markdown
+- **[Python-Markdown](https://pypi.python.org/pypi/Markdown)** is the Markdown
   library used by Zulip as a base to build our custom Markdown syntax upon.
-* **[Python's XML ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
+- **[Python's XML ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
   is the part of the Python standard library used by Python Markdown
   and any custom extensions to generate and modify the output HTML.
 
 When changing Zulip's Markdown syntax, you need to update several
 places:
 
-* The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
-* The frontend Markdown processor (`static/js/markdown.js` and sometimes
+- The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
+- The frontend Markdown processor (`static/js/markdown.js` and sometimes
   `static/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
-* If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
-* The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
-* The in-app Markdown documentation (`markdown_help_rows` in `static/js/info_overlay.js`).
-* The list of changes to Markdown at the end of this document.
+- If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
+- The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
+- The in-app Markdown documentation (`markdown_help_rows` in `static/js/info_overlay.js`).
+- The list of changes to Markdown at the end of this document.
 
 Important considerations for any changes are:
 
-* Security: A bug in the Markdown processor can lead to XSS issues.
+- Security: A bug in the Markdown processor can lead to XSS issues.
   For example, we should not insert unsanitized HTML from a
   third-party web application into a Zulip message.
-* Uniqueness: We want to avoid users having a bad experience due to
+- Uniqueness: We want to avoid users having a bad experience due to
   accidentally triggering Markdown syntax or typeahead that isn't
   related to what they are trying to express.
-* Performance: Zulip can render a lot of messages very quickly, and
+- Performance: Zulip can render a lot of messages very quickly, and
   we'd like to keep it that way.  New regular expressions similar to
   the ones already present are unlikely to be a problem, but we need
   to be thoughtful about expensive computations or third-party API
   requests.
-* Database: The backend Markdown processor runs inside a Python thread
+- Database: The backend Markdown processor runs inside a Python thread
   (as part of how we implement timeouts for third-party API queries),
   and for that reason we currently should avoid making database
   queries inside the Markdown processor.  This is a technical
   implementation detail that could be changed with a few days of work,
   but is an important detail to know about until we do that work.
-* Testing: Every new feature should have both positive and negative
+- Testing: Every new feature should have both positive and negative
   tests; they're easy to write and give us the flexibility to refactor
   frequently.
 
@@ -177,14 +177,14 @@ chat product; even though you can edit messages to fix formatting
 mistakes, you don't want to be doing that often.  There are basically
 2 types of error rates that are important for a product like Zulip:
 
-* What fraction of the time, if you pasted a short technical email
+- What fraction of the time, if you pasted a short technical email
   that you wrote to your team and passed it through your Markdown
   implementation, would you need to change the text of your email for it
   to render in a reasonable way?  This is the "accidental Markdown
   syntax" problem, common with Markdown syntax like the italics syntax
   interacting with talking about `char *`s.
 
-* What fraction of the time do users attempting to use a particular
+- What fraction of the time do users attempting to use a particular
   Markdown syntax actually succeed at doing so correctly?  Syntax like
   required a blank line between text and the start of a bulleted list
   raise this figure substantially.
@@ -207,71 +207,71 @@ accurate.
 
 ### Basic syntax
 
-* Enable `nl2br` extension: this means one newline creates a line
+- Enable `nl2br` extension: this means one newline creates a line
   break (not paragraph break).
 
-* Allow only `*` syntax for italics, not `_`. This resolves an issue where
+- Allow only `*` syntax for italics, not `_`. This resolves an issue where
   people were using `_` and hitting it by mistake too often. Asterisks
   surrounded by spaces won't trigger italics, either (e.g. with stock Markdown
   `You should use char * instead of void * there` would produce undesired
   results).
 
-* Allow only `**` syntax for bold, not `__` (easy to hit by mistake if
+- Allow only `**` syntax for bold, not `__` (easy to hit by mistake if
   discussing Python `__init__` or something).
 
-* Add `~~` syntax for strikethrough.
+- Add `~~` syntax for strikethrough.
 
-* Disable special use of `\` to escape other syntax. Rendering `\\` as
+- Disable special use of `\` to escape other syntax. Rendering `\\` as
   `\` was hugely controversial, but having no escape syntax is also
   controversial.  We may revisit this.  For now you can always put
   things in code blocks.
 
 ### Lists
 
-* Allow tacking a bulleted list or block quote onto the end of a
+- Allow tacking a bulleted list or block quote onto the end of a
   paragraph, i.e. without a blank line before it.
 
-* Allow only `*` for bulleted lists, not `+` or `-` (previously
+- Allow only `*` for bulleted lists, not `+` or `-` (previously
   created confusion with diff-style text sloppily not included in a
   code block).
 
-* Disable ordered list syntax: stock Markdown automatically renumbers, which
+- Disable ordered list syntax: stock Markdown automatically renumbers, which
   can be really confusing when sending a numbered list across multiple
   messages.
 
 ### Links
 
-* Enable auto-linkification, both for `http://...` and guessing at
+- Enable auto-linkification, both for `http://...` and guessing at
   things like `t.co/foo`.
 
-* Force links to be absolute. `[foo](google.com)` will go to
+- Force links to be absolute. `[foo](google.com)` will go to
   `http://google.com`, and not `https://zulip.com/google.com` which
   is the default behavior.
 
-* Set `title=`(the URL) on every link tag.
+- Set `title=`(the URL) on every link tag.
 
-* Disable link-by-reference syntax,
+- Disable link-by-reference syntax,
   `[foo][bar]` ... `[bar]: https://google.com`.
 
-* Enable linking to other streams using `#**streamName**`.
+- Enable linking to other streams using `#**streamName**`.
 
 
 ### Code
 
-* Enable fenced code block extension, with syntax highlighting.
+- Enable fenced code block extension, with syntax highlighting.
 
-* Disable line-numbering within fenced code blocks -- the `<table>`
+- Disable line-numbering within fenced code blocks -- the `<table>`
   output confused our web client code.
 
 ### Other
 
-* Disable headings, both `# foo` and `== foo ==` syntax: they don't
+- Disable headings, both `# foo` and `== foo ==` syntax: they don't
   make much sense for chat messages.
 
-* Disabled images with `![]()` (images from links are shown as an inline
+- Disabled images with `![]()` (images from links are shown as an inline
   preview).
 
-* Allow embedding any avatar as a tiny (list bullet size) image.  This
+- Allow embedding any avatar as a tiny (list bullet size) image.  This
   is used primarily by version control integrations.
 
-* We added the `~~~ quote` block quote syntax.
+- We added the `~~~ quote` block quote syntax.

@@ -196,12 +196,12 @@ perceived benefit for using Redis is usually to reduce memory
 consumption by running fewer services, and no such benefit would
 materialize:
 
-* Our cache uses significant memory, but that memory usage would be
+- Our cache uses significant memory, but that memory usage would be
   essentially the same with Redis as it is with memcached.
-* All of these services have low minimum memory requirements, and in
+- All of these services have low minimum memory requirements, and in
   fact our applications for Redis and RabbitMQ do not use significant
   memory even at scale.
-* We would likely need to run multiple Redis services (with different
+- We would likely need to run multiple Redis services (with different
   configurations) in order to ensure the pure LRU use case (memcached)
   doesn't push out data that we want to persist until expiry
   (Redis-based rate limiting) or until consumed (RabbitMQ-based
@@ -271,35 +271,35 @@ in Zulip development conversations.  In general, our goal is to
 minimize the set of terminology listed here by giving elements
 self-explanatory names.
 
-* **bankruptcy**: When a user has been off Zulip for several days and
+- **bankruptcy**: When a user has been off Zulip for several days and
     has hundreds of unread messages, they are prompted for whether
     they want to mark all their unread messages as read.  This is
     called "declaring bankruptcy" (in reference to the concept in
     finance).
 
-* **chevron**: A small downward-facing arrow next to a message's
+- **chevron**: A small downward-facing arrow next to a message's
     timestamp, offering contextual options, e.g., "Reply", "Mute [this
     topic]", or "Link to this conversation". To avoid visual clutter,
     the chevron only appears in the web UI upon hover.
 
-* **ellipsis**: A small vertical three dot icon (technically called
+- **ellipsis**: A small vertical three dot icon (technically called
     as ellipsis-v), present in sidebars as a menu icon.
     It offers contextual options for global filters (All messages
     and Starred messages), stream filters and topics in left
     sidebar and users in right sidebar. To avoid visual clutter
     ellipsis only appears in the web UI upon hover.
 
-* **huddle**: What the codebase calls a "group private message".
+- **huddle**: What the codebase calls a "group private message".
 
-* **message editing**: If the realm admin allows it, then after a user
+- **message editing**: If the realm admin allows it, then after a user
     posts a message, the user has a few minutes to click "Edit" and
     change the content of their message. If they do, Zulip adds a
     marker such as "(EDITED)" at the top of the message, visible to
     anyone who can see the message.
 
-* **realm**: What the codebase calls an "organization" in the UI.
+- **realm**: What the codebase calls an "organization" in the UI.
 
-* **recipient bar**: A visual indication of the context of a message
+- **recipient bar**: A visual indication of the context of a message
     or group of messages, displaying the stream and topic or private
     message recipient list, at the top of a group of messages. A
     typical 1-line message to a new recipient shows to the user as
@@ -308,7 +308,7 @@ self-explanatory names.
     the star and the chevron), and third the message content. The
     recipient bar is or contains hyperlinks to help the user narrow.
 
-* **star**: Zulip allows a user to mark any message they can see,
+- **star**: Zulip allows a user to mark any message they can see,
     public or private, as "starred". A user can easily access messages
     they've starred through the "Starred messages" link in the
     left sidebar, or use "is:starred" as a narrow or a search
@@ -316,4 +316,4 @@ self-explanatory names.
     message is private; other users and realm admins don't know
     whether a message has been starred, or by whom.
 
-* **subject**: What the codebase calls a "topic" in many places.
+- **subject**: What the codebase calls a "topic" in many places.

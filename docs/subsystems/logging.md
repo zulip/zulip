@@ -20,19 +20,19 @@ is great for small installations.
 The [Django][django-errors] framework provides much of the
 infrastructure needed by our error reporting system:
 
-* The ability to send emails to the server's administrators with any
+- The ability to send emails to the server's administrators with any
   500 errors, using the `mail_admins` function.  We enhance these data
   with extra details (like what user was involved in the error) in
   `zerver/logging_handlers.py`, and then send them to the
   administrator in `zerver/lib/error_notify.py` (which also supports
   sending Zulips to a stream about production errors).
-* The ability to rate-limit certain errors to avoid sending hundreds
+- The ability to rate-limit certain errors to avoid sending hundreds
   of emails in an outage (see `_RateLimitFilter` in
   `zerver/lib/logging_util.py`)
-* A nice framework for filtering passwords and other important user
+- A nice framework for filtering passwords and other important user
   data from the exception details, which we use in
   `zerver/filters.py`.
-* Middleware for handling `JsonableError`, which is our standard
+- Middleware for handling `JsonableError`, which is our standard
   system for API code to return a JSON-format HTTP error response.
 
 Since 500 errors in any Zulip server are usually a problem the server
@@ -83,18 +83,18 @@ can be extremely valuable for investigating performance problems.
 ```
 
 The format of this output is:
-* Timestamp
-* Log level
-* Logger name, abbreviated as "zr" for these Zulip request logs
-* IP address
-* HTTP method
-* HTTP status code
-* Time to process
-* (Optional perf data details, e.g. database time/queries, memcached
+- Timestamp
+- Log level
+- Logger name, abbreviated as "zr" for these Zulip request logs
+- IP address
+- HTTP method
+- HTTP status code
+- Time to process
+- (Optional perf data details, e.g. database time/queries, memcached
 time/queries, Django process startup time, Markdown processing time,
 etc.)
-* Endpoint/URL from zproject/urls.py
-* "email via client" showing user account involved (if logged in) and
+- Endpoint/URL from zproject/urls.py
+- "email via client" showing user account involved (if logged in) and
 the type of client they used ("web", "Android", etc.).
 
 The performance data details are particularly useful for investigating
@@ -123,33 +123,33 @@ might use).  In development, this means displaying a highly visible
 overlay over the message view area, to make exceptions in testing a
 new feature hard to miss.
 
-* Blueslip is implemented in `static/js/blueslip.js`.
-* In order to capture essentially any error occurring in the browser,
+- Blueslip is implemented in `static/js/blueslip.js`.
+- In order to capture essentially any error occurring in the browser,
   Blueslip listens for the `error` event on `window`, and has methods
   for being manually triggered by Zulip JavaScript code for warnings
   and assertion failures.
-* Blueslip keeps a log of all the notices it has received during a
+- Blueslip keeps a log of all the notices it has received during a
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together.  You can print
   this log from the browser console using
   `blueslip = require("./static/js/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
-* `throw new Error(…)`: For fatal errors that cannot be easily
+- `throw new Error(…)`: For fatal errors that cannot be easily
   recovered from.  We try to avoid using it, since it kills the
   current JS thread, rather than returning execution to the caller.
-* `blueslip.error`: For logging of events that are definitely caused
+- `blueslip.error`: For logging of events that are definitely caused
   by a bug and thus sufficiently important to be reported, but where
   we can handle the error without creating major user-facing problems
   (e.g. an exception when handling a presence update).
-* `blueslip.warn`: For logging of events that are a problem but not
+- `blueslip.warn`: For logging of events that are a problem but not
   important enough to send an email about in production.  They are,
   however, highlighted in the JS console in development.
-* `blueslip.log` (and `blueslip.info`): Logged to the JS console in
+- `blueslip.log` (and `blueslip.info`): Logged to the JS console in
   development and also in the blueslip log in production.  Useful for
   data that might help discern what state the browser was in during an
   error (e.g. whether the user was in a narrow).
-* `blueslip.debug`: Similar to `blueslip.log`, but are not printed to
+- `blueslip.debug`: Similar to `blueslip.log`, but are not printed to
   the JS console in development.
 
 ## Frontend performance reporting
@@ -158,12 +158,12 @@ In order to make it easier to debug potential performance problems in
 the critically latency-sensitive message sending code pathway, we log
 and report to the server the following whenever a message is sent:
 
-* The time the user triggered the message (aka the start time).
-* The time the `send_message` response returned from the server.
-* The time the message was received by the browser from the
+- The time the user triggered the message (aka the start time).
+- The time the `send_message` response returned from the server.
+- The time the message was received by the browser from the
   `get_events` protocol (these last two race with each other).
-* Whether the message was locally echoed.
-* If so, whether there was a disparity between the echoed content and
+- Whether the message was locally echoed.
+- If so, whether there was a disparity between the echoed content and
   the server-rendered content, which can be used for statistics on how
   effective our [local echo system](../subsystems/markdown.md) is.
 
@@ -172,9 +172,9 @@ The code is all in `zerver/lib/report.py` and `static/js/sent_messages.js`.
 We have similar reporting for the time it takes to narrow / switch to
 a new view:
 
-* The time the action was initiated
-* The time when the updated message feed was visible to the user
-* The time when the browser was idle again after switching views
+- The time the action was initiated
+- The time when the updated message feed was visible to the user
+- The time when the browser was idle again after switching views
   (intended to catch issues where we generate a lot of deferred work).
 
 [django-errors]: https://docs.djangoproject.com/en/2.2/howto/error-reporting/

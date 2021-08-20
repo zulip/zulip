@@ -44,13 +44,13 @@ to a new Zulip release:
     ```
 
     The upgrade process will:
-    * Run `apt-get upgrade`
-    * Install new versions of Zulip's dependencies (mainly Python packages).
-    * (`upgrade-zulip-from-git` only) Build Zulip's frontend assets using `webpack`.
-    * Shut down the Zulip service
-    * Run a `puppet apply`
-    * Run any database migrations
-    * Bring the Zulip service back up on the new version.
+    - Run `apt-get upgrade`
+    - Install new versions of Zulip's dependencies (mainly Python packages).
+    - (`upgrade-zulip-from-git` only) Build Zulip's frontend assets using `webpack`.
+    - Shut down the Zulip service
+    - Run a `puppet apply`
+    - Run any database migrations
+    - Bring the Zulip service back up on the new version.
 
 Upgrading will result in brief downtime for the service, which should
 be under 30 seconds unless there is an expensive database migration
@@ -165,10 +165,10 @@ guide](../production/troubleshooting.md).
 The upgrade scripts are idempotent, so there's no harm in trying again
 after resolving an issue.  The most common causes of errors are:
 
-* Networking issues (e.g. your Zulip server doesn't have reliable
+- Networking issues (e.g. your Zulip server doesn't have reliable
   Internet access or needs a proxy set up).  Fix the networking issue
   and try again.
-* Especially when using `upgrade-zulip-from-git`, systems with the
+- Especially when using `upgrade-zulip-from-git`, systems with the
   minimal RAM for running Zulip can run into out-of-memory issues
   during the upgrade process (generally `tools/webpack` is the step
   that fails).  You can get past this by shutting down the Zulip
@@ -176,9 +176,9 @@ after resolving an issue.  The most common causes of errors are:
   the upgrade process.
 
 Useful logs are available in a few places:
-* The Zulip upgrade scripts log all output to
+- The Zulip upgrade scripts log all output to
   `/var/log/zulip/upgrade.log`.
-* The Zulip server logs all Internal Server Errors to
+- The Zulip server logs all Internal Server Errors to
   `/var/log/zulip/errors.log`.
 
 If you need help and don't have a support contract, you can visit
@@ -520,10 +520,10 @@ If you do modify Zulip and then report an issue you see in your
 modified version of Zulip, please be responsible about communicating
 that fact:
 
-* Ideally, you'd reproduce the issue in an unmodified version (e.g. on
+- Ideally, you'd reproduce the issue in an unmodified version (e.g. on
 [chat.zulip.org](https://zulip.com/developer-community/) or
 [zulip.com](https://zulip.com)).
-* Where that is difficult or you think it's very unlikely your changes
+- Where that is difficult or you think it's very unlikely your changes
 are related to the issue, just mention your changes in the issue report.
 
 If you're looking to modify Zulip by applying changes developed by the
@@ -537,41 +537,41 @@ One way to modify Zulip is to just edit files under
 can work OK for testing small changes to Python code or shell scripts.
 But we don't recommend this approach for maintaining changes because:
 
-* You cannot modify JavaScript, CSS, or other frontend files this way,
+- You cannot modify JavaScript, CSS, or other frontend files this way,
   because we don't include them in editable form in our production
   release tarballs (doing so would make our release tarballs much
   larger without any runtime benefit).
-* You will need to redo your changes after you next upgrade your Zulip
+- You will need to redo your changes after you next upgrade your Zulip
   server (or they will be lost).
-* You need to remember to restart the server or your changes won't
+- You need to remember to restart the server or your changes won't
   have effect.
-* Your changes aren't tracked, so mistakes can be hard to debug.
+- Your changes aren't tracked, so mistakes can be hard to debug.
 
 Instead, we recommend the following GitHub-based workflow (see [our
 Git guide][git-guide] if you need a primer):
 
-* Decide where you're going to edit Zulip's code.  We recommend [using
+- Decide where you're going to edit Zulip's code.  We recommend [using
   the Zulip development environment](../development/overview.md) on
   a desktop or laptop as it will make it extremely convenient for you
   to test your changes without deploying them in production.  But if
   your changes are small or you're OK with risking downtime, you don't
   strictly need it; you just need an environment with Git installed.
-* **Important**.  Determine what Zulip version you're running on your
+- **Important**.  Determine what Zulip version you're running on your
   server.  You can check by inspecting `ZULIP_VERSION` in
   `/home/zulip/deployments/current/version.py` (we'll use `2.0.4`
   below).  If you apply your changes to the wrong version of Zulip,
   it's likely to fail and potentially cause downtime.
-* [Fork and clone][fork-clone] the [zulip/zulip][] repository on
+- [Fork and clone][fork-clone] the [zulip/zulip][] repository on
   [GitHub](https://github.com).
-* Create a branch (named `acme-branch` below) containing your changes:
+- Create a branch (named `acme-branch` below) containing your changes:
 
 ```bash
 cd zulip
 git checkout -b acme-branch 2.0.4
 ```
 
-* Use your favorite code editor to modify Zulip.
-* Commit your changes and push them to GitHub:
+- Use your favorite code editor to modify Zulip.
+- Commit your changes and push them to GitHub:
 
 ```bash
 git commit -a
@@ -583,7 +583,7 @@ git diff 2.0.4 acme-branch
 git push origin +acme-branch
 ```
 
-* Log in to your Zulip server and configure and use
+- Log in to your Zulip server and configure and use
 [upgrade-zulip-from-git][] to install the changes; remember to
 configure `git_repo_url` to point to your fork on GitHub and run it as
 `upgrade-zulip-from-git acme-branch`.
@@ -630,10 +630,10 @@ branch, as before.
 If you are using [docker-zulip][], there are two things that are
 different from the above:
 
-* Because of how container images work, editing files directly is even
+- Because of how container images work, editing files directly is even
   more precarious, because Docker is designed for working with
   container images and may lose your changes.
-* Instead of running `upgrade-zulip-from-git`, you will need to use
+- Instead of running `upgrade-zulip-from-git`, you will need to use
   the [docker upgrade workflow][docker-zulip-upgrade] to build a
   container image based on your modified version of Zulip.
 
@@ -686,11 +686,11 @@ so, it's important to understand how to happily run a server based on
 For background, it's backporting arbitrary patches from `main` to an
 older version requires some care.  Common issues include:
 
-* Changes containing database migrations (new files under
+- Changes containing database migrations (new files under
   `*/migrations/`), which includes most new features.  We
   don't support applying database migrations out of order.
-* Changes that are stacked on top of other changes to the same system.
-* Essentially any patch with hundreds of lines of changes will have
+- Changes that are stacked on top of other changes to the same system.
+- Essentially any patch with hundreds of lines of changes will have
   merge conflicts and require extra work to apply.
 
 While it's possible to backport these sorts of changes, you're
@@ -701,10 +701,10 @@ If you need an unreleased feature, the best path is usually to
 upgrade to Zulip `main` using [upgrade-zulip-from-git][].  Before
 upgrading to `main`, make sure you understand:
 
-* In Zulip's version numbering scheme, `main` will always be "newer"
+- In Zulip's version numbering scheme, `main` will always be "newer"
   than the latest maintenance release (E.g. `3.1` or `2.1.6`) and
   "older" than the next major release (E.g. `3.0` or `4.0`).
-* The `main` branch is under very active development; dozens of new
+- The `main` branch is under very active development; dozens of new
   changes are integrated into it on most days.  The `main` branch
   can have thousands of changes not present in the latest release (all
   of which will be included in our next major release).  On average
@@ -712,30 +712,30 @@ upgrading to `main`, make sure you understand:
   (because we fix hundreds of bugs in every major release) but it
   might have some bugs that are more severe than we would consider
   acceptable for a release.
-* We deploy `main` to chat.zulip.org and zulip.com on a regular
+- We deploy `main` to chat.zulip.org and zulip.com on a regular
   basis (often daily), so it's very important to the project that it
   be stable.  Most regressions will be minor UX issues or be fixed
   quickly, because we need them to be fixed for Zulip Cloud.
-* The development community is very interested in helping debug issues
+- The development community is very interested in helping debug issues
   that arise when upgrading from the latest release to `main`, since
   they provide us an opportunity to fix that category of issue before
   our next major release.  (Much more so than we are in helping folks
   debug other custom changes).  That said, we cannot make any
   guarantees about how quickly we'll resolve an issue to folks without
   a formal support contract.
-* We do not support downgrading from `main` to earlier versions, so
+- We do not support downgrading from `main` to earlier versions, so
   if downtime for your Zulip server is unacceptable, make sure you
   have a current
   [backup](../production/export-and-import.html#backups) in case the
   upgrade fails.
-* Our changelog contains [draft release
+- Our changelog contains [draft release
   notes](../overview/changelog.md) available listing major changes
   since the last release.  The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
-* Whenever we push a security or maintenance release, the changes in
+- Whenever we push a security or maintenance release, the changes in
   that release will always be merged to `main`; so you can get the
   security fixes by upgrading to `main`.
-* You can always upgrade from `main` to the next major release when it
+- You can always upgrade from `main` to the next major release when it
   comes out, using either [upgrade-zulip-from-git][] or the release
   tarball.  So there's no risk of upgrading to `main` resulting in
   a system that's not upgradeable back to a normal release.

@@ -65,24 +65,24 @@ The following questions are useful when debugging Puppeteer test
 failures you might see in [continuous
 integration](../testing/continuous-integration.md):
 
-* Does the flow being tested work properly in the Zulip browser UI?
+- Does the flow being tested work properly in the Zulip browser UI?
   Test failures can reflect real bugs, and often it's easier and more
   interactive to debug an issue in the normal Zulip development
   environment than in the Puppeteer test suite.
-* Does the change being tested adjust the HTML structure in a way that
+- Does the change being tested adjust the HTML structure in a way that
   affects any of the selectors used in the tests?  If so, the test may
   just need to be updated for your changes.
-* Does the test fail deterministically when you run it locally using
+- Does the test fail deterministically when you run it locally using
   E.g. `./tools/test-js-with-puppeteer compose.ts`? If so, you can
   iteratively debug to see the failure.
-* Does the test fail nondeterministically?  If so, the problem is
+- Does the test fail nondeterministically?  If so, the problem is
   likely that a `waitForSelector` statement is either missing or not
   waiting for the right thing.  Tests fail nondeterministically much
   more often on very slow systems like those used for Continuous
   Integration (CI) services because small races are amplified in those
   environments; this often explains failures in CI that cannot be
   easily reproduced locally.
-* Does the test fail when you are typing (filling the form) on a modal
+- Does the test fail when you are typing (filling the form) on a modal
   or other just-opened UI widget? Puppeteer starts typing after focusing on
   the text field, sending keystrokes one after another. So, if
   application code explicitly focuses the modal after it
@@ -96,22 +96,22 @@ integration](../testing/continuous-integration.md):
 
 These tools/features are often useful when debugging:
 
-* You can use `console.log` statements both in Puppeteer tests and the
+- You can use `console.log` statements both in Puppeteer tests and the
   code being tested to print-debug.
-* Zulip's Puppeteer tests are configured to generate screenshots of
+- Zulip's Puppeteer tests are configured to generate screenshots of
   the state of the test browser when an assert statement fails; these
   are stored under `var/puppeteer/*.png` and are extremely helpful for
   debugging test failures.
-* TODO: Mention how to access Puppeteer screenshots in CI.
-* TODO: Add an option for using the `headless: false` debugging mode
+- TODO: Mention how to access Puppeteer screenshots in CI.
+- TODO: Add an option for using the `headless: false` debugging mode
   of Puppeteer so you can watch what's happening, and document how to
   make that work with Vagrant.
-* TODO: Document `--interactive`.
-* TODO: Document how to run 100x in CI to check for nondeterminstic
+- TODO: Document `--interactive`.
+- TODO: Document how to run 100x in CI to check for nondeterminstic
   failures.
-* TODO: Document any other techniques/ideas that were helpful when porting
+- TODO: Document any other techniques/ideas that were helpful when porting
   the Casper suite.
-* The Zulip server powering these tests is just `run-dev.py` with some
+- The Zulip server powering these tests is just `run-dev.py` with some
   extra [Django settings](../subsystems/settings.md) from
   `zproject/test_extra_settings.py` to configure an isolated database
   so that the tests will not interfere/interact with a normal

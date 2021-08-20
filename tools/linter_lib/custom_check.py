@@ -528,7 +528,7 @@ prose_style_rules: List["Rule"] = [
     {
         "pattern": "[oO]rganisation",  # exclude usage in hrefs/divs
         "description": "Organization is spelled with a z",
-        "exclude_line": {("docs/translating/french.md", "* organization - **organisation**")},
+        "exclude_line": {("docs/translating/french.md", "- organization - **organisation**")},
     },
     {"pattern": "!!! warning", "description": "!!! warning is invalid; it's spelled '!!! warn'"},
     {"pattern": "Terms of service", "description": "The S in Terms of Service is capitalized"},

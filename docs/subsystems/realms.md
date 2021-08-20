@@ -19,8 +19,8 @@ are also relevant reading.
 
 There are two main methods for creating realms.
 
-* Using unique link generator
-* Enabling open realm creation
+- Using unique link generator
+- Enabling open realm creation
 
 #### Using unique link generator
 
