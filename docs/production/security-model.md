@@ -1,6 +1,6 @@
 # Security model
 
-This section attempts to document the Zulip security model.  It likely
+This section attempts to document the Zulip security model. It likely
 does not cover every issue; if there are details you're curious about,
 please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
@@ -19,7 +19,7 @@ announcement).
   or Zulip database server, or with access to the `zulip` user on a
   Zulip application server, has complete control over the Zulip
   installation and all of its data (so they can read messages, modify
-  history, etc.).  It would be difficult or impossible to avoid this,
+  history, etc.). It would be difficult or impossible to avoid this,
   because the server needs access to the data to support features
   expected of a group chat system like the ability to search the
   entire message history, and thus someone with control over the
@@ -28,7 +28,7 @@ announcement).
 ## Encryption and authentication
 
 - Traffic between clients (web, desktop and mobile) and the Zulip
-  server is encrypted using HTTPS.  By default, all Zulip services
+  server is encrypted using HTTPS. By default, all Zulip services
   talk to each other either via a localhost connection or using an
   encrypted SSL connection.
 
@@ -37,7 +37,7 @@ announcement).
 
 - The preferred way to log in to Zulip is using an SSO solution like
   Google auth, LDAP, or similar, but Zulip also supports password
-  authentication.  See
+  authentication. See
   [the authentication methods documentation](../production/authentication-methods.md)
   for details on Zulip's available authentication methods.
 
@@ -46,8 +46,8 @@ announcement).
 Zulip stores user passwords using the standard PBKDF2 algorithm.
 
 When the user is choosing a password, Zulip checks the password's
-strength using the popular [zxcvbn][zxcvbn] library.  Weak passwords
-are rejected, and strong passwords encouraged.  The minimum password
+strength using the popular [zxcvbn][zxcvbn] library. Weak passwords
+are rejected, and strong passwords encouraged. The minimum password
 strength allowed is controlled by two settings in
 `/etc/zulip/settings.py`:
 
@@ -71,7 +71,7 @@ strength allowed is controlled by two settings in
   impossible to efficiently do perfectly. For background or when
   considering an alternate value for this setting, the article
   ["Passwords and the Evolution of Imperfect Authentication"][BHOS15]
-  is recommended.  The [2016 zxcvbn paper][zxcvbn-paper] adds useful
+  is recommended. The [2016 zxcvbn paper][zxcvbn-paper] adds useful
   information about the performance of zxcvbn, and [a large 2012 study
   of Yahoo users][Bon12] is informative about the strength of the
   passwords users choose.
@@ -99,7 +99,7 @@ strength allowed is controlled by two settings in
 - Zulip supports both public streams and private streams.
   - Any non-guest user can join any public stream in the organization,
     and can view the complete message history of any public stream
-    without joining the stream.  Guests can only access streams that
+    without joining the stream. Guests can only access streams that
     another user adds them to.
 
   - Organization owners and administrators can see and modify most
@@ -159,13 +159,13 @@ strength allowed is controlled by two settings in
 
 - Every Zulip user has an API key, available on the settings page.
   This API key can be used to do essentially everything the user can
-  do; for that reason, users should keep their API key safe.  Users
+  do; for that reason, users should keep their API key safe. Users
   can rotate their own API key if it is accidentally compromised.
 
 - To properly remove a user's access to a Zulip team, it does not
   suffice to change their password or deactivate their account in a
   SSO system, since neither of those prevents authenticating with the
-  user's API key or those of bots the user has created.  Instead, you
+  user's API key or those of bots the user has created. Instead, you
   should
   [deactivate the user's account](https://zulip.com/help/deactivate-or-reactivate-a-user)
   via Zulip's "Organization settings" interface.
@@ -188,7 +188,7 @@ strength allowed is controlled by two settings in
     notifications, or create other bots).
   - Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
-    streams, including private streams.  This is important for implementing
+    streams, including private streams. This is important for implementing
     integrations like the Jabber, IRC, and Zephyr mirrors.
 
     These bots cannot be created by Zulip users, including
@@ -197,14 +197,14 @@ strength allowed is controlled by two settings in
 
 ## User-uploaded content and user-generated requests
 
-- Zulip supports user-uploaded files.  Ideally they should be hosted
+- Zulip supports user-uploaded files. Ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
   various same-domain attacks (e.g. zulip-user-content.example.com).
 
   We support two ways of hosting them: the basic `LOCAL_UPLOADS_DIR`
   file storage backend, where they are stored in a directory on the
   Zulip server's filesystem, and the S3 backend, where the files are
-  stored in Amazon S3.  It would not be difficult to add additional
+  stored in Amazon S3. It would not be difficult to add additional
   supported backends should there be a need; see
   `zerver/lib/upload.py` for the full interface.
 
@@ -221,11 +221,11 @@ strength allowed is controlled by two settings in
   provide additional layers of protection in both backends as well.
 
   In the Zulip S3 backend, the random URLs to access files that are
-  presented to users don't actually host the content.  Instead, the S3
+  presented to users don't actually host the content. Instead, the S3
   backend verifies that the user has a valid Zulip session in the
   relevant organization (and that has access to a Zulip message linking to
   the file), and if so, then redirects the browser to a temporary S3
-  URL for the file that expires a short time later.  In this way,
+  URL for the file that expires a short time later. In this way,
   possessing a URL to a secret file in Zulip does not provide
   unauthorized users with access to that file.
 
@@ -241,7 +241,7 @@ strength allowed is controlled by two settings in
   servers to fetch images, improving privacy.
 
 - By default, Zulip will provide image previews inline in the body of
-  messages when a message contains a link to an image.  You can
+  messages when a message contains a link to an image. You can
   control this using the `INLINE_IMAGE_PREVIEW` setting.
 
 - Zulip may make outgoing HTTP connections to other servers in a
@@ -255,11 +255,11 @@ strength allowed is controlled by two settings in
   - Mobile push notifications (must be configured to be enabled)
 
 - Notably, these first 3 features give end users (limited) control to cause
-  the Zulip server to make HTTP requests on their behalf.  As a result,
+  the Zulip server to make HTTP requests on their behalf. As a result,
   Zulip supports routing all outgoing outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][SSRF] against other systems on an
-  internal corporate network.  The default Smokescreen configuration
+  internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
 [SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery

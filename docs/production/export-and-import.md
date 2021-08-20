@@ -7,7 +7,7 @@ service (or back):
 
 - The [Backup](#backups) tool is designed for exact restoration of a
   Zulip server's state, for disaster recovery, testing with production
-  data, or hardware migration.  This tool has a few limitations:
+  data, or hardware migration. This tool has a few limitations:
 
   - Backups must be restored on a server running the same Zulip
     version (most precisely, one where `manage.py showmigrations` has
@@ -20,13 +20,13 @@ service (or back):
 
   We highly recommend this tool in situations where it is applicable,
   because it is highly optimized and highly stable, since the hard
-  work is done by the built-in backup feature of PostgreSQL.  We also
+  work is done by the built-in backup feature of PostgreSQL. We also
   document [backup details](#backup-details) for users managing
   backups manually.
 
 - The logical [Data export](#data-export) tool is designed for
   migrating data between Zulip Cloud and other Zulip servers, as well
-  as various auditing purposes.  The logical export tool produces a
+  as various auditing purposes. The logical export tool produces a
   `.tar.gz` archive with most of the Zulip database data encoded in
   JSON files–a format shared by our [data
   import](#import-into-a-new-zulip-server) tools for third-party
@@ -34,10 +34,10 @@ service (or back):
   [Slack](https://zulip.com/help/import-from-slack).
 
   Like the backup tool, logical data exports must be imported on a
-  Zulip server running the same version.  However, logical data
+  Zulip server running the same version. However, logical data
   exports can be imported on Zulip servers running a different
   PostgreSQL version or hosting a different set of Zulip
-  organizations.  We recommend this tool in cases where the backup
+  organizations. We recommend this tool in cases where the backup
   tool isn't applicable, including situations where an easily
   machine-parsable export format is desired.
 
@@ -66,9 +66,9 @@ su zulip -c '/home/zulip/deployments/current/manage.py backup'
 
 The backup tool provides the following options:
 - `--output=/tmp/backup.tar.gz`: Filename to write the backup tarball
-  to (default: write to a file in `/tmp`).  On success, the
+  to (default: write to a file in `/tmp`). On success, the
   console output will show the path to the output tarball.
-- `--skip-db`: Skip backup of the database.  Useful if you're using a
+- `--skip-db`: Skip backup of the database. Useful if you're using a
   remote PostgreSQL host with its own backup system and just need to
   back up non-database state.
 - `--skip-uploads`: If `LOCAL_UPLOADS_DIR` is set, user-uploaded files
@@ -82,7 +82,7 @@ server's state on another machine perfectly.
 
 First, [install a new Zulip server through Step 3][install-server]
 with the same version of both the base OS and Zulip from your previous
-installation.  Then, run as root:
+installation. Then, run as root:
 
 ```bash
 /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
@@ -109,7 +109,7 @@ errors when trying to access it via `zuliptest.example.com`.
 
 If you're not sure what versions were in use when a given backup was
 created, you can get that information via the files in the backup
-tarball: `postgres-version`, `os-version`, and `zulip-version`.  The
+tarball: `postgres-version`, `os-version`, and `zulip-version`. The
 following command may be useful for viewing these files without
 extracting the entire archive.
 
@@ -128,27 +128,27 @@ server, including the database, settings, secrets from
 The following data is not included in these backup archives,
 and you may want to back up separately:
 
-- The server access/error logs from `/var/log/zulip`.  The Zulip
+- The server access/error logs from `/var/log/zulip`. The Zulip
   server only appends to logs, and they can be very large compared to
   the rest of the data for a Zulip server.
 
 - Files uploaded with the Zulip
-  [S3 file upload backend](../production/upload-backends.md).  We
+  [S3 file upload backend](../production/upload-backends.md). We
   don't include these for two reasons. First, the uploaded file data
   in S3 can easily be many times larger than the rest of the backup,
   and downloading it all to a server doing a backup could easily
-  exceed its disk capacity.  Additionally, S3 is a reliable persistent
+  exceed its disk capacity. Additionally, S3 is a reliable persistent
   storage system with its own high-quality tools for doing backups.
 
-- SSL certificates.  These are not included because they are
+- SSL certificates. These are not included because they are
   particularly security-sensitive and are either trivially replaced
   (if generated via Certbot) or provided by the system administrator.
 
 For completeness, Zulip's backups do not include certain highly
-transient state that Zulip doesn't store in a database.  For example,
+transient state that Zulip doesn't store in a database. For example,
 typing status data, API rate-limiting counters, and RabbitMQ queues
 that are essentially always empty in a healthy server (like outgoing
-emails to send).  You can check whether these queues are empty using
+emails to send). You can check whether these queues are empty using
 `rabbitmqctl list_queues`.
 
 #### Backup details
@@ -156,14 +156,14 @@ emails to send).  You can check whether these queues are empty using
 This section is primarily for users managing backups themselves
 (E.g. if they're using a remote PostgreSQL database with an existing
 backup strategy), and also serves as documentation for what is
-included in the backups generated by Zulip's standard tools.  The
+included in the backups generated by Zulip's standard tools. The
 data includes:
 
-- The PostgreSQL database.  You can back this up with any standard
-database export or backup tool.  Zulip has built-in support for taking
+- The PostgreSQL database. You can back this up with any standard
+database export or backup tool. Zulip has built-in support for taking
 daily incremental backups using
 [wal-g](https://github.com/wal-g/wal-g); these backups are stored for
-30 days in S3.  If you have an Amazon S3 bucket you wish to store for
+30 days in S3. If you have an Amazon S3 bucket you wish to store for
 storing the backups, edit `/etc/zulip/zulip-secrets.conf` on the
 PostgreSQL server to add:
 
@@ -174,12 +174,12 @@ PostgreSQL server to add:
   ```
 
   After adding the secrets, run
-  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  You
+  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. You
   can (and should) monitor that backups are running regularly via
   the Nagios plugin installed into
   `/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
 
-- Any user-uploaded files.  If you're using S3 as storage for file
+- Any user-uploaded files. If you're using S3 as storage for file
 uploads, this is backed up in S3. But if you have instead set
 `LOCAL_UPLOADS_DIR`, any files uploaded by users (including avatars)
 will be stored in that directory and you'll want to back it up.
@@ -237,7 +237,7 @@ replication. You can see the configuration in these files:
 - `puppet/zulip_ops/files/postgresql/*`
 
 We use this configuration for Zulip Cloud, and it works well in
-production, but it's not fully generic.  Contributions to make it a
+production, but it's not fully generic. Contributions to make it a
 supported and documented option for other installations are
 appreciated.
 
@@ -254,16 +254,16 @@ backups.
 ### Preventing changes during the export
 
 For best results, you'll want to shut down access to the organization
-before exporting; so that nobody can send new messages (etc.)  while
-you're exporting data.  There are two ways to do this:
+before exporting; so that nobody can send new messages (etc.) while
+you're exporting data. There are two ways to do this:
 
-1. `./scripts/stop-server`, which stops the whole server.  This is
+1. `./scripts/stop-server`, which stops the whole server. This is
 preferred if you're not hosting multiple organizations, because it has
 no side effects other than disabling the Zulip server for the
 duration.
 1. Pass `--deactivate` to `./manage export`, which first deactivates
 the target organization, logging out all active login sessions and
-preventing all accounts from logging in or accessing the API.  This is
+preventing all accounts from logging in or accessing the API. This is
 preferred for environments like Zulip Cloud where you might want to
 export a single organization without disrupting any other users, and
 the intent is to move hosting of the organization (and forcing users
@@ -271,7 +271,7 @@ to re-log in would be required as part of the hosting migration
 anyway).
 
 We include both options in the instructions below, commented out so
-that neither runs (using the `# ` at the start of the lines).  If
+that neither runs (using the `# ` at the start of the lines). If
 you'd like to use one of these options, remove the `# ` at the start
 of the lines for the appropriate option.
 
@@ -291,7 +291,7 @@ cd /home/zulip/deployments/current
 the default organization hosted at the Zulip server's root domain.)
 
 This will generate a tarred archive with a name like
-`/tmp/zulip-export-zcmpxfm6.tar.gz`.  The archive contains several
+`/tmp/zulip-export-zcmpxfm6.tar.gz`. The archive contains several
 JSON files (containing the Zulip organization's data) as well as an
 archive of all the organization's uploaded files.
 
@@ -323,25 +323,25 @@ archive of all the organization's uploaded files.
 2. If your new Zulip server is meant to fully replace a previous Zulip
 server, you may want to copy some settings from `/etc/zulip` to your
 new server to reuse the server-level configuration and secret keys
-from your old server.  There are a few important details to understand
+from your old server. There are a few important details to understand
 about doing so:
 
    - Copying `/etc/zulip/settings.py` and `/etc/zulip/zulip.conf` is
-     safe and recommended.  Care is required when copying secrets from
+     safe and recommended. Care is required when copying secrets from
      `/etc/zulip/zulip-secrets.conf` (details below).
    - If you copy `zulip_org_id` and `zulip_org_key` (the credentials
      for the [mobile push notifications
      service](../production/mobile-push-notifications.md)), you should
      be very careful to make sure the no users had their IDs
      renumbered during the import process (this can be checked using
-     `manage.py shell` with some care).  The push notifications
+     `manage.py shell` with some care). The push notifications
      service has a mapping of which `user_id` values are associated
      with which devices for a given Zulip server (represented by the
-     `zulip_org_id` registration).  This means that if any `user_id`
+     `zulip_org_id` registration). This means that if any `user_id`
      values were renumbered during the import and you don't register a
      new `zulip_org_id`, push notifications meant for the user who now
      has ID 15 may be sent to devices registered by the user who had
-     user ID 15 before the data export (yikes!).  The solution is
+     user ID 15 before the data export (yikes!). The solution is
      simply to not copy these settings and re-register your server for
      mobile push notifications if any users had their IDs renumbered
      during the logical export/import process.
@@ -354,7 +354,7 @@ about doing so:
      authentication and email delivery so that those work on your new
      server.
    - Copying `avatar_salt` is not recommended, due to similar issues
-     to the mobile push notifications service.  Zulip will
+     to the mobile push notifications service. Zulip will
      automatically rewrite avatars at URLs appropriate for the new
      user IDs, and using the same avatar salt (and same server URL)
      post import could result in issues with browsers caching the
@@ -400,7 +400,7 @@ Your users will need to either authenticate using something like
 Google auth or start by resetting their passwords.
 
 You can use the `./manage.py send_password_reset_email` command to
-send password reset emails to your users.  We
+send password reset emails to your users. We
 recommend starting with sending one to yourself for testing:
 
 ```bash
@@ -418,7 +418,7 @@ and then once you're ready, you can email them to everyone using e.g.
 
 If you did a test import of a Zulip organization, you may want to
 delete the test import data from your Zulip server before doing a
-final import.  You can **permanently delete** all data from a Zulip
+final import. You can **permanently delete** all data from a Zulip
 organization using the following procedure:
 
 - Start a [Zulip management shell](../production/management-commands.html#manage-py-shell)

@@ -25,7 +25,7 @@ with only a few things you need to know to get started.
   `send_future_email`. The `ScheduledEmail` entries are eventually processed
   by a supervisor job that runs `zerver/management/commands/deliver_scheduled_emails.py`.
 - Always use `user_profile.delivery_email`, not `user_profile.email`,
-  when passing data into the `send_email` library.  The
+  when passing data into the `send_email` library. The
   `user_profile.email` field may not always be valid.
 - A good way to find a bunch of example email pathways is to `git grep` for
   `zerver/emails` in the `zerver/` directory.
@@ -48,10 +48,10 @@ from a queue. Documentation on our queueing system is available
 ## Development and testing
 
 All the emails sent in the development environment can be accessed by
-visiting `/emails` in the browser.  The way that this works is that
+visiting `/emails` in the browser. The way that this works is that
 we've set the email backend (aka what happens when you call the email
 `.send()` method in Django) in the development environment to be our
-custom backend, `EmailLogBackEnd`.  It does the following:
+custom backend, `EmailLogBackEnd`. It does the following:
 
 - Logs any sent emails to `var/log/email_content.log`. This log is
   displayed by the `/emails` endpoint
@@ -65,7 +65,7 @@ You can also forward all the emails sent in the development
 environment to an email account of your choice by clicking on
 **Forward emails to an email account** on the `/emails` page. This
 feature can be used for testing how the emails gets rendered by
-actual email clients.  This is important because web email clients
+actual email clients. This is important because web email clients
 have limited CSS functionality, autolinkify things, and otherwise
 mutate the HTML email one can see previewed on `/emails`.
 
@@ -123,18 +123,18 @@ email_password = gmail_password
 
 ## Email templates
 
-Zulip's email templates live under `templates/zerver/emails`.  Email
+Zulip's email templates live under `templates/zerver/emails`. Email
 templates are a messy problem, because on the one hand, you want nice,
 readable markup and styling, but on the other, email clients have very
 limited CSS support and generally require us to inject any CSS we're
-using in the emails into the email as inline styles.  And then you
-also need both plain-text and HTML emails.  We solve these problems
+using in the emails into the email as inline styles. And then you
+also need both plain-text and HTML emails. We solve these problems
 using a combination of the
 [premailer](https://github.com/peterbe/premailer) library and having
 two copies of each email (plain-text and HTML).
 
 So for each email, there are two source templates: the `.txt` version
-(for plain-text format) as well as a `.source.html` template.  The
+(for plain-text format) as well as a `.source.html` template. The
 `.txt` version is used directly; while the `.source.html` template is
 processed by `scripts/setup/inline_email_css.py` (generating a `.html` template
 under `templates/zerver/emails/compiled`); that tool (powered by
@@ -143,19 +143,19 @@ under `templates/zerver/emails/compiled`); that tool (powered by
 
 What this means is that when you're editing emails, **you need to run
 `scripts/setup/inline_email_css.py`** after making changes to see the changes
-take effect.  Our tooling automatically runs this as part of
+take effect. Our tooling automatically runs this as part of
 `tools/provision` and production deployments; but you should bump
 `PROVISION_VERSION` when making changes to emails that change test
 behavior, or other developers will get test failures until they
 provision.
 
 While this model is great for the markup side, it isn't ideal for
-[translations](../translating/translating.md).  The Django
+[translations](../translating/translating.md). The Django
 translation system works with exact strings, and having different new
 markup can require translators to re-translate strings, which can
 result in problems like needing 2 copies of each string (one for
 plain-text, one for HTML) and/or needing to re-translate a bunch of
-strings after making a CSS tweak.  Re-translating these strings is
+strings after making a CSS tweak. Re-translating these strings is
 relatively easy in Transifex, but annoying.
 
 So when writing email templates, we try to translate individual

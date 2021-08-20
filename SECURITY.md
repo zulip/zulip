@@ -8,7 +8,7 @@ so you should subscribe if you are running Zulip in production.
 We love responsible reports of (potential) security issues in Zulip,
 whether in the latest release or our development branch.
 
-Our security contact is security@zulip.com.  Reporters should expect a
+Our security contact is security@zulip.com. Reporters should expect a
 response within 24 hours.
 
 Please include details on the issue and how you'd like to be credited

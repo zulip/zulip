@@ -1,8 +1,8 @@
 # Reviewing Zulip code
 
-Code review is a key part of how Zulip does development!  If you've
+Code review is a key part of how Zulip does development! If you've
 been contributing to Zulip's code, we'd love for you to do reviews.
-This is a guide to how.  (With some thoughts for writing code too.)
+This is a guide to how. (With some thoughts for writing code too.)
 
 ## Protocol for authors
 
@@ -26,7 +26,7 @@ to dive right into reviewing the PR's core functionality.
 ### Responding to a review feedback
 
 Once you've received a review and resolved any feedback, it's critical
-to update the GitHub thread to reflect that.  Best practices are to:
+to update the GitHub thread to reflect that. Best practices are to:
 
 - Make sure that CI passes and the PR is rebased onto recent `main`.
 - Post comments on each feedback thread explaining at least how you
@@ -38,7 +38,7 @@ to update the GitHub thread to reflect that.  Best practices are to:
 - Post a summary comment in the main feed for the PR, explaining that
   this is ready for another review, and summarizing any changes from
   the previous version, details on how you tested the changes, new
-  screenshots/etc.  More detail is better than less, as long as you
+  screenshots/etc. More detail is better than less, as long as you
   take the time to write clearly.
 
 If you resolve the feedback, but the PR has merge conflicts, CI
@@ -48,7 +48,7 @@ will assume it isn't ready for review and move on to other work.
 
 If you need help or think an open discussion topic requires more
 feedback or a more complex discussion, move the discussion to a topic
-in the Zulip development community server.  Be sure to provide links
+in the Zulip development community server. Be sure to provide links
 from the GitHub PR to the conversation (and vice versa) so that it's
 convenient to read both conversations together.
 
@@ -74,7 +74,7 @@ those are really helpful contributions.
 
 Doing code reviews is an important part of making the project grow.
 It's also an important skill to develop for participating in
-open-source projects and working in the industry in general.  If
+open-source projects and working in the industry in general. If
 you're contributing to Zulip and have been working in our code for a
 little while, we would love for some of your time contributing to come
 in the form of doing code reviews!
@@ -86,7 +86,7 @@ the first couple of weeks as you're getting going) doing code reviews.
 ### Fast replies are key
 
 For the author of a PR, getting feedback quickly is really important
-for making progress quickly and staying productive.  That means that
+for making progress quickly and staying productive. That means that
 if you get @-mentioned on a PR with a request for you to review it,
 it helps the author a lot if you reply promptly.
 
@@ -99,9 +99,9 @@ review the PR.
 
 People in the Zulip project live and work in many timezones, and code
 reviewers also need focused chunks of time to write code and do other
-things, so an immediate reply isn't always possible.  But a good
+things, so an immediate reply isn't always possible. But a good
 benchmark is to try to always reply **within one workday**, at least
-with a short initial reply, if you're working regularly on Zulip.  And
+with a short initial reply, if you're working regularly on Zulip. And
 sooner is better.
 
 ## Things to look for
@@ -123,25 +123,25 @@ sooner is better.
 - *Technical design.* There are a lot of considerations here:
   security, migration paths/backwards compatibility, cost of new
   dependencies, interactions with features, speed of performance, API
-  changes.  Security is especially important and worth thinking about
+  changes. Security is especially important and worth thinking about
   carefully with any changes to security-sensitive code like views.
 
 - *User interface and visual design.* If frontend changes are
   involved, the reviewer will check out the code, play with the new
   UI, and verify it for both quality and consistency with the rest of
-  the Zulip UI.  We highly encourage posting screenshots to save
+  the Zulip UI. We highly encourage posting screenshots to save
   reviewers time in getting a feel for what the feature looks like --
   you'll get a quicker response that way.
 
 - *Error handling.* The code should always check for invalid user
-  input.  User-facing error messages should be clear and when possible
+  input. User-facing error messages should be clear and when possible
   be actionable (it should be obvious to the user what they need to do
   in order to correct the problem).
 
 - *Testing.* The tests should validate that the feature works
   correctly, and specifically test for common error conditions, bad
   user input, and potential bugs that are likely for the type of
-  change being made.  Tests that exclude whole classes of potential
+  change being made. Tests that exclude whole classes of potential
   bugs are preferred when possible (e.g., the common test suite
   `test_markdown.py` between the Zulip server's [frontend and backend
   Markdown processors](../subsystems/markdown.md), or the `GetEventsTest` test for
@@ -158,7 +158,7 @@ sooner is better.
 
 - *Duplicated code.* Code duplication is a huge source of bugs in
   large projects and makes the codebase difficult to understand, so we
-  avoid significant code duplication wherever possible.  Sometimes
+  avoid significant code duplication wherever possible. Sometimes
   avoiding code duplication involves some refactoring of existing
   code; if so, that should usually be done as its own series of
   commits (not squashed into other changes or left as a thing to do
@@ -170,11 +170,11 @@ sooner is better.
   discussion for the feature itself.
 
 - *Completeness.* For refactorings, verify that the changes are
-  complete.  Usually one can check that efficiently using `git grep`,
+  complete. Usually one can check that efficiently using `git grep`,
   and it's worth it, as we very frequently find issues by doing so.
 
-- *Documentation updates.*  If this changes how something works, does it
-  update the documentation in a corresponding way?  If it's a new
+- *Documentation updates.* If this changes how something works, does it
+  update the documentation in a corresponding way? If it's a new
   feature, is it documented, and documented in the right place?
 
 - *Good comments.* It's often worth thinking about whether explanation
@@ -185,7 +185,7 @@ sooner is better.
   lots of clever tricks.
 
 - *Coding style.* See the Zulip [code-style] documentation for
-  details.  Our goal is to have as much of this as possible verified
+  details. Our goal is to have as much of this as possible verified
   via the linters and tests, but there's always going to be unusual
   forms of Python/JavaScript style that our tools don't check for.
 
@@ -202,11 +202,11 @@ Some points specific to the Zulip server codebase:
   the various error conditions.
 
 - *Testing -- Frontend.* If the feature involves frontend changes,
-  there should be frontend tests.  See the [test
+  there should be frontend tests. See the [test
   writing][test-writing] documentation for more details.
 
 - *mypy annotations.* New functions should be annotated using [mypy]
-  and existing annotations should be updated.  Use of `Any`, `ignore`,
+  and existing annotations should be updated. Use of `Any`, `ignore`,
   and unparameterized containers should be limited to cases where a
   more precise type cannot be specified.
 

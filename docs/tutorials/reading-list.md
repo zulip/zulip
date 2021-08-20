@@ -76,7 +76,7 @@ Some titles have been shortened for organizational purposes.
 
 *Tutorial* - [clean-code-javascript Software engineering principles](https://github.com/ryanmcdermott/clean-code-javascript)
 
-*Course* - [React native and redux course](https://www.udemy.com/course/the-complete-react-native-and-redux-course/)  (*Not free!*)
+*Course* - [React native and redux course](https://www.udemy.com/course/the-complete-react-native-and-redux-course/) (*Not free!*)
 
 *Slides* - [TypeScript vs. CoffeeScript vs. ES6](https://www.slideshare.net/NeilGreen1/type-script-vs-coffeescript-vs-es6)
 

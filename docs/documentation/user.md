@@ -40,7 +40,7 @@ are usually linked from `static/images/help/`.
 
 This means that you can contribute to the Zulip user documentation by just
 adding to or editing the collection of Markdown files under
-`templates/zerver/help`.  If you have the Zulip development environment
+`templates/zerver/help`. If you have the Zulip development environment
 set up, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
 rendered.
@@ -115,7 +115,7 @@ documentation.
 Images and screenshots should be included in user documentation only
 if they will help guide the user in how to do something (e.g. if the
 image will make it much clearer which element on the page the user
-should interact with).  For instance, an image of an element should
+should interact with). For instance, an image of an element should
 not be included if the element the user needs to interact with is the
 only thing on the page, but images can be included to show the end
 result of an interaction with the UI.
@@ -126,7 +126,7 @@ instructions for something simple look long and complicated.
 
 When taking screenshots, the image should never include the whole
 Zulip browser window in a screenshot; instead, it should only show
-relevant parts of the app.  In addition, the screenshot should always
+relevant parts of the app. In addition, the screenshot should always
 come *after* the text that describes it, never before.
 
 Images are often a part of a numbered step and must be indented four
@@ -235,7 +235,7 @@ should be formatted as a continuation of a numbered step.
 Our Markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different
 [platforms](https://zulip.com/help/logging-out) in user docs,
-languages in API docs, etc.  To create a tab switcher, write:
+languages in API docs, etc. To create a tab switcher, write:
 
 ```md
 {start_tabs}

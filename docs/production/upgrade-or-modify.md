@@ -17,7 +17,7 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 Note that there are additional instructions if you're [using
 docker-zulip][docker-upgrade], have [patched Zulip](#modifying-zulip),
 or have [modified Zulip-managed configuration
-files](#preserving-local-changes-to-service-configuration-files).  To upgrade
+files](#preserving-local-changes-to-service-configuration-files). To upgrade
 to a new Zulip release:
 
 1. Read the [upgrade notes](../overview/changelog.html#upgrade-notes)
@@ -56,7 +56,7 @@ Upgrading will result in brief downtime for the service, which should
 be under 30 seconds unless there is an expensive database migration
 involved (these will be documented in the [release
 notes](../overview/changelog.md), and usually can be avoided with
-some care).  If downtime is problematic for your organization,
+some care). If downtime is problematic for your organization,
 consider testing the upgrade on a
 [backup](../production/export-and-import.html#backups) in advance,
 doing the final upgrade at off hours, or buying a support contract.
@@ -69,7 +69,7 @@ run into any issues or need to roll back the upgrade.
 Zulip supports upgrading a production installation to any commit in a
 Git repository, which is great for [running pre-release changes from
 `main`](#applying-changes-from-main) or [maintaining a
-fork](#making-changes).  The process is simple:
+fork](#making-changes). The process is simple:
 
 ```bash
 # Upgrade to an official release
@@ -163,15 +163,15 @@ See also the general Zulip server [troubleshooting
 guide](../production/troubleshooting.md).
 
 The upgrade scripts are idempotent, so there's no harm in trying again
-after resolving an issue.  The most common causes of errors are:
+after resolving an issue. The most common causes of errors are:
 
 - Networking issues (e.g. your Zulip server doesn't have reliable
-  Internet access or needs a proxy set up).  Fix the networking issue
+  Internet access or needs a proxy set up). Fix the networking issue
   and try again.
 - Especially when using `upgrade-zulip-from-git`, systems with the
   minimal RAM for running Zulip can run into out-of-memory issues
   during the upgrade process (generally `tools/webpack` is the step
-  that fails).  You can get past this by shutting down the Zulip
+  that fails). You can get past this by shutting down the Zulip
   server with `supervisorctl stop all` to free up RAM before running
   the upgrade process.
 
@@ -206,7 +206,7 @@ This means that if the new version isn't working,
 you can quickly downgrade to the old version by running
 `/home/zulip/deployments/last/scripts/restart-server`, or to an
 earlier previous version by running
-`/home/zulip/deployments/DATE/scripts/restart-server`.  The
+`/home/zulip/deployments/DATE/scripts/restart-server`. The
 `restart-server` script stops any running Zulip server, and starts
 the version corresponding to the `restart-server` path you call.
 
@@ -228,9 +228,9 @@ configuration.
 
 That said, Zulip's configuration files are designed to be flexible
 enough for a wide range of installations, from a small self-hosted
-system to Zulip Cloud.  Before making local changes to a configuration
+system to Zulip Cloud. Before making local changes to a configuration
 file, first check whether there's an option supported by
-`/etc/zulip/zulip.conf` for the customization you need.  And if you
+`/etc/zulip/zulip.conf` for the customization you need. And if you
 need to make local modifications, please report the issue so that we
 can make the Zulip Puppet configuration flexible enough to handle your
 setup.
@@ -267,7 +267,7 @@ instructions for other supported platforms.
     ```
 
 3. Switch to the root user and upgrade the operating system using the
-   OS's standard tooling.  E.g. for Ubuntu, this means running
+   OS's standard tooling. E.g. for Ubuntu, this means running
    `do-release-upgrade` and following the prompts until it completes
    successfully:
 
@@ -283,7 +283,7 @@ instructions for other supported platforms.
     When `do-release-upgrade` asks you how to upgrade configuration
     files for services that Zulip manages like Redis, PostgreSQL,
     Nginx, and memcached, the best choice is `N` to keep the
-    currently installed version.  But it's not important; the next
+    currently installed version. But it's not important; the next
     step will re-install Zulip's configuration in any case.
 
 4. As root, upgrade the database to the latest version of PostgreSQL:
@@ -295,7 +295,7 @@ instructions for other supported platforms.
 5. Ubuntu 20.04 has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
    "collations"); this corrupts database indexes that rely on
-   collations.  Regenerate the affected indexes by running:
+   collations. Regenerate the affected indexes by running:
 
    ```bash
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
@@ -319,7 +319,7 @@ instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
-1. Upgrade your server to the latest Zulip `2.1.x` release.  You can
+1. Upgrade your server to the latest Zulip `2.1.x` release. You can
    only upgrade to Zulip 3.0 and newer after completing this process,
    since newer releases don't support Ubuntu 16.04 Xenial.
 
@@ -367,7 +367,7 @@ instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
-1. Upgrade your server to the latest Zulip `2.0.x` release.  You can
+1. Upgrade your server to the latest Zulip `2.0.x` release. You can
    only upgrade to Zulip `2.1.x` and newer after completing this
    process, since newer releases don't support Ubuntu 14.04 Trusty.
 
@@ -410,7 +410,7 @@ instructions for other supported platforms.
 
 ### Upgrading from Debian Stretch to Debian Buster
 
-1. Upgrade your server to the latest Zulip `2.1.x` release.  You can
+1. Upgrade your server to the latest Zulip `2.1.x` release. You can
    only upgrade to Zulip 3.0 and newer after completing this process,
    since newer releases don't support Ubuntu Debian Stretch.
 
@@ -423,7 +423,7 @@ instructions for other supported platforms.
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
    Nginx, and memcached, the best choice is `N` to keep the
-   currently installed version.  But it's not important; the next
+   currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
 4. As root, upgrade the database installation and OS configuration to
@@ -461,7 +461,7 @@ instructions for other supported platforms.
 7. Debian Buster has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
    "collations"); this corrupts database indexes that rely on
-   collations.  Regenerate the affected indexes by running:
+   collations. Regenerate the affected indexes by running:
 
    ```bash
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
@@ -476,7 +476,7 @@ instructions for other supported platforms.
 ## Upgrading PostgreSQL
 
 Starting with Zulip 3.0, we use the latest available version of
-PostgreSQL at installation time (currently version 13).  Upgrades to
+PostgreSQL at installation time (currently version 13). Upgrades to
 the version of PostgreSQL are no longer linked to upgrades of the
 distribution; that is, you may opt to upgrade to PostgreSQL 13 while
 running Ubuntu 18.04 Bionic.
@@ -518,7 +518,7 @@ confirm everything is working correctly.
 ## Modifying Zulip
 
 Zulip is 100% free and open source software, and you're welcome to
-modify it!  This section explains how to make and maintain
+modify it! This section explains how to make and maintain
 modifications in a safe and convenient fashion.
 
 If you do modify Zulip and then report an issue you see in your
@@ -538,7 +538,7 @@ section](#applying-changes-from-main).
 ## Making changes
 
 One way to modify Zulip is to just edit files under
-`/home/zulip/deployments/current` and then restart the server.  This
+`/home/zulip/deployments/current` and then restart the server. This
 can work OK for testing small changes to Python code or shell scripts.
 But we don't recommend this approach for maintaining changes because:
 
@@ -555,16 +555,16 @@ But we don't recommend this approach for maintaining changes because:
 Instead, we recommend the following GitHub-based workflow (see [our
 Git guide][git-guide] if you need a primer):
 
-- Decide where you're going to edit Zulip's code.  We recommend [using
+- Decide where you're going to edit Zulip's code. We recommend [using
   the Zulip development environment](../development/overview.md) on
   a desktop or laptop as it will make it extremely convenient for you
-  to test your changes without deploying them in production.  But if
+  to test your changes without deploying them in production. But if
   your changes are small or you're OK with risking downtime, you don't
   strictly need it; you just need an environment with Git installed.
-- **Important**.  Determine what Zulip version you're running on your
-  server.  You can check by inspecting `ZULIP_VERSION` in
+- **Important**. Determine what Zulip version you're running on your
+  server. You can check by inspecting `ZULIP_VERSION` in
   `/home/zulip/deployments/current/version.py` (we'll use `2.0.4`
-  below).  If you apply your changes to the wrong version of Zulip,
+  below). If you apply your changes to the wrong version of Zulip,
   it's likely to fail and potentially cause downtime.
 - [Fork and clone][fork-clone] the [zulip/zulip][] repository on
   [GitHub](https://github.com).
@@ -600,10 +600,10 @@ across future Zulip releases.
 
 ### Upgrading to future releases
 
-Eventually, you'll want to upgrade to a new Zulip release.  If your
+Eventually, you'll want to upgrade to a new Zulip release. If your
 changes were integrated into that Zulip release or are otherwise no
 longer needed, you can just [upgrade as
-usual](#upgrading-to-a-release).  If you [upgraded to
+usual](#upgrading-to-a-release). If you [upgraded to
 `main`](#upgrading-to-main); review that section again; new
 maintenance releases are likely "older" than your current installation
 and you might need to upgrade to `main` again rather than to the
@@ -611,7 +611,7 @@ new maintenance release.
 
 Otherwise, you'll need to update your branch by rebasing your changes
 (starting from a [clone][fork-clone] of the [zulip/zulip][]
-repository).  The example below assumes you have a branch off of 2.0.4
+repository). The example below assumes you have a branch off of 2.0.4
 and want to upgrade to 2.1.0.
 
 ```bash
@@ -649,12 +649,12 @@ different from the above:
 
 If you are experiencing an issue that has already been fixed by the
 Zulip development community, and you'd like to get the fix now, you
-have a few options.  There are two possible ways you might get those
+have a few options. There are two possible ways you might get those
 fixes on your local Zulip server without waiting for an official release.
 
 ### Applying a small change
 
-Many bugs have small/simple fixes.  In this case, you can use the Git
+Many bugs have small/simple fixes. In this case, you can use the Git
 workflow [described above](#making-changes), using:
 
 ```bash
@@ -671,12 +671,12 @@ cherry-picking arbitrary commits if the issues don't also affect
 
 The exception to this rule is when we ask or encourage a user to apply
 a change to their production system to help verify the fix resolves
-the issue for them.  You can expect the Zulip community to be
+the issue for them. You can expect the Zulip community to be
 responsive in debugging any problems caused by a patch we asked
 you to apply.
 
 Also, consider asking whether a small fix that is important to you can
-be added to the current stable release branch (E.g. `2.1.x`).  In
+be added to the current stable release branch (E.g. `2.1.x`). In
 addition to scheduling that change for Zulip's next bug fix release,
 we support changes in stable release branches as though they were
 released.
@@ -684,15 +684,15 @@ released.
 ### Upgrading to `main`
 
 Many Zulip servers (including chat.zulip.org and zulip.com) upgrade to
-`main` on a regular basis to get the latest features.  Before doing
+`main` on a regular basis to get the latest features. Before doing
 so, it's important to understand how to happily run a server based on
 `main`.
 
 For background, it's backporting arbitrary patches from `main` to an
-older version requires some care.  Common issues include:
+older version requires some care. Common issues include:
 
 - Changes containing database migrations (new files under
-  `*/migrations/`), which includes most new features.  We
+  `*/migrations/`), which includes most new features. We
   don't support applying database migrations out of order.
 - Changes that are stacked on top of other changes to the same system.
 - Essentially any patch with hundreds of lines of changes will have
@@ -703,29 +703,29 @@ unlikely to succeed without help from the core team via a support
 contract.
 
 If you need an unreleased feature, the best path is usually to
-upgrade to Zulip `main` using [upgrade-zulip-from-git][].  Before
+upgrade to Zulip `main` using [upgrade-zulip-from-git][]. Before
 upgrading to `main`, make sure you understand:
 
 - In Zulip's version numbering scheme, `main` will always be "newer"
   than the latest maintenance release (E.g. `3.1` or `2.1.6`) and
   "older" than the next major release (E.g. `3.0` or `4.0`).
 - The `main` branch is under very active development; dozens of new
-  changes are integrated into it on most days.  The `main` branch
+  changes are integrated into it on most days. The `main` branch
   can have thousands of changes not present in the latest release (all
-  of which will be included in our next major release).  On average
+  of which will be included in our next major release). On average
   `main` usually has fewer total bugs than the latest release
   (because we fix hundreds of bugs in every major release) but it
   might have some bugs that are more severe than we would consider
   acceptable for a release.
 - We deploy `main` to chat.zulip.org and zulip.com on a regular
   basis (often daily), so it's very important to the project that it
-  be stable.  Most regressions will be minor UX issues or be fixed
+  be stable. Most regressions will be minor UX issues or be fixed
   quickly, because we need them to be fixed for Zulip Cloud.
 - The development community is very interested in helping debug issues
   that arise when upgrading from the latest release to `main`, since
   they provide us an opportunity to fix that category of issue before
-  our next major release.  (Much more so than we are in helping folks
-  debug other custom changes).  That said, we cannot make any
+  our next major release. (Much more so than we are in helping folks
+  debug other custom changes). That said, we cannot make any
   guarantees about how quickly we'll resolve an issue to folks without
   a formal support contract.
 - We do not support downgrading from `main` to earlier versions, so
@@ -735,20 +735,20 @@ upgrading to `main`, make sure you understand:
   upgrade fails.
 - Our changelog contains [draft release
   notes](../overview/changelog.md) available listing major changes
-  since the last release.  The **Upgrade notes** section will always
+  since the last release. The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
 - Whenever we push a security or maintenance release, the changes in
   that release will always be merged to `main`; so you can get the
   security fixes by upgrading to `main`.
 - You can always upgrade from `main` to the next major release when it
   comes out, using either [upgrade-zulip-from-git][] or the release
-  tarball.  So there's no risk of upgrading to `main` resulting in
+  tarball. So there's no risk of upgrading to `main` resulting in
   a system that's not upgradeable back to a normal release.
 
 ## Contributing patches
 
 Zulip contains thousands of changes submitted by volunteer
-contributors like you.  If your changes are likely to be of useful to
+contributors like you. If your changes are likely to be of useful to
 other organizations, consider [contributing
 them](../overview/contributing.md).
 

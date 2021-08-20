@@ -1,6 +1,6 @@
 # Authentication methods
 
-Zulip supports a wide variety of authentication methods.  Some of them
+Zulip supports a wide variety of authentication methods. Some of them
 require configuration to set up.
 
 To configure or disable authentication methods on your Zulip server,
@@ -19,7 +19,7 @@ Users set a password with the Zulip server, and log in with their
 email and password.
 
 When first setting up your Zulip server, this method must be used for
-creating the initial realm and user.  You can disable it after that.
+creating the initial realm and user. You can disable it after that.
 
 ## Plug-and-play SSO (Google, GitHub, GitLab)
 
@@ -32,7 +32,7 @@ authentication providers:
 - Microsoft Azure Active Directory, with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
-`settings.py`, as well as a secret in `zulip-secrets.conf`.  Details
+`settings.py`, as well as a secret in `zulip-secrets.conf`. Details
 are documented in your `settings.py`.
 
 ```eval_rst
@@ -46,7 +46,7 @@ optionally using LDAP as an authentication mechanism.
 In either configuration, you will need to do the following:
 
 1. These instructions assume you have an installed Zulip server and
-   are logged into a shell there.  You can have created an
+   are logged into a shell there. You can have created an
    organization already using EmailAuthBackend, or plan to create the
    organization using LDAP authentication.
 
@@ -55,17 +55,17 @@ In either configuration, you will need to do the following:
      integration, part 1: Connecting to the LDAP server".
    - If a password is required, put it in
      `/etc/zulip/zulip-secrets.conf` by setting
-     `auth_ldap_bind_password`.  For example:
+     `auth_ldap_bind_password`. For example:
      `auth_ldap_bind_password = abcd1234`.
 
 1. Decide how you want to map the information in your LDAP database to
-   users' account data in Zulip.  For each Zulip user, two closely
+   users' account data in Zulip. For each Zulip user, two closely
    related concepts are:
-   - their **email address**.  Zulip needs this in order to send, for
+   - their **email address**. Zulip needs this in order to send, for
      example, a notification when they're offline and another user
      sends a PM.
-   - their **Zulip username**.  This means the name the user types into the
-     Zulip login form.  You might choose for this to be the user's
+   - their **Zulip username**. This means the name the user types into the
+     Zulip login form. You might choose for this to be the user's
      email address (`sam@example.com`), or look like a traditional
      "username" (`sam`), or be something else entirely, depending on
      your environment.
@@ -74,7 +74,7 @@ In either configuration, you will need to do the following:
    in your LDAP database.
 
 1. Tell Zulip how to map the user information in your LDAP database to
-   the form it needs for authentication.  There are three supported
+   the form it needs for authentication. There are three supported
    ways to set up the username and/or email mapping:
 
    (A) Using email addresses as Zulip usernames, if LDAP has each
@@ -111,7 +111,7 @@ You can quickly test whether your configuration works by running:
 /home/zulip/deployments/current/manage.py query_ldap username
 ```
 
-from the root of your Zulip installation.  If your configuration is
+from the root of your Zulip installation. If your configuration is
 working, that will output the full name for your user (and that user's
 email address, if it isn't the same as the "Zulip username").
 
@@ -138,14 +138,14 @@ of the following configurations:
 
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
-`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing so
+`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`. After doing so
 (and as always [restarting the Zulip server](settings.md) to ensure
 your settings changes take effect), you should be able to log in to
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
 You may also want to configure Zulip's settings for [inviting new
-users](https://zulip.com/help/invite-new-users).  If LDAP is the
+users](https://zulip.com/help/invite-new-users). If LDAP is the
 only enabled authentication method, the main use case for Zulip's
 invitation feature is selecting the initial streams for invited users
 (invited users will still need to use their LDAP password to create an
@@ -196,10 +196,10 @@ or `jpegPhoto` attribute in LDAP) by configuring the `avatar` key in
 
 Starting with Zulip 2.0, Zulip supports syncing
 [custom profile fields][custom-profile-fields] from LDAP / Active
-Directory.  To configure this, you first need to
+Directory. To configure this, you first need to
 [configure some custom profile fields][custom-profile-fields] for your
-Zulip organization.  Then, define a mapping from the fields you'd like
-to sync from LDAP to the corresponding LDAP attributes.  For example,
+Zulip organization. Then, define a mapping from the fields you'd like
+to sync from LDAP to the corresponding LDAP attributes. For example,
 if you have a custom profile field `LinkedIn Profile` and the
 corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
@@ -210,22 +210,22 @@ to the `AUTH_LDAP_USER_ATTR_MAP`.
 #### Automatically deactivating users with Active Directory
 
 Starting with Zulip 2.0, Zulip supports synchronizing the
-disabled/deactivated status of users from Active Directory.  You can
+disabled/deactivated status of users from Active Directory. You can
 configure this by uncommenting the sample line
 `"userAccountControl": "userAccountControl",` in
-`AUTH_LDAP_USER_ATTR_MAP` (and restarting the Zulip server).  Zulip
+`AUTH_LDAP_USER_ATTR_MAP` (and restarting the Zulip server). Zulip
 will then treat users that are disabled via the "Disable Account"
 feature in Active Directory as deactivated in Zulip.
 
 Users disabled in active directory will be immediately unable to log in
 to Zulip, since Zulip queries the LDAP/Active Directory server on
-every login attempt.  The user will be fully deactivated the next time
+every login attempt. The user will be fully deactivated the next time
 your `manage.py sync_ldap_user_data` cron job runs (at which point
 they will be forcefully logged out from all active browser sessions,
 appear as deactivated in the Zulip UI, etc.).
 
 This feature works by checking for the `ACCOUNTDISABLE` flag on the
-`userAccountControl` field in Active Directory.  See
+`userAccountControl` field in Active Directory. See
 [this handy resource](https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/)
 for details on the various `userAccountControl` flags.
 
@@ -234,11 +234,11 @@ for details on the various `userAccountControl` flags.
 Starting with Zulip 2.0, Zulip supports automatically deactivating
 users if they are not found by the `AUTH_LDAP_USER_SEARCH` query
 (either because the user is no longer in LDAP/Active Directory, or
-because the user no longer matches the query).  This feature is
+because the user no longer matches the query). This feature is
 enabled by default if LDAP is the only authentication backend
-configured on the Zulip server.  Otherwise, you can enable this
+configured on the Zulip server. Otherwise, you can enable this
 feature by setting `LDAP_DEACTIVATE_NON_MATCHING_USERS` to `True` in
-`/etc/zulip/settings.py`.  Nonmatching users will be fully deactivated
+`/etc/zulip/settings.py`. Nonmatching users will be fully deactivated
 the next time your `manage.py sync_ldap_user_data` cron job runs.
 
 #### Other fields
@@ -246,7 +246,7 @@ the next time your `manage.py sync_ldap_user_data` cron job runs.
 Other fields you may want to sync from LDAP include:
 
 - Boolean flags; `is_realm_admin` (the organization's administrator
-  permission) is the main one.  You can use the
+  permission) is the main one. You can use the
   [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
   `django-auth-ldap` to configure a group to get this permissions.
   (We don't recommend using this flags feature for managing
@@ -269,7 +269,7 @@ the fields that would be useful to sync from your LDAP databases.
 
 ### Multiple LDAP searches
 
-To do the union of multiple LDAP searches, use `LDAPSearchUnion`.  For example:
+To do the union of multiple LDAP searches, use `LDAPSearchUnion`. For example:
 ```python
 AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
     LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
@@ -281,7 +281,7 @@ AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
 
 You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
-settings in `/etc/zulip/settings.py`.  See the
+settings in `/etc/zulip/settings.py`. See the
 [upstream django-auth-ldap documentation][upstream-ldap-groups] for
 details.
 
@@ -292,7 +292,7 @@ details.
 If you're hosting multiple Zulip organizations, you can restrict which
 users have access to which organizations.
 This is done by setting `org_membership` in `AUTH_LDAP_USER_ATTR_MAP` to the name of
-the LDAP attribute which will contain a list of  subdomains that the
+the LDAP attribute which will contain a list of subdomains that the
 user should be allowed to access.
 
 For the root subdomain, `www` in the list will work, or any other of
@@ -308,7 +308,7 @@ department: www
 ```
 
 More complex access control rules are possible via the
-`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` setting.  Note that
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` setting. Note that
 `org_membership` takes precedence over
 `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL`:
 
@@ -316,7 +316,7 @@ More complex access control rules are possible via the
 2. If `org_membership` is not set or does not allow access,
    `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` will control access.
 
-This contains a map keyed by the organization's subdomain.  The
+This contains a map keyed by the organization's subdomain. The
 organization list with multiple maps, that contain a map with an attribute, and a required
 value for that attribute. If for any of the attribute maps, all user's
 LDAP attributes match what is configured, access is granted.
@@ -331,7 +331,7 @@ LDAP attributes match what is configured, access is granted.
 ### Troubleshooting
 
 Most issues with LDAP authentication are caused by misconfigurations of
-the user and email search settings.  Some things you can try to get to
+the user and email search settings. Some things you can try to get to
 the bottom of the problem:
 
 - Review the instructions for the LDAP configuration type you're
@@ -340,7 +340,7 @@ the bottom of the problem:
   instructions for that configuration type.
 - Use the `manage.py query_ldap` tool to verify your configuration.
   The output of the command will usually indicate the cause of any
-  configuration problem.  For the LDAP integration to work, this
+  configuration problem. For the LDAP integration to work, this
   command should be able to successfully fetch a complete, correct set
   of data for the queried user.
 - You can find LDAP-specific logs in `/var/log/zulip/ldap.log`. If
@@ -351,7 +351,7 @@ the bottom of the problem:
 ## SAML
 
 Zulip 2.1 and later supports SAML authentication, used by Okta,
-OneLogin, and many other IdPs (identity providers).  You can configure
+OneLogin, and many other IdPs (identity providers). You can configure
 it as follows:
 
 1. These instructions assume you have an installed Zulip server; if
@@ -372,12 +372,12 @@ it as follows:
       `/home/zulip/deployments/current/scripts/get-django-setting SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
 
     - **SSO URL**:
-      `https://yourzulipdomain.example.com/complete/saml/`.  This is
+      `https://yourzulipdomain.example.com/complete/saml/`. This is
       the "SAML ACS url" in SAML terminology.
 
       If you're
       [hosting multiple organizations](../production/multiple-organizations.html#authentication),
-      you need to use `SOCIAL_AUTH_SUBDOMAIN`.  For example,
+      you need to use `SOCIAL_AUTH_SUBDOMAIN`. For example,
       if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
       this should be `https://auth.zulip.example.com/complete/saml/`.
 
@@ -388,14 +388,14 @@ it as follows:
      organization name (`displayname` may appear in the IdP's
      authentication flow; `name` won't be displayed to humans).
    - Fill out `SOCIAL_AUTH_SAML_ENABLED_IDPS` with data provided by
-     your identity provider.  You may find [the python-social-auth
+     your identity provider. You may find [the python-social-auth
      SAML
      docs](https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
-     helpful.  You'll need to obtain several values from your IdP's
+     helpful. You'll need to obtain several values from your IdP's
      metadata and enter them on the right-hand side of this
      Python dictionary:
      1. Set the outer `idp_name` key to be an identifier for your IdP,
-        e.g. `testshib` or `okta`.  This field appears in URLs for
+        e.g. `testshib` or `okta`. This field appears in URLs for
         parts of your Zulip server's SAML authentication flow.
      2. The IdP should provide the `url` and `entity_id` values.
      3. Save the `x509cert` value to a file; you'll use it in the
@@ -403,7 +403,7 @@ it as follows:
      4. The values needed in the `attr_` fields are often configurable
         in your IdP's interface when setting up SAML authentication
         (referred to as "Attribute Statements" with Okta, or
-        "Attribute Mapping" with GSuite).  You'll want to connect
+        "Attribute Mapping" with GSuite). You'll want to connect
         these so that Zulip gets the email address (used as a unique
         user ID) and name for the user.
      5. The `display_name` and `display_icon` fields are used to
@@ -411,13 +411,13 @@ it as follows:
      6. The `auto_signup` field determines how Zulip should handle
         login attempts by users who don't have an account yet.
 
-3. Install the certificate(s) required for SAML authentication.  You
-    will definitely need the public certificate of your IdP.  Some IdP
+3. Install the certificate(s) required for SAML authentication. You
+    will definitely need the public certificate of your IdP. Some IdP
     providers also support the Zulip server (Service Provider) having
-    a certificate used for encryption and signing.  We detail these
+    a certificate used for encryption and signing. We detail these
     steps as optional below, because they aren't required for basic
     setup, and some IdPs like Okta don't fully support Service
-    Provider certificates.  You should install them as follows:
+    Provider certificates. You should install them as follows:
 
     1. On your Zulip server, `mkdir -p /etc/zulip/saml/idps/`
     2. Put the IDP public certificate in `/etc/zulip/saml/idps/{idp_name}.crt`
@@ -437,7 +437,7 @@ it as follows:
    certificates above, you can enable the additional setting
    `"authnRequestsSigned": True` in `SOCIAL_AUTH_SAML_SECURITY_CONFIG`
    to have the SAMLRequests the server will be issuing to the IdP
-   signed using those certificates.  Additionally, if the IdP supports
+   signed using those certificates. Additionally, if the IdP supports
    it, you can upload the public certificate to enable encryption of
    assertions in the SAMLResponses the IdP will send about
    authenticated users.
@@ -446,7 +446,7 @@ it as follows:
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
 
 6. [Restart the Zulip server](../production/settings.md) to ensure
-your settings changes take effect.  The Zulip login page should now
+your settings changes take effect. The Zulip login page should now
 have a button for SAML authentication that you can use to log in or
 create an account (including when creating a new organization).
 
@@ -461,7 +461,7 @@ IdP.
 
 The above configuration is sufficient for Service Provider initialized
 SSO, i.e. you can visit the Zulip webapp and click "Sign in with
-{IdP}" and it'll correctly start the authentication flow.  If you are
+{IdP}" and it'll correctly start the authentication flow. If you are
 not hosting multiple organizations, with Zulip 3.0+, the above
 configuration is also sufficient for Identity Provider initiated SSO,
 i.e. clicking a "Sign in to Zulip" button on the IdP's website can
@@ -472,7 +472,7 @@ If you're hosting multiple organizations and thus using the
 `RelayState` in your IdP of the form
 `{"subdomain": "yourzuliporganization"}` to let Zulip know which
 organization to authenticate the user to when they visit your SSO URL
-from the IdP.  (If the organization is on the root domain, use the
+from the IdP. (If the organization is on the root domain, use the
 empty string: `{"subdomain": ""}`.).
 
 ### Restricting access to specific organizations
@@ -533,7 +533,7 @@ straightforward way to deploy that SSO solution with Zulip.
 
 4. To configure our SSO integration, edit a copy of
    `/etc/apache2/sites-available/zulip-sso.example`, saving the result
-   as `/etc/apache2/sites-available/zulip-sso.conf`.  The example sets
+   as `/etc/apache2/sites-available/zulip-sso.conf`. The example sets
    up HTTP basic auth, with an `htpasswd` file; you'll want to replace
    that with configuration for your SSO solution to authenticate the
    user and set `REMOTE_USER`.
@@ -541,7 +541,7 @@ straightforward way to deploy that SSO solution with Zulip.
    For testing, you may want to move ahead with the rest of the setup
    using the `htpasswd` example configuration and demonstrate that
    working end-to-end, before returning later to configure your SSO
-   solution.  You can do that with the following steps:
+   solution. You can do that with the following steps:
    ```bash
    /home/zulip/deployments/current/scripts/restart-server
    cd /etc/apache2/sites-available/
@@ -551,7 +551,7 @@ straightforward way to deploy that SSO solution with Zulip.
 
 5. Run `a2ensite zulip-sso` to enable the SSO integration within Apache.
 
-6. Run `service apache2 reload` to use your new configuration.  If
+6. Run `service apache2 reload` to use your new configuration. If
    Apache isn't already running, you may need to run
    `service apache2 start` instead.
 
@@ -561,7 +561,7 @@ at `https://zulip.example.com/`) and log in via the SSO solution.
 ### Troubleshooting Apache-based SSO
 
 Most issues with this setup tend to be subtle issues with the
-hostname/DNS side of the configuration.  Suggestions for how to
+hostname/DNS side of the configuration. Suggestions for how to
 improve this SSO setup documentation are very welcome!
 
 - For example, common issues have to do with `/etc/hosts` not mapping
@@ -606,14 +606,14 @@ to debug.
 
 - The Apache `zulip-sso` site which you've enabled listens on
   `localhost:8888` and (in the example config) presents the `htpasswd`
-  dialogue.  (In a real configuration, it takes the user through
-  whatever more complex interaction your SSO solution performs.)  The
+  dialogue. (In a real configuration, it takes the user through
+  whatever more complex interaction your SSO solution performs.) The
   user provides correct login information, and the request reaches a
   second Zulip Django app instance, running behind Apache, with
-  `REMOTE_USER` set.  That request is served by
+  `REMOTE_USER` set. That request is served by
   `zerver.views.remote_user_sso`, which just checks the `REMOTE_USER`
   variable and either logs the user in or, if they don't have an
-  account already, registers them.  The login sets a cookie.
+  account already, registers them. The login sets a cookie.
 
 - After succeeding, that redirects the user back to `/` on port 443.
   This request is sent by nginx to the main Zulip Django app, which
@@ -623,7 +623,7 @@ to debug.
 ## Sign in with Apple
 
 Zulip supports using the web flow for Sign in with Apple on
-self-hosted servers.  To do so, you'll need to do the following:
+self-hosted servers. To do so, you'll need to do the following:
 
 1. Visit [the Apple Developer site][apple-developer] and [Create a
 Services ID.][apple-create-services-id]. When prompted for a "Return
@@ -633,7 +633,7 @@ domain for your server).
 1. Create a [Sign in with Apple private key][apple-create-private-key].
 
 1. Store the resulting private key at
-   `/etc/zulip/apple-auth-key.p8`.  Be sure to set
+   `/etc/zulip/apple-auth-key.p8`. Be sure to set
    permissions correctly:
 
    ```bash
@@ -650,16 +650,16 @@ domain for your server).
      app that you used in step 1 to configure your Services ID.
      This might look like "com.example.app".
    - `SOCIAL_AUTH_APPLE_KEY`: Despite the name this is not a key, but
-     rather the Key ID of the key you created in step 2.  This looks
+     rather the Key ID of the key you created in step 2. This looks
      like "F6G7H8I9J0".
    - `AUTHENTICATION_BACKENDS`: Uncomment (or add) a line like
      `'zproject.backends.AppleAuthBackend',` to enable Apple auth
      using the created configuration.
 
 1. Register with Apple the email addresses or domains your Zulip
-   server sends email to users from.  For instructions and background,
+   server sends email to users from. For instructions and background,
    see the "Email Relay Service" subsection of
-   [this page][apple-get-started].  For details on what email
+   [this page][apple-get-started]. For details on what email
    addresses Zulip sends from, see our
    [outgoing email documentation][outgoing-email].
 
@@ -679,7 +679,7 @@ bit of code, and pull requests to add new backends are welcome.
 For example, the
 [Azure Active Directory integration](https://github.com/zulip/zulip/commit/49dbd85a8985b12666087f9ea36acb6f7da0aa4f)
 was about 30 lines of code, plus some documentation and an
-[automatically generated migration][schema-migrations].  We also have
+[automatically generated migration][schema-migrations]. We also have
 helpful developer documentation on
 [testing auth backends](../development/authentication.md).
 
@@ -689,5 +689,5 @@ helpful developer documentation on
 ## Development only
 
 The `DevAuthBackend` method is used only in development, to allow
-passwordless login as any user in a development environment.  It's
+passwordless login as any user in a development environment. It's
 mentioned on this page only for completeness.

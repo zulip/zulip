@@ -6,7 +6,7 @@ Zulip.
 
 Additionally, the Zulip UI is translated into more than a dozen major
 languages, including Spanish, German, Hindi, French, Chinese, Russian,
-and Japanese, and we're always excited to add more.  If you speak a
+and Japanese, and we're always excited to add more. If you speak a
 language other than English, your help with translating Zulip is be
 greatly appreciated!
 
@@ -42,7 +42,7 @@ to any languages that you'd like to contribute to (or add new ones).
    usually takes less than a day. You should then be able to access
    Zulip's dashboard in Transifex.
 
-1. Translate the strings for your language in Transifex.  Zulip has
+1. Translate the strings for your language in Transifex. Zulip has
    several resource files:
    - `mobile.json` is for the iOS/Android mobile apps.
    - `desktop.json` is for the parts of the Zulip desktop apps that
@@ -55,7 +55,7 @@ to any languages that you'd like to contribute to (or add new ones).
      current [stable release series](../overview/release-lifecycle.md).
 
    Transifex is smart about only asking you to translate a string once
-   even if it appears in multiple resources.  The `4-x--` type variants
+   even if it appears in multiple resources. The `4-x--` type variants
    allow translators to get a language to 100% translated for the
    current release.
 
@@ -68,7 +68,7 @@ to any languages that you'd like to contribute to (or add new ones).
 Some useful tips for your translating journey:
 
 - Follow your language's [translation guide](#translation-style-guides).
-  Keeping it open in a tab while translating is very handy.  If one
+  Keeping it open in a tab while translating is very handy. If one
   doesn't exist one, write one as you go; they're easiest to write as
   you go along and will help any future translators a lot.
 
@@ -112,21 +112,21 @@ can usually just deploy the latest translations there.
 `tools/i18n/sync-translations` command (it will require some [initial
 setup](../translating/internationalization.html#transifex-cli-setup)). This
 command will download the resource files from Transifex and replace
-your local resource files with them, and then compile them.  You can
+your local resource files with them, and then compile them. You can
 now test your translation work in the Zulip UI.
 
 There are a few ways to see your translations in the Zulip UI:
 
-- You can insert the language code as a URL prefix.  For example, you
+- You can insert the language code as a URL prefix. For example, you
   can view the login page in German using
-  `http://localhost:9991/de/login/`.  This works for any part of the
+  `http://localhost:9991/de/login/`. This works for any part of the
   Zulip UI, including portico (logged-out) pages.
 - For Zulip's logged-in UI (i.e. the actual webapp), you can [pick the
   language](https://zulip.com/help/change-your-language) in the
   Zulip UI.
 - If your system has languages configured in your OS/browser, Zulip's
   portico (logged-out) pages will automatically use your configured
-  language.  Note that we only tag for translation strings in pages
+  language. Note that we only tag for translation strings in pages
   that individual users need to use (e.g. `/login/`, `/register/`,
   etc.), not marketing pages like `/features/`.
 - In case you need to understand how the above interact, Zulip figures
@@ -171,7 +171,7 @@ Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
 style guide as they work , since it's easy to take notes as you
 translate, and doing so greatly increases the ability of future
-translators to update the translations in a consistent way.  See [our
+translators to update the translations in a consistent way. See [our
 docs on this documentation](../documentation/overview.md) for how to
 submit your changes.
 
@@ -179,7 +179,7 @@ submit your changes.
 
 We expect that all the English translatable strings in Zulip are
 properly capitalized in a way consistent with how Zulip does
-capitalization in general.  This means that:
+capitalization in general. This means that:
 
 - The first letter of a sentence or phrase should be capitalized.
     - Correct: "Manage streams"

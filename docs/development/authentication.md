@@ -14,9 +14,9 @@ through the real flow.
 
 The steps to do this are a variation of the steps discussed in the
 production documentation, including the comments in
-`zproject/prod_settings_template.py`.  The differences here are driven
+`zproject/prod_settings_template.py`. The differences here are driven
 by the fact that `dev_settings.py` is in Git, so it is inconvenient
-for local [settings configuration](../subsystems/settings.md).  As a
+for local [settings configuration](../subsystems/settings.md). As a
 result, in the development environment, we allow setting certain
 settings in the untracked file `zproject/dev-secrets.conf` (which is
 also serves as `/etc/zulip/zulip-secrets.conf`).
@@ -28,7 +28,7 @@ methods supported by Zulip.
 
 Zulip's default EmailAuthBackend authenticates users by verifying
 control over their email address, and then allowing them to set a
-password for their account.  There are two development environment
+password for their account. There are two development environment
 details worth understanding:
 
 - All of our authentication flows in the development environment have
@@ -40,7 +40,7 @@ details worth understanding:
   `manage.py print_initial_password username@example.com`, that prints
   out **default** passwords for the development environment users.
   Note that if you change a user's password in the development
-  environment, those passwords will no longer work.  It also prints
+  environment, those passwords will no longer work. It also prints
   out the user's **current** API key.
 
 ### Google
@@ -51,9 +51,9 @@ console](https://console.developers.google.com) and navigate to "APIs
 to your dev environment.
 
 - Navigate to "APIs & services" > "Library", and find the "Identity
-  Toolkit API".  Choose "Enable".
+  Toolkit API". Choose "Enable".
 
-- Return to "Credentials", and select "Create credentials".  Choose
+- Return to "Credentials", and select "Create credentials". Choose
   "OAuth client ID", and follow prompts to create a consent screen, etc.
   For "Authorized redirect URIs", fill in
   `http://zulipdev.com:9991/complete/google/` .
@@ -70,7 +70,7 @@ to your dev environment.
   Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
 
 - You should get a page with settings for your new application,
-  showing a client ID and a client secret.  In `dev-secrets.conf`, set
+  showing a client ID and a client secret. In `dev-secrets.conf`, set
   `social_auth_github_key` to the client ID and `social_auth_github_secret`
   to the client secret.
 
@@ -81,7 +81,7 @@ to your dev environment.
   Specify `http://zulipdev.com:9991/complete/gitlab` as the callback URL.
 
 - You should get a page containing the Application ID and Secret for
-  your new application.  In `dev-secrets.conf`, enter the Application
+  your new application. In `dev-secrets.conf`, enter the Application
   ID as `social_auth_gitlab_key` and the Secret as
   `social_auth_gitlab_secret`.
 
@@ -137,7 +137,7 @@ to your dev environment.
 
 Some OAuth providers (such as Facebook) require HTTPS on the callback
 URL they post back to, which isn't supported directly by the Zulip
-development environment.  If you run a
+development environment. If you run a
 [remote Zulip development server](../development/remote.md), we have
 instructions for
 [an nginx reverse proxy with SSL](../development/remote.html#using-an-nginx-reverse-proxy)
@@ -148,18 +148,18 @@ that you can use for your development efforts.
 Before Zulip 2.0, one of the more common classes of bug reports with
 Zulip's authentication was users having trouble getting [LDAP
 authentication](../production/authentication-methods.html#ldap-including-active-directory)
-working.  The root cause was because setting up a local LDAP server
+working. The root cause was because setting up a local LDAP server
 for development was difficult, which meant most developers were unable
 to work on fixing even simple issues with it.
 
 We solved this problem for our unit tests long ago by using the
-popular [fakeldap](https://github.com/zulip/fakeldap) library.  And in
+popular [fakeldap](https://github.com/zulip/fakeldap) library. And in
 2018, we added convenient support for using fakeldap in the Zulip
 development environment as well, so that you can go through all the
 actual flows for LDAP configuration.
 
 - To enable fakeldap, set `FAKE_LDAP_MODE` in
-`zproject/dev_settings.py` to one of the following options.  For more
+`zproject/dev_settings.py` to one of the following options. For more
 information on these modes, refer to
 [our production docs](../production/authentication-methods.html#ldap-including-active-directory):
   - `a`: If users' email addresses are in LDAP and used as username.
@@ -185,7 +185,7 @@ contain data one might want to sync, including avatars and custom
 profile fields.
 
 We also have configured `AUTH_LDAP_USER_ATTR_MAP` in
-`zproject/dev_settings.py` to sync several of those fields.  For
+`zproject/dev_settings.py` to sync several of those fields. For
 example:
 
 - Modes `a` and `b` will set the user's avatar on account creation and
@@ -203,7 +203,7 @@ example:
 For our automated tests, we generally configure custom LDAP data for
 each individual test, because that generally means one can understand
 exactly what data is being used in the test without looking at other
-resources.  It also gives us more freedom to edit the development
+resources. It also gives us more freedom to edit the development
 environment directory without worrying about tests.
 
 ## Two factor authentication
@@ -213,13 +213,13 @@ Zulip uses [django-two-factor-auth][0] as a beta 2FA integration.
 To enable 2FA, set `TWO_FACTOR_AUTHENTICATION_ENABLED` in settings to
 `True`, then log in to Zulip and add an OTP device from the settings
 page. Once the device is added, password based authentication will ask
-for a one-time-password.  In the development environment, this
+for a one-time-password. In the development environment, this
 one-time-password will be printed to the console when you try to
-log in.  Just copy-paste it into the form field to continue.
+log in. Just copy-paste it into the form field to continue.
 
 Direct development logins don't prompt for 2FA one-time-passwords, so
 to test 2FA in development, make sure that you log in using a
-password.  You can get the passwords for the default test users using
+password. You can get the passwords for the default test users using
 `./manage.py print_initial_password`.
 
 ## Password form implementation
@@ -227,7 +227,7 @@ password.  You can get the passwords for the default test users using
 By default, Zulip uses `autocomplete=off` for password fields where we
 enter the current password, and `autocomplete="new-password"` for
 password fields where we create a new account or change the existing
-password.  This prevents the browser from auto-filling the existing
+password. This prevents the browser from auto-filling the existing
 password.
 
 Visit <https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete> for more details.

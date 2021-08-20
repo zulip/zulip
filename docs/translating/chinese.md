@@ -117,7 +117,7 @@ readability considerations.
 - Mute/Unmute - **开启/关闭免打扰**
 
 "Mute" is mostly translated as "静音(Silent)", which is common in TV
-set.  Such a translation is not appropriate for Zulip. "开启/关闭免打
+set. Such a translation is not appropriate for Zulip. "开启/关闭免打
 扰(Turn off/on Notification)" is a sense to sense translation, which
 is also borrowed from the WeChat.
 

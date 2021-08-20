@@ -24,7 +24,7 @@ migrations.
   code as part of the migration, it's best to read past migrations to
   understand how to write them well.
   `git grep RunPython zerver/migrations/02*` will find many good
-  examples.  Before writing migrations of this form, you should read
+  examples. Before writing migrations of this form, you should read
   Django's docs and the sections below.
 - **Numbering conflicts across branches**: If you've done your schema
   change in a branch, and meanwhile another schema change has taken
@@ -32,13 +32,13 @@ migrations.
   number. There are two easy way to fix this:
   - If your migrations were automatically generated using
     `manage.py makemigrations`, a good option is to just remove your
-    migration and rerun the command after rebasing.  Remember to
+    migration and rerun the command after rebasing. Remember to
     `git rebase` to do this in the the commit that changed `models.py`
     if you have a multi-commit branch.
   - If you wrote code as part of preparing your migrations, or prefer
     this workflow, you can use run `./tools/renumber-migrations`,
     which renumbers your migration(s) and fixes up the "dependencies"
-    entries in your migration(s).  The tool could use a bit of work to
+    entries in your migration(s). The tool could use a bit of work to
     prompt unnecessarily less, but it will update the working tree for
     you automatically (you still need to do all the `git add`
     commands, etc.).
@@ -54,14 +54,14 @@ migrations.
   to be built while the server is active. While in historical migrations
   we've used `RunSQL` directly, newer versions of Django add the corresponding
   operation `AddIndexConcurrently` and thus that's what should normally be used.
-- **Atomicity**.  By default, each Django migration is run atomically
-  inside a transaction.  This can be problematic if one wants to do
+- **Atomicity**. By default, each Django migration is run atomically
+  inside a transaction. This can be problematic if one wants to do
   something in a migration that touches a lot of data and would best
   be done in batches of e.g. 1000 objects (e.g. a `Message` or
-  `UserMessage` table change).  There is a [useful Django
+  `UserMessage` table change). There is a [useful Django
   feature][migrations-non-atomic] that makes it possible to add
   `atomic=False` at the top of a `Migration` class and thus not have
-  the entire migration in a transaction.  This should make it possible
+  the entire migration in a transaction. This should make it possible
   to use the batch update tools in `zerver/lib/migrate.py` (originally
   written to work with South) for doing larger database migrations.
 
@@ -101,25 +101,25 @@ migrations.
   non-atomic, splitting it into two migration files (recommended), or replacing the
   `RunPython` logic with pure SQL (though this can generally be difficult).
 
-- **Making large migrations work**.  Major migrations should have a
+- **Making large migrations work**. Major migrations should have a
 few properties:
 
-  - **Unit tests**.  You'll want to carefully test these, so you might
+  - **Unit tests**. You'll want to carefully test these, so you might
     as well write some unit tests to verify the migration works
-    correctly, rather than doing everything by hand.  This often saves
+    correctly, rather than doing everything by hand. This often saves
     a lot of time in re-testing the migration process as we make
     adjustments to the plan.
-  - **Run in batches**.  Updating more than 1K-10K rows (depending on
-    type) in a single transaction can lock up a database.  It's best
+  - **Run in batches**. Updating more than 1K-10K rows (depending on
+    type) in a single transaction can lock up a database. It's best
     to do lots of small batches, potentially with a brief sleep in
     between, so that we don't block other operations from finishing.
-  - **Rerunnability/idempotency**.  Good migrations are ones where if
+  - **Rerunnability/idempotency**. Good migrations are ones where if
     operational concerns (e.g. it taking down the Zulip server for
     users) interfere with it finishing, it's easy to restart the
-    migration without doing a bunch of hand investigation.  Ideally,
+    migration without doing a bunch of hand investigation. Ideally,
     the migration can even continue where it left off, without needing
     to redo work.
-  - **Multi-step migrations**.  For really big migrations, one wants
+  - **Multi-step migrations**. For really big migrations, one wants
   to split the transition into into several commits that are each
   individually correct, and can each be deployed independently:
 
@@ -138,7 +138,7 @@ few properties:
 ## Automated testing for migrations
 
 Zulip has support for writing automated tests for your database
-migrations, using the `MigrationsTestCase` test class.  This system is
+migrations, using the `MigrationsTestCase` test class. This system is
 inspired by [a great blog post][django-migration-test-blog-post] on
 the subject.
 
@@ -148,7 +148,7 @@ from `test_classes.py` and friends from inside the tests (which is
 normally not possible in Django's migrations framework).
 
 If you find yourself writing logic in a `RunPython` migration, we
-highly recommend adding a test using this framework.  We may end up
+highly recommend adding a test using this framework. We may end up
 deleting the test later (they can get slow once they are many
 migrations away from current), but it can help prevent disaster where
 an incorrect migration messes up a database in a way that's impossible

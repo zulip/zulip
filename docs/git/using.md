@@ -324,7 +324,7 @@ messages][github-help-closing-issues] for details.
 
 Note in particular that GitHub's regular expressions for this feature
 are sloppy, so phrases like `Partially fixes #1234` will automatically
-close the issue.  Phrases like `Fixes part of #1234` are a good
+close the issue. Phrases like `Fixes part of #1234` are a good
 alternative.
 
 Make as many commits as you need to to address the issue or implement your feature.

@@ -1,7 +1,7 @@
 # Full-text search
 
 Zulip supports full-text search, which can be combined arbitrarily
-with Zulip's full suite of narrowing operators.  By default, it only
+with Zulip's full suite of narrowing operators. By default, it only
 supports English text, but there is an experimental
 [PGroonga](https://pgroonga.github.io/) integration that provides
 full-text search for all languages.
@@ -19,7 +19,7 @@ search results.
 
 In order to optimize the performance of delivering messages, the
 full-text search index is updated for newly sent messages in the
-background, after the message has been delivered.  This background
+background, after the message has been delivered. This background
 updating is done by
 `puppet/zulip/files/postgresql/process_fts_updates`, which is usually
 deployed on the database server, but could be deployed on an
@@ -31,7 +31,7 @@ Zulip also supports using [PGroonga](https://pgroonga.github.io/) for
 full-text search. While PostgreSQL's built-in full-text search feature
 supports only one language at a time (in Zulip's case, English), the
 PGroonga full-text search engine supports all languages
-simultaneously, including Japanese and Chinese.  Once we have tested
+simultaneously, including Japanese and Chinese. Once we have tested
 this new backend sufficiently, we expect to switch Zulip deployments
 to always use PGroonga.
 
