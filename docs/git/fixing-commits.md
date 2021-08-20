@@ -32,4 +32,4 @@ Sometimes, you want to make one commit out of a bunch of commits. To do this,
 2. Reorder the lines containing the commits and save
 
 ## Pushing commits after tidying them
-1. `git push origin +my-feature-branch`  (Note the `+` there and substitute your actual branch name.)
+1. `git push origin +my-feature-branch` (Note the `+` there and substitute your actual branch name.)

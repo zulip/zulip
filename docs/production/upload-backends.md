@@ -18,11 +18,11 @@ provider supported by the `boto` library).
 ## S3 backend configuration
 
 Here, we document the process for configuring Zulip's S3 file upload
-backend.  To enable this backend, you need to do the following:
+backend. To enable this backend, you need to do the following:
 
 1. In the AWS management console, create a new IAM account (aka API
 user) for your Zulip server, and two buckets in S3, one for uploaded
-files included in messages, and another for user avatars.  You need
+files included in messages, and another for user avatars. You need
 two buckets because the "user avatars" bucket is generally configured
 as world-readable, whereas the "uploaded files" one is not.
 
@@ -68,7 +68,7 @@ as world-readable, whereas the "uploaded files" one is not.
    (`/home/zulip/deployments/current/scripts/restart-server`).
 
 It's simplest to just do this configuration when setting up your Zulip
-server for production usage.  Note that if you had any existing
+server for production usage. Note that if you had any existing
 uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
@@ -78,7 +78,7 @@ below for those steps.
 ## S3 bucket policy
 
 The best way to do the S3 integration with Amazon is to create a new
-IAM user just for your Zulip server with limited permissions.  For
+IAM user just for your Zulip server with limited permissions. For
 each of the two buckets, you'll want to
 [add an S3 bucket policy](https://awspolicygen.s3.amazonaws.com/policygen.html)
 entry that looks something like this:
@@ -129,14 +129,14 @@ need a block like this:
 }
 ```
 
-The file-uploads bucket should not be world-readable.  See the
+The file-uploads bucket should not be world-readable. See the
 [documentation on the Zulip security model](security-model.md) for
 details on the security model for uploaded files.
 
 ## Migrating from local uploads to Amazon S3 backend
 
 As you scale your server, you might want to migrate the uploads from
-your local backend to Amazon S3.  Follow these instructions, step by
+your local backend to Amazon S3. Follow these instructions, step by
 step, to do the migration.
 
 1. First, [set up the S3 backend](#s3-backend-configuration) in the settings
@@ -145,13 +145,13 @@ step, to do the migration.
 2. Run `./manage.py transfer_uploads_to_s3`. This will upload all the
     files from the local uploads directory to Amazon S3. By default,
     this command runs on 6 parallel processes, since uploading is a
-    latency-sensitive operation.  You can control this parameter using
+    latency-sensitive operation. You can control this parameter using
     the `--processes` option.
 3. Once the transfer script completes, disable `LOCAL_UPLOADS_DIR`, and
     restart your server (continuing the last few steps of the S3
     backend setup instructions).
 
-Congratulations!  Your uploaded files are now migrated to S3.
+Congratulations! Your uploaded files are now migrated to S3.
 
 **Caveat**: The current version of this tool does not migrate an
   uploaded organization avatar or logo.

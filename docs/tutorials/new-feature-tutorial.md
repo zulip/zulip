@@ -22,7 +22,7 @@ will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
 [Django's documentation](https://docs.djangoproject.com/en/2.2/#index-first-steps)
 for more information about how Django projects are typically
-organized.  And finally, the
+organized. And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
 the additional complexity involved in sending messages.
 
@@ -199,8 +199,8 @@ dictionary.
 ```
 
 **The majority of realm settings can be included in
-`property_types`.**  However, there are some properties that need custom
-logic and thus cannot use this framework.  For example:
+`property_types`.** However, there are some properties that need custom
+logic and thus cannot use this framework. For example:
 
 - The realm `authentication_methods` attribute is a bitfield and needs
 additional code for validation and updating.
@@ -255,7 +255,7 @@ Like typical apps, we will need our backend to update the database and
 send some response to the client that made the request.
 
 Beyond that, we need to orchestrate notifications about the setting change
-to *other* clients (or other users, if you will).  Clients
+to *other* clients (or other users, if you will). Clients
 find out about settings through two closely related code paths. When a client
 first contacts the server, the server sends the client its
 initial state. Subsequently, clients subscribe to "events," which can
@@ -481,7 +481,7 @@ write automated backend tests for your new feature.
 To test the new setting syncs correctly with the `property_types`
 framework, one usually just needs to add a line in each of
 `test_events.py` and `test_realm.py` with a list of values to switch
-between in the test.  In the case of a boolean field, no action is
+between in the test. In the case of a boolean field, no action is
 required, because those tests will correctly assume that the only
 values to test are `True` and `False`.
 
@@ -541,7 +541,7 @@ In frontend, we have split the `property_types` into three objects:
 - `org_settings`: This contains properties for the "organization
     settings" page. Settings belonging to this section generally
     decide what features should be available to a user like deleting a
-    message, message edit history etc.  Our `mandatory_topics` feature
+    message, message edit history etc. Our `mandatory_topics` feature
     belongs in this section.
 
 - `org_permissions`: This contains properties for the "organization
@@ -560,7 +560,7 @@ before implementing it.*
 
 Note that some settings, like `realm_msg_edit_limit_setting`,
 require special treatment, because they don't match the common
-pattern.  We can't extract the property name and compare the value of
+pattern. We can't extract the property name and compare the value of
 such input elements with those in `page_params`, so we have to
 manually handle such situations in a couple key functions:
 
@@ -570,7 +570,7 @@ manually handle such situations in a couple key functions:
     compare and set the values of corresponding DOM element.
 
 - `settings_org.update_dependent_subsettings`: This handles settings
-    whose value and state depend on other elements.  For example,
+    whose value and state depend on other elements. For example,
     `realm_waiting_period_threshold` is only shown for with the right
     state of `realm_waiting_period_setting`.
 
@@ -586,7 +586,7 @@ backend, so no UI updates are required.).
 
 However, if you had written a function to update the UI after a given
 setting has changed, your function should be referenced in the
-`realm_settings` of `server_events_dispatch.js`.  See for example
+`realm_settings` of `server_events_dispatch.js`. See for example
 `settings_emoji.update_custom_emoji_ui`.
 
 ``` diff
@@ -619,7 +619,7 @@ Here are few important cases you should consider when testing your changes:
   properly.
 
 - If your setting is dependent on another setting, carefully check
-  that both are properly synchronized.  For example, the input element
+  that both are properly synchronized. For example, the input element
   for `realm_waiting_period_threshold` is shown only when we have
   selected the custom time limit option in the
   `realm_waiting_period_setting` dropdown.

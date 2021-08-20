@@ -58,21 +58,21 @@ Other considerations:
     tests" commit on top of it.
 
 Zulip expects you to structure the commits in your pull requests to form
-a clean history before we will merge them.  It's best to write your
+a clean history before we will merge them. It's best to write your
 commits following these guidelines in the first place, but if you don't,
 you can always fix your history using `git rebase -i` (more on that
 [here](../git/fixing-commits.md)).
 
 Never mix multiple changes together in a single commit, but it's great
 to include several related changes, each in their own commit, in a
-single pull request.  If you notice an issue that is only somewhat
+single pull request. If you notice an issue that is only somewhat
 related to what you were working on, but you feel that it's too minor
 to create a dedicated pull request, feel free to append it as an
 additional commit in the pull request for your main project (that
 commit should have a clear explanation of the bug in its commit
-message).  This way, the bug gets fixed, but this independent change
-is highlighted for reviewers.  Or just create a dedicated pull request
-for it.  Whatever you do, don't squash unrelated changes together in a
+message). This way, the bug gets fixed, but this independent change
+is highlighted for reviewers. Or just create a dedicated pull request
+for it. Whatever you do, don't squash unrelated changes together in a
 single commit; the reviewer will ask you to split the changes out into
 their own commits.
 
@@ -100,8 +100,8 @@ The first line of the commit message is the **summary**. The summary:
 
 ### Good summaries:
 
-Below is an example of a good commit summary line.  It starts with the
-prefix "provision:", using lowercase "**p**".  Next, "Improve performance of
+Below is an example of a good commit summary line. It starts with the
+prefix "provision:", using lowercase "**p**". Next, "Improve performance of
 install npm." starts with a capital "**I**", uses imperative tense,
 and ends with a period.
 

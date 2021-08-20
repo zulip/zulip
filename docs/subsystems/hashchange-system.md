@@ -13,19 +13,19 @@ Some examples are:
 - `/#streams/11/announce`: Streams overlay with stream ID 11 (called
   "announce") selected.
 - `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
-  "android" and topic "fun".  (The `42` represents the id of the
+  "android" and topic "fun". (The `42` represents the id of the
    stream.
 
 The main module in the frontend that manages this all is
 `static/js/hashchange.js` (plus `hash_util.js` for all the parsing
-code), which is unfortunately one of our thorniest modules.  Part of
+code), which is unfortunately one of our thorniest modules. Part of
 the reason that it's thorny is that it needs to support a lot of
 different flows:
 
 - The user clicking on an in-app link, which in turn opens an overlay.
   For example the streams overlay opens when the user clicks the small
   cog symbol on the left sidebar, which is in fact a link to
-  `/#streams`.  This makes it easy to have simple links around the app
+  `/#streams`. This makes it easy to have simple links around the app
   without custom click handlers for each one.
 - The user uses the "back" button in their browser (basically
   equivalent to the previous one, as a *link* out of the browser history
@@ -70,7 +70,7 @@ Internally you have these functions:
 - `hashchange.do_hashchange_normal` handles most cases, like loading the main
   page (but maybe with a specific URL if you are narrowed to a
   stream or topic or PMs, etc.).
-- `hashchange.do_hashchange_overlay` handles overlay cases.  Overlays have
+- `hashchange.do_hashchange_overlay` handles overlay cases. Overlays have
   some minor complexity related to remembering the page from
   which the overlay was launched, as well as optimizing in-page
   transitions (i.e. don't close/re-open the overlay if you can
@@ -84,19 +84,19 @@ reload itself:
 - If the browser has been offline for more than 10 minutes, the
   browser's [event queue][events-system] will have been
   garbage-collected by the server, meaning the browser can no longer
-  get real-time updates altogether.  In this case, the browser
-  auto-reloads immediately in order to reconnect.  We have coded an
+  get real-time updates altogether. In this case, the browser
+  auto-reloads immediately in order to reconnect. We have coded an
   unsuspend callback (based on some clever time logic) that ensures we
   check immediately when a client unsuspends; grep for `watchdog` to
   see the code.
 - If a new version of the server has been deployed, we want to reload
-  the browser so that it will start running the latest code.  However,
-  we don't want server deploys to be disruptive.  So, the backend
+  the browser so that it will start running the latest code. However,
+  we don't want server deploys to be disruptive. So, the backend
   preserves user-side event queues (etc.) and just pushes a special
-  `restart` event to all clients.  That event causes the browser to
+  `restart` event to all clients. That event causes the browser to
   start looking for a good time to reload, based on when the user is
   idle (ideally, we'd reload when they're not looking and restore
-  state so that the user never knew it happened!).  The logic for
+  state so that the user never knew it happened!). The logic for
   doing this is in `static/js/reload.js`; but regardless we'll reload
   within 30 minutes unconditionally.
 

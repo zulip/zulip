@@ -161,7 +161,7 @@ Rough steps:
    key of `base.zulipdev.org` during this step.
 1. Create a user called `zulipdev` and add it to the `sudo` group.
 1. Make sudo of `zulipdev` user passwordless by including
-   `zulipdev ALL=(ALL) NOPASSWD:ALL` in  `/etc/sudoers.d/90-cloud-init-users`
+   `zulipdev ALL=(ALL) NOPASSWD:ALL` in `/etc/sudoers.d/90-cloud-init-users`
 1. Copy the `authorized_keys` file of `root` user to the `.ssh` directory of `zulipdev` user
 1. Switch to `zulipdev` user and set the permissions for the `.ssh` folder to `700` and
    `.ssh/authorized_keys` to `600`.

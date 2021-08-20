@@ -1,13 +1,13 @@
 # Management commands
 
 Sometimes, you need to modify or inspect Zulip data from the command
-line.  To help with this, Zulip ships with over 100 command-line tools
+line. To help with this, Zulip ships with over 100 command-line tools
 implemented using the [Django management commands
 framework][django-management].
 
 ## Running management commands
 
-Start by logging in as the `zulip` user on the Zulip server.  Then run
+Start by logging in as the `zulip` user on the Zulip server. Then run
 them as follows:
 
 ```bash
@@ -25,7 +25,7 @@ primarily want to use those in the `[zerver]` section as those are the
 ones specifically built for Zulip.
 
 As a warning, some of them are designed for specific use cases and may
-cause problems if run in other situations.  If you're not sure, it's
+cause problems if run in other situations. If you're not sure, it's
 worth reading the documentation (or the code, usually available at
 `zerver/management/commands/`; they're generally very simple programs).
 
@@ -54,14 +54,14 @@ unlikely to ever need to interact with that realm.)
 Unless you are
 [hosting multiple organizations on your Zulip server](../production/multiple-organizations.md),
 your single Zulip organization on the root domain will have the empty
-string (`''`) as its `string_id`.  So you can run e.g.:
+string (`''`) as its `string_id`. So you can run e.g.:
 
 ```console
 zulip@zulip:~$ /home/zulip/deployments/current/manage.py show_admins -r ''
 ```
 
 Otherwise, the `string_id` will correspond to the organization's
-subdomain.  E.g. on `it.zulip.example.com`, use
+subdomain. E.g. on `it.zulip.example.com`, use
 `/home/zulip/deployments/current/manage.py show_admins -r it`.
 
 ## manage.py shell
@@ -86,11 +86,11 @@ formatting data from Zulip's tables for inspection; Zulip's own
 you understand how the codebase is organized.
 
 We recommend against directly editing objects and saving them using
-Django's `object.save()`.  While this will save your changes to the
+Django's `object.save()`. While this will save your changes to the
 database, for most objects, in addition to saving the changes to the
 database, one may also need to flush caches, notify the apps and open
 browser windows, and record the change in Zulip's `RealmAuditLog`
-audit history table.  For almost any data change you want to do, there
+audit history table. For almost any data change you want to do, there
 is already a function in `zerver.lib.actions.py` with a name like
 `do_change_full_name` that updates that field and notifies clients
 correctly.
@@ -102,16 +102,16 @@ access other functions, you'll need to import them yourself.
 ## Other useful manage.py commands
 
 There are dozens of useful management commands under
-`zerver/management/commands/`.  We detail a few here:
+`zerver/management/commands/`. We detail a few here:
 
 - `./manage.py help`: Lists all available management commands.
 - `./manage.py dbshell`: If you're more comfortable with raw SQL than
   Python, this will open a PostgreSQL SQL shell connected to the Zulip
-  server's database.  Beware of changing data; editing data directly
+  server's database. Beware of changing data; editing data directly
   with SQL will often not behave correctly because PostgreSQL doesn't
   know to flush Zulip's caches or notify browsers of changes.
 - `./manage.py send_custom_email`: Can be used to send an email to a set
-  of users.  The `--help` documents how to run it from a
+  of users. The `--help` documents how to run it from a
   `manage.py shell` for use with more complex programmatically
   computed sets of users.
 - `./manage.py send_password_reset_email`: Sends password reset email(s)
@@ -154,7 +154,7 @@ self-hosted Zulip server:
 
 Custom management commands are Python 3 programs that run inside
 Zulip's context, so that they can access its libraries, database, and
-code freely.  They can be the best choice when you want to run custom
+code freely. They can be the best choice when you want to run custom
 code that is not permitted by Zulip's security model (and thus can't
 be done more easily using the [REST API][zulip-api]) and that you
 might want to run often (and so the interactive `manage.py shell` is

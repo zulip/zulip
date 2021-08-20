@@ -20,7 +20,7 @@ Usually, this involves a few steps:
 - Make sure you've added your integration to
   `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
   section (or `INTEGRATIONS` if not a webhook), and the
-  `DOC_SCREENSHOT_CONFIG` sections.  These registries configure your
+  `DOC_SCREENSHOT_CONFIG` sections. These registries configure your
   integration to appear on the `/integrations` page and make it
   possible to automatically generate the screenshot of a sample
   message (which is important for the screenshots to be updated as
@@ -88,7 +88,7 @@ Here are a few common macros used to document Zulip's integrations:
     required to set up the URL and you can't use this macro, be sure to use the
     `{{ api_url }}` template variable, so that your integration
     documentation will provide the correct URL for whatever server it is
-    deployed on.  If special configuration is required to set the `SITE`
+    deployed on. If special configuration is required to set the `SITE`
     variable, you should document that too.
 
 - `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`

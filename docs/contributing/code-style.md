@@ -2,7 +2,7 @@
 
 One can summarize Zulip's coding philosophy as a relentless focus on
 making the codebase easy to understand and difficult to make dangerous
-mistakes in.  The majority of work in any large software development
+mistakes in. The majority of work in any large software development
 project is understanding the existing code so one can debug or modify
 it, and investments in code readability usually end up paying for
 themselves when someone inevitably needs to debug or improve the code.
@@ -15,10 +15,10 @@ comments/docstrings, and commit messages (roughly in order of priority
 better than writing a comment explaining how the bad interface works).
 
 This page documents code style policies that every Zulip developer
-should understand.  We aim for this document to be short and focused
+should understand. We aim for this document to be short and focused
 only on details that cannot be easily enforced another way (e.g.
 through linters, automated tests, subsystem design that makes classes
-of mistakes unlikely, etc.).  This approach minimizes the cognitive
+of mistakes unlikely, etc.). This approach minimizes the cognitive
 load of ensuring a consistent coding style for both contributors and
 maintainers.
 
@@ -86,8 +86,8 @@ for bar in bars:
     # Make use of foo
 ```
 
-...which makes a database query for every Bar.  While this may be fast
-locally in development, it may be quite slow in production!  Instead,
+...which makes a database query for every Bar. While this may be fast
+locally in development, it may be quite slow in production! Instead,
 tell Django's [QuerySet
 API](https://docs.djangoproject.com/en/dev/ref/models/querysets/) to
 _prefetch_ the data in the initial query:
@@ -263,9 +263,9 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 ### JavaScript and TypeScript
 
 Our JavaScript and TypeScript code is formatted with
-[Prettier](https://prettier.io/).  You can ask Prettier to reformat
+[Prettier](https://prettier.io/). You can ask Prettier to reformat
 all code via our [linter tool](../testing/linters.md) with
-`tools/lint --only=prettier --fix`.  You can also [integrate it with your
+`tools/lint --only=prettier --fix`. You can also [integrate it with your
 editor](https://prettier.io/docs/en/editors.html).
 
 Combine adjacent on-ready functions, if they are logically related.
@@ -306,7 +306,7 @@ call a helper function instead.
 
 ### HTML / CSS
 
-Our CSS is formatted with [Prettier](https://prettier.io/).  You can
+Our CSS is formatted with [Prettier](https://prettier.io/). You can
 ask Prettier to reformat all code via our [linter
 tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
 You can also [integrate it with your
@@ -324,10 +324,10 @@ type changes in the future.
 
 -   Our Python code is formatted with
     [Black](https://github.com/psf/black) and
-    [isort](https://pycqa.github.io/isort/).  The [linter
+    [isort](https://pycqa.github.io/isort/). The [linter
     tool](../testing/linters.md) enforces this by running Black and
     isort in check mode, or in write mode with
-    `tools/lint --only=black,isort --fix`.  You may find it helpful to
+    `tools/lint --only=black,isort --fix`. You may find it helpful to
     [integrate
     Black](https://black.readthedocs.io/en/stable/editor_integration.html)
     and
@@ -355,7 +355,7 @@ type changes in the future.
 
 Clear, readable code is important for [tests](../testing/testing.md);
 familiarize yourself with our testing frameworks so that you can write
-clean, readable tests.  Comments about anything subtle about what is
+clean, readable tests. Comments about anything subtle about what is
 being verified are appreciated.
 
 ### Third party code

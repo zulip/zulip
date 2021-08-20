@@ -4,7 +4,7 @@ The default Zulip installation instructions will install a complete
 Zulip server, with all of the services it needs, on a single machine.
 
 For production deployment, however, it's common to want to do
-something more complicated.  This page documents the options for doing so.
+something more complicated. This page documents the options for doing so.
 
 ## Installing Zulip from Git
 
@@ -23,7 +23,7 @@ You can also [upgrade Zulip from Git](../production/upgrade-or-modify.html#upgra
 
 The most common use case for this is upgrading to `main` to get a
 feature that hasn't made it into an official release yet (often
-support for a new base OS release).  See [upgrading to
+support for a new base OS release). See [upgrading to
 main][upgrade-to-main] for notes on how `main` works and the
 support story for it, and [upgrading to future
 releases][upgrade-to-future-release] for notes on upgrading Zulip
@@ -39,7 +39,7 @@ our next major release has a reliable install experience.
 ## Zulip in Docker
 
 Zulip has an officially supported, experimental
-[docker image](https://github.com/zulip/docker-zulip).  Please note
+[docker image](https://github.com/zulip/docker-zulip). Please note
 that Zulip's [normal installer](../production/install.md) has been
 extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
@@ -52,7 +52,7 @@ as well as those mentioned in the
 [install](../production/install.html#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
-  installed.  We currently support PostgreSQL 10, 11, 12, and 13.
+  installed. We currently support PostgreSQL 10, 11, 12, and 13.
 
 - `--postgresql-database-name=exampledbname`: With this option, you
   can customize the default database name. If you do not set this. The
@@ -108,11 +108,11 @@ env PUPPET_CLASSES=zulip::profile::redis ./scripts/setup/install
 ```
 
 All puppet modules under `zulip::profile` are allowed to be configured
-stand-alone on a host.  You can see most likely manifests you might
+stand-alone on a host. You can see most likely manifests you might
 want to choose in the list of includes in [the main manifest for the
 default all-in-one Zulip server][standalone.pp], though it's also
 possible to subclass some of the lower-level manifests defined in that
-directory if you want to customize.  A good example of doing this is
+directory if you want to customize. A good example of doing this is
 in the [zulip_ops Puppet configuration][zulipchat-puppet] that we use
 as part of managing chat.zulip.org and zulip.com.
 
@@ -133,7 +133,7 @@ below.
 #### Step 1: Set up Zulip
 
 Follow the [standard instructions](../production/install.md), with one
-change.  When running the installer, pass the `--no-init-db`
+change. When running the installer, pass the `--no-init-db`
 flag, e.g.:
 
 ```bash
@@ -174,7 +174,7 @@ database provider for the available options.
 
 In `/etc/zulip/settings.py` on your Zulip server, configure the
 following settings with details for how to connect to your PostgreSQL
-server.  Your database provider should provide these details.
+server. Your database provider should provide these details.
 
 - `REMOTE_POSTGRES_HOST`: Name or IP address of the PostgreSQL server.
 - `REMOTE_POSTGRES_PORT`: Port on the PostgreSQL server.
@@ -214,7 +214,7 @@ configure that as follows:
     ```
 
 1. As root, run
-  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+  `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
   will convert Zulip's main `nginx` configuration file to use your new
   port.
 
@@ -228,14 +228,14 @@ behind reverse proxies.
 Zulip supports routing all of its outgoing HTTP and HTTPS traffic
 through an HTTP `CONNECT` proxy, such as [Smokescreen][smokescreen];
 this includes outgoing webhooks, image and website previews, and
-mobile push notifications.  You may wish to enable this feature to
+mobile push notifications. You may wish to enable this feature to
 provide a consistent egress point, or enforce access control on URLs
 to prevent [SSRF][ssrf] against internal resources.
 
 To use Smokescreen:
 
 1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
-   in `/etc/zulip/zulip.conf`.  A typical value after this change is:
+   in `/etc/zulip/zulip.conf`. A typical value after this change is:
     ```ini
     puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
     ```
@@ -255,12 +255,12 @@ To use Smokescreen:
     ```
 
 1. If you intend to also make the Smokescreen install available to
-   other hosts, set `listen_address` in the same block.  Note that you
+   other hosts, set `listen_address` in the same block. Note that you
    must control access to the Smokescreen port if you do this, as
    failing to do so opens a public HTTP proxy!
 
 1. As root, run
-   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
    will compile and install Smokescreen, reconfigure services to use
    it, and restart Zulip.
 
@@ -303,7 +303,7 @@ HTTP as follows:
     ```
 
 1. As root, run
-`/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+`/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
 will convert Zulip's main `nginx` configuration file to allow HTTP
 instead of HTTPS.
 
@@ -313,12 +313,12 @@ instead of HTTPS.
 ### nginx configuration
 
 For `nginx` configuration, there's two things you need to set up:
-- The root `nginx.conf` file.  We recommend using
+- The root `nginx.conf` file. We recommend using
   `/etc/nginx/nginx.conf` from your Zulip server for our recommended
-  settings.  E.g. if you don't set `client_max_body_size`, it won't be
+  settings. E.g. if you don't set `client_max_body_size`, it won't be
   possible to upload large files to your Zulip server.
 - The `nginx` site-specific configuration (in
-  `/etc/nginx/sites-available`) for the Zulip app.  The following
+  `/etc/nginx/sites-available`) for the Zulip app. The following
   example is a good starting point:
 
 ```nginx
@@ -368,7 +368,7 @@ make the following changes in two configuration files.
 3. Restart your Zulip server with `/home/zulip/deployments/current/scripts/restart-server`.
 
 4. Create an Apache2 virtual host configuration file, similar to the
-   following.  Place it the appropriate path for your Apache2
+   following. Place it the appropriate path for your Apache2
    installation and enable it (E.g. if you use Debian or Ubuntu, then
    place it in `/etc/apache2/sites-available/zulip.example.com.conf`
    and then run
@@ -434,28 +434,28 @@ things you need to be careful about when configuring it:
 
 1. Configure your reverse proxy (or proxies) to correctly maintain the
 `X-Forwarded-For` HTTP header, which is supposed to contain the series
-of IP addresses the request was forwarded through.  You can verify
+of IP addresses the request was forwarded through. You can verify
 your work by looking at `/var/log/zulip/server.log` and checking it
 has the actual IP addresses of clients, not the IP address of the
 proxy server.
 
 2. Ensure your proxy doesn't interfere with Zulip's use of
 long-polling for real-time push from the server to your users'
-browsers.  This [nginx code snippet][nginx-proxy-longpolling-config]
+browsers. This [nginx code snippet][nginx-proxy-longpolling-config]
 does this.
 
 The key configuration options are, for the `/json/events` and
 `/api/1/events` endpoints:
 
-- `proxy_read_timeout 1200;`.  It's critical that this be
+- `proxy_read_timeout 1200;`. It's critical that this be
   significantly above 60s, but the precise value isn't important.
-- `proxy_buffering off`.  If you don't do this, your `nginx` proxy may
+- `proxy_buffering off`. If you don't do this, your `nginx` proxy may
   return occasional 502 errors to clients using Zulip's events API.
 
 3. The other tricky failure mode we've seen with `nginx` reverse
 proxies is that they can load-balance between the IPv4 and IPv6
-addresses for a given hostname.  This can result in mysterious errors
-that can be quite difficult to debug.  Be sure to declare your
+addresses for a given hostname. This can result in mysterious errors
+that can be quite difficult to debug. Be sure to declare your
 `upstreams` equivalent in a way that won't do load-balancing
 unexpectedly (e.g. pointing to a DNS name that you haven't configured
 with multiple IPs for your Zulip machine; sometimes this happens with
@@ -466,7 +466,7 @@ IPv6 configuration).
 
 The file `/etc/zulip/zulip.conf` is used to configure properties of
 the system and deployment; `/etc/zulip/settings.py` is used to
-configure the application itself.  The `zulip.conf` sections and
+configure the application itself. The `zulip.conf` sections and
 settings are described below.
 
 ### `[machine]`
@@ -501,11 +501,11 @@ extension](../subsystems/full-text-search.html#multi-language-full-text-search).
 #### `deploy_options`
 
 Options passed by `upgrade-zulip` and `upgrade-zulip-from-git` into
-`upgrade-zulip-stage-2`.  These might be any of:
+`upgrade-zulip-stage-2`. These might be any of:
 
- - **`--skip-puppet`** skips doing Puppet/apt upgrades.  The user will need
+ - **`--skip-puppet`** skips doing Puppet/apt upgrades. The user will need
    to run `zulip-puppet-apply` manually after the upgrade.
- - **`--skip-migrations`** skips running database migrations.  The
+ - **`--skip-migrations`** skips running database migrations. The
    user will need to run `./manage.py migrate` manually after the upgrade.
  - **`--skip-purge-old-deployments`** skips purging old deployments;
    without it, only deployments with the last two weeks are kept.
@@ -552,7 +552,7 @@ mode). The calculation is based on whether the system has enough
 memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
-Set to `true` or `false` to override the automatic calculation.  This
+Set to `true` or `false` to override the automatic calculation. This
 override is useful both Docker systems (where the above algorithm
 might see the host's memory, not the container's) and/or when using
 remote servers for postgres, memcached, redis, and RabbitMQ.
@@ -577,7 +577,7 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 #### `auto_renew`
 
 If set to the string `yes`, [Certbot will attempt to automatically
-renew its certificate](../production/ssl-certificates.html#certbot-recommended).  Do
+renew its certificate](../production/ssl-certificates.html#certbot-recommended). Do
 no set by hand; use `scripts/setup/setup-certbot` to configure this.
 
 
@@ -629,7 +629,7 @@ connections.
 
 #### `version`
 
-The version of PostgreSQL that is in use.  Do not set by hand; use the
+The version of PostgreSQL that is in use. Do not set by hand; use the
 [PostgreSQL upgrade tool](../production/upgrade-or-modify.html#upgrading-postgresql).
 
 

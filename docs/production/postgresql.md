@@ -2,12 +2,12 @@ PostgreSQL database details
 =========================
 
 Starting with Zulip 3.0, Zulip supports a range of PostgreSQL
-versions.  PostgreSQL 13 is the current default for new installations;
+versions. PostgreSQL 13 is the current default for new installations;
 PostgreSQL 10, 11, and 12 are all supported.
 
 Previous versions of Zulip used whatever version of PostgreSQL was
 included with the base operating system (E.g. PostgreSQL 12 on Ubuntu
-Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial).  We recommend
+Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial). We recommend
 that installations currently using older PostgreSQL releases [upgrade
 to PostgreSQL 13][upgrade-postgresql], as we may drop support for
 older PostgreSQL in a future release.
@@ -89,7 +89,7 @@ To stop a runaway query, you can run
 `SELECT pg_terminate_backend(pid int)` as the 'postgres' user. The
 former cancels the backend's current query and the latter terminates
 the backend process. They are implemented by sending SIGINT and
-SIGTERM to the processes, respectively.  We recommend against sending
+SIGTERM to the processes, respectively. We recommend against sending
 a PostgreSQL process SIGKILL. Doing so will cause the database to kill
 all current connections, roll back any pending transactions, and enter
 recovery mode.
@@ -144,9 +144,9 @@ pg_ctlcluster does.
 #### PostgreSQL vacuuming alerts
 
 The `autovac_freeze` PostgreSQL alert from `check_postgres` is
-particularly important.  This alert indicates that the age (in terms
+particularly important. This alert indicates that the age (in terms
 of number of transactions) of the oldest transaction id (XID) is
-getting close to the `autovacuum_freeze_max_age` setting.  When the
+getting close to the `autovacuum_freeze_max_age` setting. When the
 oldest XID hits that age, PostgreSQL will force a VACUUM operation,
 which can often lead to sudden downtime until the operation finishes.
 If it did not do this and the age of the oldest XID reached 2 billion,

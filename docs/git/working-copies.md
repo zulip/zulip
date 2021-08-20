@@ -3,8 +3,8 @@
 When you work on Zulip code, there are three copies of the Zulip Git
 repository that you are generally concerned with:
 
-- The `upstream` remote.  This is the [official Zulip
-  repository](https://github.com/zulip/zulip) on GitHub.  You probably
+- The `upstream` remote. This is the [official Zulip
+  repository](https://github.com/zulip/zulip) on GitHub. You probably
   don't have write access to this repository.
 - The **origin** remote: Your personal remote repository on GitHub.
   You'll use this to share your code and create [pull requests](../git/pull-requests.md).
@@ -44,7 +44,7 @@ working copies:
 - `git push`: This pushes code from your local repository to one of the remotes.
 - `git remote`: This helps you configure short names for remotes.
 - `git pull`: This pulls code, but by default creates a merge commit
-  (which you definitely don't want).  However, if you've followed our
+  (which you definitely don't want). However, if you've followed our
   [cloning documentation](../git/cloning.md), this will do
   `git pull --rebase` instead, which is the only mode you'll want to
   use when working on Zulip.

@@ -5,7 +5,7 @@ live under `{zerver,zilencer,analytics}/management/commands/`.
 
 If you need some Python code to run with a Zulip context (access to
 the database, etc.) in a script, it should probably go in a management
-command.  The key thing distinguishing these from production scripts
+command. The key thing distinguishing these from production scripts
 (`scripts/`) and development scripts (`tools/`) is that management
 commands can access the database.
 
@@ -33,14 +33,14 @@ installation, e.g. `checkconfig`, `send_test_email`.
 ## Writing management commands
 
 It's generally pretty easy to template off an existing management
-command to write a new one.  Some good examples are
-`change_user_email` and `deactivate_realm`.  The Django documentation
+command to write a new one. Some good examples are
+`change_user_email` and `deactivate_realm`. The Django documentation
 is good, but we have a few pieces advice specific to the Zulip
 project.
 
 - If you need to access a realm or user, use the `ZulipBaseCommand`
   class in `zerver/lib/management.py` so you don't need to write the
-  tedious code of looking those objects up.  This is especially
+  tedious code of looking those objects up. This is especially
   important for users, since the library handles the issues around
   looking up users by email well (if there's a unique user with that
   email, just modify it without requiring the user to specify the
@@ -48,8 +48,8 @@ project.
 - Avoid writing a lot of code in management commands; management
   commands are annoying to unit test, and thus easier to maintain if
   all the interesting logic is in a nice function that is unit tested
-  (and ideally, also used in Zulip's existing code).  Look for code in
-  `zerver/lib/` that already does what you need.  For most actions,
+  (and ideally, also used in Zulip's existing code). Look for code in
+  `zerver/lib/` that already does what you need. For most actions,
   you can just call a `do_change_foo` type function from
   `zerver/lib/actions.py` to do all the work; this is usually far
   better than manipulating the database directly, since the library

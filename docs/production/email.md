@@ -6,13 +6,13 @@ email addresses and send notifications.
 ## How to configure
 
 1. Identify an outgoing email (SMTP) account where you can have Zulip
-   send mail.  If you don't already have one you want to use, see
+   send mail. If you don't already have one you want to use, see
    [Email services](#email-services) below.
 
 1. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
-   email (SMTP) settings".  This includes the hostname and typically
+   email (SMTP) settings". This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log in to
-   it.  You'll also want to fill out the noreply email section.
+   it. You'll also want to fill out the noreply email section.
 
 1. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
@@ -57,7 +57,7 @@ the best documentation).
 
 If you don't have an existing outgoing SMTP provider, don't worry!
 Each of the options we recommend above (as well as dozens of other
-services) have free options.  Once you've signed up, you'll want to
+services) have free options. Once you've signed up, you'll want to
 find the service's provided "SMTP credentials", and configure Zulip as
 follows:
 
@@ -88,7 +88,7 @@ EMAIL_HOST_USER = ""
 We should emphasize that because modern spam filtering is very
 aggressive, you should make sure your downstream email system is
 configured to properly sign outgoing email sent by your Zulip server
-(or check your spam folder) when using this configuration.  See
+(or check your spam folder) when using this configuration. See
 [documentation on using Django with a local postfix server][postfix-email]
 for additional advice.
 
@@ -97,7 +97,7 @@ for additional advice.
 ### Using Gmail for outgoing email
 
 We don't recommend using an inbox product like Gmail for outgoing
-email, because Gmail's anti-spam measures make this annoying.  But if
+email, because Gmail's anti-spam measures make this annoying. But if
 you want to use a Gmail account to send outgoing email anyway, here's
 how to make it work:
 - Create a totally new Gmail account for your Zulip server; you don't
@@ -111,13 +111,13 @@ how to make it work:
   Gmail doesn't allow servers to send outgoing email by default.
 - Note also that the rate limits for Gmail are also quite low
   (e.g. 100 / day), so it's easy to get rate-limited if your server
-  has significant traffic.  For more active servers, we recommend
+  has significant traffic. For more active servers, we recommend
   moving to a free account on a transactional email service.
 
 ### Logging outgoing email to a file for prototyping
 
 For prototyping, you might want to proceed without setting up an email
-provider.  If you want to see the emails Zulip would have sent, you
+provider. If you want to see the emails Zulip would have sent, you
 can log them to a file instead.
 
 To do so, add these lines to `/etc/zulip/settings.py`:
@@ -142,14 +142,14 @@ su zulip -c '/home/zulip/deployments/current/manage.py send_test_email user@exam
 ```
 
 If it doesn't throw an error, it probably worked; you can confirm by
-checking your email.  You should get two emails: One sent by the
+checking your email. You should get two emails: One sent by the
 default From address for your Zulip server, and one sent by the
 "noreply" From address.
 
 If it doesn't work, check these common failure causes:
 
 - Your hosting provider may block outgoing SMTP traffic in its default
-  firewall rules.  Check whether the port `EMAIL_PORT` is blocked in
+  firewall rules. Check whether the port `EMAIL_PORT` is blocked in
   your hosting provider's firewall.
 
 - Your SMTP server's permissions might not allow the email account
@@ -162,11 +162,11 @@ If it doesn't work, check these common failure causes:
 
   If necessary, you can set `ADD_TOKENS_TO_NOREPLY_ADDRESS` to `False`
   in `/etc/zulip/settings.py` (which will cause these confirmation
-  emails to be sent from a consistent `noreply@` address).  Disabling
+  emails to be sent from a consistent `noreply@` address). Disabling
   `ADD_TOKENS_TO_NOREPLY_ADDRESS` is generally safe if you are not
   using Zulip's feature that allows anyone to create an account in
   your Zulip organization if they have access to an email address in a
-  certain domain.  See [this article][helpdesk-attack] for details on
+  certain domain. See [this article][helpdesk-attack] for details on
   the security issue with helpdesk software that
   `ADD_TOKENS_TO_NOREPLY_ADDRESS` helps protect against.
 
@@ -192,7 +192,7 @@ aren't receiving emails from Zulip:
 
 - Starting with Zulip 1.7, Zulip logs an entry in
   `/var/log/zulip/send_email.log` whenever it attempts to send an
-  email.  The log entry includes whether the request succeeded or failed.
+  email. The log entry includes whether the request succeeded or failed.
 
 - If attempting to send an email throws an exception, a traceback
   should be in `/var/log/zulip/errors.log`, along with any other
@@ -205,14 +205,14 @@ aren't receiving emails from Zulip:
 
 - Zulip's email sending configuration is based on the standard Django
   [SMTP backend](https://docs.djangoproject.com/en/2.0/topics/email/#smtp-backend)
-  configuration.  So if you're having trouble getting your email
+  configuration. So if you're having trouble getting your email
   provider working, you may want to search for documentation related
   to using your email provider with Django.
 
   The one thing we've changed from the Django defaults is that we read
   the email password from the `email_password` entry in the Zulip
   secrets file, as part of our policy of not having any secret
-  information in the `/etc/zulip/settings.py` file.  In other words,
+  information in the `/etc/zulip/settings.py` file. In other words,
   if Django documentation references setting `EMAIL_HOST_PASSWORD`,
   you should instead set `email_password` in
   `/etc/zulip/zulip-secrets.conf`.

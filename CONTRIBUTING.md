@@ -75,7 +75,7 @@ to help.
   and do the Git tutorial (coming soon) if you are unfamiliar with
   Git, getting help in
   [#git help](https://chat.zulip.org/#narrow/stream/44-git-help) if
-  you run into any troubles.  Be sure to check out the
+  you run into any troubles. Be sure to check out the
   [extremely useful Zulip-specific tools page](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
 
 ### Picking an issue
@@ -96,7 +96,7 @@ on.
 - For the main server and web repository, we recommend browsing
   recently opened issues to look for issues you are confident you can
   fix correctly in a way that clearly communicates why your changes
-  are the correct fix.  Our GitHub workflow bot, zulipbot, limits
+  are the correct fix. Our GitHub workflow bot, zulipbot, limits
   users who have 0 commits merged to claiming a single issue labeled
   with "good first issue" or "help wanted".
 - We also partition all of our issues in the main repo into areas like
@@ -127,9 +127,9 @@ Other notes:
   [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
   and
   [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-  labels.  Avoid issues with the "difficult" label unless you
+  labels. Avoid issues with the "difficult" label unless you
   understand why it is difficult and are confident you can resolve the
-  issue correctly and completely.  Issues without one of these labels
+  issue correctly and completely. Issues without one of these labels
   are fair game if Tim has written a clear technical design proposal
   in the issue, or it is a bug that you can reproduce and you are
   confident you can fix the issue correctly.
@@ -172,7 +172,7 @@ labels.
 
 ## What makes a great Zulip contributor?
 
-Zulip has a lot of experience working with new contributors.  In our
+Zulip has a lot of experience working with new contributors. In our
 experience, these are the best predictors of success:
 
 - Posting good questions. This generally means explaining your current
@@ -216,7 +216,7 @@ if appropriate.
 
 **Reporting security issues**. Please do not report security issues
   publicly, including on public streams on chat.zulip.org. You can
-  email security@zulip.com.  We create a CVE for every security
+  email security@zulip.com. We create a CVE for every security
   issue in our released software.
 
 ## User feedback
@@ -257,7 +257,7 @@ mind:
   publicly viewable patches you can link to from your resume, regardless of
   whether you are selected.
 - To apply, you'll have to submit at least one pull request to a Zulip
-  repository.  Most students accepted to one of our programs have
+  repository. Most students accepted to one of our programs have
   several merged pull requests (including at least one larger PR) by
   the time of the application deadline.
 - The main criteria we use is quality of your best contributions, and
@@ -274,7 +274,7 @@ important parts of the project. We hope you apply!
 ### Google Summer of Code
 
 The largest outreach program Zulip participates in is GSoC (14
-students in 2017; 11 in 2018; 17 in 2019; 18 in 2020).  While we don't control how
+students in 2017; 11 in 2018; 17 in 2019; 18 in 2020). While we don't control how
 many slots Google allocates to Zulip, we hope to mentor a similar
 number of students in future summers.
 
@@ -282,9 +282,9 @@ If you're reading this well before the application deadline and want
 to make your application strong, we recommend getting involved in the
 community and fixing issues in Zulip now. Having good contributions
 and building a reputation for doing good work is the best way to have
-a strong application.  About half of Zulip's GSoC students for Summer
+a strong application. About half of Zulip's GSoC students for Summer
 2017 had made significant contributions to the project by February
-2017, and about half had not.  Our
+2017, and about half had not. Our
 [GSoC project ideas page][gsoc-guide] has lots more details on how
 Zulip does GSoC, as well as project ideas (though the project idea
 list is maintained only during the GSoC application period, so if
@@ -293,9 +293,9 @@ out-of-date).
 
 We also have in some past years run a Zulip Summer of Code (ZSoC)
 program for students who we didn't have enough slots to accept for
-GSoC but were able to find funding for.  Student expectations are the
+GSoC but were able to find funding for. Student expectations are the
 same as with GSoC, and it has no separate application process; your
-GSoC application is your ZSoC application.  If we'd like to select you
+GSoC application is your ZSoC application. If we'd like to select you
 for ZSoC, we'll contact you when the GSoC results are announced.
 
 [gsoc-guide]: https://zulip.readthedocs.io/en/latest/contributing/gsoc-ideas.html
