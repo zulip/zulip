@@ -586,18 +586,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
         members = [iago, othello]
 
         user_group = create_user_group(
-            "System group",
+            "Full members",
             members,
             iago.realm,
-            description="This is a system group",
+            description="Full members user group",
             is_system_group=True,
         )
 
         def check_support_group_permission(acting_user: UserProfile) -> None:
             self.login_user(acting_user)
             params = {
-                "name": "Test system group",
-                "description": "This is a test system group.",
+                "name": "Full members user group",
+                "description": "Full members system user group.",
             }
             result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
             self.assert_json_error(result, "Insufficient permission")
