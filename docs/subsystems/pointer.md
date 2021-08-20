@@ -28,7 +28,7 @@ First a bit of terminology:
 
 ### Recipient bar: message you clicked
 
-If you enter a narrow by clicking on a message group's *recipient bar*
+If you enter a narrow by clicking on a message group's _recipient bar_
 (stream/topic or private message recipient list at the top of a group
 of messages), Zulip will select the message you clicked on. This
 provides a nice user experience where you get to see the stuff near

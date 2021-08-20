@@ -1,8 +1,6 @@
-Zulip architectural overview
-============================
+# Zulip architectural overview
 
-Key codebases
--------------
+## Key codebases
 
 The main Zulip codebase is at <https://github.com/zulip/zulip>. It
 contains the Zulip backend (written in Python 3.x and Django), the
@@ -37,8 +35,7 @@ translations.
 In this overview, we'll mainly discuss the core Zulip server and web
 application.
 
-Usage assumptions and concepts
-------------------------------
+## Usage assumptions and concepts
 
 Zulip is a real-time team chat application meant to provide a great
 experience for a wide range of organizations, from companies to
@@ -50,7 +47,7 @@ all modern web browsers, several cross-protocol chat clients, and
 numerous dedicated [Zulip API](https://zulip.com/api) clients
 (e.g. bots).
 
-A server can host multiple Zulip *realms* (organizations), each on its
+A server can host multiple Zulip _realms_ (organizations), each on its
 own (sub)domain. While most installations host only one organization, some
 such as zulip.com host thousands. Each organization is a private
 chamber with its own users, streams, customizations, and so on. This
@@ -61,10 +58,9 @@ more on security considerations and options, see [the security model
 section](../production/security-model.md) and the [Zulip Help
 Center](https://zulip.com/help).
 
-Components
-----------
+## Components
 
-  ![architecture-simple](../images/architecture_simple.png)
+![architecture-simple](../images/architecture_simple.png)
 
 ### Django and Tornado
 
@@ -116,8 +112,8 @@ For more details on the frontend, see our documentation on
 [directory structure](../overview/directory-structure.md), and
 [the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
 
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
 
 ### nginx
 
@@ -130,16 +126,16 @@ according to the rules laid down in the many config files found in
 important of these files. It explains what happens when requests come in
 from outside.
 
--   In production, all requests to URLs beginning with `/static/` are
-    served from the corresponding files in `/home/zulip/prod-static/`,
-    and the production build process (`tools/build-release-tarball`)
-    compiles, minifies, and installs the static assets into the
-    `prod-static/` tree form. In development, files are served directly
-    from `/static/` in the Git repository.
--   Requests to `/json/events` and `/api/v1/events`, i.e. the
-    real-time push system, are sent to the Tornado server.
--   Requests to all other paths are sent to the Django app running via
-    `uWSGI` via `unix:/home/zulip/deployments/uwsgi-socket`.
+- In production, all requests to URLs beginning with `/static/` are
+  served from the corresponding files in `/home/zulip/prod-static/`,
+  and the production build process (`tools/build-release-tarball`)
+  compiles, minifies, and installs the static assets into the
+  `prod-static/` tree form. In development, files are served directly
+  from `/static/` in the Git repository.
+- Requests to `/json/events` and `/api/v1/events`, i.e. the
+  real-time push system, are sent to the Tornado server.
+- Requests to all other paths are sent to the Django app running via
+  `uWSGI` via `unix:/home/zulip/deployments/uwsgi-socket`.
 - By default (i.e. if `LOCAL_UPLOADS_DIR` is set), nginx will serve
   user-uploaded content like avatars, custom emoji, and uploaded
   files. However, one can configure Zulip to store these in a cloud
@@ -272,48 +268,48 @@ minimize the set of terminology listed here by giving elements
 self-explanatory names.
 
 - **bankruptcy**: When a user has been off Zulip for several days and
-    has hundreds of unread messages, they are prompted for whether
-    they want to mark all their unread messages as read. This is
-    called "declaring bankruptcy" (in reference to the concept in
-    finance).
+  has hundreds of unread messages, they are prompted for whether
+  they want to mark all their unread messages as read. This is
+  called "declaring bankruptcy" (in reference to the concept in
+  finance).
 
 - **chevron**: A small downward-facing arrow next to a message's
-    timestamp, offering contextual options, e.g., "Reply", "Mute [this
-    topic]", or "Link to this conversation". To avoid visual clutter,
-    the chevron only appears in the web UI upon hover.
+  timestamp, offering contextual options, e.g., "Reply", "Mute [this
+  topic]", or "Link to this conversation". To avoid visual clutter,
+  the chevron only appears in the web UI upon hover.
 
 - **ellipsis**: A small vertical three dot icon (technically called
-    as ellipsis-v), present in sidebars as a menu icon.
-    It offers contextual options for global filters (All messages
-    and Starred messages), stream filters and topics in left
-    sidebar and users in right sidebar. To avoid visual clutter
-    ellipsis only appears in the web UI upon hover.
+  as ellipsis-v), present in sidebars as a menu icon.
+  It offers contextual options for global filters (All messages
+  and Starred messages), stream filters and topics in left
+  sidebar and users in right sidebar. To avoid visual clutter
+  ellipsis only appears in the web UI upon hover.
 
 - **huddle**: What the codebase calls a "group private message".
 
 - **message editing**: If the realm admin allows it, then after a user
-    posts a message, the user has a few minutes to click "Edit" and
-    change the content of their message. If they do, Zulip adds a
-    marker such as "(EDITED)" at the top of the message, visible to
-    anyone who can see the message.
+  posts a message, the user has a few minutes to click "Edit" and
+  change the content of their message. If they do, Zulip adds a
+  marker such as "(EDITED)" at the top of the message, visible to
+  anyone who can see the message.
 
 - **realm**: What the codebase calls an "organization" in the UI.
 
 - **recipient bar**: A visual indication of the context of a message
-    or group of messages, displaying the stream and topic or private
-    message recipient list, at the top of a group of messages. A
-    typical 1-line message to a new recipient shows to the user as
-    three lines of content: first the recipient bar, second the
-    sender's name and avatar alongside the timestamp (and, on hover,
-    the star and the chevron), and third the message content. The
-    recipient bar is or contains hyperlinks to help the user narrow.
+  or group of messages, displaying the stream and topic or private
+  message recipient list, at the top of a group of messages. A
+  typical 1-line message to a new recipient shows to the user as
+  three lines of content: first the recipient bar, second the
+  sender's name and avatar alongside the timestamp (and, on hover,
+  the star and the chevron), and third the message content. The
+  recipient bar is or contains hyperlinks to help the user narrow.
 
 - **star**: Zulip allows a user to mark any message they can see,
-    public or private, as "starred". A user can easily access messages
-    they've starred through the "Starred messages" link in the
-    left sidebar, or use "is:starred" as a narrow or a search
-    constraint. Whether a user has or has not starred a particular
-    message is private; other users and realm admins don't know
-    whether a message has been starred, or by whom.
+  public or private, as "starred". A user can easily access messages
+  they've starred through the "Starred messages" link in the
+  left sidebar, or use "is:starred" as a narrow or a search
+  constraint. Whether a user has or has not starred a particular
+  message is private; other users and realm admins don't know
+  whether a message has been starred, or by whom.
 
 - **subject**: What the codebase calls a "topic" in many places.

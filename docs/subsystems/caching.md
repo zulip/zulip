@@ -59,7 +59,7 @@ The `get_user` function is a pretty typical piece of code using this
 framework; as you can see, it's very little code on top of our
 `cache_with_key` decorator:
 
-``` python
+```python
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
     return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
 
@@ -73,6 +73,7 @@ def get_user(email: str, realm: Realm) -> UserProfile:
 ```
 
 This decorator implements a pretty classic caching paradigm:
+
 - The `user_profile_cache_key` function defines a unique map from a
   canonical form of its arguments to a string. These strings are
   namespaced (the `user_profile:` part) so that they won't overlap
@@ -237,6 +238,7 @@ objects to minimize data transfer between Django and memcached).
 We generally try to avoid in-process backend caching in Zulip's Django
 codebase, because every Zulip production installation involves
 multiple servers. We do have a few, however:
+
 - `per_request_display_recipient_cache`: A cache flushed at the start
   of every request; this simplifies correctly implementing our goal of
   not repeatedly fetching the "display recipient" (e.g. stream name)
@@ -260,5 +262,4 @@ cached by clients is changed. Clients are responsible for handling
 the events, updating their state, and rerendering any UI components
 that might display the modified state.
 
-[post-save-signals]:
-https://docs.djangoproject.com/en/2.0/ref/signals/#post-save
+[post-save-signals]: https://docs.djangoproject.com/en/2.0/ref/signals/#post-save

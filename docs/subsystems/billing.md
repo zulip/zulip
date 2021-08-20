@@ -4,6 +4,7 @@ Zulip uses a third party (Stripe) for billing, so working on the billing
 system requires a little bit of setup.
 
 To set up the development environment to work on the billing code:
+
 - Create a Stripe account
 - Go to <https://dashboard.stripe.com/account/apikeys>, and add the
   publishable key and secret key as `stripe_publishable_key` and
@@ -15,6 +16,7 @@ Nearly all the billing-relevant code lives in `corporate/`.
 
 Stripe makes pretty regular updates to their API. The process for upgrading
 our code is:
+
 - Go to <https://dashboard.stripe.com/developers> in your Stripe account.
 - Upgrade the API version.
 - Run `tools/test-backend --generate-stripe-fixtures`

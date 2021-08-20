@@ -19,7 +19,7 @@ The best way to connect to your server is using the command line tool `ssh`.
 - On macOS and Linux/UNIX, `ssh` is a part of Terminal.
 - On Windows, `ssh` comes with [Bash for Git][git-bash].
 
-Open *Terminal* or *Bash for Git*, and connect with the following:
+Open _Terminal_ or _Bash for Git_, and connect with the following:
 
 ```console
 $ ssh username@host
@@ -37,14 +37,15 @@ to the next section.
 
 You can create a new user with sudo privileges by running the
 following commands as root:
+
 - You can create a `zulipdev` user by running the command
-`adduser zulipdev`. Run through the prompts to assign a password and
-user information. (You can pick any username you like for this user
-account.)
+  `adduser zulipdev`. Run through the prompts to assign a password and
+  user information. (You can pick any username you like for this user
+  account.)
 - You can add the user to the sudo group by running the command
-`usermod -aG sudo zulipdev`.
+  `usermod -aG sudo zulipdev`.
 - Finally, you can switch to the user by running the command
-`su - zulipdev` (or just log in to that user using `ssh`).
+  `su - zulipdev` (or just log in to that user using `ssh`).
 
 ## Setting up the development environment
 
@@ -149,7 +150,7 @@ guide][rtd-git-guide]. In brief, the steps are as follows.
 
 On your **local computer**:
 
-1. Open *Terminal* (macOS/Linux) or *Git for BASH*.
+1. Open _Terminal_ (macOS/Linux) or _Git for BASH_.
 2. Change directory to where you cloned Zulip (e.g. `cd zulip`).
 3. Use `git add` and `git commit` to stage and commit your changes (if you
    haven't already).
@@ -160,7 +161,7 @@ Be sure to replace `branchname` with the name of your actual feature branch.
 Once `git push` has completed successfully, you are ready to fetch the commits
 from your remote development instance:
 
-1. In *Terminal* or *Git BASH*, connect to your remote development
+1. In _Terminal_ or _Git BASH_, connect to your remote development
    instance with `ssh user@host`.
 2. Change to the zulip directory (e.g., `cd zulip`).
 3. Fetch new commits from GitHub with `git fetch origin`.
@@ -193,12 +194,13 @@ Similar packages/extensions exist for other popular code editors as
 well; contributions of precise documentation for them are welcome!
 
 - [VSCode Remote - SSH][vscode-remote-ssh]: Lets you use Visual Studio
-Code against a remote repository with a similar user experience to
-developing locally.
+  Code against a remote repository with a similar user experience to
+  developing locally.
 
 [vscode-remote-ssh]: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh
 
 - [rmate](https://github.com/textmate/rmate) for TextMate + VS Code:
+
 1. Install the extension
    [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
@@ -229,11 +231,11 @@ Two editors often available by default on Linux systems are:
 - **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
   features useful for programming, such as syntax highlighting, so we only
   recommended it for quick edits to things like configuration files. Launch by
-  running command `nano <filename>`. Exit by pressing *Ctrl-X*.
+  running command `nano <filename>`. Exit by pressing _Ctrl-X_.
 
 - **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
-  to learn. Launch by running `vim <filename>`. Quit Vim by pressing *Esc*,
-  typing `:q`, and then pressing *Enter*. Vim comes with a program to learn it
+  to learn. Launch by running `vim <filename>`. Quit Vim by pressing _Esc_,
+  typing `:q`, and then pressing _Enter_. Vim comes with a program to learn it
   called `vimtutor` (just run that command to start it).
 
 Other options include:
@@ -250,12 +252,12 @@ started working quickly, we recommend web-based IDE
 To set up Codeanywhere for Zulip:
 
 1. Create a [Codeanywhere][codeanywhere] account and log in.
-2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
+2. Create a new **SFTP-SSH** project. Use _Public key_ for authentication.
 3. Click **GET YOUR PUBLIC KEY** to get the new public key that
    Codeanywhere generates when you create a new project. Add this public key to
    `~/.ssh/authorized_keys` on your remote development instance.
 4. Once you've added the new public key to your remote development instance, click
-   *CONNECT*.
+   _CONNECT_.
 
 Now your workspace should look similar this:
 ![Codeanywhere workspace][img-ca-workspace]
@@ -290,26 +292,27 @@ that the user is `zulipdev`; edit accordingly if the situation is
 different.
 
 1. First, get an SSL certificate; you can use
-    [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
-    by running the following commands as root:
-    ```bash
-    # apt install -y crudini
-    mkdir -p /var/lib/zulip/certbot-webroot/
-    # if nginx running this will fail and you need to run `service nginx stop`
-    /home/zulipdev/zulip/scripts/setup/setup-certbot \
-      hostname.example.com --no-zulip-conf \
-      --email=username@example.com --method=standalone
-    ```
+   [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
+   by running the following commands as root:
+
+   ```bash
+   # apt install -y crudini
+   mkdir -p /var/lib/zulip/certbot-webroot/
+   # if nginx running this will fail and you need to run `service nginx stop`
+   /home/zulipdev/zulip/scripts/setup/setup-certbot \
+     hostname.example.com --no-zulip-conf \
+     --email=username@example.com --method=standalone
+   ```
 
 1. Install nginx configuration:
 
-    ```bash
-    apt install -y nginx-full
-    cp -a /home/zulipdev/zulip/tools/droplets/zulipdev /etc/nginx/sites-available/
-    ln -nsf /etc/nginx/sites-available/zulipdev /etc/nginx/sites-enabled/
-    nginx -t  # Verifies your nginx configuration
-    service nginx reload  # Actually enabled your nginx configuration
-    ```
+   ```bash
+   apt install -y nginx-full
+   cp -a /home/zulipdev/zulip/tools/droplets/zulipdev /etc/nginx/sites-available/
+   ln -nsf /etc/nginx/sites-available/zulipdev /etc/nginx/sites-enabled/
+   nginx -t  # Verifies your nginx configuration
+   service nginx reload  # Actually enabled your nginx configuration
+   ```
 
 1. Edit `zproject/dev_settings.py` to set
    `EXTERNAL_URI_SCHEME = "https://"`, so that URLs served by the

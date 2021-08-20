@@ -15,7 +15,7 @@ discussion and very much subject to change.
 
 A typical piece of TypeScript code looks like this:
 
-``` ts
+```ts
 setdefault(key: K, value: V): V {
     const mapping = this._items[this._munge(key)];
     if (mapping === undefined) {
@@ -28,7 +28,6 @@ setdefault(key: K, value: V): V {
 The following resources are valuable for learning TypeScript:
 
 - The main documentation on [TypeScript syntax][typescript-handbook].
-
 
 ## Type checking
 

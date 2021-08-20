@@ -10,6 +10,7 @@ keyboard shortcuts, etc.).
 ## Running tests
 
 You can run this test suite as follows:
+
 ```bash
 tools/test-js-with-puppeteer
 ```

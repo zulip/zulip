@@ -103,6 +103,7 @@ on specific versions of these packages wherever possible.
 
 The exact lists of `apt` packages needed by Zulip are maintained in a
 few places:
+
 - For production, in our Puppet configuration, `puppet/zulip/`, using
   the `Package` and `SafePackage` directives.
 - For development, in `SYSTEM_DEPENDENCIES` in `tools/lib/provision.py`.
@@ -249,12 +250,12 @@ installer for `yarn`, modified to support installing to a path that is
 not the current user's home directory).
 
 - `nvm` has its own system for installing each version of `node` at
-its own path, which we use, though we install a `/usr/local/bin/node`
-wrapper to access the desired version conveniently and efficiently
-(`nvm` has a lot of startup overhead).
+  its own path, which we use, though we install a `/usr/local/bin/node`
+  wrapper to access the desired version conveniently and efficiently
+  (`nvm` has a lot of startup overhead).
 - `install-yarn.sh` is configured to install `yarn` at
-`/srv/zulip-yarn`. We don't do anything special to try to manage
-multiple versions of `yarn`.
+  `/srv/zulip-yarn`. We don't do anything special to try to manage
+  multiple versions of `yarn`.
 
 ## Other third-party and generated files
 

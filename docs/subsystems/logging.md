@@ -84,6 +84,7 @@ can be extremely valuable for investigating performance problems.
 ```
 
 The format of this output is:
+
 - Timestamp
 - Log level
 - Logger name, abbreviated as "zr" for these Zulip request logs
@@ -92,11 +93,11 @@ The format of this output is:
 - HTTP status code
 - Time to process
 - (Optional perf data details, e.g. database time/queries, memcached
-time/queries, Django process startup time, Markdown processing time,
-etc.)
+  time/queries, Django process startup time, Markdown processing time,
+  etc.)
 - Endpoint/URL from zproject/urls.py
 - "email via client" showing user account involved (if logged in) and
-the type of client they used ("web", "Android", etc.).
+  the type of client they used ("web", "Android", etc.).
 
 The performance data details are particularly useful for investigating
 performance problems, since one can see at a glance whether a slow
@@ -136,6 +137,7 @@ new feature hard to miss.
   `blueslip = require("./static/js/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
+
 - `throw new Error(…)`: For fatal errors that cannot be easily
   recovered from. We try to avoid using it, since it kills the
   current JS thread, rather than returning execution to the caller.

@@ -99,7 +99,7 @@ for its API. This means that we use:
   useful to check a link without downloading a potentially large link
 - OPTIONS (handled automatically, see more below)
 
-Of these, PUT, DELETE, HEAD, OPTIONS, and GET are *idempotent*, which
+Of these, PUT, DELETE, HEAD, OPTIONS, and GET are _idempotent_, which
 means that we can send the request multiple times and get the same
 state on the server. You might get a different response after the first
 request, as we like to give our clients an error so they know that no

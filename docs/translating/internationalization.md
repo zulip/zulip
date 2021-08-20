@@ -272,6 +272,7 @@ If you are passing a translated string to a Handlebars partial, you can use:
 The syntax for block strings or strings containing variables is:
 
 <!-- The html+handlebars lexer fails to lex the single braces. -->
+
 ```text
 {{#tr}}
     Block of English text.
@@ -282,7 +283,7 @@ The syntax for block strings or strings containing variables is:
 {{/tr}}
 ```
 
-Just like in JavaScript code, variables are enclosed in *single*
+Just like in JavaScript code, variables are enclosed in _single_
 braces (rather than the usual Handlebars double braces). Unlike in
 JavaScript code, variables are automatically escaped by our Handlebars
 helper.
@@ -331,13 +332,12 @@ hostname = https://www.transifex.com
 This basically identifies you as a Transifex user, so you can access your
 organizations from the command line.
 
-
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[FormatJS]: https://formatjs.io/
-[ICU MessageFormat]: https://formatjs.io/docs/intl-messageformat
+[formatjs]: https://formatjs.io/
+[icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
-[Transifex]: https://transifex.com
+[transifex]: https://transifex.com
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
 [html-templates]: ../subsystems/html-css.html#html-templates

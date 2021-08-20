@@ -41,7 +41,7 @@ described above in that it does not create a branch for the pull request
 checkout.
 
 **This tool checks for uncommitted changes, but it will move the
-  current branch using `git reset --hard`. Use with caution.**
+current branch using `git reset --hard`. Use with caution.**
 
 First, make sure you are working in a branch you want to move (in this
 example, we'll use the local `main` branch). Then run the script
@@ -163,10 +163,11 @@ Deleting local branch review-original-5156 (was 5a1e982)
 ## Merge conflict on yarn.lock file
 
 If there is a merge conflict on yarn.lock, yarn should be run to
-regenerate the file. *Important* don't delete the yarn.lock file. Check out the
+regenerate the file. _Important_ don't delete the yarn.lock file. Check out the
 latest one from `origin/main` so that yarn knows the previous asset versions.
 
 Run the following commands
+
 ```bash
 git checkout origin/main -- yarn.lock
 yarn install

@@ -1,6 +1,7 @@
 # Requirements and scalability
 
 To run a Zulip server, you will need:
+
 - A dedicated machine or VM
 - A supported OS:
   - Ubuntu 20.04 Focal
@@ -44,8 +45,7 @@ sudo apt update
 ```
 
 [upgrade-os]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
-[ubuntu-repositories]:
-https://help.ubuntu.com/community/Repositories/Ubuntu
+[ubuntu-repositories]: https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
 
 #### Hardware specifications
@@ -93,10 +93,10 @@ on hardware requirements for larger organizations.
 - Zulip supports [running behind a reverse proxy][reverse-proxy].
 - Zulip servers running inside a private network should configure the
   [Smokescreen integration][smokescreen-proxy] to protect against
-  [SSRF attacks][SSRF], where users could make the Zulip server make
+  [SSRF attacks][ssrf], where users could make the Zulip server make
   requests to private resources.
 
-[SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+[ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: ../production/deployment.html#using-an-outgoing-http-proxy
 [reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
 [email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
@@ -140,8 +140,9 @@ Zulip in production](../production/install.md).
 This section details some basic guidelines for running a Zulip server
 for larger organizations (especially >1000 users or 500+ daily active
 users). Zulip's resource needs depend mainly on 3 parameters:
+
 - daily active users (e.g. number of employees if everyone's an
-employee)
+  employee)
 - total user accounts (can be much larger)
 - message volume.
 
@@ -159,16 +160,17 @@ installing Zulip with a dedicated database server.
   active users, we recommend using a [remote PostgreSQL
   database](postgresql.md), but it's not required.
 
-- **RAM:**  We recommended more RAM for larger installations:
-    - With 25+ daily active users, 4GB of RAM.
-    - With 100+ daily active users, 8GB of RAM.
-    - With 400+ daily active users, 16GB of RAM for the Zulip
-      application server, plus 16GB for the database.
-    - With 2000+ daily active users 32GB of RAM, plus 32GB for the
-      database.
-    - Roughly linear scaling beyond that.
+- **RAM:** We recommended more RAM for larger installations:
 
-- **CPU:**  The Zulip application server's CPU usage is heavily
+  - With 25+ daily active users, 4GB of RAM.
+  - With 100+ daily active users, 8GB of RAM.
+  - With 400+ daily active users, 16GB of RAM for the Zulip
+    application server, plus 16GB for the database.
+  - With 2000+ daily active users 32GB of RAM, plus 32GB for the
+    database.
+  - Roughly linear scaling beyond that.
+
+- **CPU:** The Zulip application server's CPU usage is heavily
   optimized due to extensive work on optimizing the performance of
   requests for latency reasons. Because most servers with sufficient
   RAM have sufficient CPU resources, CPU requirements are rarely an

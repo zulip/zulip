@@ -37,6 +37,7 @@ and restart various services.
 ### Checking status with `supervisorctl status`
 
 You can check if the Zulip application is running using:
+
 ```bash
 supervisorctl status
 ```
@@ -111,15 +112,18 @@ problems and how to resolve them:
   nginx will fail to start if you configured SSL incorrectly or did
   not provide SSL certificates. To fix this, configure them properly
   and then run:
+
   ```bash
   service nginx restart
   ```
 
 - If your host is being port scanned by unauthorized users, you may see
   messages in `/var/log/zulip/server.log` like
+
   ```text
   2017-02-22 14:11:33,537 ERROR Invalid HTTP_HOST header: '10.2.3.4'. You may need to add u'10.2.3.4' to ALLOWED_HOSTS.
   ```
+
   Django uses the hostnames configured in `ALLOWED_HOSTS` to identify
   legitimate requests and block others. When an incoming request does
   not have the correct HTTP Host header, Django rejects it and logs the

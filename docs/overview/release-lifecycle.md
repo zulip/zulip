@@ -232,14 +232,8 @@ independently as needed.
 [chat-zulip-org]: ../contributing/chat-zulip-org.md
 [fork-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
 [zulip-server]: https://github.com/zulip/zulip
-
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
-
-[label-blocker]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
-[label-high]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
-[label-release-goal]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22release+goal%22
-[label-post-release]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22post+release%22
+[label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
+[label-high]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
+[label-release-goal]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22release+goal%22
+[label-post-release]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22post+release%22

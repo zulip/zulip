@@ -1,6 +1,6 @@
 # Realms in Zulip
 
-Zulip allows multiple *realms* to be hosted on a single instance.
+Zulip allows multiple _realms_ to be hosted on a single instance.
 Realms are the Zulip codebases's internal name for what we refer to in
 user documentation as an organization (the name "realm" comes from
 [Kerberos](https://web.mit.edu/kerberos/)).
@@ -66,7 +66,7 @@ user-facing documentation on this.
 By default, Linux does not provide a convenient way to use subdomains
 in your local development environment. To solve this problem, we use
 the **zulipdev.com** domain, which has a wildcard A record pointing to
-127.0.0.1.  You can use zulipdev.com to connect to your Zulip
+127.0.0.1. You can use zulipdev.com to connect to your Zulip
 development server instead of localhost. The default realm with the
 Shakespeare users has the subdomain `zulip` and can be accessed by
 visiting **zulip.zulipdev.com**.
@@ -77,7 +77,7 @@ will try to get the page on your behalf. Since zulipdev.com points
 to 127.0.0.1 the proxy server is likely to give you a 503 error. The
 workaround is to disable your proxy for `*.zulipdev.com`. The DNS
 lookup should still work even if you disable proxy for
-*.zulipdev.com. If it doesn't you can add zulipdev.com records in
+\*.zulipdev.com. If it doesn't you can add zulipdev.com records in
 `/etc/hosts` file. The file should look something like this.
 
 ```text

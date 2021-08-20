@@ -8,6 +8,7 @@ This was once a long page covering a bunch of topics; those topics
 have since all moved to dedicated pages:
 
 ### Monitoring
+
 Moved to [Troubleshooting](../production/troubleshooting.html#monitoring).
 
 ### Securing your Zulip server

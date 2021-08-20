@@ -8,6 +8,7 @@ There are two types of documents: articles about specific features, and a
 handful of longer guides.
 
 The feature articles serve a few different purposes:
+
 - Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
 - Public documentation of our featureset, for someone googling "can zulip do .."
@@ -29,7 +30,7 @@ ReadTheDocs, since Zulip supports running a server completely disconnected
 from the Internet, and we'd like the documentation to be available in that
 environment.
 
- The source for this user documentation is the Markdown files under
+The source for this user documentation is the Markdown files under
 `templates/zerver/help/` in the
 [main Zulip server repository](https://github.com/zulip/zulip). The file
 `foo.md` is automatically rendered by the `render_markdown_path` function in
@@ -99,15 +100,15 @@ Zulip's Markdown processor allows you to include several special features in
 your documentation to help improve its readability:
 
 - Since raw HTML is supported in Markdown, you can include arbitrary
-HTML/CSS in your documentation as needed.
+  HTML/CSS in your documentation as needed.
 - Code blocks allow you to highlight syntax, similar to Zulip's own Markdown.
 - Anchor tags can be used to link to headers in other documents.
 - [Images](#images) of Zulip UI can be added to documentation.
 - Inline [icons](#icons) used to refer to features in the Zulip UI.
 - You can utilize [macros](#macros) to limit repeated content in the
-documentation.
+  documentation.
 - You can create special highlight warning blocks using
-[tips and warnings](#tips-and-warnings).
+  [tips and warnings](#tips-and-warnings).
 - You can create tabs using [Markdown tab switcher](#tab-switcher).
 
 ### Images
@@ -127,7 +128,7 @@ instructions for something simple look long and complicated.
 When taking screenshots, the image should never include the whole
 Zulip browser window in a screenshot; instead, it should only show
 relevant parts of the app. In addition, the screenshot should always
-come *after* the text that describes it, never before.
+come _after_ the text that describes it, never before.
 
 Images are often a part of a numbered step and must be indented four
 spaces to be formatted correctly.
@@ -142,39 +143,39 @@ icons from [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) which
 make use of `fa` as a base class.
 
 - cog (<i class="fa fa-cog"></i>) icon —
-`cog (<i class="fa fa-cog"></i>) icon`
+  `cog (<i class="fa fa-cog"></i>) icon`
 - down chevron (<i class="fa fa-chevron-down"></i>) icon —
-`down chevron (<i class="fa fa-chevron-down"></i>) icon`
+  `down chevron (<i class="fa fa-chevron-down"></i>) icon`
 - eye (<i class="fa fa-eye"></i>) icon —
-`eye (<i class="fa fa-eye"></i>) icon`
+  `eye (<i class="fa fa-eye"></i>) icon`
 - file (<i class="fa fa-file-code-o"></i>) icon —
-`file (<i class="fa fa-file-code-o"></i>) icon`
+  `file (<i class="fa fa-file-code-o"></i>) icon`
 - filled star (<i class="fa fa-star"></i>) icon —
-`filled star (<i class="fa fa-star"></i>) icon`
+  `filled star (<i class="fa fa-star"></i>) icon`
 - formatting (<i class="fa fa-font"></i>) icon —
-`formatting (<i class="fa fa-font"></i>) icon`
+  `formatting (<i class="fa fa-font"></i>) icon`
 - menu (<i class="fa fa-bars"></i>) icon —
-`menu (<i class="fa fa-bars"></i>) icon`
+  `menu (<i class="fa fa-bars"></i>) icon`
 - overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
-`overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
+  `overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
 - paperclip (<i class="fa fa-paperclip"></i>) icon —
-`paperclip (<i class="fa fa-paperclip"></i>) icon`
+  `paperclip (<i class="fa fa-paperclip"></i>) icon`
 - pencil (<i class="fa fa-pencil"></i>) icon —
-`pencil (<i class="fa fa-pencil"></i>) icon`
+  `pencil (<i class="fa fa-pencil"></i>) icon`
 - pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
-`pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon`
+  `pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon`
 - plus (<i class="fa fa-plus"></i>) icon —
-`plus (<i class="fa fa-plus"></i>) icon`
+  `plus (<i class="fa fa-plus"></i>) icon`
 - smiley face (<i class="fa fa-smile-o"></i>) icon —
-`smiley face (<i class="fa fa-smile-o"></i>) icon`
+  `smiley face (<i class="fa fa-smile-o"></i>) icon`
 - star (<i class="fa fa-star-o"></i>) icon —
-`star (<i class="fa fa-star-o"></i>) icon`
+  `star (<i class="fa fa-star-o"></i>) icon`
 - trash (<i class="fa fa-trash-o"></i>) icon —
-`trash (<i class="fa fa-trash-o"></i>) icon`
+  `trash (<i class="fa fa-trash-o"></i>) icon`
 - video-camera (<i class="fa fa-video-camera"></i>) icon —
-`video-camera (<i class="fa fa-video-camera"></i>) icon`
+  `video-camera (<i class="fa fa-video-camera"></i>) icon`
 - x (<i class="fa fa-times"></i>) icon —
-`x (<i class="fa fa-times"></i>) icon`
+  `x (<i class="fa fa-times"></i>) icon`
 
 ### Macros
 
@@ -230,7 +231,7 @@ All tips/warnings should appear inside tip/warning blocks. There
 should be only one tip/warning inside each block, and they usually
 should be formatted as a continuation of a numbered step.
 
-###  Tab switcher
+### Tab switcher
 
 Our Markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different

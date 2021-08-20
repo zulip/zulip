@@ -100,7 +100,6 @@ def home(request: HttpRequest) -> HttpResponse:
 Templates for the main website are found in
 [templates/zerver/app](https://github.com/zulip/zulip/tree/main/templates/zerver/app).
 
-
 ## Writing API REST endpoints
 
 These are code-parseable views that take x-www-form-urlencoded or JSON
@@ -114,7 +113,7 @@ This method will authenticate the user either through a session token
 from a cookie on the browser, or from a base64 encoded `email:api-key`
 string given via HTTP basic auth for API clients.
 
-``` py
+```py
 >>> import requests
 >>> r = requests.get('https://api.github.com/user', auth=('hello@example.com', '0123456789abcdeFGHIJKLmnopQRSTUV'))
 >>> r.status_code
@@ -146,7 +145,7 @@ arguments for.
 
 Here's an example:
 
-``` py
+```py
 from zerver.decorator import require_realm_admin
 from zerver.lib.request import has_request_variables, REQ
 
@@ -232,7 +231,7 @@ If you're removing data, use DELETE.
 
 When writing a new API endpoint, with the exception of things like
 sending messages, requests should be safe to repeat, without impacting
-the state of the server. This is *idempotency*.
+the state of the server. This is _idempotency_.
 
 You will often want to return an error if a request to change
 something would do nothing because the state is already as desired, to
@@ -343,7 +342,7 @@ If the webhook does not have an option to provide a bot email, use the
 `webhook_view` decorator, to fill in the `user_profile` and
 `request.client` fields of a request:
 
-``` py
+```py
 @webhook_view('PagerDuty')
 @has_request_variables
 def api_pagerduty_webhook(request, user_profile,
@@ -351,6 +350,7 @@ def api_pagerduty_webhook(request, user_profile,
                           stream=REQ(default='pagerduty'),
                           topic=REQ(default=None)):
 ```
+
 `request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
 in this example and it will be passed to `check_send_stream_message`. For
 more information, see [Clients in Zulip](../subsystems/client.md).

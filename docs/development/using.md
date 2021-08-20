@@ -1,5 +1,4 @@
-Using the development environment
-=================================
+# Using the development environment
 
 This page describes the basic edit/refresh workflows for working with
 the Zulip development environment. Generally, the development
@@ -40,12 +39,12 @@ the development environment][authentication-dev-server].
 - For changes that don't affect the database model, the Zulip
   development environment will automatically detect changes and
   restart:
-    - The main Django/Tornado server processes are run on top of
+  - The main Django/Tornado server processes are run on top of
     Django's [manage.py runserver][django-runserver], which will
     automatically restart them when you save changes to Python code
     they use. You can watch this happen in the `run-dev.py` console
     to make sure the backend has reloaded.
-   - The Python queue workers will also automatically restart when you
+  - The Python queue workers will also automatically restart when you
     save changes, as long as they haven't crashed (which can happen if
     they reloaded into a version with a syntax error).
 - If you change the database schema (`zerver/models.py`), you'll need
@@ -69,9 +68,9 @@ the development environment][authentication-dev-server].
 - By default, the development server homepage just shows a list of the
   users that exist on the server and you can log in as any of them by
   just clicking on a user.
-    - This setup saves time for the common case where you want to test
+  - This setup saves time for the common case where you want to test
     something other than the login process.
-    - You can test the login or registration process by clicking the
+  - You can test the login or registration process by clicking the
     links for the normal login page.
 - Most changes will take effect automatically. Details:
   - If you change CSS files, your changes will appear immediately via

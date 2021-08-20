@@ -15,6 +15,7 @@ This page discusses additional configuration that a system
 administrator can do. To change any of the following settings, edit
 the `/etc/zulip/settings.py` file on your Zulip server, and then
 restart the server with the following command:
+
 ```bash
 su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 ```
@@ -95,6 +96,7 @@ configuration along with your other Zulip server configuration.
 ### Miscellaneous server settings
 
 Some popular settings in `/etc/zulip/settings.py` include:
+
 - The Twitter integration, which provides pretty inline previews of
   tweets.
 - The [email gateway](../production/email-gateway.md), which lets
