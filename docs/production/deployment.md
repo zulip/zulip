@@ -11,7 +11,7 @@ something more complicated.  This page documents the options for doing so.
 To install a development version of Zulip from Git, just clone the Git
 repository from GitHub:
 
-```
+```bash
 # First, install Git if you don't have it installed already
 sudo apt install git
 git clone https://github.com/zulip/zulip.git zulip-server-git
@@ -103,7 +103,7 @@ configuration to be completely modular.
 For example, to install a Zulip Redis server on a machine, you can run
 the following after unpacking a Zulip production release tarball:
 
-```
+```bash
 env PUPPET_CLASSES=zulip::profile::redis ./scripts/setup/install
 ```
 
@@ -136,7 +136,7 @@ Follow the [standard instructions](../production/install.md), with one
 change.  When running the installer, pass the `--no-init-db`
 flag, e.g.:
 
-```
+```bash
 sudo -s  # If not already root
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
@@ -147,7 +147,7 @@ The script also installs and starts PostgreSQL on the server by
 default. We don't need it, so run the following command to
 stop and disable the local PostgreSQL server.
 
-```
+```bash
 sudo service postgresql stop
 sudo update-rc.d postgresql disable
 ```
@@ -184,13 +184,13 @@ If you're using password authentication, you should specify the
 password of the `zulip` user in /etc/zulip/zulip-secrets.conf as
 follows:
 
-```
+```ini
 postgres_password = abcd1234
 ```
 
 Now complete the installation by running the following commands.
 
-```
+```bash
 # Ask Zulip installer to initialize the PostgreSQL database.
 su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 
@@ -208,7 +208,7 @@ configure that as follows:
    with `/home/zulip/deployments/current/scripts/restart-server`.
 1. Add the following block to `/etc/zulip/zulip.conf`:
 
-    ```
+    ```ini
     [application_server]
     nginx_listen_port = 12345
     ```
@@ -236,7 +236,7 @@ To use Smokescreen:
 
 1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
    in `/etc/zulip/zulip.conf`.  A typical value after this change is:
-    ```
+    ```ini
     puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
     ```
 
@@ -248,7 +248,7 @@ To use Smokescreen:
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
 
-    ```
+    ```ini
     [http_proxy]
     host = 127.0.0.1
     port = 4750
@@ -297,7 +297,7 @@ HTTP as follows:
 
 1. Add the following block to `/etc/zulip/zulip.conf`:
 
-    ```
+    ```ini
     [application_server]
     http_only = true
     ```
@@ -321,7 +321,7 @@ For `nginx` configuration, there's two things you need to set up:
   `/etc/nginx/sites-available`) for the Zulip app.  The following
   example is a good starting point:
 
-```
+```nginx
 server {
         listen                  443 ssl http2;
         listen                  [::]:443 ssl http2;
@@ -358,7 +358,7 @@ make the following changes in two configuration files.
 1. Follow the instructions for [Configure Zulip to allow HTTP](#configuring-zulip-to-allow-http).
 
 2. Add the following to `/etc/zulip/settings.py`:
-    ```
+    ```python
     EXTERNAL_HOST = 'zulip.example.com'
     ALLOWED_HOSTS = ['zulip.example.com', '127.0.0.1']
     USE_X_FORWARDED_HOST = True
@@ -374,7 +374,7 @@ make the following changes in two configuration files.
    and then run `a2ensite zulip.example.com && systemctl reload
    apache2`):
 
-    ```
+    ```apache
     <VirtualHost *:80>
         ServerName zulip.example.com
         RewriteEngine On
@@ -415,7 +415,7 @@ make the following changes in two configuration files.
 If you want to use HAProxy with Zulip, this `backend` config is a good
 place to start.
 
-```
+```text
 backend zulip
     mode http
     balance leastconn

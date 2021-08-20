@@ -57,7 +57,7 @@ service (or back):
 
 The Zulip server has a built-in backup tool:
 
-```
+```bash
 # As the zulip user
 /home/zulip/deployments/current/manage.py backup
 # Or as root
@@ -84,7 +84,7 @@ First, [install a new Zulip server through Step 3][install-server]
 with the same version of both the base OS and Zulip from your previous
 installation.  Then, run as root:
 
-```
+```bash
 /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
 ```
 
@@ -113,7 +113,7 @@ tarball: `postgres-version`, `os-version`, and `zulip-version`.  The
 following command may be useful for viewing these files without
 extracting the entire archive.
 
-```
+```bash
 tar -Oaxf /path/to/archive/zulip-backup-rest.tar.gz zulip-backup/zulip-version
 ```
 
@@ -167,7 +167,7 @@ daily incremental backups using
 storing the backups, edit `/etc/zulip/zulip-secrets.conf` on the
 PostgreSQL server to add:
 
-    ```
+    ```ini
     s3_backups_key = # aws public key
     s3_backups_secret_key =  # aws secret key
     s3_backups_bucket = # name of S3 backup
@@ -280,7 +280,7 @@ of the lines for the appropriate option.
 Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands:
 
-```
+```bash
 cd /home/zulip/deployments/current
 # ./scripts/stop-server
 # export DEACTIVATE_FLAG="--deactivate"   # Deactivates the organization
@@ -307,7 +307,7 @@ archive of all the organization's uploaded files.
       master][upgrade-zulip-from-git], since we run run master on
       Zulip Cloud:
 
-      ```
+      ```bash
       /home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
       ```
 
@@ -364,7 +364,7 @@ about doing so:
 following commands, replacing the filename with the path to your data
 export tarball:
 
-```
+```bash
 cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
@@ -386,7 +386,7 @@ custom subdomain, e.g. if you already have an existing organization on the
 root domain. Replace the last three lines above with the following, after replacing
 `<subdomain>` with the desired subdomain.
 
-```
+```bash
 ./manage.py import <subdomain> ~/zulip-export-zcmpxfm6
 ./manage.py reactivate_realm -r <subdomain>  # Reactivates the organization
 ```
@@ -403,12 +403,12 @@ You can use the `./manage.py send_password_reset_email` command to
 send password reset emails to your users.  We
 recommend starting with sending one to yourself for testing:
 
-```
+```bash
 ./manage.py send_password_reset_email -u username@example.com
 ```
 
 and then once you're ready, you can email them to everyone using e.g.
-```
+```bash
 ./manage.py send_password_reset_email -r '' --all-users
 ```
 
@@ -426,7 +426,7 @@ organization using the following procedure:
   with the subdomain if [you are hosting the organization on a
   subdomain](../production/multiple-organizations.md):
 
-```
+```python
 realm = Realm.objects.get(string_id="")
 realm.delete()
 ```
@@ -434,7 +434,7 @@ realm.delete()
 The output contains details on the objects deleted from the database.
 
 Now, exit the management shell and run this to clear Zulip's cache:
-```
+```bash
 /home/zulip/deployments/current/scripts/setup/flush-memcached
 ```
 
@@ -444,7 +444,7 @@ can additionally delete all file uploads, avatars, and custom emoji on
 a Zulip server (across **all organizations**) with the following
 command:
 
-```
+```bash
 rm -rf /home/zulip/uploads/*/*
 ```
 
@@ -454,7 +454,7 @@ in the management shell before deleting the organization from the
 database (this will be `2` for the first organization created on a
 Zulip server, shown in the example below), e.g.:
 
-```
+```bash
 rm -rf /home/zulip/uploads/*/2/
 ```
 

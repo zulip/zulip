@@ -30,7 +30,7 @@ means that the settings files are Python programs that set a lot of
 variables with all-capital names like `EMAIL_GATEWAY_PATTERN`.  You can
 access these anywhere in the Zulip Django code using e.g.:
 
-```
+```python
 from django.conf import settings
 print(settings.EMAIL_GATEWAY_PATTERN)
 ```
@@ -38,7 +38,7 @@ print(settings.EMAIL_GATEWAY_PATTERN)
 Additionally, if you need to access a Django setting in a shell
 script (or just on the command line for debugging), you can use e.g.:
 
-```
+```console
 $ ./scripts/get-django-setting EMAIL_GATEWAY_PATTERN
 %s@localhost:9991
 ```

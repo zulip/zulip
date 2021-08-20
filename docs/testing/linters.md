@@ -43,9 +43,11 @@ and exempting legacy files from lint checks.
 If you run `./tools/test-all`, it will automatically run the linters.
 You can also run them individually or pass specific files:
 
-    ./tools/lint
-    ./tools/lint static/js/compose.js
-    ./tools/lint static/js/
+```bash
+./tools/lint
+./tools/lint static/js/compose.js
+./tools/lint static/js/
+```
 
 `./tools/lint` has many useful options; you can read about them in its
 internal documentation using `./tools/lint --help`.  Of particular

@@ -41,33 +41,44 @@ All steps in this section should be run as the `root` user; on most installs, th
 
 1. Alter the deployment setting:
 
-        crudini --set /etc/zulip/zulip.conf machine pgroonga enabled
+   ```bash
+   crudini --set /etc/zulip/zulip.conf machine pgroonga enabled
+   ```
 
 1. Update the deployment to respect that new setting:
 
-        /home/zulip/deployments/current/scripts/zulip-puppet-apply
+   ```bash
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply
+   ```
 
 1. Edit `/etc/zulip/settings.py`, to add:
 
-        USING_PGROONGA = True
+   ```python
+   USING_PGROONGA = True
+   ```
 
 1. Apply the PGroonga migrations:
 
-        su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
+   ```
 
     Note that the migration may take a long time, and users will be
     unable to send new messages until the migration finishes.
 
 1. Once the migrations are complete, restart Zulip:
 
-        su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
-
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+   ```
 
 ### Disabling PGroonga
 
 1. Remove the PGroonga migration:
 
-        su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga zero'
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga zero'
+   ```
 
     If you intend to re-enable PGroonga later, you can skip this step,
     at the cost of your Message table being slightly larger than it would
@@ -75,12 +86,18 @@ All steps in this section should be run as the `root` user; on most installs, th
 
 1. Edit `/etc/zulip/settings.py`, editing the line containing `USING_PGROONGA` to read:
 
-        USING_PGROONGA = False
+   ```python
+   USING_PGROONGA = False
+   ```
 
 1. Restart Zulip:
 
-        su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+   ```
 
 1. Finally, remove the deployment setting:
 
-        crudini --del /etc/zulip/zulip.conf machine pgroonga
+   ```bash
+   crudini --del /etc/zulip/zulip.conf machine pgroonga
+   ```

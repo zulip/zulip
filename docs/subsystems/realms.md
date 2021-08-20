@@ -25,7 +25,7 @@ There are two main methods for creating realms.
 #### Using unique link generator
 
 ```bash
-    ./manage.py generate_realm_creation_link
+./manage.py generate_realm_creation_link
 ```
 
 The above command will output a URL which can be used for creating a
@@ -80,7 +80,7 @@ lookup should still work even if you disable proxy for
 *.zulipdev.com. If it doesn't you can add zulipdev.com records in
 `/etc/hosts` file. The file should look something like this.
 
- ```
+```text
 127.0.0.1    localhost
 
 127.0.0.1    zulipdev.com

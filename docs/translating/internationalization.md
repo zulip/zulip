@@ -139,7 +139,7 @@ template so that it can be translated.
 To mark a string for translation in a Jinja2 template, you
 can use the `_()` function in the templates like this:
 
-```
+```jinja
 {{ _("English text") }}
 ```
 
@@ -149,14 +149,14 @@ help translators to translate an entire sentence.  To translate a
 block, Jinja2 uses the [trans][] tag.  So rather than writing
 something ugly and confusing for translators like this:
 
-```
+```jinja
 # Don't do this!
 {{ _("This string will have") }} {{ value }} {{ _("inside") }}
 ```
 
 You can instead use:
 
-```
+```jinja
 {% trans %}This string will have {{ value }} inside.{% endtrans %}
 ```
 
@@ -165,7 +165,7 @@ You can instead use:
 A string in Python can be marked for translation using the `_()` function,
 which can be imported as follows:
 
-```
+```python
 from django.utils.translation import gettext as _
 ```
 
@@ -174,7 +174,7 @@ ensure this, the error message passed to `JsonableError`
 should always be a literal string enclosed by `_()`
 function, e.g.:
 
-```
+```python
 JsonableError(_('English text'))
 ```
 
@@ -256,13 +256,13 @@ $t_html(
 For translations in Handlebars templates we also use FormatJS, through two
 Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
 
-```
+```html+handlebars
 {{t 'English text' }}
 ```
 
 If you are passing a translated string to a Handlebars partial, you can use:
 
-```
+```html+handlebars
 {{> template_name
     variable_name=(t 'English text')
     }}
@@ -270,7 +270,8 @@ If you are passing a translated string to a Handlebars partial, you can use:
 
 The syntax for block strings or strings containing variables is:
 
-```
+<!-- The html+handlebars lexer fails to lex the single braces. -->
+```text
 {{#tr}}
     Block of English text.
 {{/tr}}
@@ -297,7 +298,7 @@ Restrictions on including HTML tags in translated strings are the same
 as in JavaScript.  You can insert more complex markup using a local
 custom HTML tag like this:
 
-```
+```html+handlebars
 {{#tr}}
     <b>HTML</b> linking to the <z-link>login page</z-link>
     {{#*inline "z-link"}}<a href="/login/">{{> @partial-block}}</a>{{/inline}}
@@ -318,7 +319,7 @@ file, located at `~/.transifexrc`.
 You can find details on how to set it up [here][transifexrc], but it should
 look similar to this (with your credentials):
 
-```
+```ini
 [https://www.transifex.com]
 username = user
 token =

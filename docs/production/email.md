@@ -78,7 +78,7 @@ configuration on the system that forwards email sent locally into your
 corporate email system), you will likely need to use something like
 these setting values:
 
-```
+```python
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
@@ -122,7 +122,7 @@ can log them to a file instead.
 
 To do so, add these lines to `/etc/zulip/settings.py`:
 
-```
+```python
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/var/log/zulip/emails'
 ```
@@ -137,7 +137,7 @@ later set up a real SMTP provider!
 
 You can quickly test your outgoing email configuration using:
 
-```
+```bash
 su zulip -c '/home/zulip/deployments/current/manage.py send_test_email user@example.com'
 ```
 

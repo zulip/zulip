@@ -71,7 +71,7 @@ In production, one usually wants to look at `errors.log` for errors
 since the main server log can be very verbose, but the main server log
 can be extremely valuable for investigating performance problems.
 
-```
+```text
 2016-05-20 14:50:22.056 INFO [zr] 127.0.0.1       GET     302 528ms (db: 1ms/1q) (+start: 123ms) / (unauth@zulip via ?)
 [20/May/2016 14:50:22]"GET / HTTP/1.0" 302 0
 2016-05-20 14:50:22.272 INFO [zr] 127.0.0.1       GET     200 124ms (db: 3ms/2q) /login/ (unauth@zulip via ?)

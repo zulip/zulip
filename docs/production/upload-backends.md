@@ -50,7 +50,7 @@ as world-readable, whereas the "uploaded files" one is not.
    With Zulip 1.9.0 and newer, you can do this automatically with the
    following commands run as root:
 
-   ```
+   ```bash
    crudini --set /etc/zulip/zulip.conf application_server no_serve_uploads true
    /home/zulip/deployments/current/scripts/zulip-puppet-apply
    ```
@@ -83,7 +83,7 @@ each of the two buckets, you'll want to
 [add an S3 bucket policy](https://awspolicygen.s3.amazonaws.com/policygen.html)
 entry that looks something like this:
 
-```
+```json
 {
     "Version": "2012-10-17",
     "Id": "Policy1468991802321",
@@ -117,7 +117,7 @@ entry that looks something like this:
 The avatars bucket is intended to be world-readable, so you'll also
 need a block like this:
 
-```
+```json
 {
     "Sid": "Stmt1468991795389",
     "Effect": "Allow",

@@ -181,8 +181,10 @@ Redis is configured in `zulip/puppet/zulip/files/redis` and it's a
 pretty standard configuration except for the last line, which turns off
 persistence:
 
-    # Zulip-specific configuration: disable saving to disk.
-    save ""
+```text
+# Zulip-specific configuration: disable saving to disk.
+save ""
+```
 
 People often wonder if we could replace memcached with Redis (or
 replace RabbitMQ with Redis, with some loss of functionality).

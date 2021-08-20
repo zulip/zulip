@@ -48,7 +48,9 @@ requirements/mypy.txt`.
 
 To run mypy on Zulip's python code, you can run the command:
 
-    tools/run-mypy
+```bash
+tools/run-mypy
+```
 
 Mypy outputs errors in the same style as a compiler would.  For
 example, if your code has a type error like this:
@@ -60,7 +62,7 @@ foo = '1'
 
 you'll get an error like this:
 
-```
+```console
 test.py: note: In function "test":
 test.py:200: error: Incompatible types in assignment (expression has type "str", variable has type "int")
 ```
@@ -507,7 +509,7 @@ have untracked files in your Zulip checkout safely).  So if you get a
 `mypy` error like this after adding a new file that is referenced by
 the existing codebase:
 
-```
+```console
 mypy | zerver/models.py:1234: note: Import of 'zerver.lib.markdown_wrappers' ignored
 mypy | zerver/models.py:1234: note: (Using --follow-imports=error, module not passed on command line)
 ```

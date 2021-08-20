@@ -29,7 +29,7 @@ File not found errors (404) are served using a Django URL, so that we
 can use configuration variables (like whether the user is logged in)
 in the 404 error page.
 
-```
+```nginx
 location /static/ {
     alias /home/zulip/prod-static/;
     # Set a nonexistent path, so we just serve the nice Django 404 page.
@@ -61,10 +61,7 @@ in
 [the directory structure doc](../overview/directory-structure.md).
 
 The main Zulip Django app is `zerver`. The routes are found in
-```
-zproject/urls.py
-zproject/legacy_urls.py
-```
+`zproject/urls.py` and `zproject/legacy_urls.py`.
 
 There are HTML-serving, REST API, legacy, and webhook url patterns. We
 will look at how each of these types of requests are handled, and focus
@@ -140,9 +137,11 @@ yields a response with this HTTP header:
 
 We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
 
-    rest_path('users',
-              GET=get_members_backend,
-              PUT=create_user_backend),
+```python
+rest_path('users',
+          GET=get_members_backend,
+          PUT=create_user_backend),
+```
 
 In this way, the API is partially self-documenting.
 
@@ -175,7 +174,7 @@ the request, and then figure out which view to show from that.
 
 In our example,
 
-```
+```python
 GET=get_members_backend,
 PUT=create_user_backend
 ```
@@ -195,7 +194,9 @@ This is covered in good detail in the [writing views doc](writing-views.md).
 Our API works on JSON requests and responses. Every API endpoint should
 `raise JsonableError` in the case of an error, which gives a JSON string:
 
-`{'result': 'error', 'msg': <some error message>, 'code': 'BAD_REQUEST'}`
+```json
+{"result": "error", "msg": "<some error message>", "code": "BAD_REQUEST"}
+```
 
 in a
 [HTTP response](https://docs.djangoproject.com/en/1.8/ref/request-response/)
@@ -203,11 +204,13 @@ with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
 a successfully handled request, we use
-`json_success(data=<some python object which can be converted to a JSON string>`.
+`json_success(data=<some python object which can be converted to a JSON string>)`.
 
 This will result in a JSON string:
 
-`{'result': 'success', 'msg': '', 'data'='{'var_name1': 'var_value1', 'var_name2': 'var_value2'...}`
+```json
+{"result": "success", "msg": "", "data": {"var_name1": "var_value1", "var_name2": "var_value2"}}
+```
 
 with a HTTP 200 status and a content type of 'application/json'.
 

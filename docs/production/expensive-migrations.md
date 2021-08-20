@@ -19,42 +19,46 @@ can run them manually before starting the upgrade:
   PostgreSQL database.
 3. In the PostgreSQL shell, run the following commands:
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_is_private_message_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 2048) != 0;
+   ```postgresql
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_is_private_message_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 2048) != 0;
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_active_mobile_push_notification_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 4096) != 0;
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_active_mobile_push_notification_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 4096) != 0;
+   ```
 
-(These first migrations are the only new ones in Zulip 1.9).
+   (These first migrations are the only new ones in Zulip 1.9).
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_mentioned_message_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 8) != 0;
+   ```postgresql
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_mentioned_message_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 8) != 0;
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_starred_message_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 2) != 0;
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_starred_message_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 2) != 0;
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_has_alert_word_message_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 512) != 0;
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_has_alert_word_message_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 512) != 0;
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_wildcard_mentioned_message_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 8) != 0 OR (flags & 16) != 0;
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_wildcard_mentioned_message_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 8) != 0 OR (flags & 16) != 0;
 
-        CREATE INDEX CONCURRENTLY
-        zerver_usermessage_unread_message_id
-        ON zerver_usermessage (user_profile_id, message_id)
-        WHERE (flags & 1) = 0;
+   CREATE INDEX CONCURRENTLY
+   zerver_usermessage_unread_message_id
+   ON zerver_usermessage (user_profile_id, message_id)
+   WHERE (flags & 1) = 0;
+   ```
 
 These will take some time to run, during which the server will
 continue to serve user traffic as usual with no disruption.  Once they
