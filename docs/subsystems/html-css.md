@@ -3,12 +3,12 @@
 ## Zulip CSS organization
 
 The Zulip application's CSS can be found in the `static/styles/`
-directory.  Zulip uses [Bootstrap](https://getbootstrap.com/) as its
+directory. Zulip uses [Bootstrap](https://getbootstrap.com/) as its
 main third-party CSS library.
 
-Zulip uses PostCSS for its CSS files.  There are two high-level sections
+Zulip uses PostCSS for its CSS files. There are two high-level sections
 of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
-and the app.  The portico CSS lives under the `static/styles/portico`
+and the app. The portico CSS lives under the `static/styles/portico`
 subdirectory.
 
 ## Editing Zulip CSS
@@ -33,8 +33,8 @@ browser window (following backend changes).
 
 Without care, it's easy for a web application to end up with thousands
 of lines of duplicated CSS code, which can make it very difficult to
-understand the current styling or modify it.  We would very much like
-to avoid such a fate.  So please make an effort to reuse existing
+understand the current styling or modify it. We would very much like
+to avoid such a fate. So please make an effort to reuse existing
 styling, clean up now-unused CSS, etc., to keep things maintainable.
 
 ### Be consistent with existing similar UI
@@ -84,7 +84,7 @@ found [here][jconditionals].
 
 The context for Jinja2 templates is assembled from a few places:
 
-- `zulip_default_context` in `zerver/context_processors.py`.  This is
+- `zulip_default_context` in `zerver/context_processors.py`. This is
 the default context available to all Jinja2 templates.
 
 - As an argument in the `render` call in the relevant function that
@@ -151,10 +151,10 @@ relevant background as well.
 ### Primary build process
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
-we are working on migrating these to TypeScript modules.  Stylesheets
+we are working on migrating these to TypeScript modules. Stylesheets
 are written in CSS extended by various PostCSS plugins; they are
 converted from plain CSS, and we have yet to take full advantage of
-the features PostCSS offers.  We use Webpack to transpile and build JS
+the features PostCSS offers. We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
 points specified in `tools/webpack.*assets.json`; source maps are
 generated in the process for better debugging experience.
@@ -188,9 +188,9 @@ first add it to the appropriate place under `static/`.
   version of third-party libraries.
 - Third-party files that we have patched should all go in
   `static/third/`. Tag the commit with "[third]" when adding or
-  modifying a third-party package.  Our goal is to the extent possible
+  modifying a third-party package. Our goal is to the extent possible
   to eliminate patched third-party code from the project.
-- Our own JavaScript and TypeScript files live under `static/js`.  Ideally,
+- Our own JavaScript and TypeScript files live under `static/js`. Ideally,
   new modules should be written in TypeScript (details on this policy below).
 - CSS files live under `static/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
@@ -225,18 +225,18 @@ If you want to test minified files in development, look for the
 
 A few useful notes are:
 - Zulip installs static assets in production in
-`/home/zulip/prod-static`.  When a new version is deployed, before the
+`/home/zulip/prod-static`. When a new version is deployed, before the
 server is restarted, files are copied into that directory.
 - We use the VFL (versioned file layout) strategy, where each file in
   the codebase (e.g. `favicon.ico`) gets a new name
-  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it.  Each
+  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it. Each
   deployment, has a manifest file
   (e.g. `/home/zulip/deployments/current/staticfiles.json`) that maps
-  codebase filenames to serving filenames for that deployment.  The
+  codebase filenames to serving filenames for that deployment. The
   benefit of this VFL approach is that all the static files for past
   deployments can coexist, which in turn eliminates most classes of
   race condition bugs where browser windows opened just before a
-  deployment can't find their static assets.  It also is necessary for
+  deployment can't find their static assets. It also is necessary for
   any incremental rollout strategy where different clients get
   different versions of the site.
 - Some paths for files (e.g. emoji) are stored in the
@@ -261,24 +261,24 @@ where one is moving code from an existing JavaScript module, the new
 commit should just move the code, not translate it to TypeScript).
 TypeScript provides more accurate information to development tools,
 allowing for better refactoring, auto-completion and static analysis.
-TypeScript also uses the ES6 module system.  See our documentation on
+TypeScript also uses the ES6 module system. See our documentation on
 [TypeScript static types](../testing/typescript).
 
 Webpack does not ordinarily allow modules to be accessed directly from
 the browser console, but for debugging convenience, we have a custom
 webpack plugin (`tools/debug-require-webpack-plugin.ts`) that exposes
 a version of the `require()` function to the development environment
-browser console for this purpose.  For example, you can access our
+browser console for this purpose. For example, you can access our
 `people` module by evaluating
 `people = require("./static/js/people")`, or the third-party `lodash`
-module with `_ = require("lodash")`.  This mechanism is **not** a
+module with `_ = require("lodash")`. This mechanism is **not** a
 stable API and should not be used for any purpose other than
 interactive debugging.
 
 We have one module, `zulip_test`, that’s exposed as a global variable
 using `expose-loader` for direct use in Puppeteer tests and in the
-production browser console.  If you need to access a variable or
-function in those scenarios, add it to `zulip_test`.  This is also
+production browser console. If you need to access a variable or
+function in those scenarios, add it to `zulip_test`. This is also
 **not** a stable API.
 
 [Jinja2]: http://jinja.pocoo.org/

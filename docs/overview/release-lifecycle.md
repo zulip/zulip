@@ -31,7 +31,7 @@ server repository][zulip-server].
 - Zulip Server **stable releases**, such as Zulip 4.5.
   Organizations self-hosting Zulip primarily use stable releases.
 - The numbering scheme is simple: the first digit indicates the major
-  release series (which we'll refer to as "4.x").  (Before Zulip 3.0,
+  release series (which we'll refer to as "4.x"). (Before Zulip 3.0,
   Zulip versions had another digit, e.g. 1.9.2 was a bug fix release
   in the Zulip 1.9.x major release series).
 - [New major releases][blog-major-releases], like Zulip 4.0, are
@@ -45,7 +45,7 @@ server repository][zulip-server].
   you use the latest version of the upgrade code.
 
 Starting with Zulip 4.0, the Zulip webapp displays the current server
-version in the gear menu.  With older releases, the server version is
+version in the gear menu. With older releases, the server version is
 available [via the API](https://zulip.com/api/get-server-settings).
 
 This ReadTheDocs documentation has a widget in the lower-left corner
@@ -68,11 +68,11 @@ in a stable release.
   userbase.
 - [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
   Zulip development community, is upgraded to `main` several times
-  every week.  We also often "test deploy" changes not yet in `main`
+  every week. We also often "test deploy" changes not yet in `main`
   to chat.zulip.org to facilitate design feedback.
 - We maintain Git branches with names like `4.x` containing backported
   commits from `main` that we plan to include in the next maintenance
-  release.  Self hosters can [upgrade][upgrade-from-git] to these
+  release. Self hosters can [upgrade][upgrade-from-git] to these
   stable release branches to get bug fixes staged for the next stable
   release (which is very useful when you reported a bug whose fix we
   choose to backport). We support these branches as though they were a
@@ -89,10 +89,10 @@ for self-hosters, has no regressions, and that the [Zulip upgrade
 process](../production/upgrade-or-modify.md) Just Works.
 
 The Zulip server and clients apps are all carefully engineered to
-ensure compatibility with old versions.  In particular:
+ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
-  code to support any Zulip server since 2.1.0.  (They may also work
+  code to support any Zulip server since 2.1.0. (They may also work
   with older versions, with a degraded experience).
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
@@ -147,7 +147,7 @@ You can adjust the deadline for your installation by setting e.g.
 
 For platforms we support, like Debian and Ubuntu, Zulip aims to
 support all versions of the upstream operating systems that are fully
-supported by the vendor.  We document how to correctly [upgrade the
+supported by the vendor. We document how to correctly [upgrade the
 operating system][os-upgrade] for a Zulip server, including how to
 correctly chain upgrades when the latest Zulip release no longer
 supports your OS.
@@ -177,7 +177,7 @@ aggregate, just as important as the big things. Most resolved issues
 do not have any of these priority labels.
 
 We welcome participation from our user community in influencing the
-Zulip roadmap.  If a bug or missing feature is causing significant
+Zulip roadmap. If a bug or missing feature is causing significant
 pain for you, we'd love to hear from you, either in
 [chat.zulip.org](../contributing/chat-zulip-org.md) or on the relevant
 GitHub issue. Please an include an explanation of your use case: such

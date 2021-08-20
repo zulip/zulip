@@ -1,14 +1,14 @@
 # Manual testing #
 
 As a general rule, we like to have automated tests for everything that
-can be practically tested.  However, there are certain types of bugs
+can be practically tested. However, there are certain types of bugs
 that are best caught with old fashioned manual testing (also called
-manual QA).  Manual testing not only catches bugs, but it also helps
+manual QA). Manual testing not only catches bugs, but it also helps
 developers learn more about the system and think about the existing
 semantics of a feature they're working on.
 
 This doc assumes you know how to set up a local development server
-and open the Zulip app in the browser.  It also assumes a basic
+and open the Zulip app in the browser. It also assumes a basic
 knowledge of how to use Zulip.
 
 ## Basic stuff ##
@@ -16,24 +16,24 @@ knowledge of how to use Zulip.
 When testing Zulip manually, here are things to focus on:
 
 - The best bugs to catch are security/permissions bugs.
-- Don't rush manual testing.  Look for small details like
+- Don't rush manual testing. Look for small details like
   display glitches.
 - Always test with multiple users (you can use incognito windows
   to facilitate this).
 - Always keep the inspector console open and watch for warnings
   or errors.
-- Be methodical about collecting information on bugs.  (You will
+- Be methodical about collecting information on bugs. (You will
   eventually want to create tickets, but you may want to consolidate
   your own notes before filing tickets.)
 
 You generally want to test with Cordelia as the primary user,
-and use Hamlet as her primary conversation partner.  Use Iago
-when you need to test administrative functions.  Send messages
+and use Hamlet as her primary conversation partner. Use Iago
+when you need to test administrative functions. Send messages
 to Othello or Prospero if you want to verify things such as
 Cordelia not being able to receive messages not intended for her.
 
 The rest of this document groups tasks into basic areas of
-functionality of the system.  If you have multiple people testing
+functionality of the system. If you have multiple people testing
 at once, you can divvy up QA tasks by these sections in the doc.
 
 ### Message view ###
@@ -150,9 +150,9 @@ Here are some tasks:
 
 Zulip uses the term "narrowing" to refer to opening different views
 of your messages, whether by clicking on sidebar options, recipient
-bars, or by using search.  The main focus of these tasks should
-be watching unread counts.  Of course, you also want to see messages
-show up in the message pane.  And, finally, you should make sure
+bars, or by using search. The main focus of these tasks should
+be watching unread counts. Of course, you also want to see messages
+show up in the message pane. And, finally, you should make sure
 that no messages outside the narrow show up in Cordelia's view.
 
 
@@ -191,14 +191,14 @@ messages after each narrow):
 - Go to Denmark view.
 - Go to Denmark/foo view.
 
-There are 56 things to test here.  If you can get into a rhythm
+There are 56 things to test here. If you can get into a rhythm
 where you can test each case in about 30 seconds, then the whole
 exercise is about 30 minutes, assuming no bugs.
 
 ### Composing messages ###
 
 We have pretty good automated tests for our Markdown processor, so
-manual testing is targeted more to other interactions.  For composing
+manual testing is targeted more to other interactions. For composing
 a message, pay attention to details like what is automatically
 populated and where the focus is placed.
 
@@ -258,9 +258,9 @@ populated and where the focus is placed.
 ### Popover menus ###
 
 For this task you just want to go through all of our popover menus
-and exercise them.  The main nuance here is that you occasionally want
+and exercise them. The main nuance here is that you occasionally want
 to click somewhere on the UI outside of an existing popover to see if
-the popover menu is "too sticky."  Also, occasionally actions will be
+the popover menu is "too sticky." Also, occasionally actions will be
 somewhat jarring; for example, if you mute a message in the current view,
 then the message will disappear from the view.
 
@@ -307,7 +307,7 @@ Here are the things to test:
 ### Sidebar filtering ###
 
 This is a fairly quick task where we test the search filters on the left sidebar
-and the buddy list.  If Cordelia is not subscribed to Denmark, subscribe her to
+and the buddy list. If Cordelia is not subscribed to Denmark, subscribe her to
 that stream.
 
 - Streams filtering
@@ -350,7 +350,7 @@ First, we start off with "positive" tests.
       users.
 
 For negative tests, we want to dig a little deeper to find back
-doors for Cordelia to access the stream.  Here are some techniques
+doors for Cordelia to access the stream. Here are some techniques
 to try:
 
 - Try to have her compose a message to the stream by
@@ -360,7 +360,7 @@ to try:
 - Go to stream settings and see if the stream shows up.
 
 For public streams, it's ok for Cordelia to know the stream exists,
-and she can subsequently subscribe.  For private streams, she should
+and she can subsequently subscribe. For private streams, she should
 not even know they exist (until she's invited, of course).
 
 - Negative tests
@@ -381,9 +381,9 @@ not even know they exist (until she's invited, of course).
 ### Search ###
 
 The main task for testing search is to play around with search
-suggestions (autocomplete).  Once you select an option, verify the
+suggestions (autocomplete). Once you select an option, verify the
 message view is consistent with the search and that the left sidebar
-reflects the current narrow.  If a search comes up legitimately
+reflects the current narrow. If a search comes up legitimately
 empty, have Hamlet send a message that matches the search.
 
 Here are searches you should be able to do with autocomplete:
@@ -531,7 +531,7 @@ Here are the tasks:
 
 ### To be continued... ###
 
-This document does not cover settings/admin options yet.  The main
+This document does not cover settings/admin options yet. The main
 things to do when testing the settings system are:
 - Verify that changes are synced to other users.
 - Verify error messages appear if you do something wrong and look right.

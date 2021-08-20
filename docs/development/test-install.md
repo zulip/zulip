@@ -12,7 +12,7 @@ the installation process in a clean environment each time.
 ## Configuring
 
 Using the test installer framework requires a Linux operating system;
-it will not work on WSL, for instance.  It requires at least 3G of
+it will not work on WSL, for instance. It requires at least 3G of
 RAM, in order to accommodate the VMs and the steps which build the
 release assets.
 
@@ -43,7 +43,7 @@ as the last step; for example,
 Next, unpack that file into a local directory; we will make any
 changes we want in our source checkout and copy them into this
 directory. The test installer needs the release directory to be named
-`zulip-server`, so we rename it and move it appropriately.  In the
+`zulip-server`, so we rename it and move it appropriately. In the
 first line, you'll need to substitute the actual path that you got for
 the tarball, above:
 ```bash

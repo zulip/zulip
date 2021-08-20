@@ -300,11 +300,11 @@ $ /usr/bin/env python3 ./my_program.py
 
 The purpose of `/usr/bin/env` in our shebangs is as a way to locate
 the `python3` program in your current environment, the same one the
-shell would use if you ran `python3 my_program.py`.  You may see
+shell would use if you ran `python3 my_program.py`. You may see
 Python scripts outside of Zulip with a shebang like
 `#!/usr/bin/python3`; but because of the way Python virtualenvs work,
 this has the effect of running the script outside of any currently
-activated virtualenv.  We use `/usr/bin/env` to keep our scripts
+activated virtualenv. We use `/usr/bin/env` to keep our scripts
 running inside the virtualenv where we've installed all our
 dependencies.
 

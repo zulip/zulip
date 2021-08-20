@@ -48,7 +48,7 @@
 - invite-only - **закрытый**
 - public - **открытый**
 - name - **название** for things, **имя** for people
-- id  - **код**
+- id - **код**
 - notifications - **оповещения**
 - @-mentions - **@-упоминания**
 - mute - **заглушить**

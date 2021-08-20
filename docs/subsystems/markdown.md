@@ -1,13 +1,13 @@
 # Markdown implementation
 
 Zulip uses a special flavor of Markdown/CommonMark for its message
-formatting.  Our Markdown flavor is unique primarily to add important
+formatting. Our Markdown flavor is unique primarily to add important
 extensions, such as quote blocks and math blocks, and also to do
-previews and correct issues specific to the chat context.  Beyond
+previews and correct issues specific to the chat context. Beyond
 that, it has a number of minor historical variations resulting from
 its history predacting CommonMark (and thus Zulip choosing different
 solutions to some problems) and based in part on Python-Markdown,
-which is proudly a classic Markdown implementation.  We reduce these
+which is proudly a classic Markdown implementation. We reduce these
 variations with every major Zulip release.
 
 Zulip has two implementations of Markdown. The backend implementation
@@ -15,11 +15,11 @@ at `zerver/lib/markdown/` is based on
 [Python-Markdown](https://pypi.python.org/pypi/Markdown) and is used to
 authoritatively render messages to HTML (and implements
 slow/expensive/complex features like querying the Twitter API to
-render tweets nicely).  The frontend implementation is in JavaScript,
+render tweets nicely). The frontend implementation is in JavaScript,
 based on [marked.js](https://github.com/chjj/marked)
 (`static/js/echo.js`), and is used to preview and locally echo
 messages the moment the sender hits Enter, without waiting for round
-trip from the server.  Those frontend renderings are only shown to the
+trip from the server. Those frontend renderings are only shown to the
 sender of a message, and they are (ideally) identical to the backend
 rendering.
 
@@ -28,12 +28,12 @@ The JavaScript Markdown implementation has a function,
 contains any syntax that needs to be rendered to HTML on the backend.
 If `markdown.contains_backend_only_syntax` returns true, the frontend simply won't
 echo the message for the sender until it receives the rendered HTML
-from the backend.  If there is a bug where `markdown.contains_backend_only_syntax`
+from the backend. If there is a bug where `markdown.contains_backend_only_syntax`
 returns false incorrectly, the frontend will discover this when the
 backend returns the newly sent message, and will update the HTML based
 on the authoritative backend rendering (which would cause a change in
 the rendering that is visible only to the sender shortly after a
-message is sent).  As a result, we try to make sure that
+message is sent). As a result, we try to make sure that
 `markdown.contains_backend_only_syntax` is always correct.
 
 ## Testing
@@ -46,7 +46,7 @@ The Python-Markdown implementation is tested by
 A shared set of fixed test data ("test fixtures") is present in
 `zerver/tests/fixtures/markdown_test_cases.json`, and is automatically used
 by both test suites; as a result, it is the preferred place to add new
-tests for Zulip's Markdown system.  Some important notes on reading
+tests for Zulip's Markdown system. Some important notes on reading
 this file:
 
 - `expected_output` is the expected output for the backend Markdown
@@ -57,13 +57,13 @@ this file:
   `markdown.contains_backend_only_syntax` rejects the syntax, ensuring
   it will be rendered only by the backend processor.
 - When the two processors disagree, we set `marked_expected_output` in
-  the fixtures; this will ensure that the syntax stays that way.  If
+  the fixtures; this will ensure that the syntax stays that way. If
   the differences are important (i.e. not just whitespace), we should
   also open an issue on GitHub to track the problem.
 - For mobile push notifications, we need a text version of the
   rendered content, since the APNS and GCM push notification systems
-  don't support richer markup.  Mostly, this involves stripping HTML,
-  but there's some syntax we take special care with.  Tests for what
+  don't support richer markup. Mostly, this involves stripping HTML,
+  but there's some syntax we take special care with. Tests for what
   this plain-text version of content should be are stored in the
   `text_content` field.
 
@@ -72,10 +72,10 @@ implementation, the easiest way to do this is as follows:
 
 1. Log in to your development server.
 2. Stop your Zulip server with Ctrl-C, leaving the browser open.
-3. Compose and send the messages you'd like to test.  They will be
+3. Compose and send the messages you'd like to test. They will be
    locally echoed using the frontend rendering.
 
-This procedure prevents any server-side rendering.  If you don't do
+This procedure prevents any server-side rendering. If you don't do
 this, backend will likely render the Markdown you're testing and swap
 it in before you can see the frontend's rendering.
 
@@ -118,14 +118,14 @@ Important considerations for any changes are:
   accidentally triggering Markdown syntax or typeahead that isn't
   related to what they are trying to express.
 - Performance: Zulip can render a lot of messages very quickly, and
-  we'd like to keep it that way.  New regular expressions similar to
+  we'd like to keep it that way. New regular expressions similar to
   the ones already present are unlikely to be a problem, but we need
   to be thoughtful about expensive computations or third-party API
   requests.
 - Database: The backend Markdown processor runs inside a Python thread
   (as part of how we implement timeouts for third-party API queries),
   and for that reason we currently should avoid making database
-  queries inside the Markdown processor.  This is a technical
+  queries inside the Markdown processor. This is a technical
   implementation detail that could be changed with a few days of work,
   but is an important detail to know about until we do that work.
 - Testing: Every new feature should have both positive and negative
@@ -135,7 +135,7 @@ Important considerations for any changes are:
 ## Per-realm features
 
 Zulip's Markdown processor's rendering supports a number of features
-that depend on realm-specific or user-specific data.  For example, the
+that depend on realm-specific or user-specific data. For example, the
 realm could have
 [linkifiers](https://zulip.com/help/add-a-custom-linkifier)
 or [custom emoji](https://zulip.com/help/add-custom-emoji)
@@ -144,7 +144,7 @@ groups (which depend on data like users' names, IDs, etc.).
 
 At a backend code level, these are controlled by the `message_realm`
 object and other arguments passed into `do_convert` (`sent_by_bot`,
-`translate_emoticons`, `mention_data`, etc.).  Because
+`translate_emoticons`, `mention_data`, etc.). Because
 Python-Markdown doesn't support directly passing arguments into the
 Markdown processor, our logic attaches these data to the Markdown
 processor object via e.g. `_md_engine.zulip_db_data`, and then
@@ -154,7 +154,7 @@ For non-message contexts (e.g. an organization's profile (aka the
 thing on the right-hand side of the login page), stream descriptions,
 or rendering custom profile fields), one needs to just pass in a
 `message_realm` (see, for example, `zulip_default_context` for the
-organization profile code for this).  But for messages, we need to
+organization profile code for this). But for messages, we need to
 pass in attributes like `sent_by_bot` and `translate_emoticons` that
 indicate details about how the user sending the message is configured.
 
@@ -171,21 +171,21 @@ plain text (e.g. emails) that it helps more than getting in the way.
 The main issue for using Markdown in instant messaging is that the
 Markdown standard syntax used in a lot of wikis/blogs has nontrivial
 error rates, where the author needs to go back and edit the post to
-fix the formatting after typing it the first time.  While that's
+fix the formatting after typing it the first time. While that's
 basically fine when writing a blog, it gets annoying very fast in a
 chat product; even though you can edit messages to fix formatting
-mistakes, you don't want to be doing that often.  There are basically
+mistakes, you don't want to be doing that often. There are basically
 2 types of error rates that are important for a product like Zulip:
 
 - What fraction of the time, if you pasted a short technical email
   that you wrote to your team and passed it through your Markdown
   implementation, would you need to change the text of your email for it
-  to render in a reasonable way?  This is the "accidental Markdown
+  to render in a reasonable way? This is the "accidental Markdown
   syntax" problem, common with Markdown syntax like the italics syntax
   interacting with talking about `char *`s.
 
 - What fraction of the time do users attempting to use a particular
-  Markdown syntax actually succeed at doing so correctly?  Syntax like
+  Markdown syntax actually succeed at doing so correctly? Syntax like
   required a blank line between text and the start of a bulleted list
   raise this figure substantially.
 
@@ -223,7 +223,7 @@ accurate.
 
 - Disable special use of `\` to escape other syntax. Rendering `\\` as
   `\` was hugely controversial, but having no escape syntax is also
-  controversial.  We may revisit this.  For now you can always put
+  controversial. We may revisit this. For now you can always put
   things in code blocks.
 
 ### Lists
@@ -271,7 +271,7 @@ accurate.
 - Disabled images with `![]()` (images from links are shown as an inline
   preview).
 
-- Allow embedding any avatar as a tiny (list bullet size) image.  This
+- Allow embedding any avatar as a tiny (list bullet size) image. This
   is used primarily by version control integrations.
 
 - We added the `~~~ quote` block quote syntax.

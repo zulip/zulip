@@ -10,7 +10,7 @@ Note that the deployment cycles are different:
 
  - In the mobile app, this code is deployed in the same way as the
    rest of the mobile app: it's bundled up into the app binary which
-   is uploaded to app stores and users install on their devices.  The
+   is uploaded to app stores and users install on their devices. The
    client will be running the version built into their version of the
    mobile app, which may be newer, older, or simply different from the
    version on the server.

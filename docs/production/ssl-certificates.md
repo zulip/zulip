@@ -16,8 +16,8 @@ files into place at the following paths:
 
 Your certificate file should contain not only your own certificate but
 its **full chain, including any intermediate certificates** used by
-your certificate authority (CA).  See the [nginx
-documentation][nginx-chains] for details on what this means.  If
+your certificate authority (CA). See the [nginx
+documentation][nginx-chains] for details on what this means. If
 you're missing part of the chain, your server may work with some
 browsers, but not others and not the Zulip mobile and desktop apps.
 The desktop apps support [configuring a custom CA][desktop-certs] to
@@ -33,7 +33,7 @@ browsers ignore errors that others don't.
 Two good tests include:
 
 - If your server is accessible from the public Internet, use the [SSL
-  Labs tester][ssllabs-tester].  Be sure to check for "Chain issues";
+  Labs tester][ssllabs-tester]. Be sure to check for "Chain issues";
   if any, your certificate file is missing intermediate certificates.
 
 - Alternatively, run a command like `curl -SsI https://zulip.example.com`
@@ -49,11 +49,11 @@ Two good tests include:
 
 [Let's Encrypt](https://letsencrypt.org/) is a free, completely
 automated CA launched in 2016 to help make HTTPS routine for the
-entire Web.  Zulip offers a simple automation for
+entire Web. Zulip offers a simple automation for
 [Certbot](https://certbot.eff.org/), a Let's Encrypt client, to get
 SSL certificates from Let's Encrypt and renew them automatically.
 
-We recommend most Zulip servers use Certbot.  You'll want something
+We recommend most Zulip servers use Certbot. You'll want something
 else if:
 - you have an existing workflow for managing SSL certificates
   that you prefer;
@@ -72,7 +72,7 @@ To enable the Certbot automation when first installing Zulip, just
 pass the `--certbot` flag when [running the install script][doc-install-script].
 
 The `--hostname` and `--email` options are required when using
-`--certbot`.  You'll need the hostname to be a real DNS name, and the
+`--certbot`. You'll need the hostname to be a real DNS name, and the
 Zulip server machine to be reachable by that name from the public
 Internet.
 
@@ -100,11 +100,11 @@ When the Certbot automation in Zulip is first enabled, by either
 method, it creates an account for the server at the Let's Encrypt CA;
 requests a certificate for the given hostname; proves to the CA that
 the server controls the website at that hostname; and is then given a
-certificate.  (For details, refer to
+certificate. (For details, refer to
 [Let's Encrypt](https://letsencrypt.org/how-it-works/).)
 
 Then it records a flag in `/etc/zulip/zulip.conf` saying Certbot is in
-use and should be auto-renewed.  A cron job checks that flag, then
+use and should be auto-renewed. A cron job checks that flag, then
 checks if any certificates are due for renewal, and if they are (so
 approximately once every 60 days), repeats the process of request,
 prove, get a fresh certificate.
@@ -113,10 +113,10 @@ prove, get a fresh certificate.
 ## Self-signed certificate
 
 If you aren't able to use Certbot, you can generate a self-signed SSL
-certificate.  This can be convenient for testing, but isn't
-recommended for production, as it is insecure.  The Zulip desktop and
+certificate. This can be convenient for testing, but isn't
+recommended for production, as it is insecure. The Zulip desktop and
 mobile apps will not connect to a server if they cannot validate its
-SSL certificate.  The desktop apps support [configuring a custom
+SSL certificate. The desktop apps support [configuring a custom
 certificate authority][desktop-certs] to allow validation of an
 internal certificate.
 
@@ -146,7 +146,7 @@ service nginx reload
 
 ### The Android app can't connect to the server
 
-This is most often caused by an incomplete certificate chain.  See
+This is most often caused by an incomplete certificate chain. See
 discussion in the [Manual install](#manual-install) section above.
 
 
@@ -156,9 +156,9 @@ This can be caused by a server set up to support only TLS 1.1 or
 older (including TLS 1.0, SSL 3, or SSL 2.)
 
 TLS 1.2 has been a standard for over 10 years, and all modern web
-server software supports it.  Starting in early 2020, all major
+server software supports it. Starting in early 2020, all major
 browsers [will *require* TLS 1.2 or later][tls12-required-news], and
-will refuse to connect over TLS 1.1 or older.  And on iOS, Apple [has
+will refuse to connect over TLS 1.1 or older. And on iOS, Apple [has
 since iOS 9][apple-ats] required TLS 1.2 for all connections made by
 apps, unless the app specifically opts into lower security.
 
@@ -170,7 +170,7 @@ to check what TLS versions it supports is the [SSL Labs
 tester][ssllabs-tester].
 
 To resolve this issue, update your server to support TLS 1.2,
-and preferably also TLS 1.3.  For nginx, see [the `ssl_protocols`
+and preferably also TLS 1.3. For nginx, see [the `ssl_protocols`
 directive][nginx-doc-protocols] in your configuration.
 
 [nginx-doc-protocols]: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
@@ -188,14 +188,14 @@ configuration.
 
 The issue is that Android 7.0 supports only the curve `secp256r1` when
 doing elliptic-curve cryptography for TLS, and not other curves like
-`secp384r1` or `secp512r1`.  If your server's TLS/SSL configuration
+`secp384r1` or `secp512r1`. If your server's TLS/SSL configuration
 offers only other curves, then Android 7.0 clients will be unable to
 connect.
 
 By default `nginx` (and therefore a Zulip server) offers the
-`secp256r1` curve among others, and so everything works.  You can
+`secp256r1` curve among others, and so everything works. You can
 control the offered curves with `ssl_ecdh_curve` in the `nginx`
-configuration on your server.  See [nginx docs][nginx-doc-curve] for
+configuration on your server. See [nginx docs][nginx-doc-curve] for
 details.
 
 [nginx-doc-curve]: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_ecdh_curve
@@ -207,9 +207,9 @@ cause:
   later.
 
 - If your server is reachable from the public Internet, use the [SSL
-  Labs tester][ssllabs-tester].  Under "Cipher Suites" you may see
+  Labs tester][ssllabs-tester]. Under "Cipher Suites" you may see
   lines beginning with `TLS_ECDHE`, for cipher suites which use
-  elliptic-curve cryptography.  These lines will have further text
+  elliptic-curve cryptography. These lines will have further text
   like `ECDH secp256r1` or `ECDH secp384r1`, which identifies specific
-  elliptic curves your server offers to use.  This issue applies if
+  elliptic curves your server offers to use. This issue applies if
   your server does not offer `secp256r1`.

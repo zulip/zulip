@@ -40,7 +40,7 @@ follows:
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
-This enables Zoom support in your Zulip server.  Finally, [configure
+This enables Zoom support in your Zulip server. Finally, [configure
 Zoom as the video call
 provider](https://zulip.com/help/start-a-call) in the Zulip
 organization(s) where you want to use it.
@@ -71,7 +71,7 @@ Server as follows:
 3. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
-This enables Big Blue Button support in your Zulip server.  Finally, [configure
+This enables Big Blue Button support in your Zulip server. Finally, [configure
 Big Blue Button as the video call
 provider](https://zulip.com/help/start-a-call) in the Zulip
 organization(s) where you want to use it.

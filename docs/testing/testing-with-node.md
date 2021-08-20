@@ -1,7 +1,7 @@
 # JavaScript/TypeScript unit tests
 
 Our node-based unit tests system is the preferred way to test
-JavaScript/TypeScript code in Zulip.  We prefer it over the [Puppeteer
+JavaScript/TypeScript code in Zulip. We prefer it over the [Puppeteer
 black-box whole-app testing](../testing/testing-with-puppeteer.md),
 system since it is much (>100x) faster and also easier to do correctly
 than the Puppeteer system.
@@ -15,8 +15,8 @@ See `test-js-with-node --help` for useful options; even though the
 whole suite is quite fast, it still saves time to run a single test by
 name when debugging something.
 
-The JS unit tests are written to work with node.  You can find them
-in `frontend_tests/node_tests`.  Here is an example test from
+The JS unit tests are written to work with node. You can find them
+in `frontend_tests/node_tests`. Here is an example test from
 `frontend_tests/node_tests/stream_data.js`:
 
 ```js
@@ -38,8 +38,8 @@ in `frontend_tests/node_tests`.  Here is an example test from
 ```
 
 The names of the node tests generally align with the names of the
-modules they test.  If you modify a JS module in `static/js` you should
-see if there are corresponding test in `frontend_tests/node_tests`.  If
+modules they test. If you modify a JS module in `static/js` you should
+see if there are corresponding test in `frontend_tests/node_tests`. If
 there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
@@ -69,7 +69,7 @@ working on or debugging the Zulip node tests.
 
 Conceptually, the `zjquery` library provides minimal versions of most
 `jQuery` DOM manipulation functions, and has a convenient system for
-letting you set up return values for more complex functions.  For
+letting you set up return values for more complex functions. For
 example, if the code you'd like to test calls `$obj.find()`, you can
 use `$obj.set_find_results(selector, $value)` to set up `zjquery` so
 that calls to `$obj.find(selector)` will return `$value`. See the unit
@@ -97,7 +97,7 @@ based on how other functions have been stubbed in the same file.
 The other big challenge with doing unit tests for a JavaScript project
 is that often one wants to limit the scope the production code being
 run, just to avoid doing extra setup work that isn't relevant to the
-code you're trying to test.  For that reason, each unit test file
+code you're trying to test. For that reason, each unit test file
 explicitly declares all of the modules it depends on, with a few
 different types of declarations depending on whether we want to:
 
@@ -178,8 +178,8 @@ data/logic modules (UI modules are lower priority for unit testing).
 
 Our node test system is pretty simple, and it's possible to configure
 the native debugger features of popular editors to allow stepping
-through the code.  Below we document the editors where someone has put
-together detailed instructions for how to do so.  Contributions of
+through the code. Below we document the editors where someone has put
+together detailed instructions for how to do so. Contributions of
 notes for other editors are welcome!
 
 ## Webstorm integration setup
@@ -201,7 +201,7 @@ These instructions assume you're using the Vagrant development environment.
     - `Vagrant executable` should already be correctly `vagrant`.
     - `Environment Variables` is not needed.
 
-3. You'll now need to set up a WebStorm "Debug Configuration".  Open
+3. You'll now need to set up a WebStorm "Debug Configuration". Open
    the `Run/Debug Configuration` menu and create a new `Node.js` config:
     1. Under `Node interpreter:` click the 3 dots to the right side and
       click on the little plus in the bottom left of the
@@ -217,7 +217,7 @@ These instructions assume you're using the Vagrant development environment.
     1. Under `JavaScript file`, enter `frontend_tests/zjsunit/index.js`
      -- this is the root script for Zulip's node unit tests.
 
-Congratulations!  You've now set up the integration.
+Congratulations! You've now set up the integration.
 
 ## Running tests with the debugger
 

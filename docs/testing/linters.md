@@ -11,7 +11,7 @@ but for other files, we are quite thorough about checking semantic
 correctness.
 
 Obviously, a large reason for linting code is to enforce the [Zulip
-coding standards](../contributing/code-style.md).  But we also use the linters to
+coding standards](../contributing/code-style.md). But we also use the linters to
 prevent common coding errors.
 
 We borrow some open source tools for much of our linting, and the links
@@ -44,7 +44,7 @@ You can also run them individually or pass specific files:
 ```
 
 `./tools/lint` has many useful options; you can read about them in its
-internal documentation using `./tools/lint --help`.  Of particular
+internal documentation using `./tools/lint --help`. Of particular
 note are:
 - `--fix`: Several of our linters support automatically fixing basic
   issues; this option will ask `tools/lint` to run those.
@@ -82,9 +82,9 @@ And, of course, for minor oversights, `lint` is your friend, not your foe.
 
 Occasionally, our linters will complain about things that are more of
 an artifact of the linter limitations than any actual problem with your
-code.  There is usually a mechanism where you can bypass the linter in
+code. There is usually a mechanism where you can bypass the linter in
 extreme cases, but often it can be a simple matter of writing your code
-in a slightly different style to appease the linter.  If you have
+in a slightly different style to appease the linter. If you have
 problems getting something to lint, you can submit an unfinished PR
 and ask the reviewer to help you work through the lint problem, or you
 can find other people in the [Zulip Community](../contributing/chat-zulip-org.md)
@@ -95,12 +95,12 @@ find limitations in either the Zulip home-grown stuff or our third party
 tools, feedback will be highly appreciated.
 
 Finally, one way to clean up your code is to thoroughly exercise it
-with tests.  The [Zulip test documentation](../testing/testing.md)
+with tests. The [Zulip test documentation](../testing/testing.md)
 describes our test system in detail.
 
 ## Lint checks
 
-Most of our lint checks get performed by `./tools/lint`.  These include the
+Most of our lint checks get performed by `./tools/lint`. These include the
 following checks:
 
 - Check Python code with pyflakes.
@@ -113,10 +113,10 @@ following checks:
 - Check HTML templates for matching tags and indentations.
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
-- Running `mypy` to check static types in Python code.  Our
+- Running `mypy` to check static types in Python code. Our
   [documentation on using mypy](../testing/mypy.md) covers mypy in
   more detail.
-- Running `tsc` to compile TypeScript code.  Our [documentation on
+- Running `tsc` to compile TypeScript code. Our [documentation on
   TypeScript](typescript.md) covers TypeScript in more detail.
 
 The rest of this document pertains to the checks that occur in `./tools/lint`.
@@ -134,14 +134,14 @@ In order for our entire lint suite to run in a timely fashion, the `lint`
 script performs several lint checks in parallel by forking out subprocesses.
 
 Note that our project does custom regex-based checks on the code, and we
-also customize how we call pyflakes and pycodestyle (pep8).  The code for these
+also customize how we call pyflakes and pycodestyle (pep8). The code for these
 types of checks mostly lives [here](https://github.com/zulip/zulip/tree/main/tools/linter_lib).
 
 ### Special options
 
-You can use the `-h` option for `lint` to see its usage.  One particular
+You can use the `-h` option for `lint` to see its usage. One particular
 flag to take note of is the `--modified` flag, which enables you to only run
-lint checks against files that are modified in your Git repo.  Most of the
+lint checks against files that are modified in your Git repo. Most of the
 "sub-linters" respect this flag, but some will continue to process all the files.
 Generally, a good workflow is to run with `--modified` when you are iterating on
 the code, and then run without that option right before committing new code.
@@ -157,7 +157,7 @@ various file types.
 
 #### Generic source code checks
 
-We check almost our entire codebase for trailing whitespace.  Also, we
+We check almost our entire codebase for trailing whitespace. Also, we
 disallow tab (\t) characters in all but two files.
 
 We also have custom regex-based checks that apply to specific file types.
@@ -165,7 +165,7 @@ For relatively minor files like Markdown files and JSON fixtures, this
 is the extent of our checking.
 
 Finally, we're checking line length in Python code (and hope to extend
-this to other parts of the codebase soon).  You can use
+this to other parts of the codebase soon). You can use
 `#ignorelinelength` for special cases where a very long line makes
 sense (e.g. a link in a comment to an extremely long URL).
 
@@ -173,19 +173,19 @@ sense (e.g. a link in a comment to an extremely long URL).
 
 Our Python code is formatted using Black (using the options in the
 `[tool.black]` section of `pyproject.toml`) and isort (using the
-options in `.isort.cfg`).  The `lint` script enforces this by running
+options in `.isort.cfg`). The `lint` script enforces this by running
 Black and isort in check mode, or in write mode with `--fix`.
 
-The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
+The bulk of our Python linting gets outsourced to the "pyflakes" tool. We
 call "pyflakes" in a fairly vanilla fashion, and then we post-process its
 output to exclude certain specific errors that Zulip is comfortable
 ignoring.
 
 Zulip also has custom regex-based rules that it applies to Python code.
-Look for `python_rules` in the source code for `lint`.  Note that we
+Look for `python_rules` in the source code for `lint`. Note that we
 provide a mechanism to exclude certain lines of codes from these checks.
 Often, it is simply the case that our regex approach is too crude to
-correctly exonerate certain valid constructs.  In other cases, the code
+correctly exonerate certain valid constructs. In other cases, the code
 that we exempt may be deemed not worthwhile to fix.
 
 #### JavaScript code
@@ -198,7 +198,7 @@ We check our JavaScript code in a few different ways:
 #### Puppet manifests
 
 We use Puppet as our tool to manage configuration files, using
-Puppet "manifests."  To lint Puppet manifests, we use the "parser validate"
+Puppet "manifests." To lint Puppet manifests, we use the "parser validate"
 option of Puppet.
 
 #### HTML templates
@@ -209,7 +209,7 @@ Zulip uses two HTML templating systems:
 - [handlebars](https://handlebarsjs.com/)
 
 Zulip has an internal tool that validates both types of templates for
-correct indentation and matching tags.  You can find the code here:
+correct indentation and matching tags. You can find the code here:
 
 - driver: [check-templates](https://github.com/zulip/zulip/blob/main/tools/check-templates)
 - engine: [lib/template_parser.py](https://github.com/zulip/zulip/blob/main/tools/lib/template_parser.py)
@@ -227,7 +227,7 @@ for the rules we currently enforce.
 #### Shell scripts
 
 Zulip uses [shellcheck](https://github.com/koalaman/shellcheck) to
-lint our shell scripts.  We recommend the
+lint our shell scripts. We recommend the
 [shellcheck gallery of bad code][shellcheck-bad-code] as a resource on
 how to not write bad shell.
 

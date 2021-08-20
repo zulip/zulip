@@ -26,7 +26,7 @@ of various useful helper functions defined in
 
 The Puppeteer tests use a real Chromium browser (powered by
 [puppeteer](https://github.com/puppeteer/puppeteer)), connected to a
-real Zulip development server.  These are black-box tests: Steps in a
+real Zulip development server. These are black-box tests: Steps in a
 Puppeteer test are largely things one might do as a user of the Zulip
 webapp, like "Type this key", "Wait until this HTML element
 appears/disappears", or "Click on this HTML element".
@@ -45,7 +45,7 @@ async function test_private_message_compose_shortcut(page) {
 
 The test function presses the `x` key, waits for the
 `#private_message_recipient` input element to appear, verifies its
-content is empty, and then closes the compose box.  The
+content is empty, and then closes the compose box. The
 `waitForSelector` step here (and in most tests) is critical; tests
 that don't wait properly often fail nonderministically, because the
 test will work or not depending on whether the browser updates the UI
@@ -70,14 +70,14 @@ integration](../testing/continuous-integration.md):
   interactive to debug an issue in the normal Zulip development
   environment than in the Puppeteer test suite.
 - Does the change being tested adjust the HTML structure in a way that
-  affects any of the selectors used in the tests?  If so, the test may
+  affects any of the selectors used in the tests? If so, the test may
   just need to be updated for your changes.
 - Does the test fail deterministically when you run it locally using
   E.g. `./tools/test-js-with-puppeteer compose.ts`? If so, you can
   iteratively debug to see the failure.
-- Does the test fail nondeterministically?  If so, the problem is
+- Does the test fail nondeterministically? If so, the problem is
   likely that a `waitForSelector` statement is either missing or not
-  waiting for the right thing.  Tests fail nondeterministically much
+  waiting for the right thing. Tests fail nondeterministically much
   more often on very slow systems like those used for Continuous
   Integration (CI) services because small races are amplified in those
   environments; this often explains failures in CI that cannot be
@@ -115,7 +115,7 @@ These tools/features are often useful when debugging:
   extra [Django settings](../subsystems/settings.md) from
   `zproject/test_extra_settings.py` to configure an isolated database
   so that the tests will not interfere/interact with a normal
-  development environment.  The console output while running the tests
+  development environment. The console output while running the tests
   includes the console output for the server; any Python exceptions
   are likely actual bugs in the changes being tested.
 
@@ -143,22 +143,22 @@ notes above:
   assumes the last step was processed by the browser (E.g. after you
   click on a user's avatar, you need an explicit wait for the profile
   popover to appear before you can try to click on a menu item in that
-  popover).  This means that before essentially every action in your
+  popover). This means that before essentially every action in your
   Puppeteer tests, you'll want to use `waitForSelector` or similar
   wait function to make sure the page or element is ready before you
-  interact with it.  The [puppeteer docs site](https://pptr.dev/) is a
+  interact with it. The [puppeteer docs site](https://pptr.dev/) is a
   useful reference for the available wait functions.
 - When using `waitForSelector`, you always want to use the
   `{visible: true}` option; otherwise the test will stop waiting as
   soon as the target selector is present in the DOM even if it's
-  hidden.  For the common UI pattern of having an element always be
+  hidden. For the common UI pattern of having an element always be
   present in the DOM whose presence is managed via show/hide rather
   than adding/removing it from the DOM, `waitForSelector` without
   `visible: true` won't wait at all.
 - The test suite uses a smaller set of default user accounts and other
   data initialized in the database than the normal development
   environment; specifically, it uses the same setup as the [backend
-  tests](../testing/testing-with-django.md).  To see what differs from
+  tests](../testing/testing-with-django.md). To see what differs from
   the development environment, check out the conditions on
   `options["test_suite"]` in
   `zilencer/management/commands/populate_db.py`.

@@ -32,14 +32,14 @@ networks.
 ## Setting up user accounts
 
 You will need a non-root user account with sudo privileges to set up
-the Zulip development environment.  If you have one already, continue
+the Zulip development environment. If you have one already, continue
 to the next section.
 
 You can create a new user with sudo privileges by running the
 following commands as root:
 - You can create a `zulipdev` user by running the command
 `adduser zulipdev`. Run through the prompts to assign a password and
-user information.  (You can pick any username you like for this user
+user information. (You can pick any username you like for this user
 account.)
 - You can add the user to the sudo group by running the command
 `usermod -aG sudo zulipdev`.
@@ -93,7 +93,7 @@ developing on your laptop).
 To properly secure your remote development environment, you can
 [port forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding)
 using ssh instead of running the development environment on an exposed
-interface.  For example, if you're running Zulip on a remote server
+interface. For example, if you're running Zulip on a remote server
 such as a DigitalOcean Droplet or an AWS EC2 instance, you can set up
 port-forwarding to access Zulip by running the following command in
 your terminal:
@@ -282,7 +282,7 @@ Next, read the following to learn more about developing for Zulip:
 
 For some applications (e.g. developing an OAuth2 integration for
 Facebook), you may need your Zulip development to have a valid SSL
-certificate.  While `run-dev.py` doesn't support that, you can do this
+certificate. While `run-dev.py` doesn't support that, you can do this
 with an `nginx` reverse proxy sitting in front of `run-dev.py.`.
 
 The following instructions assume you have a Zulip Droplet working and

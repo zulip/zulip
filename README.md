@@ -32,7 +32,7 @@ You might be interested in:
 
 - **Contributing code**. Check out our
   [guide for new contributors](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
-  to get started.  Zulip prides itself on maintaining a clean and
+  to get started. Zulip prides itself on maintaining a clean and
   well-tested codebase, and a stock of hundreds of
   [beginner-friendly issues][beginner-friendly].
 

@@ -1,19 +1,19 @@
 # Incoming email integration
 
 Zulip's incoming email gateway integration makes it possible to send
-messages into Zulip by sending an email.  It's highly recommended
+messages into Zulip by sending an email. It's highly recommended
 because it enables:
 
 - When users reply to one of Zulip's message notification emails
   from their email client, the reply can go directly
   into Zulip.
 - Integrating third-party services that can send email notifications
-  into Zulip.  See the [integration
+  into Zulip. See the [integration
   documentation](https://zulip.com/integrations/doc/email) for
   details.
 
 Once this integration is configured, each stream will have a special
-email address displayed on the stream settings page.  Emails sent to
+email address displayed on the stream settings page. Emails sent to
 that address will be delivered into the stream.
 
 There are two ways to configure Zulip's email gateway:
@@ -24,7 +24,7 @@ There are two ways to configure Zulip's email gateway:
     inbox (`username@example.com`) every minute for new emails.
 
 The local delivery configuration is preferred for production because
-it supports nicer looking email addresses and has no cron delay.  The
+it supports nicer looking email addresses and has no cron delay. The
 polling option is convenient for testing/developing this feature
 because it doesn't require a public IP address or setting up MX
 records in DNS.
@@ -45,7 +45,7 @@ integration; you just need to enable and configure it as follows.
 
 The main decision you need to make is what email domain you want to
 use for the gateway; for this discussion we'll use
-`emaildomain.example.com`.  The email addresses used by the gateway
+`emaildomain.example.com`. The email addresses used by the gateway
 will look like `foo@emaildomain.example.com`, so we recommend using
 `EXTERNAL_HOST` here.
 
@@ -55,7 +55,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 
 1. Using your DNS provider, create a DNS MX (mail exchange) record
    configuring email for `emaildomain.example.com` to be processed by
-   `hostname.example.com`.  You can check your work using this command:
+   `hostname.example.com`. You can check your work using this command:
 
     ```console
     $ dig +short emaildomain.example.com -t MX
@@ -65,7 +65,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 1. Log in to your Zulip server; the remaining steps all happen there.
 
 1. Add `, zulip::postfix_localmail` to `puppet_classes` in
-   `/etc/zulip/zulip.conf`.  A typical value after this change is:
+   `/etc/zulip/zulip.conf`. A typical value after this change is:
    ```ini
    puppet_classes = zulip::profile::standalone, zulip::postfix_localmail
    ```
@@ -93,15 +93,15 @@ using an [HTTP reverse proxy][reverse-proxy]).
 1. Restart your Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
-Congratulations!  The integration should be fully operational.
+Congratulations! The integration should be fully operational.
 
 [reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
 
 ## Polling setup
 
 1. Create an email account dedicated to Zulip's email gateway
-  messages.  We assume the address is of the form
-  `username@example.com`.  The email provider needs to support the
+  messages. We assume the address is of the form
+  `username@example.com`. The email provider needs to support the
   standard model of delivering emails sent to
   `username+stuff@example.com` to the `username@example.com` inbox.
 
@@ -122,4 +122,4 @@ Congratulations!  The integration should be fully operational.
     sudo cp puppet/zulip/files/cron.d/email-mirror /etc/cron.d/
     ```
 
-Congratulations!  The integration should be fully operational.
+Congratulations! The integration should be fully operational.
