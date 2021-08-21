@@ -1574,7 +1574,6 @@ class TestGetAPNsPayload(PushNotificationTest):
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
         payload = get_message_payload_apns(self.sender, message, NotificationTriggers.STREAM_PUSH)
-        message.stream_name = "Verona"
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1605,7 +1604,6 @@ class TestGetAPNsPayload(PushNotificationTest):
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
         payload = get_message_payload_apns(user_profile, message, NotificationTriggers.MENTION)
-        message.stream_name = "Verona"
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1639,7 +1637,6 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(
             user_profile, message, NotificationTriggers.MENTION, user_group.id, user_group.name
         )
-        message.stream_name = "Verona"
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1674,7 +1671,6 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(
             user_profile, message, NotificationTriggers.WILDCARD_MENTION
         )
-        message.stream_name = "Verona"
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1844,7 +1840,6 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_stream_notifications(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
             hamlet, message, NotificationTriggers.STREAM_PUSH
@@ -1882,7 +1877,6 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_redacted_content(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
             hamlet, message, NotificationTriggers.STREAM_PUSH
