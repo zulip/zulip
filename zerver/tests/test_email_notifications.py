@@ -825,33 +825,6 @@ class TestMissedMessages(ZulipTestCase):
         for text in expected_email_include:
             self.assertIn(text, self.normalize_string(mail.outbox[0].body))
 
-    def test_system_user_group_mention_sends_email(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), is_system_group=True
-        )
-        user_group_mentioned_message_id = self.send_stream_message(
-            othello, "Denmark", "@*hamlet_and_cordelia*"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {
-                    "message_id": user_group_mentioned_message_id,
-                    "trigger": "mentioned",
-                    "mentioned_user_group_id": hamlet_and_cordelia.id,
-                },
-            ],
-        )
-        self.assertIn(
-            "Othello, the Moor of Venice: @*hamlet_and_cordelia* -- ",
-            self.normalize_string(mail.outbox[0].body),
-        )
-
     def test_realm_name_in_notifications(self) -> None:
         # Test with realm_name_in_notifications for hamlet disabled.
         self._realm_name_in_missed_message_email_subject(False)
