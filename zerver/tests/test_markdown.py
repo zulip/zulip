@@ -2396,6 +2396,28 @@ class MarkdownTest(ZulipTestCase):
         assert_silent_mention("```quote\n@*backend*\n```")
         assert_silent_mention("```quote\n@_*backend*\n```")
 
+    def test_system_user_group_mention(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        moderators_group = create_user_group(
+            "Moderators", [iago, shiva], get_realm("zulip"), is_system_group=True
+        )
+        content = "@*Moderators* @**King Hamlet** test message"
+
+        # Owner cannot mention a system user group.
+        msg = Message(sender=desdemona, sending_client=get_client("test"))
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
+        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
+
+        # Admin belonging to user group also cannot mention a system user group.
+        msg = Message(sender=iago, sending_client=get_client("test"))
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
+        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
+
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")

@@ -101,7 +101,7 @@ class MentionData:
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
             for group in UserGroup.objects.filter(
-                realm_id=realm_id, name__in=user_group_names
+                realm_id=realm_id, name__in=user_group_names, is_system_group=False
             ).prefetch_related("usergroupmembership_set"):
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_members[group.id] = [
