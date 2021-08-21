@@ -29,19 +29,21 @@ from typing_extensions import Literal
 import zerver.lib.rate_limiter as rate_limiter
 import zerver.tornado.handlers as handlers
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
+from zerver.lib.notes import BaseNotes
 from zerver.lib.types import Validator, ViewFuncT
 from zerver.models import Client, Realm
 
 
 @dataclass
-class ZulipRequestNotes:
+class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     """This class contains extra metadata that Zulip associated with a
-    Django HttpRequest object.
+    Django HttpRequest object. See the docstring for BaseNotes for
+    details on how it works.
 
     Note that most Optional fields will be definitely not None once
     middlware has run. In the future, we may want to express that in
-    the types by having different types ZulipEarlyRequestNotes and
-    post-middleware ZulipRequestNotes types, but for now we have a lot
+    the types by having different types EarlyRequestNotes and
+    post-middleware RequestNotes types, but for now we have a lot
     of `assert request_notes.foo is not None` when accessing them.
     """
 
@@ -68,16 +70,9 @@ class ZulipRequestNotes:
     processed_parameters: Set[str] = field(default_factory=set)
     ignored_parameters: Set[str] = field(default_factory=set)
 
-
-request_notes_map: MutableMapping[HttpRequest, ZulipRequestNotes] = weakref.WeakKeyDictionary()
-
-
-def get_request_notes(request: HttpRequest) -> ZulipRequestNotes:
-    try:
-        return request_notes_map[request]
-    except KeyError:
-        request_notes_map[request] = ZulipRequestNotes()
-        return request_notes_map[request]
+    @classmethod
+    def init_notes(cls) -> "RequestNotes":
+        return RequestNotes()
 
 
 class RequestConfusingParmsError(JsonableError):
@@ -358,7 +353,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
-        request_notes = get_request_notes(request)
+        request_notes = RequestNotes.get_notes(request)
         for param in post_params:
             func_var_name = param.func_var_name
             if param.path_only:

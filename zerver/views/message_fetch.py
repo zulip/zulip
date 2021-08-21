@@ -37,7 +37,7 @@ from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import is_web_public_compatible, is_web_public_narrow
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -1040,7 +1040,7 @@ def get_messages_backend(
                 verbose_operators.append("is:" + term["operand"])
             else:
                 verbose_operators.append(term["operator"])
-        log_data = get_request_notes(request).log_data
+        log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 

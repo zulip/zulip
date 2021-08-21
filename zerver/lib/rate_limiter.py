@@ -42,10 +42,10 @@ class RateLimitedObject(ABC):
         )
 
     def rate_limit_request(self, request: HttpRequest) -> None:
-        from zerver.lib.request import get_request_notes
+        from zerver.lib.request import RequestNotes
 
         ratelimited, time = self.rate_limit()
-        request_notes = get_request_notes(request)
+        request_notes = RequestNotes.get_notes(request)
 
         request_notes.ratelimits_applied.append(
             RateLimitResult(

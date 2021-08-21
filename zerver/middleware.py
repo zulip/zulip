@@ -38,7 +38,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import get_request_notes, set_request, unset_request
+from zerver.lib.request import RequestNotes, set_request, unset_request
 from zerver.lib.response import json_response, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
@@ -61,7 +61,7 @@ def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
 
 
 def async_request_timer_stop(request: HttpRequest) -> None:
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     record_request_stop_data(log_data)
 
@@ -77,7 +77,7 @@ def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
 
 
 def async_request_timer_restart(request: HttpRequest) -> None:
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     if "time_restarted" in log_data:
         # Don't destroy data when being called from
@@ -341,7 +341,7 @@ class LogRequests(MiddlewareMixin):
     # method here too
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
-        request_notes = get_request_notes(request)
+        request_notes = RequestNotes.get_notes(request)
 
         if request_notes.log_data is not None:
             # Sanity check to ensure this is being called from the
@@ -362,7 +362,7 @@ class LogRequests(MiddlewareMixin):
         args: List[str],
         kwargs: Dict[str, Any],
     ) -> None:
-        request_notes = get_request_notes(request)
+        request_notes = RequestNotes.get_notes(request)
         if request_notes.saved_response is not None:
             # The below logging adjustments are unnecessary (because
             # we've already imported everything) and incorrect
@@ -394,7 +394,7 @@ class LogRequests(MiddlewareMixin):
         remote_ip = request.META["REMOTE_ADDR"]
 
         # Get the requestor's identifier and client, if available.
-        request_notes = get_request_notes(request)
+        request_notes = RequestNotes.get_notes(request)
         requestor_for_logs = request_notes.requestor_for_logs
         if requestor_for_logs is None:
             # Note that request.user is a Union[RemoteZulipServer, UserProfile, AnonymousUser],
@@ -455,7 +455,7 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
-        if get_request_notes(request).error_format == "JSON":
+        if RequestNotes.get_notes(request).error_format == "JSON":
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
             json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
@@ -471,9 +471,9 @@ class TagRequests(MiddlewareMixin):
 
     def process_request(self, request: HttpRequest) -> None:
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
-            get_request_notes(request).error_format = "JSON"
+            RequestNotes.get_notes(request).error_format = "JSON"
         else:
-            get_request_notes(request).error_format = "HTML"
+            RequestNotes.get_notes(request).error_format = "HTML"
 
 
 class CsrfFailureError(JsonableError):
@@ -490,7 +490,7 @@ class CsrfFailureError(JsonableError):
 
 
 def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
-    if get_request_notes(request).error_format == "JSON":
+    if RequestNotes.get_notes(request).error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
         return html_csrf_failure(request, reason)
@@ -517,7 +517,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         # An additional responsibility of our override of this middleware is to save the user's language
         # preference in a cookie. That determination is made by code handling the request
         # and saved in the set_language flag so that it can be used here.
-        set_language = get_request_notes(request).set_language
+        set_language = RequestNotes.get_notes(request).set_language
         if set_language is not None:
             response.set_cookie(settings.LANGUAGE_COOKIE_NAME, set_language)
 
@@ -544,7 +544,7 @@ class RateLimitMiddleware(MiddlewareMixin):
             return response
 
         # Add X-RateLimit-*** headers
-        ratelimits_applied = get_request_notes(request).ratelimits_applied
+        ratelimits_applied = RequestNotes.get_notes(request).ratelimits_applied
         if len(ratelimits_applied) > 0:
             self.set_response_headers(response, ratelimits_applied)
 
@@ -577,7 +577,7 @@ class HostDomainMiddleware(MiddlewareMixin):
 
         subdomain = get_subdomain(request)
         if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-            request_notes = get_request_notes(request)
+            request_notes = RequestNotes.get_notes(request)
             try:
                 request_notes.realm = get_realm(subdomain)
             except Realm.DoesNotExist:
@@ -614,7 +614,7 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
 
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
-    placeholder_open_graph_description = get_request_notes(
+    placeholder_open_graph_description = RequestNotes.get_notes(
         request
     ).placeholder_open_graph_description
     assert placeholder_open_graph_description is not None
@@ -629,7 +629,7 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
         self, request: HttpRequest, response: StreamingHttpResponse
     ) -> StreamingHttpResponse:
 
-        if get_request_notes(request).placeholder_open_graph_description is not None:
+        if RequestNotes.get_notes(request).placeholder_open_graph_description is not None:
             assert not response.streaming
             response.content = alter_content(request, response.content)
         return response

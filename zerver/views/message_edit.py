@@ -11,7 +11,7 @@ from zerver.lib.actions import check_update_message, do_delete_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.message import access_message
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
@@ -117,7 +117,7 @@ def update_message_backend(
     )
 
     # Include the number of messages changed in the logs
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{number_changed}]"
 

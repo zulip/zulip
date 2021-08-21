@@ -276,9 +276,9 @@ def json_change_settings(
         do_set_user_display_setting(user_profile, "timezone", timezone)
 
     # TODO: Do this more generally.
-    from zerver.lib.request import get_request_notes
+    from zerver.lib.request import RequestNotes
 
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
     for req_var in request.POST:
         if req_var not in request_notes.processed_parameters:
             request_notes.ignored_parameters.add(req_var)

@@ -47,7 +47,7 @@ def finish_handler(
     try:
         # We do the import during runtime to avoid cyclic dependency
         # with zerver.lib.request
-        from zerver.lib.request import get_request_notes
+        from zerver.lib.request import RequestNotes
         from zerver.middleware import async_request_timer_restart
 
         # We call async_request_timer_restart here in case we are
@@ -56,7 +56,7 @@ def finish_handler(
         handler = get_handler_by_id(handler_id)
         request = handler._request
         async_request_timer_restart(request)
-        log_data = get_request_notes(request).log_data
+        log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
         if len(contents) != 1:
             log_data["extra"] = f"[{event_queue_id}/1]"
@@ -113,11 +113,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         request = WSGIRequest(environ)
 
         # We do the import during runtime to avoid cyclic dependency
-        from zerver.lib.request import get_request_notes
+        from zerver.lib.request import RequestNotes
 
         # Provide a way for application code to access this handler
         # given the HttpRequest object.
-        get_request_notes(request).tornado_handler = weakref.ref(self)
+        RequestNotes.get_notes(request).tornado_handler = weakref.ref(self)
 
         return request
 
@@ -228,12 +228,12 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # HttpResponse with all Django middleware run.
         request = self.convert_tornado_request_to_django_request()
 
-        # We import get_request_notes during runtime to avoid
+        # We import RequestNotes during runtime to avoid
         # cyclic import
-        from zerver.lib.request import get_request_notes
+        from zerver.lib.request import RequestNotes
 
-        request_notes = get_request_notes(request)
-        old_request_notes = get_request_notes(old_request)
+        request_notes = RequestNotes.get_notes(request)
+        old_request_notes = RequestNotes.get_notes(old_request)
 
         # Add to this new HttpRequest logging data from the processing of
         # the original request; we will need these for logging.

@@ -14,7 +14,7 @@ from zerver.decorator import (
     process_as_post,
 )
 from zerver.lib.exceptions import MissingAuthenticationError
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
@@ -66,7 +66,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     etc, as that is where we route HTTP verbs to target functions.
     """
     supported_methods: Dict[str, Any] = {}
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
     if request_notes.saved_response is not None:
         # For completing long-polled Tornado requests, we skip the
         # view function logic and just return the response.

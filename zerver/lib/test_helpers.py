@@ -45,7 +45,8 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.lib.request import ZulipRequestNotes, request_notes_map
+from zerver.lib.notes import BaseNotes
+from zerver.lib.request import RequestNotes
 from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
 from zerver.models import (
     Client,
@@ -320,12 +321,16 @@ class HostRequestMock(HttpRequest):
         self.user = user_profile
         self._body = b""
         self.content_type = ""
+        BaseNotes[str, str].get_notes
 
-        request_notes_map[self] = ZulipRequestNotes(
-            client_name="",
-            log_data={},
-            tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
-            client=get_client(client_name) if client_name is not None else None,
+        RequestNotes.set_notes(
+            self,
+            RequestNotes(
+                client_name="",
+                log_data={},
+                tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
+                client=get_client(client_name) if client_name is not None else None,
+            ),
         )
 
     @property

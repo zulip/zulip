@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import internal_notify_view, process_client
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
@@ -36,7 +36,7 @@ def cleanup_event_queue(
         raise BadEventQueueIdError(queue_id)
     if user_profile.id != client.user_profile_id:
         raise JsonableError(_("You are not authorized to access this queue"))
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
     client.cleanup()
@@ -49,7 +49,7 @@ def get_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
-    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, client_name="internal")
     return get_events_backend(request, user_profile)
 
@@ -111,13 +111,13 @@ def get_events_backend(
         raise JsonableError(_("User not authorized for this query"))
 
     # Extract the Tornado handler from the request
-    tornado_handler = get_request_notes(request).tornado_handler
+    tornado_handler = RequestNotes.get_notes(request).tornado_handler
     assert tornado_handler is not None
     handler = tornado_handler()
     assert handler is not None
 
     if user_client is None:
-        valid_user_client = get_request_notes(request).client
+        valid_user_client = RequestNotes.get_notes(request).client
         assert valid_user_client is not None
     else:
         valid_user_client = user_client
@@ -155,7 +155,7 @@ def get_events_backend(
 
     result = fetch_events(events_query)
     if "extra_log_data" in result:
-        log_data = get_request_notes(request).log_data
+        log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
         log_data["extra"] = result["extra_log_data"]
 

@@ -11,7 +11,7 @@ from zerver.lib.actions import do_update_user_status, update_user_presence
 from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool, check_capped_string
@@ -114,7 +114,7 @@ def update_user_status_backend(
         assert emoji_type is not None
         check_emoji_request(user_profile.realm, emoji_name, emoji_code, emoji_type)
 
-    client = get_request_notes(request).client
+    client = RequestNotes.get_notes(request).client
     assert client is not None
     do_update_user_status(
         user_profile=user_profile,
@@ -143,7 +143,7 @@ def update_active_status_backend(
     if status_val is None:
         raise JsonableError(_("Invalid status: {}").format(status))
     elif user_profile.presence_enabled:
-        client = get_request_notes(request).client
+        client = RequestNotes.get_notes(request).client
         assert client is not None
         update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
 

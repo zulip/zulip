@@ -47,9 +47,9 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.request import (
     REQ,
     RequestConfusingParmsError,
+    RequestNotes,
     RequestVariableConversionError,
     RequestVariableMissingError,
-    get_request_notes,
     has_request_variables,
 )
 from zerver.lib.response import json_response, json_success
@@ -1428,19 +1428,19 @@ class TestInternalNotifyView(ZulipTestCase):
                 orjson.loads(self.internal_notify(False, request).content).get("msg"),
                 self.BORING_RESULT,
             )
-            self.assertEqual(get_request_notes(request).requestor_for_logs, "internal")
+            self.assertEqual(RequestNotes.get_notes(request).requestor_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, request)
 
-        get_request_notes(request).tornado_handler = DummyHandler()
+        RequestNotes.get_notes(request).tornado_handler = DummyHandler()
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(request))
             self.assertEqual(
                 orjson.loads(self.internal_notify(True, request).content).get("msg"),
                 self.BORING_RESULT,
             )
-            self.assertEqual(get_request_notes(request).requestor_for_logs, "internal")
+            self.assertEqual(RequestNotes.get_notes(request).requestor_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(False, request)
