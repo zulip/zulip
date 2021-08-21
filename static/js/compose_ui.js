@@ -140,9 +140,16 @@ export function compute_placeholder_text(opts) {
 
 export function wrap_text_with_markdown(textarea, prefix, suffix) {
     const range = textarea.range();
-
-    if (!document.execCommand("insertText", false, prefix + range.text + suffix)) {
-        textarea.range(range.start, range.end).range(prefix + range.text + suffix);
+    let textRange = range.text;
+    if (prefix === "**" || prefix === "*") {
+        const rangeLength = textRange.length;
+        if (textRange.charCodeAt(rangeLength - 1) === 10) {
+            textRange = textRange.slice(0, -1);
+            suffix += "\n";
+        }
+    }
+    if (!document.execCommand("insertText", false, prefix + textRange + suffix)) {
+        textarea.range(range.start, range.end).range(prefix + textRange + suffix);
     }
 }
 
