@@ -164,12 +164,12 @@ export const bot_creation_policy_values = {
     },
     everyone: {
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
     restricted: {
         code: 2,
         description: $t({
-            defaultMessage: "Admins and members, but only admins can add generic bots",
+            defaultMessage: "Admins, moderators and members, but only admins can add generic bots",
         }),
     },
 };

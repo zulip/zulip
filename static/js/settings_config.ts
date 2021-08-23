@@ -97,7 +97,7 @@ export const get_all_display_settings = (): DisplaySettings => ({
 export const email_address_visibility_values = {
     everyone: {
         code: 1,
-        description: $t({defaultMessage: "Admins, members, and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     // // Backend support for this configuration is not available yet.
     // admins_and_members: {
@@ -132,12 +132,12 @@ export const common_policy_values = {
     by_full_members: {
         order: 3,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_members: {
         order: 4,
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
 };
 
@@ -160,12 +160,12 @@ export const invite_to_realm_policy_values = {
     by_full_members: {
         order: 4,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_members: {
         order: 5,
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
 };
 
@@ -173,7 +173,7 @@ export const private_message_policy_values = {
     by_anyone: {
         order: 1,
         code: 1,
-        description: $t({defaultMessage: "Admins, members, and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     disabled: {
         order: 2,
@@ -186,17 +186,17 @@ export const wildcard_mention_policy_values = {
     by_everyone: {
         order: 1,
         code: 1,
-        description: $t({defaultMessage: "Admins, members and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     by_members: {
         order: 2,
         code: 2,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
     by_full_members: {
         order: 3,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_moderators_only: {
         order: 4,
@@ -228,17 +228,17 @@ export const common_message_policy_values = {
     by_everyone: {
         order: 1,
         code: 5,
-        description: $t({defaultMessage: "Admins, members and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     by_members: {
         order: 2,
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
     by_full_members: {
         order: 3,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_moderators_only: {
         order: 4,

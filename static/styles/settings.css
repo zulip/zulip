@@ -1560,7 +1560,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     vertical-align: center;
 }
 
-/* These have enough space for "Admins and full members" in German. */
+/* These have enough space for "Admins, moderators and full members" in German. */
 .setting_desktop_icon_count_display,
 #id_realm_waiting_period_setting,
 #id_realm_create_stream_policy,
@@ -1572,7 +1572,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #id_realm_wildcard_mention_policy,
 #id_realm_move_messages_between_streams_policy,
 #id_realm_invite_to_realm_policy {
-    width: 250px;
+    width: 325px;
 }
 
 #id_realm_bot_creation_policy,
