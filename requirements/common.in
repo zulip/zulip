@@ -132,7 +132,6 @@ py3dns
 # Install Python Social Auth
 social-auth-app-django
 social-auth-core[azuread,openidconnect,saml]
-https://github.com/onelogin/python3-saml/archive/4b6c4b1f2ed3f6eab70ff4391e595b808ace168c.zip#egg=python3-saml==1.10.1+git  # remove defusedxml: https://github.com/onelogin/python3-saml/pull/236
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -142,7 +141,7 @@ lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
-https://github.com/karls/twilio-python/archive/355de2bc698596c20226990be48d8625d17e38fb.zip#egg=twilio==6.61.0+git  # support PyJWT ≥ 2.0.0: https://github.com/twilio/twilio-python/pull/560
+https://github.com/karls/twilio-python/archive/fb847755d2ec943a4fd84f0c33ae9f7f4999095a.zip#egg=twilio==6.61.0+git  # support PyJWT ≥ 2.0.0: https://github.com/twilio/twilio-python/pull/560
 
 # Needed for processing payments (in corporate)
 stripe
