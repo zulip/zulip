@@ -4973,6 +4973,8 @@ def do_create_realm(
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: Optional[bool] = False,
 ) -> Realm:
+    if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
+        raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
     if not server_initialized():

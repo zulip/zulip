@@ -59,6 +59,11 @@ class RealmTest(ZulipTestCase):
                 ["INFO:root:Server not yet initialized. Creating the internal realm first."],
             )
 
+    def test_realm_creation_on_social_auth_subdomain_disallowed(self) -> None:
+        with self.settings(SOCIAL_AUTH_SUBDOMAIN="zulipauth"):
+            with self.assertRaises(AssertionError):
+                do_create_realm("zulipauth", "Test Realm")
+
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
