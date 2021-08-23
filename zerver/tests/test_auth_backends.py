@@ -1116,7 +1116,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         result = self.client_get(result.url)
         self.assert_in_success_response(
-            [f"Your account {user_profile.delivery_email} is no longer active."], result
+            [f"Your account {user_profile.delivery_email} has been deactivated."], result
         )
 
     def test_social_auth_invalid_realm(self) -> None:
