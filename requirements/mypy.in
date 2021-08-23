@@ -18,7 +18,6 @@ types-decorator
 types-jsonschema
 types-Markdown
 types-oauthlib
-types-orjson
 types-polib
 types-Pillow
 types-psycopg2

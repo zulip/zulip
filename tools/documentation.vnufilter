@@ -1,4 +1,4 @@
 # Warnings that are probably less important.
 
-The “type” attribute is unnecessary for JavaScript resources\.
+Consider using the “h1” element as a top-level heading only \(all “h1” elements are treated as top-level headings by many screen readers and other tools\)\.
 Section lacks heading\. Consider using “h2”-“h6” elements to add identifying headings to all sections\.
