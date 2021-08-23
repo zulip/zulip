@@ -338,8 +338,7 @@ LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
 
 # What domains to treat like the root domain
-# "auth" is by default a reserved subdomain for the use by python-social-auth.
-ROOT_SUBDOMAIN_ALIASES = ["www", "auth"]
+ROOT_SUBDOMAIN_ALIASES = ["www"]
 # Whether the root domain is a landing page or can host a realm.
 ROOT_DOMAIN_LANDING_PAGE = False
 

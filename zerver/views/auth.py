@@ -731,6 +731,9 @@ def login_page(
     next: str = REQ(default="/"),
     **kwargs: Any,
 ) -> HttpResponse:
+    if settings.SOCIAL_AUTH_SUBDOMAIN == get_subdomain(request):
+        return social_auth_subdomain_login_page(request)
+
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
     # logged-in app.
@@ -792,6 +795,18 @@ def login_page(
 
     assert isinstance(template_response, HttpResponse)
     return template_response
+
+
+def social_auth_subdomain_login_page(request: HttpRequest) -> HttpResponse:
+    origin_subdomain = request.session.get("subdomain")
+    if origin_subdomain is not None:
+        try:
+            origin_realm = get_realm(origin_subdomain)
+            return HttpResponseRedirect(origin_realm.uri)
+        except Realm.DoesNotExist:
+            pass
+
+    return render(request, "zerver/auth_subdomain.html", status=400)
 
 
 def start_two_factor_auth(

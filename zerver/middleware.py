@@ -576,7 +576,10 @@ class HostDomainMiddleware(MiddlewareMixin):
             return None
 
         subdomain = get_subdomain(request)
-        if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+        if (
+            subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+            and subdomain != settings.SOCIAL_AUTH_SUBDOMAIN
+        ):
             request_notes = RequestNotes.get_notes(request)
             try:
                 request_notes.realm = get_realm(subdomain)

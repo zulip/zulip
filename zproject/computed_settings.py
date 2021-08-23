@@ -49,6 +49,7 @@ from .configured_settings import (
     REMOTE_POSTGRES_HOST,
     REMOTE_POSTGRES_PORT,
     REMOTE_POSTGRES_SSLMODE,
+    ROOT_SUBDOMAIN_ALIASES,
     SENDFILE_BACKEND,
     SENTRY_DSN,
     SOCIAL_AUTH_APPLE_APP_ID,
@@ -59,6 +60,7 @@ from .configured_settings import (
     SOCIAL_AUTH_GOOGLE_KEY,
     SOCIAL_AUTH_SAML_ENABLED_IDPS,
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
+    SOCIAL_AUTH_SUBDOMAIN,
     STATSD_HOST,
     TORNADO_PORTS,
     USING_PGROONGA,
@@ -1065,6 +1067,9 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [
     "multiuse_object_key",
 ]
 SOCIAL_AUTH_LOGIN_ERROR_URL = "/login/"
+
+if SOCIAL_AUTH_SUBDOMAIN in ROOT_SUBDOMAIN_ALIASES:
+    ROOT_SUBDOMAIN_ALIASES.remove(SOCIAL_AUTH_SUBDOMAIN)
 
 # CLIENT is required by PSA's internal implementation. We name it
 # SERVICES_ID to make things more readable in the configuration

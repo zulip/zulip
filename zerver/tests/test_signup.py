@@ -5290,6 +5290,27 @@ class TestLoginPage(ZulipTestCase):
             response,
         )
 
+    @patch("django.http.HttpRequest.get_host", return_value="auth.testserver")
+    def test_social_auth_subdomain_login_page(self, mock_get_host: MagicMock) -> None:
+        result = self.client_get("http://auth.testserver/login/")
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Authentication subdomain", result)
+
+        zulip_realm = get_realm("zulip")
+        session = self.client.session
+        session["subdomain"] = "zulip"
+        session.save()
+        result = self.client_get("http://auth.testserver/login/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, zulip_realm.uri)
+
+        session = self.client.session
+        session["subdomain"] = "invalid"
+        session.save()
+        result = self.client_get("http://auth.testserver/login/")
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Authentication subdomain", result)
+
 
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self) -> None:
