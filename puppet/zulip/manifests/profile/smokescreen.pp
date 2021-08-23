@@ -5,10 +5,10 @@ class zulip::profile::smokescreen {
   include zulip::supervisor
   include zulip::golang
 
-  $version = 'bfca45c5e61f3587eaaf1dcc89a0c4116501cba3'
+  $version = 'dc403015f563eadc556a61870c6ad327688abe88'
   zulip::sha256_tarball_to { 'smokescreen':
     url     => "https://github.com/stripe/smokescreen/archive/${version}.tar.gz",
-    sha256  => '7aa2719abd282930b01394e5e748885a8e8cb8121fe97a15446f93623ec13f59',
+    sha256  => 'ad4b181d14adcd9425045152b903a343dbbcfcad3c1e7625d2c65d1d50e1959d',
     install => {
       "smokescreen-${version}/" => "/srv/smokescreen-src-${version}/",
     },
