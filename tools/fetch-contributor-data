@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import sys
+import unicodedata
 from datetime import date
 from random import randrange
 from time import sleep
@@ -141,7 +142,9 @@ def update_contributor_data_file() -> None:
 
                 name = contributor.get("name")
                 if name is not None:
-                    contributor_username_to_data[username]["name"] = name
+                    contributor_username_to_data[username]["name"] = unicodedata.normalize(
+                        "NFC", name
+                    )
 
     # remove duplicate contributions count
     # find commits at the time of split and subtract from zulip-server
