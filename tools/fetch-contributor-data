@@ -3,32 +3,28 @@
 Fetch contributors data from GitHub using their API, convert it to structured
 JSON data for the /team page contributors section.
 """
+import argparse
+import json
+import logging
 import os
 import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
-import argparse
-import logging
 from datetime import date
 from random import randrange
 from time import sleep
 from typing import Dict, List, Optional, Union
 
-from typing_extensions import TypedDict
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.setup_path import setup_path
 
+setup_path()
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+
 import django
-
-django.setup()
-
-import json
-
 import requests
 from django.conf import settings
+from typing_extensions import TypedDict
+
+django.setup()
 
 from zerver.lib.avatar_hash import gravatar_hash
 from zproject.config import get_secret
