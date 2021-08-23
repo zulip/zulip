@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-node_version=14.17.3
+node_version=14.17.5
 nvm_version=0.38.0
 
 # This is a fix for the fact that nvm uses $HOME to determine which
