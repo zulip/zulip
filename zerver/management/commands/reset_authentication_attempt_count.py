@@ -15,7 +15,7 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         if not options["username"]:
-            self.print_help("./manage.py", "clear_auth_rate_limit_history")
+            self.print_help("./manage.py", "reset_authentication_attempt_count")
             raise CommandError("Please enter a username")
 
         username = options["username"]
