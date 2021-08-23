@@ -5641,32 +5641,45 @@ class DeactivateUserTest(ZulipTestCase):
 
 class TestLoginPage(ZulipTestCase):
     @patch("django.http.HttpRequest.get_host")
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",))
     def test_login_page_redirects_for_root_alias(self, mock_get_host: MagicMock) -> None:
         mock_get_host.return_value = "www.testserver"
+        result = self.client_get("/en/login/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/accounts/go/")
+
+        result = self.client_get("/en/login/", {"next": "/upgrade/"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
+
+        # If a realm actually exists on the root subdomain, we clearly
+        # should just allow the user to access the login page.
+        do_create_realm("", "realm on root subdomain")
+        result = self.client_get("/en/login/")
+        self.assertEqual(result.status_code, 200)
+
+        # We still need to verify the ROOT_DOMAIN_LANDING_PAGE setting
+        # works correctly, by redirecting from the login page
+        # regardless of a realm existing on the root subdomain or not.
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/accounts/go/")
-
-            result = self.client_get("/en/login/", {"next": "/upgrade/"})
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
 
     @patch("django.http.HttpRequest.get_host")
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",))
     def test_login_page_redirects_for_root_domain(self, mock_get_host: MagicMock) -> None:
         mock_get_host.return_value = "testserver"
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/en/login/")
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/")
+        result = self.client_get("/en/login/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/accounts/go/")
 
-            result = self.client_get("/en/login/", {"next": "/upgrade/"})
-            self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
+        result = self.client_get("/en/login/", {"next": "/upgrade/"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
 
         mock_get_host.return_value = "www.testserver.com"
         with self.settings(
-            ROOT_DOMAIN_LANDING_PAGE=True,
             EXTERNAL_HOST="www.testserver.com",
             ROOT_SUBDOMAIN_ALIASES=["test"],
         ):
@@ -5677,18 +5690,6 @@ class TestLoginPage(ZulipTestCase):
             result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
-
-    @patch("django.http.HttpRequest.get_host")
-    def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
-        mock_get_host.return_value = "www.testserver"
-        with self.settings(ROOT_SUBDOMAIN_ALIASES=["www"]):
-            result = self.client_get("/en/login/")
-            self.assertEqual(result.status_code, 200)
-
-        mock_get_host.return_value = "testserver"
-        with self.settings(ROOT_SUBDOMAIN_ALIASES=["www"]):
-            result = self.client_get("/en/login/")
-            self.assertEqual(result.status_code, 200)
 
     def test_login_page_registration_hint(self) -> None:
         response = self.client_get("/login/")

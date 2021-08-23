@@ -740,6 +740,28 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 
+def should_redirect_away_from_login_page(request: HttpRequest) -> bool:
+    if dev_auth_enabled():
+        # The dev auth backend is special and meant for debugging or development evironment,
+        # so we want to display the login page with it on this subdomain if it is enabled.
+        return False
+
+    if not is_subdomain_root_or_alias(request):
+        return False
+
+    if not Realm.objects.filter(string_id="").exists():
+        # Under usual conditions, if there's no realm on the root subdomain we don't want to
+        # allow access to the login page because it doesn't make sense and can only lead to bugs.
+        return True
+
+    if settings.ROOT_DOMAIN_LANDING_PAGE:
+        # ROOT_DOMAIN_LANDING_PAGE is a setting for enabling special "landing page" behavior
+        # on the root subdomain, so we also want to redirect away from the login page if it's enabled.
+        return True
+
+    return False
+
+
 @has_request_variables
 def login_page(
     request: HttpRequest,
@@ -758,7 +780,8 @@ def login_page(
             return HttpResponseRedirect(request.user.realm.uri)
     elif request.user.is_authenticated and not is_preview:
         return HttpResponseRedirect(request.user.realm.uri)
-    if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
+
+    if should_redirect_away_from_login_page(request):
         redirect_url = reverse("realm_redirect")
         if request.GET:
             redirect_url = append_url_query_string(redirect_url, request.GET.urlencode())
