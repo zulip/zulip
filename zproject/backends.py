@@ -73,6 +73,7 @@ from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
@@ -1346,11 +1347,11 @@ def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 
-def redirect_deactivated_user_to_login(realm: Realm) -> HttpResponseRedirect:
+def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = realm.uri + login_url + "?is_deactivated=true"
+    redirect_url = add_query_to_redirect_url(realm.uri + login_url, f"is_deactivated={email}")
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1565,7 +1566,7 @@ def social_auth_finish(
             return_data["inactive_user_id"],
             return_data["realm_string_id"],
         )
-        return redirect_deactivated_user_to_login(realm)
+        return redirect_deactivated_user_to_login(realm, return_data["validated_email"])
 
     if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
         # Redirect to login page. We can't send to registration

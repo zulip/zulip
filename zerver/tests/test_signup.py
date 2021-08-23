@@ -735,9 +735,11 @@ class LoginTest(ZulipTestCase):
     def test_login_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         do_deactivate_user(user_profile, acting_user=None)
-        result = self.login_with_return(self.example_email("hamlet"), "xxx")
+        result = self.login_with_return(user_profile.delivery_email, "xxx")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Your account is no longer active.", result)
+        self.assert_in_response(
+            "Your account {} is no longer active.".format(user_profile.delivery_email), result
+        )
         self.assert_logged_in_user_id(None)
 
     def test_login_bad_password(self) -> None:
@@ -809,8 +811,9 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_login_wrong_subdomain(self) -> None:
+        email = self.mit_email("sipbtest")
         with self.assertLogs(level="WARNING") as m:
-            result = self.login_with_return(self.mit_email("sipbtest"), "xxx")
+            result = self.login_with_return(email, "xxx")
             self.assertEqual(
                 m.output,
                 [
@@ -818,11 +821,11 @@ class LoginTest(ZulipTestCase):
                 ],
             )
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response(
-            "Your Zulip account is not a member of the "
-            "organization associated with this subdomain.",
-            result,
+        expected_error = (
+            f"Your Zulip account {email} is not a member of the "
+            + "organization associated with this subdomain."
         )
+        self.assert_in_response(expected_error, result)
         self.assert_logged_in_user_id(None)
 
     def test_login_invalid_subdomain(self) -> None:
@@ -5310,6 +5313,12 @@ class TestLoginPage(ZulipTestCase):
         result = self.client_get("http://auth.testserver/login/")
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Authentication subdomain", result)
+
+    def test_login_page_is_deactivated_validation(self) -> None:
+        with patch("zerver.views.auth.logging.info") as mock_info:
+            result = self.client_get("/login/?is_deactivated=invalid_email")
+            mock_info.assert_called_once()
+            self.assert_not_in_success_response(["invalid_email"], result)
 
 
 class TestFindMyTeam(ZulipTestCase):
