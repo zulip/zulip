@@ -18,4 +18,10 @@ define zulip_ops::firewall_allow (
     order   => $order,
     content => "-A INPUT -p ${proto} --dport ${portname} -j ACCEPT\n",
   }
+
+  concat::fragment { "iptables_v6_${portname}":
+    target  => '/etc/iptables/rules.v6',
+    order   => $order,
+    content => "-A INPUT -p ${proto} --dport ${portname} -j ACCEPT\n",
+  }
 }

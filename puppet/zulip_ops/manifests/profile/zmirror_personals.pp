@@ -55,6 +55,11 @@ class zulip_ops::profile::zmirror_personals {
     source => 'puppet:///modules/zulip_ops/iptables/zmirror.v4',
     order  => '20',
   }
+  concat::fragment { 'iptables-zmirror.v6':
+    target => '/etc/iptables/rules.v6',
+    source => 'puppet:///modules/zulip_ops/iptables/zmirror.v6',
+    order  => '20',
+  }
 
   # TODO: Do the rest of our setup, which includes at least:
   # Building patched libzephyr4-krb5 from davidben's roost branch and installing that
