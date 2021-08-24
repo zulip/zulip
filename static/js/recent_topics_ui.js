@@ -162,7 +162,7 @@ export function get_focused_row_message() {
     return undefined;
 }
 
-function revive_current_focus() {
+export function revive_current_focus() {
     // After re-render, the current_focus_elem is no longer linked
     // to the focused element, this function attempts to revive the
     // link and focus to the element prior to the rerender.
