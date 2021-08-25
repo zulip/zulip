@@ -42,10 +42,7 @@ mypy-boto3-s3
 defusedxml
 
 # Needed for LDAP support
-# Using our fork for the feature of searching users by email.
-# https://github.com/django-auth-ldap/django-auth-ldap/pull/150 for monitoring
-# progress on merging this upstream.
-https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1
+django-auth-ldap
 
 # Django extension providing bitfield support
 django-bitfield

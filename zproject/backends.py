@@ -31,7 +31,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -434,13 +434,11 @@ def check_ldap_config() -> None:
         assert settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
 
 
-def find_ldap_users_by_email(email: str) -> Optional[List[_LDAPUser]]:
+def find_ldap_users_by_email(email: str) -> List[_LDAPUser]:
     """
-    Returns list of _LDAPUsers matching the email search,
-    or None if no matches are found.
+    Returns list of _LDAPUsers matching the email search
     """
-    email_search = LDAPReverseEmailSearch(LDAPBackend(), email)
-    return email_search.search_for_users(should_populate=False)
+    return LDAPReverseEmailSearch().search_for_users(email)
 
 
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
@@ -467,6 +465,46 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
 
 
 ldap_logger = logging.getLogger("zulip.ldap")
+
+
+class LDAPReverseEmailSearch(_LDAPUser):
+    """
+    This class is a workaround - we want to use
+    django-auth-ldap to query the ldap directory for
+    users with the specified email address, but it doesn't
+    provide an API for that or an isolated class for handling
+    the connection. Because connection-handling is tightly integrated
+    into the _LDAPUser class, we have to make this strange inheritance here,
+    in order to be able to comfortably have an ldap connection and make search
+    queries.
+
+    We may be able to get rid of this in the future if we can get
+    https://github.com/django-auth-ldap/django-auth-ldap/pull/150 merged upstream.
+    """
+
+    def __init__(self) -> None:
+        # Superclass __init__ requires a username argument - it doesn't actually
+        # impact anything for us in this class, given its very limited use
+        # for only making a search query, so we pass an empty string.
+        super().__init__(LDAPBackend(), username="")
+
+    def search_for_users(self, email: str) -> List[_LDAPUser]:
+        search = settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
+        USERNAME_ATTR = settings.AUTH_LDAP_USERNAME_ATTR
+
+        results = search.execute(self.connection, {"email": email})
+
+        ldap_users = []
+        for result in results:
+            user_dn, user_attrs = result
+            username = user_attrs[USERNAME_ATTR][0]
+            ldap_user = _LDAPUser(self.backend, username=username)
+            ldap_user._user_dn = user_dn
+            ldap_user._user_attrs = user_attrs
+
+            ldap_users.append(ldap_user)
+
+        return ldap_users
 
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
@@ -544,7 +582,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             # We can use find_ldap_users_by_email
             if is_valid_email(username):
                 email_search_result = find_ldap_users_by_email(username)
-                if email_search_result is None:
+                if not email_search_result:
                     result = username
                 elif len(email_search_result) == 1:
                     return email_search_result[0]._username

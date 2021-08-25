@@ -391,8 +391,9 @@ django[argon2]==3.2.6 \
     #   django-phonenumber-field
     #   django-sendfile2
     #   django-two-factor-auth
-https://github.com/zulip/django-auth-ldap/archive/e26d0ef2a7ff77ab3fdd7b6578a76081f780778c.zip#egg=django-auth-ldap==2.0.0zulip1 \
-    --hash=sha256:1a104fdb5085ef9340996ae82d4b302f99c39c5d9d60d4ae55bcc7c1f58cb65e
+django-auth-ldap==3.0.0 \
+    --hash=sha256:19ee19034f344d9efd07ed88d3187e256ec33ae39d6a47222083b89f7d35c5f6 \
+    --hash=sha256:1f2d5c562d9ba9a5e9a64099ae9798e1a63840a11afe4d1c4a9c74121f066eaa
     # via -r requirements/common.in
 django-bitfield==2.1.0 \
     --hash=sha256:158f1056e22cce450d0a49633ea77bfd84b85a2294b1ef03faa775a485f4065d \
