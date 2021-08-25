@@ -1,4 +1,5 @@
 <form class="display-settings-form">
+    {{#unless for_realm_settings}}
     <div class="lang-settings">
         <!-- this is inline block so that the alert notification can sit beside
         it. If there's not an alert, don't make it inline-block. -->
@@ -15,6 +16,7 @@
 
         {{> ../default_language_modal language_list=language_list_dbl_col prefix=prefix}}
     </div>
+    {{/unless}}
 
     <div class="display-settings">
         <h3 class="inline-block">{{t "Display settings" }}</h3>
@@ -56,6 +58,7 @@
         </div>
     </div>
 
+    {{#unless for_realm_settings}}
     <div class="time-settings">
         <h3 class="inline-block">{{t "Time settings" }}</h3>
         <div class="alert-notification time-settings-status"></div>
@@ -69,6 +72,7 @@
             </select>
         </div>
     </div>
+    {{/unless}}
 
     <div class="emoji-settings">
         <h3 class="inline-block light">{{t "Emoji settings" }}</h3>
