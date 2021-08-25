@@ -56,7 +56,7 @@
         {{#each notification_settings.desktop_notification_settings}}
         {{> settings_checkbox
           setting_name=this
-          is_checked=(lookup ../user_settings this)
+          is_checked=(lookup ../settings_object this)
           label=(lookup ../settings_label this)
           prefix=../prefix}}
         {{/each}}
@@ -71,7 +71,7 @@
               disabled
               {{/unless}}>
                 <option value="none">{{t "None" }}</option>
-                {{#each user_settings.available_notification_sounds}}
+                {{#each settings_object.available_notification_sounds}}
                 <option value="{{ this }}">{{ this }}</option>
                 {{/each}}
             </select>
@@ -97,7 +97,7 @@
         {{#each notification_settings.mobile_notification_settings}}
         {{> settings_checkbox
           setting_name=this
-          is_checked=(lookup ../user_settings this)
+          is_checked=(lookup ../settings_object this)
           label=(lookup ../settings_label this)
           show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)
           prefix=../prefix}}
@@ -124,7 +124,7 @@
         {{#each notification_settings.email_message_notification_settings}}
         {{> settings_checkbox
           setting_name=this
-          is_checked=(lookup ../user_settings this)
+          is_checked=(lookup ../settings_object this)
           label=(lookup ../settings_label this)
           prefix=../prefix}}
         {{/each}}

@@ -126,7 +126,7 @@ export function build_page() {
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.default_language_name,
         language_list_dbl_col: get_language_list_columns(user_settings.default_language),
-        user_settings,
+        settings_object: user_settings,
     });
 
     $(".settings-box").html(rendered_settings_tab);
