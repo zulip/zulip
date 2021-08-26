@@ -52,9 +52,10 @@ function change_notification_setting(setting, value, status_element, url) {
 
 function update_desktop_icon_count_display() {
     const container = $("#user-notification-settings");
+    const settings_object = user_settings;
     container
         .find(".setting_desktop_icon_count_display")
-        .val(user_settings.desktop_icon_count_display);
+        .val(settings_object.desktop_icon_count_display);
     unread_ui.update_unread_counts();
 }
 
@@ -79,6 +80,7 @@ export function set_enable_marketing_emails_visibility() {
 export function set_up() {
     const container = $("#user-notification-settings");
     const patch_url = "/json/settings";
+    const settings_object = user_settings;
     container.on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -105,13 +107,13 @@ export function set_up() {
     });
 
     container.find(".play_notification_sound").on("click", () => {
-        if (user_settings.notification_sound !== "none") {
+        if (settings_object.notification_sound !== "none") {
             $("#user-notification-sound-audio")[0].play();
         }
     });
 
     const notification_sound_dropdown = container.find(".setting_notification_sound");
-    notification_sound_dropdown.val(user_settings.notification_sound);
+    notification_sound_dropdown.val(settings_object.notification_sound);
 
     container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
         if (
@@ -130,7 +132,7 @@ export function set_up() {
         ".setting_email_notifications_batching_period_seconds",
     );
     email_notifications_batching_period_dropdown.val(
-        user_settings.email_notifications_batching_period_seconds,
+        settings_object.email_notifications_batching_period_seconds,
     );
 
     set_enable_digest_emails_visibility();
@@ -140,6 +142,7 @@ export function set_up() {
 
 export function update_page() {
     const container = $("#user-notification-settings");
+    const settings_object = user_settings;
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
@@ -155,11 +158,11 @@ export function update_page() {
             setting === "notification_sound" ||
             setting === "email_notifications_batching_period_seconds"
         ) {
-            container.find(`.setting_${CSS.escape(setting)}`).val(user_settings[setting]);
+            container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
             continue;
         }
 
-        container.find(`.${CSS.escape(setting)}`).prop("checked", user_settings[setting]);
+        container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
     }
     rerender_ui();
 }
