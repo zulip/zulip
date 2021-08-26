@@ -52,11 +52,13 @@ function change_notification_setting(setting, value, status_element, url) {
     settings_ui.do_settings_change(channel.patch, url, data, status_element);
 }
 
-function update_desktop_icon_count_display(container, settings_object) {
+function update_desktop_icon_count_display(container, settings_object, for_realm_settings) {
     container
         .find(".setting_desktop_icon_count_display")
         .val(settings_object.desktop_icon_count_display);
-    unread_ui.update_unread_counts();
+    if (!for_realm_settings) {
+        unread_ui.update_unread_counts();
+    }
 }
 
 export function set_enable_digest_emails_visibility(container) {
@@ -76,9 +78,14 @@ export function set_enable_marketing_emails_visibility() {
     }
 }
 
-export function set_up(container, settings_object) {
-    const patch_url = "/json/settings";
-    const notification_sound_elem = $("#user-notification-sound-audio");
+export function set_up(container, settings_object, for_realm_settings) {
+    let patch_url = "/json/settings";
+    let notification_sound_elem = $("#user-notification-sound-audio");
+    if (for_realm_settings) {
+        patch_url = "/json/realm/user_settings_defaults";
+        notification_sound_elem = $("#realm-default-notification-sound-audio");
+    }
+
     container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -96,13 +103,15 @@ export function set_up(container, settings_object) {
         );
     });
 
-    update_desktop_icon_count_display(container, settings_object);
+    update_desktop_icon_count_display(container, settings_object, for_realm_settings);
 
-    container.find(".send_test_notification").on("click", () => {
-        notifications.send_test_notification(
-            $t({defaultMessage: "This is what a Zulip notification looks like."}),
-        );
-    });
+    if (!for_realm_settings) {
+        container.find(".send_test_notification").on("click", () => {
+            notifications.send_test_notification(
+                $t({defaultMessage: "This is what a Zulip notification looks like."}),
+            );
+        });
+    }
 
     container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
@@ -134,8 +143,10 @@ export function set_up(container, settings_object) {
     );
 
     set_enable_digest_emails_visibility(container);
-    set_enable_marketing_emails_visibility();
-    rerender_ui();
+    if (!for_realm_settings) {
+        set_enable_marketing_emails_visibility();
+        rerender_ui();
+    }
 }
 
 export function update_page(container, settings_object) {

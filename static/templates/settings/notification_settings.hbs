@@ -51,7 +51,9 @@
         <h3 class="inline-block">{{t "Desktop message notifications" }}</h3>
         <div class="alert-notification"></div>
 
+        {{#unless for_realm_settings}}
         <p><a class="send_test_notification">{{t "Test desktop notification" }}</a></p>
+        {{/unless}}
 
         {{#each notification_settings.desktop_notification_settings}}
         {{> settings_checkbox

@@ -1,4 +1,4 @@
-type RealmDefaultSettingsType = {
+export type RealmDefaultSettingsType = {
     color_scheme: number;
     default_language: string;
     default_view: string;

@@ -2,6 +2,7 @@ import Handlebars from "handlebars/runtime";
 
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
+import type {RealmDefaultSettingsType} from "./realm_user_settings_defaults";
 import type {UserSettingsType} from "./user_settings";
 
 /*
@@ -371,6 +372,29 @@ export const display_settings_labels = {
     ),
 };
 
+export const realm_user_settings_defaults_labels = {
+    enable_online_push_notifications: $t({
+        defaultMessage: "Send mobile notifications even if user is online (useful for testing)",
+    }),
+    pm_content_in_desktop_notifications: $t({
+        defaultMessage: "Include content of private messages in desktop notifications",
+    }),
+    desktop_icon_count_display: $t({
+        defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
+    }),
+    enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
+    enable_login_emails: $t({
+        defaultMessage: "Send email notifications for new logins to the account",
+    }),
+    message_content_in_email_notifications: $t({
+        defaultMessage: "Include message content in message notification emails",
+    }),
+    realm_name_in_notifications: $t({
+        defaultMessage: "Include organization name in subject of message notification emails",
+    }),
+    ...display_settings_labels,
+};
+
 // NOTIFICATIONS
 
 export const general_notifications_table_labels = {
@@ -404,7 +428,7 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-type SettingsObjectType = UserSettingsType;
+type SettingsObjectType = UserSettingsType | RealmDefaultSettingsType;
 type PageParamsItem = keyof SettingsObjectType;
 export const stream_notification_settings: PageParamsItem[] = [
     "enable_stream_desktop_notifications",

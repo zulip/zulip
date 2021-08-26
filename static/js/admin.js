@@ -58,6 +58,24 @@ function insert_tip_box() {
         .prepend(tip_box);
 }
 
+function get_realm_level_notification_settings(options) {
+    const all_notifications_settings = settings_config.all_notifications(
+        realm_user_settings_defaults,
+    );
+
+    // We remove enable_marketing_emails setting from all_notification_settings, since there is no
+    // realm-level default of this setting.
+    all_notifications_settings.settings.other_email_settings = [
+        "enable_digest_emails",
+        "enable_login_emails",
+    ];
+
+    options.general_settings = all_notifications_settings.general_settings;
+    options.notification_settings = all_notifications_settings.settings;
+    options.show_push_notifications_tooltip =
+        all_notifications_settings.show_push_notifications_tooltip;
+}
+
 export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
@@ -129,7 +147,13 @@ export function build_page() {
         default_view_values: settings_config.default_view_values,
         settings_object: realm_user_settings_defaults,
         display_settings: settings_config.get_all_display_settings(),
-        settings_label: settings_config.display_settings_labels,
+        settings_label: settings_config.realm_user_settings_defaults_labels,
+        desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
+        enable_sound_select:
+            realm_user_settings_defaults.enable_sounds ||
+            realm_user_settings_defaults.enable_stream_audible_notifications,
+        email_notifications_batching_period_values:
+            settings_config.email_notifications_batching_period_values,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -143,6 +167,8 @@ export function build_page() {
         options.giphy_help_link =
             "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
     }
+
+    get_realm_level_notification_settings(options);
 
     const rendered_admin_tab = render_admin_tab(options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
