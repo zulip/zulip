@@ -55,9 +55,7 @@ preparing a new release.
 * Tag that commit with an unsigned Git tag named the release number.
 * Use `build-release-tarball` to generate a final release tarball.
 * Push the tag and release commit.
-* Copy the tarball to `zulip.org`, and run
-  `/etc/zulip/ship-release.sh` on it; this will put it in place,
-  update the latest symlink, and update the SHA256 sums.
+* Upload the tarball using `tools/upload-release`.
 * Post the release by [editing the latest tag on
   GitHub](https://github.com/zulip/zulip/tags); use the text from
   `changelog.md` for the release notes.
