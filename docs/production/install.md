@@ -15,17 +15,17 @@ you can create a test organization at <https://zulip.com/new>.
 ## Step 1: Download the latest release
 
 Download and unpack [the latest built server
-tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
+tarball](https://download.zulip.com/server/zulip-server-latest.tar.gz)
 with the following commands:
 
 ```bash
 cd $(mktemp -d)
-wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+wget https://download.zulip.com/server/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
 
 - If you'd like to verify the download, we
-  [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
+  [publish the sha256sums of our release tarballs](https://download.zulip.com/server/SHA256SUMS.txt).
 - You can also
   [install a pre-release version of Zulip](../production/deployment.html#installing-zulip-from-git)
   using code from our [repository on GitHub](https://github.com/zulip/zulip/).

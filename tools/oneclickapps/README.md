@@ -5,7 +5,7 @@ This directory contains scripts for automating the release of Zulip one click ap
 ## DigitalOcean 1-Click Application
 
 `prepare_digital_ocean_one_click_app_release.py` creates the image of DigitalOcean 1-Click
-app from the latest Zulip release (fetched from https://www.zulip.org/dist/releases). It will
+app from the latest Zulip release (fetched from https://download.zulip.com/server/). It will
 also create a test droplet from the image and send the image and droplet
 details to a pre-configured Zulip stream. Anyone, whose key is added to the
 Zulip DigitalOcean team can SSH into the droplet for testing.

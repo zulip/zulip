@@ -24,11 +24,11 @@ to a new Zulip release:
    for all releases newer than what is currently installed.
 
 1. Download the appropriate release tarball from
-   <https://www.zulip.org/dist/releases/> You can download the latest
+   <https://download.zulip.com/server/> You can download the latest
    release with:
 
    ```bash
-   wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
+   wget https://download.zulip.com/server/zulip-server-latest.tar.gz
    ```
 
    You also have the option of upgrading Zulip [to a version in a Git
