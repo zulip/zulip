@@ -44,10 +44,10 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, status_element) {
+function change_notification_setting(setting, value, status_element, url) {
     const data = {};
     data[setting] = value;
-    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
+    settings_ui.do_settings_change(channel.patch, url, data, status_element);
 }
 
 function update_desktop_icon_count_display() {
@@ -78,6 +78,7 @@ export function set_enable_marketing_emails_visibility() {
 
 export function set_up() {
     const container = $("#user-notification-settings");
+    const patch_url = "/json/settings";
     container.on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -91,6 +92,7 @@ export function set_up() {
             setting_name,
             settings_org.get_input_element_value(this),
             input_elem.closest(".subsection-parent").find(".alert-notification"),
+            patch_url,
         );
     });
 
