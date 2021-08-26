@@ -17,6 +17,7 @@ import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import {user_settings} from "./user_settings";
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so
@@ -54,7 +55,7 @@ export function update_property(stream_id, property, value, other_values) {
         case "email_notifications":
         case "wildcard_mentions_notify":
             update_stream_setting(sub, value, property);
-            settings_notifications.update_page();
+            settings_notifications.update_page($("#user-notification-settings"), user_settings);
             break;
         case "name":
             stream_settings_ui.update_stream_name(sub, value);

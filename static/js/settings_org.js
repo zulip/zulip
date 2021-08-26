@@ -381,7 +381,9 @@ function update_dependent_subsettings(property_name) {
             set_message_content_in_email_notifications_visiblity();
             break;
         case "realm_digest_emails_enabled":
-            settings_notifications.set_enable_digest_emails_visibility();
+            settings_notifications.set_enable_digest_emails_visibility(
+                $("#user-notification-settings"),
+            );
             set_digest_emails_weekday_visibility();
             break;
     }

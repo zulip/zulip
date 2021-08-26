@@ -57,7 +57,9 @@ export function initialize() {
     load_func_dict.set("display-settings", () => {
         settings_display.set_up($("#user-display-settings"), user_settings, false);
     });
-    load_func_dict.set("notifications", settings_notifications.set_up);
+    load_func_dict.set("notifications", () => {
+        settings_notifications.set_up($("#user-notification-settings"), user_settings);
+    });
     load_func_dict.set("your-bots", settings_bots.set_up);
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);

@@ -12,7 +12,6 @@ import * as settings_ui from "./settings_ui";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
-import {user_settings} from "./user_settings";
 
 function rerender_ui() {
     const unmatched_streams_table = $("#stream-specific-notify-table");
@@ -50,17 +49,14 @@ function change_notification_setting(setting, value, status_element, url) {
     settings_ui.do_settings_change(channel.patch, url, data, status_element);
 }
 
-function update_desktop_icon_count_display() {
-    const container = $("#user-notification-settings");
-    const settings_object = user_settings;
+function update_desktop_icon_count_display(container, settings_object) {
     container
         .find(".setting_desktop_icon_count_display")
         .val(settings_object.desktop_icon_count_display);
     unread_ui.update_unread_counts();
 }
 
-export function set_enable_digest_emails_visibility() {
-    const container = $("#user-notification-settings");
+export function set_enable_digest_emails_visibility(container) {
     if (page_params.realm_digest_emails_enabled) {
         container.find(".enable_digest_emails_label").parent().show();
     } else {
@@ -77,10 +73,8 @@ export function set_enable_marketing_emails_visibility() {
     }
 }
 
-export function set_up() {
-    const container = $("#user-notification-settings");
+export function set_up(container, settings_object) {
     const patch_url = "/json/settings";
-    const settings_object = user_settings;
     container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -98,7 +92,7 @@ export function set_up() {
         );
     });
 
-    update_desktop_icon_count_display();
+    update_desktop_icon_count_display(container, settings_object);
 
     container.find(".send_test_notification").on("click", () => {
         notifications.send_test_notification(
@@ -135,14 +129,12 @@ export function set_up() {
         settings_object.email_notifications_batching_period_seconds,
     );
 
-    set_enable_digest_emails_visibility();
+    set_enable_digest_emails_visibility(container);
     set_enable_marketing_emails_visibility();
     rerender_ui();
 }
 
-export function update_page() {
-    const container = $("#user-notification-settings");
-    const settings_object = user_settings;
+export function update_page(container, settings_object) {
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
@@ -152,7 +144,7 @@ export function update_page() {
             // we should just leave the checkbox always off.
             continue;
         } else if (setting === "desktop_icon_count_display") {
-            update_desktop_icon_count_display();
+            update_desktop_icon_count_display(container, settings_object);
             continue;
         } else if (
             setting === "notification_sound" ||

@@ -576,7 +576,7 @@ export function dispatch_normal_event(event) {
         case "user_settings": {
             if (settings_config.all_notification_settings.includes(event.property)) {
                 notifications.handle_global_notification_updates(event.property, event.value);
-                settings_notifications.update_page();
+                settings_notifications.update_page($("#user-notification-settings"), user_settings);
                 // TODO: This should also do a refresh of the stream_edit UI
                 // if it's currently displayed, possibly reusing some code
                 // from stream_events.js
