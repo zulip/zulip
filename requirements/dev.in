@@ -77,3 +77,6 @@ semgrep
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
+
+# For sorting versions when uploading releases
+natsort

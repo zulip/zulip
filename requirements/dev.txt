@@ -847,6 +847,10 @@ myst-parser==0.15.1 \
     --hash=sha256:7c3c78a36c4bc30ce6a67933ebd800a880c8d81f1688fad5c2ebd82cddbc1603 \
     --hash=sha256:e8baa9959dac0bcf0f3ea5fc32a1a28792959471d8a8094e3ed5ee0de9733ade
     # via -r requirements/docs.in
+natsort==7.1.1 \
+    --hash=sha256:00c603a42365830c4722a2eb7663a25919551217ec09a243d3399fa8dd4ac403 \
+    --hash=sha256:d0f4fc06ca163fa4a5ef638d9bf111c67f65eedcc7920f98dec08e489045b67e
+    # via -r requirements/dev.in
 oauthlib==3.1.1 \
     --hash=sha256:42bf6354c2ed8c6acb54d971fce6f88193d97297e18602a3a886603f9d7730cc \
     --hash=sha256:8f0215fcc533dd8dd1bee6f4c412d4f0cd7297307d43ac61666389e3bc3198a3
