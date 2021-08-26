@@ -62,7 +62,7 @@ preparing a new release.
 
   **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/master/tools/oneclickapps/README.md)
   for updating DigitalOcean one-click app image. The action uses the latest release
-  tarball published on `zulip.org` for creating the image.
+  tarball published on `download.zulip.com` for creating the image.
 * Update the [Docker image](https://github.com/zulip/docker-zulip) and
   do a release of that.
 * Update the image of DigitalOcean one click app using
