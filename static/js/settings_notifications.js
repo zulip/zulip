@@ -51,9 +51,10 @@ function change_notification_setting(setting, value, status_element) {
 }
 
 function update_desktop_icon_count_display() {
-    $("#user-notification-settings .setting_desktop_icon_count_display").val(
-        user_settings.desktop_icon_count_display,
-    );
+    const container = $("#user-notification-settings");
+    container
+        .find(".setting_desktop_icon_count_display")
+        .val(user_settings.desktop_icon_count_display);
     unread_ui.update_unread_counts();
 }
 
@@ -77,7 +78,7 @@ export function set_enable_marketing_emails_visibility() {
 
 export function set_up() {
     const container = $("#user-notification-settings");
-    $("#user-notification-settings").on("change", "input, select", function (e) {
+    container.on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const input_elem = $(e.currentTarget);
@@ -134,6 +135,7 @@ export function set_up() {
 }
 
 export function update_page() {
+    const container = $("#user-notification-settings");
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
@@ -146,14 +148,10 @@ export function update_page() {
             update_desktop_icon_count_display();
             continue;
         } else if (setting === "notification_sound") {
-            $("#user-notification-settings .setting_notification_sound").val(
-                user_settings.notification_sound,
-            );
+            container.find(".setting_notification_sound").val(user_settings.notification_sound);
         }
 
-        $("#user-notification-settings")
-            .find(`.${CSS.escape(setting)}`)
-            .prop("checked", user_settings[setting]);
+        container.find(`.${CSS.escape(setting)}`).prop("checked", user_settings[setting]);
     }
     rerender_ui();
 }
