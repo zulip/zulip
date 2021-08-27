@@ -147,12 +147,12 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
             - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS),
         )
     except MissedMessageEmailAddress.DoesNotExist:
-        raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
+        raise ZulipEmailForwardUserError("Missed message address expired or doesn't exist.")
 
     if not mm_address.is_usable():
         # Technical, this also checks whether the event is expired,
         # but that case is excluded by the logic above.
-        raise ZulipEmailForwardError("Missed message address out of uses.")
+        raise ZulipEmailForwardUserError("Missed message address out of uses.")
 
     return mm_address
 
