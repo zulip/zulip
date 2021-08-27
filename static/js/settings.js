@@ -100,13 +100,13 @@ export function build_page() {
         color_scheme_values: settings_config.color_scheme_values,
         default_view_values: settings_config.default_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
-        general_settings: settings_config.all_notifications().general_settings,
-        notification_settings: settings_config.all_notifications().settings,
+        general_settings: settings_config.all_notifications(user_settings).general_settings,
+        notification_settings: settings_config.all_notifications(user_settings).settings,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
-            settings_config.all_notifications().show_push_notifications_tooltip,
+            settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
         display_settings: settings_config.get_all_display_settings(),
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),

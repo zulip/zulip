@@ -2,7 +2,7 @@ import Handlebars from "handlebars/runtime";
 
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
-import {user_settings} from "./user_settings";
+import type {UserSettingsType} from "./user_settings";
 
 /*
     This file contains translations between the integer values used in
@@ -404,7 +404,8 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-type PageParamsItem = keyof typeof user_settings;
+type SettingsObjectType = UserSettingsType;
+type PageParamsItem = keyof SettingsObjectType;
 export const stream_notification_settings: PageParamsItem[] = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
@@ -495,6 +496,7 @@ type NotificationSettingCheckbox = {
 
 export function get_notifications_table_row_data(
     notify_settings: PageParamsItem[],
+    settings_object: SettingsObjectType,
 ): NotificationSettingCheckbox[] {
     return general_notifications_table_labels.realm.map((column, index) => {
         const setting_name = notify_settings[index];
@@ -506,7 +508,7 @@ export function get_notifications_table_row_data(
             };
         }
 
-        const checked = user_settings[setting_name];
+        const checked = settings_object[setting_name];
         if (typeof checked !== "boolean") {
             throw new TypeError(`Incorrect setting_name passed: ${setting_name}`);
         }
@@ -537,16 +539,20 @@ export interface AllNotifications {
     };
 }
 
-export const all_notifications = (): AllNotifications => ({
+export const all_notifications = (settings_object: SettingsObjectType): AllNotifications => ({
     general_settings: [
         {
             label: $t({defaultMessage: "Streams"}),
-            notification_settings: get_notifications_table_row_data(stream_notification_settings),
+            notification_settings: get_notifications_table_row_data(
+                stream_notification_settings,
+                settings_object,
+            ),
         },
         {
             label: $t({defaultMessage: "PMs, mentions, and alerts"}),
             notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
+                settings_object,
             ),
         },
     ],

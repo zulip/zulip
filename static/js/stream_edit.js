@@ -485,7 +485,8 @@ export function is_notification_setting(setting_label) {
 
 export function stream_settings(sub) {
     const settings_labels = settings_config.general_notifications_table_labels.stream;
-    const check_realm_setting = settings_config.all_notifications().show_push_notifications_tooltip;
+    const check_realm_setting =
+        settings_config.all_notifications(user_settings).show_push_notifications_tooltip;
 
     const settings = Object.keys(settings_labels).map((setting) => {
         const ret = {

@@ -12,6 +12,7 @@ import * as settings_ui from "./settings_ui";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
+import {user_settings} from "./user_settings";
 
 function rerender_ui() {
     const unmatched_streams_table = $("#stream-specific-notify-table");
@@ -31,7 +32,9 @@ function rerender_ui() {
                 stream,
                 stream_specific_notification_settings:
                     settings_config.stream_specific_notification_settings,
-                is_disabled: settings_config.all_notifications().show_push_notifications_tooltip,
+                is_disabled:
+                    settings_config.all_notifications(user_settings)
+                        .show_push_notifications_tooltip,
             }),
         );
     }

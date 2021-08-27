@@ -22,13 +22,19 @@ run_test("all_notifications", () => {
     // is passed. In this case, we articulate that with
     // wildcard_mentions_notify being undefined, which will be
     // the case, if a wrong setting_name is passed.
-    assert.throws(settings_config.all_notifications, {
-        name: "TypeError",
-        message: "Incorrect setting_name passed: wildcard_mentions_notify",
-    });
+    let error_message;
+    let error_name;
+    try {
+        settings_config.all_notifications(user_settings);
+    } catch (error) {
+        error_name = error.name;
+        error_message = error.message;
+    }
+    assert.equal(error_name, "TypeError");
+    assert.equal(error_message, "Incorrect setting_name passed: wildcard_mentions_notify");
 
     user_settings.wildcard_mentions_notify = false;
-    const notifications = settings_config.all_notifications();
+    const notifications = settings_config.all_notifications(user_settings);
 
     assert.deepEqual(notifications.general_settings, [
         {

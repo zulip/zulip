@@ -1,4 +1,4 @@
-type UserSettingsType = {
+export type UserSettingsType = {
     color_scheme: number;
     default_language: string;
     default_view: string;
