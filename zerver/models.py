@@ -1322,7 +1322,7 @@ class UserBaseSettings(models.Model):
         (TEXT_EMOJISET, "Plain text"),
     )
     emojiset: str = models.CharField(
-        default=GOOGLE_BLOB_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
+        default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
     )
 
     ### Notifications settings. ###

@@ -1197,7 +1197,7 @@ class UserProfileTest(ZulipTestCase):
 
         self.assertEqual(iago.emojiset, "twitter")
         self.assertEqual(cordelia.emojiset, "twitter")
-        self.assertEqual(hamlet.emojiset, "google-blob")
+        self.assertEqual(hamlet.emojiset, "google")
 
         self.assertEqual(iago.timezone, "America/Phoenix")
         self.assertEqual(cordelia.timezone, "America/Phoenix")
