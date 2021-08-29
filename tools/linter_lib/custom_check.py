@@ -617,6 +617,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/billing.html",
             "templates/zerver/hello.html",
             "templates/corporate/upgrade.html",
+            "templates/corporate/event_status.html",
         },
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'

@@ -3,7 +3,6 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -41,11 +40,14 @@
                 <div class="tab-content">
                     <div class="tab-pane active" id="autopay">
                         <div id="autopay-input-section">
-                            <form id="autopay-form" data-key="{{ publishable_key }}" data-email="{{ email }}" method="post">
+                            <form id="autopay-form">
                                 <input type="hidden" name="seat_count" value="{{ seat_count }}" />
                                 <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
                                 <input type="hidden" name="salt" value="{{ salt }}" />
                                 <input type="hidden" name="billing_modality" value="charge_automatically" />
+                                {% if onboarding %}
+                                <input type="hidden" name="onboarding" value="true" />
+                                {% endif %}
                                 {% if onboarding and free_trial_days %}
                                 <p><b>Not ready to start your trial?</b>  <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
                                 <hr />
@@ -153,8 +155,8 @@
                             </div>
                             <div id="autopay_loading_indicator"></div>
                         </div>
-                        <div id="autopay-success" class="alert alert-success">
-                            Upgrade complete! The page will now reload.
+                        <div id="autopay-success" class="alert alert-info">
+                            Redirecting to Stripe Checkout...
                         </div>
                     </div>
 
@@ -257,7 +259,7 @@
                             </div>
                             <div id="sponsorship_loading_indicator"></div>
                         </div>
-                        <div id="sponsorship-success" class="alert alert-success">
+                        <div id="sponsorship-success" class="alert alert-info">
                             Request received! The page will now reload.
                         </div>
                     </div>

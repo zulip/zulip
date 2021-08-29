@@ -1,0 +1,39 @@
+{
+  "application": null,
+  "cancellation_reason": null,
+  "client_secret": "seti_1JTqADA4KHR4JzRvNZ7Y9npM_secret_K86Mg4MTEnGNuUwopcKVKgvS20oVzp7",
+  "created": 1010000009,
+  "customer": "cus_NORMALIZED0001",
+  "description": null,
+  "id": "seti_1JTqADA4KHR4JzRvNZ7Y9npM",
+  "last_setup_error": null,
+  "latest_attempt": "setatt_1JTqADA4KHR4JzRv3Qn6rfDc",
+  "livemode": false,
+  "mandate": null,
+  "metadata": {
+    "billing_modality": "charge_automatically",
+    "billing_schedule": "1",
+    "license_management": "automatic",
+    "licenses": "6",
+    "price_per_license": "8000",
+    "realm_str": "zulip",
+    "seat_count": "6",
+    "type": "upgrade",
+    "user_email": "hamlet@zulip.com"
+  },
+  "next_action": null,
+  "object": "setup_intent",
+  "on_behalf_of": null,
+  "payment_method": "pm_1JTqACA4KHR4JzRv22oKQaFN",
+  "payment_method_options": {
+    "card": {
+      "request_three_d_secure": "automatic"
+    }
+  },
+  "payment_method_types": [
+    "card"
+  ],
+  "single_use_mandate": null,
+  "status": "succeeded",
+  "usage": "off_session"
+}

@@ -186,6 +186,7 @@ EXEMPT_FILES = {
     "static/js/zform.js",
     "static/js/zulip.js",
     "static/js/zulip_test.js",
+    "static/js/billing/event_status.js",
     "static/shared/js/poll_data.js",
 }
 

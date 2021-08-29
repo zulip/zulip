@@ -3,7 +3,6 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -62,16 +61,14 @@
                             {% endif %}
                         </p>
                     </div>
-                    <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-key="{{publishable_key}}">
+                    <div class="tab-pane" id="payment-method">
                         <div id="cardchange-error" class="alert alert-danger"></div>
                         <div id="cardchange-input-section">
                             <form id="cardchange-form">
                                 <p>Billing email: <strong>{{ stripe_email }}</strong></p>
                                 <p>Current payment method: <strong>{{ payment_method }}</strong></p>
                                 {% if charge_automatically %}
-                                <button id="update-card-button" class="stripe-button-el">
-                                    <span id="update-card-button-span">Update card</span>
-                                </button>
+                                <button class="btn-info" id="update-card-button" class="stripe-button-el">Update card</button>
                                 {% endif %}
                             </form>
                         </div>
@@ -85,7 +82,7 @@
                             <div id="cardchange_loading_indicator"></div>
                         </div>
                         <div id="cardchange-success" class="alert alert-success">
-                            Card updated. The page will now reload.
+                            Redirecting to Stripe checkout page for updating Card details.
                         </div>
                     </div>
 
