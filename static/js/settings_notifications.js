@@ -81,7 +81,7 @@ export function set_up() {
     const container = $("#user-notification-settings");
     const patch_url = "/json/settings";
     const settings_object = user_settings;
-    container.on("change", "input, select", function (e) {
+    container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const input_elem = $(e.currentTarget);
