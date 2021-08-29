@@ -1,6 +1,6 @@
 {
   "account_country": "US",
-  "account_name": null,
+  "account_name": "NORMALIZED-1",
   "account_tax_ids": null,
   "amount_due": 10000,
   "amount_paid": 0,
@@ -21,7 +21,7 @@
   "custom_fields": null,
   "customer": "cus_NORMALIZED0002",
   "customer_address": null,
-  "customer_email": "user-0-realm_747106@zulip.com",
+  "customer_email": "user-0-realm_572697@zulip.com",
   "customer_name": null,
   "customer_phone": null,
   "customer_shipping": null,
@@ -36,9 +36,9 @@
   "due_date": 1000000000,
   "ending_balance": 0,
   "footer": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001FnfOy",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001LGFI5",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001FnfOy/pdf",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001LGFI5/pdf",
   "last_finalization_error": null,
   "lines": {
     "data": [
@@ -72,6 +72,7 @@
           "object": "price",
           "product": "prod_NORMALIZED0001",
           "recurring": null,
+          "tax_behavior": "unspecified",
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",

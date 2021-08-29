@@ -8,19 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
 from unittest.mock import Mock, patch
 
 import orjson
@@ -30,6 +18,7 @@ from django.conf import settings
 from django.core import signing
 from django.http import HttpResponse
 from django.urls.resolvers import get_resolver
+from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import (
@@ -45,7 +34,7 @@ from corporate.lib.stripe import (
     attach_discount_to_realm,
     catch_stripe_errors,
     compute_plan_parameters,
-    customer_has_credit_card_as_default_source,
+    customer_has_credit_card_as_default_payment_method,
     do_create_stripe_customer,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_discount_for_realm,
@@ -55,13 +44,14 @@ from corporate.lib.stripe import (
     get_realms_to_default_discount_dict,
     invoice_plan,
     invoice_plans_as_needed,
+    is_free_trial_offer_enabled,
     is_realm_on_free_trial,
     is_sponsored_realm,
     make_end_of_cycle_updates_if_needed,
     next_month,
     process_initial_upgrade,
     sign_string,
-    stripe_customer_has_credit_card_as_default_source,
+    stripe_customer_has_credit_card_as_default_payment_method,
     stripe_get_customer,
     switch_realm_from_standard_to_plus_plan,
     unsign_string,
@@ -76,7 +66,10 @@ from corporate.lib.stripe import (
 from corporate.models import (
     Customer,
     CustomerPlan,
+    Event,
     LicenseLedger,
+    PaymentIntent,
+    Session,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_current_plan_by_realm,
@@ -108,21 +101,16 @@ CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 
-# TODO: check that this creates a token similar to what is created by our
-# actual Stripe Checkout flows
-def stripe_create_token(card_number: str = "4242424242424242") -> stripe.Token:
-    return stripe.Token.create(
+
+def create_payment_method(card_number: str) -> stripe.PaymentMethod:
+    return stripe.PaymentMethod.create(
+        type="card",
         card={
             "number": card_number,
             "exp_month": 3,
             "exp_year": 2033,
             "cvc": "333",
-            "name": "Ada Starr",
-            "address_line1": "Under the sea,",
-            "address_city": "Pacific",
-            "address_zip": "33333",
-            "address_country": "United States",
-        }
+        },
     )
 
 
@@ -295,6 +283,8 @@ def normalize_fixture_data(
 MOCKED_STRIPE_FUNCTION_NAMES = [
     f"stripe.{name}"
     for name in [
+        "checkout.Session.create",
+        "checkout.Session.list",
         "Charge.create",
         "Charge.list",
         "Coupon.create",
@@ -303,6 +293,9 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
         "Customer.list_balance_transactions",
         "Customer.retrieve",
         "Customer.save",
+        "Customer.list",
+        "Customer.modify",
+        "Event.list",
         "Invoice.create",
         "Invoice.finalize_invoice",
         "Invoice.list",
@@ -312,8 +305,19 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
         "Invoice.void_invoice",
         "InvoiceItem.create",
         "InvoiceItem.list",
+        "PaymentIntent.confirm",
+        "PaymentIntent.create",
+        "PaymentIntent.list",
+        "PaymentIntent.retrieve",
+        "PaymentMethod.attach",
+        "PaymentMethod.create",
+        "PaymentMethod.detach",
+        "PaymentMethod.list",
         "Plan.create",
         "Product.create",
+        "SetupIntent.create",
+        "SetupIntent.list",
+        "SetupIntent.retrieve",
         "Subscription.create",
         "Subscription.delete",
         "Subscription.retrieve",
@@ -330,6 +334,8 @@ def mock_stripe(
         generate_fixture = generate
         if generate_fixture is None:
             generate_fixture = settings.GENERATE_STRIPE_FIXTURES
+        if generate_fixture:  # nocoverage
+            assert stripe.api_key
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
             mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
             if generate_fixture:
@@ -339,7 +345,12 @@ def mock_stripe(
             else:
                 side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
             decorated_function = cast(
-                CallableT, patch(mocked_function_name, side_effect=side_effect)(decorated_function)
+                CallableT,
+                patch(
+                    mocked_function_name,
+                    side_effect=side_effect,
+                    autospec=mocked_function_name.endswith(".refresh"),
+                )(decorated_function),
             )
 
         @wraps(decorated_function)
@@ -416,22 +427,121 @@ class StripeTestCase(ZulipTestCase):
         match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode())
         return match.group(1) if match else None
 
+    def get_test_card_number(
+        self,
+        attaches_to_customer: bool,
+        charge_succeeds: Optional[bool] = None,
+        card_provider: Optional[str] = None,
+    ) -> str:
+        if attaches_to_customer:
+            assert charge_succeeds is not None
+            if charge_succeeds:
+                if card_provider == "visa":
+                    return "4242424242424242"
+                if card_provider == "mastercard":
+                    return "5555555555554444"
+                raise AssertionError("Unreachable code path")
+            else:
+                return "4000000000000341"
+        else:
+            return "4000000000000002"
+
+    def assert_details_of_valid_session_from_event_status_endpoint(
+        self, stripe_session_id: str, expected_details: Dict[str, Any]
+    ) -> None:
+        json_response = self.client_get(
+            "/json/billing/event/status",
+            {
+                "stripe_session_id": stripe_session_id,
+            },
+        )
+        self.assert_json_success(json_response)
+        self.assertEqual(json_response.json()["session"], expected_details)
+
+    def assert_details_of_valid_payment_intent_from_event_status_endpoint(
+        self,
+        stripe_payment_intent_id: str,
+        expected_details: Dict[str, Any],
+    ) -> None:
+        json_response = self.client_get(
+            "/json/billing/event/status",
+            {
+                "stripe_payment_intent_id": stripe_payment_intent_id,
+            },
+        )
+        self.assert_json_success(json_response)
+        self.assertEqual(json_response.json()["payment_intent"], expected_details)
+
+    def trigger_stripe_checkout_session_completed_webhook(
+        self,
+        payment_method: stripe.PaymentMethod,
+        stripe_session: Optional[stripe.checkout.Session] = None,
+    ) -> None:
+        [checkout_setup_intent] = stripe.SetupIntent.list(limit=1)
+        stripe_setup_intent = stripe.SetupIntent.create(
+            payment_method=payment_method.id,
+            confirm=True,
+            payment_method_types=checkout_setup_intent.payment_method_types,
+            customer=checkout_setup_intent.customer,
+            metadata=checkout_setup_intent.metadata,
+            usage=checkout_setup_intent.usage,
+        )
+        if stripe_session is None:
+            [stripe_session] = stripe.checkout.Session.list(limit=1)
+        stripe_session_dict = stripe_session.to_dict_recursive()
+        stripe_session_dict["setup_intent"] = stripe_setup_intent.id
+
+        event_payload = {
+            "id": "evt_{}".format(get_random_string(24)),
+            "object": "event",
+            "data": {"object": stripe_session_dict},
+            "type": "checkout.session.completed",
+        }
+
+        response = self.client_post(
+            "/stripe/webhook/", event_payload, content_type="application/json"
+        )
+        assert response.status_code == 200
+
+    def send_stripe_webhook_event(self, event: stripe.Event) -> None:
+        response = self.client_post(
+            "/stripe/webhook/", event.to_dict_recursive(), content_type="application/json"
+        )
+        assert response.status_code == 200
+
+    def send_stripe_webhook_events(self, most_recent_event: stripe.Event) -> None:
+        while True:
+            events_old_to_new = list(reversed(stripe.Event.list(ending_before=most_recent_event)))
+            if len(events_old_to_new) == 0:
+                break
+            for event in events_old_to_new:
+                self.send_stripe_webhook_event(event)
+            most_recent_event = events_old_to_new[-1]
+
+    def send_last_stripe_webhook_event(self) -> None:
+        [last_event] = stripe.Event.list(limit=1)
+        self.send_stripe_webhook_event(last_event)
+
     def upgrade(
         self,
         invoice: bool = False,
         talk_to_stripe: bool = True,
+        onboarding: bool = False,
         realm: Optional[Realm] = None,
+        payment_method: Optional[stripe.PaymentMethod] = None,
+        upgrade_page_response: HttpResponse = None,
         del_args: Sequence[str] = [],
         **kwargs: Any,
     ) -> HttpResponse:
         host_args = {}
         if realm is not None:  # nocoverage: TODO
             host_args["HTTP_HOST"] = realm.host
-        response = self.client_get("/upgrade/", {}, **host_args)
+        if upgrade_page_response is None:
+            upgrade_page_response = self.client_get("/upgrade/", {}, **host_args)
         params: Dict[str, Any] = {
             "schedule": "annual",
-            "signed_seat_count": self.get_signed_seat_count_from_response(response),
-            "salt": self.get_salt_from_response(response),
+            "signed_seat_count": self.get_signed_seat_count_from_response(upgrade_page_response),
+            "salt": self.get_salt_from_response(upgrade_page_response),
         }
         if invoice:  # send_invoice
             params.update(
@@ -439,41 +549,92 @@ class StripeTestCase(ZulipTestCase):
                 licenses=kwargs.get("licenses", 123),
             )
         else:  # charge_automatically
-            stripe_token = None
-            if not talk_to_stripe:
-                stripe_token = "token"
-            stripe_token = kwargs.get("stripe_token", stripe_token)
-            if stripe_token is None:
-                stripe_token = stripe_create_token().id
             params.update(
                 billing_modality="charge_automatically",
                 license_management="automatic",
-                stripe_token=stripe_token,
+            )
+
+        if onboarding:
+            params.update(
+                onboarding="true",
             )
 
         params.update(kwargs)
         for key in del_args:
             if key in params:
                 del params[key]
-        return self.client_post("/json/billing/upgrade", params, **host_args)
+
+        if talk_to_stripe:
+            [last_event] = stripe.Event.list(limit=1)
+
+        upgrade_json_response = self.client_post("/json/billing/upgrade", params, **host_args)
+
+        if invoice or not talk_to_stripe:
+            return upgrade_json_response
+
+        expected_session_details = {"status": "created"}
+        if is_free_trial_offer_enabled():
+            if onboarding:
+                expected_session_details["type"] = "free_trial_upgrade_from_onboarding_page"
+            else:
+                expected_session_details["type"] = "free_trial_upgrade_from_billing_page"
+        else:
+            expected_session_details["type"] = "upgrade_from_billing_page"
+            expected_session_details[
+                "stripe_payment_intent_id"
+            ] = PaymentIntent.objects.last().stripe_payment_intent_id
+
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            upgrade_json_response.json()["stripe_session_id"], expected_session_details
+        )
+        if payment_method is None:
+            payment_method = create_payment_method(
+                self.get_test_card_number(
+                    attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
+                )
+            )
+        self.trigger_stripe_checkout_session_completed_webhook(payment_method)
+        self.send_stripe_webhook_events(last_event)
+        return upgrade_json_response
 
     # Upgrade without talking to Stripe
-    def local_upgrade(self, *args: Any) -> None:
+    def local_upgrade(
+        self,
+        licenses: int,
+        automanage_licenses: bool,
+        billing_schedule: int,
+        charge_automatically: bool,
+        free_trial: bool,
+    ) -> None:
         class StripeMock(Mock):
             def __init__(self, depth: int = 1):
                 super().__init__(spec=stripe.Card)
                 self.id = "id"
                 self.created = "1000"
                 self.last4 = "4242"
-                if depth == 1:
-                    self.source = StripeMock(depth=2)
 
-        def upgrade_func(*args: Any) -> Any:
-            return process_initial_upgrade(self.example_user("hamlet"), *args[:4])
+        def upgrade_func(
+            licenses: int,
+            automanage_licenses: bool,
+            billing_schedule: int,
+            charge_automatically: bool,
+            free_trial: bool,
+            *mock_args: Any,
+        ) -> Any:
+            return process_initial_upgrade(
+                self.example_user("hamlet"),
+                licenses,
+                automanage_licenses,
+                billing_schedule,
+                charge_automatically,
+                free_trial,
+            )
 
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
             upgrade_func = patch(mocked_function_name, return_value=StripeMock())(upgrade_func)
-        upgrade_func(*args)
+        upgrade_func(
+            licenses, automanage_licenses, billing_schedule, charge_automatically, free_trial
+        )
 
 
 class StripeTest(StripeTestCase):
@@ -525,14 +686,30 @@ class StripeTest(StripeTestCase):
 
         # Click "Make payment" in Stripe Checkout
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.upgrade()
+            response = self.upgrade()
+        [payment_intent] = PaymentIntent.objects.all()
+        assert payment_intent.stripe_payment_intent_id is not None
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            response.json()["stripe_session_id"],
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "succeeded",
+                },
+            },
+        )
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            payment_intent.stripe_payment_intent_id,
+            {"status": "succeeded", "event_handler": {"status": "succeeded"}},
+        )
 
         # Check that we correctly created a Customer object in Stripe
         stripe_customer = stripe_get_customer(
             assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
-        self.assertEqual(stripe_customer.default_source.id[:5], "card_")
-        self.assertTrue(stripe_customer_has_credit_card_as_default_source(stripe_customer))
+        self.assertTrue(stripe_customer_has_credit_card_as_default_payment_method(stripe_customer))
         self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.delivery_email)
@@ -632,7 +809,7 @@ class StripeTest(StripeTestCase):
                     RealmAuditLog.STRIPE_CUSTOMER_CREATED,
                     timestamp_to_datetime(stripe_customer.created),
                 ),
-                (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(stripe_customer.created)),
+                (RealmAuditLog.STRIPE_CARD_CHANGED, self.now),
                 (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
             ],
         )
@@ -670,7 +847,7 @@ class StripeTest(StripeTestCase):
             "January 2, 2013",
             f"${80 * self.seat_count}.00",
             f"Billing email: <strong>{user.delivery_email}</strong>",
-            "Visa ending in 4242",
+            "visa ending in 4242",
             "Update card",
         ]:
             self.assert_in_response(substring, response)
@@ -695,7 +872,7 @@ class StripeTest(StripeTestCase):
         stripe_customer = stripe_get_customer(
             assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
-        self.assertFalse(stripe_customer_has_credit_card_as_default_source(stripe_customer))
+        self.assertFalse(stripe_customer_has_credit_card_as_default_payment_method(stripe_customer))
         # It can take a second for Stripe to attach the source to the customer, and in
         # particular it may not be attached at the time stripe_get_customer is called above,
         # causing test flakes.
@@ -832,12 +1009,23 @@ class StripeTest(StripeTestCase):
             self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
             with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-                self.upgrade()
+                response = self.upgrade()
+            self.assertEqual(PaymentIntent.objects.count(), 0)
+            self.assert_details_of_valid_session_from_event_status_endpoint(
+                response.json()["stripe_session_id"],
+                {
+                    "type": "free_trial_upgrade_from_billing_page",
+                    "status": "completed",
+                    "event_handler": {"status": "succeeded"},
+                },
+            )
 
             stripe_customer = stripe_get_customer(
                 assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
             )
-            self.assertEqual(stripe_customer.default_source.id[:5], "card_")
+            self.assertTrue(
+                stripe_customer_has_credit_card_as_default_payment_method(stripe_customer)
+            )
             self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
@@ -887,7 +1075,7 @@ class StripeTest(StripeTestCase):
                     ),
                     (
                         RealmAuditLog.STRIPE_CARD_CHANGED,
-                        timestamp_to_datetime(stripe_customer.created),
+                        self.now,
                     ),
                     (RealmAuditLog.CUSTOMER_PLAN_CREATED, self.now),
                 ],
@@ -921,7 +1109,7 @@ class StripeTest(StripeTestCase):
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
                 f"Billing email: <strong>{user.delivery_email}</strong>",
-                "Visa ending in 4242",
+                "visa ending in 4242",
                 "Update card",
             ]:
                 self.assert_in_response(substring, response)
@@ -1025,6 +1213,69 @@ class StripeTest(StripeTestCase):
 
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
             [invoice0, invoice1, invoice2] = stripe.Invoice.list(customer=stripe_customer.id)
+
+    @mock_stripe(tested_timestamp_fields=["created"])
+    def test_free_trial_upgrade_by_card_from_onboarding_page(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        with self.settings(FREE_TRIAL_DAYS=60):
+            free_trial_end_date = self.now + timedelta(days=60)
+            self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
+
+            with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+                response = self.upgrade(onboarding=True)
+            self.assertEqual(PaymentIntent.objects.all().count(), 0)
+            self.assert_details_of_valid_session_from_event_status_endpoint(
+                response.json()["stripe_session_id"],
+                {
+                    "type": "free_trial_upgrade_from_onboarding_page",
+                    "status": "completed",
+                    "event_handler": {"status": "succeeded"},
+                },
+            )
+
+            stripe_customer = stripe_get_customer(
+                assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
+            )
+            self.assertTrue(
+                stripe_customer_has_credit_card_as_default_payment_method(stripe_customer)
+            )
+            self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
+            self.assertEqual(stripe_customer.discount, None)
+            self.assertEqual(stripe_customer.email, user.delivery_email)
+            metadata_dict = dict(stripe_customer.metadata)
+            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            try:
+                int(metadata_dict["realm_id"])
+            except ValueError:  # nocoverage
+                raise AssertionError("realm_id is not a number")
+            self.assertFalse(stripe.Charge.list(customer=stripe_customer.id))
+            self.assertFalse(stripe.Invoice.list(customer=stripe_customer.id))
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
+            plan = CustomerPlan.objects.get(
+                customer=customer,
+                automanage_licenses=True,
+                price_per_license=8000,
+                fixed_price=None,
+                discount=None,
+                billing_cycle_anchor=self.now,
+                billing_schedule=CustomerPlan.ANNUAL,
+                invoiced_through=LicenseLedger.objects.first(),
+                next_invoice_date=free_trial_end_date,
+                tier=CustomerPlan.STANDARD,
+                status=CustomerPlan.FREE_TRIAL,
+            )
+            LicenseLedger.objects.get(
+                plan=plan,
+                is_renewal=True,
+                event_time=self.now,
+                licenses=self.seat_count,
+                licenses_at_next_renewal=self.seat_count,
+            )
+            # We don't test anything else since test_free_trial_upgrade_by_card does this already.
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_free_trial_upgrade_by_invoice(self, *mocks: Mock) -> None:
@@ -1180,39 +1431,6 @@ class StripeTest(StripeTestCase):
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
             [invoice0, invoice1] = stripe.Invoice.list(customer=stripe_customer.id)
 
-    @mock_stripe()
-    def test_billing_page_permissions(self, *mocks: Mock) -> None:
-        # Guest users can't access /upgrade page
-        self.login_user(self.example_user("polonius"))
-        response = self.client_get("/upgrade/", follow=True)
-        self.assertEqual(response.status_code, 404)
-
-        # Check that non-admins can access /upgrade via /billing, when there is no Customer object
-        self.login_user(self.example_user("hamlet"))
-        response = self.client_get("/billing/")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual("/upgrade/", response.url)
-        # Check that non-admins can sign up and pay
-        self.upgrade()
-        # Check that the non-admin hamlet can still access /billing
-        response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your current plan is"], response)
-
-        # Check realm owners can access billing, even though they are not a billing admin
-        desdemona = self.example_user("desdemona")
-        desdemona.role = UserProfile.ROLE_REALM_OWNER
-        desdemona.save(update_fields=["role"])
-        self.login_user(self.example_user("desdemona"))
-        response = self.client_get("/billing/")
-        self.assert_in_success_response(["Your current plan is"], response)
-
-        # Check that member who is not a billing admin does not have access
-        self.login_user(self.example_user("cordelia"))
-        response = self.client_get("/billing/")
-        self.assert_in_success_response(
-            ["You must be an organization owner or a billing administrator"], response
-        )
-
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_card_with_outdated_seat_count(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
@@ -1220,7 +1438,10 @@ class StripeTest(StripeTestCase):
         new_seat_count = 23
         # Change the seat count while the user is going through the upgrade flow
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count):
-            self.upgrade()
+            with patch(
+                "corporate.views.upgrade.get_latest_seat_count", return_value=self.seat_count
+            ):
+                self.upgrade()
         customer = Customer.objects.first()
         assert customer is not None
         stripe_customer_id: str = assert_is_not_none(customer.stripe_customer_id)
@@ -1240,17 +1461,216 @@ class StripeTest(StripeTestCase):
         self.assertEqual(ledger_entry.licenses_at_next_renewal, new_seat_count)
 
     @mock_stripe()
-    def test_upgrade_where_first_card_fails(self, *mocks: Mock) -> None:
+    def test_upgrade_first_card_fails_and_retry_with_another_card_without_starting_from_begining(
+        self, *mocks: Mock
+    ) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
         # a Customer object succeeds, but attempts to charge the customer fail.
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            self.upgrade(stripe_token=stripe_create_token("4000000000000341").id)
+            response = self.upgrade(
+                payment_method=create_payment_method(
+                    self.get_test_card_number(attaches_to_customer=True, charge_succeeds=False)
+                )
+            )
             self.assertEqual(
                 m.output,
-                ["INFO:corporate.stripe:Stripe card error: 402 card_error card_declined None"],
+                [
+                    "INFO:corporate.stripe:Stripe payment intent failed: zulip card_error card_declined None"
+                ],
             )
+
+        [payment_intent] = PaymentIntent.objects.all()
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            response.json()["stripe_session_id"],
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "succeeded",
+                },
+            },
+        )
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            payment_intent.stripe_payment_intent_id,
+            {
+                "status": "requires_payment_method",
+                "last_payment_error": {
+                    "message": "Your card was declined.",
+                    "description": "card_error",
+                },
+                "event_handler": {"status": "succeeded"},
+            },
+        )
+        # Check that we created a Customer object but no CustomerPlan
+        stripe_customer_id = Customer.objects.get(realm=get_realm("zulip")).stripe_customer_id
+        assert stripe_customer_id is not None
+        self.assertFalse(CustomerPlan.objects.exists())
+        # Check that we created a Customer in stripe, a failed Charge, and no Invoices or Invoice Items
+        self.assertTrue(stripe_get_customer(stripe_customer_id))
+        [charge] = stripe.Charge.list(customer=stripe_customer_id)
+        self.assertEqual(charge.failure_code, "card_declined")
+        self.assertFalse(stripe.Invoice.list(customer=stripe_customer_id))
+        self.assertFalse(stripe.InvoiceItem.list(customer=stripe_customer_id))
+        # Check that we correctly populated RealmAuditLog
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(acting_user=user)
+            .values_list("event_type", flat=True)
+            .order_by("id")
+        )
+        self.assertEqual(
+            audit_log_entries,
+            [RealmAuditLog.STRIPE_CUSTOMER_CREATED, RealmAuditLog.STRIPE_CARD_CHANGED],
+        )
+        # Check that we did not update Realm
+        realm = get_realm("zulip")
+        self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+        # Check that we still get redirected to /upgrade
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/upgrade/", response.url)
+
+        [last_event] = stripe.Event.list(limit=1)
+        retry_payment_intent_json_response = self.client_post(
+            "/json/billing/session/start_retry_payment_intent_session",
+            {
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+            },
+        )
+        self.assert_json_success(retry_payment_intent_json_response)
+        [payment_intent] = PaymentIntent.objects.all()
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            retry_payment_intent_json_response.json()["stripe_session_id"],
+            {
+                "type": "retry_upgrade_with_another_payment_method",
+                "status": "created",
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+            },
+        )
+        self.trigger_stripe_checkout_session_completed_webhook(
+            create_payment_method(
+                self.get_test_card_number(
+                    attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
+                )
+            )
+        )
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            payment_intent.stripe_payment_intent_id,
+            {"status": "processing"},
+        )
+        self.send_stripe_webhook_events(last_event)
+
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            retry_payment_intent_json_response.json()["stripe_session_id"],
+            {
+                "type": "retry_upgrade_with_another_payment_method",
+                "status": "completed",
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "succeeded",
+                },
+            },
+        )
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            payment_intent.stripe_payment_intent_id,
+            {"status": "succeeded", "event_handler": {"status": "succeeded"}},
+        )
+
+        retry_payment_intent_json_response = self.client_post(
+            "/json/billing/session/start_retry_payment_intent_session",
+            {
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+            },
+        )
+        self.assert_json_error(retry_payment_intent_json_response, "Payment already succeeded.")
+
+        customer = Customer.objects.get(realm=get_realm("zulip"))
+        # It's impossible to create two Customers, but check that we didn't
+        # change stripe_customer_id
+        self.assertEqual(customer.stripe_customer_id, stripe_customer_id)
+        # Check that we successfully added a CustomerPlan, and have the right number of licenses
+        plan = CustomerPlan.objects.get(customer=customer)
+        ledger_entry = LicenseLedger.objects.get(plan=plan)
+        self.assertEqual(ledger_entry.licenses, self.seat_count)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, self.seat_count)
+        # Check the Charges and Invoices in Stripe
+        [charge0, charge1] = stripe.Charge.list(customer=stripe_customer_id)
+        self.assertEqual(8000 * self.seat_count, charge0.amount)
+        [stripe_invoice] = stripe.Invoice.list(customer=stripe_customer_id)
+        self.assertEqual(
+            [8000 * self.seat_count, -8000 * self.seat_count],
+            [item.amount for item in stripe_invoice.lines],
+        )
+        # Check that we correctly populated RealmAuditLog
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(acting_user=user)
+            .values_list("event_type", flat=True)
+            .order_by("id")
+        )
+        self.assertEqual(
+            audit_log_entries,
+            [
+                RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                RealmAuditLog.STRIPE_CARD_CHANGED,
+                RealmAuditLog.STRIPE_CARD_CHANGED,
+                RealmAuditLog.CUSTOMER_PLAN_CREATED,
+                RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+            ],
+        )
+        # Check that we correctly updated Realm
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+        # Check that we can no longer access /upgrade
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/billing/", response.url)
+
+    @mock_stripe()
+    def test_upgrade_first_card_fails_and_restart_from_begining(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        # From https://stripe.com/docs/testing#cards: Attaching this card to
+        # a Customer object succeeds, but attempts to charge the customer fail.
+        with self.assertLogs("corporate.stripe", "INFO") as m:
+            response = self.upgrade(
+                payment_method=create_payment_method(
+                    self.get_test_card_number(attaches_to_customer=True, charge_succeeds=False)
+                )
+            )
+            self.assertEqual(
+                m.output,
+                [
+                    "INFO:corporate.stripe:Stripe payment intent failed: zulip card_error card_declined None"
+                ],
+            )
+
+        [payment_intent] = PaymentIntent.objects.all()
+        assert payment_intent.stripe_payment_intent_id is not None
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            response.json()["stripe_session_id"],
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "succeeded",
+                },
+            },
+        )
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            payment_intent.stripe_payment_intent_id,
+            {
+                "status": "requires_payment_method",
+                "last_payment_error": {
+                    "message": "Your card was declined.",
+                    "description": "card_error",
+                },
+                "event_handler": {"status": "succeeded"},
+            },
+        )
+
         # Check that we created a Customer object but no CustomerPlan
         stripe_customer_id = Customer.objects.get(realm=get_realm("zulip")).stripe_customer_id
         assert stripe_customer_id is not None
@@ -1283,7 +1703,24 @@ class StripeTest(StripeTestCase):
         # Try again, with a valid card, after they added a few users
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=23):
             with patch("corporate.views.upgrade.get_latest_seat_count", return_value=23):
-                self.upgrade()
+                response = self.upgrade()
+        [second_payment_intent, _] = PaymentIntent.objects.all().order_by("-id")
+        assert second_payment_intent.stripe_payment_intent_id is not None
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            response.json()["stripe_session_id"],
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": second_payment_intent.stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "succeeded",
+                },
+            },
+        )
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            second_payment_intent.stripe_payment_intent_id,
+            {"status": "succeeded", "event_handler": {"status": "succeeded"}},
+        )
         customer = Customer.objects.get(realm=get_realm("zulip"))
         # It's impossible to create two Customers, but check that we didn't
         # change stripe_customer_id
@@ -1325,23 +1762,125 @@ class StripeTest(StripeTestCase):
     def test_upgrade_with_tampered_seat_count(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        response = self.upgrade(talk_to_stripe=False, salt="badsalt")
+        with self.assertLogs("corporate.stripe", "WARNING"):
+            response = self.upgrade(talk_to_stripe=False, salt="badsalt")
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
         self.assertEqual(orjson.loads(response.content)["error_description"], "tampered seat count")
 
-    def test_upgrade_race_condition(self) -> None:
+    @mock_stripe()
+    def test_upgrade_race_condition_during_card_upgrade(self, *mocks: Mock) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        self.login_user(hamlet)
+        hamlet_upgrade_page_response = self.client_get("/upgrade/")
+        self.client_post(
+            "/json/billing/upgrade",
+            {
+                "billing_modality": "charge_automatically",
+                "schedule": "annual",
+                "signed_seat_count": self.get_signed_seat_count_from_response(
+                    hamlet_upgrade_page_response
+                ),
+                "salt": self.get_salt_from_response(hamlet_upgrade_page_response),
+                "license_management": "automatic",
+            },
+        )
+        [hamlet_stripe_session] = stripe.checkout.Session.list(limit=1)
+        [hamlet_payment_intent] = stripe.PaymentIntent.list(limit=1)
+
+        self.login_user(othello)
+        self.upgrade()
+
+        self.login_user(hamlet)
+        # Checkout session cannot be started since the organization has been already upgraded.
+        with self.assertLogs("corporate.stripe", "WARNING"):
+            response = self.client_post(
+                "/json/billing/upgrade",
+                {
+                    "billing_modality": "charge_automatically",
+                    "schedule": "annual",
+                    "signed_seat_count": self.get_signed_seat_count_from_response(
+                        hamlet_upgrade_page_response
+                    ),
+                    "salt": self.get_salt_from_response(hamlet_upgrade_page_response),
+                    "license_management": "automatic",
+                },
+            )
+            self.assert_json_error_contains(
+                response,
+                "The organization is already subscribed to a plan. Please reload the billing page.",
+            )
+        payment_method = create_payment_method(
+            self.get_test_card_number(
+                attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
+            )
+        )
+
+        # Organization has been upgraded by the time hamlet completes the checkout session.
+        with self.assertLogs("corporate.stripe", "WARNING"):
+            self.trigger_stripe_checkout_session_completed_webhook(
+                payment_method, hamlet_stripe_session
+            )
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            hamlet_stripe_session.id,
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": hamlet_payment_intent.id,
+                "event_handler": {
+                    "status": "failed",
+                    "error": {
+                        "message": "The organization is already subscribed to a plan. Please reload the billing page.",
+                        "description": "subscribing with existing subscription",
+                    },
+                },
+            },
+        )
+
+        # Organization has been upgraded by the time payment intent is successful.
+        stripe.PaymentIntent.confirm(
+            hamlet_payment_intent.id,
+            payment_method=payment_method.id,
+            off_session=True,
+        )
+        with self.assertLogs("corporate.stripe", "WARNING"):
+            self.send_last_stripe_webhook_event()
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            hamlet_payment_intent.id,
+            {
+                "status": "succeeded",
+                "event_handler": {
+                    "status": "failed",
+                    "error": {
+                        "message": "The organization is already subscribed to a plan. Please reload the billing page.",
+                        "description": "subscribing with existing subscription",
+                    },
+                },
+            },
+        )
+        charged_amount = self.seat_count * 8000
+        customer = get_customer_by_realm(get_realm("zulip"))
+        assert customer is not None
+        assert customer.stripe_customer_id is not None
+        [invoice, _] = stripe.Invoice.list(customer=customer.stripe_customer_id)
+        self.assertEqual(invoice.total, -1 * charged_amount)
+        stripe_customer = stripe.Customer.retrieve(customer.stripe_customer_id)
+        self.assertEqual(stripe_customer.balance, -1 * charged_amount)
+
+    def test_upgrade_race_condition_during_invoice_upgrade(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         with self.assertLogs("corporate.stripe", "WARNING") as m:
             with self.assertRaises(BillingError) as context:
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.assertEqual(
             "subscribing with existing subscription", context.exception.error_description
         )
         self.assertEqual(
             m.output[0],
-            f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {hamlet.realm.id}> id> trying to upgrade, but has an active subscription",
+            "WARNING:corporate.stripe:Upgrade of zulip failed because of existing active plan.",
         )
         self.assert_length(m.output, 1)
 
@@ -1353,23 +1892,59 @@ class StripeTest(StripeTestCase):
             upgrade_params: Mapping[str, Any],
             del_args: Sequence[str] = [],
         ) -> None:
-            response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
-            self.assert_json_error_contains(response, error_message)
             if error_description:
-                self.assertEqual(
-                    orjson.loads(response.content)["error_description"], error_description
-                )
+                with self.assertLogs("corporate.stripe", "WARNING"):
+                    response = self.upgrade(
+                        talk_to_stripe=False, del_args=del_args, **upgrade_params
+                    )
+                    self.assertEqual(
+                        orjson.loads(response.content)["error_description"], error_description
+                    )
+            else:
+                response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
+            self.assert_json_error_contains(response, error_message)
 
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         check_error("Invalid billing_modality", "", {"billing_modality": "invalid"})
         check_error("Invalid schedule", "", {"schedule": "invalid"})
         check_error("Invalid license_management", "", {"license_management": "invalid"})
+
         check_error(
-            "Something went wrong. Please contact",
-            "autopay with no card",
-            {},
-            del_args=["stripe_token"],
+            "You must invoice for at least 30 users.",
+            "not enough licenses",
+            {"billing_modality": "send_invoice", "licenses": -1},
+        )
+        check_error(
+            "You must invoice for at least 30 users.",
+            "not enough licenses",
+            {"billing_modality": "send_invoice"},
+        )
+        check_error(
+            "You must invoice for at least 30 users.",
+            "not enough licenses",
+            {"billing_modality": "send_invoice", "licenses": 25},
+        )
+        check_error(
+            "Invoices with more than 1000 licenses can't be processed from this page",
+            "too many licenses",
+            {"billing_modality": "send_invoice", "licenses": 10000},
+        )
+
+        check_error(
+            "You must invoice for at least 6 users.",
+            "not enough licenses",
+            {"billing_modality": "charge_automatically", "license_management": "manual"},
+        )
+
+        check_error(
+            "You must invoice for at least 6 users.",
+            "not enough licenses",
+            {
+                "billing_modality": "charge_automatically",
+                "license_management": "manual",
+                "licenses": 3,
+            },
         )
 
     def test_upgrade_license_counts(self) -> None:
@@ -1384,16 +1959,18 @@ class StripeTest(StripeTestCase):
             else:
                 del_args = []
                 upgrade_params["licenses"] = licenses
-            response = self.upgrade(
-                invoice=invoice, talk_to_stripe=False, del_args=del_args, **upgrade_params
-            )
+            with self.assertLogs("corporate.stripe", "WARNING"):
+                response = self.upgrade(
+                    invoice=invoice, talk_to_stripe=False, del_args=del_args, **upgrade_params
+                )
             self.assert_json_error_contains(response, f"at least {min_licenses_in_response} users")
             self.assertEqual(
                 orjson.loads(response.content)["error_description"], "not enough licenses"
             )
 
         def check_max_licenses_error(licenses: int) -> None:
-            response = self.upgrade(invoice=True, talk_to_stripe=False, licenses=licenses)
+            with self.assertLogs("corporate.stripe", "WARNING"):
+                response = self.upgrade(invoice=True, talk_to_stripe=False, licenses=licenses)
             self.assert_json_error_contains(
                 response, f"with more than {MAX_INVOICED_LICENSES} licenses"
             )
@@ -1410,9 +1987,16 @@ class StripeTest(StripeTestCase):
                 del_args = []
                 upgrade_params["licenses"] = licenses
             with patch("corporate.views.upgrade.process_initial_upgrade"):
-                response = self.upgrade(
-                    invoice=invoice, talk_to_stripe=False, del_args=del_args, **upgrade_params
-                )
+                stripe_session = stripe.checkout.Session()
+                stripe_session.id = "stripe_session_id"
+                stripe_session.url = "stripe_session_url"
+                with patch(
+                    "corporate.views.upgrade.setup_upgrade_checkout_session_and_payment_intent",
+                    return_value=stripe_session,
+                ):
+                    response = self.upgrade(
+                        invoice=invoice, talk_to_stripe=False, del_args=del_args, **upgrade_params
+                    )
             self.assert_json_success(response)
 
         hamlet = self.example_user("hamlet")
@@ -1454,7 +2038,8 @@ class StripeTest(StripeTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         with patch(
-            "corporate.views.upgrade.process_initial_upgrade", side_effect=Exception
+            "corporate.views.upgrade.setup_upgrade_checkout_session_and_payment_intent",
+            side_effect=Exception,
         ), self.assertLogs("corporate.stripe", "WARNING") as m:
             response = self.upgrade(talk_to_stripe=False)
             self.assertIn("ERROR:corporate.stripe:Uncaught exception in billing", m.output[0])
@@ -1465,6 +2050,103 @@ class StripeTest(StripeTestCase):
         self.assertEqual(
             orjson.loads(response.content)["error_description"], "uncaught exception during upgrade"
         )
+
+    @mock_stripe()
+    def test_checkout_session_completed_with_uncaught_exception(self, *mock_args: Any) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with patch(
+            "corporate.lib.stripe_event_handler.update_or_create_stripe_customer",
+            side_effect=Exception,
+        ), self.assertLogs("corporate.stripe", "WARNING"):
+            response = self.upgrade()
+
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            response.json()["stripe_session_id"],
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": PaymentIntent.objects.get().stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "failed",
+                    "error": {
+                        "message": "Something went wrong. Please contact desdemona+admin@zulip.com.",
+                        "description": "uncaught exception in checkout.session.completed event handler",
+                    },
+                },
+            },
+        )
+
+    @mock_stripe()
+    def test_payment_intent_succeeded_event_with_uncaught_exception(self, *mock_args: Any) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with patch(
+            "corporate.lib.stripe_event_handler.process_initial_upgrade", side_effect=Exception
+        ), self.assertLogs("corporate.stripe", "WARNING"):
+            response = self.upgrade()
+
+        [payment_intent] = PaymentIntent.objects.all().order_by("-id")
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            response.json()["stripe_session_id"],
+            {
+                "type": "upgrade_from_billing_page",
+                "status": "completed",
+                "stripe_payment_intent_id": payment_intent.stripe_payment_intent_id,
+                "event_handler": {
+                    "status": "succeeded",
+                },
+            },
+        )
+
+        self.assert_details_of_valid_payment_intent_from_event_status_endpoint(
+            payment_intent.stripe_payment_intent_id,
+            {
+                "status": "succeeded",
+                "event_handler": {
+                    "status": "failed",
+                    "error": {
+                        "message": "Something went wrong. Please contact desdemona+admin@zulip.com.",
+                        "description": "uncaught exception in payment_intent.succeeded event handler",
+                    },
+                },
+            },
+        )
+
+    @mock_stripe()
+    def test_restart_payment_intent_session_errors(self, *mocks: Any) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        json_response = self.client_post("/json/billing/session/start_retry_payment_intent_session")
+        self.assert_json_error(json_response, "Missing 'stripe_payment_intent_id' argument")
+
+        json_response = self.client_post(
+            "/json/billing/session/start_retry_payment_intent_session",
+            {"stripe_payment_intent_id": "stripe_payment_intent_id"},
+        )
+        self.assert_json_error(json_response, "Please create a customer first.")
+
+        upgrade_page_response = self.client_get("/upgrade/")
+        self.client_post(
+            "/json/billing/upgrade",
+            {
+                "billing_modality": "charge_automatically",
+                "schedule": "monthly",
+                "signed_seat_count": self.get_signed_seat_count_from_response(
+                    upgrade_page_response
+                ),
+                "salt": self.get_salt_from_response(upgrade_page_response),
+                "license_management": "automatic",
+            },
+        )
+        response = self.client_post(
+            "/json/billing/session/start_retry_payment_intent_session",
+            {"stripe_payment_intent_id": "stripe_payment_intent_id"},
+        )
+        self.assert_json_error(response, "Invalid payment intent id.")
 
     def test_request_sponsorship_form_with_invalid_url(self) -> None:
         user = self.example_user("hamlet")
@@ -1771,9 +2453,7 @@ class StripeTest(StripeTestCase):
         plan.save(update_fields=["status"])
         attach_discount_to_realm(user.realm, Decimal(25), acting_user=user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            process_initial_upgrade(
-                user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id
-            )
+            self.upgrade(license_management="automatic", billing_modality="charge_automatically")
         [charge, _] = stripe.Charge.list(customer=customer.stripe_customer_id)
         self.assertEqual(6000 * self.seat_count, charge.amount)
         stripe_customer_id = customer.stripe_customer_id
@@ -1844,76 +2524,119 @@ class StripeTest(StripeTestCase):
         self.assertEqual(get_discount_for_realm(user.realm), 85)
 
     @mock_stripe()
-    def test_replace_payment_source(self, *mocks: Mock) -> None:
+    def test_replace_payment_method(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
         self.upgrade()
         # Create an open invoice
-        stripe_customer = Customer.objects.first()
-        assert stripe_customer is not None
-        stripe_customer_id = stripe_customer.stripe_customer_id
+        customer = Customer.objects.first()
+        assert customer is not None
+        stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
         stripe.InvoiceItem.create(amount=5000, currency="usd", customer=stripe_customer_id)
         stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
         stripe.Invoice.finalize_invoice(stripe_invoice)
         RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).delete()
 
-        # Replace with an invalid card
-        stripe_token = stripe_create_token(card_number="4000000000009987").id
-        with patch("stripe.Invoice.list") as mock_invoice_list, self.assertLogs(
-            "corporate.stripe", "INFO"
-        ) as m:
-            response = self.client_post(
-                "/json/billing/sources/change",
-                {"stripe_token": stripe_token},
-            )
-            self.assertEqual(
-                m.output, ["INFO:corporate.stripe:Stripe card error: 402 card_error card_declined "]
-            )
-        mock_invoice_list.assert_not_called()
-        self.assertEqual(orjson.loads(response.content)["error_description"], "card error")
-        self.assert_json_error_contains(response, "Your card was declined")
-        for stripe_source in stripe_get_customer(stripe_customer_id).sources:
-            assert isinstance(stripe_source, stripe.Card)
-            self.assertEqual(stripe_source.last4, "4242")
-        self.assertFalse(
-            RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists()
+        start_session_json_response = self.client_post(
+            "/json/billing/session/start_card_update_session"
         )
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            start_session_json_response.json()["stripe_session_id"],
+            {
+                "type": "card_update_from_billing_page",
+                "status": "created",
+            },
+        )
+        with self.assertRaises(stripe.error.CardError):
+            # We don't have to handle this since the Stripe Checkout page would
+            # ask Customer to enter a valid card number. trigger_stripe_checkout_session_completed_webhook
+            # emulates what happens in the Stripe Checkout page. Adding this check mostly for coverage of
+            # create_payment_method.
+            self.trigger_stripe_checkout_session_completed_webhook(
+                create_payment_method(self.get_test_card_number(attaches_to_customer=False))
+            )
 
-        # Replace with a card that's valid, but charging the card fails
-        stripe_token = stripe_create_token(card_number="4000000000000341").id
+        start_session_json_response = self.client_post(
+            "/json/billing/session/start_card_update_session"
+        )
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            start_session_json_response.json()["stripe_session_id"],
+            {
+                "type": "card_update_from_billing_page",
+                "status": "created",
+            },
+        )
         with self.assertLogs("corporate.stripe", "INFO") as m:
-            response = self.client_post(
-                "/json/billing/sources/change",
-                {"stripe_token": stripe_token},
+            self.trigger_stripe_checkout_session_completed_webhook(
+                create_payment_method(
+                    self.get_test_card_number(attaches_to_customer=True, charge_succeeds=False)
+                )
             )
             self.assertEqual(
-                m.output,
-                ["INFO:corporate.stripe:Stripe card error: 402 card_error card_declined None"],
+                m.output[0],
+                "INFO:corporate.stripe:Stripe card error: 402 card_error card_declined None",
             )
-        self.assertEqual(orjson.loads(response.content)["error_description"], "card error")
-        self.assert_json_error_contains(response, "Your card was declined")
-        for stripe_source in stripe_get_customer(stripe_customer_id).sources:
-            assert isinstance(stripe_source, stripe.Card)
-            self.assertEqual(stripe_source.last4, "0341")
-        self.assertEqual(
-            len(list(stripe.Invoice.list(customer=stripe_customer_id, status="open"))), 1
-        )
-        self.assertEqual(
-            1, RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).count()
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            start_session_json_response.json()["stripe_session_id"],
+            {
+                "type": "card_update_from_billing_page",
+                "status": "completed",
+                "event_handler": {
+                    "status": "failed",
+                    "error": {"message": "Your card was declined.", "description": "card error"},
+                },
+            },
         )
 
-        # Replace with a valid card
-        stripe_token = stripe_create_token(card_number="5555555555554444").id
-        response = self.client_post("/json/billing/sources/change", {"stripe_token": stripe_token})
-        self.assert_json_success(response)
-        number_of_sources = 0
-        for stripe_source in stripe_get_customer(stripe_customer_id).sources:
-            assert isinstance(stripe_source, stripe.Card)
-            self.assertEqual(stripe_source.last4, "4444")
-            number_of_sources += 1
-        # Verify that we replaced the previous card, rather than adding a new one
-        self.assertEqual(number_of_sources, 1)
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["payment method: <strong>visa ending in 0341"], response)
+        assert RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists()
+        stripe_payment_methods = stripe.PaymentMethod.list(customer=stripe_customer_id, type="card")
+        self.assert_length(stripe_payment_methods, 2)
+
+        for stripe_payment_method in stripe_payment_methods:
+            stripe.PaymentMethod.detach(stripe_payment_method.id)
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(
+            ["payment method: <strong>No payment method on file"], response
+        )
+
+        start_session_json_response = self.client_post(
+            "/json/billing/session/start_card_update_session"
+        )
+        self.assert_json_success(start_session_json_response)
+        self.trigger_stripe_checkout_session_completed_webhook(
+            create_payment_method(
+                self.get_test_card_number(
+                    attaches_to_customer=True, charge_succeeds=True, card_provider="mastercard"
+                )
+            )
+        )
+        self.assert_details_of_valid_session_from_event_status_endpoint(
+            start_session_json_response.json()["stripe_session_id"],
+            {
+                "type": "card_update_from_billing_page",
+                "status": "completed",
+                "event_handler": {"status": "succeeded"},
+            },
+        )
+
+        self.login_user(self.example_user("iago"))
+        response = self.client_get(
+            "/json/billing/event/status",
+            {"stripe_session_id": start_session_json_response.json()["stripe_session_id"]},
+        )
+        self.assert_json_error_contains(
+            response, "Must be a billing administrator or an organization owner"
+        )
+
+        self.login_user(self.example_user("hamlet"))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(
+            ["payment method: <strong>mastercard ending in 4444"], response
+        )
+        self.assert_length(stripe.PaymentMethod.list(customer=stripe_customer_id, type="card"), 1)
         # Ideally we'd also test that we don't pay invoices with collection_method=='send_invoice'
         for stripe_invoice in stripe.Invoice.list(customer=stripe_customer_id):
             self.assertEqual(stripe_invoice.status, "paid")
@@ -1925,7 +2648,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         plan = get_current_plan_by_realm(user.realm)
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
@@ -1946,7 +2669,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(plan.licenses_at_next_renewal(), None)
 
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
-            mock_customer = Mock(email=user.delivery_email, default_source=None)
+            mock_customer = Mock(email=user.delivery_email)
             with patch(
                 "corporate.views.billing_page.stripe_get_customer", return_value=mock_customer
             ):
@@ -2332,7 +3055,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         with self.assertLogs("corporate.stripe", "INFO") as m:
             with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
                 response = self.client_patch(
@@ -2369,7 +3092,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         with self.assertLogs("corporate.stripe", "INFO") as m:
             stripe_customer_id = Customer.objects.get(realm=user.realm).id
             new_plan = get_current_plan_by_realm(user.realm)
@@ -2397,7 +3120,7 @@ class StripeTest(StripeTestCase):
         free_trial_end_date = self.now + timedelta(days=60)
         with self.settings(FREE_TRIAL_DAYS=60):
             with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, True)
 
             plan = CustomerPlan.objects.get()
             self.assertEqual(plan.next_invoice_date, free_trial_end_date)
@@ -2444,7 +3167,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.login_user(user)
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -2462,10 +3185,10 @@ class StripeTest(StripeTestCase):
             "corporate.stripe", "WARNING"
         ) as m:
             with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.assertEqual(
             m.output[0],
-            f"WARNING:corporate.stripe:Customer <Customer <Realm: zulip {user.realm.id}> id> trying to upgrade, but has an active subscription",
+            "WARNING:corporate.stripe:Upgrade of zulip failed because of existing active plan.",
         )
         self.assertEqual(
             context.exception.error_description, "subscribing with existing subscription"
@@ -2477,7 +3200,7 @@ class StripeTest(StripeTestCase):
         self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.next_year):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.assertEqual(Customer.objects.count(), 1)
         self.assertEqual(CustomerPlan.objects.count(), 2)
@@ -2621,7 +3344,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
             result = self.client_patch("/json/billing/plan", {"licenses": 100})
@@ -2633,7 +3356,7 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_with_invalid_status(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.login_user(self.example_user("hamlet"))
 
         response = self.client_patch(
@@ -2644,7 +3367,7 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_without_any_params(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.login_user(self.example_user("hamlet"))
         with patch("corporate.views.billing_page.timezone_now", return_value=self.now):
@@ -2653,7 +3376,7 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_that_which_is_due_for_expiry(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -2675,7 +3398,7 @@ class StripeTest(StripeTestCase):
 
     def test_update_plan_that_which_is_due_for_replacement(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.MONTHLY, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.MONTHLY, True, False)
 
         self.login_user(self.example_user("hamlet"))
         with self.assertLogs("corporate.stripe", "INFO") as m:
@@ -2700,7 +3423,7 @@ class StripeTest(StripeTestCase):
     def test_deactivate_realm(self, mock_: Mock) -> None:
         user = self.example_user("hamlet")
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         plan = CustomerPlan.objects.get()
         self.assertEqual(plan.next_invoice_date, self.next_month)
@@ -2745,7 +3468,7 @@ class StripeTest(StripeTestCase):
         user = self.example_user("hamlet")
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
         self.assertTrue(get_realm("zulip").deactivated)
@@ -2756,7 +3479,7 @@ class StripeTest(StripeTestCase):
         self.assert_in_success_response(["Your organization is on the <b>Zulip Free</b>"], response)
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
 
         self.assertEqual(Customer.objects.count(), 1)
 
@@ -3095,20 +3818,181 @@ class StripeTest(StripeTestCase):
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
 
     @mock_stripe()
-    def test_customer_has_credit_card_as_default_source(self, *mocks: Mock) -> None:
+    def test_customer_has_credit_card_as_default_payment_method(self, *mocks: Mock) -> None:
         iago = self.example_user("iago")
         customer = Customer.objects.create(realm=iago.realm)
-        self.assertFalse(customer_has_credit_card_as_default_source(customer))
+        self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
         customer = do_create_stripe_customer(iago)
-        self.assertFalse(customer_has_credit_card_as_default_source(customer))
+        self.assertFalse(customer_has_credit_card_as_default_payment_method(customer))
 
-        customer = do_create_stripe_customer(iago, stripe_token=stripe_create_token().id)
-        self.assertTrue(customer_has_credit_card_as_default_source(customer))
+        customer = do_create_stripe_customer(
+            iago,
+            payment_method=create_payment_method(
+                self.get_test_card_number(
+                    attaches_to_customer=True, charge_succeeds=True, card_provider="visa"
+                )
+            ).id,
+        )
+        self.assertTrue(customer_has_credit_card_as_default_payment_method(customer))
 
 
-class RequiresBillingAccessTest(ZulipTestCase):
-    def setUp(self) -> None:
+class StripeWebhookEndpointTest(ZulipTestCase):
+    def test_stripe_webhook_with_invalid_data(self) -> None:
+        result = self.client_post(
+            "/stripe/webhook/",
+            '["dsdsds"]',
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 400)
+
+    def test_stripe_webhook_for_session_completed_event(self) -> None:
+        valid_session_event_data = {
+            "id": "stripe_event_id",
+            "type": "checkout.session.completed",
+            "data": {"object": {"object": "checkout.session", "id": "stripe_session_id"}},
+        }
+        with patch("corporate.views.webhook.handle_checkout_session_completed_event") as m:
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_session_event_data,
+                content_type="application/json",
+            )
+        self.assert_length(Event.objects.all(), 0)
+        self.assertEqual(result.status_code, 200)
+        m.assert_not_called()
+
+        customer = Customer.objects.create(realm=get_realm("zulip"))
+        Session.objects.create(
+            stripe_session_id="stripe_session_id",
+            customer=customer,
+            type=Session.UPGRADE_FROM_BILLING_PAGE,
+        )
+
+        self.assert_length(Event.objects.all(), 0)
+        with patch("corporate.views.webhook.handle_checkout_session_completed_event") as m:
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_session_event_data,
+                content_type="application/json",
+            )
+        [event] = Event.objects.all()
+        self.assertEqual(result.status_code, 200)
+        strip_event = stripe.Event.construct_from(valid_session_event_data, stripe.api_key)
+        m.assert_called_once_with(strip_event.data.object, event)
+
+        with patch("corporate.views.webhook.handle_checkout_session_completed_event") as m:
+            result = self.client_post(
+                "/stripe/webhook/",
+                valid_session_event_data,
+                content_type="application/json",
+            )
+        self.assert_length(Event.objects.all(), 1)
+        self.assertEqual(result.status_code, 200)
+        m.assert_not_called()
+
+    def test_stripe_webhook_for_payment_intent_events(self) -> None:
+        customer = Customer.objects.create(realm=get_realm("zulip"))
+
+        for index, event_type in enumerate(
+            ["payment_intent.succeeded", "payment_intent.payment_failed"]
+        ):
+            handler_function_name = "handle_" + event_type.replace(".", "_") + "_event"
+            handler_function_path = f"corporate.views.webhook.{handler_function_name}"
+
+            stripe_event_id = f"stripe_event_id_{index}"
+            stripe_payment_intent_id = f"stripe_payment_intent_id{index}"
+
+            valid_session_event_data = {
+                "id": stripe_event_id,
+                "type": event_type,
+                "data": {"object": {"object": "payment_intent", "id": stripe_payment_intent_id}},
+            }
+
+            with patch(handler_function_path) as m:
+                result = self.client_post(
+                    "/stripe/webhook/",
+                    valid_session_event_data,
+                    content_type="application/json",
+                )
+            self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 0)
+            self.assertEqual(result.status_code, 200)
+            m.assert_not_called()
+
+            PaymentIntent.objects.create(
+                stripe_payment_intent_id=stripe_payment_intent_id,
+                customer=customer,
+                status=PaymentIntent.REQUIRES_PAYMENT_METHOD,
+            )
+
+            self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 0)
+            with patch(handler_function_path) as m:
+                result = self.client_post(
+                    "/stripe/webhook/",
+                    valid_session_event_data,
+                    content_type="application/json",
+                )
+            [event] = Event.objects.filter(stripe_event_id=stripe_event_id)
+            self.assertEqual(result.status_code, 200)
+            strip_event = stripe.Event.construct_from(valid_session_event_data, stripe.api_key)
+            m.assert_called_once_with(strip_event.data.object, event)
+
+            with patch(handler_function_path) as m:
+                result = self.client_post(
+                    "/stripe/webhook/",
+                    valid_session_event_data,
+                    content_type="application/json",
+                )
+            self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 1)
+            self.assertEqual(result.status_code, 200)
+            m.assert_not_called()
+
+
+class EventStatusTest(StripeTestCase):
+    def test_event_status_json_endpoint_errors(self) -> None:
+        self.login_user(self.example_user("iago"))
+
+        response = self.client_get("/json/billing/event/status")
+        self.assert_json_error_contains(response, "No customer for this organization!")
+
+        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_123")
+        response = self.client_get(
+            "/json/billing/event/status", {"stripe_session_id": "invalid_session_id"}
+        )
+        self.assert_json_error_contains(response, "Session not found")
+
+        response = self.client_get(
+            "/json/billing/event/status", {"stripe_payment_intent_id": "invalid_payment_intent_id"}
+        )
+        self.assert_json_error_contains(response, "Payment intent not found")
+
+        response = self.client_get(
+            "/json/billing/event/status",
+        )
+        self.assert_json_error_contains(
+            response, "Pass stripe_session_id or stripe_payment_intent_id"
+        )
+
+    def test_event_status_page(self) -> None:
+        self.login_user(self.example_user("polonius"))
+
+        stripe_session_id = "cs_test_9QCz62mPTJQUwvhcwZHBpJMHmMZiLU512AQHU9g5znkx6NweU3j7kJvY"
+        response = self.client_get(
+            "/billing/event_status/", {"stripe_session_id": stripe_session_id}
+        )
+        self.assert_in_success_response([f'data-stripe-session-id="{stripe_session_id}"'], response)
+
+        stripe_payment_intent_id = "pi_1JGLpnA4KHR4JzRvUfkF9Tn7"
+        response = self.client_get(
+            "/billing/event_status/", {"stripe_payment_intent_id": stripe_payment_intent_id}
+        )
+        self.assert_in_success_response(
+            [f'data-stripe-payment-intent-id="{stripe_payment_intent_id}"'], response
+        )
+
+
+class RequiresBillingAccessTest(StripeTestCase):
+    def setUp(self, *mocks: Mock) -> None:
         super().setUp()
         hamlet = self.example_user("hamlet")
         hamlet.is_billing_admin = True
@@ -3118,81 +4002,87 @@ class RequiresBillingAccessTest(ZulipTestCase):
         desdemona.role = UserProfile.ROLE_REALM_OWNER
         desdemona.save(update_fields=["role"])
 
-    def test_who_can_access_json_endpoints(self) -> None:
-        # Billing admins have access
-        self.login_user(self.example_user("hamlet"))
-        with patch("corporate.views.billing_page.do_replace_payment_source") as mocked1:
-            response = self.client_post("/json/billing/sources/change", {"stripe_token": "token"})
-        self.assert_json_success(response)
-        mocked1.assert_called_once()
+    def test_json_endpoints_permissions(self) -> None:
+        guest = self.example_user("polonius")
+        member = self.example_user("othello")
+        realm_admin = self.example_user("iago")
 
-        # Realm owners have access, even if they are not billing admins
-        self.login_user(self.example_user("desdemona"))
-        with patch("corporate.views.billing_page.do_replace_payment_source") as mocked2:
-            response = self.client_post("/json/billing/sources/change", {"stripe_token": "token"})
-        self.assert_json_success(response)
-        mocked2.assert_called_once()
+        billing_admin = self.example_user("hamlet")
+        billing_admin.is_billing_admin = True
+        billing_admin.save(update_fields=["is_billing_admin"])
 
-    def test_who_cant_access_json_endpoints(self) -> None:
-        def verify_user_cant_access_endpoint(
-            username: str,
-            endpoint: str,
-            method: str,
-            request_data: Dict[str, Union[str, int]],
+        tested_endpoints = set()
+
+        def check_users_cant_access(
+            users: List[UserProfile],
             error_message: str,
+            url: str,
+            method: str,
+            data: Dict[str, Any],
         ) -> None:
+            tested_endpoints.add(url)
+            for user in users:
+                self.login_user(user)
+                if method == "POST":
+                    client_func: Any = self.client_post
+                elif method == "GET":
+                    client_func = self.client_get
+                else:
+                    client_func = self.client_patch
+                result = client_func(
+                    url,
+                    data,
+                    content_type="application/json",
+                )
+                self.assert_json_error_contains(result, error_message)
 
-            self.login_user(self.example_user(username))
-            if method == "POST":
-                response = self.client_post(endpoint, request_data)
-            elif method == "PATCH":
-                response = self.client_patch(endpoint, request_data)
-            else:
-                raise AssertionError("Invalid method")
-            self.assert_json_error_contains(response, error_message)
-
-        verify_user_cant_access_endpoint(
-            "polonius",
+        check_users_cant_access(
+            [guest],
+            "Must be an organization member",
             "/json/billing/upgrade",
             "POST",
-            {
-                "billing_modality": "charge_automatically",
-                "schedule": "annual",
-                "signed_seat_count": "signed count",
-                "salt": "salt",
-            },
-            "Must be an organization member",
+            {},
         )
 
-        verify_user_cant_access_endpoint(
-            "polonius",
+        check_users_cant_access(
+            [guest],
+            "Must be an organization member",
             "/json/billing/sponsorship",
             "POST",
-            {
-                "organization-type": "event",
-                "description": "event description",
-                "website": "example.com",
-            },
-            "Must be an organization member",
+            {},
         )
 
-        for username in ["cordelia", "iago"]:
-            self.login_user(self.example_user(username))
-            verify_user_cant_access_endpoint(
-                username,
-                "/json/billing/sources/change",
-                "POST",
-                {"stripe_token": "token"},
-                "Must be a billing administrator or an organization owner",
-            )
+        check_users_cant_access(
+            [guest, member, realm_admin],
+            "Must be a billing administrator or an organization owner",
+            "/json/billing/plan",
+            "PATCH",
+            {},
+        )
 
-            verify_user_cant_access_endpoint(
-                username,
-                "/json/billing/plan",
-                "PATCH",
-                {"status": 1},
-                "Must be a billing administrator or an organization owner",
-            )
+        check_users_cant_access(
+            [guest, member, realm_admin],
+            "Must be a billing administrator or an organization owner",
+            "/json/billing/session/start_card_update_session",
+            "POST",
+            {},
+        )
+
+        check_users_cant_access(
+            [guest],
+            "Must be an organization member",
+            "/json/billing/session/start_retry_payment_intent_session",
+            "POST",
+            {},
+        )
+
+        check_users_cant_access(
+            [guest],
+            "Must be an organization member",
+            "/json/billing/event/status",
+            "GET",
+            {},
+        )
 
         # Make sure that we are testing all the JSON endpoints
         # Quite a hack, but probably fine for now
@@ -3200,7 +4090,40 @@ class RequiresBillingAccessTest(ZulipTestCase):
         json_endpoints = {
             word.strip("\"'()[],$") for word in string_with_all_endpoints.split() if "json/" in word
         }
-        self.assert_length(json_endpoints, 4)
+        self.assert_length(json_endpoints, len(tested_endpoints))
+
+    @mock_stripe()
+    def test_billing_page_permissions(self, *mocks: Mock) -> None:
+        # Guest users can't access /upgrade page
+        self.login_user(self.example_user("polonius"))
+        response = self.client_get("/upgrade/", follow=True)
+        self.assertEqual(response.status_code, 404)
+
+        # Check that non-admins can access /upgrade via /billing, when there is no Customer object
+        self.login_user(self.example_user("hamlet"))
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual("/upgrade/", response.url)
+        # Check that non-admins can sign up and pay
+        self.upgrade()
+        # Check that the non-admin hamlet can still access /billing
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your current plan is"], response)
+
+        # Check realm owners can access billing, even though they are not a billing admin
+        desdemona = self.example_user("desdemona")
+        desdemona.role = UserProfile.ROLE_REALM_OWNER
+        desdemona.save(update_fields=["role"])
+        self.login_user(self.example_user("desdemona"))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Your current plan is"], response)
+
+        # Check that member who is not a billing admin does not have access
+        self.login_user(self.example_user("cordelia"))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(
+            ["You must be an organization owner or a billing administrator"], response
+        )
 
 
 class BillingHelpersTest(ZulipTestCase):
@@ -3349,7 +4272,7 @@ class BillingHelpersTest(ZulipTestCase):
         with patch(
             "corporate.lib.stripe.do_create_stripe_customer", return_value="returned"
         ) as mocked1:
-            returned = update_or_create_stripe_customer(user, stripe_token="token")
+            returned = update_or_create_stripe_customer(user, payment_method="payment_method_id")
         mocked1.assert_called_once()
         self.assertEqual(returned, "returned")
 
@@ -3358,14 +4281,14 @@ class BillingHelpersTest(ZulipTestCase):
         with patch(
             "corporate.lib.stripe.do_create_stripe_customer", return_value="returned"
         ) as mocked2:
-            returned = update_or_create_stripe_customer(user, stripe_token="token")
+            returned = update_or_create_stripe_customer(user, payment_method="payment_method_id")
         mocked2.assert_called_once()
         self.assertEqual(returned, "returned")
 
         customer.stripe_customer_id = "cus_12345"
         customer.save()
         # Customer exists, replace payment source
-        with patch("corporate.lib.stripe.do_replace_payment_source") as mocked3:
+        with patch("corporate.lib.stripe.do_replace_payment_method") as mocked3:
             returned_customer = update_or_create_stripe_customer(
                 self.example_user("hamlet"), "token"
             )
@@ -3373,7 +4296,7 @@ class BillingHelpersTest(ZulipTestCase):
         self.assertEqual(returned_customer, customer)
 
         # Customer exists, do nothing
-        with patch("corporate.lib.stripe.do_replace_payment_source") as mocked4:
+        with patch("corporate.lib.stripe.do_replace_payment_method") as mocked4:
             returned_customer = update_or_create_stripe_customer(self.example_user("hamlet"), None)
         mocked4.assert_not_called()
         self.assertEqual(returned_customer, customer)
@@ -3478,7 +4401,7 @@ class BillingHelpersTest(ZulipTestCase):
 class LicenseLedgerTest(StripeTestCase):
     def test_add_plan_renewal_if_needed(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         self.assertEqual(LicenseLedger.objects.count(), 1)
         plan = CustomerPlan.objects.get()
         # Plan hasn't renewed yet
@@ -3508,7 +4431,7 @@ class LicenseLedgerTest(StripeTestCase):
         update_license_ledger_if_needed(realm, self.now)
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
-        self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, "token")
+        self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, True, False)
         plan = CustomerPlan.objects.get()
         self.assertEqual(LicenseLedger.objects.count(), 1)
         self.assertEqual(plan.licenses(), self.seat_count + 1)
@@ -3530,7 +4453,7 @@ class LicenseLedgerTest(StripeTestCase):
     def test_update_license_ledger_for_automanaged_plan(self) -> None:
         realm = get_realm("zulip")
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.licenses(), self.seat_count)
@@ -3579,7 +4502,7 @@ class LicenseLedgerTest(StripeTestCase):
         realm = get_realm("zulip")
 
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, True, False)
 
         plan = get_current_plan_by_realm(realm)
         assert plan is not None
@@ -3635,7 +4558,7 @@ class LicenseLedgerTest(StripeTestCase):
             update_license_ledger_for_manual_plan(plan, self.now)
 
     def test_user_changes(self) -> None:
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
         do_deactivate_user(user, acting_user=None)
         do_reactivate_user(user, acting_user=None)
@@ -3660,7 +4583,7 @@ class LicenseLedgerTest(StripeTestCase):
 
 class InvoiceTest(StripeTestCase):
     def test_invoicing_status_is_started(self) -> None:
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         plan.invoicing_status = CustomerPlan.STARTED
@@ -3669,7 +4592,7 @@ class InvoiceTest(StripeTestCase):
             invoice_plan(assert_is_not_none(CustomerPlan.objects.first()), self.now)
 
     def test_invoice_plan_without_stripe_customer(self) -> None:
-        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL)
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, False)
         plan = get_current_plan_by_realm(get_realm("zulip"))
         assert plan and plan.customer
         plan.customer.stripe_customer_id = None
@@ -3780,7 +4703,7 @@ class InvoiceTest(StripeTestCase):
 
     def test_no_invoice_needed(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
@@ -3793,7 +4716,7 @@ class InvoiceTest(StripeTestCase):
 
     def test_invoice_plans_as_needed(self) -> None:
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
-            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, True, False)
         plan = CustomerPlan.objects.first()
         assert plan is not None
         self.assertEqual(plan.next_invoice_date, self.next_month)
