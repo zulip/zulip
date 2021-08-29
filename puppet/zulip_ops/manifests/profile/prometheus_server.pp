@@ -6,10 +6,10 @@ class zulip_ops::profile::prometheus_server {
   include zulip_ops::profile::base
   include zulip_ops::prometheus::base
 
-  $version = '2.27.1'
+  $version = '2.29.2'
   zulip::sha256_tarball_to { 'prometheus':
     url     => "https://github.com/prometheus/prometheus/releases/download/v${version}/prometheus-${version}.linux-amd64.tar.gz",
-    sha256  => 'ce637d0167d5e6d2561f3bd37e1c58fe8601e13e4e1ea745653c068f6e1317ae',
+    sha256  => '51500b603a69cf1ea764b59a7456fe0c4164c4574714aca2a2b6b3d4da893348',
     install => {
       "prometheus-${version}.linux-amd64/" => "/srv/prometheus-${version}/",
     },
