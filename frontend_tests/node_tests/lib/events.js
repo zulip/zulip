@@ -518,6 +518,13 @@ exports.fixtures = {
         },
     },
 
+    realm_user_settings_defaults__emojiset: {
+        type: "realm_user_settings_defaults",
+        op: "update",
+        property: "emojiset",
+        value: "google",
+    },
+
     restart: {
         type: "restart",
         zulip_version: "4.0-dev+git",

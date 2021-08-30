@@ -102,6 +102,8 @@ try {
         require("../../static/js/page_params");
         namespace.mock_esm("../../static/js/user_settings", zpage_params);
         require("../../static/js/user_settings");
+        namespace.mock_esm("../../static/js/realm_user_settings_defaults", zpage_params);
+        require("../../static/js/realm_user_settings_defaults");
 
         run_one_module(file);
 

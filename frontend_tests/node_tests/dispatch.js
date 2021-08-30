@@ -7,7 +7,11 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
-const {page_params, user_settings} = require("../zjsunit/zpage_params");
+const {
+    page_params,
+    realm_user_settings_defaults,
+    user_settings,
+} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -984,4 +988,17 @@ run_test("server_event_dispatch_op_errors", ({override}) => {
     override(settings_user_groups, "reload", noop);
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
+});
+
+run_test("realm_user_settings_defaults", ({override}) => {
+    override(settings_display, "update_page", noop);
+    const event = event_fixtures.realm_user_settings_defaults__emojiset;
+    realm_user_settings_defaults.emojiset = "text";
+    let called = false;
+    settings_display.report_emojiset_change = () => {
+        called = true;
+    };
+    dispatch(event);
+    assert_same(realm_user_settings_defaults.emojiset, "google");
+    assert_same(called, true);
 });

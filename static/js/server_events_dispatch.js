@@ -36,6 +36,7 @@ import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
@@ -380,6 +381,36 @@ export function dispatch_normal_event(event) {
                 }
             }
             break;
+
+        case "realm_user_settings_defaults": {
+            realm_user_settings_defaults[event.property] = event.value;
+
+            const display_settings_list = [
+                "color_scheme",
+                "default_view",
+                "demote_inactive_streams",
+                "dense_mode",
+                "emojiset",
+                "fluid_layout_width",
+                "high_contrast_mode",
+                "left_side_userlist",
+                "translate_emoticons",
+                "starred_message_counts",
+            ];
+
+            const container_elem = $("#realm-user-default-settings");
+            if (display_settings_list.includes(event.property)) {
+                settings_display.update_page(container_elem, realm_user_settings_defaults);
+            }
+
+            if (event.property === "emojiset") {
+                settings_display.report_emojiset_change(
+                    container_elem,
+                    realm_user_settings_defaults,
+                );
+            }
+            break;
+        }
 
         case "realm_user":
             switch (event.op) {
