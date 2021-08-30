@@ -75,6 +75,7 @@ export function set_enable_marketing_emails_visibility() {
 
 export function set_up(container, settings_object) {
     const patch_url = "/json/settings";
+    const notification_sound_elem = $("#user-notification-sound-audio");
     container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -102,7 +103,7 @@ export function set_up(container, settings_object) {
 
     container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
-            $("#user-notification-sound-audio")[0].play();
+            notification_sound_elem[0].play();
         }
     });
 
