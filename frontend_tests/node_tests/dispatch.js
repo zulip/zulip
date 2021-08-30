@@ -1012,4 +1012,18 @@ run_test("realm_user_settings_defaults", ({override}) => {
     dispatch(event);
     assert_same(realm_user_settings_defaults.notification_sound, "ding");
     assert_same(called, true);
+
+    const presence_enabled_elem = $.create(".presence_enabled");
+    $("#realm-user-default-settings").set_find_results(".presence_enabled", presence_enabled_elem);
+    called = false;
+    presence_enabled_elem.prop = (property, value) => {
+        assert_same(property, "checked");
+        assert_same(value, false);
+        called = true;
+    };
+    event = event_fixtures.realm_user_settings_defaults__presence_enabled;
+    realm_user_settings_defaults.presence_enabled = true;
+    dispatch(event);
+    assert_same(realm_user_settings_defaults.presence_enabled, false);
+    assert_same(called, true);
 });

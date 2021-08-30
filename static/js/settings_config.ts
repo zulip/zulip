@@ -409,6 +409,8 @@ export const realm_user_settings_defaults_labels = {
     enable_login_emails: $t({
         defaultMessage: "Send email notifications for new logins to the account",
     }),
+
+    realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
 };
 
 // NOTIFICATIONS

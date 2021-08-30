@@ -407,6 +407,10 @@ export function dispatch_normal_event(event) {
                     realm_user_settings_defaults,
                     true,
                 );
+            } else {
+                container_elem
+                    .find(`.${CSS.escape(event.property)}`)
+                    .prop("checked", realm_user_settings_defaults[event.property]);
             }
 
             if (event.property === "emojiset") {

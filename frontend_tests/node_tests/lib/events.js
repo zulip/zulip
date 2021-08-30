@@ -532,6 +532,13 @@ exports.fixtures = {
         value: "ding",
     },
 
+    realm_user_settings_defaults__presence_enabled: {
+        type: "realm_user_settings_defaults",
+        op: "update",
+        property: "presence_enabled",
+        value: false,
+    },
+
     restart: {
         type: "restart",
         zulip_version: "4.0-dev+git",

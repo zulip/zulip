@@ -5,4 +5,15 @@
     {{> display_settings prefix="realm_" for_realm_settings=true}}
 
     {{> notification_settings prefix="realm_" for_realm_settings=true}}
+
+    <div class="form-horizontal" class="privacy_settings">
+        <h3 class="inline-block">{{t "Privacy settings" }}</h3>
+        <div class="alert-notification privacy-setting-status"></div>
+        {{> settings_checkbox
+          setting_name="presence_enabled"
+          is_checked=settings_object.presence_enabled
+          label=settings_label.realm_presence_enabled
+          help_link="/help/status-and-availability"
+          prefix="realm_"}}
+    </div>
 </div>
