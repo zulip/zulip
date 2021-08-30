@@ -1406,6 +1406,12 @@ class UserBaseSettings(models.Model):
     class Meta:
         abstract = True
 
+    @staticmethod
+    def emojiset_choices() -> List[Dict[str, str]]:
+        return [
+            dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES
+        ]
+
 
 class RealmUserDefault(UserBaseSettings):
     """This table stores realm-level default values for user preferences
@@ -1740,12 +1746,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         if settings.EMBEDDED_BOTS_ENABLED:
             allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
         return allowed_bot_types
-
-    @staticmethod
-    def emojiset_choices() -> List[Dict[str, str]]:
-        return [
-            dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES
-        ]
 
     def email_address_is_realm_public(self) -> bool:
         if self.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
