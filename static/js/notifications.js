@@ -89,13 +89,12 @@ export function initialize() {
             window_focused = false;
         });
 
-    update_notification_sound_source();
+    update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
 }
 
-function update_notification_sound_source() {
-    const notification_sound = user_settings.notification_sound;
+function update_notification_sound_source(container_elem, settings_object) {
+    const notification_sound = settings_object.notification_sound;
     const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
-    const container_elem = $("#user-notification-sound-audio");
     container_elem
         .find(".notification-sound-source-ogg")
         .attr("src", `${audio_file_without_extension}.ogg`);
@@ -739,6 +738,6 @@ export function handle_global_notification_updates(notification_name, setting) {
 
     if (notification_name === "notification_sound") {
         // Change the sound source with the new page `notification_sound`.
-        update_notification_sound_source();
+        update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
     }
 }
