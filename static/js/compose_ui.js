@@ -140,9 +140,14 @@ export function compute_placeholder_text(opts) {
 
 export function wrap_text_with_markdown(textarea, prefix, suffix) {
     const range = textarea.range();
+    let selected_text = range.text;
+    if ((prefix === "**" || prefix === "*") && selected_text.slice(-1) === "\n") {
+        selected_text = selected_text.slice(0, -1);
+        suffix = suffix + "\n";
+    }
 
-    if (!document.execCommand("insertText", false, prefix + range.text + suffix)) {
-        textarea.range(range.start, range.end).range(prefix + range.text + suffix);
+    if (!document.execCommand("insertText", false, prefix + selected_text + suffix)) {
+        textarea.range(range.start, range.end).range(prefix + selected_text + suffix);
     }
 }
 
