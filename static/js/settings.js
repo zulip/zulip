@@ -60,7 +60,7 @@ function setup_settings_label() {
             defaultMessage: "Send email notifications for new logins to my account",
         }),
         enable_marketing_emails: $t({
-            defaultMessage: "Send me occasional marketing emails about Zulip (a few times a year)",
+            defaultMessage: "Send me Zulip's low-traffic newsletter (a few times a year)",
         }),
         message_content_in_email_notifications: $t({
             defaultMessage: "Include message content in message notification emails",
