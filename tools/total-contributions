@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import pathlib
+import subprocess
+import sys
+from collections import defaultdict
+from datetime import datetime
+from typing import Dict, List
+
+
+def add_log(committer_dict: Dict[str, int], input: List[str]) -> None:
+    for dataset in input:
+        committer_name = dataset.split("\t")[1]
+        commit_count = int(dataset.split("\t")[0])
+        committer_dict[committer_name] += commit_count
+
+
+def retrieve_log(repo: str, lower_version: str, upper_version: str) -> List[str]:
+    return subprocess.check_output(
+        ["git", "shortlog", "-s", lower_version + ".." + upper_version],
+        cwd=find_path(repo),
+        text=True,
+    ).splitlines()
+
+
+def find_version(time: str, repository: str) -> str:
+    """Find the latest release version for the target repository as of the
+    specified time.
+    """
+    versions_list = subprocess.check_output(
+        ["git", "tag", "-l", "--sort=creatordate"], cwd=find_path(repository), text=True
+    ).splitlines()
+
+    for version in reversed(versions_list):
+        version_time = subprocess.check_output(
+            ["git", "log", "-1", "--format=%ci", version],
+            cwd=find_path(repository),
+            text=True,
+        ).split()[0]
+        if datetime.strptime(version_time, "%Y-%m-%d") < datetime.strptime(time, "%Y-%m-%d"):
+            return version
+
+    # This is a bug, but this tool doesn't support ranges for the
+    # beginning of a project's history yet.
+    raise AssertionError("Could not find any releases prior to tag.")
+
+
+def find_path(repository: str) -> str:
+    return os.path.dirname((pathlib.Path().resolve()).parents[0]) + "/" + repository
+
+
+# argparse
+parser = argparse.ArgumentParser(
+    prog="python3 total-contributions",
+    formatter_class=argparse.RawTextHelpFormatter,
+    description="""\
+Aggregates the total commit contributions to Zulip that should be
+attributed to the time window between the two provided
+zulip/zulip versions (tags or branches).
+
+The attribution algorithm used by this tool attributes all changes for
+a Zulip project between:
+
+* The last release of the target project before the first zulip/zulip version.
+* The last release of the target project before the last zulip/zulip version.
+
+This algorithm has the key property that the totals for a given contributor of
+2.1.0..4.0 will equal the sum of 2.1.0..3.0 and 3.0..4.0.
+
+Its main downside is that contributions to projects other than
+zulip/zulip in the last few weeks before a zulip/zulip release will be
+delayed (i.e. counted in the total for the next zulip/zulip release).
+
+Expects that all Zulip repositories repositories are in the current working
+directory, which does not need to be the directory this is run from.
+
+# Changes between two major releases.
+total-contributions 4.0 5.0
+
+# Changes between a release and the current main branch.
+total-contributions 4.0 main
+total-contributions 2.1.0
+    """,
+)
+parser.add_argument(
+    "version",
+    metavar="version",
+    nargs="*",
+    # TODO: Ideally, we'd replace "1.3.0" with "First commit", to
+    # simplify including contributions before the 1.3.0 release.
+    default=["1.3.0", "main"],
+    help="Git tag or branch in zulip/zulip specifying one end of the commit range to use.",
+)
+
+parser.add_argument(
+    "-a",
+    "--ascending",
+    action="store_true",
+    help="Sort contributors based on number of commits(ascending order)",
+)
+
+args = parser.parse_args()
+
+if len(args.version) > 2:
+    parser.error("Expects 0 to 2 version number(s)")
+
+lower_zulip_version = args.version[0]
+if len(args.version) == 1:
+    upper_zulip_version = "main"
+else:
+    upper_zulip_version = args.version[1]
+
+subprocess.check_call(["git", "fetch"], cwd=find_path("zulip"))
+
+# Extract git version and time. It's important that we use the commit
+# date (%ci), not the author date (%ai), since while those are often
+# near identical for release commits, if we pass a branch like `main`,
+# it's possible the latest commit on the branch might have a months
+# old author date if the last pull request merged was started at that
+# time.
+try:
+    lower_time = subprocess.check_output(
+        ["git", "log", "-1", "--format=%ci", lower_zulip_version],
+        stderr=subprocess.DEVNULL,
+        text=True,
+    ).split()[0]
+    upper_time = subprocess.check_output(
+        ["git", "log", "-1", "--format=%ci", upper_zulip_version],
+        stderr=subprocess.DEVNULL,
+        text=True,
+    ).split()[0]
+except subprocess.CalledProcessError:
+    print("Specified version(s) don't exist")
+    sys.exit(0)
+
+out_dict: Dict[str, int] = defaultdict(int)
+zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
+add_log(out_dict, zulip)
+
+print(f"Commit range corresponds to {lower_time} to {upper_time}")
+
+# TODO: This should probably include more repositories in the zulip organization.
+for repository in [
+    "zulip-mobile",
+    "zulip-desktop",
+    "docker-zulip",
+    "python-zulip-api",
+    "zulip-terminal",
+]:
+    subprocess.check_call(["git", "fetch"], cwd=find_path(repository))
+    lower_repo_version = find_version(lower_time, repository)
+    upper_repo_version = find_version(upper_time, repository)
+    repo_log = retrieve_log(repository, lower_repo_version, upper_repo_version)
+    print(f"Commit range for {repository} {lower_repo_version}..{upper_repo_version}")
+    add_log(out_dict, repo_log)
+
+# Sorting based on number of commits
+for commit_count, committer_name in sorted(
+    out_dict.items(), key=lambda item: item[1], reverse=not args.ascending
+):
+    print(str(committer_name) + "\t" + commit_count)
+
+print(
+    "Total contributors across all Zulip repos within Zulip versions "
+    + lower_zulip_version
+    + " - "
+    + upper_zulip_version
+    + ": "
+    + str(len(out_dict))
+)
