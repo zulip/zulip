@@ -46,9 +46,7 @@ export const show_subs_pane = {
     settings(stream_name) {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
-        $("#subscription_overlay .stream-info-title").text(
-            $t({defaultMessage: "Settings for #{stream_name}"}, {stream_name}),
-        );
+        $("#subscription_overlay .stream-info-title").text("#" + stream_name);
     },
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
