@@ -391,7 +391,7 @@ CSS](https://github.com/zulip/zulip/).
   being built into Zulip.  And then for built-in bots, one should be able to click a few
   buttons of configuration on the web to set them up and include them in
   your organization.  We've developed a number of example bots
-  in the (`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots)
+  in the [`zulip_bots`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots)
   PyPI package.
   **Skills recommended**: Python and JavaScript/CSS, plus devops
   skills (Linux deployment, Docker, Puppet etc.) are all useful here.

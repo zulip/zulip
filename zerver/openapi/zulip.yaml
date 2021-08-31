@@ -174,7 +174,7 @@ paths:
           description: |
             The highest event ID in this queue that you've received and
             wish to acknowledge. See the [code for
-            `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py)
+            `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/main/zulip/zulip/__init__.py)
             in the [zulip Python
             module](https://github.com/zulip/python-zulip-api) for an
             example implementation of correctly processing each event

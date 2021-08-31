@@ -8,7 +8,7 @@ them. Zulip supports several other types of integrations.
    (examples: SVN, Git), where we can get the service to call our integration
    (by shelling out or otherwise), passing in the required data.  Our preferred
    model for these is to ship these integrations in the
-   [Zulip Python API distribution](https://github.com/zulip/python-zulip-api/tree/master/zulip),
+   [Zulip Python API distribution](https://github.com/zulip/python-zulip-api/tree/main/zulip),
    within the `integrations` directory there.
 
 1. **Plugin integrations** (examples:

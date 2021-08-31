@@ -192,7 +192,7 @@ running it manually.
 
     * Edit the `<>` sections according to your preferences.
 
-[supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf
+[supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/main/zulip_botserver/zulip-botserver-supervisord.conf
 
 1. Update *supervisord* to read the configuration file:
 
