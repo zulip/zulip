@@ -27,6 +27,10 @@ class ZulipEmailForwardError(Exception):
     pass
 
 
+class ZulipEmailForwardUserError(ZulipEmailForwardError):
+    pass
+
+
 def get_email_gateway_message_string_from_address(address: str) -> str:
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split("%s")]
     if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:

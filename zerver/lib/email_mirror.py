@@ -17,6 +17,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.email_mirror_helpers import (
     ZulipEmailForwardError,
+    ZulipEmailForwardUserError,
     decode_email_address,
     get_email_gateway_message_string_from_address,
 )
@@ -197,10 +198,6 @@ def construct_zulip_body(
 
 
 ## Sending the Zulip ##
-
-
-class ZulipEmailForwardUserError(ZulipEmailForwardError):
-    pass
 
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
