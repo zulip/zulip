@@ -708,8 +708,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # See https://github.com/zulip/zulip/issues/4658 for more information
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.netloc == "github.com" or parsed_url.netloc.endswith(".github.com"):
-            # https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png ->
-            # https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png
+            # https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png ->
+            # https://raw.githubusercontent.com/zulip/zulip/main/static/images/logo/zulip-icon-128x128.png
             split_path = parsed_url.path.split("/")
             if len(split_path) > 3 and split_path[3] == "blob":
                 return urllib.parse.urljoin(

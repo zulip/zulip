@@ -61,7 +61,7 @@ to any languages that you'd like to contribute to (or add new ones).
 1. If possible, test your translations (details below).
 
 1. Ask in Zulip for a maintainer to sync the strings from Transifex,
-   merge them to master, and deploy the update to chat.zulip.org so
+   merge them to main, and deploy the update to chat.zulip.org so
    you can verify them in action there.
 
 Some useful tips for your translating journey:

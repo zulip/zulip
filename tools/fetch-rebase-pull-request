@@ -12,6 +12,6 @@ remote=${2:-"upstream"}
 
 set -x
 git fetch "$remote" "pull/$request_id/head"
-git checkout -B "review-${request_id}" "$remote/master"
+git checkout -B "review-${request_id}" "$remote/main"
 git reset --hard FETCH_HEAD
 git pull --rebase

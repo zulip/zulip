@@ -509,7 +509,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
                 # event["client_id"] directly.
                 #
                 # TODO/compatibility: We can delete this once it is no
-                # longer possible to directly upgrade from 2.1 to master.
+                # longer possible to directly upgrade from 2.1 to main.
                 if event["client"] not in self.client_id_map:
                     client = get_client(event["client"])
                     self.client_id_map[event["client"]] = client.id

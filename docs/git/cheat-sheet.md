@@ -8,7 +8,7 @@ See also [fixing commits][fix-commit]
     - `git add foo.py`
 - checkout
     - `git checkout -b new-branch-name`
-    - `git checkout master`
+    - `git checkout main`
     - `git checkout old-branch-name`
 - commit
     - `git commit -m "topic: Commit message title."`
@@ -36,8 +36,8 @@ See also [fixing commits][fix-commit]
     - `git push origin +branch-name`
 - rebase
     - `git rebase -i HEAD~3`
-    - `git rebase -i master`
-    - `git rebase upstream/master`
+    - `git rebase -i main`
+    - `git rebase upstream/main`
 - reflog
     - `git reflog | head -10`
 - remote
@@ -49,7 +49,7 @@ See also [fixing commits][fix-commit]
 - show
     - `git show HEAD`
     - `git show HEAD~~~`
-    - `git show master`
+    - `git show main`
 - status
     - `git status`
 
@@ -61,7 +61,7 @@ See also [fixing commits][fix-commit]
     - `git add -u`: Adds all tracked files to the staging area.
 - checkout
     - `git checkout -b new-branch-name`: create branch `new-branch-name` and switch to/check out that new branch
-    - `git checkout master`: switch to your `master` branch
+    - `git checkout main`: switch to your `main` branch
     - `git checkout old-branch-name`: switch to an existing branch `old-branch-name`
 - commit
     - `git commit -m "commit message"`: It is recommended to type a
@@ -84,7 +84,7 @@ See also [fixing commits][fix-commit]
     - `git log`: show commit logs
     - `git log --oneline | head`: To quickly see the latest ten commits on a branch.
 - pull
-    - `git pull --rebase`: rebase your changes on top of master.
+    - `git pull --rebase`: rebase your changes on top of main.
     - `git pull` (with no options): Will either create a merge commit
       (which you don't want) or do the same thing as `git pull --rebase`,
       depending on [whether you've configured Git properly][git-config-clone]
@@ -94,8 +94,8 @@ See also [fixing commits][fix-commit]
     - `git push origin +branch-name`: force push your commits to your origin repository.
 - rebase
     - `git rebase -i HEAD~3`: interactive rebasing current branch with first three items on HEAD
-    - `git rebase -i master`: interactive rebasing current branch with master branch
-    - `git rebase upstream/master`: rebasing current branch with master branch from upstream repository
+    - `git rebase -i main`: interactive rebasing current branch with main branch
+    - `git rebase upstream/main`: rebasing current branch with main branch from upstream repository
 - reflog
     - `git reflog | head -10`: manage reference logs for the past 10 commits
 - remote
@@ -107,7 +107,7 @@ See also [fixing commits][fix-commit]
 - show
     - `git show HEAD`: display most recent commit
     - `git show HEAD~~~`: display third most recent commit
-    - `git show master`: display most recent commit on `master`
+    - `git show main`: display most recent commit on `main`
 - status
     - `git status`: show the working tree status, unstaged and staged files
 

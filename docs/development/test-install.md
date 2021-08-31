@@ -6,7 +6,7 @@ configurations; when making changes to more complicated [installation
 options][installer-docs], Zulip provides tooling to repeatedly test
 the installation process in a clean environment each time.
 
-[CI]: https://github.com/zulip/zulip/actions/workflows/production-suite.yml?query=branch%3Amaster
+[CI]: https://github.com/zulip/zulip/actions/workflows/production-suite.yml?query=branch%3Amain
 [installer-docs]: ../production/install.md
 
 ## Configuring

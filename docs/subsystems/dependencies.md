@@ -208,7 +208,7 @@ See the [README][requirements-readme] file in `requirements/` directory
 to learn how to upgrade a single Python package.
 
 [mypy-docs]: ../testing/mypy.md
-[requirements-readme]: https://github.com/zulip/zulip/blob/master/requirements/README.md#requirements
+[requirements-readme]: https://github.com/zulip/zulip/blob/main/requirements/README.md#requirements
 [stack-overflow]: https://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
 [caching]: https://help.github.com/en/articles/caching-your-github-password-in-git
 
@@ -333,7 +333,7 @@ usually one needs to think about making changes in 3 places:
   to be called from `tools/update-prod-static`, which is called by
   `tools/build-release-tarball` (for doing Zulip releases) as well as
   `tools/upgrade-zulip-from-git` (for deploying a Zulip server off of
-  master).
+  main).
 
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
 [virtualenv-clone]: https://github.com/edwardgeorge/virtualenv-clone/
