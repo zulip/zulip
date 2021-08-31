@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+import argparse
+from argparse import RawTextHelpFormatter
+import os
+import pathlib
+import subprocess
+from datetime import datetime
+from typing import Dict, List
+import requests
+import sys
+
+
+def add_log(dict: Dict[str, int], input: List[str]) -> None:
+    for dataset in input:
+        name = dataset.split("\t")[1]
+        value = int(dataset.split("\t")[0])
+        if name in dict:
+            dict[name] += value
+        else:
+            dict[name] = value
+
+
+def retrieve_log(repo: str, lower_version: str, upper_version: str) -> List[str]:
+    return subprocess.check_output(
+        ["git", "shortlog", "-s", lower_version + ".." + upper_version],
+        universal_newlines=True,
+        cwd=find_path(repo),
+    ).splitlines()
+
+
+def find_version(time: str, repo: str) -> str:
+    versions_list = subprocess.check_output(
+        ["git", "tag", "-l"], universal_newlines=True, cwd=find_path(repo)
+    ).splitlines()
+    for version in versions_list:
+        version_time = subprocess.check_output(
+            ["git", "log", "-1", "--format=%ai", version],
+            universal_newlines=True,
+            cwd=find_path(repo),
+        ).split()[0]
+        if datetime.strptime(version_time, "%Y-%m-%d") >= datetime.strptime(time, "%Y-%m-%d"):
+            return version
+    return version
+
+
+def find_path(repo: str) -> str:
+    return os.path.dirname((pathlib.Path().resolve()).parents[0]) + "/" + repo
+
+response = requests.get("https://api.github.com/repos/zulip/zulip/releases/latest") # get latest release version
+latest_version = response.json()["tag_name"]
+
+#argparse
+parser = argparse.ArgumentParser(prog = "python3 total-contributions",formatter_class=RawTextHelpFormatter, description="This script aggregates the total contributors within all Zulip Repositories within two versions. Using it requires that all Zulip Repositories be in the same directory")
+version_help = '''To receive a list of all contributors to repositories: 
+    between Zulip Versions x and y - python3 total-contributions x y
+    between Zulip Versions x to latest - python3 total-contributions x
+    [default] between Zulip Version 1.3.0(oldest) and ''' +latest_version+'''(latest) - python3 total-contributions\n'''
+parser.add_argument('version', metavar='version', nargs='*', default=["1.3.0",latest_version], help=version_help)
+
+parser.add_argument('-s','--sort',action="store_true",  help="Sort contributors based on number of commits(ascending order)")
+parser.add_argument('-sr','--sort-rev',action="store_true",  help="Sort contributors based on number of commits(descending order)")
+args = parser.parse_args()
+
+if len(args.version) > 2:
+    parser.error("Expects 0 to 2 version number(s)")
+
+lower_zulip_version = args.version[0]
+if len(args.version) == 1:
+    upper_zulip_version = latest_version
+else:
+    upper_zulip_version = args.version[1]
+
+# extract git version and time
+try:
+    lower_time = subprocess.check_output(
+        ["git", "log", "-1", "--format=%ai", lower_zulip_version], universal_newlines=True
+    , stderr=subprocess.DEVNULL).split()[0]
+    upper_time = subprocess.check_output(
+        ["git", "log", "-1", "--format=%ai", upper_zulip_version], universal_newlines=True
+    , stderr=subprocess.DEVNULL).split()[0]
+except subprocess.CalledProcessError as e:
+    # handle invalid versions
+    print("Specified version(s) don't exist")
+    sys.exit(0)
+
+out_dict: Dict[str, int] = {}
+zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
+add_log(out_dict, zulip)
+for repo_name in [
+    "zulip-mobile",
+    "zulip-desktop",
+    "docker-zulip",
+    "python-zulip-api",
+    "zulip-terminal",
+]:
+    lower_repo_version = find_version(lower_time, repo_name)
+    upper_repo_version = find_version(upper_time, repo_name)
+    repo_log = retrieve_log(repo_name, lower_repo_version, upper_repo_version)
+    add_log(out_dict, repo_log)
+
+#Sorting based on number of commits
+if args.sort:
+    for key, value in sorted (out_dict.items() , key=lambda keys: keys[1]):
+        print(str(value) + "\t" + key)
+elif args.sort_rev:
+    for key, value in sorted (out_dict.items() , key=lambda keys: keys[1], reverse=True):
+        print(str(value) + "\t" + key)
+else:
+    for key, value in out_dict.items():
+        print(str(value) + "\t" + key)
+
+
+print(
+    "Total contributions across all Zulip repos within Zulip versions "
+    + lower_zulip_version
+    + " - "
+    + upper_zulip_version
+)
