@@ -353,6 +353,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 from_name=FromAddress.security_email_from_name(user_profile=user),
                 from_address=FromAddress.tokenized_no_reply_address(),
                 context=context,
+                realm=realm,
+                request=request,
             )
         else:
             context["active_account_in_realm"] = False
@@ -370,6 +372,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 language=language,
                 context=context,
                 realm=realm,
+                request=request,
             )
 
 

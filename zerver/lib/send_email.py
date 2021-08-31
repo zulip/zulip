@@ -18,6 +18,7 @@ from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
+from django.http import HttpRequest
 from django.template import loader
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
@@ -226,6 +227,7 @@ def send_email(
     realm: Optional[Realm] = None,
     connection: Optional[BaseEmailBackend] = None,
     dry_run: bool = False,
+    request: Optional[HttpRequest] = None,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -247,7 +249,15 @@ def send_email(
     if connection is None:
         connection = get_connection()
 
-    logger.info("Sending %s email to %s", template, mail.to)
+    cause = ""
+    if request is not None:
+        cause = f" (triggered from {request.META['REMOTE_ADDR']})"
+
+    logging_recipient = mail.to
+    if realm is not None:
+        logging_recipient = f"{mail.to} in {realm.string_id}"
+
+    logger.info("Sending %s email to %s%s", template, logging_recipient, cause)
 
     try:
         # This will call .open() for us, which is a no-op if it's already open;
