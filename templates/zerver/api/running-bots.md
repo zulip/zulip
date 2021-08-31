@@ -7,7 +7,7 @@ to messages in Zulip.
 
 This guide will show you how to run an existing Zulip bot
 found in [zulip_bots/bots](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
+https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
 
 You'll need:
 

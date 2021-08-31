@@ -138,7 +138,7 @@ soon as it attempted to send them to the client; if that specific HTTP
 response didn't reach the client due to a network TCP failure, then
 those events could be lost).
 
-[api-bindings-code]: https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py
+[api-bindings-code]: https://github.com/zulip/python-zulip-api/blob/main/zulip/zulip/__init__.py
 
 The queue servers are a very high-traffic system, processing at a
 minimum one request for every message delivered to every Zulip client.
