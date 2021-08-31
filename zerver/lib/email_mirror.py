@@ -492,7 +492,7 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> Non
             process_stream_message(to, message)
     except ZulipEmailForwardUserError as e:
         # TODO: notify sender of error, retry if appropriate.
-        logger.warning(e.args[0])
+        logger.info(e.args[0])
     except ZulipEmailForwardError as e:
         log_and_report(message, e.args[0], to)
 
