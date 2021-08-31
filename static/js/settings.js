@@ -1,5 +1,4 @@
 import {parseISO} from "date-fns";
-import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 
 import timezones from "../generated/timezones.json";
@@ -73,19 +72,7 @@ function setup_settings_label() {
         }),
 
         // display settings
-        dense_mode: $t({defaultMessage: "Dense mode"}),
-        fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
-        high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
-        left_side_userlist: $t({
-            defaultMessage: "Show user list on left sidebar in narrow windows",
-        }),
-        starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
-        twenty_four_hour_time: $t({defaultMessage: "Time format"}),
-        translate_emoticons: new Handlebars.SafeString(
-            $t_html({
-                defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
-            }),
-        ),
+        ...settings_config.display_settings_labels,
     };
 }
 
