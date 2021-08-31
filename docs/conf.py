@@ -44,8 +44,8 @@ templates_path = ["_templates"]
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
-# The master toctree document.
-master_doc = "index"
+# The root toctree document.
+root_doc = "index"
 
 # General information about the project.
 project = "Zulip"
@@ -234,7 +234,7 @@ latex_elements: Dict[str, str] = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "zulip-contributor-docs.tex", "Zulip Documentation", "The Zulip Team", "manual"),
+    (root_doc, "zulip-contributor-docs.tex", "Zulip Documentation", "The Zulip Team", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -263,7 +263,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, "zulip-contributor-docs", "Zulip Documentation", [author], 1),
+    (root_doc, "zulip-contributor-docs", "Zulip Documentation", [author], 1),
 ]
 
 # If true, show URL addresses after external links.
@@ -277,7 +277,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (
-        master_doc,
+        root_doc,
         "zulip-contributor-docs",
         "Zulip Documentation",
         author,
