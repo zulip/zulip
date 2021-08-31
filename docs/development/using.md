@@ -13,9 +13,9 @@ the development environment][authentication-dev-server].
 
 ## Common
 
-* Zulip's master branch moves quickly, and you should rebase
+* Zulip's main branch moves quickly, and you should rebase
   constantly with e.g. `git fetch upstream; git rebase
-  upstream/master` to avoid developing on an old version of the Zulip
+  upstream/main` to avoid developing on an old version of the Zulip
   codebase (leading to unnecessary merge conflicts).
 * Remember to run `tools/provision` to update your development
   environment after switching branches; it will run in under a second

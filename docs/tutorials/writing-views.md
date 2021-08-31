@@ -98,7 +98,7 @@ def home(request: HttpRequest) -> HttpResponse:
 ### Writing a template
 
 Templates for the main website are found in
-[templates/zerver/app](https://github.com/zulip/zulip/tree/master/templates/zerver/app).
+[templates/zerver/app](https://github.com/zulip/zulip/tree/main/templates/zerver/app).
 
 
 ## Writing API REST endpoints
@@ -109,7 +109,7 @@ view code is in the implementations of API REST endpoints.
 
 The REST API does authentication of the user through `rest_dispatch`,
 which is documented in detail at
-[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py).
 This method will authenticate the user either through a session token
 from a cookie on the browser, or from a base64 encoded `email:api-key`
 string given via HTTP basic auth for API clients.
@@ -174,7 +174,7 @@ the inner decorator.
 
 The implementation of `has_request_variables` is documented in detail
 in
-[zerver/lib/request.py](https://github.com/zulip/zulip/blob/master/zerver/lib/request.py))
+[zerver/lib/request.py](https://github.com/zulip/zulip/blob/main/zerver/lib/request.py))
 
 REQ also helps us with request variable validation. For example:
 
@@ -200,7 +200,7 @@ REQ also helps us with request variable validation. For example:
   validator on the value of a string.
 
 See
-[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
+[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/main/zerver/lib/validator.py)
 for more validators and their documentation.
 
 ### Deciding which HTTP verb to use
@@ -214,7 +214,7 @@ be read with GET, without the expense of the full GET. OPTIONS is also
 read-only, and used by clients to determine which HTTP verbs are
 available for a given path. This isn't something you need to write, as
 it happens automatically in the implementation of `rest_dispatch`--see
-[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py)
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py)
 for more.
 
 If you're creating new data, try to figure out if the thing you are
@@ -259,7 +259,7 @@ database) and lead to a 500 error.  If an actions function is
 responsible for validation as well, it should have a name starting
 with `check_`.
 
-For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/master/zerver/views/realm.py):
+For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/main/zerver/views/realm.py):
 
 ```py
 @require_realm_admin
@@ -284,7 +284,7 @@ Zulip realm).
 
 You should always use `channel.<method>` to make an `HTTP <method>` call
 to the Zulip JSON API. As an example, in
-[static/js/admin.js](https://github.com/zulip/zulip/blob/master/static/js/admin.js)
+[static/js/admin.js](https://github.com/zulip/zulip/blob/main/static/js/admin.js)
 
 ```js
 var url = "/json/realm";

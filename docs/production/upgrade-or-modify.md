@@ -10,7 +10,7 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 - [Upgrading the operating system](#upgrading-the-operating-system)
 - [Upgrading PostgreSQL](#upgrading-postgresql)
 - [Modifying Zulip](#modifying-zulip)
-- [Applying changes from master](#applying-changes-from-master)
+- [Applying changes from main](#applying-changes-from-main)
 
 ## Upgrading to a release
 
@@ -68,7 +68,7 @@ run into any issues or need to roll back the upgrade.
 
 Zulip supports upgrading a production installation to any commit in a
 Git repository, which is great for [running pre-release changes from
-master](#applying-changes-from-master) or [maintaining a
+main](#applying-changes-from-main) or [maintaining a
 fork](#making-changes).  The process is simple:
 
 ```bash
@@ -76,7 +76,7 @@ fork](#making-changes).  The process is simple:
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
 # Upgrade to a branch (or other Git ref)
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git 2.1.x
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
@@ -87,9 +87,9 @@ containing the changes planned for the next minor release
 (E.g. 2.1.5); we support these stable release branches as though they
 were a published release.
 
-The `master` branch contains changes planned for the next major
+The `main` branch contains changes planned for the next major
 release (E.g. 3.0); see our documentation on [running
-master](#upgrading-to-master) before upgrading to it.
+main](#upgrading-to-main) before upgrading to it.
 
 By default, this uses the main upstream Zulip server repository, but
 you can configure any other Git repository by adding a section like
@@ -527,8 +527,8 @@ that fact:
 are related to the issue, just mention your changes in the issue report.
 
 If you're looking to modify Zulip by applying changes developed by the
-Zulip core team and merged into master, skip to [this
-section](#applying-changes-from-master).
+Zulip core team and merged into main, skip to [this
+section](#applying-changes-from-main).
 
 ## Making changes
 
@@ -599,9 +599,9 @@ Eventually, you'll want to upgrade to a new Zulip release.  If your
 changes were integrated into that Zulip release or are otherwise no
 longer needed, you can just [upgrade as
 usual](#upgrading-to-a-release).  If you [upgraded to
-master](#upgrading-to-master); review that section again; new
+main](#upgrading-to-main); review that section again; new
 maintenance releases are likely "older" than your current installation
-and you might need to upgrade to the master again rather than to the
+and you might need to upgrade to the main again rather than to the
 new maintenance release.
 
 Otherwise, you'll need to update your branch by rebasing your changes
@@ -640,7 +640,7 @@ different from the above:
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [docker-zulip-upgrade]: https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository
 
-## Applying changes from master
+## Applying changes from main
 
 If you are experiencing an issue that has already been fixed by the
 Zulip development community, and you'd like to get the fix now, you
@@ -662,7 +662,7 @@ of the change you'd like).
 
 In general, we can't provide unpaid support for issues caused by
 cherry-picking arbitrary commits if the issues don't also affect
-master or an official release.
+main or an official release.
 
 The exception to this rule is when we ask or encourage a user to apply
 a change to their production system to help verify the fix resolves
@@ -676,14 +676,14 @@ addition to scheduling that change for Zulip's next bug fix release,
 we support changes in stable release branches as though they were
 released.
 
-### Upgrading to master
+### Upgrading to main
 
 Many Zulip servers (including chat.zulip.org and zulip.com) upgrade to
-master on a regular basis to get the latest features.  Before doing
+main on a regular basis to get the latest features.  Before doing
 so, it's important to understand how to happily run a server based on
-master.
+main.
 
-For background, it's backporting arbitrary patches from master to an
+For background, it's backporting arbitrary patches from main to an
 older version requires some care.  Common issues include:
 
 * Changes containing database migrations (new files under
@@ -698,32 +698,32 @@ unlikely to succeed without help from the core team via a support
 contract.
 
 If you need an unreleased feature, the best path is usually to
-upgrade to Zulip master using [upgrade-zulip-from-git][].  Before
-upgrading to master, make sure you understand:
+upgrade to Zulip main using [upgrade-zulip-from-git][].  Before
+upgrading to main, make sure you understand:
 
-* In Zulip's version numbering scheme, `master` will always be "newer"
+* In Zulip's version numbering scheme, `main` will always be "newer"
   than the latest maintenance release (E.g. `3.1` or `2.1.6`) and
   "older" than the next major release (E.g. `3.0` or `4.0`).
-* The `master` branch is under very active development; dozens of new
-  changes are integrated into it on most days.  The `master` branch
+* The `main` branch is under very active development; dozens of new
+  changes are integrated into it on most days.  The `main` branch
   can have thousands of changes not present in the latest release (all
   of which will be included in our next major release).  On average
-  `master` usually has fewer total bugs than the latest release
+  `main` usually has fewer total bugs than the latest release
   (because we fix hundreds of bugs in every major release) but it
   might have some bugs that are more severe than we would consider
   acceptable for a release.
-* We deploy `master` to chat.zulip.org and zulip.com on a regular
+* We deploy `main` to chat.zulip.org and zulip.com on a regular
   basis (often daily), so it's very important to the project that it
   be stable.  Most regressions will be minor UX issues or be fixed
   quickly, because we need them to be fixed for Zulip Cloud.
 * The development community is very interested in helping debug issues
-  that arise when upgrading from the latest release to master, since
+  that arise when upgrading from the latest release to main, since
   they provide us an opportunity to fix that category of issue before
   our next major release.  (Much more so than we are in helping folks
   debug other custom changes).  That said, we cannot make any
   guarantees about how quickly we'll resolve an issue to folks without
   a formal support contract.
-* We do not support downgrading from `master` to earlier versions, so
+* We do not support downgrading from `main` to earlier versions, so
   if downtime for your Zulip server is unacceptable, make sure you
   have a current
   [backup](../production/export-and-import.html#backups) in case the
@@ -733,11 +733,11 @@ upgrading to master, make sure you understand:
   since the last release.  The **Upgrade notes** section will always
   be current, even if some new features aren't documented.
 * Whenever we push a security or maintenance release, the changes in
-  that release will always be merged to master; so you can get the
-  security fixes by upgrading to master.
-* You can always upgrade from master to the next major release when it
+  that release will always be merged to main; so you can get the
+  security fixes by upgrading to main.
+* You can always upgrade from main to the next major release when it
   comes out, using either [upgrade-zulip-from-git][] or the release
-  tarball.  So there's no risk of upgrading to `master` resulting in
+  tarball.  So there's no risk of upgrading to `main` resulting in
   a system that's not upgradeable back to a normal release.
 
 ## Contributing patches

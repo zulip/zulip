@@ -146,7 +146,7 @@ Here are a few common macros used to document Zulip's integrations:
 [github-integration]: https://zulip.com/integrations/doc/github
 [codebase]: https://zulip.com/integrations/doc/codebase
 [beanstalk]: https://zulip.com/integrations/doc/beanstalk
-[integrations-file]: https://github.com/zulip/zulip/blob/master/zerver/lib/integrations.py
+[integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines
 

@@ -8,8 +8,8 @@ allows users to easily process hundreds or thousands of messages a day. With
 over 700 contributors merging over 500 commits a month, Zulip is also the
 largest and fastest growing open source group chat project.
 
-[![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg?branch=master)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amaster)
-[![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/master.svg)](https://codecov.io/gh/zulip/zulip/branch/master)
+[![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
+[![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
@@ -75,6 +75,6 @@ You might be interested in:
 You may also be interested in reading our [blog](https://blog.zulip.org/) or
 following us on [Twitter](https://twitter.com/zulip).
 Zulip is distributed under the
-[Apache 2.0](https://github.com/zulip/zulip/blob/master/LICENSE) license.
+[Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
 
 [beginner-friendly]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22

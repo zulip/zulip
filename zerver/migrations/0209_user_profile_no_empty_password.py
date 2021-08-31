@@ -60,7 +60,7 @@ def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEdit
     # Because we're backporting this migration to the Zulip 2.0.x
     # series, we've given it migration number 0209, which is a
     # duplicate with an existing migration already merged into Zulip
-    # master.  Migration 0247_realmauditlog_event_type_to_int.py
+    # main.  Migration 0247_realmauditlog_event_type_to_int.py
     # changes the format of RealmAuditLog.event_type, so we need the
     # following conditional block to determine what values to use when
     # searching for the relevant events in that log.

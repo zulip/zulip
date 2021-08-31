@@ -32,7 +32,7 @@ EXCLUDED_URLS = [
     "https://www.transifex.com/zulip/zulip/announcements/",
     "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh",
     # Requires authentication
-    "https://circleci.com/gh/zulip/zulip/tree/master",
+    "https://circleci.com/gh/zulip/zulip/tree/main",
     "https://circleci.com/gh/zulip/zulip/16617",
     "https://www.linkedin.com/company/zulip-project",
     # Returns 403 errors to HEAD requests
@@ -54,8 +54,8 @@ VNU_IGNORE_REGEX = re.compile(r"|".join(VNU_IGNORE))
 
 DEPLOY_ROOT = os.path.abspath(os.path.join(__file__, "../../../../../.."))
 
-ZULIP_SERVER_GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/master"
-ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/master"
+ZULIP_SERVER_GITHUB_FILE_URL_PREFIX = "https://github.com/zulip/zulip/blob/main"
+ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX = "https://github.com/zulip/zulip/tree/main"
 
 
 class BaseDocumentationSpider(scrapy.Spider):

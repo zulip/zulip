@@ -44,7 +44,7 @@ there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
 A good first test to read is
-[example1.js](https://github.com/zulip/zulip/blob/master/frontend_tests/node_tests/example1.js).
+[example1.js](https://github.com/zulip/zulip/blob/main/frontend_tests/node_tests/example1.js).
 (And then there are several other example files.)
 
 ## How the node tests work
@@ -59,10 +59,10 @@ those slow down the tests a lot, and often don't add much value.
 Instead, the preferred model for our unit tests is to mock DOM
 manipulations (which in Zulip are almost exclusively done via
 `jQuery`) using a custom library
-[zjquery](https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zjquery.js).
+[zjquery](https://github.com/zulip/zulip/blob/main/frontend_tests/zjsunit/zjquery.js).
 
 The
-[unit test file](https://github.com/zulip/zulip/blob/master/frontend_tests/node_tests/zjquery.js)
+[unit test file](https://github.com/zulip/zulip/blob/main/frontend_tests/node_tests/zjquery.js)
 for `zjquery` is designed to be also serve as nice documentation for
 how to use `zjquery`, and is **highly recommended reading** for anyone
 working on or debugging the Zulip node tests.

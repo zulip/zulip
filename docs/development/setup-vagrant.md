@@ -445,7 +445,7 @@ guide][rtd-git-guide].
 
 If after rebasing onto a new version of the Zulip server, you receive
 new errors while starting the Zulip server or running tests, this is
-probably not because Zulip's master branch is broken.  Instead, this
+probably not because Zulip's main branch is broken.  Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environment.  To update your environment, you'll need to

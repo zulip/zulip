@@ -456,7 +456,7 @@ See
 [our guide on documenting an integration][integration-docs-guide]
 for further details, including how to easily create the message
 screenshot. Mostly you should plan on templating off an existing guide, like
-[this one](https://raw.githubusercontent.com/zulip/zulip/master/zerver/webhooks/github/doc.md).
+[this one](https://raw.githubusercontent.com/zulip/zulip/main/zerver/webhooks/github/doc.md).
 
 [integration-docs-guide]: https://zulip.readthedocs.io/en/latest/documentation/integrations.html
 

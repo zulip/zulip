@@ -44,13 +44,13 @@ checkout.
   current branch using `git reset --hard`.  Use with caution.**
 
 First, make sure you are working in a branch you want to move (in this
-example, we'll use the local `master` branch). Then run the script
+example, we'll use the local `main` branch). Then run the script
 with the ID number of the pull request as the first argument.
 
 ```console
-$ git checkout master
-Switched to branch 'master'
-Your branch is up-to-date with 'origin/master'.
+$ git checkout main
+Switched to branch 'main'
+Your branch is up-to-date with 'origin/main'.
 
 $ ./tools/reset-to-pull-request 1900
 + request_id=1900
@@ -70,7 +70,7 @@ HEAD is now at 2bcd1d8 troubleshooting tip about provisioning
 
 `tools/fetch-rebase-pull-request` is a short-cut for [checking out a pull
 request locally][zulip-git-guide-fetch-pr] in its own branch and then updating it with any
-changes from upstream/master with `git rebase`.
+changes from upstream/main with `git rebase`.
 
 Run the script with the ID number of the pull request as the first argument.
 
@@ -84,8 +84,8 @@ remote: Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
 Unpacking objects: 100% (4/4), done.
 From https://github.com/zulip/zulip
  * branch            refs/pull/1913/head -> FETCH_HEAD
-+ git checkout upstream/master -b review-1913
-Branch review-1913 set up to track remote branch master from upstream.
++ git checkout upstream/main -b review-1913
+Branch review-1913 set up to track remote branch main from upstream.
 Switched to a new branch 'review-1913'
 + git reset --hard FETCH_HEAD
 HEAD is now at 99aa2bf Add provision.py fails issue in common errors
@@ -96,7 +96,7 @@ Current branch review-1913 is up to date.
 ## Fetch a pull request without rebasing
 
 `tools/fetch-pull-request` is a similar to `tools/fetch-rebase-pull-request`, but
-it does not rebase the pull request against upstream/master, thereby getting
+it does not rebase the pull request against upstream/main, thereby getting
 exactly the same repository state as the commit author had.
 
 Run the script with the ID number of the pull request as the first argument.
@@ -146,11 +146,11 @@ achieve this by granting other users permission to write to your fork.
 
 `tools/clean-branches` is a shell script that removes branches that are either:
 
-1. Local branches that are ancestors of origin/master.
-2. Branches in origin that are ancestors of origin/master and named like `$USER-*`.
+1. Local branches that are ancestors of origin/main.
+2. Branches in origin that are ancestors of origin/main and named like `$USER-*`.
 3. Review branches created by `tools/fetch-rebase-pull-request` and `tools/fetch-pull-request`.
 
-First, make sure you are working in branch `master`. Then run the script without any
+First, make sure you are working in branch `main`. Then run the script without any
 arguments for default behavior. Since removing review branches can inadvertently remove any
 feature branches whose names are like `review-*`, it is not done by default. To
 use it, run `tools/clean-branches --reviews`.
@@ -164,11 +164,11 @@ Deleting local branch review-original-5156 (was 5a1e982)
 
 If there is a merge conflict on yarn.lock, yarn should be run to
 regenerate the file. *Important* don't delete the yarn.lock file. Check out the
-latest one from origin/master so that yarn knows the previous asset versions.
+latest one from origin/main so that yarn knows the previous asset versions.
 
 Run the following commands
 ```bash
-git checkout origin/master -- yarn.lock
+git checkout origin/main -- yarn.lock
 yarn install
 git add yarn.lock
 git rebase --continue
