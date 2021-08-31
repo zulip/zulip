@@ -303,7 +303,7 @@ the **zform** to the client rendering it.
 
 
 First,
-[here](https://github.com/zulip/python-zulip-api/blob/master/zulip_bots/zulip_bots/bots/trivia_quiz/trivia_quiz.py)
+[here](https://github.com/zulip/python-zulip-api/blob/main/zulip_bots/zulip_bots/bots/trivia_quiz/trivia_quiz.py)
 is the code that produces the JSON.
 
 ``` py

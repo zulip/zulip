@@ -759,7 +759,7 @@ def login_page(
         # context_data attribute. This attribute doesn't exist otherwise. It is
         # added in SimpleTemplateResponse class, which is a derived class of
         # HttpResponse. See django.template.response.SimpleTemplateResponse,
-        # https://github.com/django/django/blob/master/django/template/response.py#L19.
+        # https://github.com/django/django/blob/2.0/django/template/response.py#L19
         update_login_page_context(request, template_response.context_data)
 
     return template_response

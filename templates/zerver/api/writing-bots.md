@@ -114,7 +114,7 @@ we have a little tool to help you out: `zulip-terminal`
 * [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
 
 * Run `zulip-terminal` to test one of the bots in
-  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
+  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
 
 Example invocations are below:
 
@@ -374,7 +374,7 @@ every call to `put` and `get`, respectively.
 
 Bots, like most software that you want to work, should have unit tests. In this section,
 we detail our framework for writing unit tests for bots. We require that bots in the main
-[`python-zulip-api`](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+[`python-zulip-api`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
 repository include a reasonable set of unit tests, so that future developers can easily
 refactor them.
 
@@ -385,7 +385,7 @@ refactor them.
 ### A simple example
 
  Let's have a look at a simple test suite for the [`helloworld`](
- https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/helloworld)
+ https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/helloworld)
  bot.
 
 ```
@@ -419,7 +419,7 @@ The best way to learn about bot tests is to read all the existing tests in the
 Once you have written a test suite, you want to verify that everything works as expected.
 
 * To test a bot in [Zulip's bot directory](
-  https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots):
+  https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots):
   `tools/test-bots <botname>`
 
 * To run all bot tests: `tools/test-bots`
@@ -429,13 +429,13 @@ Once you have written a test suite, you want to verify that everything works as 
 This section shows advanced testing techniques for more complicated bots that have
 configuration files or interact with third-party APIs.
 *The code for the bot testing library can be found [here](
- https://github.com/zulip/python-zulip-api/blob/master/zulip_bots/zulip_bots/test_lib.py).*
+ https://github.com/zulip/python-zulip-api/blob/main/zulip_bots/zulip_bots/test_lib.py).*
 
 
 #### Testing bots with config files
 
 Some bots, such as [Giphy](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
+https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy),
 support or require user configuration options to control how the bot works.
 
 To test such a bot, you can use the following pattern:
@@ -449,7 +449,7 @@ system and gives your test "dummy data" instead.
 #### Testing bots with internet access
 
 Some bots, such as [Giphy](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
+https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy),
 depend on a third-party service, such as the Giphy webapp, in order to work. Because
 we want our test suite to be reliable and not add load to these third-party APIs, tests
 for these services need to have "test fixtures": sample HTTP request/response pairs to
@@ -476,7 +476,7 @@ fixtures:
 }
 ```
 For an example, check out the [giphy bot](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy).
+https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy).
 
 *Tip: You can use [requestbin](https://requestbin.com/) or a similar
 tool to capture payloads from the service your bot is interacting
@@ -484,7 +484,7 @@ with.*
 
 #### Examples
 
-Check out our [bots](https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
+Check out our [bots](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
 to see examples of bot tests.
 
 ## Common problems

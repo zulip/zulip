@@ -90,5 +90,5 @@ assignee(s) if they are still working on the issue.
 If you wish to help develop and contribute to **@zulipbot**, check out the
 [zulip/zulipbot](https://github.com/zulip/zulipbot) repository on GitHub and read
 the project's [contributing
-guidelines](https://github.com/zulip/zulipbot/blob/master/.github/CONTRIBUTING.md#contributing) for
+guidelines](https://github.com/zulip/zulipbot/blob/main/.github/CONTRIBUTING.md#contributing) for
 more information.

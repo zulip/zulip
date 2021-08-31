@@ -237,7 +237,7 @@ above.
    bindings don't have a dedicated method for a specific API call,
    you may either use `client.call_endpoint` or add a dedicated
    function to the [zulip PyPI
-   package](https://github.com/zulip/python-zulip-api/tree/master/zulip).
+   package](https://github.com/zulip/python-zulip-api/tree/main/zulip).
    Ultimately, the goal is for every endpoint to be documented the
    latter way, but it's useful to be able to write working
    documentation for an endpoint that isn't supported by
@@ -285,7 +285,7 @@ above.
    in `zerver/openapi/zulip.yaml`, which mentions the API feature level
    at which they were added.
 
-[javascript-examples]: https://github.com/zulip/zulip-js/tree/master/examples
+[javascript-examples]: https://github.com/zulip/zulip-js/tree/main/examples
 
 ## Why a custom system?
 
