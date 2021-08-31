@@ -3269,6 +3269,11 @@ class UserActivityInterval(models.Model):
     start: datetime.datetime = models.DateTimeField("start time", db_index=True)
     end: datetime.datetime = models.DateTimeField("end time", db_index=True)
 
+    class Meta:
+        index_together = [
+            ("user_profile", "end"),
+        ]
+
 
 class UserPresence(models.Model):
     """A record from the last time we heard from a given user on a given client.
