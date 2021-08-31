@@ -43,7 +43,7 @@ preparing a new release.
 
 ### Executing the release
 
-* Create the release commit, on master (for major releases) or on the
+* Create the release commit, on main (for major releases) or on the
   release branch (for minor releases):
   * Copy the Markdown release notes for the release into
     `docs/overview/changelog.md`.
@@ -62,7 +62,7 @@ preparing a new release.
   GitHub](https://github.com/zulip/zulip/tags); use the text from
   `changelog.md` for the release notes.
 
-  **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/master/tools/oneclickapps/README.md)
+  **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/main/tools/oneclickapps/README.md)
   for updating DigitalOcean one-click app image. The action uses the latest release
   tarball published on `zulip.org` for creating the image.
 * Update the [Docker image](https://github.com/zulip/docker-zulip) and
@@ -81,7 +81,7 @@ preparing a new release.
   * Create a release branch (e.g. `4.x`).
   * On the release branch, update `ZULIP_VERSION` in `version.py` to
     the present release with a `+git` suffix, e.g. `4.0+git`.
-  * On master, update `ZULIP_VERSION` to the future major release with
+  * On main, update `ZULIP_VERSION` to the future major release with
     a `-dev+git` suffix, e.g. `5.0-dev+git`.  Make a Git tag for this
     update commit with a `-dev` suffix, e.g. `5.0-dev`.  Push the tag
     to both zulip.git and zulip-internal.git to get a correct version
@@ -92,4 +92,4 @@ preparing a new release.
   * Update `ZULIP_VERSION` to the present release with a `+git`
     suffix, e.g. `3.2+git`.
   * Update `LATEST_RELEASE_VERSION` with the released version.
-  * Cherry-pick the changelog changes back to `master`.
+  * Cherry-pick the changelog changes back to `main`.

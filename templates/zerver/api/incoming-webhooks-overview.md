@@ -66,7 +66,7 @@ process.
 
 * Document the integration (required for getting it merged into Zulip). You
   can template off an existing guide, like
-  [this one](https://raw.githubusercontent.com/zulip/zulip/master/zerver/webhooks/github/doc.md).
+  [this one](https://raw.githubusercontent.com/zulip/zulip/main/zerver/webhooks/github/doc.md).
   This should not take more than 15 minutes, even if you don't speak English
   as a first language (we'll clean up the text before merging).
 

@@ -21,19 +21,19 @@ and then
 [continue the normal installation instructions](../production/install.html#step-2-install-zulip).
 You can also [upgrade Zulip from Git](../production/upgrade-or-modify.html#upgrading-from-a-git-repository).
 
-The most common use case for this is upgrading to `master` to get a
+The most common use case for this is upgrading to `main` to get a
 feature that hasn't made it into an official release yet (often
 support for a new base OS release).  See [upgrading to
-master][upgrade-to-master] for notes on how `master` works and the
+main][upgrade-to-main] for notes on how `main` works and the
 support story for it, and [upgrading to future
 releases][upgrade-to-future-release] for notes on upgrading Zulip
 afterwards.
 
 In particular, we are always very glad to investigate problems with
-installing Zulip from `master`; they are rare and help us ensure that
+installing Zulip from `main`; they are rare and help us ensure that
 our next major release has a reliable install experience.
 
-[upgrade-to-master]: ../production/upgrade-or-modify.html#upgrading-to-master
+[upgrade-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
 [upgrade-to-future-release]: ../production/upgrade-or-modify.html#upgrading-to-future-releases
 
 ## Zulip in Docker
@@ -328,9 +328,9 @@ Don't forget to update `server_name`, `ssl_certificate`,
 `ssl_certificate_key` and `proxy_pass` with the appropriate values for
 your installation.
 
-[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
-[standalone.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/profile/standalone.pp
-[zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
+[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
+[standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
+[zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/zulip_ops/manifests
 
 ### Apache2 configuration
 

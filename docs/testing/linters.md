@@ -128,14 +128,14 @@ It is the workhorse of our linting system, although in some cases it
 dispatches the heavy lifting to other components such as pyflakes,
 eslint, and other home grown tools.
 
-You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint).
+You can find the source code [here](https://github.com/zulip/zulip/blob/main/tools/lint).
 
 In order for our entire lint suite to run in a timely fashion, the `lint`
 script performs several lint checks in parallel by forking out subprocesses.
 
 Note that our project does custom regex-based checks on the code, and we
 also customize how we call pyflakes and pycodestyle (pep8).  The code for these
-types of checks mostly lives [here](https://github.com/zulip/zulip/tree/master/tools/linter_lib).
+types of checks mostly lives [here](https://github.com/zulip/zulip/tree/main/tools/linter_lib).
 
 ### Special options
 
@@ -211,8 +211,8 @@ Zulip uses two HTML templating systems:
 Zulip has an internal tool that validates both types of templates for
 correct indentation and matching tags.  You can find the code here:
 
-- driver: [check-templates](https://github.com/zulip/zulip/blob/master/tools/check-templates)
-- engine: [lib/template_parser.py](https://github.com/zulip/zulip/blob/master/tools/lib/template_parser.py)
+- driver: [check-templates](https://github.com/zulip/zulip/blob/main/tools/check-templates)
+- engine: [lib/template_parser.py](https://github.com/zulip/zulip/blob/main/tools/lib/template_parser.py)
 
 We exempt some legacy files from indentation checks, but we are hoping to
 clean those files up eventually.
@@ -221,7 +221,7 @@ clean those files up eventually.
 
 Zulip uses [stylelint](https://github.com/stylelint/stylelint) to lint
 its CSS; see our
-[configuration](https://github.com/zulip/zulip/blob/master/stylelint.config.js)
+[configuration](https://github.com/zulip/zulip/blob/main/stylelint.config.js)
 for the rules we currently enforce.
 
 #### Shell scripts

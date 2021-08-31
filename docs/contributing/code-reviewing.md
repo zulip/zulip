@@ -28,7 +28,7 @@ to dive right into reviewing the PR's core functionality.
 Once you've received a review and resolved any feedback, it's critical
 to update the GitHub thread to reflect that.  Best practices are to:
 
-* Make sure that CI passes and the PR is rebased onto recent master.
+* Make sure that CI passes and the PR is rebased onto recent main.
 * Post comments on each feedback thread explaining at least how you
   resolved the feedback, as well as any other useful information
   (problems encountered, reasoning for why you picked one of several
@@ -215,7 +215,7 @@ Some points specific to the Zulip server codebase:
 To make it easier to review pull requests, if you're working in the
 Zulip server codebase, use our [git tool]
 `tools/fetch-rebase-pull-request` to check out a pull request locally
-and rebase it against master.
+and rebase it against main.
 
 If a pull request just needs a little fixing to make it mergeable,
 feel free to do that in a new commit, then push your branch to GitHub

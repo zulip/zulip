@@ -25,7 +25,7 @@ What is zjquery?
 
 The code we are testing lives here:
 
-    https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zjquery.js
+    https://github.com/zulip/zulip/blob/main/frontend_tests/zjsunit/zjquery.js
 
 */
 

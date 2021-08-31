@@ -362,7 +362,7 @@ up-to-date list of raw changes.
   was actually an integration for canarytokens.org).
 - Reformatted the frontend codebase using prettier.  This change was
   included in this maintenance release to ensure backporting patches
-  from master remains easy.
+  from main remains easy.
 
 ### 3.0 -- July 16, 2020
 
@@ -2201,5 +2201,5 @@ easily read them all when upgrading across multiple releases.
 * [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
-[commit-log]: https://github.com/zulip/zulip/commits/master
+[commit-log]: https://github.com/zulip/zulip/commits/main
 [latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html

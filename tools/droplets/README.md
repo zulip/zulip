@@ -127,7 +127,7 @@ Rough steps:
    probably have to be logged in in the Zulip organization view, rather than
    via your personal account.
 1. `ssh zulipdev@base.zulipdev.org`
-1. `git pull upstream master`
+1. `git pull upstream main`
 1. `tools/provision`
 1. `git clean -f`, in case things were added/removed from `.gitignore`.
 1. `tools/run-dev.py`, let it run to completion, and then Ctrl-C (to clear

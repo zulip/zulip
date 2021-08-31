@@ -407,4 +407,4 @@ correctly, clients are responsible for discarding events related to
 messages that the client has not yet fetched.
 
 Additionally, see
-[the master documentation on sending messages](../subsystems/sending-messages.md)
+[the main documentation on sending messages](../subsystems/sending-messages.md)

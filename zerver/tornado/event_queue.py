@@ -1223,7 +1223,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
             # queue at the time of upgrade.
             #
             # TODO/compatibility: Remove this block once you can no
-            # longer directly upgrade directly from 4.x to master.
+            # longer directly upgrade directly from 4.x to main.
             user_ids: List[int] = [user["id"] for user in cast(List[Mapping[str, Any]], users)]
         else:
             user_ids = cast(List[int], users)

@@ -31,7 +31,7 @@ Sometimes you want to publish commits. Here are some scenarios:
 Finally, the Zulip core team will occasionally want your changes!
 
 - The Zulip core team can accept your changes and add them to
-  the official repo, usually on the master branch.
+  the official repo, usually on the main branch.
 
 ## Relevant Git commands
 

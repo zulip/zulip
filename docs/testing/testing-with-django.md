@@ -79,9 +79,9 @@ accidentally regresses the feature in the future, the test will catch
 the regression.
 
 Another important files to skim are
-[zerver/lib/test_helpers.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_helpers.py),
+[zerver/lib/test_helpers.py](https://github.com/zulip/zulip/blob/main/zerver/lib/test_helpers.py),
 which contains test helpers.
-[zerver/lib/test_classes.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_classes.py),
+[zerver/lib/test_classes.py](https://github.com/zulip/zulip/blob/main/zerver/lib/test_classes.py),
 which contains our `ZulipTestCase` and `WebhookTestCase` classes.
 
 ### Setting up data for tests
@@ -406,7 +406,7 @@ A detailed description of mocks, along with useful coded snippets, can be found 
 
 ### Template tests
 
-In [zerver/tests/test_templates.py](https://github.com/zulip/zulip/blob/master/zerver/tests/test_templates.py)
+In [zerver/tests/test_templates.py](https://github.com/zulip/zulip/blob/main/zerver/tests/test_templates.py)
 we have a test that renders all of our backend templates with
 a "dummy" context, to make sure the templates don't have obvious
 errors.  (These tests won't catch all types of errors; they are

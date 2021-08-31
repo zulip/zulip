@@ -834,12 +834,12 @@ class MarkdownTest(ZulipTestCase):
 
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
-        msg = "Test: https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"
+        msg = "Test: https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"
         converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(
             converted,
-            '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>',
+            '<p>Test: <a href="https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmain%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmain%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>',
         )
 
         msg = "Test: https://developer.github.com/assets/images/hero-circuit-bg.png"

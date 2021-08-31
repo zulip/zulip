@@ -23,7 +23,7 @@ What is zblueslip?
 
 The code we are testing lives here:
 
-    https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zblueslip.js
+    https://github.com/zulip/zulip/blob/main/frontend_tests/zjsunit/zblueslip.js
 
 Read the following contents for an overview of how zblueslip works. Also take a
 look at `node_tests/people_errors.js` for actual usage of this module.

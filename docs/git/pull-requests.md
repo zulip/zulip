@@ -26,7 +26,7 @@ work from being merged before you're confident in it.
 
 ## Create a pull request
 
-### Step 0: Make sure you're on a feature branch (not `master`)
+### Step 0: Make sure you're on a feature branch (not `main`)
 
 It is important to [work on a feature
 branch](using.html#work-on-a-feature-branch) when creating a pull
@@ -35,7 +35,7 @@ branch while it is open, so you will need to reserve your branch only
 for changes related to your issue, and avoid introducing extraneous
 changes for other issues or from upstream.
 
-If you are working on a branch named `master`, you need to create and
+If you are working on a branch named `main`, you need to create and
 switch to a feature branch before proceeding.
 
 ### Step 1: Update your branch with git rebase
@@ -56,9 +56,9 @@ remote: Compressing objects: 100% (23/23), done.
 remote: Total 69 (delta 49), reused 39 (delta 39), pack-reused 7
 Unpacking objects: 100% (69/69), done.
 From https://github.com/zulip/zulip
-   69fa600..43e21f6  master     -> upstream/master
+   69fa600..43e21f6  main     -> upstream/main
 
-$ git rebase upstream/master
+$ git rebase upstream/main
 
 First, rewinding head to replay your work on top of it...
 Applying: troubleshooting tip about provisioning

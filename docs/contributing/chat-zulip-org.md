@@ -54,7 +54,7 @@ streams that are only of occasional interest.
 
 ## This is a bleeding edge development server
 
-The chat.zulip.org server is frequently deployed off of `master` from
+The chat.zulip.org server is frequently deployed off of `main` from
 the Zulip Git repository, so please point out anything you notice that
 seems wrong!  We catch many bugs that escape code review this way.
 

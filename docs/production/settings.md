@@ -28,7 +28,7 @@ comment documentation for new configuration settings after upgrading
 to each new major release.
 
 [update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
-[settings-py-template]: https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py
+[settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
 Since Zulip's settings file is a Python script, there are a number of
 other things that one can configure that are not documented; ask on

@@ -99,7 +99,7 @@ on hardware requirements for larger organizations.
 [SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: ../production/deployment.html#using-an-outgoing-http-proxy
 [reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
-[email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
+[email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
 
 ## Credentials needed
 

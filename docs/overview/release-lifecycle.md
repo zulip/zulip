@@ -60,25 +60,25 @@ the Zulip server itself (E.g. `https://zulip.example.com/help/`).
 Many Zulip servers run versions from Git that have not been published
 in a stable release.
 
-* [Zulip Cloud](https://zulip.com) essentially runs the master
-  branch. It is usually a few days behind master (with some
+* [Zulip Cloud](https://zulip.com) essentially runs the main
+  branch. It is usually a few days behind main (with some
   cherry-picked bug fixes), but can fall up to 2 weeks behind when
   major UI or internals changes mean we'd like to bake changes longer
   on chat.zulip.org before exposing them to the full Zulip Cloud
   userbase.
 * [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
-  Zulip development community, is upgraded to master several times
-  every week.  We also often "test deploy" changes not yet in master
+  Zulip development community, is upgraded to main several times
+  every week.  We also often "test deploy" changes not yet in main
   to chat.zulip.org to facilitate design feedback.
 * We maintain Git branches with names like `4.x` containing backported
-  commits from master that we plan to include in the next maintenance
+  commits from main that we plan to include in the next maintenance
   release.  Self hosters can [upgrade][upgrade-from-git] to these
   stable release branches to get bug fixes staged for the next stable
   release (which is very useful when you reported a bug whose fix we
   choose to backport). We support these branches as though they were a
   stable release.
 * Self-hosters who want new features not yet present in a major
-  release can [upgrade to master][upgrading-to-master] or run [a fork
+  release can [upgrade to main][upgrading-to-main] or run [a fork
   of Zulip][fork-zulip].
 
 ### Compatibility and upgrading
@@ -117,7 +117,7 @@ bug fix release, transparently documenting the issue(s) using the
 industry-standard [CVE advisory process](https://cve.mitre.org/).
 
 When new security releases are published, we simultaneously publish
-the fixes to the `master` and stable release branches (E.g. `4.x`), so
+the fixes to the `main` and stable release branches (E.g. `4.x`), so
 that anyone using those branches can immediately upgrade as well.
 
 See also our [security model][security-model] documentation.
@@ -227,7 +227,7 @@ core community, like the Python and JavaScript bindings, are released
 independently as needed.
 
 [electron]: https://www.electronjs.org/
-[upgrading-to-master]: ../production/upgrade-or-modify.html#upgrading-to-master
+[upgrading-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
 [os-upgrade]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
 [chat-zulip-org]: ../contributing/chat-zulip-org.md
 [fork-zulip]: ../production/upgrade-or-modify.html#modifying-zulip

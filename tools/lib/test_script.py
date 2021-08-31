@@ -39,7 +39,7 @@ NEED_TO_DOWNGRADE = """
 It looks like you checked out a branch that expects an older
 version of dependencies than the version you provisioned last.
 This may be ok, but it's likely that you either want to rebase
-your branch on top of upstream/master or re-provision your VM.
+your branch on top of upstream/main or re-provision your VM.
 
 Do this: `./tools/provision`
 """

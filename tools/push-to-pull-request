@@ -7,9 +7,9 @@ usage: $0 [--merge] PULL_REQUEST_ID [REMOTE]
 
 Force-push our HEAD to the given GitHub pull request branch.
 
-Useful for a maintainer to run just before pushing to master,
+Useful for a maintainer to run just before pushing to main,
 after tweaking the branch and/or rebasing to latest.  This causes
-GitHub to see the subsequent push to master as representing a
+GitHub to see the subsequent push to main as representing a
 merge of the PR, rather than requiring the PR to be manually
 (and to the casual observer misleadingly) closed instead.
 
