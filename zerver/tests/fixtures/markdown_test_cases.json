@@ -526,7 +526,7 @@
     {
       "name": "translate_emoticons",
       "input":  ":) foo :( bar <3 with space : ) real emoji :smile:",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span> foo <span aria-label=\"frown\" class=\"emoji emoji-1f641\" role=\"img\" title=\"frown\">:frown:</span> bar <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> with space : ) real emoji <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>",
+      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span> foo <span aria-label=\"slightly_frowning_face\" class=\"emoji emoji-1f641\" role=\"img\" title=\"slightly_frowning_face\">:slightly_frowning_face:</span> bar <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> with space : ) real emoji <span aria-label=\"smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"smile\">:smile:</span></p>",
       "text_content": "\ud83d\ude42 foo \ud83d\ude41 bar \u2764 with space : ) real emoji \ud83d\ude42",
       "translate_emoticons": true
     },

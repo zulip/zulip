@@ -23,11 +23,11 @@ run_test("get_canonical_name", () => {
     let canonical_name = emoji.get_canonical_name("green_tick");
     assert.equal(canonical_name, "green_tick");
 
-    canonical_name = emoji.get_canonical_name("thumbs_up");
-    assert.equal(canonical_name, "+1");
+    canonical_name = emoji.get_canonical_name("thumbs_up_sign");
+    assert.equal(canonical_name, "thumbs_up_sign");
 
     canonical_name = emoji.get_canonical_name("+1");
-    assert.equal(canonical_name, "+1");
+    assert.equal(canonical_name, "thumbs_up_sign");
 
     canonical_name = emoji.get_canonical_name("airplane");
     assert.equal(canonical_name, "airplane");
@@ -37,33 +37,33 @@ run_test("get_canonical_name", () => {
 });
 
 run_test("get_emoji_* API", () => {
-    assert.equal(emoji.get_emoji_name("1f384"), "holiday_tree");
+    assert.equal(emoji.get_emoji_name("1f384"), "christmas_tree");
     assert.equal(emoji.get_emoji_name("1f951"), "avocado");
     assert.equal(emoji.get_emoji_name("bogus"), undefined);
 
     assert.equal(emoji.get_emoji_codepoint("avocado"), "1f951");
-    assert.equal(emoji.get_emoji_codepoint("holiday_tree"), "1f384");
+    assert.equal(emoji.get_emoji_codepoint("christmas_tree"), "1f384");
     assert.equal(emoji.get_emoji_codepoint("bogus"), undefined);
 
     assert.equal(emoji.get_realm_emoji_url("spain"), "/some/path/to/spain.png");
 });
 
 run_test("get_emoji_details_by_name", () => {
-    let emoji_name = "smile";
+    let emoji_name = "slightly_smiling_face";
 
     let result = emoji.get_emoji_details_by_name(emoji_name);
     assert.deepEqual(result, {
-        emoji_name: "smile",
+        emoji_name: "slightly_smiling_face",
         emoji_code: "1f642",
         reaction_type: "unicode_emoji",
     });
 
     // Test adding an unicode_emoji.
-    emoji_name = "smile";
+    emoji_name = "slightly_smiling_face";
 
     result = emoji.get_emoji_details_by_name(emoji_name);
     assert.deepEqual(result, {
-        emoji_name: "smile",
+        emoji_name: "slightly_smiling_face",
         reaction_type: "unicode_emoji",
         emoji_code: "1f642",
     });

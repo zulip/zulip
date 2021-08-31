@@ -38,7 +38,7 @@ function build_emoticon_translations() {
         { regex: /(\(\:)/g, replacement_text: ':smile:' },
         { regex: /(\:\/)/g, replacement_text: ':confused:' },
         { regex: /(<3)/g, replacement_text: ':heart:' },
-        { regex: /(\:\()/g, replacement_text: ':frown:' },
+        { regex: /(\:\()/g, replacement_text: ':slightly_frowning_face:' },
         { regex: /(\:\|)/g, replacement_text: ':expressionless:' },
         ....
     ]

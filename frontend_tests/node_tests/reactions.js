@@ -16,7 +16,7 @@ const sample_message = {
     reactions: [
         {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f642"},
         {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f642"},
-        {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
+        {emoji_name: "slightly_frowning_face", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
 
         {emoji_name: "tada", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f389"},
         {emoji_name: "tada", user_id: 8, reaction_type: "unicode_emoji", emoji_code: "1f389"},
@@ -162,13 +162,13 @@ test("basics", () => {
 
     const expected_result = [
         {
-            emoji_name: "frown",
+            emoji_name: "slightly_frowning_face",
             reaction_type: "unicode_emoji",
             emoji_code: "1f641",
             local_id: "unicode_emoji,1f641",
             count: 1,
             user_ids: [7],
-            label: "translated: Cali reacted with :frown:",
+            label: "translated: Cali reacted with :slightly_frowning_face:",
             emoji_alt_code: false,
             class: "message_reaction",
         },
@@ -851,7 +851,7 @@ test("remove spurious user", ({override}) => {
 
     const event = {
         reaction_type: "unicode_emoji",
-        emoji_name: "frown",
+        emoji_name: "slightly_frowning_face",
         emoji_code: "1f641",
         message_id: message.id,
         user_id: alice.user_id,
@@ -873,11 +873,11 @@ test("remove last user", ({override}) => {
         );
     }
 
-    assert_names(["smile", "frown", "tada", "rocket", "wave", "inactive_realm_emoji"]);
+    assert_names(["smile", "slightly_frowning_face", "tada", "rocket", "wave", "inactive_realm_emoji"]);
 
     const event = {
         reaction_type: "unicode_emoji",
-        emoji_name: "frown",
+        emoji_name: "slightly_frowning_face",
         emoji_code: "1f641",
         message_id: message.id,
         user_id: cali.user_id,
@@ -931,7 +931,7 @@ test("warnings", () => {
                 emoji_code: "1f419",
             },
             {
-                emoji_name: "frown",
+                emoji_name: "slightly_frowning_face",
                 user_id: 9999,
                 reaction_type: "unicode_emoji",
                 emoji_code: "1f641",

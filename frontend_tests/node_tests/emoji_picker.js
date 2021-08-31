@@ -21,7 +21,7 @@ run_test("initialize", () => {
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");
     assert.equal(complete_emoji_catalog.length, 11);
-    assert.equal(emoji.emojis_by_name.size, 1050);
+    assert.equal(emoji.emojis_by_name.size, 1817);
 
     let total_emoji_in_categories = 0;
 
@@ -42,21 +42,26 @@ run_test("initialize", () => {
     }
     const popular_emoji_count = 6;
     const zulip_emoji_count = 1;
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 170);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 195);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 129);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 215);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 220);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 156);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 102);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 189);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 92);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 5);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 349);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 250);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 129);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 269);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 104);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-soccer-ball-o", 63);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 140);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-soccer-ball-o", 84);
 
+    // The "Component" category consists of '1f3fb', '1f3fc', '1f3fd', '1f3fe',
+    // '1f3ff' (i.e. skin tone 2 to 6). We don't display this skin tone
+    // modifier in our emoji picker category, so we have to take it out in the
+    // subsequent assertion.
+    const component_count = 5;
     // The popular emoji appear twice in the picker, and the zulip emoji is special
     assert.equal(
-        emoji.emojis_by_name.size,
+        emoji.emojis_by_name.size - component_count,
         total_emoji_in_categories - popular_emoji_count + zulip_emoji_count,
     );
 });
