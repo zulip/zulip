@@ -12,7 +12,7 @@ Get Zulip notifications for your Git repositories!
 
     You can specify the branches that will be used for notifications by modifying
     the `commit_notice_destination` function. By default,
-    pushes to the `master` and `test-post-receive` branches will result in a
+    pushes to the `main`, `master`, and `test-post-receive` branches will result in a
     notification.
 
 1. Symlink `/usr/local/share/zulip/integrations/git/zulip_git_config.py`
@@ -23,7 +23,7 @@ Get Zulip notifications for your Git repositories!
 
 !!! tip ""
 
-    You can test the plugin without changing your `master` branch by
+    You can test the plugin without changing your `main` branch by
     pushing to the `test-post-receive` branch.
 
 {!congrats.md!}
