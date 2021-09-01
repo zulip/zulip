@@ -5180,7 +5180,9 @@ class UserSignUpTest(InviteUserBase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
-        expected_deletion_date = realm.date_created + datetime.timedelta(days=30)
+        expected_deletion_date = realm.date_created + datetime.timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
 
