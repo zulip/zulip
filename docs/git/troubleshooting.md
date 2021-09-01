@@ -153,7 +153,7 @@ which ever branch you are rebasing on top of, is to code that has been changed
 by those new commits.
 
 For example, while I'm working on a file, another contributor makes a change to
-that file, submits a pull request and has their code merged into main.
+that file, submits a pull request and has their code merged into `main`.
 Usually this is not a problem, but in this case the other contributor made a
 change to a part of the file I also want to change. When I try to bring my
 branch up to date with `git fetch` and then `git rebase upstream/main`, I see
