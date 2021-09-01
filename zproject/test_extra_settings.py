@@ -136,6 +136,7 @@ if not PUPPETEER_TESTS:
 
     set_loglevel("zulip.requests", "CRITICAL")
     set_loglevel("zulip.management", "CRITICAL")
+    set_loglevel("zulip.auth", "WARNING")
     set_loglevel("django.request", "ERROR")
     set_loglevel("django_auth_ldap", "WARNING")
     set_loglevel("fakeldap", "ERROR")
