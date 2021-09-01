@@ -574,8 +574,11 @@ Output:
 
     def assert_login_failure(self, email: str, password: str) -> None:
         realm = get_realm("zulip")
+        request = HttpRequest()
+        request.session = self.client.session
         self.assertFalse(
             self.client.login(
+                request=request,
                 username=email,
                 password=password,
                 realm=realm,
