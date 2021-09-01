@@ -137,7 +137,7 @@ notes above:
   verify it does not fail nondeterminstically (see above for notes on
   how to get CI to do it for you); this is important to avoid
   introducing extremely annoying nondeterministic failures into
-  main.
+  `main`.
 - With black-box browser tests like these, it's very important to write your code
   to wait for browser's UI to update before taking any action that
   assumes the last step was processed by the browser (E.g. after you

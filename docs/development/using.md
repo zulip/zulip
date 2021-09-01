@@ -13,7 +13,7 @@ the development environment][authentication-dev-server].
 
 ## Common
 
-* Zulip's main branch moves quickly, and you should rebase
+* Zulip's `main` branch moves quickly, and you should rebase
   constantly with e.g. `git fetch upstream; git rebase
   upstream/main` to avoid developing on an old version of the Zulip
   codebase (leading to unnecessary merge conflicts).

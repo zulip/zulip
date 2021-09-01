@@ -43,19 +43,19 @@ $ git diff e2f404c 7977169
 
 ## Changes between branches
 
-Display changes between tip of topic branch and tip of main branch:
+Display changes between tip of `topic` branch and tip of `main` branch:
 
 ```console
 $ git diff topic main
 ```
 
-Display changes that have occurred on main branch since topic branch was created:
+Display changes that have occurred on `main` branch since `topic` branch was created:
 
 ```console
 $ git diff topic...main
 ```
 
-Display changes you've committed so far since creating a branch from upstream/main:
+Display changes you've committed so far since creating a branch from `upstream/main`:
 
 ```console
 $ git diff upstream/main...HEAD

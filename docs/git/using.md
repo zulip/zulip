@@ -67,7 +67,7 @@ Switched to branch 'main'
 $ git rebase upstream/main
 ```
 
-This will rollback any changes you've made to main, update it from
+This will rollback any changes you've made to `main`, update it from
 `upstream/main`, and then re-apply your changes. Rebasing keeps the commit
 history clean and readable.
 
@@ -99,10 +99,10 @@ feature. Recall from [how Git is different][how-git-is-different] that
 **Git is designed for lightweight branching and merging.** You can and should
 create as many branches as you'd like.
 
-First, make sure your main branch is up-to-date with Zulip upstream ([see
+First, make sure your `main` branch is up-to-date with Zulip upstream ([see
 how][zulip-git-guide-up-to-date]).
 
-Next, from your main branch, create a new tracking branch, providing a
+Next, from your `main` branch, create a new tracking branch, providing a
 descriptive name for your feature branch:
 
 ```console
@@ -317,7 +317,7 @@ testing in a more production-like environment.
 
 The final paragraph indicates that this commit addresses and fixes issue #1755.
 When you submit your pull request, GitHub will detect and link this reference
-to the appropriate issue. Once your commit is merged into zulip/main, GitHub
+to the appropriate issue. Once your commit is merged into `upstream/main`, GitHub
 will automatically close the referenced issue. See [Closing issues via commit
 messages][github-help-closing-issues] for details.
 
@@ -335,7 +335,7 @@ This ensures your work is backed up should something happen to your local
 machine and allows others to follow your progress. It also allows you to
 [work from multiple computers][self-multiple-computers] without losing work.
 
-Pushing to a feature branch is just like pushing to main:
+Pushing to a feature branch is just like pushing to `main`:
 
 ```console
 $ git push origin <branch-name>

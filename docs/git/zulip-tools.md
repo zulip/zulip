@@ -70,7 +70,7 @@ HEAD is now at 2bcd1d8 troubleshooting tip about provisioning
 
 `tools/fetch-rebase-pull-request` is a short-cut for [checking out a pull
 request locally][zulip-git-guide-fetch-pr] in its own branch and then updating it with any
-changes from upstream/main with `git rebase`.
+changes from `upstream/main` with `git rebase`.
 
 Run the script with the ID number of the pull request as the first argument.
 
@@ -96,7 +96,7 @@ Current branch review-1913 is up to date.
 ## Fetch a pull request without rebasing
 
 `tools/fetch-pull-request` is a similar to `tools/fetch-rebase-pull-request`, but
-it does not rebase the pull request against upstream/main, thereby getting
+it does not rebase the pull request against `upstream/main`, thereby getting
 exactly the same repository state as the commit author had.
 
 Run the script with the ID number of the pull request as the first argument.
@@ -146,8 +146,8 @@ achieve this by granting other users permission to write to your fork.
 
 `tools/clean-branches` is a shell script that removes branches that are either:
 
-1. Local branches that are ancestors of origin/main.
-2. Branches in origin that are ancestors of origin/main and named like `$USER-*`.
+1. Local branches that are ancestors of `origin/main`.
+2. Branches in origin that are ancestors of `origin/main` and named like `$USER-*`.
 3. Review branches created by `tools/fetch-rebase-pull-request` and `tools/fetch-pull-request`.
 
 First, make sure you are working in branch `main`. Then run the script without any
@@ -164,7 +164,7 @@ Deleting local branch review-original-5156 (was 5a1e982)
 
 If there is a merge conflict on yarn.lock, yarn should be run to
 regenerate the file. *Important* don't delete the yarn.lock file. Check out the
-latest one from origin/main so that yarn knows the previous asset versions.
+latest one from `origin/main` so that yarn knows the previous asset versions.
 
 Run the following commands
 ```bash

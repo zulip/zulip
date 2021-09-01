@@ -43,7 +43,7 @@ preparing a new release.
 
 ### Executing the release
 
-* Create the release commit, on main (for major releases) or on the
+* Create the release commit, on `main` (for major releases) or on the
   release branch (for minor releases):
   * Copy the Markdown release notes for the release into
     `docs/overview/changelog.md`.
@@ -81,7 +81,7 @@ preparing a new release.
   * Create a release branch (e.g. `4.x`).
   * On the release branch, update `ZULIP_VERSION` in `version.py` to
     the present release with a `+git` suffix, e.g. `4.0+git`.
-  * On main, update `ZULIP_VERSION` to the future major release with
+  * On `main`, update `ZULIP_VERSION` to the future major release with
     a `-dev+git` suffix, e.g. `5.0-dev+git`.  Make a Git tag for this
     update commit with a `-dev` suffix, e.g. `5.0-dev`.  Push the tag
     to both zulip.git and zulip-internal.git to get a correct version

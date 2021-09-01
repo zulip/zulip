@@ -314,7 +314,7 @@ usually one needs to think about making changes in 3 places:
   to be called from `tools/update-prod-static`, which is called by
   `tools/build-release-tarball` (for doing Zulip releases) as well as
   `tools/upgrade-zulip-from-git` (for deploying a Zulip server off of
-  main).
+  `main`).
 
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
 [virtualenv-clone]: https://github.com/edwardgeorge/virtualenv-clone/
