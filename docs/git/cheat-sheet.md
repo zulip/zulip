@@ -84,7 +84,7 @@ See also [fixing commits][fix-commit]
     - `git log`: show commit logs
     - `git log --oneline | head`: To quickly see the latest ten commits on a branch.
 - pull
-    - `git pull --rebase`: rebase your changes on top of main.
+    - `git pull --rebase`: rebase your changes on top of `main`.
     - `git pull` (with no options): Will either create a merge commit
       (which you don't want) or do the same thing as `git pull --rebase`,
       depending on [whether you've configured Git properly][git-config-clone]
@@ -94,8 +94,8 @@ See also [fixing commits][fix-commit]
     - `git push origin +branch-name`: force push your commits to your origin repository.
 - rebase
     - `git rebase -i HEAD~3`: interactive rebasing current branch with first three items on HEAD
-    - `git rebase -i main`: interactive rebasing current branch with main branch
-    - `git rebase upstream/main`: rebasing current branch with main branch from upstream repository
+    - `git rebase -i main`: interactive rebasing current branch with `main` branch
+    - `git rebase upstream/main`: rebasing current branch with `main` branch from upstream repository
 - reflog
     - `git reflog | head -10`: manage reference logs for the past 10 commits
 - remote

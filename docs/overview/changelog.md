@@ -470,7 +470,7 @@ log][commit-log] for an up-to-date list of raw changes.
   was actually an integration for canarytokens.org).
 - Reformatted the frontend codebase using prettier.  This change was
   included in this maintenance release to ensure backporting patches
-  from main remains easy.
+  from `main` remains easy.
 
 ### 3.0 -- July 16, 2020
 
