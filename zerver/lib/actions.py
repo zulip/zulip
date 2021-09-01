@@ -4964,7 +4964,7 @@ def do_create_realm(
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
             realm.demo_organization_scheduled_deletion_date = (
-                realm.date_created + datetime.timedelta(days=30)
+                realm.date_created + datetime.timedelta(days=settings.DEMO_ORG_DEADLINE_DAYS)
             )
         realm.save()
 

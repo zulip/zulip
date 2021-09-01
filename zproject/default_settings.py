@@ -266,6 +266,9 @@ OPEN_REALM_CREATION = False
 # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
 SYSTEM_ONLY_REALMS = {"zulip"}
 
+# Default deadline for demo organizations
+DEMO_ORG_DEADLINE_DAYS = 30
+
 # Alternate hostnames to serve particular realms on, in addition to
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
 # and values are alternate hosts.
