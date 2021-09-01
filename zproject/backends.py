@@ -294,6 +294,30 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
     return result
 
 
+@decorator
+def log_auth_attempts(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+    result = auth_func(*args, **kwargs)
+
+    backend_instance = args[0]
+    request = args[1]
+    username = kwargs["username"]
+    realm = kwargs["realm"]
+    return_data = kwargs["return_data"]
+
+    ip_addr = request.META.get("REMOTE_ADDR")
+    outcome = "success" if result is not None else "failed"
+    backend_instance.logger.info(
+        "Authentication attempt from %s: subdomain=%s;username=%s;outcome=%s;return_data=%s",
+        ip_addr,
+        realm.subdomain,
+        username,
+        outcome,
+        return_data,
+    )
+
+    return result
+
+
 class ZulipAuthMixin:
     """This common mixin is used to override Django's default behavior for
     looking up a logged-in user by ID to use a version that fetches
@@ -371,6 +395,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     name = "email"
 
     @rate_limit_auth
+    @log_auth_attempts
     def authenticate(
         self,
         request: HttpRequest,
@@ -779,6 +804,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
     @rate_limit_auth
+    @log_auth_attempts
     def authenticate(
         self,
         request: Optional[HttpRequest] = None,
