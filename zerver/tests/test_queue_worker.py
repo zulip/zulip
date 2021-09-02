@@ -735,7 +735,7 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 self.assertEqual(
                     m.records[0].message,
-                    "Timed out after 1 seconds processing 1 events in queue timeout_worker",
+                    "Timed out in timeout_worker after 1 seconds processing 1 events",
                 )
                 self.assertIn(m.records[0].stack_info, m.output[0])
 
@@ -775,7 +775,7 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 self.assertEqual(
                     m.records[0].message,
-                    "Timed out after 1 seconds while fetching URLs for message 15: ['first', 'second']",
+                    "Timed out in timeout_worker after 1 seconds while fetching URLs for message 15: ['first', 'second']",
                 )
 
     def test_worker_noname(self) -> None:

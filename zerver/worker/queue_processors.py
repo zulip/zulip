@@ -109,12 +109,13 @@ logger = logging.getLogger(__name__)
 
 
 class WorkerTimeoutException(Exception):
-    def __init__(self, limit: int, event_count: int) -> None:
+    def __init__(self, queue_name: str, limit: int, event_count: int) -> None:
+        self.queue_name = queue_name
         self.limit = limit
         self.event_count = event_count
 
     def __str__(self) -> str:
-        return f"Timed out after {self.limit * self.event_count} seconds processing {self.event_count} events"
+        return f"Timed out in {self.queue_name} after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
 
 class InterruptConsumeException(Exception):
@@ -350,7 +351,7 @@ class QueueProcessingWorker(ABC):
     def timer_expired(
         self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
     ) -> None:
-        raise WorkerTimeoutException(limit, len(events))
+        raise WorkerTimeoutException(self.queue_name, limit, len(events))
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         if isinstance(exception, InterruptConsumeException):
@@ -369,9 +370,7 @@ class QueueProcessingWorker(ABC):
             if isinstance(exception, WorkerTimeoutException):
                 with sentry_sdk.push_scope() as scope:
                     scope.fingerprint = ["worker-timeout", self.queue_name]
-                    logging.exception(
-                        "%s in queue %s", str(exception), self.queue_name, stack_info=True
-                    )
+                    logging.exception(exception, stack_info=True)
             else:
                 logging.exception(
                     "Problem handling data on queue %s", self.queue_name, stack_info=True
@@ -838,7 +837,8 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         event = events[0]
 
         logging.warning(
-            "Timed out after %s seconds while fetching URLs for message %s: %s",
+            "Timed out in %s after %s seconds while fetching URLs for message %s: %s",
+            self.queue_name,
             limit,
             event["message_id"],
             event["urls"],
