@@ -304,9 +304,29 @@ def log_auth_attempts(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Option
     realm = kwargs["realm"]
     return_data = kwargs["return_data"]
 
+    log_auth_attempt(
+        backend_instance.logger,
+        request,
+        realm,
+        username,
+        succeeded=result is not None,
+        return_data=return_data,
+    )
+
+    return result
+
+
+def log_auth_attempt(
+    logger: logging.Logger,
+    request: HttpRequest,
+    realm: Realm,
+    username: str,
+    succeeded: bool,
+    return_data: Dict[str, Any],
+) -> None:
     ip_addr = request.META.get("REMOTE_ADDR")
-    outcome = "success" if result is not None else "failed"
-    backend_instance.logger.info(
+    outcome = "success" if succeeded else "failed"
+    logger.info(
         "Authentication attempt from %s: subdomain=%s;username=%s;outcome=%s;return_data=%s",
         ip_addr,
         realm.subdomain,
@@ -314,8 +334,6 @@ def log_auth_attempts(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Option
         outcome,
         return_data,
     )
-
-    return result
 
 
 class ZulipAuthMixin:
@@ -1661,6 +1679,18 @@ def social_auth_finish(
     # The next step is to call login_or_register_remote_user, but
     # there are two code paths here because of an optimization to save
     # a redirect on mobile and desktop.
+
+    # Authentication failures happen on the external provider's side, so we don't get to log those,
+    # but we should log the successes at least.
+    log_auth_attempt(
+        backend.logger,
+        strategy.request,
+        realm,
+        username=email_address,
+        succeeded=True,
+        return_data={},
+    )
+
     data_dict = ExternalAuthDataDict(
         subdomain=realm.subdomain,
         is_signup=is_signup,
