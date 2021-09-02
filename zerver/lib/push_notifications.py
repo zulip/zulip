@@ -88,6 +88,7 @@ def get_apns_context() -> Optional[APNsContext]:
     apns = aioapns.APNs(
         client_cert=settings.APNS_CERT_FILE,
         topic=settings.APNS_TOPIC,
+        max_connection_attempts=APNS_MAX_RETRIES,
         loop=loop,
         use_sandbox=settings.APNS_SANDBOX,
     )
@@ -157,52 +158,40 @@ def send_apple_push_notification(
     logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
     payload_data = modernize_apns_payload(payload_data).copy()
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
-    retries_left = APNS_MAX_RETRIES
     for device in devices:
         # TODO obviously this should be made to actually use the async
         request = aioapns.NotificationRequest(
             device_token=device.token, message=message, time_to_live=24 * 3600
         )
 
-        async def attempt_send() -> Optional[str]:
-            assert apns_context is not None
-            try:
-                result = await apns_context.apns.send_notification(request)
-                return "Success" if result.is_successful else result.description
-            except aioapns.exceptions.ConnectionClosed as e:  # nocoverage
-                logger.warning(
-                    "APNs: ConnectionClosed sending for user %d to device %s: %s",
-                    user_id,
-                    device.token,
-                    e.__class__.__name__,
-                )
-                return None
-            except aioapns.exceptions.ConnectionError as e:  # nocoverage
-                logger.warning(
-                    "APNs: ConnectionError sending for user %d to device %s: %s",
-                    user_id,
-                    device.token,
-                    e.__class__.__name__,
-                )
-                return None
+        try:
+            result = apns_context.loop.run_until_complete(
+                apns_context.apns.send_notification(request)
+            )
+        except aioapns.exceptions.ConnectionError as e:
+            logger.warning(
+                "APNs: ConnectionError sending for user %d to device %s: %s",
+                user_id,
+                device.token,
+                e.__class__.__name__,
+            )
+            continue
 
-        result = apns_context.loop.run_until_complete(attempt_send())
-        while result is None and retries_left > 0:
-            retries_left -= 1
-            result = apns_context.loop.run_until_complete(attempt_send())
-        if result is None:
-            result = "HTTP error, retries exhausted"
-
-        if result == "Success":
+        if result.is_successful:
             logger.info("APNs: Success sending for user %d to device %s", user_id, device.token)
-        elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
-            logger.info("APNs: Removing invalid/expired token %s (%s)", device.token, result)
+        elif result.description in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
+            logger.info(
+                "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
+            )
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
             DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
         else:
             logger.warning(
-                "APNs: Failed to send for user %d to device %s: %s", user_id, device.token, result
+                "APNs: Failed to send for user %d to device %s: %s",
+                user_id,
+                device.token,
+                result.description,
             )
 
 
