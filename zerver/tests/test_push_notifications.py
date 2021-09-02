@@ -1452,6 +1452,24 @@ class TestAPNs(PushNotificationTest):
                 1,
             )
 
+    def test_internal_server_error(self) -> None:
+        self.setup_apns_tokens()
+        with self.mock_apns() as apns_context, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
+            result = mock.Mock()
+            result.is_successful = False
+            result.description = "InternalServerError"
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
+            )
+            apns_context.apns.send_notification.return_value.set_result(result)
+            self.send(devices=self.devices()[0:1])
+            self.assertIn(
+                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user {self.user_profile.id} to device {self.devices()[0].token}: InternalServerError",
+                logger.output,
+            )
+
     def test_modernize_apns_payload(self) -> None:
         payload = {
             "alert": "Message from Hamlet",
