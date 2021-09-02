@@ -1,7 +1,6 @@
 import asyncio
 import base64
 import datetime
-import itertools
 import re
 import uuid
 from contextlib import contextmanager
@@ -1373,60 +1372,6 @@ class TestAPNs(PushNotificationTest):
                     logger.output,
                 )
 
-    def test_http_retry(self) -> None:
-        import aioapns
-
-        self.setup_apns_tokens()
-        with self.mock_apns() as apns_context, self.assertLogs(
-            "zerver.lib.push_notifications", level="INFO"
-        ) as logger:
-            exception: asyncio.Future[object] = asyncio.Future(loop=apns_context.loop)
-            exception.set_exception(aioapns.exceptions.ConnectionError())
-            result = mock.Mock()
-            result.is_successful = True
-            future: asyncio.Future[object] = asyncio.Future(loop=apns_context.loop)
-            future.set_result(result)
-            apns_context.apns.send_notification.side_effect = itertools.chain(
-                [exception], itertools.repeat(future)
-            )
-            self.send()
-            self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
-                logger.output,
-            )
-            for device in self.devices():
-                self.assertIn(
-                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
-                    logger.output,
-                )
-
-    def test_http_retry_closed(self) -> None:
-        import aioapns
-
-        self.setup_apns_tokens()
-        with self.mock_apns() as apns_context, self.assertLogs(
-            "zerver.lib.push_notifications", level="INFO"
-        ) as logger:
-            exception: asyncio.Future[object] = asyncio.Future(loop=apns_context.loop)
-            exception.set_exception(aioapns.exceptions.ConnectionClosed())
-            result = mock.Mock()
-            result.is_successful = True
-            future: asyncio.Future[object] = asyncio.Future(loop=apns_context.loop)
-            future.set_result(result)
-            apns_context.apns.send_notification.side_effect = itertools.chain(
-                [exception], itertools.repeat(future)
-            )
-            self.send()
-            self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionClosed sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionClosed",
-                logger.output,
-            )
-            for device in self.devices():
-                self.assertIn(
-                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
-                    logger.output,
-                )
-
     def test_http_retry_eventually_fails(self) -> None:
         import aioapns
 
@@ -1434,22 +1379,16 @@ class TestAPNs(PushNotificationTest):
         with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            exception: asyncio.Future[object] = asyncio.Future(loop=apns_context.loop)
-            exception.set_exception(aioapns.exceptions.ConnectionError())
-            apns_context.apns.send_notification.side_effect = iter([exception] * 5)
-
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
+            )
+            apns_context.apns.send_notification.return_value.set_exception(
+                aioapns.exceptions.ConnectionError()
+            )
             self.send(devices=self.devices()[0:1])
-            self.assert_length(
-                [log_record for log_record in logger.records if log_record.levelname == "WARNING"],
-                5,
-            )
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user {self.user_profile.id} to device {self.devices()[0].token}: HTTP error, retries exhausted",
+                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
                 logger.output,
-            )
-            self.assert_length(
-                [log_record for log_record in logger.records if log_record.levelname == "INFO"],
-                1,
             )
 
     def test_internal_server_error(self) -> None:
