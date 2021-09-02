@@ -547,6 +547,11 @@ class AuthBackendTest(ZulipTestCase):
 
             backend.strategy.request_data = return_email
 
+            if request is None:
+                request = mock.MagicMock()
+                request.META = dict(REMOTE_ADDR="127.0.0.1")
+            backend.strategy.request = request
+
             result = orig_authenticate(backend, request, **kwargs)
             return result
 
@@ -594,7 +599,12 @@ class AuthBackendTest(ZulipTestCase):
                     self.verify_backend(backend, good_kwargs=good_kwargs, bad_kwargs=bad_kwargs)
                 # Verify logging for deactivated users
                 self.assertEqual(
-                    info_log.output,
+                    # Filter out noisy logs:
+                    [
+                        output
+                        for output in info_log.output
+                        if "Authentication attempt from 127.0.0.1" not in output
+                    ],
                     [
                         f"INFO:{logger_name}:Failed login attempt for deactivated account: {user.id}@{user.realm.string_id}",
                         f"INFO:{logger_name}:Failed login attempt for deactivated account: {user.id}@{user.realm.string_id}",
@@ -1054,12 +1064,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-        result = self.social_auth_test(
-            account_data_dict,
-            expect_choose_email_screen=False,
-            subdomain="zulip",
-            next="/user_uploads/image",
-        )
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=False,
+                subdomain="zulip",
+                next="/user_uploads/image",
+            )
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.example_email("hamlet"))
         self.assertEqual(data["full_name"], self.name)
@@ -1069,6 +1080,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         parsed_url = urllib.parse.urlparse(result.url)
         uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         self.assertTrue(uri.startswith("http://zulip.testserver/accounts/login/subdomain/"))
+
+        self.assertIn(
+            f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: subdomain=zulip;username=hamlet@zulip.com;outcome=success",
+            m.output[0],
+        )
 
     @override_settings(SOCIAL_AUTH_SUBDOMAIN=None)
     def test_when_social_auth_subdomain_is_not_set(self) -> None:
