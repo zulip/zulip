@@ -201,6 +201,9 @@ class ZulipUploadBackend:
     def get_public_upload_root_url(self) -> str:
         raise NotImplementedError()
 
+    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+        raise NotImplementedError()
+
     def upload_message_file(
         self,
         uploaded_file_name: str,
@@ -439,6 +442,15 @@ class S3UploadBackend(ZulipUploadBackend):
     def get_public_upload_root_url(self) -> str:
         return self.public_upload_url_base
 
+    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+        return "/".join(
+            [
+                realm_id,
+                secrets.token_urlsafe(18),
+                sanitize_name(uploaded_file_name),
+            ]
+        )
+
     def upload_message_file(
         self,
         uploaded_file_name: str,
@@ -450,13 +462,7 @@ class S3UploadBackend(ZulipUploadBackend):
     ) -> str:
         if target_realm is None:
             target_realm = user_profile.realm
-        s3_file_name = "/".join(
-            [
-                str(target_realm.id),
-                secrets.token_urlsafe(18),
-                sanitize_name(uploaded_file_name),
-            ]
-        )
+        s3_file_name = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
         url = f"/user_uploads/{s3_file_name}"
 
         upload_image_to_s3(
@@ -767,6 +773,17 @@ class LocalUploadBackend(ZulipUploadBackend):
     def get_public_upload_root_url(self) -> str:
         return "/user_avatars/"
 
+    def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
+        # Split into 256 subdirectories to prevent directories from getting too big
+        return "/".join(
+            [
+                realm_id,
+                format(random.randint(0, 255), "x"),
+                secrets.token_urlsafe(18),
+                sanitize_name(uploaded_file_name),
+            ]
+        )
+
     def upload_message_file(
         self,
         uploaded_file_name: str,
@@ -776,15 +793,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
-        # Split into 256 subdirectories to prevent directories from getting too big
-        path = "/".join(
-            [
-                str(user_profile.realm_id),
-                format(random.randint(0, 255), "x"),
-                secrets.token_urlsafe(18),
-                sanitize_name(uploaded_file_name),
-            ]
-        )
+        path = self.generate_message_upload_path(str(user_profile.realm_id), uploaded_file_name)
 
         write_local_file("files", path, file_data)
         create_attachment(uploaded_file_name, path, user_profile, uploaded_file_size)
