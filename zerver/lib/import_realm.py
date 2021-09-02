@@ -2,7 +2,6 @@ import datetime
 import logging
 import multiprocessing
 import os
-import secrets
 import shutil
 from mimetypes import guess_type
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -32,7 +31,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, get_bucket, sanitize_name
+from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -672,6 +671,12 @@ def fix_subscriptions_is_user_active_column(
 
 
 def process_avatars(record: Dict[str, Any]) -> None:
+    # We need to re-import upload_backend here, because in the
+    # import-export unit tests, the Zulip settings are overridden for
+    # specific tests to control the choice of upload backend, and this
+    # reimport ensures that we use the right choice for the current
+    # test. Outside the test suite, settings never change after the
+    # server is started, so this import will have no effect in production.
     from zerver.lib.upload import upload_backend
 
     if record["s3_path"].endswith(".original"):
@@ -773,17 +778,11 @@ def import_uploads(
             relative_path = os.path.join(str(record["realm_id"]), "realm", icon_name)
             record["last_modified"] = timestamp
         else:
-            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
-            # function 'upload_message_file'.
             # This relative_path is basically the new location of the file,
             # which will later be copied from its original location as
             # specified in record["s3_path"].
-            relative_path = "/".join(
-                [
-                    str(record["realm_id"]),
-                    secrets.token_urlsafe(18),
-                    sanitize_name(os.path.basename(record["path"])),
-                ]
+            relative_path = upload_backend.generate_message_upload_path(
+                str(record["realm_id"]), sanitize_name(os.path.basename(record["path"]))
             )
             path_maps["attachment_path"][record["s3_path"]] = relative_path
 
