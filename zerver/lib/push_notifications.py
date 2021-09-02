@@ -896,6 +896,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 
+    if user_profile.is_bot:
+        # BUG: Investigate why it's possible to get here.
+        return  # nocoverage
+
+    if not (
+        user_profile.enable_offline_push_notifications
+        or user_profile.enable_online_push_notifications
+    ):
+        # BUG: Investigate why it's possible to get here.
+        return  # nocoverage
+
     try:
         (message, user_message) = access_message(user_profile, missed_message["message_id"])
     except JsonableError:
