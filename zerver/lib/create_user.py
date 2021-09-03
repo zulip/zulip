@@ -123,7 +123,7 @@ def create_user(
     default_all_public_streams: Optional[bool] = None,
     source_profile: Optional[UserProfile] = None,
     force_id: Optional[int] = None,
-    enable_marketing_emails: bool = True,
+    enable_marketing_emails: Optional[bool] = None,
 ) -> UserProfile:
     user_profile = create_user_profile(
         realm,
@@ -160,7 +160,7 @@ def create_user(
     else:
         user_profile.save()
 
-    if bot_type is None:
+    if bot_type is None and enable_marketing_emails is not None:
         user_profile.enable_marketing_emails = enable_marketing_emails
         user_profile.save(update_fields=["enable_marketing_emails"])
 
