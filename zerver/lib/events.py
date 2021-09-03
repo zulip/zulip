@@ -44,6 +44,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -321,6 +322,10 @@ def fetch_initial_state_data(
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
+        if realm.demo_organization_scheduled_deletion_date is not None:
+            state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
+                realm.demo_organization_scheduled_deletion_date
+            )
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)

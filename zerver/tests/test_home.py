@@ -1,4 +1,5 @@
 import calendar
+import datetime
 import urllib
 from datetime import timedelta
 from typing import Any
@@ -271,6 +272,33 @@ class HomeTest(ZulipTestCase):
 
         realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0].keys())
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+
+    def test_home_demo_organization(self) -> None:
+        realm = get_realm("zulip")
+
+        # We construct a scheduled deletion date that's definitely in
+        # the future, regardless of how long ago the Zulip realm was
+        # created.
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
+            days=1
+        )
+        realm.save()
+        self.login("hamlet")
+
+        # Verify succeeds once logged-in
+        flush_per_request_caches()
+        with queries_captured():
+            with patch("zerver.lib.cache.cache_set"):
+                result = self._get_home_page(stream="Denmark")
+                self.check_rendered_logged_in_app(result)
+
+        page_params = self._get_page_params(result)
+        actual_keys = sorted(str(k) for k in page_params.keys())
+        expected_keys = self.expected_page_params_keys + [
+            "demo_organization_scheduled_deletion_date"
+        ]
+
+        self.assertEqual(set(actual_keys), set(expected_keys))
 
     def test_logged_out_home(self) -> None:
         result = self.client_get("/")

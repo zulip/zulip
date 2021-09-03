@@ -8419,6 +8419,17 @@ paths:
                               type: string
                               description: |
                                 The name of the custom profile field type.
+                      demo_organization_scheduled_deletion_date:
+                        type: integer
+                        description: |
+                          Present if the realm is a demo organization.
+
+                          The UNIX timestamp (UTC) when the demo organization will be
+                          automatically deleted. Clients should use this to display a
+                          prominent warning to the user that the organization will be
+                          deleted at the indicated time.
+
+                          **Changes**: New in Zulip 5.0 (feature level 94).
                       drafts:
                         type: array
                         description: |

@@ -11,6 +11,10 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 94**
+* [`POST /register`](/api/register-queue): Added
+  `demo_organization_scheduled_deletion_date` field to realm data.
+
 **Feature level 93**
 
 * [`POST /register`](/api/register-queue), [`GET /user_groups`](/api/get-user-groups),
