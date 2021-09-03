@@ -1504,8 +1504,9 @@ class TestGetAPNsPayload(PushNotificationTest):
             "Content of personal message",
         )
         message = Message.objects.get(id=message_id)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         expected = {
             "alert": {
                 "title": "King Hamlet",
@@ -1538,8 +1539,9 @@ class TestGetAPNsPayload(PushNotificationTest):
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         expected = {
             "alert": {
                 "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
@@ -1571,9 +1573,8 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_stream_message(self) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.STREAM_PUSH
+        payload = get_message_payload_apns(self.sender, message, NotificationTriggers.STREAM_PUSH)
         message.stream_name = "Verona"
-        payload = get_message_payload_apns(self.sender, message)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1603,9 +1604,8 @@ class TestGetAPNsPayload(PushNotificationTest):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.MENTION
+        payload = get_message_payload_apns(user_profile, message, NotificationTriggers.MENTION)
         message.stream_name = "Verona"
-        payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1636,9 +1636,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         user_group = create_user_group("test_user_group", [user_profile], get_realm("zulip"))
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.MENTION
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.MENTION, user_group.id, user_group.name
+        )
         message.stream_name = "Verona"
-        payload = get_message_payload_apns(user_profile, message, user_group.id, user_group.name)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1670,9 +1671,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.WILDCARD_MENTION
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.WILDCARD_MENTION
+        )
         message.stream_name = "Verona"
-        payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1705,8 +1707,9 @@ class TestGetAPNsPayload(PushNotificationTest):
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         expected = {
             "alert": {
                 "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
@@ -1749,11 +1752,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message.content = "a" * 210
         message.rendered_content = "a" * 210
         message.save()
-        message.trigger = trigger
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, mentioned_user_group_id, mentioned_user_group_name
+            hamlet, message, trigger, mentioned_user_group_id, mentioned_user_group_name
         )
         expected_payload = {
             "user_id": hamlet.id,
@@ -1808,9 +1810,10 @@ class TestGetGCMPayload(PushNotificationTest):
 
     def test_get_message_payload_gcm_private_message(self) -> None:
         message = self.get_message(Recipient.PERSONAL, 1)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         self.assertDictEqual(
             payload,
             {
@@ -1841,10 +1844,11 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_stream_notifications(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.STREAM_PUSH
         message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, NotificationTriggers.STREAM_PUSH
+        )
         self.assertDictEqual(
             payload,
             {
@@ -1878,10 +1882,11 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_redacted_content(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.STREAM_PUSH
         message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, NotificationTriggers.STREAM_PUSH
+        )
         self.assertDictEqual(
             payload,
             {
