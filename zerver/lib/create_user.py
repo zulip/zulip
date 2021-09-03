@@ -142,7 +142,6 @@ def create_user(
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
     user_profile.default_events_register_stream = default_events_register_stream
-    user_profile.enable_marketing_emails = enable_marketing_emails
     if role is not None:
         user_profile.role = role
     # Allow the ORM default to be used if not provided
@@ -160,6 +159,10 @@ def create_user(
         copy_user_settings(source_profile, user_profile)
     else:
         user_profile.save()
+
+    if bot_type is None:
+        user_profile.enable_marketing_emails = enable_marketing_emails
+        user_profile.save(update_fields=["enable_marketing_emails"])
 
     if not user_profile.email_address_is_realm_public():
         # With restricted access to email addresses, we can't generate
