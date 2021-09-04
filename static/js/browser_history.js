@@ -11,7 +11,7 @@ export const state = {
     // so that we can take user back to the allowed hash.
     // TODO: Store #narrow old hashes. Currently they are not stored here since, the #narrow
     // hashes are changed without calling `hashchanged` in many ways.
-    spectator_old_hash: hash_util.is_web_public_compatible(window.location.hash)
+    spectator_old_hash: hash_util.is_spectator_compatible(window.location.hash)
         ? window.location.hash
         : "#",
 };

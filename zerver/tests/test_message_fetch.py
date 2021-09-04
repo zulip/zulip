@@ -29,7 +29,7 @@ from zerver.lib.message import (
     render_markdown,
     update_first_visible_message_id,
 )
-from zerver.lib.narrow import build_narrow_filter, is_web_public_compatible
+from zerver.lib.narrow import build_narrow_filter, is_spectator_compatible
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
@@ -550,40 +550,40 @@ class NarrowLibraryTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             build_narrow_filter(["invalid_operator", "operand"])
 
-    def test_is_web_public_compatible(self) -> None:
-        self.assertTrue(is_web_public_compatible([]))
-        self.assertTrue(is_web_public_compatible([{"operator": "has", "operand": "attachment"}]))
-        self.assertTrue(is_web_public_compatible([{"operator": "has", "operand": "image"}]))
-        self.assertTrue(is_web_public_compatible([{"operator": "search", "operand": "magic"}]))
-        self.assertTrue(is_web_public_compatible([{"operator": "near", "operand": "15"}]))
+    def test_is_spectator_compatible(self) -> None:
+        self.assertTrue(is_spectator_compatible([]))
+        self.assertTrue(is_spectator_compatible([{"operator": "has", "operand": "attachment"}]))
+        self.assertTrue(is_spectator_compatible([{"operator": "has", "operand": "image"}]))
+        self.assertTrue(is_spectator_compatible([{"operator": "search", "operand": "magic"}]))
+        self.assertTrue(is_spectator_compatible([{"operator": "near", "operand": "15"}]))
         self.assertTrue(
-            is_web_public_compatible(
+            is_spectator_compatible(
                 [{"operator": "id", "operand": "15"}, {"operator": "has", "operand": "attachment"}]
             )
         )
         self.assertTrue(
-            is_web_public_compatible([{"operator": "sender", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([{"operator": "sender", "operand": "hamlet@zulip.com"}])
         )
         self.assertFalse(
-            is_web_public_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
         )
         self.assertFalse(
-            is_web_public_compatible([{"operator": "group-pm-with", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([{"operator": "group-pm-with", "operand": "hamlet@zulip.com"}])
         )
-        self.assertTrue(is_web_public_compatible([{"operator": "stream", "operand": "Denmark"}]))
+        self.assertTrue(is_spectator_compatible([{"operator": "stream", "operand": "Denmark"}]))
         self.assertTrue(
-            is_web_public_compatible(
+            is_spectator_compatible(
                 [
                     {"operator": "stream", "operand": "Denmark"},
                     {"operator": "topic", "operand": "logic"},
                 ]
             )
         )
-        self.assertFalse(is_web_public_compatible([{"operator": "is", "operand": "starred"}]))
-        self.assertFalse(is_web_public_compatible([{"operator": "is", "operand": "private"}]))
-        self.assertTrue(is_web_public_compatible([{"operator": "streams", "operand": "public"}]))
+        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "starred"}]))
+        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "private"}]))
+        self.assertTrue(is_spectator_compatible([{"operator": "streams", "operand": "public"}]))
         # Malformed input not allowed
-        self.assertFalse(is_web_public_compatible([{"operator": "has"}]))
+        self.assertFalse(is_spectator_compatible([{"operator": "has"}]))
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -1521,7 +1521,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "anchor": 1,
             "num_before": 1,
             "num_after": 1,
-            # "is:private" is not a is_web_public_compatible narrow.
+            # "is:private" is not a is_spectator_compatible narrow.
             "narrow": orjson.dumps(
                 [
                     dict(operator="streams", operand="web-public"),

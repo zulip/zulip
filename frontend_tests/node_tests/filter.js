@@ -1615,38 +1615,36 @@ test("error_cases", ({override}) => {
     assert.ok(!predicate({type: "private"}));
 });
 
-run_test("is_web_public_compatible", () => {
-    // tests same as test_is_web_public_compatible from test_message_fetch.py
-    assert.ok(Filter.is_web_public_compatible([]));
-    assert.ok(Filter.is_web_public_compatible([{operator: "has", operand: "attachment"}]));
-    assert.ok(Filter.is_web_public_compatible([{operator: "has", operand: "image"}]));
-    assert.ok(Filter.is_web_public_compatible([{operator: "search", operand: "magic"}]));
-    assert.ok(Filter.is_web_public_compatible([{operator: "near", operand: "15"}]));
+run_test("is_spectator_compatible", () => {
+    // tests same as test_is_spectator_compatible from test_message_fetch.py
+    assert.ok(Filter.is_spectator_compatible([]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "attachment"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "image"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "search", operand: "magic"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "near", operand: "15"}]));
     assert.ok(
-        Filter.is_web_public_compatible([
+        Filter.is_spectator_compatible([
             {operator: "id", operand: "15"},
             {operator: "has", operand: "attachment"},
         ]),
     );
-    assert.ok(Filter.is_web_public_compatible([{operator: "sender", operand: "hamlet@zulip.com"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "sender", operand: "hamlet@zulip.com"}]));
     assert.ok(
-        !Filter.is_web_public_compatible([{operator: "pm-with", operand: "hamlet@zulip.com"}]),
+        !Filter.is_spectator_compatible([{operator: "pm-with", operand: "hamlet@zulip.com"}]),
     );
     assert.ok(
-        !Filter.is_web_public_compatible([
-            {operator: "group-pm-with", operand: "hamlet@zulip.com"},
-        ]),
+        !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );
-    assert.ok(Filter.is_web_public_compatible([{operator: "stream", operand: "Denmark"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "stream", operand: "Denmark"}]));
     assert.ok(
-        Filter.is_web_public_compatible([
+        Filter.is_spectator_compatible([
             {operator: "stream", operand: "Denmark"},
             {operator: "topic", operand: "logic"},
         ]),
     );
-    assert.ok(!Filter.is_web_public_compatible([{operator: "is", operand: "starred"}]));
-    assert.ok(!Filter.is_web_public_compatible([{operator: "is", operand: "private"}]));
-    assert.ok(Filter.is_web_public_compatible([{operator: "streams", operand: "public"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "starred"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "private"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "public"}]));
     // Malformed input not allowed
-    assert.ok(!Filter.is_web_public_compatible([{operator: "has"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "has"}]));
 });

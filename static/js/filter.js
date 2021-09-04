@@ -1007,7 +1007,7 @@ export class Filter {
         return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
     }
 
-    static is_web_public_compatible(ops) {
+    static is_spectator_compatible(ops) {
         for (const op of ops) {
             if (op.operand === undefined) {
                 return false;

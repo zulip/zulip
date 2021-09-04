@@ -318,7 +318,7 @@ function hashchanged(from_reload, e) {
 
     const was_internal_change = browser_history.save_old_hash();
 
-    const is_hash_web_public_compatible = hash_util.is_web_public_compatible(current_hash);
+    const is_hash_web_public_compatible = hash_util.is_spectator_compatible(current_hash);
     if (is_hash_web_public_compatible) {
         browser_history.state.spectator_old_hash = current_hash;
     }
