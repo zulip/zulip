@@ -14,7 +14,7 @@ from django.urls import set_script_prefix
 from django.utils.cache import patch_vary_headers
 from tornado.wsgi import WSGIContainer
 
-from zerver.lib.response import json_response
+from zerver.lib.response import ResponseNotes, json_response
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
@@ -153,7 +153,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         response = await sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
 
         try:
-            if hasattr(response, "asynchronous"):
+            if ResponseNotes.get_notes(response).asynchronous is not None:
                 # We import async_request_timer_restart during runtime
                 # to avoid cyclic dependency with zerver.lib.request
                 from zerver.middleware import async_request_timer_stop

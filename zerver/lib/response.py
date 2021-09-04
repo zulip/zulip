@@ -1,10 +1,22 @@
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
+from django.http.response import HttpResponseBase
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.notes import BaseNotes
+
+
+@dataclass
+class ResponseNotes(BaseNotes[HttpResponseBase, "ResponseNotes"]):
+    asynchronous: Optional[bool] = None
+
+    @classmethod
+    def init_notes(cls) -> "ResponseNotes":
+        return ResponseNotes()
 
 
 class HttpResponseUnauthorized(HttpResponse):
