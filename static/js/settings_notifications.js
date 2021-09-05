@@ -139,6 +139,10 @@ export function update_page() {
         } else if (setting === "desktop_icon_count_display") {
             update_desktop_icon_count_display();
             continue;
+        } else if (setting === "notification_sound") {
+            $("#user-notification-settings .setting_notification_sound").val(
+                user_settings.notification_sound,
+            );
         }
 
         $("#user-notification-settings")
