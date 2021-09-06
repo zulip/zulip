@@ -38,6 +38,14 @@ developer documentation is at `docs/` in the Zulip Git repository, and
 they are served in production at
 [zulip.readthedocs.io](https://zulip.readthedocs.io/en/latest/).
 
+This documentation is hosted by the excellent [ReadTheDocs
+service](https://readthedocs.org/). ReadTheDocs automatically [builds
+a preview](https://docs.readthedocs.io/en/stable/pull-requests.html)
+for every pull request, accessible from a "Details" link in the
+"Checks" section of the pull request page. It's nonetheless valuable
+to submit a screenshot with any pull request modifying documentation
+to help make reviews efficient.
+
 If you want to build the developer documentation locally (e.g. to test
 your changes), the dependencies are automatically installed as part of
 Zulip development environment provisioning, and you can build the
@@ -61,7 +69,7 @@ table of contents.
 You can also usually test your changes by pushing a branch to GitHub
 and looking at the content on the GitHub web UI, since GitHub renders
 Markdown, though that won't be as faithful as the `make html`
-approach.
+approach or the preview build.
 
 When editing dependencies for the Zulip documentation, you should edit
 `requirements/docs.in` and then run `tools/update-locked-requirements`
