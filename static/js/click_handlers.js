@@ -433,9 +433,16 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
+        // The element's parent may re-render while it is being passed to
+        // other functions, so, we get topic_key first.
         const topic_row = $(e.target).closest("tr");
+        const topic_key = topic_row.attr("id").slice("recent_topics:".length - 1);
         const topic_row_index = topic_row.index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.topic);
+        recent_topics_ui.focus_clicked_element(
+            topic_row_index,
+            recent_topics_ui.COLUMNS.topic,
+            topic_key,
+        );
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
