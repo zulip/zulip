@@ -155,6 +155,7 @@ class TwoFactorLoader(app_directories.Loader):
 MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
+    'corsheaders.middleware.CorsMiddleware',
     'zerver.middleware.TagRequests',
     'zerver.middleware.SetRemoteAddrFromForwardedFor',
     'zerver.middleware.LogRequests',
@@ -1077,3 +1078,7 @@ CROSS_REALM_BOT_EMAILS = {
 THUMBOR_KEY = get_secret('thumbor_key')
 
 TWO_FACTOR_PATCH_ADMIN = False
+
+CORS_URLS_REGEX = '^/api/v1/.*$'
+CORS_ORIGIN_ALLOW_ALL = True
+INSTALLED_APPS += ['corsheaders']

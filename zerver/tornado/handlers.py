@@ -97,6 +97,12 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, descriptor)
 
+    def set_default_headers(self):
+        # CORS
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
     def load_middleware(self) -> None:
         """
         Populate middleware lists from settings.MIDDLEWARE. This is copied

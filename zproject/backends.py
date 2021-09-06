@@ -29,7 +29,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.dispatch import receiver, Signal
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
 from requests import HTTPError
@@ -44,7 +44,8 @@ from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data_if_changed, validate_email_for_realm
+    do_update_user_custom_profile_data_if_changed, validate_email_for_realm, bulk_add_subscriptions, \
+    create_stream_if_needed
 from zerver.lib.avatar import is_avatar_new, avatar_url
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -1434,10 +1435,62 @@ def get_external_method_dicts(realm: Optional[Realm]=None) -> List[ExternalAuthM
 
     return result
 
+
+
+@external_auth_method
+class ZulipRemoteJWTBackend(ExternalAuthMethod):
+    """
+    See also api_jwt_fetch_api_key in zerver/views/auth.py.
+    """
+    auth_backend_name = "RemoteJWT"
+    name = "remotejwt"
+    create_unknown_user = True
+
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, jwt_payload: Dict[str, Any], realm: Realm,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+
+        if not auth_enabled_helper(["RemoteJWT"], realm):
+            return None
+
+        # We want to get the user by email, not delivery_email
+        user_profile = common_get_active_user(username, realm)
+        if user_profile is None:
+            user_profile = do_create_user(username, None, realm, '', '')
+
+        # TODO: Update user e-mail from JWT token?
+        # if jwt_payload.get('email', None):
+        #     user_profile.delivery_email = jwt_payload['email']
+        #     user_profile.save(update_fields=["delivery_email"])
+
+        # Create a channel and invite the support
+
+        stream, created = create_stream_if_needed(
+            realm=realm,
+            stream_name=username,
+            stream_description="Support channel for ".format(username),
+            invite_only=True,
+        )
+        bulk_add_subscriptions(
+            streams=[stream],
+            users=[user_profile] + list(UserProfile.objects.filter(role__lte=200))
+        )
+        return user_profile
+
+    @classmethod
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name="JWT",
+            display_icon=cls.display_icon,
+        )]
+
+
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
     'LDAP': ZulipLDAPAuthBackend,
+    'RemoteJWT': ZulipRemoteJWTBackend
 }  # type: Dict[str, Any]
 
 for external_method in EXTERNAL_AUTH_METHODS:

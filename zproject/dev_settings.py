@@ -168,3 +168,10 @@ USE_X_FORWARDED_PORT = True
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991/"
 
 MEMCACHED_USERNAME = None
+
+# TODO: hack for now
+AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipRemoteJWTBackend',)
+
+# JWT_AUTH_KEYS = {
+#    'zulip': get_secret('jwt_auth_key')
+# }

@@ -80,3 +80,4 @@ zulip.kdev4
 # (Ideally this section is empty.)
 zthumbor/thumbor_local_settings.py
 .transifexrc
+tools/jwt-fetch-api-key.sh
