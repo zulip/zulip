@@ -1,0 +1,7 @@
+<div data-step="1">
+    {{#tr}}
+        This is a <z-link>demo organization</z-link> and will be automatically deleted in {days_remaining} days.
+        {{#*inline "z-link"}}<a class="alert-link" href="/help/demo-organizations" target="_blank" rel="noopener noreferrer" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+    <a class="alert-link hide-demo-org-notice" role="button" tabindex=0>{{t "Hide notice" }}</a>
+</div>

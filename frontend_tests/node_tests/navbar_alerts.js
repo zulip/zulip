@@ -116,3 +116,21 @@ test("server_upgrade_alert hide_duration_expired", ({override}) => {
     navbar_alerts.dismiss_upgrade_nag(ls);
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 });
+
+test("demo_org_days_remaining", ({override}) => {
+    const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
+
+    const high_priority_deadline = addDays(start_time, 5);
+    page_params.demo_organization_scheduled_deletion_date = Math.trunc(
+        high_priority_deadline / 1000,
+    );
+    override(Date, "now", () => start_time);
+    assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 5);
+
+    const low_priority_deadline = addDays(start_time, 10);
+    page_params.demo_organization_scheduled_deletion_date = Math.trunc(
+        low_priority_deadline / 1000,
+    );
+    override(Date, "now", () => start_time);
+    assert.equal(navbar_alerts.get_demo_organization_deadline_days_remaining(), 10);
+});
