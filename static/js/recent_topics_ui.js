@@ -653,10 +653,10 @@ function is_focus_at_last_table_row() {
     return row_focus === topic_rows.length - 1;
 }
 
-export function focus_clicked_element($elt, col) {
+export function focus_clicked_element(topic_row_index, col) {
     current_focus_elem = "table";
     col_focus = col;
-    row_focus = $elt.closest("tr").index();
+    row_focus = topic_row_index;
     // Set compose_closed_ui reply button text.  The rest of the table
     // focus logic should be a noop.
     set_table_focus(row_focus, col_focus);
