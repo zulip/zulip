@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.hbs";
 import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
+import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
 import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
@@ -122,9 +123,27 @@ export function show_profile_incomplete(is_profile_incomplete) {
     }
 }
 
+export function get_demo_organization_deadline_days_remaining() {
+    const now = new Date(Date.now());
+    const deadline = new Date(page_params.demo_organization_scheduled_deletion_date * 1000);
+    const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+    const days_remaining = Math.round(Math.abs(deadline - now) / day);
+    return days_remaining;
+}
+
 export function initialize() {
     const ls = localstorage();
-    if (page_params.insecure_desktop_app) {
+
+    if (page_params.demo_organization_scheduled_deletion_date) {
+        const days_remaining = get_demo_organization_deadline_days_remaining();
+        open({
+            data_process: "demo-organization-deadline",
+            custom_class: days_remaining <= 7 ? "red" : "",
+            rendered_alert_content_html: render_demo_organization_deadline_content({
+                days_remaining,
+            }),
+        });
+    } else if (page_params.insecure_desktop_app) {
         open({
             data_process: "insecure-desktop-app",
             custom_class: "red",
@@ -176,6 +195,11 @@ export function initialize() {
     $(".reject-notifications").on("click", function () {
         $(this).closest(".alert").hide();
         ls.set("dontAskForNotifications", true);
+        $(window).trigger("resize");
+    });
+
+    $(".hide-demo-org-notice").on("click", function () {
+        $(this).closest(".alert").hide();
         $(window).trigger("resize");
     });
 
