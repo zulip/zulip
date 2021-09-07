@@ -2656,7 +2656,9 @@ class MultiuseInviteTest(ZulipTestCase):
 
     def test_expired_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")
-        date_sent = timezone_now() - datetime.timedelta(days=2)
+        date_sent = timezone_now() - datetime.timedelta(
+            days=settings.INVITATION_LINK_VALIDITY_DAYS + 1
+        )
         invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
         result = self.client_post(invite_link, {"email": email})
 
