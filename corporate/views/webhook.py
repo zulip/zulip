@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from corporate.lib.stripe import STRIPE_API_VERSION
 from corporate.lib.stripe_event_handler import (
     handle_checkout_session_completed_event,
     handle_payment_intent_payment_failed_event,
@@ -41,6 +42,11 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
             stripe_event = stripe.Event.construct_from(json.loads(request.body), stripe.api_key)
         except Exception:
             return HttpResponse(status=400)
+
+    if stripe_event.api_version != STRIPE_API_VERSION:
+        error_message = f"Mismatch between billing system Stripe API version({STRIPE_API_VERSION}) and Stripe webhook event API version({stripe_event.api_version})."
+        billing_logger.error(error_message)
+        return HttpResponse(status=400)
 
     if stripe_event.type not in [
         "checkout.session.completed",
