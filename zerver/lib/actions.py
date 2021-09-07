@@ -5052,9 +5052,12 @@ def do_change_notification_settings(
         "value": setting_value,
     }
     event_time = timezone_now()
+
+    # Prior to all personal settings being managed by property_types,
+    # these were only created for notification settings.
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED,
+        event_type=RealmAuditLog.USER_SETTING_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
         modified_user=user_profile,

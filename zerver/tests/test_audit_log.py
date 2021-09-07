@@ -648,7 +648,7 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=user.realm,
-                    event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED,
+                    event_type=RealmAuditLog.USER_SETTING_CHANGED,
                     event_time__gte=now,
                     acting_user=user,
                     modified_user=user,
