@@ -58,10 +58,11 @@ the last test run.
 **Webhook integrations**.  For performance, `test-backend` with no
 arguments will not run webhook integration tests (`zerver/webhooks/`),
 which would otherwise account for about 25% of the total runtime.
-When working on webhooks, we recommend instead running `test-backend
-zerver/webhooks` manually (or better, the direction for the specific
-webhooks you're working on).  And of course our CI is configured to
-always use `test-backend --include-webhooks` and run all of the tests.
+When working on webhooks, we recommend instead running
+`test-backend zerver/webhooks` manually (or better, the direction for
+the specific webhooks you're working on).  And of course our CI is
+configured to always use `test-backend --include-webhooks` and run all
+of the tests.
 
 ## Writing tests
 
@@ -473,8 +474,8 @@ is exposed in your development environment).
 the console; use `with self.assertLogs` to capture and verify any
 logging output.  Note that we reconfigure various loggers in
 `zproject/test_extra_settings.py` where the output is unlikely to be
-interesting when running our test suite.  `test-backend
---ban-console-output` checks for stray print statements.
+interesting when running our test suite.
+`test-backend --ban-console-output` checks for stray print statements.
 
 Note that `test-backend --coverage` will assert that
 various specific files in the project have 100% test coverage and

@@ -168,8 +168,8 @@ cause time-related bugs that are hard to catch with a test suite, or bugs
 that only show up during daylight savings time.
 
 Good ways to make timezone-aware datetimes are below. We import timezone
-libraries as `from datetime import datetime, timezone` and `from
-django.utils.timezone import now as timezone_now`.
+libraries as `from datetime import datetime, timezone` and
+`from django.utils.timezone import now as timezone_now`.
 
 Use:
 * `timezone_now()` to get a datetime when Django is available, such as
@@ -241,10 +241,8 @@ generally use modern
 [ECMAScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Language_Resources)
 primitives such as [`for … of`
 loops](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of),
-[`Array.prototype.{entries, every, filter, find, indexOf, map,
-some}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array),
-[`Object.{assign, entries, keys,
-values}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object),
+[`Array.prototype.{entries, every, filter, find, indexOf, map, some}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array),
+[`Object.{assign, entries, keys, values}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object),
 [spread
 syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax),
 and so on. Our Babel configuration automatically transpiles and
@@ -266,8 +264,8 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 
 Our JavaScript and TypeScript code is formatted with
 [Prettier](https://prettier.io/).  You can ask Prettier to reformat
-all code via our [linter tool](../testing/linters.md) with `tools/lint
---only=prettier --fix`.  You can also [integrate it with your
+all code via our [linter tool](../testing/linters.md) with
+`tools/lint --only=prettier --fix`.  You can also [integrate it with your
 editor](https://prettier.io/docs/en/editors.html).
 
 Combine adjacent on-ready functions, if they are logically related.
@@ -328,8 +326,9 @@ type changes in the future.
     [Black](https://github.com/psf/black) and
     [isort](https://pycqa.github.io/isort/).  The [linter
     tool](../testing/linters.md) enforces this by running Black and
-    isort in check mode, or in write mode with `tools/lint
-    --only=black,isort --fix`.  You may find it helpful to [integrate
+    isort in check mode, or in write mode with
+    `tools/lint --only=black,isort --fix`.  You may find it helpful to
+    [integrate
     Black](https://black.readthedocs.io/en/stable/editor_integration.html)
     and
     [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)

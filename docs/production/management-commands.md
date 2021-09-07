@@ -111,9 +111,9 @@ There are dozens of useful management commands under
   with SQL will often not behave correctly because PostgreSQL doesn't
   know to flush Zulip's caches or notify browsers of changes.
 * `./manage.py send_custom_email`: Can be used to send an email to a set
-  of users.  The `--help` documents how to run it from a `manage.py
-  shell` for use with more complex programmatically computed sets of
-  users.
+  of users.  The `--help` documents how to run it from a
+  `manage.py shell` for use with more complex programmatically
+  computed sets of users.
 * `./manage.py send_password_reset_email`: Sends password reset email(s)
   to one or more users.
 * `./manage.py change_realm_subdomain`: Change subdomain of a realm.

@@ -204,8 +204,8 @@ These instructions assume you're using the Vagrant development environment.
 3. You'll now need to set up a WebStorm "Debug Configuration".  Open
    the `Run/Debug Configuration` menu and create a new `Node.js` config:
     1. Under `Node interpreter:` click the 3 dots to the right side and
-      click on the little plus in the bottom left of the `Node.js
-      Interpreters` window.
+      click on the little plus in the bottom left of the
+      `Node.js Interpreters` window.
     1. Select `Add Remote...`.
         1. In the `Configure Node.js Remote Interpreter`, window select `Vagrant`
         1. Wait for WebStorm to connect to Vagrant. This will be displayed

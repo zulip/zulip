@@ -45,6 +45,6 @@ working copies:
 - `git remote`: This helps you configure short names for remotes.
 - `git pull`: This pulls code, but by default creates a merge commit
   (which you definitely don't want).  However, if you've followed our
-  [cloning documentation](../git/cloning.md), this will do `git pull
-  --rebase` instead, which is the only mode you'll want to use when
-  working on Zulip.
+  [cloning documentation](../git/cloning.md), this will do
+  `git pull --rebase` instead, which is the only mode you'll want to
+  use when working on Zulip.

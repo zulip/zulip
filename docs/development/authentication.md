@@ -36,11 +36,12 @@ details worth understanding:
   which shows all emails that the Zulip server has "sent" (emails are
   not actually sent by the development environment), to make it
   convenient to click through the UI of signup, password reset, etc.
-* There's a management command, `manage.py print_initial_password
-  username@example.com`, that prints out **default** passwords for the
-  development environment users.  Note that if you change a user's
-  password in the development environment, those passwords will no longer
-  work.  It also prints out the user's **current** API key.
+* There's a management command,
+  `manage.py print_initial_password username@example.com`, that prints
+  out **default** passwords for the development environment users.
+  Note that if you change a user's password in the development
+  environment, those passwords will no longer work.  It also prints
+  out the user's **current** API key.
 
 ### Google
 

@@ -90,10 +90,11 @@ your organization, and your own user account as an administrator.
 Then, log in!
 
 The link is a secure one-time-use link.  If you need another
-later, you can generate a new one by running `manage.py
-generate_realm_creation_link` on the server.  See also our doc on
-running [multiple organizations on the same server](multiple-organizations.md)
-if that's what you're planning to do.
+later, you can generate a new one by running
+`manage.py generate_realm_creation_link` on the server.  See also our
+doc on running [multiple organizations on the same
+server](multiple-organizations.md) if that's what you're planning to
+do.
 
 ## Step 4: Configure and use
 

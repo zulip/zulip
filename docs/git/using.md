@@ -46,9 +46,9 @@ from Zulip's main repositories.
 
 **Note about git pull**: You might be used to using `git pull` on other
 projects. With Zulip, because we don't use merge commits, you'll want to avoid
-it. Rather than using `git pull`, which by default is a shortcut for `git fetch
-&& git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you should use `git fetch`
-and then `git rebase`.
+it. Rather than using `git pull`, which by default is a shortcut for
+`git fetch && git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you
+should use `git fetch` and then `git rebase`.
 
 First, [fetch][gitbook-fetch] changes from Zulip's upstream repository you
 configured in the step above:
@@ -166,9 +166,10 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 ### Stage additions with git add
 
-To add changes to your staging area, use `git add <filename>`. Because `git
-add` is all about staging the changes you want to commit, you use it to add
-*new files* as well as *files with changes* to your staging area.
+To add changes to your staging area, use `git add <filename>`. Because
+`git add` is all about staging the changes you want to commit, you use
+it to add *new files* as well as *files with changes* to your staging
+area.
 
 Continuing our example from above, after we run `git add newfile.py`, we'll see
 the following from `git status`:
