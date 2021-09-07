@@ -354,8 +354,8 @@ make the following changes in two configuration files.
    following.  Place it the appropriate path for your Apache2
    installation and enable it (E.g. if you use Debian or Ubuntu, then
    place it in `/etc/apache2/sites-available/zulip.example.com.conf`
-   and then run `a2ensite zulip.example.com && systemctl reload
-   apache2`):
+   and then run
+   `a2ensite zulip.example.com && systemctl reload apache2`):
 
     ```apache
     <VirtualHost *:80>

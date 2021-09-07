@@ -183,11 +183,10 @@ REQ also helps us with request variable validation. For example:
   as JSON, and pass it into the function as the `msg_ids` Python
   keyword argument.
 
-* `streams_raw = REQ("subscriptions",
-  json_validator=check_list(check_string))` will check that the
-  "subscriptions" HTTP parameter is a list of strings, marshalled as
-  JSON, and pass it into the function with the Python keyword argument
-  `streams_raw`.
+* `streams_raw = REQ("subscriptions", json_validator=check_list(check_string))`
+  will check that the "subscriptions" HTTP parameter is a list of
+  strings, marshalled as JSON, and pass it into the function with the
+  Python keyword argument `streams_raw`.
 
 * `message_id=REQ(converter=to_non_negative_int)` will check that the
   `message_id` HTTP parameter is a string containing a non-negative

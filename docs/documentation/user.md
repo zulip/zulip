@@ -141,20 +141,20 @@ base class `icon-vector` and have dropped support for it. We now only support
 icons from [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) which
 make use of `fa` as a base class.
 
-* cog (<i class="fa fa-cog"></i>) icon — `cog (<i
-class="fa fa-cog"></i>) icon`
+* cog (<i class="fa fa-cog"></i>) icon —
+`cog (<i class="fa fa-cog"></i>) icon`
 * down chevron (<i class="fa fa-chevron-down"></i>) icon —
 `down chevron (<i class="fa fa-chevron-down"></i>) icon`
-* eye (<i class="fa fa-eye"></i>) icon — `eye (<i
-class="fa fa-eye"></i>) icon`
-* file (<i class="fa fa-file-code-o"></i>) icon — `file (<i
-class="fa fa-file-code-o"></i>) icon`
+* eye (<i class="fa fa-eye"></i>) icon —
+`eye (<i class="fa fa-eye"></i>) icon`
+* file (<i class="fa fa-file-code-o"></i>) icon —
+`file (<i class="fa fa-file-code-o"></i>) icon`
 * filled star (<i class="fa fa-star"></i>) icon —
 `filled star (<i class="fa fa-star"></i>) icon`
 * formatting (<i class="fa fa-font"></i>) icon —
 `formatting (<i class="fa fa-font"></i>) icon`
-* menu (<i class="fa fa-bars"></i>) icon — `menu (<i
-class="fa fa-bars"></i>) icon`
+* menu (<i class="fa fa-bars"></i>) icon —
+`menu (<i class="fa fa-bars"></i>) icon`
 * overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
 `overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
 * paperclip (<i class="fa fa-paperclip"></i>) icon —

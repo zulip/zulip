@@ -297,8 +297,9 @@ up-to-date list of raw changes.
 - Fixed Postfix configuration error which would prevent outgoing email
   to any email address containing `.`, `+`, or starting with `mm`, when
   configured to use the local Postfix to deliver outgoing email.
-- Fixed a backporting error which caused the `manage.py
-  change_user_role` tool to not work for `admin`, `member`, or `guest` roles.
+- Fixed a backporting error which caused the
+  `manage.py change_user_role` tool to not work for `admin`, `member`,
+  or `guest` roles.
 - Add support for logout events sent from modern versions of the
   desktop application.
 - Upgraded minor python dependencies.
@@ -437,8 +438,8 @@ up-to-date list of raw changes.
   [our new PostgreSQL upgrade guide][postgresql-upgrade].
 - The format of the `JWT_AUTH_KEYS` setting has changed to include an
   [algorithms](https://pyjwt.readthedocs.io/en/latest/algorithms.html)
-  list: `{"subdomain": "key"}` becomes `{"subdomain": {"key": "key",
-  "algorithms": ["HS256"]}}`.
+  list: `{"subdomain": "key"}` becomes
+  `{"subdomain": {"key": "key", "algorithms": ["HS256"]}}`.
 - Added a new organization owner permission above the previous
   organization administrator.  All existing organization
   administrators are automatically converted into organization owners.

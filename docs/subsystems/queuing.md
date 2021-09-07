@@ -41,8 +41,8 @@ To add a new queue processor:
   queue worker in the Zulip development environment
   (`tools/run-dev.py` will automatically restart the queue processors
   and start running your new queue processor code).  You can also run
-  a single queue processor manually using e.g. `./manage.py
-  process_queue --queue=user_activity`.
+  a single queue processor manually using e.g.
+  `./manage.py process_queue --queue=user_activity`.
 
 * So that supervisord will know to run the queue processor in
   production, you will need to add to the `queues` variable in

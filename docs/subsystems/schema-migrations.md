@@ -22,19 +22,19 @@ migrations.
   * Commit your changes.
 * For more complicated migrations where you need to run custom Python
   code as part of the migration, it's best to read past migrations to
-  understand how to write them well.  `git grep RunPython
-  zerver/migrations/02*` will find many good examples.  Before writing
-  migrations of this form, you should read Django's docs and the
-  sections below.
+  understand how to write them well.
+  `git grep RunPython zerver/migrations/02*` will find many good
+  examples.  Before writing migrations of this form, you should read
+  Django's docs and the sections below.
 * **Numbering conflicts across branches**: If you've done your schema
   change in a branch, and meanwhile another schema change has taken
   place, Django will now have two migrations with the same
   number. There are two easy way to fix this:
-  * If your migrations were automatically generated using `manage.py
-    makemigrations`, a good option is to just remove your migration
-    and rerun the command after rebasing.  Remember to `git rebase` to
-    do this in the the commit that changed `models.py` if you have a
-    multi-commit branch.
+  * If your migrations were automatically generated using
+    `manage.py makemigrations`, a good option is to just remove your
+    migration and rerun the command after rebasing.  Remember to
+    `git rebase` to do this in the the commit that changed `models.py`
+    if you have a multi-commit branch.
   * If you wrote code as part of preparing your migrations, or prefer
     this workflow, you can use run `./tools/renumber-migrations`,
     which renumbers your migration(s) and fixes up the "dependencies"

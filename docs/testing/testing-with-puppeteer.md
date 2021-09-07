@@ -148,13 +148,13 @@ notes above:
   wait function to make sure the page or element is ready before you
   interact with it.  The [puppeteer docs site](https://pptr.dev/) is a
   useful reference for the available wait functions.
-- When using `waitForSelector`, you always want to use the `{visible:
-  true}` option; otherwise the test will stop waiting as soon as the
-  target selector is present in the DOM even if it's hidden.  For the
-  common UI pattern of having an element always be present in the DOM
-  whose presence is managed via show/hide rather than adding/removing
-  it from the DOM, `waitForSelector` without `visible: true` won't
-  wait at all.
+- When using `waitForSelector`, you always want to use the
+  `{visible: true}` option; otherwise the test will stop waiting as
+  soon as the target selector is present in the DOM even if it's
+  hidden.  For the common UI pattern of having an element always be
+  present in the DOM whose presence is managed via show/hide rather
+  than adding/removing it from the DOM, `waitForSelector` without
+  `visible: true` won't wait at all.
 - The test suite uses a smaller set of default user accounts and other
   data initialized in the database than the normal development
   environment; specifically, it uses the same setup as the [backend

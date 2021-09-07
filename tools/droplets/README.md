@@ -138,8 +138,8 @@ Rough steps:
    and shut down the droplet.
 1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
 1. Wait for several minutes.
-1. Do something like `curl -X GET -H "Content-Type: application/json"
-   -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
+1. Do something like
+   `curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
    (maybe with a different page number, and replace your API_KEY).
 1. Replace `template_id` in `create.py` in this directory with the
    appropriate `id`.
@@ -181,8 +181,8 @@ Rough steps:
 1. `> ~/.bash_history && history -c && sudo shutdown -h now`
 1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
 1. Wait for several minutes.
-1. Do something like `curl -X GET -H "Content-Type: application/json"
-   -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
+1. Do something like
+   `curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
    (maybe with a different page number, and replace your API_KEY).
 1. Replace `template_id` in `create.py` in this directory with the
    appropriate `id`.

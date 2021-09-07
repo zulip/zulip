@@ -254,8 +254,8 @@ Database monitoring:
 Standard server monitoring:
 
 * `check_website_response.sh`: Basic HTTP check.
-* `check_debian_packages`: Checks whether the system is behind on `apt
-  upgrade`.
+* `check_debian_packages`: Checks whether the system is behind on
+  `apt upgrade`.
 
 If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are

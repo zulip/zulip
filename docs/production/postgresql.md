@@ -84,14 +84,15 @@ which shows the currently running backends and their activity. This is
 similar to the pg_top output, with the added advantage of showing the
 complete query, which can be valuable in debugging.
 
-To stop a runaway query, you can run `SELECT pg_cancel_backend(pid
-int)` or `SELECT pg_terminate_backend(pid int)` as the 'postgres'
-user. The former cancels the backend's current query and the latter
-terminates the backend process. They are implemented by sending SIGINT
-and SIGTERM to the processes, respectively.  We recommend against
-sending a PostgreSQL process SIGKILL. Doing so will cause the database
-to kill all current connections, roll back any pending transactions,
-and enter recovery mode.
+To stop a runaway query, you can run
+`SELECT pg_cancel_backend(pid int)` or
+`SELECT pg_terminate_backend(pid int)` as the 'postgres' user. The
+former cancels the backend's current query and the latter terminates
+the backend process. They are implemented by sending SIGINT and
+SIGTERM to the processes, respectively.  We recommend against sending
+a PostgreSQL process SIGKILL. Doing so will cause the database to kill
+all current connections, roll back any pending transactions, and enter
+recovery mode.
 
 #### Stopping the Zulip PostgreSQL database
 
