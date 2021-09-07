@@ -159,14 +159,14 @@ highlighting.  The system is largely managed by the code in
   depends on directly.  Those packages have their own recursive
   dependencies.  When adding or removing a dependency from Zulip, one
   simply edits the appropriate "source" requirements files, and then
-  runs `tools/update-locked-requirements`.  That tool will use `pip
-  compile` to generate the locked requirements files like `prod.txt`,
-  `dev.txt` etc files that explicitly declare versions of all of
-  Zulip's recursive dependencies.  For indirect dependencies (i.e.
-  dependencies not explicitly declared in the source requirements files),
-  it provides helpful comments explaining which direct dependency (or
-  dependencies) needed that indirect dependency.  The process for
-  using this system is documented in more detail in
+  runs `tools/update-locked-requirements`.  That tool will use
+  `pip-compile` to generate the locked requirements files like
+  `prod.txt`, `dev.txt` etc files that explicitly declare versions of
+  all of Zulip's recursive dependencies.  For indirect dependencies
+  (i.e. dependencies not explicitly declared in the source
+  requirements files), it provides helpful comments explaining which
+  direct dependency (or dependencies) needed that indirect dependency.
+  The process for using this system is documented in more detail in
   `requirements/README.md`.
 * **Caching of virtualenvs and packages**.  To make updating the
   dependencies of a Zulip installation efficient, we maintain a cache
