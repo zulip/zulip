@@ -78,8 +78,8 @@ those that:
 * Don't have large open pull requests (to avoid merge conflicts); one
   can scan for these using [TinglingGit](https://github.com/zulip/TinglingGit).
 * Have good unit test coverage, which limits the risk of breaking
-  correctness through refactoring.  Use `tools/test-js-with-node
-  --coverage` to get a coverage report.
+  correctness through refactoring.  Use
+  `tools/test-js-with-node --coverage` to get a coverage report.
 
 When migrating a module, we want to be especially thoughtful about
 putting together a commit structure that makes mistakes unlikely and

@@ -106,16 +106,16 @@ memcached to do work.
 As one can see, there are two categories of endpoints that are
 important for scalability: those with extremely high request volumes,
 and those with moderately high request volumes that are also
-expensive.  It doesn't matter how expensive, for example, `POST
-/users/me/subscriptions` is for scalability, because the volume is
-negligible.
+expensive.  It doesn't matter how expensive, for example,
+`POST /users/me/subscriptions` is for scalability, because the volume
+is negligible.
 
 ### Tornado
 
 Zulip's Tornado-based [real-time push
-system](../subsystems/events-system.md), and in particular `GET
-/events`, accounts for something like 50% of all HTTP requests to a
-production Zulip server.  Despite `GET /events` being extremely
+system](../subsystems/events-system.md), and in particular
+`GET /events`, accounts for something like 50% of all HTTP requests to
+a production Zulip server.  Despite `GET /events` being extremely
 high-volume, the typical request takes 1-3ms to process, and doesn't
 use the database at all (though it will access `memcached` and
 `redis`), so they aren't a huge contributor to the overall CPU usage
@@ -228,10 +228,10 @@ of active optimization work.
 
 ### Fetching message history
 
-Bulk requests for message content and metadata ([`GET
-/messages`](https://zulip.com/api/get-messages)) account for ~3% of
-total HTTP requests.  The zulip web app has a few major reasons it does
-a large number of these requests:
+Bulk requests for message content and metadata
+([`GET /messages`](https://zulip.com/api/get-messages)) account for
+~3% of total HTTP requests.  The zulip web app has a few major reasons
+it does a large number of these requests:
 
 * Most of these requests are from users clicking into different views
   -- to avoid certain subtle bugs, Zulip's web app currently fetches

@@ -53,8 +53,8 @@ In either configuration, you will need to do the following:
      integration, part 1: Connecting to the LDAP server".
    * If a password is required, put it in
      `/etc/zulip/zulip-secrets.conf` by setting
-     `auth_ldap_bind_password`.  For example: `auth_ldap_bind_password
-     = abcd1234`.
+     `auth_ldap_bind_password`.  For example:
+     `auth_ldap_bind_password = abcd1234`.
 
 1. Decide how you want to map the information in your LDAP database to
    users' account data in Zulip.  For each Zulip user, two closely
@@ -207,11 +207,11 @@ to the `AUTH_LDAP_USER_ATTR_MAP`.
 
 Starting with Zulip 2.0, Zulip supports synchronizing the
 disabled/deactivated status of users from Active Directory.  You can
-configure this by uncommenting the sample line `"userAccountControl":
-"userAccountControl",` in `AUTH_LDAP_USER_ATTR_MAP` (and restarting
-the Zulip server).  Zulip will then treat users that are disabled via
-the "Disable Account" feature in Active Directory as deactivated in
-Zulip.
+configure this by uncommenting the sample line
+`"userAccountControl": "userAccountControl",` in
+`AUTH_LDAP_USER_ATTR_MAP` (and restarting the Zulip server).  Zulip
+will then treat users that are disabled via the "Disable Account"
+feature in Active Directory as deactivated in Zulip.
 
 Users disabled in active directory will be immediately unable to log in
 to Zulip, since Zulip queries the LDAP/Active Directory server on
@@ -360,8 +360,7 @@ it as follows:
       The `Entity ID` should match the value of
       `SOCIAL_AUTH_SAML_SP_ENTITY_ID` computed in the Zulip settings.
       You can get the correct value by running the following:
-      `/home/zulip/deployments/current/scripts/get-django-setting
-      SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
+      `/home/zulip/deployments/current/scripts/get-django-setting SOCIAL_AUTH_SAML_SP_ENTITY_ID`.
 
     * **SSO URL**:
       `https://yourzulipdomain.example.com/complete/saml/`.  This is
@@ -485,11 +484,11 @@ correctly authenticate the user to Zulip.
 
 If you're hosting multiple organizations and thus using the
 `SOCIAL_AUTH_SUBDOMAIN` setting, you'll need to configure a custom
-`RelayState` in your IdP of the form `{"subdomain":
-"yourzuliporganization"}` to let Zulip know which organization to
-authenticate the user to when they visit your SSO URL from the IdP.
-(If the organization is on the root domain, use the empty string:
-`{"subdomain": ""}`.).
+`RelayState` in your IdP of the form
+`{"subdomain": "yourzuliporganization"}` to let Zulip know which
+organization to authenticate the user to when they visit your SSO URL
+from the IdP.  (If the organization is on the root domain, use the
+empty string: `{"subdomain": ""}`.).
 
 ### Restricting access to specific organizations
 
@@ -568,8 +567,8 @@ straightforward way to deploy that SSO solution with Zulip.
 5. Run `a2ensite zulip-sso` to enable the SSO integration within Apache.
 
 6. Run `service apache2 reload` to use your new configuration.  If
-   Apache isn't already running, you may need to run `service apache2
-   start` instead.
+   Apache isn't already running, you may need to run
+   `service apache2 start` instead.
 
 Now you should be able to visit your Zulip server in a browser (e.g.,
 at `https://zulip.example.com/`) and log in via the SSO solution.
@@ -702,8 +701,8 @@ By default, users who attempt to login with OIDC using an email
 address that does not have a current Zulip account will be prompted
 for whether they intend to create a new account or would like to login
 using another authentication method. You can configure automatic
-account creation on first login attempt by setting `"auto_signup":
-True` in the IdP configuration dictionary.
+account creation on first login attempt by setting
+`"auto_signup": True` in the IdP configuration dictionary.
 
 The global setting `SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED` controls how
 Zulip uses the Full Name provided by the IdP. By default, Zulip

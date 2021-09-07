@@ -251,10 +251,10 @@ expected.
 1. If you get the error `Hyper-V could not initialize memory`, this is
    likely because your system has insufficient free memory to start
    the virtual machine.  You can generally work around this error by
-   closing all other running programs and running `vagrant up
-   --provider=hyperv` again. You can reopen the other programs after
-   the provisioning is completed. If it still isn't enough, try
-   restarting your system and running the command again.
+   closing all other running programs and running
+   `vagrant up --provider=hyperv` again. You can reopen the other
+   programs after the provisioning is completed. If it still isn't
+   enough, try restarting your system and running the command again.
 
 2. Be patient the first time you run `./tools/run-dev.py`.
 
@@ -295,13 +295,14 @@ you can sign up [here](https://aws.amazon.com/cloud9/).
 * Resize the workspace to be 1GB of memory and 4GB of disk
   space. (This is under free limit for both the old Cloud9 and the AWS
   Free Tier).
-* Clone the zulip repo: `git clone --config pull.rebase
-  https://github.com/<your-username>/zulip.git`
-* Restart rabbitmq-server since its broken on Cloud9: `sudo service
-  rabbitmq-server restart`.
+* Clone the zulip repo:
+  `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
+* Restart rabbitmq-server since its broken on Cloud9:
+  `sudo service rabbitmq-server restart`.
 * And run provision `cd zulip && ./tools/provision`, once this is done.
-* Activate the Zulip virtual environment by `source
-  /srv/zulip-py3-venv/bin/activate` or by opening a new terminal.
+* Activate the Zulip virtual environment by
+  `source /srv/zulip-py3-venv/bin/activate` or by opening a new
+  terminal.
 
 #### Install zulip-cloud9
 

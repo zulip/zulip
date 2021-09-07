@@ -321,8 +321,9 @@ section.  If that doesn't help, please visit
 in the [Zulip development community server](https://zulip.com/developer-community/) for
 real-time help.
 
-On Windows, you will see the message `The system cannot find the path
-specified.` several times.  This is normal and is not a problem.
+On Windows, you will see the message
+`The system cannot find the path specified.` several times.  This is
+normal and is not a problem.
 
 Once `vagrant up` has completed, connect to the development
 environment with `vagrant ssh`:
@@ -804,11 +805,11 @@ The `vagrant up` command basically does the following:
 
 To debug such errors, you can log in to the Vagrant guest machine by
 running `vagrant ssh`, which should present you with a standard shell
-prompt.  You can debug interactively by using e.g. `cd zulip &&
-./tools/provision`, and then running the individual subcommands
-that failed.  Once you've resolved the problem, you can rerun
-`tools/provision` to proceed; the provisioning system is designed
-to recover well from failures.
+prompt.  You can debug interactively by using e.g.
+`cd zulip && ./tools/provision`, and then running the individual
+subcommands that failed.  Once you've resolved the problem, you can
+rerun `tools/provision` to proceed; the provisioning system is
+designed to recover well from failures.
 
 The Zulip provisioning system is generally highly reliable; the most common
 cause of issues here is a poor network connection (or one where you need a
@@ -883,9 +884,10 @@ enabled in your BIOS.
 
 If the error persists, you may have run into an incompatibility
 between VirtualBox and Hyper-V on Windows.  To disable Hyper-V, open
-command prompt as administrator, run `bcdedit /set
-hypervisorlaunchtype off`, and reboot.  If you need to enable it
-later, run `bcdedit /deletevalue hypervisorlaunchtype`, and reboot.
+command prompt as administrator, run
+`bcdedit /set hypervisorlaunchtype off`, and reboot.  If you need to
+enable it later, run `bcdedit /deletevalue hypervisorlaunchtype`, and
+reboot.
 
 #### OSError: [Errno 26] Text file busy
 

@@ -32,12 +32,12 @@ Checking connectivity... done.
 ```
 
 (The `--config pull.rebase` option configures Git so that `git pull`
-will behave like `git pull --rebase` by default.  Using `git pull
---rebase` to update your changes to resolve merge conflicts is
-expected by essentially all of open source projects, including Zulip.
-You can also set that option after cloning using `git config --add
-pull.rebase true`, or just be careful to always run `git pull
---rebase`, never `git pull`).
+will behave like `git pull --rebase` by default.  Using
+`git pull --rebase` to update your changes to resolve merge conflicts
+is expected by essentially all of open source projects, including
+Zulip.  You can also set that option after cloning using
+`git config --add pull.rebase true`, or just be careful to always run
+`git pull --rebase`, never `git pull`).
 
 Note: If you receive an error while cloning, you may not have [added your ssh
 key to GitHub][github-help-add-ssh-key].
@@ -65,8 +65,8 @@ origin  git@github.com:YOUR_USERNAME/zulip.git (push)
 Note: If you've cloned the repository using a graphical client, you may already
 have the upstream remote repository configured. For example, when you clone
 [zulip/zulip][github-zulip-zulip] with the GitHub desktop client it configures
-the remote repository `zulip` and you see the following output from `git remote
--v`:
+the remote repository `zulip` and you see the following output from
+`git remote -v`:
 
 ```console
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)

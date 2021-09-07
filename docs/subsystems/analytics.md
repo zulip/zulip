@@ -137,11 +137,11 @@ system:
 - Tests for the backend views code logic for extracting data from the
   database and serving it to clients.
 
-For manual backend testing, it sometimes can be valuable to use `./manage.py
-dbshell` to inspect the tables manually to check that things look right; but
-usually anything you feel the need to check manually, you should add some
-sort of assertion for to the backend analytics tests, to make sure it stays
-that way as we refactor.
+For manual backend testing, it sometimes can be valuable to use
+`./manage.py dbshell` to inspect the tables manually to check that
+things look right; but usually anything you feel the need to check
+manually, you should add some sort of assertion for to the backend
+analytics tests, to make sure it stays that way as we refactor.
 
 ## LoggingCountStats
 

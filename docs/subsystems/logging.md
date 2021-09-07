@@ -131,8 +131,8 @@ new feature hard to miss.
 * Blueslip keeps a log of all the notices it has received during a
   browser session, and includes them in reports to the server, so that
   one can see cases where exceptions chained together.  You can print
-  this log from the browser console using `blueslip =
-  require("./static/js/blueslip"); blueslip.get_log()`.
+  this log from the browser console using
+  `blueslip = require("./static/js/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
 * `throw new Error(…)`: For fatal errors that cannot be easily
