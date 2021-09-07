@@ -1,6 +1,7 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
+import _ from "lodash";
 import tippy from "tippy.js";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
@@ -86,6 +87,28 @@ export const draft_model = (function () {
         save(drafts);
     };
 
+    exports.getDraftsIdByStreamAndTopic = function (stream, topic) {
+        const drafts = this.get();
+        return Object.keys(drafts).filter(
+            (draft_id) =>
+                drafts[draft_id].type === "stream" &&
+                drafts[draft_id].stream === stream &&
+                drafts[draft_id].topic === topic,
+        );
+    };
+
+    exports.getDraftsIdByRecipients = function (private_message_recipient) {
+        const drafts = this.get();
+        return Object.keys(drafts).filter(
+            (draft_id) =>
+                drafts[draft_id].type === "private" &&
+                _.isEqual(
+                    drafts[draft_id].private_message_recipient.split(",").sort(),
+                    private_message_recipient.split(",").sort(),
+                ),
+        );
+    };
+
     return exports;
 })();
 
@@ -151,7 +174,7 @@ function draft_notify() {
     setTimeout(remove_instance, 1500);
 }
 
-export function update_draft() {
+export function update_draft(notify = true) {
     const draft = snapshot_message();
 
     if (draft === undefined) {
@@ -169,7 +192,9 @@ export function update_draft() {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);
-        draft_notify();
+        if (notify) {
+            draft_notify();
+        }
         return;
     }
 
@@ -177,7 +202,9 @@ export function update_draft() {
     // one.
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
-    draft_notify();
+    if (notify) {
+        draft_notify();
+    }
 }
 
 export function delete_active_draft() {
@@ -221,6 +248,33 @@ export function restore_draft(draft_id) {
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
+}
+
+export function restore_draft_in_open_compose_box(draft_id) {
+    const draft = draft_model.getDraft(draft_id);
+    if (!compose_state.composing() || !draft) {
+        return;
+    }
+
+    // We avoid showing the tooltip as it will cause showing multiple tooltips if
+    // the compose box is closed instantly after the new draft is loaded.
+    update_draft(false);
+    compose_actions.clear_box();
+
+    const msg_type = compose_state.get_message_type();
+    if (msg_type === "stream") {
+        compose_state.stream_name(draft.stream);
+        compose_state.topic(draft.topic);
+    } else {
+        compose_state.private_message_recipient(draft.private_message_recipient);
+    }
+    compose_state.message_content(draft.content);
+
+    const opts = compose_state.get_all();
+    compose_actions.complete_starting_tasks(msg_type, opts);
+    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("#compose-textarea").data("draft-id", draft_id);
+    compose_actions.set_focus(msg_type, opts);
 }
 
 const DRAFT_LIFETIME = 30;

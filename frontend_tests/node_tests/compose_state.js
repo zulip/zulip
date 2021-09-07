@@ -20,3 +20,21 @@ run_test("private_message_recipient", ({override}) => {
     compose_state.private_message_recipient("fred@fred.org");
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
+
+run_test("get_all", ({override}) => {
+    override(compose_pm_pill, "get_emails", () => "");
+
+    const expected_get_all = {
+        message_type: "stream",
+        stream: "Verona",
+        topic: "test",
+        private_message_recipient: "",
+        message_content: "Testing get all!",
+    };
+
+    compose_state.set_message_type(expected_get_all.message_type);
+    compose_state.stream_name(expected_get_all.stream);
+    compose_state.topic(expected_get_all.topic);
+    compose_state.message_content(expected_get_all.message_content);
+    assert.deepEqual(compose_state.get_all(), expected_get_all);
+});

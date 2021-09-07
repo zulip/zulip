@@ -56,3 +56,13 @@ export function private_message_recipient(value) {
 export function has_message_content() {
     return message_content() !== "";
 }
+
+export function get_all() {
+    return {
+        message_type: get_message_type(),
+        stream: stream_name(),
+        topic: topic(),
+        private_message_recipient: private_message_recipient(),
+        message_content: message_content(),
+    };
+}

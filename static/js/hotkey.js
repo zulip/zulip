@@ -94,6 +94,8 @@ const keydown_cmd_or_ctrl_mappings = {
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    38: {name: "draft_up", message_view_only: true}, // up arrow
+    40: {name: "draft_down", message_view_only: true}, // down arrow
 };
 
 const keydown_either_mappings = {
@@ -666,6 +668,16 @@ export function process_hotkey(e, hotkey) {
 
         if (event_name === "left_arrow" && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
+            return true;
+        }
+
+        if (event_name === "draft_up" && compose_state.composing()) {
+            compose_actions.rotate_drafts_in_compose_box("up");
+            return true;
+        }
+
+        if (event_name === "draft_down" && compose_state.composing()) {
+            compose_actions.rotate_drafts_in_compose_box("down");
             return true;
         }
 

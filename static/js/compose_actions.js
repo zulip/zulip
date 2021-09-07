@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import * as fenced_code from "../shared/js/fenced_code";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -103,7 +104,7 @@ export function clear_textarea() {
     $("#compose").find("input[type=text], textarea").val("");
 }
 
-function clear_box() {
+export function clear_box() {
     compose.clear_invites();
 
     // TODO: Better encapsulate at-mention warnings.
@@ -411,6 +412,74 @@ export function reply_with_mention(opts) {
     const message = message_lists.current.selected_message();
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
     compose_ui.insert_syntax_and_focus(mention);
+}
+
+export function rotate_drafts_in_compose_box(rotate_type) {
+    if (!compose_state.composing()) {
+        return;
+    }
+
+    if (rotate_type !== "up" && rotate_type !== "down") {
+        blueslip.error("Programming error -- rotate_type should be either 'up' or 'down'.");
+        return;
+    }
+
+    const current_compose_state = compose_state.get_all();
+
+    let drafts_ids = {};
+    if (current_compose_state.message_type === "stream") {
+        // Return if the topic field is empty as we don't want to
+        // show the drafts with an empty topic name.
+        if (!current_compose_state.topic) {
+            return;
+        }
+
+        drafts_ids = drafts.draft_model.getDraftsIdByStreamAndTopic(
+            current_compose_state.stream,
+            current_compose_state.topic,
+        );
+    } else {
+        drafts_ids = drafts.draft_model.getDraftsIdByRecipients(
+            current_compose_state.private_message_recipient,
+        );
+    }
+
+    // Return if the drafts_ids is empty or has only one value.
+    if (drafts_ids.length <= 1) {
+        return;
+    }
+
+    const current_draft_index = drafts_ids.indexOf($("#compose-textarea").data("draft-id"));
+
+    let draft_index_to_restore;
+
+    if (rotate_type === "up") {
+        if (current_draft_index !== -1) {
+            if (current_draft_index === 0) {
+                // Restore the last draft if the first draft is active.
+                draft_index_to_restore = drafts_ids.length - 1;
+            } else {
+                draft_index_to_restore = current_draft_index - 1;
+            }
+        } else {
+            // Restore the last draft if it's new draft.
+            draft_index_to_restore = drafts_ids.length - 1;
+        }
+    } else {
+        if (current_draft_index !== -1) {
+            if (current_draft_index === drafts_ids.length - 1) {
+                // Restore the first draft if the last draft is active.
+                draft_index_to_restore = 0;
+            } else {
+                draft_index_to_restore = current_draft_index + 1;
+            }
+        } else {
+            // Restore the first draft if it's new draft.
+            draft_index_to_restore = 0;
+        }
+    }
+
+    drafts.restore_draft_in_open_compose_box(drafts_ids[draft_index_to_restore]);
 }
 
 export function on_topic_narrow() {
