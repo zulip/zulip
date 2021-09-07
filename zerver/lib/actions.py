@@ -5024,7 +5024,7 @@ def do_create_realm(
 def do_change_notification_settings(
     user_profile: UserProfile,
     setting_name: str,
-    value: Union[bool, int, str],
+    setting_value: Union[bool, int, str],
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
@@ -5035,13 +5035,13 @@ def do_change_notification_settings(
     old_value = getattr(user_profile, setting_name)
     notification_setting_type = UserProfile.notification_setting_types[setting_name]
     assert isinstance(
-        value, notification_setting_type
-    ), f"Cannot update {setting_name}: {value} is not an instance of {notification_setting_type}"
+        setting_value, notification_setting_type
+    ), f"Cannot update {setting_name}: {setting_value} is not an instance of {notification_setting_type}"
 
-    setattr(user_profile, setting_name, value)
+    setattr(user_profile, setting_name, setting_value)
 
     # Disabling digest emails should clear a user's email queue
-    if setting_name == "enable_digest_emails" and not value:
+    if setting_name == "enable_digest_emails" and not setting_value:
         clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[setting_name])
@@ -5049,7 +5049,7 @@ def do_change_notification_settings(
         "type": "user_settings",
         "op": "update",
         "property": setting_name,
-        "value": value,
+        "value": setting_value,
     }
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -5061,7 +5061,7 @@ def do_change_notification_settings(
         extra_data=orjson.dumps(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
+                RealmAuditLog.NEW_VALUE: setting_value,
                 "property": setting_name,
             }
         ).decode(),
@@ -5077,7 +5077,7 @@ def do_change_notification_settings(
             "type": "update_global_notifications",
             "user": user_profile.email,
             "notification_name": setting_name,
-            "setting": value,
+            "setting": setting_value,
         }
         send_event(user_profile.realm, legacy_event, [user_profile.id])
 
