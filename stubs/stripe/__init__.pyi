@@ -320,6 +320,7 @@ class EventData:
 
 class Event:
     id: str
+    api_version: str
     type: EventTypes
     data: EventData
     @staticmethod

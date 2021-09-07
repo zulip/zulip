@@ -25,6 +25,7 @@ from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MAX_INVOICED_LICENSES,
     MIN_INVOICED_LICENSES,
+    STRIPE_API_VERSION,
     BillingError,
     InvalidBillingSchedule,
     InvalidTier,
@@ -496,6 +497,7 @@ class StripeTestCase(ZulipTestCase):
             "object": "event",
             "data": {"object": stripe_session_dict},
             "type": "checkout.session.completed",
+            "api_version": STRIPE_API_VERSION,
         }
 
         response = self.client_post(
@@ -3846,9 +3848,27 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 400)
 
+    def test_stripe_webhook_endpoint_invalid_api_version(self) -> None:
+        event_data = {
+            "id": "stripe_event_id",
+            "api_version": "1991-02-20",
+            "type": "event_type",
+            "data": {"object": {"object": "checkout.session", "id": "stripe_session_id"}},
+        }
+
+        expected_error_message = fr"Mismatch between billing system Stripe API version({STRIPE_API_VERSION}) and Stripe webhook event API version(1991-02-20)."
+        with self.assertLogs("corporate.stripe", "ERROR") as error_log:
+            self.client_post(
+                "/stripe/webhook/",
+                event_data,
+                content_type="application/json",
+            )
+            self.assertEqual(error_log.output, [f"ERROR:corporate.stripe:{expected_error_message}"])
+
     def test_stripe_webhook_for_session_completed_event(self) -> None:
         valid_session_event_data = {
             "id": "stripe_event_id",
+            "api_version": STRIPE_API_VERSION,
             "type": "checkout.session.completed",
             "data": {"object": {"object": "checkout.session", "id": "stripe_session_id"}},
         }
@@ -3906,6 +3926,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
             valid_session_event_data = {
                 "id": stripe_event_id,
                 "type": event_type,
+                "api_version": STRIPE_API_VERSION,
                 "data": {"object": {"object": "payment_intent", "id": stripe_payment_intent_id}},
             }
 
