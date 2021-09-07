@@ -233,7 +233,7 @@ export function format_text(textarea, type) {
             // Ctrl + I: Convert selected text to italic text
             wrapSelection(field, "*");
             break;
-        case "link":
+        case "link": {
             // Ctrl + L: Insert a link to selected text
             wrapSelection(field, "[", "](url)");
 
@@ -244,5 +244,6 @@ export function format_text(textarea, type) {
             const new_end = new_start + "url".length;
             field.setSelectionRange(new_start, new_end);
             break;
+        }
     }
 }
