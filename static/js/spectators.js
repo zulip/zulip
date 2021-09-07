@@ -12,7 +12,7 @@ import render_login_to_access_modal from "../templates/login_to_access.hbs";
 import * as hash_util from "./hash_util";
 import {page_params} from "./page_params";
 
-export function show() {
+export function login_to_access() {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
     let login_link;

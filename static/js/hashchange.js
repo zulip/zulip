@@ -9,7 +9,6 @@ import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import * as info_overlay from "./info_overlay";
 import * as invite from "./invite";
-import * as login_to_access from "./login_to_access";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
@@ -22,6 +21,7 @@ import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
@@ -335,7 +335,7 @@ function hashchanged(from_reload, e) {
     }
 
     if (page_params.is_spectator && !is_hash_web_public_compatible) {
-        login_to_access.show();
+        spectators.login_to_access();
         return undefined;
     }
 
