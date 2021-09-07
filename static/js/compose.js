@@ -656,6 +656,7 @@ export function initialize() {
 
     $("#compose-textarea").on("focus", () => {
         compose_actions.update_placeholder_text();
+        drafts.restore_last_draft_based_on_compose_state();
     });
 
     $("#stream_message_recipient_topic").on("focus", () => {

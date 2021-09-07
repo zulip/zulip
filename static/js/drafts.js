@@ -1,6 +1,7 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
+import _ from "lodash";
 import tippy from "tippy.js";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
@@ -86,6 +87,28 @@ export const draft_model = (function () {
         save(drafts);
     };
 
+    exports.getDraftsIdByStreamAndTopic = function (stream, topic) {
+        const drafts = this.get();
+        return Object.keys(drafts).filter(
+            (draft_id) =>
+                drafts[draft_id].type === "stream" &&
+                drafts[draft_id].stream === stream &&
+                drafts[draft_id].topic === topic,
+        );
+    };
+
+    exports.getDraftsIdByRecipients = function (private_message_recipient) {
+        const drafts = this.get();
+        return Object.keys(drafts).filter(
+            (draft_id) =>
+                drafts[draft_id].type === "private" &&
+                _.isEqual(
+                    drafts[draft_id].private_message_recipient.split(",").sort(),
+                    private_message_recipient.split(",").sort(),
+                ),
+        );
+    };
+
     return exports;
 })();
 
@@ -134,7 +157,7 @@ export function restore_message(draft) {
         };
     }
 
-    return compose_args;
+    return {...compose_args, trigger: "restore draft"};
 }
 
 function draft_notify() {
@@ -153,17 +176,17 @@ function draft_notify() {
 
 export function update_draft() {
     const draft = snapshot_message();
+    const draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
-        // there is nothing to save here.  Don't obliterate
-        // the existing draft yet--the user may have mistakenly
-        // hit delete after select-all or something.
-        // Just do nothing.
+        // there is nothing to save here but delete the
+        // draft if exists.
+        if (draft_id) {
+            delete_active_draft();
+        }
         return;
     }
-
-    const draft_id = $("#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
@@ -221,6 +244,39 @@ export function restore_draft(draft_id) {
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
+}
+
+export function restore_last_draft_based_on_compose_state() {
+    const message_type = compose_state.get_message_type();
+    if (!message_type || compose_state.message_content()) {
+        return;
+    }
+    const opts = {};
+
+    let last_draft_id;
+    if (message_type === "private") {
+        opts.private_message_recipient = compose_state.private_message_recipient();
+        if (opts.private_message_recipient) {
+            last_draft_id = draft_model
+                .getDraftsIdByRecipients(opts.private_message_recipient)
+                .pop();
+        }
+    } else {
+        opts.stream = compose_state.stream_name();
+        opts.topic = compose_state.topic();
+        if (opts.stream && opts.topic) {
+            last_draft_id = draft_model.getDraftsIdByStreamAndTopic(opts.stream, opts.topic).pop();
+        }
+    }
+
+    const draft = draft_model.getDraft(last_draft_id);
+    if (!draft) {
+        return;
+    }
+
+    compose_state.message_content(draft.content);
+    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("#compose-textarea").trigger("select").data("draft-id", last_draft_id);
 }
 
 const DRAFT_LIFETIME = 30;
