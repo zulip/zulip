@@ -5053,22 +5053,26 @@ def do_change_notification_settings(
     }
     event_time = timezone_now()
 
-    # Prior to all personal settings being managed by property_types,
-    # these were only created for notification settings.
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_SETTING_CHANGED,
-        event_time=event_time,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: setting_value,
-                "property": setting_name,
-            }
-        ).decode(),
-    )
+    if setting_name in UserProfile.notification_setting_types:
+        # Prior to all personal settings being managed by property_types,
+        # these were only created for notification settings.
+        #
+        # TODO: Start creating these for all settings, and do a
+        # backfilled=True migration.
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            event_type=RealmAuditLog.USER_SETTING_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            modified_user=user_profile,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: setting_value,
+                    "property": setting_name,
+                }
+            ).decode(),
+        )
 
     send_event(user_profile.realm, event, [user_profile.id])
 
