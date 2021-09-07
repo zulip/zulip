@@ -5023,7 +5023,7 @@ def do_create_realm(
 
 def do_change_notification_settings(
     user_profile: UserProfile,
-    name: str,
+    setting_name: str,
     value: Union[bool, int, str],
     *,
     acting_user: Optional[UserProfile],
@@ -5032,23 +5032,23 @@ def do_change_notification_settings(
     preference to update, and the value to update to
     """
 
-    old_value = getattr(user_profile, name)
-    notification_setting_type = UserProfile.notification_setting_types[name]
+    old_value = getattr(user_profile, setting_name)
+    notification_setting_type = UserProfile.notification_setting_types[setting_name]
     assert isinstance(
         value, notification_setting_type
-    ), f"Cannot update {name}: {value} is not an instance of {notification_setting_type}"
+    ), f"Cannot update {setting_name}: {value} is not an instance of {notification_setting_type}"
 
-    setattr(user_profile, name, value)
+    setattr(user_profile, setting_name, value)
 
     # Disabling digest emails should clear a user's email queue
-    if name == "enable_digest_emails" and not value:
+    if setting_name == "enable_digest_emails" and not value:
         clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
 
-    user_profile.save(update_fields=[name])
+    user_profile.save(update_fields=[setting_name])
     event = {
         "type": "user_settings",
         "op": "update",
-        "property": name,
+        "property": setting_name,
         "value": value,
     }
     event_time = timezone_now()
@@ -5062,21 +5062,21 @@ def do_change_notification_settings(
             {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: value,
-                "property": name,
+                "property": setting_name,
             }
         ).decode(),
     )
 
     send_event(user_profile.realm, event, [user_profile.id])
 
-    if name in UserProfile.notification_settings_legacy:
+    if setting_name in UserProfile.notification_settings_legacy:
         # This legacy event format is for backwards-compatiblity with
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
         legacy_event = {
             "type": "update_global_notifications",
             "user": user_profile.email,
-            "notification_name": name,
+            "notification_name": setting_name,
             "setting": value,
         }
         send_event(user_profile.realm, legacy_event, [user_profile.id])
