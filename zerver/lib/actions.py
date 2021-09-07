@@ -5028,30 +5028,30 @@ def do_change_notification_settings(
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
-    """Takes in a UserProfile object, the name of a global notification
-    preference to update, and the value to update to
-    """
+    # TODO: Make acting_user a mandatory parameter to
+    # do_change_user_setting, and then delete this function (having
+    # callers access do_change_user_setting directly).
+    do_change_user_setting(user_profile, setting_name, setting_value, acting_user=acting_user)
 
+
+def do_change_user_setting(
+    user_profile: UserProfile,
+    setting_name: str,
+    setting_value: Union[bool, str, int],
+    acting_user: Optional[UserProfile] = None,
+) -> None:
     old_value = getattr(user_profile, setting_name)
-    notification_setting_type = UserProfile.notification_setting_types[setting_name]
-    assert isinstance(
-        setting_value, notification_setting_type
-    ), f"Cannot update {setting_name}: {setting_value} is not an instance of {notification_setting_type}"
+    event_time = timezone_now()
 
+    if setting_name == "timezone":
+        assert isinstance(setting_value, str)
+    else:
+        property_type = UserProfile.property_types[setting_name]
+        assert isinstance(setting_value, property_type)
     setattr(user_profile, setting_name, setting_value)
 
-    # Disabling digest emails should clear a user's email queue
-    if setting_name == "enable_digest_emails" and not setting_value:
-        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
-
+    # TODO: Move these database actions into a transaction.atomic block.
     user_profile.save(update_fields=[setting_name])
-    event = {
-        "type": "user_settings",
-        "op": "update",
-        "property": setting_name,
-        "value": setting_value,
-    }
-    event_time = timezone_now()
 
     if setting_name in UserProfile.notification_setting_types:
         # Prior to all personal settings being managed by property_types,
@@ -5073,6 +5073,19 @@ def do_change_notification_settings(
                 }
             ).decode(),
         )
+    # Disabling digest emails should clear a user's email queue
+    if setting_name == "enable_digest_emails" and not setting_value:
+        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
+
+    event = {
+        "type": "user_settings",
+        "op": "update",
+        "property": setting_name,
+        "value": setting_value,
+    }
+    if setting_name == "default_language":
+        assert isinstance(setting_value, str)
+        event["language_name"] = get_language_name(setting_value)
 
     send_event(user_profile.realm, event, [user_profile.id])
 
@@ -5087,30 +5100,6 @@ def do_change_notification_settings(
             "setting": setting_value,
         }
         send_event(user_profile.realm, legacy_event, [user_profile.id])
-
-
-def do_change_user_setting(
-    user_profile: UserProfile, setting_name: str, setting_value: Union[bool, str, int]
-) -> None:
-    if setting_name == "timezone":
-        assert isinstance(setting_value, str)
-    else:
-        property_type = UserProfile.property_types[setting_name]
-        assert isinstance(setting_value, property_type)
-    setattr(user_profile, setting_name, setting_value)
-    user_profile.save(update_fields=[setting_name])
-
-    event = {
-        "type": "user_settings",
-        "op": "update",
-        "property": setting_name,
-        "value": setting_value,
-    }
-    if setting_name == "default_language":
-        assert isinstance(setting_value, str)
-        event["language_name"] = get_language_name(setting_value)
-
-    send_event(user_profile.realm, event, [user_profile.id])
 
     if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
         # This legacy event format is for backwards-compatiblity with
