@@ -15,7 +15,6 @@ import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as login_to_access from "./login_to_access";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -26,6 +25,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
+import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
@@ -216,7 +216,7 @@ export function update_placeholder_text() {
 
 export function start(msg_type, opts) {
     if (page_params.is_spectator) {
-        login_to_access.show();
+        spectators.login_to_access();
         return;
     }
 

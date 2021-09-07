@@ -44,8 +44,8 @@ const emoji_picker = mock_esm("../../static/js/emoji_picker", {
 });
 const message_lists = mock_esm("../../static/js/message_lists");
 const message_store = mock_esm("../../static/js/message_store");
-const login_to_access = mock_esm("../../static/js/login_to_access", {
-    show() {},
+const spectators = mock_esm("../../static/js/spectators", {
+    login_to_access() {},
 });
 
 message_lists.current = {
@@ -914,7 +914,7 @@ test("process_reaction_click", ({override}) => {
     // Test spectator cannot react.
     page_params.is_spectator = true;
     let stub = make_stub();
-    login_to_access.show = stub.f;
+    spectators.login_to_access = stub.f;
     reactions.process_reaction_click(message.id, "unicode_emoji,1f642");
     let args = stub.get_args("args").args;
     assert.equal(args, undefined);
