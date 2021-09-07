@@ -6,6 +6,10 @@ system requires a little bit of setup.
 To set up the development environment to work on the billing code:
 
 - Create a Stripe account
+- Ensure that the [API version](https://stripe.com/docs/api/versioning) of
+  your Stripe account is same as `STRIPE_API_VERSION` defined in
+  `corporate/lib/stripe.py`. You can upgrade to a higher version from
+  the Stripe dashboard.
 - Go to <https://dashboard.stripe.com/account/apikeys>, and add the
   publishable key and secret key as `stripe_publishable_key` and
   `stripe_secret_key` to `zproject/dev-secrets.conf`.
@@ -21,9 +25,10 @@ our code is:
 - Upgrade the API version.
 - Run `tools/test-backend --generate-stripe-fixtures`
 - Fix any failing tests, and manually look through `git diff` to understand
-  the changes.
-- If there are no material changes, commit the diff, and open a PR.
-- Ask Rishi or Tim to go to <https://dashboard.stripe.com/developers> in the
+  the changes. Ensure that there are no material changes.
+- Update the value of `STRIPE_API_VERSION` in `corporate/lib/stripe.py`.
+- Commit the diff, and open a PR.
+- Ask to Tim to go to <https://dashboard.stripe.com/developers> in the
   zulipchat Stripe account, and upgrade the API version there.
 
 We currently aren't set up to do version upgrades where there are breaking

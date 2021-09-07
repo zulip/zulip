@@ -51,6 +51,9 @@ MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
+# The version of Stripe API the billing system supports.
+STRIPE_API_VERSION = "2020-08-27"
+
 
 def get_latest_seat_count(realm: Realm) -> int:
     non_guests = (
