@@ -37,14 +37,14 @@ to the next section.
 
 You can create a new user with sudo privileges by running the
 following commands as root:
-* You can create a `zulipdev` user by running the command `adduser
-zulipdev`. Run through the prompts to assign a password and user
-information.  (You can pick any username you like for this user
+* You can create a `zulipdev` user by running the command
+`adduser zulipdev`. Run through the prompts to assign a password and
+user information.  (You can pick any username you like for this user
 account.)
 * You can add the user to the sudo group by running the command
 `usermod -aG sudo zulipdev`.
-* Finally, you can switch to the user by running the command `su -
-zulipdev` (or just log in to that user using `ssh`).
+* Finally, you can switch to the user by running the command
+`su - zulipdev` (or just log in to that user using `ssh`).
 
 ## Setting up the development environment
 
@@ -311,9 +311,9 @@ different.
     service nginx reload  # Actually enabled your nginx configuration
     ```
 
-1. Edit `zproject/dev_settings.py` to set `EXTERNAL_URI_SCHEME =
-   "https://"`, so that URLs served by the development environment
-   will be HTTPS.
+1. Edit `zproject/dev_settings.py` to set
+   `EXTERNAL_URI_SCHEME = "https://"`, so that URLs served by the
+   development environment will be HTTPS.
 
 1. Start the Zulip development environment with the following command:
    ```bash

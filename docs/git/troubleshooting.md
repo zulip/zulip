@@ -129,9 +129,9 @@ $ git log
 * 13bea0e (HEAD -> main) test commit for docs.
 ```
 
-And then realize you actually needed to keep commit 67aea58. First, use `git
-reflog` to confirm that commit you want to restore and then run `git
-cherry-pick <commit>`:
+And then realize you actually needed to keep commit 67aea58. First, use
+`git reflog` to confirm that commit you want to restore and then run
+`git cherry-pick <commit>`:
 
 ```console
 $ git reflog

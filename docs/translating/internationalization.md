@@ -77,10 +77,10 @@ The end-to-end tooling process for translations in Zulip is as follows.
    [frontend](#frontend-translations) translations for details on
    this).
 
-2. Translation resource files are created using the `./manage.py
-   makemessages` command. This command will create, for each language,
-   a resource file called `translations.json` for the frontend strings
-   and `django.po` for the backend strings.
+2. Translation resource files are created using the
+   `./manage.py makemessages` command. This command will create, for
+   each language, a resource file called `translations.json` for the
+   frontend strings and `django.po` for the backend strings.
 
    The `makemessages` command is idempotent in that:
 

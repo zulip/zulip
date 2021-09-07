@@ -25,12 +25,13 @@ first.
 
 You can enable this for your Zulip server as follows:
 
-1. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL =
-   'https://push.zulipchat.com'` line in your `/etc/zulip/settings.py`
-   file (i.e. remove the `#` at the start of the line), and
-   [restart your Zulip server](../production/settings.html#making-changes).
-   If you installed your Zulip server with a version older than 1.6,
-   you'll need to add the line (it won't be there to uncomment).
+1. Uncomment the
+   `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line
+   in your `/etc/zulip/settings.py` file (i.e. remove the `#` at the
+   start of the line), and [restart your Zulip
+   server](../production/settings.html#making-changes).  If you
+   installed your Zulip server with a version older than 1.6, you'll
+   need to add the line (it won't be there to uncomment).
 
 1. If you're running Zulip 1.8.1 or newer, you can run the
     registration command:
@@ -82,9 +83,9 @@ in the installer).  You can update your server's registration data by
 running `manage.py register_server` again.
 
 If you'd like to rotate your server's API key for this service
-(`zulip_org_key`), you need to use `manage.py register_server
---rotate-key` option; it will automatically generate a new
-`zulip_org_key` and store that new key in
+(`zulip_org_key`), you need to use
+`manage.py register_server --rotate-key` option; it will automatically
+generate a new `zulip_org_key` and store that new key in
 `/etc/zulip/zulip-secrets.conf`.
 
 ## Why this is necessary

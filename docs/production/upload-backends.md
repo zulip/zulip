@@ -59,9 +59,9 @@ as world-readable, whereas the "uploaded files" one is not.
 
    With older Zulip, you need to edit
    `/etc/nginx/sites-available/zulip-enterprise` to comment out the
-   `nginx` configuration block for `/user_avatars` and the `include
-   /etc/nginx/zulip-include/uploads.route` line and then reload the
-   `nginx` service (`service nginx reload`).
+   `nginx` configuration block for `/user_avatars` and the
+   `include /etc/nginx/zulip-include/uploads.route` line and then
+   reload the `nginx` service (`service nginx reload`).
 
 1. Finally, restart the Zulip server so that your settings changes
    take effect

@@ -41,8 +41,8 @@ CI testing process in the `backend` build.
 mypy is installed by default in the Zulip development environment.  If
 you'd like to install just the version of `mypy` that we're using
 (useful if e.g. you want `mypy` installed on your laptop outside the
-Vagrant guest), you can do that with `pip install -r
-requirements/mypy.txt`.
+Vagrant guest), you can do that with
+`pip install -r requirements/mypy.txt`.
 
 ## Running mypy on Zulip's code locally
 
@@ -277,8 +277,8 @@ alternatives first:
   single site, you may want a [**`Union`
   type**](https://mypy.readthedocs.io/en/stable/kinds_of_types.html#union-types).
   `Union` is checked: before using `value: Union[str, int]` as a
-  `str`, mypy requires that you validate it with an `instance(value,
-  str)` test.
+  `str`, mypy requires that you validate it with an
+  `instance(value, str)` test.
 
 * If you really have no information about the type of a value, use the
   **`object` type**.  Since every type is a subtype of `object`, you
@@ -325,8 +325,8 @@ Instead of using `cast`:
 
 ### Avoid `# type: ignore` comments
 
-Mypy allows you to ignore any type checking error with a [`# type:
-ignore`
+Mypy allows you to ignore any type checking error with a
+[`# type: ignore`
 comment](https://mypy.readthedocs.io/en/stable/common_issues.html#spurious-errors-and-locally-silencing-the-checker),
 but you should avoid this in the absence of a very good reason, such
 as a bug in mypy itself.  If there are no safe options for dealing
@@ -378,9 +378,9 @@ collection.  For example:
 * An exclude list where the default is to exclude nothing should be
   non-`Optional` with default `[]`.
 
-Don't test an `Optional` value using truthiness (`if value:`, `not
-value`, `value or default_value`), especially when the type might have
-falsy values other than `None`.
+Don't test an `Optional` value using truthiness (`if value:`,
+`not value`, `value or default_value`), especially when the type might
+have falsy values other than `None`.
 
 ```python
 s: Optional[str]
@@ -491,8 +491,8 @@ def f(s: str) -> str:
     return s
 ```
 
-(A generic decorator with an argument would return `Callable[[FuncT],
-FuncT]`.)
+(A generic decorator with an argument would return
+`Callable[[FuncT], FuncT]`.)
 
 But Mypy doesn't yet support the advanced type annotations that would
 be needed to correctly type generic signature-changing decorators,

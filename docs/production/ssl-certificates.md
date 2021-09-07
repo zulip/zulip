@@ -38,9 +38,10 @@ Two good tests include:
 
 * Alternatively, run a command like `curl -SsI https://zulip.example.com`
   (using your server's URL) from a machine that can reach your server.
-  Make sure that on the same machine, `curl -SsI
-  https://incomplete-chain.badssl.com` gives an error; `curl` on some
-  machines, including Macs, will accept incomplete chains.
+  Make sure that on the same machine,
+  `curl -SsI https://incomplete-chain.badssl.com` gives an error;
+  `curl` on some machines, including Macs, will accept incomplete
+  chains.
 
 [ssllabs-tester]: https://www.ssllabs.com/ssltest/analyze.html
 

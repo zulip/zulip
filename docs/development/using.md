@@ -14,9 +14,10 @@ the development environment][authentication-dev-server].
 ## Common
 
 * Zulip's `main` branch moves quickly, and you should rebase
-  constantly with e.g. `git fetch upstream; git rebase
-  upstream/main` to avoid developing on an old version of the Zulip
-  codebase (leading to unnecessary merge conflicts).
+  constantly with e.g.
+  `git fetch upstream; git rebase upstream/main` to avoid developing
+  on an old version of the Zulip codebase (leading to unnecessary
+  merge conflicts).
 * Remember to run `tools/provision` to update your development
   environment after switching branches; it will run in under a second
   if no changes are required.
@@ -55,8 +56,8 @@ the development environment][authentication-dev-server].
   console output, which will show tracebacks for any 500 errors your
   Zulip development server encounters (which are probably caused by
   bugs in your code).
-* To manually query Zulip's database interactively, use `./manage.py
-  shell` or `manage.py dbshell`.
+* To manually query Zulip's database interactively, use
+  `./manage.py shell` or `manage.py dbshell`.
 * The database(s) used for the automated tests are independent from
   the one you use for manual testing in the UI, so changes you make to
   the database manually will never affect the automated tests.
