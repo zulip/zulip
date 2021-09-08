@@ -1135,7 +1135,7 @@ def do_change_realm_subdomain(
     # deactivated. We are creating a deactivated realm using old subdomain and setting
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
-    placeholder_realm = do_create_realm(old_subdomain, "placeholder-realm")
+    placeholder_realm = do_create_realm(old_subdomain, realm.name)
     do_deactivate_realm(placeholder_realm, acting_user=None)
     do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
