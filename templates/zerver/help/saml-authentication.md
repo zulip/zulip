@@ -65,6 +65,52 @@ Zulip with various common SAML identity providers.
 
 1. We will take care of the server-side setup and let you know as soon as it's ready.
 
+## Configure SAML with AzureAD
+
+1. Make sure you have created your organization.
+
+1. From your AzureAD Dashboard, navigate to "Enterprise applications",
+   click "New application", followed by "Create your own application".
+
+1. Enter a name (E.g. "Zulip Cloud") for the new AzureAD application,
+   choose "Integrate any other application you don't find in the
+   gallery (Non-gallery)" and click "Create".
+
+1. From your new AzureAD application's Overview page that opens, go to
+   "Single sign-on" and select "SAML".
+
+1. In the "Basic SAML Configuration" section:
+
+    * Set "Identifier (Entity ID)" to be `https://zulip.com`.
+    * Check the "Default" box - this is necessary for IdP-initiated sign on to work.
+    * Set `https://auth.zulipchat.com/complete/saml/` as the "Reply URL (Assertion Consumer Service URL)".
+    * Optional: If you want to set up IdP-initiated sign on, enter
+    `{"subdomain": "{your organization's subdomain}"}` in the
+    `RelayState` field. E.g. if your organization's
+    address is `mytestorganization.zulipchat.com`, set this field to
+    `{"subdomain": "mytestorganization"}`.
+
+1. The default "User Attributes & Claims" are correct. If you need to
+   make changes to them, mention it in your email to support@zulip.com
+   in a later step. The screenshot below illustrates the expected
+   configuration - which is the default the new app comes with at the
+   time of writing this:
+
+    ![AzureAD attributes](/static/images/help/azuread_saml_attrs.png)
+
+1. The AzureAD side of configuration should be ready!
+   Send the following information to us at support@zulip.com:
+     * The URL of your zulipchat-hosted organization.
+     * The `App Federation Metadata Url` and the certificate
+       downloaded from `Certificate (Base64)` in the "SAML Signing Certificate" section.
+     * The `Login URL` and `Azure AD Identifier` from the "Set up" section.
+     * The name "X" that will be displayed on the "Log in with X"
+       button on the Zulip login page.
+     * Optionally, you can also send us an icon that should be shown on the button.
+
+1. We will take care of the server-side setup and let you know as soon as it's ready.
+
+
 ## Related articles
 
 * [SAML configuration][saml-readthedocs] for self-hosting.
