@@ -5,6 +5,7 @@
 const fs = require("fs");
 
 const ExampleValidator = require("openapi-examples-validator");
+const Prettier = require("prettier");
 const SwaggerParser = require("swagger-parser");
 const {LineCounter, Scalar, YAMLMap, YAMLSeq, parseDocument, visit} = require("yaml");
 
@@ -48,6 +49,23 @@ async function checkFile(file) {
                 const {line, col} = lineCounter.linePos(node.value.range[0]);
                 console.error("%s:%d:%d: Too many inline allOf subschemas", file, line, col);
                 ok = false;
+            }
+
+            if (
+                node.key instanceof Scalar &&
+                node.key.value === "description" &&
+                node.value instanceof Scalar &&
+                typeof node.value.value === "string"
+            ) {
+                let formatted = Prettier.format(node.value.value, {parser: "markdown"});
+                if (![Scalar.BLOCK_FOLDED, Scalar.BLOCK_LITERAL].includes(node.value.type)) {
+                    formatted = formatted.replace(/\n$/, "");
+                }
+                if (formatted !== node.value.value) {
+                    ok = false;
+                    const {line, col} = lineCounter.linePos(node.value.range[0]);
+                    console.error("%s:%d:%d: Format description with Prettier", file, line, col);
+                }
             }
         },
     });
