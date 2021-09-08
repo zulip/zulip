@@ -336,11 +336,6 @@ class ChangeSettingsTest(ZulipTestCase):
         if test_value is None:
             raise AssertionError(f"No test created for {setting_name}")
 
-        if isinstance(test_value, int):
-            invalid_value: Any = 100
-        else:
-            invalid_value = "invalid_" + setting_name
-
         if setting_name not in ["demote_inactive_streams", "color_scheme"]:
             data = {setting_name: test_value}
         else:
@@ -350,21 +345,6 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_success(result)
         user_profile = self.example_user("hamlet")
         self.assertEqual(getattr(user_profile, setting_name), test_value)
-
-        # Test to make sure invalid settings are not accepted
-        # and saved in the db.
-        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
-            data = {setting_name: invalid_value}
-        else:
-            data = {setting_name: orjson.dumps(invalid_value).decode()}
-
-        result = self.client_patch("/json/settings", data)
-        # the json error for multiple word setting names (ex: default_language)
-        # displays as 'Invalid language'. Using setting_name.split('_') to format.
-        self.assert_json_error(result, f"Invalid {setting_name}")
-
-        user_profile = self.example_user("hamlet")
-        self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)
 
     def test_change_user_setting(self) -> None:
         """Test updating each non-boolean setting in UserProfile property_types"""
@@ -379,6 +359,34 @@ class ChangeSettingsTest(ZulipTestCase):
         for setting in user_settings:
             self.do_test_change_user_setting(setting)
         self.do_test_change_user_setting("timezone")
+
+    def test_invalid_setting_value(self) -> None:
+        invalid_values_dict = dict(
+            default_language="invalid_de",
+            default_view="invalid_view",
+            emojiset="apple",
+            timezone="invalid_US/Mountain",
+            demote_inactive_streams=10,
+            color_scheme=10,
+            notification_sound="invalid_sound",
+            desktop_icon_count_display=10,
+        )
+
+        self.login("hamlet")
+        for setting_name in invalid_values_dict.keys():
+            invalid_value = invalid_values_dict.get(setting_name)
+            if isinstance(invalid_value, str):
+                invalid_value = orjson.dumps(invalid_value).decode()
+
+            req = {setting_name: invalid_value}
+            result = self.client_patch("/json/settings", req)
+
+            expected_error_msg = f"Invalid {setting_name}"
+            if setting_name == "notification_sound":
+                expected_error_msg = f"Invalid notification sound '{invalid_value}'"
+            self.assert_json_error(result, expected_error_msg)
+            hamlet = self.example_user("hamlet")
+            self.assertNotEqual(getattr(hamlet, setting_name), invalid_value)
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")
