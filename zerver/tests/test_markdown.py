@@ -436,7 +436,9 @@ class MarkdownTest(ZulipTestCase):
                 if test.get("translate_emoticons", False):
                     # Create a userprofile and send message with it.
                     user_profile = self.example_user("othello")
-                    do_change_user_setting(user_profile, "translate_emoticons", True)
+                    do_change_user_setting(
+                        user_profile, "translate_emoticons", True, acting_user=None
+                    )
                     msg = Message(sender=user_profile, sending_client=get_client("test"))
                     rendering_result = render_markdown(msg, test["input"])
                     converted = rendering_result.rendered_content
@@ -1219,7 +1221,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user("othello")
-        do_change_user_setting(user_profile, "translate_emoticons", False)
+        do_change_user_setting(user_profile, "translate_emoticons", False, acting_user=None)
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = ":)"

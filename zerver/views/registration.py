@@ -420,7 +420,7 @@ def accounts_register(
             do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
-            do_change_user_setting(user_profile, "timezone", timezone)
+            do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
             # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
