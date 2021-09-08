@@ -143,29 +143,6 @@ class ChangeSettingsTest(ZulipTestCase):
             if UserProfile.notification_setting_types[notification_setting] is bool:
                 self.check_for_toggle_param_patch("/json/settings", notification_setting)
 
-    def test_change_notification_sound(self) -> None:
-        pattern = "/json/settings"
-        param = "notification_sound"
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        json_result = self.client_patch(pattern, {param: "invalid"})
-        self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
-
-        json_result = self.client_patch(pattern, {param: "ding"})
-        self.assert_json_success(json_result)
-
-        # refetch user_profile object to correctly handle caching
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(getattr(user_profile, param), "ding")
-
-        json_result = self.client_patch(pattern, {param: "zulip"})
-
-        self.assert_json_success(json_result)
-        # refetch user_profile object to correctly handle caching
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(getattr(user_profile, param), "zulip")
-
     def test_change_email_batching_period(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -328,6 +305,9 @@ class ChangeSettingsTest(ZulipTestCase):
             timezone="US/Mountain",
             demote_inactive_streams=2,
             color_scheme=2,
+            email_notifications_batching_period_seconds=100,
+            notification_sound="ding",
+            desktop_icon_count_display=2,
         )
 
         self.login("hamlet")
@@ -349,12 +329,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_change_user_setting(self) -> None:
         """Test updating each non-boolean setting in UserProfile property_types"""
         user_settings = (
-            s
-            for s in UserProfile.property_types
-            if UserProfile.property_types[s] is not bool
-            # Legacy notification settings have a separate test suite, though
-            # we can likely merge that test suite with this one in the future.
-            and s not in UserProfile.notification_settings_legacy
+            s for s in UserProfile.property_types if UserProfile.property_types[s] is not bool
         )
         for setting in user_settings:
             self.do_test_change_user_setting(setting)
