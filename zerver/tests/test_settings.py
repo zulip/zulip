@@ -133,16 +133,6 @@ class ChangeSettingsTest(ZulipTestCase):
         json_result = self.client_patch("/json/settings", dict(email="hamlet@mailnator.com"))
         self.assert_json_error(json_result, "Please use your real email address.")
 
-    # This is basically a don't-explode test.
-    def test_notify_settings(self) -> None:
-        for notification_setting in UserProfile.notification_setting_types.keys():
-            # `notification_sound` is a string not a boolean, so this test
-            # doesn't work for it.
-            #
-            # TODO: Make this work more like do_test_realm_update_api
-            if UserProfile.notification_setting_types[notification_setting] is bool:
-                self.check_for_toggle_param_patch("/json/settings", notification_setting)
-
     def test_change_email_batching_period(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -167,13 +157,13 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.email_notifications_batching_period_seconds, 300)
 
-    def test_toggling_boolean_user_display_settings(self) -> None:
+    def test_toggling_boolean_user_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
         boolean_settings = (
             s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
         )
-        for display_setting in boolean_settings:
-            self.check_for_toggle_param_patch("/json/settings", display_setting)
+        for user_setting in boolean_settings:
+            self.check_for_toggle_param_patch("/json/settings", user_setting)
 
     def test_wrong_old_password(self) -> None:
         self.login("hamlet")
