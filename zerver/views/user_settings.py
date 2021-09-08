@@ -21,7 +21,6 @@ from zerver.decorator import human_users_only
 from zerver.lib.actions import (
     check_change_full_name,
     do_change_avatar_fields,
-    do_change_notification_settings,
     do_change_password,
     do_change_user_delivery_email,
     do_change_user_setting,
@@ -259,22 +258,10 @@ def json_change_settings(
             check_change_full_name(user_profile, full_name, user_profile)
 
     # Loop over user_profile.property_types
-    request_settings = {
-        k: v
-        for k, v in list(locals().items())
-        if k in user_profile.property_types and k not in user_profile.notification_setting_types
-    }
+    request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     for k, v in list(request_settings.items()):
         if v is not None and getattr(user_profile, k) != v:
             do_change_user_setting(user_profile, k, v, acting_user=user_profile)
-
-    req_vars = {
-        k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types
-    }
-
-    for k, v in list(req_vars.items()):
-        if v is not None and getattr(user_profile, k) != v:
-            do_change_notification_settings(user_profile, k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
         do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
