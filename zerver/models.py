@@ -207,7 +207,7 @@ class Realm(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
     # User-visible display name and description used on e.g. the organization homepage
-    name: Optional[str] = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True)
+    name: str = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description: str = models.TextField(default="")
 
     # A short, identifier-like name for the organization.  Used in subdomains;
