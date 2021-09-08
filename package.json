@@ -106,7 +106,6 @@
     "eslint-import-resolver-webpack": "^0.13.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-unicorn": "^35.0.0",
-    "js-yaml": "^4.0.0",
     "jsdom": "^17.0.0",
     "mockdate": "^3.0.2",
     "node-fetch": "^2.6.1",
@@ -125,6 +124,7 @@
     "vnu-jar": "^21.2.5",
     "webpack-dev-server": "^3.5.1",
     "xvfb": "^0.4.0",
+    "yaml": "^2.0.0-8",
     "yarn-deduplicate": "^3.0.0",
     "zulip-js": "^2.0.8"
   },
