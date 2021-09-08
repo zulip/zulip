@@ -5021,19 +5021,6 @@ def do_create_realm(
     return realm
 
 
-def do_change_notification_settings(
-    user_profile: UserProfile,
-    setting_name: str,
-    setting_value: Union[bool, int, str],
-    *,
-    acting_user: Optional[UserProfile],
-) -> None:
-    # TODO: Make acting_user a mandatory parameter to
-    # do_change_user_setting, and then delete this function (having
-    # callers access do_change_user_setting directly).
-    do_change_user_setting(user_profile, setting_name, setting_value, acting_user=acting_user)
-
-
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,

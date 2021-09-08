@@ -39,7 +39,6 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_notification_settings,
     do_change_plan_type,
     do_change_realm_domain,
     do_change_stream_description,
@@ -1422,13 +1421,13 @@ class NormalActionsTest(BaseAction):
                 # These settings are tested in their own tests.
                 continue
 
-            do_change_notification_settings(
+            do_change_user_setting(
                 self.user_profile, notification_setting, False, acting_user=self.user_profile
             )
 
             for setting_value in [True, False]:
                 events = self.verify_action(
-                    lambda: do_change_notification_settings(
+                    lambda: do_change_user_setting(
                         self.user_profile,
                         notification_setting,
                         setting_value,
@@ -1441,7 +1440,7 @@ class NormalActionsTest(BaseAction):
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
-                    lambda: do_change_notification_settings(
+                    lambda: do_change_user_setting(
                         self.user_profile,
                         notification_setting,
                         setting_value,
@@ -1458,7 +1457,7 @@ class NormalActionsTest(BaseAction):
         notification_setting = "notification_sound"
 
         events = self.verify_action(
-            lambda: do_change_notification_settings(
+            lambda: do_change_user_setting(
                 self.user_profile, notification_setting, "ding", acting_user=self.user_profile
             ),
             num_events=2,
@@ -1470,7 +1469,7 @@ class NormalActionsTest(BaseAction):
         notification_setting = "desktop_icon_count_display"
 
         events = self.verify_action(
-            lambda: do_change_notification_settings(
+            lambda: do_change_user_setting(
                 self.user_profile, notification_setting, 2, acting_user=self.user_profile
             ),
             num_events=2,
@@ -1479,7 +1478,7 @@ class NormalActionsTest(BaseAction):
         check_update_global_notifications("events[1]", events[1], 2)
 
         events = self.verify_action(
-            lambda: do_change_notification_settings(
+            lambda: do_change_user_setting(
                 self.user_profile, notification_setting, 1, acting_user=self.user_profile
             ),
             num_events=2,
@@ -2074,7 +2073,7 @@ class NormalActionsTest(BaseAction):
 
     def test_notification_setting_event_not_sent(self) -> None:
         events = self.verify_action(
-            lambda: do_change_notification_settings(
+            lambda: do_change_user_setting(
                 self.user_profile,
                 "enable_sounds",
                 False,
