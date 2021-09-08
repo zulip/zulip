@@ -5038,7 +5038,8 @@ def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
     setting_value: Union[bool, str, int],
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     old_value = getattr(user_profile, setting_name)
     event_time = timezone_now()
