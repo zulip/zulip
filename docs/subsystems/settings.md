@@ -17,7 +17,7 @@ Philosophically, the goals of the settings system are to make it
 convenient for:
 
 - Zulip server administrators to configure
-  Zulip's featureset for their server without needing to patch Zulip
+  Zulip's feature set for their server without needing to patch Zulip
 - Realm administrators to configure settings for their organization
   independently without needing to talk with the server administrator.
 - Secrets (passwords, API keys, etc.) to be stored in a separate place
