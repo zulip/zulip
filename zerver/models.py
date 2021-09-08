@@ -1310,7 +1310,7 @@ class UserBaseSettings(models.Model):
         default=DEMOTE_STREAMS_AUTOMATIC
     )
 
-    # Emojisets
+    # Emoji sets
     GOOGLE_EMOJISET = "google"
     GOOGLE_BLOB_EMOJISET = "google-blob"
     TEXT_EMOJISET = "text"
