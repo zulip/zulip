@@ -266,7 +266,7 @@ def json_change_settings(
     }
     for k, v in list(request_settings.items()):
         if v is not None and getattr(user_profile, k) != v:
-            do_change_user_setting(user_profile, k, v)
+            do_change_user_setting(user_profile, k, v, acting_user=user_profile)
 
     req_vars = {
         k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types
@@ -277,7 +277,7 @@ def json_change_settings(
             do_change_notification_settings(user_profile, k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
-        do_change_user_setting(user_profile, "timezone", timezone)
+        do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
 
     # TODO: Do this more generally.
     from zerver.lib.request import RequestNotes

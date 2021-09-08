@@ -2065,6 +2065,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 "default_view",
                 "all_messages",
+                acting_user=self.user_profile,
             ),
             state_change_expected=True,
             user_settings_object=True,
@@ -2195,7 +2196,9 @@ class UserDisplayActionTest(BaseAction):
 
         for value in values:
             events = self.verify_action(
-                lambda: do_change_user_setting(self.user_profile, setting_name, value),
+                lambda: do_change_user_setting(
+                    self.user_profile, setting_name, value, acting_user=self.user_profile
+                ),
                 num_events=num_events,
             )
 
@@ -2215,7 +2218,9 @@ class UserDisplayActionTest(BaseAction):
 
         for value in values:
             events = self.verify_action(
-                lambda: do_change_user_setting(self.user_profile, "timezone", value),
+                lambda: do_change_user_setting(
+                    self.user_profile, "timezone", value, acting_user=self.user_profile
+                ),
                 num_events=num_events,
             )
 
@@ -2347,7 +2352,9 @@ class SubscribeActionTest(BaseAction):
 
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
-        do_change_user_setting(user_profile, "enable_drafts_synchronization", True)
+        do_change_user_setting(
+            user_profile, "enable_drafts_synchronization", True, acting_user=self.user_profile
+        )
 
     def test_draft_create_event(self) -> None:
         self.do_enable_drafts_synchronization(self.user_profile)
