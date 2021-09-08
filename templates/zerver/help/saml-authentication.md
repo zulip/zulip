@@ -8,13 +8,12 @@ Zulip with various common SAML identity providers.
 
 ## Configure SAML with Okta
 
-1. Make sure you have created your organization. We'll assume its URL is
-   `https://<subdomain>.zulipchat.com` in the instructions below.
+1. Make sure you have created your organization.
 
 1. Set up SAML authentication by following
    [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
    Specify:
-     * `https://<subdomain>.zulipchat.com/complete/saml/` for the "Single sign on URL"`.
+     * `https://auth.zulipchat.com/complete/saml/` for the "Single sign on URL"`.
      * `https://zulip.com` for the "Audience URI (SP Entity ID)".
      * Skip "Default RelayState".
      * Skip "Name ID format".
@@ -35,8 +34,7 @@ Zulip with various common SAML identity providers.
 
 ## Configure SAML with OneLogin
 
-1. Make sure you have created your organization. We'll assume its URL is
-   `https://<subdomain>.zulipchat.com` in the instructions below.
+1. Make sure you have created your organization.
 
 1. Navigate to the OneLogin Applications page, and click "Add App".
 
@@ -48,7 +46,7 @@ Zulip with various common SAML identity providers.
 1. Go to the "Configuration" section:
     * Leave the `RelayState` field empty.
     * Set `https://zulip.com` as the Audience.
-    * Set `https://<subdomain>.zulipchat.com/complete/saml/` as the Recipient, ACS URL
+    * Set `https://auth.zulipchat.com/complete/saml/` as the Recipient, ACS URL
       and ACS URL Validator.
 
 1. Go to the "Parameters" section. Ignore the pre-configured parameters that are already there
