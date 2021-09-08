@@ -256,8 +256,16 @@ function format_topic(topic_data) {
         // We display only 10 extra senders in tooltips,
         // and just display remaining number of senders.
         const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
+        // Pluralization syntax from:
+        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
         displayed_other_names.push(
-            $t({defaultMessage: `and {remaining_senders} other(s).`}, {remaining_senders}),
+            $t(
+                {
+                    defaultMessage:
+                        "and {remaining_senders, plural, one {1 other} other {# others}}.",
+                },
+                {remaining_senders},
+            ),
         );
     }
     const other_sender_names = displayed_other_names.join("<br/>");
