@@ -9261,11 +9261,11 @@ paths:
                               for configuring notification sounds.
                           emojiset_choices:
                             description: |
-                              Array of dictionaries where each dictionary describes an emojiset
+                              Array of dictionaries where each dictionary describes an emoji set
                               supported by this version of the Zulip server.
 
-                              Only relevant to clients with configuration UI for choosing an emojiset;
-                              the currently selected emojiset is available in the `emojiset` key.
+                              Only relevant to clients with configuration UI for choosing an emoji set;
+                              the currently selected emoji set is available in the `emojiset` key.
 
                               See [PATCH /settings](/api/update-settings) for details on
                               the meaning of this setting.
@@ -9273,18 +9273,18 @@ paths:
                             items:
                               type: object
                               description: |
-                                Object describing a emojiset.
+                                Object describing a emoji set.
                               additionalProperties: false
                               properties:
                                 key:
                                   type: string
                                   description: |
-                                    The key or the name of the emojiset which will be the value
-                                    of `emojiset` if this emojiset is chosen.
+                                    The key or the name of the emoji set which will be the value
+                                    of `emojiset` if this emoji set is chosen.
                                 text:
                                   type: string
                                   description: |
-                                    The text describing the emojiset.
+                                    The text describing the emoji set.
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -9698,7 +9698,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          The name of the emojiset that the user has chosen.
+                          The name of the emoji set that the user has chosen.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -9867,11 +9867,11 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          Array of dictionaries where each dictionary describes an emojiset
+                          Array of dictionaries where each dictionary describes an emoji set
                           supported by this version of the Zulip server.
 
-                          Only relevant to clients with configuration UI for choosing an emojiset;
-                          the currently selected emojiset is available in the `emojiset` key.
+                          Only relevant to clients with configuration UI for choosing an emoji set;
+                          the currently selected emoji set is available in the `emojiset` key.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -9883,18 +9883,18 @@ paths:
                         items:
                           type: object
                           description: |
-                            Object describing a emojiset.
+                            Object describing a emoji set.
                           additionalProperties: false
                           properties:
                             key:
                               type: string
                               description: |
-                                The key or the name of the emojiset which will be the value
-                                of `emojiset` if this emojiset is chosen.
+                                The key or the name of the emoji set which will be the value
+                                of `emojiset` if this emoji set is chosen.
                             text:
                               type: string
                               description: |
-                                The text describing the emojiset.
+                                The text describing the emoji set.
                       realm_add_custom_emoji_policy:
                         type: integer
                         description: |

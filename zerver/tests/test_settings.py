@@ -360,7 +360,7 @@ class ChangeSettingsTest(ZulipTestCase):
         return result
 
     def test_emojiset(self) -> None:
-        """Test banned emojisets are not accepted."""
+        """Test banned emoji sets are not accepted."""
         banned_emojisets = ["apple", "emojione"]
         valid_emojisets = ["google", "google-blob", "text", "twitter"]
 

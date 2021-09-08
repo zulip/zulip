@@ -3,7 +3,7 @@
 from collections import defaultdict
 from typing import Any, Dict, List
 
-# Emojisets that we currently support.
+# Emoji sets that we currently support.
 EMOJISETS = ["google", "twitter"]
 
 # Some image files in the old emoji farm had a different name than in the new emoji
