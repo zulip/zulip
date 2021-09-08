@@ -11,7 +11,7 @@ The feature articles serve a few different purposes:
 
 - Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
-- Public documentation of our featureset, for someone googling "can zulip do .."
+- Public documentation of our feature set, for someone googling "can zulip do .."
 - Canned responses to support questions; if someone emails a Zulip admin
   asking "how do I change my name", they can reply with a link to the doc.
 - Feature explanations for new Zulip users and admins, especially for
