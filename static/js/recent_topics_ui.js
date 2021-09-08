@@ -154,6 +154,10 @@ export function get_focused_row_message() {
     if (is_table_focused()) {
         const recent_topic_id_prefix_len = "recent_topic:".length;
         const topic_rows = $("#recent_topics_table table tbody tr");
+        if (topic_rows.length === 0) {
+            return undefined;
+        }
+
         const topic_row = topic_rows.eq(row_focus);
         const topic_id = topic_row.attr("id").slice(recent_topic_id_prefix_len);
         const topic_last_msg_id = topics.get(topic_id).last_msg_id;
