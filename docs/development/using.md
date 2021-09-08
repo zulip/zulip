@@ -97,4 +97,4 @@ for mobile development][mobile-dev-server].
 [django-runserver]: https://docs.djangoproject.com/en/1.8/ref/django-admin/#runserver-port-or-address-port
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
-[mobile-dev-server]: https://github.com/zulip/zulip-mobile/blob/master/docs/howto/dev-server.md#using-a-dev-version-of-the-server
+[mobile-dev-server]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/dev-server.md#using-a-dev-version-of-the-server

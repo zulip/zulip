@@ -22,4 +22,4 @@ Note that the deployment cycles are different:
 To update the version of @zulip/shared on NPM, see the
 [instructions][publishing-shared] in the mobile repo.
 
-[publishing-shared]: https://github.com/zulip/zulip-mobile/blob/master/docs/howto/shared.md#publishing-zulipshared-to-npm
+[publishing-shared]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/shared.md#publishing-zulipshared-to-npm
