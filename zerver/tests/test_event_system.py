@@ -557,9 +557,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         for prop in UserProfile.property_types:
             self.assertNotIn(prop, result)
             self.assertIn(prop, result["user_settings"])
-        for prop in UserProfile.notification_setting_types:
-            self.assertNotIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
 
         result = fetch_initial_state_data(
             user_profile=hamlet,
@@ -567,9 +564,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("user_settings", result)
         for prop in UserProfile.property_types:
-            self.assertIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
-        for prop in UserProfile.notification_setting_types:
             self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 

@@ -21,10 +21,6 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
         value = getattr(source_profile, settings_name)
         setattr(target_profile, settings_name, value)
 
-    for settings_name in UserProfile.notification_setting_types:
-        value = getattr(source_profile, settings_name)
-        setattr(target_profile, settings_name, value)
-
     setattr(target_profile, "full_name", source_profile.full_name)
     setattr(target_profile, "enter_sends", source_profile.enter_sends)
     setattr(target_profile, "timezone", source_profile.timezone)
