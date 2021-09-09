@@ -468,6 +468,12 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"], display_name="Zabbix"),
     WebhookIntegration("gci", ["misc"], display_name="Google Code-in", stream_name="gci"),
+    WebhookIntegration(
+        "githubsponsors",
+        ["misc"],
+        display_name="GitHub Sponsors",
+        logo="images/integrations/logos/github.svg",
+    ),
 ]
 
 INTEGRATIONS: Dict[str, Integration] = {
