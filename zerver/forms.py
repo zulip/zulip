@@ -413,6 +413,8 @@ class CreateUserForm(forms.Form):
 
 
 class OurAuthenticationForm(AuthenticationForm):
+    logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
+
     def clean(self) -> Dict[str, Any]:
         username = self.cleaned_data.get("username")
         password = self.cleaned_data.get("password")
@@ -459,7 +461,7 @@ class OurAuthenticationForm(AuthenticationForm):
                 raise ValidationError(error_message)
 
             if return_data.get("invalid_subdomain"):
-                logging.warning(
+                self.logger.info(
                     "User attempted password login to wrong subdomain %s. Matching accounts: %s",
                     subdomain,
                     return_data.get("matching_user_ids_in_different_realms"),
