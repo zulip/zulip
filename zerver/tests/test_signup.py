@@ -1572,6 +1572,7 @@ class InviteUserTest(InviteUserBase):
 
         self.assertEqual(invitee_msg.sender.email, "welcome-bot@zulip.com")
         self.assertTrue(invitee_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertNotIn("demo organization", invitee_msg.content)
 
     def test_multi_user_invite(self) -> None:
         """
@@ -3157,6 +3158,77 @@ class RealmCreationTest(ZulipTestCase):
         user = get_user(email, realm)
         self.assertEqual(user.realm, realm)
         self.assertFalse(user.enable_marketing_emails)
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_regular_realm_welcome_bot_pm(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Create new realm with the email
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+            enable_marketing_emails=False,
+        )
+        self.assertEqual(result.status_code, 302)
+
+        # Make sure the correct Welcome Bot PM is sent
+        welcome_msg = Message.objects.filter(
+            sender__email="welcome-bot@zulip.com", recipient__type=Recipient.PERSONAL
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertNotIn("demo organization", welcome_msg.content)
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_demo_realm_welcome_bot_pm(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Create new realm with the email
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+            enable_marketing_emails=False,
+            is_demo_organization=True,
+        )
+        self.assertEqual(result.status_code, 302)
+
+        # Make sure the correct Welcome Bot PM is sent
+        welcome_msg = Message.objects.filter(
+            sender__email="welcome-bot@zulip.com", recipient__type=Recipient.PERSONAL
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:

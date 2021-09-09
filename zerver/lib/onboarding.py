@@ -70,31 +70,38 @@ def send_initial_pms(user: UserProfile) -> None:
             + "\n"
         ).format(help_url=help_url)
 
-    content = (
-        _("Hello, and welcome to Zulip!") + "\n"
-        "\n"
-        + _("This is a private message from me, Welcome Bot.")
-        + " "
-        + _("Here are some tips to get you started:")
-        + "\n"
-        "* " + _("Download our [Desktop and mobile apps]({apps_url})") + "\n"
-        "* "
-        + _("Customize your account and notifications on your [Settings page]({settings_url})")
-        + "\n"
-        "* " + _("Type `?` to check out Zulip's keyboard shortcuts") + "\n"
-        "{organization_setup_text}"
-        "\n" + _("The most important shortcut is `r` to reply.") + "\n"
-        "\n"
-        + _("Practice sending a few messages by replying to this conversation.")
-        + " "
-        + _(
-            "If you're not into keyboards, that's okay too; "
-            "clicking anywhere on this message will also do the trick!"
+    welcome_msg = _("Hello, and welcome to Zulip!")
+    if user.realm.demo_organization_scheduled_deletion_date is not None:
+        welcome_msg += " " + _(
+            "Note that this is a [demo organization]({demo_org_help_url}) and will be automatically deleted in 30 days."
         )
+
+    content = "".join(
+        [
+            welcome_msg + "\n\n",
+            _("This is a private message from me, Welcome Bot.") + " ",
+            _("Here are some tips to get you started:") + "\n",
+            "* " + _("Download our [Desktop and mobile apps]({apps_url})") + "\n",
+            "* "
+            + _("Customize your account and notifications on your [Settings page]({settings_url})")
+            + "\n",
+            "* "
+            + _("Type `?` to check out Zulip's keyboard shortcuts")
+            + "\n {organization_setup_text}\n",
+            _("The most important shortcut is `r` to reply.") + "\n\n",
+            _("Practice sending a few messages by replying to this conversation.") + " ",
+            _(
+                "If you're not into keyboards, that's okay too; "
+                "clicking anywhere on this message will also do the trick!"
+            ),
+        ]
     )
 
     content = content.format(
-        apps_url="/apps", settings_url="#settings", organization_setup_text=organization_setup_text
+        apps_url="/apps",
+        settings_url="#settings",
+        organization_setup_text=organization_setup_text,
+        demo_org_help_url="/help/demo-organizations",
     )
 
     internal_send_private_message(
