@@ -6,6 +6,7 @@ To run a Zulip server, you will need:
 - A supported OS:
   - Ubuntu 20.04 Focal
   - Ubuntu 18.04 Bionic
+  - Debian 11 Bullseye
   - Debian 10 Buster
 - At least 2GB RAM, and 10GB disk space
   - If you expect 100+ users: 4GB RAM, and 2 CPUs
@@ -29,10 +30,10 @@ can't support you, but
 
 #### Operating system
 
-Ubuntu 20.04 Focal, 18.04 Bionic, and Debian 10 Buster are supported
-for running Zulip in production. 64-bit is recommended. We recommend
-installing on the newest supported OS release you're comfortable with,
-to save a bit of future work [upgrading the operating
+Ubuntu 20.04 Focal, 18.04 Bionic, Debian 11 Bullseye, and Debian 10 Buster
+are supported for running Zulip in production. 64-bit is recommended.
+We recommend installing on the newest supported OS release you're
+comfortable with, to save a bit of future work [upgrading the operating
 system][upgrade-os].
 
 If you're using Ubuntu, the

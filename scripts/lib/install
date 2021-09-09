@@ -221,7 +221,7 @@ Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
  - Debian 10 "buster"
- - Debian 11 "bullseye" (beta)
+ - Debian 11 "bullseye"
  - Ubuntu 18.04 LTS "bionic"
  - Ubuntu 20.04 LTS "focal"
 
