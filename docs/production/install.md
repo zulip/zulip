@@ -14,9 +14,9 @@ you can create a test organization at <https://zulip.com/new>.
 
 ## Step 1: Download the latest release
 
-Download and unpack [the latest built server
-tarball](https://download.zulip.com/server/zulip-server-latest.tar.gz)
-with the following commands:
+Download and unpack [the latest server
+release](https://download.zulip.com/server/zulip-server-latest.tar.gz)
+(**Zulip Server {{ LATEST_RELEASE_VERSION }}**) with the following commands:
 
 ```bash
 cd $(mktemp -d)
