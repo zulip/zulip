@@ -582,36 +582,3 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
-
-
-def check_settings_values(
-    notification_sound: Optional[str],
-    email_notifications_batching_period_seconds: Optional[int],
-    default_language: Optional[str] = None,
-) -> None:
-    from zerver.lib.actions import get_available_notification_sounds
-    from zerver.lib.i18n import get_available_language_codes
-
-    # We can't use REQ for this widget because
-    # get_available_language_codes requires provisioning to be
-    # complete.
-    if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid default_language"))
-
-    if (
-        notification_sound is not None
-        and notification_sound not in get_available_notification_sounds()
-        and notification_sound != "none"
-    ):
-        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
-
-    if email_notifications_batching_period_seconds is not None and (
-        email_notifications_batching_period_seconds <= 0
-        or email_notifications_batching_period_seconds > 7 * 24 * 60 * 60
-    ):
-        # We set a limit of one week for the batching period
-        raise JsonableError(
-            _("Invalid email batching period: {} seconds").format(
-                email_notifications_batching_period_seconds
-            )
-        )

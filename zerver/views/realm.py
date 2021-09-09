@@ -31,12 +31,12 @@ from zerver.lib.validator import (
     check_dict,
     check_int,
     check_int_in,
-    check_settings_values,
     check_string_in,
     check_string_or_int,
     to_non_negative_int,
 )
 from zerver.models import Realm, RealmUserDefault, UserProfile
+from zerver.views.user_settings import check_settings_values
 
 
 @require_realm_admin

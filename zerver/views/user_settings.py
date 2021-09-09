@@ -26,6 +26,7 @@ from zerver.lib.actions import (
     do_change_user_setting,
     do_regenerate_api_key,
     do_start_email_change_process,
+    get_available_notification_sounds,
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
@@ -34,17 +35,12 @@ from zerver.lib.email_validation import (
     validate_email_not_already_in_realm,
 )
 from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import (
-    check_bool,
-    check_int,
-    check_int_in,
-    check_settings_values,
-    check_string_in,
-)
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -91,6 +87,36 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
 default_view_options = ["recent_topics", "all_messages"]
+
+
+def check_settings_values(
+    notification_sound: Optional[str],
+    email_notifications_batching_period_seconds: Optional[int],
+    default_language: Optional[str] = None,
+) -> None:
+    # We can't use REQ for this widget because
+    # get_available_language_codes requires provisioning to be
+    # complete.
+    if default_language is not None and default_language not in get_available_language_codes():
+        raise JsonableError(_("Invalid default_language"))
+
+    if (
+        notification_sound is not None
+        and notification_sound not in get_available_notification_sounds()
+        and notification_sound != "none"
+    ):
+        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
+
+    if email_notifications_batching_period_seconds is not None and (
+        email_notifications_batching_period_seconds <= 0
+        or email_notifications_batching_period_seconds > 7 * 24 * 60 * 60
+    ):
+        # We set a limit of one week for the batching period
+        raise JsonableError(
+            _("Invalid email batching period: {} seconds").format(
+                email_notifications_batching_period_seconds
+            )
+        )
 
 
 @human_users_only
