@@ -823,13 +823,13 @@ class LoginTest(ZulipTestCase):
     def test_login_wrong_subdomain(self) -> None:
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
-        with self.assertLogs(level="WARNING") as m:
+        with self.assertLogs("zulip.auth", level="INFO") as m:
             result = self.login_with_return(email, "xxx")
             matching_accounts_dict = {"realm_id": user_profile.realm_id, "id": user_profile.id}
             self.assertEqual(
                 m.output,
                 [
-                    f"WARNING:root:User attempted password login to wrong subdomain zulip. Matching accounts: [{matching_accounts_dict}]"
+                    f"INFO:zulip.auth.OurAuthenticationForm:User attempted password login to wrong subdomain zulip. Matching accounts: [{matching_accounts_dict}]"
                 ],
             )
         self.assertEqual(result.status_code, 200)
