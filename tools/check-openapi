@@ -8,7 +8,7 @@ const Diff = require("diff");
 const ExampleValidator = require("openapi-examples-validator");
 const Prettier = require("prettier");
 const SwaggerParser = require("swagger-parser");
-const {Composer, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
+const {Composer, CST, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
 const yargs = require("yargs");
 
 const {argv} = yargs.option("fix", {
@@ -39,6 +39,7 @@ async function checkFile(file) {
     }
 
     let ok = true;
+    const reformats = new Map();
 
     visit(doc, {
         Map(key, node) {
@@ -74,22 +75,34 @@ async function checkFile(file) {
                     formatted = formatted.replace(/\n$/, "");
                 }
                 if (formatted !== node.value.value) {
-                    ok = false;
-                    const {line, col} = lineCounter.linePos(node.value.range[0]);
-                    console.error("%s:%d:%d: Format description with Prettier:", file, line, col);
-                    let diff = "";
-                    for (const part of Diff.diffLines(node.value.value, formatted)) {
-                        const prefix = part.added
-                            ? "\u001B[32m+"
-                            : part.removed
-                            ? "\u001B[31m-"
-                            : "\u001B[34m ";
-                        diff += prefix;
-                        diff += part.value.replace(/\n$/, "").replace(/\n/g, "\n" + prefix);
-                        diff += "\n";
+                    if (argv.fix) {
+                        reformats.set(node.value.range[0], {
+                            value: formatted,
+                            context: {afterKey: true},
+                        });
+                    } else {
+                        ok = false;
+                        const {line, col} = lineCounter.linePos(node.value.range[0]);
+                        console.error(
+                            "%s:%d:%d: Format description with Prettier:",
+                            file,
+                            line,
+                            col,
+                        );
+                        let diff = "";
+                        for (const part of Diff.diffLines(node.value.value, formatted)) {
+                            const prefix = part.added
+                                ? "\u001B[32m+"
+                                : part.removed
+                                ? "\u001B[31m-"
+                                : "\u001B[34m ";
+                            diff += prefix;
+                            diff += part.value.replace(/\n$/, "").replace(/\n/g, "\n" + prefix);
+                            diff += "\n";
+                        }
+                        diff += "\u001B[0m";
+                        console.error(diff);
                     }
-                    diff += "\u001B[0m";
-                    console.error(diff);
                 }
             }
         },
@@ -100,6 +113,14 @@ async function checkFile(file) {
     }
     if (reformats.size > 0) {
         console.log("%s: Fixing problems", file);
+        for (const token of tokens) {
+            CST.visit(token, ({value}) => {
+                if (CST.isScalar(value) && reformats.has(value.offset)) {
+                    const reformat = reformats.get(value.offset);
+                    CST.setScalarValue(value, reformat.value, reformat.context);
+                }
+            });
+        }
         await fs.promises.writeFile(file, tokens.map((token) => CST.stringify(token)).join(""));
     }
 
