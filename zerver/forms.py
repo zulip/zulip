@@ -466,13 +466,9 @@ class OurAuthenticationForm(AuthenticationForm):
                     subdomain,
                     return_data.get("matching_user_ids_in_different_realms"),
                 )
-                error_message = _(
-                    "Your Zulip account {username} is not a member of the "
-                    + "organization associated with this subdomain.  "
-                    + "Please contact your organization administrator with any questions."
-                )
-                error_message = error_message.format(username=username)
-                raise ValidationError(error_message)
+                # We don't want to leak information by revealing there are matching accounts
+                # on different subdomain - so we just fall through to the default error.
+                assert self.user_cache is None
 
             if self.user_cache is None:
                 raise forms.ValidationError(
