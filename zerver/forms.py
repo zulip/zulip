@@ -460,7 +460,9 @@ class OurAuthenticationForm(AuthenticationForm):
 
             if return_data.get("invalid_subdomain"):
                 logging.warning(
-                    "User %s attempted password login to wrong subdomain %s", username, subdomain
+                    "User attempted password login to wrong subdomain %s. Matching accounts: %s",
+                    subdomain,
+                    return_data.get("matching_user_ids_in_different_realms"),
                 )
                 error_message = _(
                     "Your Zulip account {username} is not a member of the "
