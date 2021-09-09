@@ -112,6 +112,7 @@ def run() -> None:
         ["yaml"],
         description="Validates our OpenAPI/Swagger API documentation "
         "(zerver/openapi/zulip.yaml) ",
+        fix_arg="--fix",
     )
     linter_config.external_linter(
         "shellcheck",
