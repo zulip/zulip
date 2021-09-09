@@ -15007,8 +15007,8 @@ components:
       name: queue_id
       in: query
       description: |
-        The ID of an event queue that was previously registered via `POST
-        /api/v1/register` (see [Register a queue](/api/register-queue)).
+        The ID of an event queue that was previously registered via
+        `POST /api/v1/register` (see [Register a queue](/api/register-queue)).
       schema:
         type: string
       example: 1375801870:2942
