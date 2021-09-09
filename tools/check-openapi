@@ -8,12 +8,17 @@ const Diff = require("diff");
 const ExampleValidator = require("openapi-examples-validator");
 const Prettier = require("prettier");
 const SwaggerParser = require("swagger-parser");
-const {LineCounter, Scalar, YAMLMap, YAMLSeq, parseDocument, visit} = require("yaml");
+const {Composer, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
 
 async function checkFile(file) {
     const yaml = await fs.promises.readFile(file, "utf8");
     const lineCounter = new LineCounter();
-    const doc = parseDocument(yaml, {lineCounter});
+    const tokens = [...new Parser(lineCounter.addNewLine).parse(yaml)];
+    const docs = [...new Composer().compose(tokens)];
+    if (docs.length !== 1) {
+        return;
+    }
+    const [doc] = docs;
     if (doc.errors.length > 0) {
         for (const error of doc.errors) {
             console.error("%s: %s", file, error.message);
