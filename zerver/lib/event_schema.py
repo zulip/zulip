@@ -1470,7 +1470,7 @@ def check_update_global_notifications(
     desired_val: Union[bool, int, str],
 ) -> None:
     """
-    See UserProfile.notification_setting_types for
+    See UserProfile.notification_settings_legacy for
     more details.
     """
     _check_update_global_notifications(var_name, event)
@@ -1479,7 +1479,7 @@ def check_update_global_notifications(
     assert setting == desired_val
 
     assert isinstance(setting_name, str)
-    setting_type = UserProfile.notification_setting_types[setting_name]
+    setting_type = UserProfile.notification_settings_legacy[setting_name]
     assert isinstance(setting, setting_type)
 
 
