@@ -1,4 +1,5 @@
 !!! warn ""
+
     This endpoint is limited to organizations administrators who
     additionally have the `can_create_users` permission for the Zulip organization.
 

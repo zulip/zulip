@@ -8,6 +8,7 @@ administrators can change who is allowed to use private messages.
 ### Configure who can use private messages
 
 !!! warn ""
+
     This feature is beta; see the notes below for details.
 
 {start_tabs}

@@ -22,6 +22,7 @@ Sources, Subscriptions, Files, Invoices and Invoice items.
 {% if 'http:' in external_uri_scheme %}
 
 !!! tip ""
+
     Note that Stripe will only accept HTTPS webhooks!
 
 {% endif %}

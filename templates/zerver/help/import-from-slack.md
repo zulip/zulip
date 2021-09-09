@@ -18,6 +18,7 @@ into an existing Zulip organization.
 First, export your data from Slack.
 
 !!! warn ""
+
     **Note:** Only Slack owners and admins can export data from Slack.
     See Slack's
     [guide to data exports](https://get.slack.help/hc/en-us/articles/201658943-Export-data-and-message-history)

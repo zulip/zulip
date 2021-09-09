@@ -88,6 +88,7 @@ and reusable invitation links expire 10 days after they are sent.
 1. Click **Invite**.
 
 !!! warn ""
+
     * You will only see **Invite users** in the gear menu if you have
     permission to invite users.
     * The number of email invites you can send in a day is limited in
@@ -112,6 +113,7 @@ and reusable invitation links expire 10 days after they are sent.
 1. Copy the link, and send it to anyone you'd like to invite.
 
 !!! warn ""
+
     * You will only see **Invite users** in the gear menu if you have
     permission to invite users.
     * Only organization administrators can create these reusable invitation links.

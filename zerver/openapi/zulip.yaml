@@ -60,6 +60,7 @@ paths:
         to a `zulip://` URL.
 
         !!! warn ""
+
             **Note:** If you signed up using passwordless authentication and
             never had a password, you can [reset your password](/help/change-your-password).
 

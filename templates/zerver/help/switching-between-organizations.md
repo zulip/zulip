@@ -11,6 +11,7 @@ This article assumes you've [logged in](/help/logging-in) to each organization a
 1. Click on your organization's profile picture.
 
 !!! warn ""
+
     You can ask your organization administrator to
     [set an organization profile picture](/help/create-your-organization-profile)
     if they haven't already.
