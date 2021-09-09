@@ -219,6 +219,9 @@ def common_get_active_user(
             return None
         if return_data is not None:
             return_data["invalid_subdomain"] = True
+            return_data["matching_user_ids_in_different_realms"] = list(
+                UserProfile.objects.filter(delivery_email__iexact=email).values("realm_id", "id")
+            )
         return None
     if not is_user_active(user_profile, return_data):
         return None
