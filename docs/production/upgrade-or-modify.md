@@ -405,6 +405,14 @@ instructions for other supported platforms.
    Bionic](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
    that you are running a supported operating system.
 
+### Upgrading from Debian Buster to Debian Bullseye
+
+We expect to have documentation for the upgrade from Buster to Bullseye
+available soon
+([Follow the discussion on Zulip Developer Community][bullseye-discussion-thread]).
+
+[bullseye-discussion-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Upgrade.20to.20bullseye
+
 ### Upgrading from Debian Stretch to Debian Buster
 
 1. Upgrade your server to the latest Zulip `2.1.x` release. You can
