@@ -682,6 +682,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
+        is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
     if user.is_realm_admin:
         context["getting_started_link"] = (
