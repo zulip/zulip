@@ -1175,7 +1175,7 @@ class UserProfileTest(ZulipTestCase):
 
         UserHotspot.objects.filter(user=cordelia).delete()
         UserHotspot.objects.filter(user=iago).delete()
-        hotspots_completed = ["intro_reply", "intro_streams", "intro_topics"]
+        hotspots_completed = {"intro_reply", "intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
@@ -1220,7 +1220,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.enter_sends, False)
         self.assertEqual(hamlet.enter_sends, True)
 
-        hotspots = list(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
+        hotspots = set(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
         self.assertEqual(hotspots, hotspots_completed)
 
     def test_copy_default_settings_from_realm_user_default(self) -> None:
