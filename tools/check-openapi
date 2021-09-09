@@ -9,6 +9,12 @@ const ExampleValidator = require("openapi-examples-validator");
 const Prettier = require("prettier");
 const SwaggerParser = require("swagger-parser");
 const {Composer, LineCounter, Parser, Scalar, YAMLMap, YAMLSeq, visit} = require("yaml");
+const yargs = require("yargs");
+
+const {argv} = yargs.option("fix", {
+    type: "boolean",
+    description: "Automatically fix some problems",
+});
 
 async function checkFile(file) {
     const yaml = await fs.promises.readFile(file, "utf8");
@@ -92,6 +98,10 @@ async function checkFile(file) {
     if (!ok) {
         process.exitCode = 1;
     }
+    if (reformats.size > 0) {
+        console.log("%s: Fixing problems", file);
+        await fs.promises.writeFile(file, tokens.map((token) => CST.stringify(token)).join(""));
+    }
 
     try {
         await SwaggerParser.validate(file);
@@ -112,7 +122,7 @@ async function checkFile(file) {
 }
 
 (async () => {
-    for (const file of process.argv.slice(2)) {
+    for (const file of argv._) {
         await checkFile(file);
     }
 })().catch((error) => {
