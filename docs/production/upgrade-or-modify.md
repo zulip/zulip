@@ -24,8 +24,9 @@ to a new Zulip release:
    for all releases newer than what is currently installed.
 
 1. Download the appropriate release tarball from
-   <https://download.zulip.com/server/> You can download the latest
-   release with:
+   <https://download.zulip.com/server/>. You can get the latest
+   release (**Zulip Server {{ LATEST_RELEASE_VERSION }}**) with the
+   following command:
 
    ```bash
    wget https://download.zulip.com/server/zulip-server-latest.tar.gz
@@ -40,7 +41,7 @@ to a new Zulip release:
 1. Log in to your Zulip and run as root:
 
    ```bash
-   /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
+   /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-latest.tar.gz
    ```
 
    The upgrade process will:
