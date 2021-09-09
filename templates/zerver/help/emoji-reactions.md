@@ -14,6 +14,7 @@ underneath the message.
 1. Click the smiley face (<i class="fa fa-smile-o"></i>) icon.
 
     !!! warn ""
+
         For messages that you've sent, click the ellipsis
         (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) and then
         **Add emoji reaction**.

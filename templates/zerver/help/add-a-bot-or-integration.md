@@ -19,6 +19,7 @@ is visible and available for anyone to use.
 3. Fill out the fields, and click **Create bot**.
 
 !!! warn ""
+
     See [bots and integrations](/help/bots-and-integrations) for more information about
     the various fields.
     Nearly all third-party integrations should use **Incoming webhook**

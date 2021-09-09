@@ -213,6 +213,7 @@ users.
 
 ```md
 !!! tip ""
+
     If you've forgotten your password, see the
     [Change your password](/help/change-your-password) page for
     instructions on how to reset it.
@@ -223,6 +224,7 @@ Tips are more common than warnings.
 
 ```md
 !!! warn ""
+
     **Note:** If you attempt to input a nonexistent stream name, an error
     message will appear.
 ```

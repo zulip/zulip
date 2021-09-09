@@ -1,6 +1,7 @@
 # Edit or delete a message
 
 !!! warn ""
+
     **Note:** Editing message topic is discussed in a
     [separate guide](/help/rename-a-topic).
 
@@ -25,6 +26,7 @@ content.
 {end_tabs}
 
 !!! warn ""
+
     **Note:** After you have edited a message, the message is publicly marked as
     `(EDITED)`. You can [view](/help/view-a-messages-edit-history) a message's
     edit history, assuming that feature has not been

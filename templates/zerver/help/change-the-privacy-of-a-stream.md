@@ -28,5 +28,6 @@ public.
 {end_tabs}
 
 !!! warn ""
+
     **Warning**: Be careful making a private stream public. All past messages will become
     accessible, even if the stream previously had protected history.

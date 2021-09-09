@@ -24,4 +24,5 @@ If your entire organization speaks a language other than English, an administrat
 {end_tabs}
 
 !!! tip ""
+
     You can always send and read messages in any language.

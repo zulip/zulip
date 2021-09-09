@@ -1,6 +1,7 @@
 Get Zulip notifications for your Buildbot builds!
 
 !!! tip ""
+
     This integration requires Buildbot version 2.2.0 or higher.
 
 1. {!create-stream.md!}

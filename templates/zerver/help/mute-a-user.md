@@ -1,6 +1,7 @@
 # Mute a user
 
 !!! tip ""
+
     This feature mutes a user from your personal perspective, and does not
     automatically notify anyone.
 
@@ -36,6 +37,7 @@ have the following effects:
   organization settings display muted users' names and other details.
 
 !!! tip ""
+
     Muting someone does not affect their Zulip experience in any way.
 
 

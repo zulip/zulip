@@ -22,6 +22,7 @@ Receive GitLab notifications in Zulip!
 ![](/static/images/integrations/gitlab/001.png)
 
 !!! tip ""
+
     If your GitLab server and your Zulip server are on a local network
     together, and you're running GitLab 10.5 or newer, you may need to enable
     GitLab's "Allow requests to the local network from hooks and
