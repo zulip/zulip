@@ -832,4 +832,5 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
             },
         )
     ],
+    "githubsponsors": [ScreenshotConfig("created.json")]
 }
