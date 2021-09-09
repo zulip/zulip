@@ -5,7 +5,7 @@ VAGRANTFILE_API_VERSION = "2"
 if Vagrant::VERSION == "1.8.7"
   path = `command -v curl`
   if path.include?("/opt/vagrant/embedded/bin/curl")
-    puts "In Vagrant 1.8.7, curl is broken. Please the latest Vagrant."
+    puts "In Vagrant 1.8.7, curl is broken. Please use the latest Vagrant."
     puts "See https://github.com/mitchellh/vagrant/issues/7997 for details."
     exit
   end
