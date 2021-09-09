@@ -1565,12 +1565,6 @@ def sanitize_url(url: str) -> Optional[str]:
     if not scheme:
         return sanitize_url("http://" + url)
 
-    locless_schemes = ["mailto", "news", "file", "bitcoin", "sms", "tel"]
-    if netloc == "" and scheme not in locless_schemes:
-        # This fails regardless of anything else.
-        # Return immediately to save additional processing
-        return None
-
     # Upstream code will accept a URL like javascript://foo because it
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
