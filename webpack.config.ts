@@ -210,16 +210,6 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             },
         },
         plugins: [
-            new webpack.ProgressPlugin({
-                handler(percentage) {
-                    if (percentage === 1) {
-                        console.log(
-                            "\u001B[34mi ｢wdm｣\u001B[0m:",
-                            "Webpack compilation successful.",
-                        );
-                    }
-                },
-            }),
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
@@ -247,21 +237,24 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
             }),
         ],
         devServer: {
-            clientLogLevel: "error",
+            devMiddleware: {
+                publicPath: "/webpack/",
+                stats: "errors-only",
+            },
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
-            publicPath: "/webpack/",
-            stats: "errors-only",
-            noInfo: true,
-            watchOptions: {
-                ignored: [
-                    "**/node_modules/**",
-                    // Prevent Emacs file locks from crashing webpack-dev-server
-                    // https://github.com/webpack/webpack-dev-server/issues/2821
-                    "**/.#*",
-                ],
-            },
+        },
+        infrastructureLogging: {
+            level: "warn",
+        },
+        watchOptions: {
+            ignored: [
+                "**/node_modules/**",
+                // Prevent Emacs file locks from crashing webpack-dev-server
+                // https://github.com/webpack/webpack-dev-server/issues/2821
+                "**/.#*",
+            ],
         },
     };
 
