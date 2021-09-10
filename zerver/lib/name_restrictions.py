@@ -43,6 +43,8 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "testing",
     "nagios",
     "nginx",
+    "mg",
+    "front-mail",
     # website pages
     "server",
     "client",
