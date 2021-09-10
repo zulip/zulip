@@ -189,3 +189,6 @@ google-re2
 
 # For querying recursive group membership
 django-cte
+
+# SCIM integration
+django-scim2
