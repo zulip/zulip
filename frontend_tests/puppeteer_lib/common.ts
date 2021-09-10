@@ -5,7 +5,7 @@ import path from "path";
 import ErrorStackParser from "error-stack-parser";
 import fetch from "node-fetch";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
-import {launch} from "puppeteer";
+import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 
@@ -63,7 +63,7 @@ class CommonUtils {
     async ensure_browser(): Promise<Browser> {
         if (this.browser === null) {
             const {window_size} = this;
-            this.browser = await launch({
+            this.browser = await puppeteer.launch({
                 args: [
                     `--window-size=${window_size.width},${window_size.height}`,
                     "--no-sandbox",
