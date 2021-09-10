@@ -231,8 +231,10 @@ django[argon2]==3.2.7 \
     #   django-formtools
     #   django-otp
     #   django-phonenumber-field
+    #   django-scim2
     #   django-sendfile2
     #   django-two-factor-auth
+    #   scim2-filter-parser
 django-auth-ldap==3.0.0 \
     --hash=sha256:19ee19034f344d9efd07ed88d3187e256ec33ae39d6a47222083b89f7d35c5f6 \
     --hash=sha256:1f2d5c562d9ba9a5e9a64099ae9798e1a63840a11afe4d1c4a9c74121f066eaa
@@ -260,6 +262,9 @@ django-phonenumber-field==5.2.0 \
     --hash=sha256:52b2e5970133ec5ab701218b802f7ab237229854dc95fd239b7e9e77dc43731d \
     --hash=sha256:5547fb2b2cc690a306ba77a5038419afc8fa8298a486fb7895008e9067cc7e75
     # via django-two-factor-auth
+django-scim2==0.17.0 \
+    --hash=sha256:dc3cb3c0d5b6ebf4ae8a28dd1dac1e0658fb543c8c178e72e3c19975816da092
+    # via -r requirements/common.in
 django-sendfile2==0.6.0 \
     --hash=sha256:7f850040ddc29c9c42192ed85b915465a3ed7cced916c4fafdd5eda057dd06ec
     # via -r requirements/common.in
@@ -909,6 +914,7 @@ python-dateutil==2.8.2 \
     # via
     #   -r requirements/common.in
     #   botocore
+    #   django-scim2
 python-gcm==0.4 \
     --hash=sha256:511c35fc5ae829f7fc3cbdb45c4ec3fda02f85e4fae039864efe82682ccb9c18
     # via -r requirements/common.in
@@ -1059,6 +1065,9 @@ s3transfer==0.5.0 \
     --hash=sha256:50ed823e1dc5868ad40c8dc92072f757aa0e653a192845c94a3b676f4a62da4c \
     --hash=sha256:9c1dc369814391a6bda20ebbf4b70a0f34630592c9aa520856bf384916af2803
     # via boto3
+scim2-filter-parser==0.3.5 \
+    --hash=sha256:f46b6ffa01cdad6011d3d991bd167af1a9822ab917c225bdf49bc7a44ad4ae53
+    # via django-scim2
 sentry-sdk==1.3.1 \
     --hash=sha256:ebe99144fa9618d4b0e7617e7929b75acd905d258c3c779edcd34c0adfffe26c \
     --hash=sha256:f33d34c886d0ba24c75ea8885a8b3a172358853c7cbde05979fc99c29ef7bc52
@@ -1081,6 +1090,9 @@ six==1.16.0 \
     #   qrcode
     #   talon-core
     #   traitlets
+sly==0.3 \
+    --hash=sha256:be6a3825b042a9e1b6f5730fc747e6d983c917f0f002d798d0b9f86ca5c05ad9
+    # via scim2-filter-parser
 social-auth-app-django==5.0.0 \
     --hash=sha256:52241a25445a010ab1c108bafff21fc5522d5c8cd0d48a92c39c7371824b065d \
     --hash=sha256:b6e3132ce087cdd6e1707aeb1b588be41d318408fcf6395435da0bc6fe9a9795
