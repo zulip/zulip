@@ -120,7 +120,7 @@ how to configure these SAML providers to work with Zulip.
    is `https://keycloak.example.com` and your Keycloak realm is `master` (which
    is the default name for a Keycloak realm).
 1. In Keycloak, register a new Client for your Zulip organization:
-    * Client-ID: `https://<subdomain>.zulipchat.com`
+    * Client-ID: `https://auth.zulipchat.com`
     * Client Protocol: `saml`
     * Client SAML Endpoint: leave this field empty
 1. In the `Settings` tab for your new Keycloak client, set the following properties:
@@ -128,17 +128,17 @@ how to configure these SAML providers to work with Zulip.
     - Base URL: `https://auth.zulipchat.com/complete/saml/`
     - Client Signature Required: `Disable`
 1. In the `Mappers` tab for your new Keycloak client:
-    1. Create a Mapper for first name:
+    * Create a Mapper for first name:
         * Property: `firstName`
         * Friendly Name: `first_name`
         * SAML Attribute Name: `first_name`
         * SAML Attribute Name Format: `Basic`
-    1. Create a Mapper for last name:
+    * Create a Mapper for last name:
         * Property: `lastName`
         * Friendly Name: `last_name`
         * SAML Attribute Name: `last_name`
         * SAML Attribute Name Format: `Basic`
-    1. Create a Mapper for email address:
+    * Create a Mapper for email address:
         * Property: `email`
         * Friendly Name: `email`
         * SAML Attribute Name: `email`
