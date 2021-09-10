@@ -98,17 +98,18 @@ def create_confirmation_link(
     elif hasattr(obj, "realm"):
         realm = obj.realm
 
+    current_time = timezone_now()
     expiry_date = None
     if validity_in_days:
-        expiry_date = timezone_now() + datetime.timedelta(days=validity_in_days)
+        expiry_date = current_time + datetime.timedelta(days=validity_in_days)
     else:
-        expiry_date = timezone_now() + datetime.timedelta(
+        expiry_date = current_time + datetime.timedelta(
             days=_properties[confirmation_type].validity_in_days
         )
 
     Confirmation.objects.create(
         content_object=obj,
-        date_sent=timezone_now(),
+        date_sent=current_time,
         confirmation_key=key,
         realm=realm,
         expiry_date=expiry_date,
