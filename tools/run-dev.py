@@ -261,7 +261,8 @@ class BaseHandler(web.RequestHandler):
 
             for header, v in response.headers.get_all():
                 # some header appear multiple times, eg 'Set-Cookie'
-                self.add_header(header, v)
+                if header.lower() != "transfer-encoding":
+                    self.add_header(header, v)
             if response.body:
                 self.write(response.body)
         self.finish()
