@@ -541,7 +541,7 @@ to the root and `engineering` subdomains:
    `https://keycloak.example.com/auth/realms/master/protocol/saml`
 3. Your Keycloak public certificate must be saved on the Zulip server
    as `{idp_name}.crt` in `/etc/zulip/idps/`. You can obtain the
-   certificate from the Keycloak UI in the `Keys` tab.  Click on the
+   certificate from the Keycloak UI in the `Keys` tab. Click on the
    button `Certificate` and copy the content.
 
    (Alternatively, open the URL in your browser
@@ -551,6 +551,7 @@ to the root and `engineering` subdomains:
    `<ds:X509Certificate>[...]</ds:X509Certificate>`).
 
    Save the certificate in a new `{idp_name}.crt` file constructed as follows:
+
    ```
    -----BEGIN CERTIFICATE-----
    {Paste the content here}
@@ -558,12 +559,14 @@ to the root and `engineering` subdomains:
    ```
 
 4. If you want to sign SAML requests, you have to do two things in Keycloak:
+
    1. In the Keycloak client settings you setup previously, open the
       `Settings` tab and **enable** `Client Signature Required`.
    2. Keycloak can generate the Client private key and certificate
       automatically, but Zulip's SAML library does not support the
-      resulting certificates.  Instead, you must generate the key and
+      resulting certificates. Instead, you must generate the key and
       certificate on the Zulip server and import them into Keycloak:
+
       1. Generate **Zulip server public certificate** and the corresponding **private key**:
          ```bash
          openssl req -x509 -newkey rsa:2056 -keyout zulip-private-key.key \
@@ -571,6 +574,7 @@ to the root and `engineering` subdomains:
          ```
       2. Generate a JKS keystore (replace `{mypassword}` and
          `{myalias}` in the `keytool` invocation):
+
          ```bash
          openssl pkcs12 -export -out domainname.pfx -inkey zulip-private-key.key -in zulip-cert.crt
          keytool -importkeystore -srckeystore domainname.pfx -srcstoretype pkcs12 \
@@ -582,6 +586,7 @@ to the root and `engineering` subdomains:
          it on a Mac, you may want to use the keychain
          administration tool to generate the JKS keystore with a UI instead of
          using the `keytool` command. (see also: https://stackoverflow.com/a/41250334)
+
       3. Then switch to the `SAML Keys` tab of your Keycloak
          client. Import `domainname.pfx` into Keycloak. After
          importing, only the certificate will be displayed (not the private
