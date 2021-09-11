@@ -322,7 +322,7 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
     const filtered_items = items.filter((item) =>
         search_terms.some((search_term) => {
             const lower_name = item_to_text(item).toLowerCase();
-            const cands = lower_name.split(" ");
+            const cands = lower_name.split(/[\s-_\/]+/);
             cands.push(lower_name);
             return cands.some((name) => name.startsWith(search_term));
         }),
