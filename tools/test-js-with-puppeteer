@@ -22,7 +22,6 @@ os.environ["PUPPETEER_TESTS"] = "1"
 # which we do verify in some tests.
 os.environ["LC_ALL"] = "C.UTF-8"
 
-os.environ["CHROMIUM_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/chromium")
 os.environ.pop("http_proxy", "")
 os.environ.pop("https_proxy", "")
 
