@@ -27,7 +27,7 @@ You'll know you're creating a merge commit if you're prompted for a commit
 message and the default is something like this:
 
 ```text
-Merge branch 'master' of https://github.com/zulip/zulip
+Merge branch 'main' of https://github.com/zulip/zulip
 
 # Please enter a commit message to explain why this merge is necessary,
 # especially if it merges an updated upstream into a topic branch.
@@ -44,7 +44,7 @@ Merge: 13bea0e e0c10ed
 Author: Christie Koehler <ck@christi3k.net>
 Date:   Mon Oct 10 13:25:51 2016 -0700
 
-    Merge branch 'master' of https://github.com/zulip/zulip
+    Merge branch 'main' of https://github.com/zulip/zulip
 ```
 
 Some graphical Git clients may also create merge commits.
@@ -55,7 +55,7 @@ to roll back to:
 ```console
 $ git reflog
 
-e5f8211 HEAD@{0}: pull upstream master: Merge made by the 'recursive' strategy.
+e5f8211 HEAD@{0}: pull upstream main: Merge made by the 'recursive' strategy.
 13bea0e HEAD@{1}: commit: test commit for docs.
 ```
 
@@ -75,7 +75,7 @@ HEAD is now at 13bea0e test commit for docs.
 :::{important}
 `git reset --hard <commit>` will discard all changes in your
 working directory and index since the commit you're resetting to with
-`<commit>`. *This is the main way you can lose work in Git*. If you need
+`<commit>`. _This is the main way you can lose work in Git_. If you need
 to keep any changes that are in your working directory or that you have
 committed, use `git reset --merge <commit>` instead.
 :::
@@ -90,7 +90,7 @@ last commit `13bea0e` before the merge:
 $ git reflog
 
 13bea0e HEAD@{2}: reset: moving to HEAD@{1}
-e5f8211 HEAD@{3}: pull upstream master: Merge made by the 'recursive' strategy.
+e5f8211 HEAD@{3}: pull upstream main: Merge made by the 'recursive' strategy.
 13bea0e HEAD@{4}: commit: test commit for docs.
 ```
 
@@ -115,7 +115,7 @@ For example, let's say you just committed "some work" and your `git log` looks
 like this:
 
 ```console
-* 67aea58 (HEAD -> master) some work
+* 67aea58 (HEAD -> main) some work
 * 13bea0e test commit for docs.
 ```
 
@@ -126,12 +126,12 @@ $ git reset --hard 13bea0e
 HEAD is now at 13bea0e test commit for docs.
 
 $ git log
-* 13bea0e (HEAD -> master) test commit for docs.
+* 13bea0e (HEAD -> main) test commit for docs.
 ```
 
-And then realize you actually needed to keep commit 67aea58. First, use `git
-reflog` to confirm that commit you want to restore and then run `git
-cherry-pick <commit>`:
+And then realize you actually needed to keep commit 67aea58. First, use
+`git reflog` to confirm that commit you want to restore and then run
+`git cherry-pick <commit>`:
 
 ```console
 $ git reflog
@@ -139,7 +139,7 @@ $ git reflog
 67aea58 HEAD@{1}: commit: some work
 
 $ git cherry-pick 67aea58
- [master 67aea58] some work
+ [main 67aea58] some work
  Date: Thu Oct 13 11:51:19 2016 -0700
  1 file changed, 1 insertion(+)
  create mode 100644 test4.txt
@@ -153,10 +153,10 @@ which ever branch you are rebasing on top of, is to code that has been changed
 by those new commits.
 
 For example, while I'm working on a file, another contributor makes a change to
-that file, submits a pull request and has their code merged into master.
+that file, submits a pull request and has their code merged into `main`.
 Usually this is not a problem, but in this case the other contributor made a
 change to a part of the file I also want to change. When I try to bring my
-branch up to date with `git fetch` and then `git rebase upstream/master`, I see
+branch up to date with `git fetch` and then `git rebase upstream/main`, I see
 the following:
 
 ```console
@@ -177,7 +177,7 @@ To check out the original branch and stop rebasing, run "git rebase --abort".
 ```
 
 This message tells me that Git was not able to apply my changes to README.md
-after bringing in the new commits from upstream/master.
+after bringing in the new commits from upstream/main.
 
 Running `git status` also gives me some information:
 
@@ -203,10 +203,12 @@ and `>>>>>>>`) markers to indicate where in files there are conflicts.
 
 Tip: You can see recent changes made to a file by running the following
 commands:
+
 ```bash
 git fetch upstream
-git log -p upstream/master -- /path/to/file
+git log -p upstream/main -- /path/to/file
 ```
+
 You can use this to compare the changes that you have made to a file with the
 ones in upstream, helping you avoid undoing changes from a previous commit when
 you are rebasing.
@@ -233,8 +235,8 @@ pay attention and do a bit of work to ensure all of your work is readily
 available.
 
 Recall that most Git operations are local. When you commit your changes with
-`git commit` they are safely stored in your *local* Git database only. That is,
-until you *push* the commits to GitHub, they are only available on the computer
+`git commit` they are safely stored in your _local_ Git database only. That is,
+until you _push_ the commits to GitHub, they are only available on the computer
 where you committed them.
 
 So, before you stop working for the day, or before you switch computers, push
@@ -265,7 +267,7 @@ to update:
 $ git checkout <my-branch>
 Switched to branch '<my-branch>'
 
-$ git merge origin/master
+$ git merge origin/main
 ```
 
 **If you have already made commits on the second computer that you need to

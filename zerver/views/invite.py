@@ -1,6 +1,7 @@
 import re
 from typing import List, Sequence, Set
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -35,6 +36,9 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
+    invite_expires_in_days: int = REQ(
+        json_validator=check_int, default=settings.INVITATION_LINK_VALIDITY_DAYS
+    ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
@@ -72,7 +76,13 @@ def invite_users_backend(
             )
         streams.append(stream)
 
-    do_invite_users(user_profile, invitee_emails, streams, invite_as)
+    do_invite_users(
+        user_profile,
+        invitee_emails,
+        streams,
+        invite_expires_in_days=invite_expires_in_days,
+        invite_as=invite_as,
+    )
     return json_success()
 
 
@@ -164,6 +174,9 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
+    invite_expires_in_days: int = REQ(
+        json_validator=check_int, default=settings.INVITATION_LINK_VALIDITY_DAYS
+    ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
@@ -177,5 +190,7 @@ def generate_multiuse_invite_backend(
             raise JsonableError(_("Invalid stream id {}. No invites were sent.").format(stream_id))
         streams.append(stream)
 
-    invite_link = do_create_multiuse_invite_link(user_profile, invite_as, streams)
+    invite_link = do_create_multiuse_invite_link(
+        user_profile, invite_as, invite_expires_in_days, streams
+    )
     return json_success({"invite_link": invite_link})

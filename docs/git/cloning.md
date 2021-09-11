@@ -32,12 +32,12 @@ Checking connectivity... done.
 ```
 
 (The `--config pull.rebase` option configures Git so that `git pull`
-will behave like `git pull --rebase` by default.  Using `git pull
---rebase` to update your changes to resolve merge conflicts is
-expected by essentially all of open source projects, including Zulip.
-You can also set that option after cloning using `git config --add
-pull.rebase true`, or just be careful to always run `git pull
---rebase`, never `git pull`).
+will behave like `git pull --rebase` by default. Using
+`git pull --rebase` to update your changes to resolve merge conflicts
+is expected by essentially all of open source projects, including
+Zulip. You can also set that option after cloning using
+`git config --add pull.rebase true`, or just be careful to always run
+`git pull --rebase`, never `git pull`).
 
 Note: If you receive an error while cloning, you may not have [added your ssh
 key to GitHub][github-help-add-ssh-key].
@@ -65,8 +65,8 @@ origin  git@github.com:YOUR_USERNAME/zulip.git (push)
 Note: If you've cloned the repository using a graphical client, you may already
 have the upstream remote repository configured. For example, when you clone
 [zulip/zulip][github-zulip-zulip] with the GitHub desktop client it configures
-the remote repository `zulip` and you see the following output from `git remote
--v`:
+the remote repository `zulip` and you see the following output from
+`git remote -v`:
 
 ```console
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
@@ -115,13 +115,13 @@ will run tests for new refs you push to GitHub and email you the outcome
 
 Running CI against your fork can help save both your and the
 Zulip maintainers time by making it easy to test a change fully before
-submitting a pull request.  We generally recommend a workflow where as
+submitting a pull request. We generally recommend a workflow where as
 you make changes, you use a fast edit-refresh cycle running individual
-tests locally until your changes work.  But then once you've gotten
+tests locally until your changes work. But then once you've gotten
 the tests you'd expect to be relevant to your changes working, push a
 branch to run the full test suite in GitHub Actions before
-you create a pull request.  While you wait for GitHub Actions jobs
-to run, you can start working on your next task.  When the tests finish,
+you create a pull request. While you wait for GitHub Actions jobs
+to run, you can start working on your next task. When the tests finish,
 you can create a pull request that you already know passes the tests.
 
 GitHub Actions will run all the jobs by default on your forked repository.

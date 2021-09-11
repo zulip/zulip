@@ -12,6 +12,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as spectators from "./spectators";
 import {user_settings} from "./user_settings";
 
 export const view = {}; // function namespace
@@ -110,6 +111,13 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
 }
 
 export function process_reaction_click(message_id, local_id) {
+    if (page_params.is_spectator) {
+        // Spectators can't react, since they don't have accounts.  We
+        // stop here to avoid a confusing reaction local echo.
+        spectators.login_to_access();
+        return;
+    }
+
     const message = get_message(message_id);
 
     if (!message) {

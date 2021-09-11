@@ -16,12 +16,12 @@ from zerver.lib.actions import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
     do_change_icon_source,
-    do_change_notification_settings,
     do_change_password,
     do_change_subscription_property,
     do_change_tos_version,
     do_change_user_delivery_email,
     do_change_user_role,
+    do_change_user_setting,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_stream,
@@ -639,7 +639,7 @@ class TestRealmAuditLog(ZulipTestCase):
             now = timezone_now()
 
             old_value = getattr(user, setting)
-            do_change_notification_settings(user, setting, value, acting_user=user)
+            do_change_user_setting(user, setting, value, acting_user=user)
             expected_extra_data = {
                 RealmAuditLog.OLD_VALUE: old_value,
                 RealmAuditLog.NEW_VALUE: value,
@@ -648,7 +648,7 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=user.realm,
-                    event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED,
+                    event_type=RealmAuditLog.USER_SETTING_CHANGED,
                     event_time__gte=now,
                     acting_user=user,
                     modified_user=user,

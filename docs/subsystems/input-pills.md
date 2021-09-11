@@ -27,17 +27,17 @@ var pills = input_pill.create({
 ```
 
 You can look at `static/js/user_pill.js` to see how the above
-methods are implemented.  Essentially you just need to convert
+methods are implemented. Essentially you just need to convert
 from raw data (like an email) to structured data (like an object
 with display_value, email, and user_id for a user), and vice
-versa.  The most important field to supply is `display_value`.
+versa. The most important field to supply is `display_value`.
 For user pills `pill_item.display_value === user.full_name`.
 
 ## Typeahead
 
 Pills almost always work in conjunction with typeahead, and
 you will want to provide a `source` function to typeahead
-that can exclude items from the prior pills.  Here is an
+that can exclude items from the prior pills. Here is an
 example snippet from our user group settings code.
 
 ```js
@@ -65,7 +65,6 @@ export function filter_taken_users(items, pill_widget) {
 
 You can get notifications from the pill code that pills have been
 created/remove.
-
 
 ```js
 pills.onPillCreate(function () {

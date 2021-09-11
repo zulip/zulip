@@ -14,6 +14,7 @@ Get Zulip notifications for your Netlify deployments!
 ![](/static/images/integrations/netlify/001.png)
 
 !!! tip ""
+
     For more information regarding Netlify webhooks, see: [Netlify's webhook documentation][1].
 
 [1]: https://www.netlify.com/docs/webhooks/

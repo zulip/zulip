@@ -1104,7 +1104,7 @@ def process_message_update_event(
 
     # TODO/compatibility: Translation code for the rename of
     # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
-    # when one can no longer directly upgrade from 4.x to master.
+    # when one can no longer directly upgrade from 4.x to main.
     online_push_user_ids = set()
     if "online_push_user_ids" in event_template:
         online_push_user_ids = set(event_template.pop("online_push_user_ids"))
@@ -1290,7 +1290,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
             # queue at the time of upgrade.
             #
             # TODO/compatibility: Remove this block once you can no
-            # longer directly upgrade directly from 4.x to master.
+            # longer directly upgrade directly from 4.x to main.
             user_ids: List[int] = [user["id"] for user in cast(List[Mapping[str, Any]], users)]
         else:
             user_ids = cast(List[int], users)

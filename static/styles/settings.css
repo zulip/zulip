@@ -1560,7 +1560,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     vertical-align: center;
 }
 
-/* These have enough space for "Admins and full members" in German. */
+/* These have enough space for all the options in German. */
 .setting_desktop_icon_count_display,
 #id_realm_waiting_period_setting,
 #id_realm_create_stream_policy,
@@ -1571,8 +1571,11 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #id_realm_email_address_visibility,
 #id_realm_wildcard_mention_policy,
 #id_realm_move_messages_between_streams_policy,
-#id_realm_invite_to_realm_policy {
-    width: 250px;
+#id_realm_invite_to_realm_policy,
+#id_realm_edit_topic_policy,
+#id_realm_msg_edit_limit_setting,
+#id_realm_msg_delete_limit_setting {
+    width: 325px;
 }
 
 #id_realm_bot_creation_policy,

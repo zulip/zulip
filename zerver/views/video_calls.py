@@ -24,6 +24,7 @@ from requests_oauthlib import OAuth2Session
 from zerver.decorator import zulip_login_required
 from zerver.lib.actions import do_set_zoom_token
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -31,6 +32,11 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url, add_query_to_redirect_url
 from zerver.lib.validator import check_dict, check_string
 from zerver.models import UserProfile, get_realm
+
+
+class VideoCallSession(OutgoingSession):
+    def __init__(self) -> None:
+        super().__init__(role="video_calls", timeout=5)
 
 
 class InvalidZoomTokenError(JsonableError):
@@ -218,7 +224,7 @@ def join_bigbluebutton(
         raise JsonableError(_("BigBlueButton is not configured."))
     else:
         try:
-            response = requests.get(
+            response = VideoCallSession().get(
                 add_query_to_redirect_url(
                     settings.BIG_BLUE_BUTTON_URL + "api/create",
                     urlencode(

@@ -8,15 +8,15 @@ Zulip 1.7 and 1.9 each contain some significant database migrations
 that can take several minutes to run.
 
 The upgrade process automatically minimizes disruption by running
-these first, before beginning the user-facing downtime.  However, if
+these first, before beginning the user-facing downtime. However, if
 you'd like to watch the downtime phase of the upgrade closely, you
 can run them manually before starting the upgrade:
 
 1. Log in to your Zulip server as the `zulip` user (or as `root` and
-  then run `su zulip` to drop privileges), and `cd
-  /home/zulip/deployments/current`
-2. Run `./manage.py dbshell`.  This will open a shell connected to the
-  PostgreSQL database.
+   then run `su zulip` to drop privileges), and
+   `cd /home/zulip/deployments/current`
+2. Run `./manage.py dbshell`. This will open a shell connected to the
+   PostgreSQL database.
 3. In the PostgreSQL shell, run the following commands:
 
    ```postgresql
@@ -61,12 +61,12 @@ can run them manually before starting the upgrade:
    ```
 
 These will take some time to run, during which the server will
-continue to serve user traffic as usual with no disruption.  Once they
+continue to serve user traffic as usual with no disruption. Once they
 finish, you can proceed with installing Zulip 1.7.
 
 To help you estimate how long these will take on your server: count
 the number of UserMessage rows, with `select COUNT(*) from zerver_usermessage;`
-at the `./manage.py dbshell` prompt.  At the time these migrations
+at the `./manage.py dbshell` prompt. At the time these migrations
 were run on chat.zulip.org, it had 75M UserMessage rows; the first 5
 indexes took about 1 minute each to create, and the final,
 "unread_message" index took more like 10 minutes.

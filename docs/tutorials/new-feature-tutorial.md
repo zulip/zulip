@@ -22,7 +22,7 @@ will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
 [Django's documentation](https://docs.djangoproject.com/en/2.2/#index-first-steps)
 for more information about how Django projects are typically
-organized.  And finally, the
+organized. And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
 the additional complexity involved in sending messages.
 
@@ -34,6 +34,7 @@ This tutorial will walk through adding a new feature to a Realm (an
 organization in Zulip). The following files are involved in the process:
 
 **Backend**
+
 - `zerver/models.py`: Defines the database model.
 - `zerver/views/realm.py`: The view function that implements the API endpoint
   for editing realm objects.
@@ -42,20 +43,23 @@ organization in Zulip). The following files are involved in the process:
   consistent and correct.
 
 **Frontend**
+
 - `static/templates/settings/organization_permissions_admin.hbs`: defines
-   the structure of the admin permissions page (checkboxes for each organization
-   permission setting).
+  the structure of the admin permissions page (checkboxes for each organization
+  permission setting).
 - `static/js/settings_org.js`: handles organization setting form submission.
 - `static/js/server_events_dispatch.js`: handles events coming from the server
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
 
 **Backend testing**
+
 - `zerver/tests/test_realm.py`: end-to-end API tests for updating realm settings.
 - `zerver/tests/test_events.py`: tests for possible race bugs in the
   zerver/lib/events.py implementation.
 
 **Frontend testing**
+
 - `frontend_tests/puppeteer_tests/admin.ts`: end-to-end tests for the organization
   admin settings pages.
 - `frontend_tests/node_tests/dispatch.js`
@@ -79,8 +83,7 @@ to learn more about creating and applying database migrations.
 
 **Test your changes:** Once you've run the migration, flush memcached
 on your development server (`./scripts/setup/flush-memcached`) and then
-[restart the development server](
-../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
+[restart the development server](../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Backend changes
@@ -152,14 +155,12 @@ documentation Zulip has, see [Documentation](../documentation/overview.md).
 This example describes the process of adding a new setting to Zulip: a
 flag that allows an admin to require topics on stream messages (the default
 behavior is that topics can have no subject). This flag is an
-actual Zulip feature. You can review [the original commit](
-https://github.com/zulip/zulip/pull/5660/commits/aeeb81d3ff0e0cc201e891cec07e1d2cd0a2060d)
+actual Zulip feature. You can review [the original commit](https://github.com/zulip/zulip/pull/5660/commits/aeeb81d3ff0e0cc201e891cec07e1d2cd0a2060d)
 in the Zulip repo. (This commit displays the work of setting up a checkbox
 for the feature on the admin settings page, communicating and saving updates
 to the setting to the database, and updating the state of the application
 after the setting is updated. For the code that accomplishes the underlying
-task of requiring messages to have a topic, you can [view this commit](
-https://github.com/zulip/zulip/commit/90e2f5053f5958b44ea9b2362cadcb076deaa975).)
+task of requiring messages to have a topic, you can [view this commit](https://github.com/zulip/zulip/commit/90e2f5053f5958b44ea9b2362cadcb076deaa975).)
 
 ### Update the model
 
@@ -167,7 +168,7 @@ First, update the database and model to store the new setting. Add a new
 boolean field, `mandatory_topics`, to the Realm model in
 `zerver/models.py`.
 
-``` diff
+```diff
  # zerver/models.py
 
  class Realm(models.Model):
@@ -184,7 +185,7 @@ dictionary, where the key is the name of the realm field and the value
 is the field's type. Add the new field to the `property_types`
 dictionary.
 
-``` diff
+```diff
  # zerver/models.py
 
  class Realm(models.Model)
@@ -199,14 +200,14 @@ dictionary.
 ```
 
 **The majority of realm settings can be included in
-`property_types`.**  However, there are some properties that need custom
-logic and thus cannot use this framework.  For example:
+`property_types`.** However, there are some properties that need custom
+logic and thus cannot use this framework. For example:
 
-* The realm `authentication_methods` attribute is a bitfield and needs
-additional code for validation and updating.
-* The `allow_message_editing` and `message_content_edit_limit_seconds`
-fields depend on one another, so they are also handled separately and
-not included in `property_types`.
+- The realm `authentication_methods` attribute is a bitfield and needs
+  additional code for validation and updating.
+- The `allow_message_editing` and `message_content_edit_limit_seconds`
+  fields depend on one another, so they are also handled separately and
+  not included in `property_types`.
 
 When creating a realm property that is not a boolean, Text or
 integer field, or when adding a field that is dependent on other fields,
@@ -229,6 +230,7 @@ is helpful.
 Apply the migration using Django's `migrate` command: `./manage.py migrate`.
 
 Output:
+
 ```console
 shell $ ./manage.py migrate
 Operations to perform:
@@ -244,8 +246,7 @@ Running migrations:
 ```
 
 Once you've run the migration, restart memcached on your development
-server (`/etc/init.d/memcached restart`) and then [restart the development server](
-../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
+server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Handle database interactions
@@ -255,7 +256,7 @@ Like typical apps, we will need our backend to update the database and
 send some response to the client that made the request.
 
 Beyond that, we need to orchestrate notifications about the setting change
-to *other* clients (or other users, if you will).  Clients
+to _other_ clients (or other users, if you will). Clients
 find out about settings through two closely related code paths. When a client
 first contacts the server, the server sends the client its
 initial state. Subsequently, clients subscribe to "events," which can
@@ -414,7 +415,7 @@ You'll need to add a parameter for the new field to the `update_realm`
 function in `zerver/views/realm.py` (and add the appropriate mypy type
 annotation).
 
-``` diff
+```diff
  # zerver/views/realm.py
 
  def update_realm(
@@ -481,7 +482,7 @@ write automated backend tests for your new feature.
 To test the new setting syncs correctly with the `property_types`
 framework, one usually just needs to add a line in each of
 `test_events.py` and `test_realm.py` with a list of values to switch
-between in the test.  In the case of a boolean field, no action is
+between in the test. In the case of a boolean field, no action is
 required, because those tests will correctly assume that the only
 values to test are `True` and `False`.
 
@@ -516,7 +517,7 @@ template.
 
 Then add the new form control in `static/js/admin.js`.
 
-``` diff
+```diff
  // static/js/admin.js
 
  function _setup_page() {
@@ -536,43 +537,43 @@ The JavaScript code for organization settings and permissions can be found in
 In frontend, we have split the `property_types` into three objects:
 
 - `org_profile`: This contains properties for the "organization
-    profile" settings page.
+  profile" settings page.
 
 - `org_settings`: This contains properties for the "organization
-    settings" page. Settings belonging to this section generally
-    decide what features should be available to a user like deleting a
-    message, message edit history etc.  Our `mandatory_topics` feature
-    belongs in this section.
+  settings" page. Settings belonging to this section generally
+  decide what features should be available to a user like deleting a
+  message, message edit history etc. Our `mandatory_topics` feature
+  belongs in this section.
 
 - `org_permissions`: This contains properties for the "organization
-    permissions" section. These properties control security controls
-    like who can join the organization and whether normal users can
-    create streams or upload custom emoji.
+  permissions" section. These properties control security controls
+  like who can join the organization and whether normal users can
+  create streams or upload custom emoji.
 
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
 "Other settings" (`other_settings`) subsection.
 
-*If you're not sure in which section your feature belongs, it's
+_If you're not sure in which section your feature belongs, it's
 better to discuss it in the [community](https://chat.zulip.org/)
-before implementing it.*
+before implementing it._
 
 Note that some settings, like `realm_msg_edit_limit_setting`,
 require special treatment, because they don't match the common
-pattern.  We can't extract the property name and compare the value of
+pattern. We can't extract the property name and compare the value of
 such input elements with those in `page_params`, so we have to
 manually handle such situations in a couple key functions:
 
 - `settings_org.get_property_value`: This processes the property name
-    when it doesn't match a corresponding key in `page_params`, and
-    returns the current value of that property, which we can use to
-    compare and set the values of corresponding DOM element.
+  when it doesn't match a corresponding key in `page_params`, and
+  returns the current value of that property, which we can use to
+  compare and set the values of corresponding DOM element.
 
 - `settings_org.update_dependent_subsettings`: This handles settings
-    whose value and state depend on other elements.  For example,
-    `realm_waiting_period_threshold` is only shown for with the right
-    state of `realm_waiting_period_setting`.
+  whose value and state depend on other elements. For example,
+  `realm_waiting_period_threshold` is only shown for with the right
+  state of `realm_waiting_period_setting`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
@@ -586,10 +587,10 @@ backend, so no UI updates are required.).
 
 However, if you had written a function to update the UI after a given
 setting has changed, your function should be referenced in the
-`realm_settings` of `server_events_dispatch.js`.  See for example
+`realm_settings` of `server_events_dispatch.js`. See for example
 `settings_emoji.update_custom_emoji_ui`.
 
-``` diff
+```diff
  // static/js/server_events_dispatch.js
 
  function dispatch_normal_event(event) {
@@ -619,7 +620,7 @@ Here are few important cases you should consider when testing your changes:
   properly.
 
 - If your setting is dependent on another setting, carefully check
-  that both are properly synchronized.  For example, the input element
+  that both are properly synchronized. For example, the input element
   for `realm_waiting_period_threshold` is shown only when we have
   selected the custom time limit option in the
   `realm_waiting_period_setting` dropdown.

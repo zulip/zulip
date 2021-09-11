@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict
 from unittest import mock
 
@@ -11,7 +12,13 @@ from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.users import get_all_api_keys
-from zerver.models import Draft, UserProfile, get_user_profile_by_api_key
+from zerver.models import (
+    Draft,
+    NotificationTriggers,
+    ScheduledMessageNotificationEmail,
+    UserProfile,
+    get_user_profile_by_api_key,
+)
 
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -133,41 +140,10 @@ class ChangeSettingsTest(ZulipTestCase):
         json_result = self.client_patch("/json/settings", dict(email="hamlet@mailnator.com"))
         self.assert_json_error(json_result, "Please use your real email address.")
 
-    # This is basically a don't-explode test.
-    def test_notify_settings(self) -> None:
-        for notification_setting in UserProfile.notification_setting_types.keys():
-            # `notification_sound` is a string not a boolean, so this test
-            # doesn't work for it.
-            #
-            # TODO: Make this work more like do_test_realm_update_api
-            if UserProfile.notification_setting_types[notification_setting] is bool:
-                self.check_for_toggle_param_patch("/json/settings", notification_setting)
-
-    def test_change_notification_sound(self) -> None:
-        pattern = "/json/settings"
-        param = "notification_sound"
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-
-        json_result = self.client_patch(pattern, {param: "invalid"})
-        self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
-
-        json_result = self.client_patch(pattern, {param: "ding"})
-        self.assert_json_success(json_result)
-
-        # refetch user_profile object to correctly handle caching
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(getattr(user_profile, param), "ding")
-
-        json_result = self.client_patch(pattern, {param: "zulip"})
-
-        self.assert_json_success(json_result)
-        # refetch user_profile object to correctly handle caching
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(getattr(user_profile, param), "zulip")
-
     def test_change_email_batching_period(self) -> None:
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
         self.login_user(hamlet)
 
         # Default is two minutes
@@ -190,13 +166,62 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.email_notifications_batching_period_seconds, 300)
 
-    def test_toggling_boolean_user_display_settings(self) -> None:
+        # Test that timestamps get updated for existing ScheduledMessageNotificationEmail rows
+        hamlet_msg_id1 = self.send_stream_message(sender=cordelia, stream_name="Verona")
+        hamlet_msg_id2 = self.send_stream_message(sender=cordelia, stream_name="Verona")
+        othello_msg_id1 = self.send_stream_message(sender=cordelia, stream_name="Verona")
+
+        def create_entry(user_profile_id: int, message_id: int, timestamp: datetime) -> int:
+            # The above messages don't actually mention anyone. We just fill up the trigger
+            # because we need to.
+            entry = ScheduledMessageNotificationEmail.objects.create(
+                user_profile_id=user_profile_id,
+                message_id=message_id,
+                trigger=NotificationTriggers.MENTION,
+                scheduled_timestamp=timestamp,
+            )
+            return entry.id
+
+        def get_datetime_object(minutes: int) -> datetime:
+            return datetime(
+                year=2021, month=8, day=10, hour=10, minute=minutes, second=15, tzinfo=timezone.utc
+            )
+
+        hamlet_timestamp = get_datetime_object(10)
+        othello_timestamp = get_datetime_object(20)
+
+        hamlet_entry1_id = create_entry(hamlet.id, hamlet_msg_id1, hamlet_timestamp)
+        hamlet_entry2_id = create_entry(hamlet.id, hamlet_msg_id2, hamlet_timestamp)
+        othello_entry1_id = create_entry(othello.id, othello_msg_id1, othello_timestamp)
+
+        # Update Hamlet's setting from 300 seconds (5 minutes) to 600 seconds (10 minutes)
+        self.assertEqual(hamlet.email_notifications_batching_period_seconds, 300)
+        result = self.client_patch(
+            "/json/settings", {"email_notifications_batching_period_seconds": 10 * 60}
+        )
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.email_notifications_batching_period_seconds, 10 * 60)
+
+        def check_scheduled_timestamp(entry_id: int, expected_timestamp: datetime) -> None:
+            entry = ScheduledMessageNotificationEmail.objects.get(id=entry_id)
+            self.assertEqual(entry.scheduled_timestamp, expected_timestamp)
+
+        # For Hamlet, the new scheduled timestamp should have been updated
+        expected_hamlet_timestamp = get_datetime_object(15)
+        check_scheduled_timestamp(hamlet_entry1_id, expected_hamlet_timestamp)
+        check_scheduled_timestamp(hamlet_entry2_id, expected_hamlet_timestamp)
+
+        # Nothing should have changed for Othello
+        check_scheduled_timestamp(othello_entry1_id, othello_timestamp)
+
+    def test_toggling_boolean_user_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
         boolean_settings = (
             s for s in UserProfile.property_types if UserProfile.property_types[s] is bool
         )
-        for display_setting in boolean_settings:
-            self.check_for_toggle_param_patch("/json/settings", display_setting)
+        for user_setting in boolean_settings:
+            self.check_for_toggle_param_patch("/json/settings", user_setting)
 
     def test_wrong_old_password(self) -> None:
         self.login("hamlet")
@@ -319,7 +344,7 @@ class ChangeSettingsTest(ZulipTestCase):
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
 
-    def do_test_change_user_display_setting(self, setting_name: str) -> None:
+    def do_test_change_user_setting(self, setting_name: str) -> None:
 
         test_changes: Dict[str, Any] = dict(
             default_language="de",
@@ -328,6 +353,9 @@ class ChangeSettingsTest(ZulipTestCase):
             timezone="US/Mountain",
             demote_inactive_streams=2,
             color_scheme=2,
+            email_notifications_batching_period_seconds=100,
+            notification_sound="ding",
+            desktop_icon_count_display=2,
         )
 
         self.login("hamlet")
@@ -335,11 +363,6 @@ class ChangeSettingsTest(ZulipTestCase):
         # Error if a setting in UserProfile.property_types does not have test values
         if test_value is None:
             raise AssertionError(f"No test created for {setting_name}")
-
-        if isinstance(test_value, int):
-            invalid_value: Any = 100
-        else:
-            invalid_value = "invalid_" + setting_name
 
         if setting_name not in ["demote_inactive_streams", "color_scheme"]:
             data = {setting_name: test_value}
@@ -351,29 +374,42 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.assertEqual(getattr(user_profile, setting_name), test_value)
 
-        # Test to make sure invalid settings are not accepted
-        # and saved in the db.
-        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
-            data = {setting_name: invalid_value}
-        else:
-            data = {setting_name: orjson.dumps(invalid_value).decode()}
-
-        result = self.client_patch("/json/settings", data)
-        # the json error for multiple word setting names (ex: default_language)
-        # displays as 'Invalid language'. Using setting_name.split('_') to format.
-        self.assert_json_error(result, f"Invalid {setting_name}")
-
-        user_profile = self.example_user("hamlet")
-        self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)
-
-    def test_change_user_display_setting(self) -> None:
+    def test_change_user_setting(self) -> None:
         """Test updating each non-boolean setting in UserProfile property_types"""
         user_settings = (
             s for s in UserProfile.property_types if UserProfile.property_types[s] is not bool
         )
         for setting in user_settings:
-            self.do_test_change_user_display_setting(setting)
-        self.do_test_change_user_display_setting("timezone")
+            self.do_test_change_user_setting(setting)
+        self.do_test_change_user_setting("timezone")
+
+    def test_invalid_setting_value(self) -> None:
+        invalid_values_dict = dict(
+            default_language="invalid_de",
+            default_view="invalid_view",
+            emojiset="apple",
+            timezone="invalid_US/Mountain",
+            demote_inactive_streams=10,
+            color_scheme=10,
+            notification_sound="invalid_sound",
+            desktop_icon_count_display=10,
+        )
+
+        self.login("hamlet")
+        for setting_name in invalid_values_dict.keys():
+            invalid_value = invalid_values_dict.get(setting_name)
+            if isinstance(invalid_value, str):
+                invalid_value = orjson.dumps(invalid_value).decode()
+
+            req = {setting_name: invalid_value}
+            result = self.client_patch("/json/settings", req)
+
+            expected_error_msg = f"Invalid {setting_name}"
+            if setting_name == "notification_sound":
+                expected_error_msg = f"Invalid notification sound '{invalid_value}'"
+            self.assert_json_error(result, expected_error_msg)
+            hamlet = self.example_user("hamlet")
+            self.assertNotEqual(getattr(hamlet, setting_name), invalid_value)
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")
@@ -382,7 +418,7 @@ class ChangeSettingsTest(ZulipTestCase):
         return result
 
     def test_emojiset(self) -> None:
-        """Test banned emojisets are not accepted."""
+        """Test banned emoji sets are not accepted."""
         banned_emojisets = ["apple", "emojione"]
         valid_emojisets = ["google", "google-blob", "text", "twitter"]
 

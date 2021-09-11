@@ -1,6 +1,6 @@
 # Security model
 
-This section attempts to document the Zulip security model.  It likely
+This section attempts to document the Zulip security model. It likely
 does not cover every issue; if there are details you're curious about,
 please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
@@ -11,7 +11,7 @@ announcement).
 
 ## Secure your Zulip server like your email server
 
-* It's reasonable to think about security for a Zulip server like you
+- It's reasonable to think about security for a Zulip server like you
   do security for a team email server -- only trusted individuals
   within an organization should have shell access to the server.
 
@@ -19,7 +19,7 @@ announcement).
   or Zulip database server, or with access to the `zulip` user on a
   Zulip application server, has complete control over the Zulip
   installation and all of its data (so they can read messages, modify
-  history, etc.).  It would be difficult or impossible to avoid this,
+  history, etc.). It would be difficult or impossible to avoid this,
   because the server needs access to the data to support features
   expected of a group chat system like the ability to search the
   entire message history, and thus someone with control over the
@@ -27,38 +27,38 @@ announcement).
 
 ## Encryption and authentication
 
-* Traffic between clients (web, desktop and mobile) and the Zulip
-  server is encrypted using HTTPS.  By default, all Zulip services
+- Traffic between clients (web, desktop and mobile) and the Zulip
+  server is encrypted using HTTPS. By default, all Zulip services
   talk to each other either via a localhost connection or using an
   encrypted SSL connection.
 
-* Zulip requires CSRF tokens in all interactions with the web API to
+- Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
-* The preferred way to log in to Zulip is using an SSO solution like
+- The preferred way to log in to Zulip is using an SSO solution like
   Google auth, LDAP, or similar, but Zulip also supports password
-  authentication.  See
+  authentication. See
   [the authentication methods documentation](../production/authentication-methods.md)
   for details on Zulip's available authentication methods.
 
 ### Passwords
 
 Zulip stores user passwords using the standard Argon2 and PBKDF2
-algorithms.  Argon2 is used for all new and changed passwords as of
+algorithms. Argon2 is used for all new and changed passwords as of
 Zulip Server 1.6.0, but legacy PBKDF2 passwords that were last changed
 before the 1.6.0 upgrade are still supported.
 
 When the user is choosing a password, Zulip checks the password's
-strength using the popular [zxcvbn][zxcvbn] library.  Weak passwords
-are rejected, and strong passwords encouraged.  The minimum password
+strength using the popular [zxcvbn][zxcvbn] library. Weak passwords
+are rejected, and strong passwords encouraged. The minimum password
 strength allowed is controlled by two settings in
 `/etc/zulip/settings.py`:
 
-* `PASSWORD_MIN_LENGTH`: The minimum acceptable length, in characters.
+- `PASSWORD_MIN_LENGTH`: The minimum acceptable length, in characters.
   Shorter passwords are rejected even if they pass the `zxcvbn` test
   controlled by `PASSWORD_MIN_GUESSES`.
 
-* `PASSWORD_MIN_GUESSES`: The minimum acceptable strength of the
+- `PASSWORD_MIN_GUESSES`: The minimum acceptable strength of the
   password, in terms of the estimated number of passwords an attacker
   is likely to guess before trying this one. If the user attempts to
   set a password that `zxcvbn` estimates to be guessable in less than
@@ -73,10 +73,10 @@ strength allowed is controlled by two settings in
   Estimating the guessability of a password is a complex problem and
   impossible to efficiently do perfectly. For background or when
   considering an alternate value for this setting, the article
-  ["Passwords and the Evolution of Imperfect Authentication"][BHOS15]
-  is recommended.  The [2016 zxcvbn paper][zxcvbn-paper] adds useful
+  ["Passwords and the Evolution of Imperfect Authentication"][bhos15]
+  is recommended. The [2016 zxcvbn paper][zxcvbn-paper] adds useful
   information about the performance of zxcvbn, and [a large 2012 study
-  of Yahoo users][Bon12] is informative about the strength of the
+  of Yahoo users][bon12] is informative about the strength of the
   passwords users choose.
 
 <!---
@@ -89,59 +89,60 @@ strength allowed is controlled by two settings in
 -->
 
 [zxcvbn]: https://github.com/dropbox/zxcvbn
-[BHOS15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
+[bhos15]: http://www.cl.cam.ac.uk/~fms27/papers/2015-BonneauHerOorSta-passwords.pdf
 [zxcvbn-paper]: https://www.usenix.org/system/files/conference/usenixsecurity16/sec16_paper_wheeler.pdf
-[Bon12]: http://ieeexplore.ieee.org/document/6234435/
+[bon12]: http://ieeexplore.ieee.org/document/6234435/
 
 ## Messages and history
 
-* Zulip message content is rendered using a specialized Markdown
+- Zulip message content is rendered using a specialized Markdown
   parser which escapes content to protect against cross-site scripting
   attacks.
 
-* Zulip supports both public streams and private streams.
-  * Any non-guest user can join any public stream in the organization,
+- Zulip supports both public streams and private streams.
+
+  - Any non-guest user can join any public stream in the organization,
     and can view the complete message history of any public stream
-    without joining the stream.  Guests can only access streams that
+    without joining the stream. Guests can only access streams that
     another user adds them to.
 
-  * Organization owners and administrators can see and modify most
+  - Organization owners and administrators can see and modify most
     aspects of a private stream, including the membership and
     estimated traffic. Owners and administrators generally cannot see
     messages sent to private streams or do things that would
     indirectly give them access to those messages, like adding members
     or changing the stream privacy settings.
 
-  * Non-admins cannot easily see which private streams exist, or interact
+  - Non-admins cannot easily see which private streams exist, or interact
     with them in any way until they are added. Given a stream name, they can
     figure out whether a stream with that name exists, but cannot see any
     other details about the stream.
 
-  * See [Stream permissions](https://zulip.com/help/stream-permissions) for more details.
+  - See [Stream permissions](https://zulip.com/help/stream-permissions) for more details.
 
-* Zulip supports editing the content and topics of messages that have
+- Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
   hard limits on the ways in which message content can be changed or
   undone. In contrast, our policies around message topics favor
   usefulness (e.g. for conversational organization) over faithfulness
   to the original. In all configurations:
 
-  * Message content can only ever be modified by the original author.
+  - Message content can only ever be modified by the original author.
 
-  * Any message visible to an organization owner or administrator can
+  - Any message visible to an organization owner or administrator can
     be deleted at any time by that administrator.
 
-  * See
+  - See
     [Configuring message editing and deletion](https://zulip.com/help/configure-message-editing-and-deletion)
     for more details.
 
 ## Users and bots
 
-* There are several types of users in a Zulip organization: organization
+- There are several types of users in a Zulip organization: organization
   owners, organization administrators, members (normal users), guests,
   and bots.
 
-* Owners and administrators have the ability to deactivate and
+- Owners and administrators have the ability to deactivate and
   reactivate other human and bot users, archive streams, add/remove
   administrator privileges, as well as change configuration for the
   organization.
@@ -151,47 +152,47 @@ strength allowed is controlled by two settings in
   streams to which the administrator is not subscribed. There are two
   exceptions:
 
-  * Organization owners may get access to private messages via some types of
+  - Organization owners may get access to private messages via some types of
     [data export](https://zulip.com/help/export-your-organization).
 
-  * Administrators can change the ownership of a bot. If a bot is subscribed
+  - Administrators can change the ownership of a bot. If a bot is subscribed
     to a private stream, then an administrator can indirectly get access to
     stream messages by taking control of the bot, though the access will be
     limited to what the bot can do. (E.g. incoming webhook bots cannot read
     messages.)
 
-* Every Zulip user has an API key, available on the settings page.
+- Every Zulip user has an API key, available on the settings page.
   This API key can be used to do essentially everything the user can
-  do; for that reason, users should keep their API key safe.  Users
+  do; for that reason, users should keep their API key safe. Users
   can rotate their own API key if it is accidentally compromised.
 
-* To properly remove a user's access to a Zulip team, it does not
+- To properly remove a user's access to a Zulip team, it does not
   suffice to change their password or deactivate their account in a
   SSO system, since neither of those prevents authenticating with the
-  user's API key or those of bots the user has created.  Instead, you
+  user's API key or those of bots the user has created. Instead, you
   should
   [deactivate the user's account](https://zulip.com/help/deactivate-or-reactivate-a-user)
   via Zulip's "Organization settings" interface.
 
-* The Zulip mobile apps authenticate to the server by sending the
+- The Zulip mobile apps authenticate to the server by sending the
   user's password and retrieving the user's API key; the apps then use
   the API key to authenticate all future interactions with the site.
   Thus, if a user's phone is lost, in addition to changing passwords,
   you should rotate the user's Zulip API key.
 
-* Guest users are like Members, but they do not have automatic access
+- Guest users are like Members, but they do not have automatic access
   to public streams.
 
-* Zulip supports several kinds of bots with different capabilities.
+- Zulip supports several kinds of bots with different capabilities.
 
-  * Incoming webhook bots can only send messages into Zulip.
-  * Outgoing webhook bots and Generic bots can essentially do anything a
+  - Incoming webhook bots can only send messages into Zulip.
+  - Outgoing webhook bots and Generic bots can essentially do anything a
     non-administrator user can, with a few exceptions (e.g. a bot cannot
     log in to the web application, register for mobile push
     notifications, or create other bots).
-  * Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
+  - Bots with the `can_forge_sender` permission can send messages that appear to have been sent by
     another user. They also have the ability to see the names of all
-    streams, including private streams.  This is important for implementing
+    streams, including private streams. This is important for implementing
     integrations like the Jabber, IRC, and Zephyr mirrors.
 
     These bots cannot be created by Zulip users, including
@@ -200,14 +201,14 @@ strength allowed is controlled by two settings in
 
 ## User-uploaded content and user-generated requests
 
-* Zulip supports user-uploaded files.  Ideally they should be hosted
+- Zulip supports user-uploaded files. Ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
   various same-domain attacks (e.g. zulip-user-content.example.com).
 
   We support two ways of hosting them: the basic `LOCAL_UPLOADS_DIR`
   file storage backend, where they are stored in a directory on the
   Zulip server's filesystem, and the S3 backend, where the files are
-  stored in Amazon S3.  It would not be difficult to add additional
+  stored in Amazon S3. It would not be difficult to add additional
   supported backends should there be a need; see
   `zerver/lib/upload.py` for the full interface.
 
@@ -224,11 +225,11 @@ strength allowed is controlled by two settings in
   provide additional layers of protection in both backends as well.
 
   In the Zulip S3 backend, the random URLs to access files that are
-  presented to users don't actually host the content.  Instead, the S3
+  presented to users don't actually host the content. Instead, the S3
   backend verifies that the user has a valid Zulip session in the
   relevant organization (and that has access to a Zulip message linking to
   the file), and if so, then redirects the browser to a temporary S3
-  URL for the file that expires a short time later.  In this way,
+  URL for the file that expires a short time later. In this way,
   possessing a URL to a secret file in Zulip does not provide
   unauthorized users with access to that file.
 
@@ -238,34 +239,34 @@ strength allowed is controlled by two settings in
   browser is logged into a Zulip account that has received the
   uploaded file in question).
 
-* Zulip supports using the Camo image proxy to proxy content like
+- Zulip supports using the Camo image proxy to proxy content like
   inline image previews, that can be inserted into the Zulip message feed by
   other users. This ensures that clients do not make requests to external
   servers to fetch images, improving privacy.
 
-* By default, Zulip will provide image previews inline in the body of
-  messages when a message contains a link to an image.  You can
+- By default, Zulip will provide image previews inline in the body of
+  messages when a message contains a link to an image. You can
   control this using the `INLINE_IMAGE_PREVIEW` setting.
 
-* Zulip may make outgoing HTTP connections to other servers in a
+- Zulip may make outgoing HTTP connections to other servers in a
   number of cases:
 
-  * Outgoing webhook bots (creation of which can be restricted)
-  * Inline image previews in messages (enabled by default, but can be disabled)
-  * Inline webpage previews and embeds (must be configured to be enabled)
-  * Twitter message previews (must be configured to be enabled)
-  * BigBlueButton and Zoom API requests (must be configured to be enabled)
-  * Mobile push notifications (must be configured to be enabled)
+  - Outgoing webhook bots (creation of which can be restricted)
+  - Inline image previews in messages (enabled by default, but can be disabled)
+  - Inline webpage previews and embeds (must be configured to be enabled)
+  - Twitter message previews (must be configured to be enabled)
+  - BigBlueButton and Zoom API requests (must be configured to be enabled)
+  - Mobile push notifications (must be configured to be enabled)
 
-* Notably, these first 3 features give end users (limited) control to cause
-  the Zulip server to make HTTP requests on their behalf.  As a result,
+- Notably, these first 3 features give end users (limited) control to cause
+  the Zulip server to make HTTP requests on their behalf. As a result,
   Zulip supports routing all outgoing outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
-  used to execute [SSRF attacks][SSRF] against other systems on an
-  internal corporate network.  The default Smokescreen configuration
+  used to execute [SSRF attacks][ssrf] against other systems on an
+  internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
-[SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+[ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-setup]: ../production/deployment.html#using-an-outgoing-http-proxy
 
 ## Final notes and security response

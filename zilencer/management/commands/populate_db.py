@@ -478,14 +478,14 @@ class Command(BaseCommand):
                 recipient=None,
                 topic="Release Notes",
                 content="Release 4.0 will contain ...",
-                last_edit_time=datetime.now(),
+                last_edit_time=timezone_now(),
             )
             Draft.objects.create(
                 user_profile=iago,
                 recipient=None,
                 topic="Release Notes",
                 content="Release 4.0 will contain many new features such as ... ",
-                last_edit_time=datetime.now(),
+                last_edit_time=timezone_now(),
             )
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)

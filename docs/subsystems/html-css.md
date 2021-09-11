@@ -3,12 +3,12 @@
 ## Zulip CSS organization
 
 The Zulip application's CSS can be found in the `static/styles/`
-directory.  Zulip uses [Bootstrap](https://getbootstrap.com/) as its
+directory. Zulip uses [Bootstrap](https://getbootstrap.com/) as its
 main third-party CSS library.
 
-Zulip uses PostCSS for its CSS files.  There are two high-level sections
+Zulip uses PostCSS for its CSS files. There are two high-level sections
 of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
-and the app.  The portico CSS lives under the `static/styles/portico`
+and the app. The portico CSS lives under the `static/styles/portico`
 subdirectory.
 
 ## Editing Zulip CSS
@@ -33,8 +33,8 @@ browser window (following backend changes).
 
 Without care, it's easy for a web application to end up with thousands
 of lines of duplicated CSS code, which can make it very difficult to
-understand the current styling or modify it.  We would very much like
-to avoid such a fate.  So please make an effort to reuse existing
+understand the current styling or modify it. We would very much like
+to avoid such a fate. So please make an effort to reuse existing
 styling, clean up now-unused CSS, etc., to keep things maintainable.
 
 ### Be consistent with existing similar UI
@@ -62,16 +62,16 @@ browsers to make sure things look the same.
 
 ### Behavior
 
-* Templates are automatically recompiled in development when the file
-is saved; a refresh of the page should be enough to display the latest
-version. You might need to do a hard refresh, as some browsers cache
-webpages.
+- Templates are automatically recompiled in development when the file
+  is saved; a refresh of the page should be enough to display the latest
+  version. You might need to do a hard refresh, as some browsers cache
+  webpages.
 
-* Variables can be used in templates. The variables available to the
-template are called the **context**. Passing the context to the HTML
-template sets the values of those variables to the value they were
-given in the context. The sections below contain specifics on how the
-context is defined and where it can be found.
+- Variables can be used in templates. The variables available to the
+  template are called the **context**. Passing the context to the HTML
+  template sets the values of those variables to the value they were
+  given in the context. The sections below contain specifics on how the
+  context is defined and where it can be found.
 
 ### Backend templates
 
@@ -84,12 +84,12 @@ found [here][jconditionals].
 
 The context for Jinja2 templates is assembled from a few places:
 
-* `zulip_default_context` in `zerver/context_processors.py`.  This is
-the default context available to all Jinja2 templates.
+- `zulip_default_context` in `zerver/context_processors.py`. This is
+  the default context available to all Jinja2 templates.
 
-* As an argument in the `render` call in the relevant function that
-renders the template. For example, if you want to find the context
-passed to `index.html`, you can do:
+- As an argument in the `render` call in the relevant function that
+  renders the template. For example, if you want to find the context
+  passed to `index.html`, you can do:
 
 ```console
 $ git grep zerver/app/index.html '*.py'
@@ -98,8 +98,8 @@ zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 
 The next line in the code being the context definition.
 
-* `zproject/urls.py` for some fairly static pages that are rendered
-using `TemplateView`, for example:
+- `zproject/urls.py` for some fairly static pages that are rendered
+  using `TemplateView`, for example:
 
 ```python
 path('config-error/google', TemplateView.as_view(
@@ -151,10 +151,10 @@ relevant background as well.
 ### Primary build process
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
-we are working on migrating these to TypeScript modules.  Stylesheets
+we are working on migrating these to TypeScript modules. Stylesheets
 are written in CSS extended by various PostCSS plugins; they are
 converted from plain CSS, and we have yet to take full advantage of
-the features PostCSS offers.  We use Webpack to transpile and build JS
+the features PostCSS offers. We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
 points specified in `tools/webpack.*assets.json`; source maps are
 generated in the process for better debugging experience.
@@ -188,9 +188,9 @@ first add it to the appropriate place under `static/`.
   version of third-party libraries.
 - Third-party files that we have patched should all go in
   `static/third/`. Tag the commit with "[third]" when adding or
-  modifying a third-party package.  Our goal is to the extent possible
+  modifying a third-party package. Our goal is to the extent possible
   to eliminate patched third-party code from the project.
-- Our own JavaScript and TypeScript files live under `static/js`.  Ideally,
+- Our own JavaScript and TypeScript files live under `static/js`. Ideally,
   new modules should be written in TypeScript (details on this policy below).
 - CSS files live under `static/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
@@ -203,14 +203,14 @@ For your asset to be included in a development/production bundle, it
 needs to be accessible from one of the entry points defined either in
 `tools/webpack.assets.json` or `tools/webpack.dev-assets.json`.
 
-* If you plan to only use the file within the app proper, and not on the login
+- If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
   in `static/js/bundles/app.js`.
-* If it needs to be available both in the app and all
+- If it needs to be available both in the app and all
   logged-out/portico pages, import it to
   `static/js/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
-* If it's just used on a single standalone page which is only used in
+- If it's just used on a single standalone page which is only used in
   a development environment (e.g. `/devlogin`) create a new entry
   point in `tools/webpack.dev-assets.json` or it's used in both
   production and development (e.g. `/stats`) create a new entry point
@@ -224,22 +224,23 @@ If you want to test minified files in development, look for the
 ### How it works in production
 
 A few useful notes are:
-* Zulip installs static assets in production in
-`/home/zulip/prod-static`.  When a new version is deployed, before the
-server is restarted, files are copied into that directory.
-* We use the VFL (versioned file layout) strategy, where each file in
+
+- Zulip installs static assets in production in
+  `/home/zulip/prod-static`. When a new version is deployed, before the
+  server is restarted, files are copied into that directory.
+- We use the VFL (versioned file layout) strategy, where each file in
   the codebase (e.g. `favicon.ico`) gets a new name
-  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it.  Each
+  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it. Each
   deployment, has a manifest file
   (e.g. `/home/zulip/deployments/current/staticfiles.json`) that maps
-  codebase filenames to serving filenames for that deployment.  The
+  codebase filenames to serving filenames for that deployment. The
   benefit of this VFL approach is that all the static files for past
   deployments can coexist, which in turn eliminates most classes of
   race condition bugs where browser windows opened just before a
-  deployment can't find their static assets.  It also is necessary for
+  deployment can't find their static assets. It also is necessary for
   any incremental rollout strategy where different clients get
   different versions of the site.
-* Some paths for files (e.g. emoji) are stored in the
+- Some paths for files (e.g. emoji) are stored in the
   `rendered_content` of past messages, and thus cannot be removed
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).
@@ -261,28 +262,28 @@ where one is moving code from an existing JavaScript module, the new
 commit should just move the code, not translate it to TypeScript).
 TypeScript provides more accurate information to development tools,
 allowing for better refactoring, auto-completion and static analysis.
-TypeScript also uses the ES6 module system.  See our documentation on
+TypeScript also uses the ES6 module system. See our documentation on
 [TypeScript static types](../testing/typescript).
 
 Webpack does not ordinarily allow modules to be accessed directly from
 the browser console, but for debugging convenience, we have a custom
 webpack plugin (`tools/debug-require-webpack-plugin.ts`) that exposes
 a version of the `require()` function to the development environment
-browser console for this purpose.  For example, you can access our
-`people` module by evaluating `people =
-require("./static/js/people")`, or the third-party `lodash` module
-with `_ = require("lodash")`.  This mechanism is **not** a stable API
-and should not be used for any purpose other than interactive
-debugging.
+browser console for this purpose. For example, you can access our
+`people` module by evaluating
+`people = require("./static/js/people")`, or the third-party `lodash`
+module with `_ = require("lodash")`. This mechanism is **not** a
+stable API and should not be used for any purpose other than
+interactive debugging.
 
 We have one module, `zulip_test`, that’s exposed as a global variable
 using `expose-loader` for direct use in Puppeteer tests and in the
-production browser console.  If you need to access a variable or
-function in those scenarios, add it to `zulip_test`.  This is also
+production browser console. If you need to access a variable or
+function in those scenarios, add it to `zulip_test`. This is also
 **not** a stable API.
 
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html

@@ -537,7 +537,7 @@ class AppsPageTest(ZulipTestCase):
         self.assertIn("Apps for every platform.", html)
 
     def test_app_download_link_view(self) -> None:
-        return_value = "https://github.com/zulip/zulip-desktop/releases/download/v5.4.3/Zulip-Web-Setup-5.4.3.exe"
+        return_value = "https://desktop-download.zulip.com/v5.4.3/Zulip-Web-Setup-5.4.3.exe"
         with mock.patch(
             "zerver.views.portico.get_latest_github_release_download_link_for_platform",
             return_value=return_value,

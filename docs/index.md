@@ -14,7 +14,7 @@ Welcome! Zulip's documentation is split into four parts:
 
 Zulip has well over 150,000 words of documentation. If you can't find
 what you're looking for, please [let us
-know](https://zulip.com/developer-community/)!  Further information on
+know](https://zulip.com/developer-community/)! Further information on
 the Zulip project and its features can be found at
 <https://zulip.com>.
 
@@ -25,18 +25,19 @@ Zulip](overview/contributing.md).
 
 Contents:
 
-* {ref}`Overview <overview>`
-* {ref}`Zulip in production <zulip-in-production>`
-* {ref}`Development environment <development-environment>`
-* {ref}`Developer tutorials <developer-tutorials>`
-* {ref}`Git guide <git-guide>`
-* {ref}`Code contribution guide <code-contribution-guide>`
-* {ref}`Code testing <code-testing>`
-* {ref}`Subsystem documentation <subsystem-documentation>`
-* {ref}`Writing documentation <writing-documentation>`
-* {ref}`Translating <translating>`
+- {ref}`Overview <overview>`
+- {ref}`Zulip in production <zulip-in-production>`
+- {ref}`Development environment <development-environment>`
+- {ref}`Developer tutorials <developer-tutorials>`
+- {ref}`Git guide <git-guide>`
+- {ref}`Code contribution guide <code-contribution-guide>`
+- {ref}`Code testing <code-testing>`
+- {ref}`Subsystem documentation <subsystem-documentation>`
+- {ref}`Writing documentation <writing-documentation>`
+- {ref}`Translating <translating>`
 
 (overview)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -46,6 +47,7 @@ overview/index
 ```
 
 (zulip-in-production)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -55,6 +57,7 @@ production/index
 ```
 
 (development-environment)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -64,6 +67,7 @@ development/index
 ```
 
 (developer-tutorials)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -73,6 +77,7 @@ tutorials/index
 ```
 
 (git-guide)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -82,6 +87,7 @@ git/index
 ```
 
 (code-contribution-guide)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -91,6 +97,7 @@ contributing/index
 ```
 
 (code-testing)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -100,6 +107,7 @@ testing/index
 ```
 
 (subsystem-documentation)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -109,6 +117,7 @@ subsystems/index
 ```
 
 (writing-documentation)=
+
 ```{toctree}
 ---
 maxdepth: 3
@@ -118,6 +127,7 @@ documentation/index
 ```
 
 (translating)=
+
 ```{toctree}
 ---
 maxdepth: 3

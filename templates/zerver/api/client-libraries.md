@@ -42,6 +42,7 @@ page](https://zulip.readthedocs.io/en/latest/documentation/api.html).
 ### Outdated
 
 !!! tip ""
+
     The following projects are not actively maintained.  Since
     Zulip's core APIs have been stable for 5 years, even very
     old libraries can be useful.

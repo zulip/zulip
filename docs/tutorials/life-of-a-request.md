@@ -20,7 +20,7 @@ are in your Git checkout under `static`, and are served unminified.
 
 ## Static files are [served directly][served-directly] by Nginx
 
-[served-directly]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
+[served-directly]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-frontend/app
 
 Static files include JavaScript, css, static assets (like emoji, avatars),
 and user uploads (if stored locally and not on S3).
@@ -50,7 +50,7 @@ application.
 
 [Here is the relevant nginx routing configuration.][nginx-config-link]
 
-[nginx-config-link]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
+[nginx-config-link]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-frontend/app
 
 ## Django routes the request to a view in urls.py files
 
@@ -70,7 +70,7 @@ on how the REST API handles our user creation example.
 ## Views serving HTML are internationalized by server path
 
 If we look in
-[zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py),
+[zproject/urls.py](https://github.com/zulip/zulip/blob/main/zproject/urls.py),
 we can see something called `i18n_urls`. These urls show up in the
 address bar of the browser, and serve HTML.
 
@@ -89,17 +89,17 @@ With the exception of incoming webhooks (which we do not usually control the
 format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
-* POST for creating something new where we don't have a unique
+- POST for creating something new where we don't have a unique
   ID. Also used as a catch-all if no other verb is appropriate.
-* PUT for creating something for which we have a unique ID.
-* DELETE for deleting something
-* PATCH for updating or editing attributes of something.
-* GET to get something (read-only)
-* HEAD to check the existence of something to GET, without getting it;
+- PUT for creating something for which we have a unique ID.
+- DELETE for deleting something
+- PATCH for updating or editing attributes of something.
+- GET to get something (read-only)
+- HEAD to check the existence of something to GET, without getting it;
   useful to check a link without downloading a potentially large link
-* OPTIONS (handled automatically, see more below)
+- OPTIONS (handled automatically, see more below)
 
-Of these, PUT, DELETE, HEAD, OPTIONS, and GET are *idempotent*, which
+Of these, PUT, DELETE, HEAD, OPTIONS, and GET are _idempotent_, which
 means that we can send the request multiple times and get the same
 state on the server. You might get a different response after the first
 request, as we like to give our clients an error so they know that no
@@ -135,7 +135,7 @@ This request:
 yields a response with this HTTP header:
 `Allow: PUT, GET`
 
-We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
+We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/main/zproject/urls.py):
 
 ```python
 rest_path('users',
@@ -151,7 +151,7 @@ The endpoints from the legacy JSON API are written without REST in
 mind. They are used extensively by the web client, and use POST.
 
 You can see them in
-[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/master/zproject/legacy_urls.py).
+[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/main/zproject/legacy_urls.py).
 
 ### Incoming webhook integrations may not be RESTful
 
@@ -163,7 +163,7 @@ only POST.
 
 For requests that correspond to a REST url pattern, Zulip configures
 its url patterns (see
-[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py))
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py))
 so that the action called is `rest_dispatch`. This method will
 authenticate the user, either through a session token from a cookie,
 or from an `email:api-key` string given via HTTP basic auth for API

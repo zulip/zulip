@@ -50,9 +50,14 @@ class zulip_ops::profile::zmirror_personals {
   }
 
   # Allow the relevant UDP ports
-  concat::fragment { 'iptables-zmirror':
+  concat::fragment { 'iptables-zmirror.v4':
     target => '/etc/iptables/rules.v4',
-    source => 'puppet:///modules/zulip_ops/iptables/zmirror',
+    source => 'puppet:///modules/zulip_ops/iptables/zmirror.v4',
+    order  => '20',
+  }
+  concat::fragment { 'iptables-zmirror.v6':
+    target => '/etc/iptables/rules.v6',
+    source => 'puppet:///modules/zulip_ops/iptables/zmirror.v6',
     order  => '20',
   }
 

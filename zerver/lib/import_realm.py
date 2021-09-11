@@ -2,7 +2,6 @@ import datetime
 import logging
 import multiprocessing
 import os
-import secrets
 import shutil
 from mimetypes import guess_type
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -32,7 +31,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import BadImageError, get_bucket, sanitize_name
+from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -53,6 +52,7 @@ from zerver.models import (
     RealmEmoji,
     RealmFilter,
     RealmPlayground,
+    RealmUserDefault,
     Recipient,
     Service,
     Stream,
@@ -126,6 +126,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "analytics_realmcount": {},
     "analytics_streamcount": {},
     "analytics_usercount": {},
+    "realmuserdefault": {},
 }
 
 id_map_to_list: Dict[str, Dict[int, List[int]]] = {
@@ -672,6 +673,12 @@ def fix_subscriptions_is_user_active_column(
 
 
 def process_avatars(record: Dict[str, Any]) -> None:
+    # We need to re-import upload_backend here, because in the
+    # import-export unit tests, the Zulip settings are overridden for
+    # specific tests to control the choice of upload backend, and this
+    # reimport ensures that we use the right choice for the current
+    # test. Outside the test suite, settings never change after the
+    # server is started, so this import will have no effect in production.
     from zerver.lib.upload import upload_backend
 
     if record["s3_path"].endswith(".original"):
@@ -773,17 +780,11 @@ def import_uploads(
             relative_path = os.path.join(str(record["realm_id"]), "realm", icon_name)
             record["last_modified"] = timestamp
         else:
-            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
-            # function 'upload_message_file'.
             # This relative_path is basically the new location of the file,
             # which will later be copied from its original location as
             # specified in record["s3_path"].
-            relative_path = "/".join(
-                [
-                    str(record["realm_id"]),
-                    secrets.token_urlsafe(18),
-                    sanitize_name(os.path.basename(record["path"])),
-                ]
+            relative_path = upload_backend.generate_message_upload_path(
+                str(record["realm_id"]), sanitize_name(os.path.basename(record["path"]))
             )
             path_maps["attachment_path"][record["s3_path"]] = relative_path
 
@@ -1141,6 +1142,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
         update_model_ids(BotConfigData, data, "botconfigdata")
         bulk_import_model(data, BotConfigData)
+
+    if "zerver_realmuserdefault" in data:
+        re_map_foreign_keys(data, "zerver_realmuserdefault", "realm", related_table="realm")
+        update_model_ids(RealmUserDefault, data, "realmuserdefault")
+        bulk_import_model(data, RealmUserDefault)
+
+    # Create RealmUserDefault table with default values if not created
+    # already from the import data; this can happen when importing
+    # data from another product.
+    if not RealmUserDefault.objects.filter(realm=realm).exists():
+        RealmUserDefault.objects.create(realm=realm)
 
     fix_datetime_fields(data, "zerver_userpresence")
     re_map_foreign_keys(data, "zerver_userpresence", "user_profile", related_table="user_profile")

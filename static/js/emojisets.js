@@ -16,7 +16,7 @@ const emojisets = new Map([
     ["twitter", {css: twitter_css, sheet: twitter_sheet}],
 ]);
 
-// For `text` emojiset we fallback to `google-blob` emojiset
+// For `text` emoji set we fallback to `google-blob` emoji set
 // for displaying emojis in emoji picker and typeahead.
 emojisets.set("text", emojisets.get("google-blob"));
 

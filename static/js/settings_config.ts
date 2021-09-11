@@ -97,7 +97,7 @@ export const get_all_display_settings = (): DisplaySettings => ({
 export const email_address_visibility_values = {
     everyone: {
         code: 1,
-        description: $t({defaultMessage: "Admins, members, and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     // // Backend support for this configuration is not available yet.
     // admins_and_members: {
@@ -132,12 +132,12 @@ export const common_policy_values = {
     by_full_members: {
         order: 3,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_members: {
         order: 4,
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
 };
 
@@ -160,12 +160,12 @@ export const invite_to_realm_policy_values = {
     by_full_members: {
         order: 4,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_members: {
         order: 5,
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
 };
 
@@ -173,7 +173,7 @@ export const private_message_policy_values = {
     by_anyone: {
         order: 1,
         code: 1,
-        description: $t({defaultMessage: "Admins, members, and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     disabled: {
         order: 2,
@@ -186,17 +186,17 @@ export const wildcard_mention_policy_values = {
     by_everyone: {
         order: 1,
         code: 1,
-        description: $t({defaultMessage: "Admins, members and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     by_members: {
         order: 2,
         code: 2,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
     by_full_members: {
         order: 3,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_moderators_only: {
         order: 4,
@@ -228,17 +228,17 @@ export const common_message_policy_values = {
     by_everyone: {
         order: 1,
         code: 5,
-        description: $t({defaultMessage: "Admins, members and guests"}),
+        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
     },
     by_members: {
         order: 2,
         code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
+        description: $t({defaultMessage: "Admins, moderators and members"}),
     },
     by_full_members: {
         order: 3,
         code: 3,
-        description: $t({defaultMessage: "Admins and full members"}),
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
     },
     by_moderators_only: {
         order: 4,
@@ -406,6 +406,41 @@ const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
 const mobile_notification_settings = ["enable_online_push_notifications"];
 
+export const email_notifications_batching_period_values = [
+    {
+        value: 60 * 2,
+        description: $t({defaultMessage: "2 minutes"}),
+    },
+    {
+        value: 60 * 5,
+        description: $t({defaultMessage: "5 minutes"}),
+    },
+    {
+        value: 60 * 10,
+        description: $t({defaultMessage: "10 minutes"}),
+    },
+    {
+        value: 60 * 30,
+        description: $t({defaultMessage: "30 minutes"}),
+    },
+    {
+        value: 60 * 60,
+        description: $t({defaultMessage: "1 hour"}),
+    },
+    {
+        value: 60 * 60 * 6,
+        description: $t({defaultMessage: "6 hours"}),
+    },
+    {
+        value: 60 * 60 * 24,
+        description: $t({defaultMessage: "1 day"}),
+    },
+    {
+        value: 60 * 60 * 24 * 7,
+        description: $t({defaultMessage: "1 week"}),
+    },
+];
+
 const email_notification_settings = [
     "enable_digest_emails",
     "enable_login_emails",
@@ -418,6 +453,7 @@ const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
     mobile_notification_settings,
     email_notification_settings,
+    ["email_notifications_batching_period"],
     ["notification_sound"],
 );
 

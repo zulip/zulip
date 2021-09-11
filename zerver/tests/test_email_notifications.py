@@ -1,18 +1,21 @@
 import random
 import re
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import List, Optional, Sequence
 from unittest import mock
 from unittest.mock import patch
 
 import ldap
+import lxml.html
 import orjson
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.actions import do_change_notification_settings, do_change_user_role
+from zerver.lib.actions import do_change_user_role, do_change_user_setting
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     fix_emojis,
@@ -20,7 +23,7 @@ from zerver.lib.email_notifications import (
     handle_missedmessage_emails,
     relative_to_full_url,
 )
-from zerver.lib.send_email import FromAddress, send_custom_email
+from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import create_user_group
 from zerver.models import ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
@@ -298,6 +301,43 @@ class TestFollowupEmails(ZulipTestCase):
         self.assert_length(scheduled_emails, 1)
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["template_prefix"], "zerver/emails/followup_day1")
+
+    def test_followup_emails_for_regular_realms(self) -> None:
+        cordelia = self.example_user("cordelia")
+        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+        scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
+        self.assertEqual(
+            orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+
+        deliver_scheduled_emails(scheduled_email)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        message = outbox[0]
+        self.assertIn("You've created the new Zulip organization", message.body)
+        self.assertNotIn("demo org", message.body)
+
+    def test_followup_emails_for_demo_realms(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(
+            days=30
+        )
+        cordelia.realm.save()
+        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+        scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
+        self.assertEqual(
+            orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+
+        deliver_scheduled_emails(scheduled_email)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        message = outbox[0]
+        self.assertIn("You've created a demo Zulip organization", message.body)
 
 
 class TestMissedMessages(ZulipTestCase):
@@ -824,33 +864,6 @@ class TestMissedMessages(ZulipTestCase):
         for text in expected_email_include:
             self.assertIn(text, self.normalize_string(mail.outbox[0].body))
 
-    def test_system_user_group_mention_sends_email(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), is_system_group=True
-        )
-        user_group_mentioned_message_id = self.send_stream_message(
-            othello, "Denmark", "@*hamlet_and_cordelia*"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {
-                    "message_id": user_group_mentioned_message_id,
-                    "trigger": "mentioned",
-                    "mentioned_user_group_id": hamlet_and_cordelia.id,
-                },
-            ],
-        )
-        self.assertIn(
-            "Othello, the Moor of Venice: @*hamlet_and_cordelia* -- ",
-            self.normalize_string(mail.outbox[0].body),
-        )
-
     def test_realm_name_in_notifications(self) -> None:
         # Test with realm_name_in_notifications for hamlet disabled.
         self._realm_name_in_missed_message_email_subject(False)
@@ -866,7 +879,7 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_message_content_disabled_in_missed_message_notifications(self) -> None:
         # Test when user disabled message content in email notifications.
-        do_change_notification_settings(
+        do_change_user_setting(
             self.example_user("hamlet"),
             "message_content_in_email_notifications",
             False,
@@ -979,14 +992,14 @@ class TestMissedMessages(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(False, show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", False, acting_user=None
         )
         mail.outbox = []
@@ -1000,7 +1013,7 @@ class TestMissedMessages(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
@@ -1008,7 +1021,7 @@ class TestMissedMessages(ZulipTestCase):
             False, show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", False, acting_user=None
         )
         mail.outbox = []
@@ -1098,14 +1111,14 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn("Iago: * 1\n *2\n\n--\nYou are receiving", mail.outbox[1].body)
         # If message content does not starts with <p> tag sender name is appended before the <p> tag
         self.assertIn(
-            "       <b>Iago</b>: <ul>\n<li>1<br/>\n *2</li>\n</ul>\n",
+            "       <b>Iago</b>: <div><ul>\n<li>1<br/>\n *2</li>\n</ul></div>\n",
             mail.outbox[1].alternatives[0][0],
         )
 
         self.assertEqual("Hello\n\n--\n\nReply", mail.outbox[2].body[:16])
         # Sender name is not appended to message for PM missed messages
         self.assertIn(
-            ">\n                    \n                        <p>Hello</p>\n",
+            ">\n                    \n                        <div><p>Hello</p></div>\n",
             mail.outbox[2].alternatives[0][0],
         )
 
@@ -1243,6 +1256,11 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(email_subjects, valid_email_subjects)
 
     def test_relative_to_full_url(self) -> None:
+        def convert(test_data: str) -> str:
+            fragment = lxml.html.fromstring(test_data)
+            relative_to_full_url(fragment, "http://example.com")
+            return lxml.html.tostring(fragment, encoding="unicode")
+
         zulip_realm = get_realm("zulip")
         zephyr_realm = get_realm("zephyr")
         # Run `relative_to_full_url()` function over test fixtures present in
@@ -1254,7 +1272,7 @@ class TestMissedMessages(ZulipTestCase):
             test_fixtures[test["name"]] = test
         for test_name in test_fixtures:
             test_data = test_fixtures[test_name]["expected_output"]
-            output_data = relative_to_full_url("http://example.com", test_data)
+            output_data = convert(test_data)
             if re.search(r"""(?<=\=['"])/(?=[^<]+>)""", output_data) is not None:
                 raise AssertionError(
                     "Relative URL present in email: "
@@ -1268,14 +1286,14 @@ class TestMissedMessages(ZulipTestCase):
 
         # A path similar to our emoji path, but not in a link:
         test_data = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
-        actual_output = relative_to_full_url("http://example.com", test_data)
+        actual_output = convert(test_data)
         expected_output = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
         self.assertEqual(actual_output, expected_output)
 
         # An uploaded file
         test_data = '<a href="/user_uploads/{realm_id}/1f/some_random_value">/user_uploads/{realm_id}/1f/some_random_value</a>'
         test_data = test_data.format(realm_id=zephyr_realm.id)
-        actual_output = relative_to_full_url("http://example.com", test_data)
+        actual_output = convert(test_data)
         expected_output = (
             '<a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">'
             + "/user_uploads/{realm_id}/1f/some_random_value</a>"
@@ -1285,7 +1303,7 @@ class TestMissedMessages(ZulipTestCase):
 
         # A profile picture like syntax, but not actually in an HTML tag
         test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
-        actual_output = relative_to_full_url("http://example.com", test_data)
+        actual_output = convert(test_data)
         expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
         self.assertEqual(actual_output, expected_output)
 
@@ -1294,7 +1312,7 @@ class TestMissedMessages(ZulipTestCase):
             '<p><a href="#narrow/stream/test/topic/test.20topic/near/142"'
             + 'title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
         )
-        actual_output = relative_to_full_url("http://example.com", test_data)
+        actual_output = convert(test_data)
         expected_output = (
             '<p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142" '
             + 'title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
@@ -1309,7 +1327,7 @@ class TestMissedMessages(ZulipTestCase):
             + 'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
         )
         test_data = test_data.format(realm_id=zulip_realm.id)
-        actual_output = relative_to_full_url("http://example.com", test_data)
+        actual_output = convert(test_data)
         expected_output = (
             '<div><p>See this <a href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
             + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
@@ -1325,7 +1343,7 @@ class TestMissedMessages(ZulipTestCase):
             + '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" '
             + 'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
         )
-        actual_output = relative_to_full_url("http://example.com", test_data)
+        actual_output = convert(test_data)
         expected_output = (
             '<p><a href="https://www.google.com/images/srpr/logo4w.png" '
             + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
@@ -1335,7 +1353,9 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_spoilers_in_html_emails(self) -> None:
         test_data = '<div class="spoiler-block"><div class="spoiler-header">\n\n<p><a>header</a> text</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>'
-        actual_output = fix_spoilers_in_html(test_data, "en")
+        fragment = lxml.html.fromstring(test_data)
+        fix_spoilers_in_html(fragment, "en")
+        actual_output = lxml.html.tostring(fragment, encoding="unicode")
         expected_output = '<div><div class="spoiler-block">\n\n<p><a>header</a> text <span class="spoiler-title" title="Open Zulip to see the spoiler content">(Open Zulip to see the spoiler content)</span></p>\n</div>\n\n<p>outside spoiler</p></div>'
         self.assertEqual(actual_output, expected_output)
 
@@ -1346,8 +1366,9 @@ class TestMissedMessages(ZulipTestCase):
             if "spoiler" in test["name"]:
                 test_fixtures[test["name"]] = test
         for test_name in test_fixtures:
-            test_data = test_fixtures[test_name]["expected_output"]
-            output_data = fix_spoilers_in_html(test_data, "en")
+            fragment = lxml.html.fromstring(test_fixtures[test_name]["expected_output"])
+            fix_spoilers_in_html(fragment, "en")
+            output_data = lxml.html.tostring(fragment, encoding="unicode")
             assert "spoiler-header" not in output_data
             assert "spoiler-content" not in output_data
             assert "spoiler-block" in output_data
@@ -1375,9 +1396,23 @@ class TestMissedMessages(ZulipTestCase):
             '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8" role="img" title="cloud with lightning and rain">'
             + ":cloud_with_lightning_and_rain:</span>.</p>"
         )
-        actual_output = fix_emojis(test_data, "http://example.com", "google")
+        fragment = lxml.html.fromstring(test_data)
+        fix_emojis(fragment, "http://example.com", "google")
+        actual_output = lxml.html.tostring(fragment, encoding="unicode")
         expected_output = (
             '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" '
             + 'title="cloud with lightning and rain" style="height: 20px;">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
+
+    def test_empty_backticks_in_missed_message(self) -> None:
+        msg_id = self.send_personal_message(
+            self.example_user("othello"),
+            self.example_user("hamlet"),
+            "```\n```",
+        )
+        verify_body_include = ["view it in Zulip"]
+        email_subject = "PMs with Othello, the Moor of Venice"
+        self._test_cases(
+            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
+        )

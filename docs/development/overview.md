@@ -28,8 +28,8 @@ performs well.
 Zulip also supports a wide range of ways to install the Zulip
 development environment:
 
-* On Linux platforms, you can **[install directly][install-direct]**.
-* On Windows, you can **[install directly][install-via-wsl]** via WSL 2.
+- On Linux platforms, you can **[install directly][install-direct]**.
+- On Windows, you can **[install directly][install-via-wsl]** via WSL 2.
 
 ## Slow internet connections
 
@@ -65,8 +65,8 @@ need to.
 Once you've installed the Zulip development environment, you'll want
 to read these documents to learn how to use it:
 
-* [Using the development environment][using-dev-env]
-* [Testing][testing] (and [Configuring CI][ci])
+- [Using the development environment][using-dev-env]
+- [Testing][testing] (and [Configuring CI][ci])
 
 And if you've set up the Zulip development environment on a remote
 machine, take a look at our tips for

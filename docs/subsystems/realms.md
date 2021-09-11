@@ -1,6 +1,6 @@
 # Realms in Zulip
 
-Zulip allows multiple *realms* to be hosted on a single instance.
+Zulip allows multiple _realms_ to be hosted on a single instance.
 Realms are the Zulip codebases's internal name for what we refer to in
 user documentation as an organization (the name "realm" comes from
 [Kerberos](https://web.mit.edu/kerberos/)).
@@ -8,7 +8,7 @@ user documentation as an organization (the name "realm" comes from
 Wherever possible, we avoid using the term `realm` in any user-facing
 string or documentation; "Organization" is the equivalent term used in
 those contexts (and we have linters that attempt to enforce this rule
-in translateable strings).  We may in the future modify Zulip's
+in translateable strings). We may in the future modify Zulip's
 internals to use `organization` instead.
 
 The
@@ -19,8 +19,8 @@ are also relevant reading.
 
 There are two main methods for creating realms.
 
-* Using unique link generator
-* Enabling open realm creation
+- Using unique link generator
+- Enabling open realm creation
 
 #### Using unique link generator
 
@@ -30,16 +30,16 @@ There are two main methods for creating realms.
 
 The above command will output a URL which can be used for creating a
 new realm and an administrator user for that realm. The link expires
-after the creation of the realm.  The link also expires if not used
+after the creation of the realm. The link also expires if not used
 within 7 days. The expiration period can be changed by modifying
 `REALM_CREATION_LINK_VALIDITY_DAYS` in settings.py.
 
 ### Enabling open realm creation
 
 If you want anyone to be able to create new realms on your server, you
-can enable open realm creation.  This will add a **Create new
+can enable open realm creation. This will add a **Create new
 organization** link to your Zulip homepage footer, and anyone can
-create a new realm by visiting this link (**/new**).  This
+create a new realm by visiting this link (**/new**). This
 feature is disabled by default in production instances, and can be
 enabled by setting `OPEN_REALM_CREATION = True` in settings.py.
 
@@ -57,27 +57,27 @@ records so that the subdomains point to your Zulip installation IP. An
 job.
 
 We also recommend upgrading to at least Zulip 1.7, since older Zulip
-releases had much less nice handling for subdomains.  See our
+releases had much less nice handling for subdomains. See our
 [docs on using subdomains](../production/multiple-organizations.md) for
 user-facing documentation on this.
 
 ### Working with subdomains in development environment
 
 By default, Linux does not provide a convenient way to use subdomains
-in your local development environment.  To solve this problem, we use
+in your local development environment. To solve this problem, we use
 the **zulipdev.com** domain, which has a wildcard A record pointing to
-127.0.0.1.  You can use zulipdev.com to connect to your Zulip
+127.0.0.1. You can use zulipdev.com to connect to your Zulip
 development server instead of localhost. The default realm with the
 Shakespeare users has the subdomain `zulip` and can be accessed by
 visiting **zulip.zulipdev.com**.
 
 If you are behind a **proxy server**, this method won't work. When you
 make a request to load zulipdev.com in your browser, the proxy server
-will try to get the page on your behalf.  Since zulipdev.com points
-to 127.0.0.1 the proxy server is likely to give you a 503 error.  The
+will try to get the page on your behalf. Since zulipdev.com points
+to 127.0.0.1 the proxy server is likely to give you a 503 error. The
 workaround is to disable your proxy for `*.zulipdev.com`. The DNS
 lookup should still work even if you disable proxy for
-*.zulipdev.com. If it doesn't you can add zulipdev.com records in
+\*.zulipdev.com. If it doesn't you can add zulipdev.com records in
 `/etc/hosts` file. The file should look something like this.
 
 ```text

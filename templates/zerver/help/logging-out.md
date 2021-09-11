@@ -25,6 +25,7 @@ the top right corner of the screen.
 {end_tabs}
 
 !!! tip ""
+
     Logging out doesn't affect any other organizations you may be logged in
     to. To log out of all your Zulip organizations, repeat the steps above
     for each one.

@@ -194,7 +194,7 @@ export async function report_emojiset_change() {
     if (spinner.length) {
         loading.destroy_indicator(spinner);
         ui_report.success(
-            $t_html({defaultMessage: "Emojiset changed successfully!"}),
+            $t_html({defaultMessage: "Emoji set changed successfully!"}),
             spinner.expectOne(),
         );
         spinner.expectOne();
@@ -213,7 +213,7 @@ export function update_page() {
     container.find(".setting_color_scheme").val(JSON.stringify(user_settings.color_scheme));
     container.find(".setting_default_view").val(user_settings.default_view);
 
-    // TODO: Set emojiset selector here.
+    // TODO: Set emoji set selector here.
     // Longer term, we'll want to automate this function
 }
 

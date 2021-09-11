@@ -3,7 +3,7 @@
 When you're ready for feedback, submit a pull request. Pull requests
 are a feature specific to GitHub. They provide a simple, web-based way
 to submit your work (often called "patches") to a project. It's called
-a *pull request* because you're asking the project to *pull changes*
+a _pull request_ because you're asking the project to _pull changes_
 from your fork.
 
 If you're unfamiliar with how to create a pull request, you can check
@@ -20,22 +20,22 @@ requests early and often. This allows you to share your code to make
 it easier to get feedback and help with your changes. Prefix the
 titles of work-in-progress pull requests with **[WIP]**, which in our
 project means that you don't think your pull request is ready to be
-merged (e.g. it might not work or pass tests).  This sets expectations
+merged (e.g. it might not work or pass tests). This sets expectations
 correctly for any feedback from other developers, and prevents your
 work from being merged before you're confident in it.
 
 ## Create a pull request
 
-### Step 0: Make sure you're on a feature branch (not `master`)
+### Step 0: Make sure you're on a feature branch (not `main`)
 
 It is important to [work on a feature
 branch](using.html#work-on-a-feature-branch) when creating a pull
-request.  Your new pull request will be inextricably linked with your
+request. Your new pull request will be inextricably linked with your
 branch while it is open, so you will need to reserve your branch only
 for changes related to your issue, and avoid introducing extraneous
 changes for other issues or from upstream.
 
-If you are working on a branch named `master`, you need to create and
+If you are working on a branch named `main`, you need to create and
 switch to a feature branch before proceeding.
 
 ### Step 1: Update your branch with git rebase
@@ -44,7 +44,7 @@ The best way to update your branch is with `git fetch` and `git rebase`. Do not
 use `git pull` or `git merge` as this will create merge commits. See [keep your
 fork up to date][keep-up-to-date] for details.
 
-Here's an example (you would replace *issue-123* with the name of your feature branch):
+Here's an example (you would replace _issue-123_ with the name of your feature branch):
 
 ```console
 $ git checkout issue-123
@@ -56,9 +56,9 @@ remote: Compressing objects: 100% (23/23), done.
 remote: Total 69 (delta 49), reused 39 (delta 39), pack-reused 7
 Unpacking objects: 100% (69/69), done.
 From https://github.com/zulip/zulip
-   69fa600..43e21f6  master     -> upstream/master
+   69fa600..43e21f6  main     -> upstream/main
 
-$ git rebase upstream/master
+$ git rebase upstream/main
 
 First, rewinding head to replay your work on top of it...
 Applying: troubleshooting tip about provisioning
@@ -117,7 +117,7 @@ pull request** button.
 Alternatively, if you've recently pushed to your fork, you will see a green
 **Compare & pull request** button.
 
-You'll see the *Open a pull request* page:
+You'll see the _Open a pull request_ page:
 
 ![images-create-pr]
 

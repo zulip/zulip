@@ -44,6 +44,15 @@ import * as user_profile from "./user_profile";
 import * as util from "./util";
 
 export function initialize() {
+    // SPECTATORS LOGIN TO ACCESS MODAL
+
+    $("body").on("click hide", ".spectator_go_back", (e) => {
+        browser_history.return_to_web_public_hash();
+        $("#login_to_access_modal").modal("hide");
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -409,6 +418,7 @@ export function initialize() {
         recent_topics_ui.change_focused_element($(e.target), "click");
         recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
         recent_topics_ui.update_filters_view();
+        recent_topics_ui.revive_current_focus();
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
@@ -855,6 +865,7 @@ export function initialize() {
                 !$(e.target).closest(".overlay").length &&
                 !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".modal").length &&
+                !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
                 $(e.target).closest("body").length
             ) {

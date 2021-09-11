@@ -15,11 +15,12 @@ logger = logging.getLogger("zulip.sync_ldap_user_data")
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 # Run this on a cronjob to pick up on name changes.
+@transaction.atomic
 def sync_ldap_user_data(
     user_profiles: List[UserProfile], deactivation_protection: bool = True
 ) -> None:
     logger.info("Starting update.")
-    with transaction.atomic():
+    try:
         realms = {u.realm.string_id for u in user_profiles}
 
         for u in user_profiles:
@@ -33,14 +34,11 @@ def sync_ldap_user_data(
 
         if deactivation_protection:
             if not UserProfile.objects.filter(is_bot=False, is_active=True).exists():
-                error_msg = (
-                    "Ldap sync would have deactivated all users. This is most likely due "
-                    + "to a misconfiguration of LDAP settings. Rolling back...\n"
-                    + "Use the --force option if the mass deactivation is intended."
+                raise Exception(
+                    "LDAP sync would have deactivated all users. This is most likely due "
+                    "to a misconfiguration of LDAP settings. Rolling back...\n"
+                    "Use the --force option if the mass deactivation is intended."
                 )
-                logger.error(error_msg)
-                # Raising an exception in this atomic block will rollback the transaction.
-                raise Exception(error_msg)
             for string_id in realms:
                 if not UserProfile.objects.filter(
                     is_bot=False,
@@ -48,15 +46,15 @@ def sync_ldap_user_data(
                     realm__string_id=string_id,
                     role=UserProfile.ROLE_REALM_OWNER,
                 ).exists():
-                    error_msg = (
-                        "Ldap sync would have deactivated all owners of realm %s. "
-                        + "This is most likely due "
-                        + "to a misconfiguration of LDAP settings. Rolling back...\n"
-                        + "Use the --force option if the mass deactivation is intended."
+                    raise Exception(
+                        f"LDAP sync would have deactivated all owners of realm {string_id}. "
+                        "This is most likely due "
+                        "to a misconfiguration of LDAP settings. Rolling back...\n"
+                        "Use the --force option if the mass deactivation is intended."
                     )
-                    error_msg = error_msg % (string_id,)
-                    logger.error(error_msg)
-                    raise Exception(error_msg)
+    except Exception:
+        logger.error("LDAP sync failed", exc_info=True)
+        raise
 
     logger.info("Finished update.")
 

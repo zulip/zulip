@@ -364,7 +364,7 @@ class TestQueryCounts(ZulipTestCase):
         # fails, we'll want to understand the new queries and whether
         # they're necessary. You can investiate whether the changes
         # are expected/sensible by comparing print(queries) between
-        # your branch and master.
+        # your branch and main.
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 

@@ -178,6 +178,7 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 * **Scroll through streams**: `↑` and `↓`
 
     !!! tip ""
+
         Pressing `↑` from the first stream in the list moves
         you to the **Filter streams** input.
 

@@ -1614,3 +1614,37 @@ test("error_cases", ({override}) => {
     const predicate = get_predicate([["pm-with", "Joe@example.com"]]);
     assert.ok(!predicate({type: "private"}));
 });
+
+run_test("is_spectator_compatible", () => {
+    // tests same as test_is_spectator_compatible from test_message_fetch.py
+    assert.ok(Filter.is_spectator_compatible([]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "attachment"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "image"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "search", operand: "magic"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "near", operand: "15"}]));
+    assert.ok(
+        Filter.is_spectator_compatible([
+            {operator: "id", operand: "15"},
+            {operator: "has", operand: "attachment"},
+        ]),
+    );
+    assert.ok(Filter.is_spectator_compatible([{operator: "sender", operand: "hamlet@zulip.com"}]));
+    assert.ok(
+        !Filter.is_spectator_compatible([{operator: "pm-with", operand: "hamlet@zulip.com"}]),
+    );
+    assert.ok(
+        !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
+    );
+    assert.ok(Filter.is_spectator_compatible([{operator: "stream", operand: "Denmark"}]));
+    assert.ok(
+        Filter.is_spectator_compatible([
+            {operator: "stream", operand: "Denmark"},
+            {operator: "topic", operand: "logic"},
+        ]),
+    );
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "starred"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "private"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "public"}]));
+    // Malformed input not allowed
+    assert.ok(!Filter.is_spectator_compatible([{operator: "has"}]));
+});

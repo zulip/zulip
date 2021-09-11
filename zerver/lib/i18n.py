@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.utils import translation
 
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 
 
 @lru_cache()
@@ -64,6 +64,6 @@ def get_and_set_request_language(
     # something reasonable will happen in logged-in portico pages.
     # We accomplish that by setting a flag on the request which signals
     # to LocaleMiddleware to set the cookie on the response.
-    get_request_notes(request).set_language = translation.get_language()
+    RequestNotes.get_notes(request).set_language = translation.get_language()
 
     return request_language

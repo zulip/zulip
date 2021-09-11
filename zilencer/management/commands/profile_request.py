@@ -8,7 +8,7 @@ from django.core.management.base import CommandParser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.middleware import LogRequests
 from zerver.models import UserMessage
@@ -55,6 +55,6 @@ class Command(ZulipBaseCommand):
             path="/",
         )
         mock_request.session = MockSession()
-        get_request_notes(mock_request).log_data = None
+        RequestNotes.get_notes(mock_request).log_data = None
 
         profile_request(mock_request)

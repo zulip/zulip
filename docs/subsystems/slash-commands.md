@@ -8,7 +8,7 @@ Currently supported slash commands are:
 
 - `/day` and `/night` to change the UI theme
 - `/ping` to ping to server and get back the time for the round
-trip. Mainly for testing.
+  trip. Mainly for testing.
 - `/fluid-width` and `/fixed-width` to toggle that setting
 
 It is important to distinguish slash commands from the
@@ -24,7 +24,7 @@ They send commands to the server using the `/json/command`
 endpoint.
 
 In the case of "/ping", the server code in `zcommand.py`
-basically just acks the client.  The client then computes
+basically just acks the client. The client then computes
 the round trip time and shows a little message above
 the compose box that the user can see and then dismiss.
 
@@ -32,7 +32,7 @@ For commands like "/day" and "/night", the server does
 a little bit of logic to toggle the user's night mode
 setting, and this is largely done inside `zcommand.py`.
 The server sends a very basic response, and then
-the client actually changes the display colors.  The
+the client actually changes the display colors. The
 client also shows the user a little message above
 the compose box instructing them how to reverse the
 change.
@@ -40,7 +40,7 @@ change.
 (It's possible that we don't really need a general
 `/json/zcommand` endpoint for these, and we
 may decide later to just use custom
-API endpoints for each command.  There's some logic
+API endpoints for each command. There's some logic
 in having a central API for these, though, since they
 are typically things that only UI-based clients will
 invoke, and they may share validation code.)

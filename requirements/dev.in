@@ -6,7 +6,7 @@
 -r docs.in
 
 # moto s3 mock
-moto[s3]
+moto[s3]<2.2.2  # https://github.com/spulec/moto/pull/4214
 
 # Needed for running tools/run-dev.py
 Twisted
@@ -77,3 +77,6 @@ semgrep
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
+
+# For sorting versions when uploading releases
+natsort

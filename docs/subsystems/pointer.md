@@ -17,18 +17,18 @@ make to the model.
 
 First a bit of terminology:
 
-* "Narrowing" is the process of filtering to a particular subset of
+- "Narrowing" is the process of filtering to a particular subset of
   the messages the user has access to.
 
-* The blue cursor box (the "pointer") is around is called the
-  "selected" message.  Zulip ensures that the currently selected
+- The blue cursor box (the "pointer") is around is called the
+  "selected" message. Zulip ensures that the currently selected
   message is always in-view.
 
 ## Pointer logic
 
 ### Recipient bar: message you clicked
 
-If you enter a narrow by clicking on a message group's *recipient bar*
+If you enter a narrow by clicking on a message group's _recipient bar_
 (stream/topic or private message recipient list at the top of a group
 of messages), Zulip will select the message you clicked on. This
 provides a nice user experience where you get to see the stuff near
@@ -53,7 +53,7 @@ streams.)
 
 ### Unnarrow: previous sequence
 
-When you unnarrow using e.g. the `a`  key, you will automatically be
+When you unnarrow using e.g. the `a` key, you will automatically be
 taken to the same message that was selected in the All messages view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted
@@ -76,13 +76,13 @@ see [the architectural overview](../overview/architecture-overview.md).
 
 How does Zulip decide whether a message has been read by the user?
 The algorithm needs to correctly handle a range of ways people might
-use the product.  The algorithm is as follows:
+use the product. The algorithm is as follows:
 
-* Any message which is selected or above a message which is selected
-  is marked as read.  So messages are marked as read as you scroll
+- Any message which is selected or above a message which is selected
+  is marked as read. So messages are marked as read as you scroll
   down the keyboard when the pointer passes over them.
 
-* If the whitespace at the very bottom of the feed is in view, all
+- If the whitespace at the very bottom of the feed is in view, all
   messages in view are marked as read.
 
 These two simple rules, combined with the pointer logic above, end up
@@ -95,10 +95,10 @@ thread; search views will never mark messages as read.
 
 ## Testing and development
 
-In a Zulip development environment, you can use `manage.py
-mark_all_messages_unread` to set every user's pointer to 0 and all
-messages as unread, for convenience in testing unread count related
-logic.
+In a Zulip development environment, you can use
+`manage.py mark_all_messages_unread` to set every user's pointer to 0
+and all messages as unread, for convenience in testing unread count
+related logic.
 
 It can be useful to combine this with `manage.py populate_db -n 3000`
 (which rebuilds the database with 3000 initial messages) to ensure a

@@ -154,6 +154,10 @@ export function get_focused_row_message() {
     if (is_table_focused()) {
         const recent_topic_id_prefix_len = "recent_topic:".length;
         const topic_rows = $("#recent_topics_table table tbody tr");
+        if (topic_rows.length === 0) {
+            return undefined;
+        }
+
         const topic_row = topic_rows.eq(row_focus);
         const topic_id = topic_row.attr("id").slice(recent_topic_id_prefix_len);
         const topic_last_msg_id = topics.get(topic_id).last_msg_id;
@@ -162,7 +166,7 @@ export function get_focused_row_message() {
     return undefined;
 }
 
-function revive_current_focus() {
+export function revive_current_focus() {
     // After re-render, the current_focus_elem is no longer linked
     // to the focused element, this function attempts to revive the
     // link and focus to the element prior to the rerender.
@@ -252,8 +256,16 @@ function format_topic(topic_data) {
         // We display only 10 extra senders in tooltips,
         // and just display remaining number of senders.
         const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
+        // Pluralization syntax from:
+        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
         displayed_other_names.push(
-            $t({defaultMessage: `and {remaining_senders} other(s).`}, {remaining_senders}),
+            $t(
+                {
+                    defaultMessage:
+                        "and {remaining_senders, plural, one {1 other} other {# others}}.",
+                },
+                {remaining_senders},
+            ),
         );
     }
     const other_sender_names = displayed_other_names.join("<br/>");

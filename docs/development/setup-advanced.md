@@ -2,22 +2,22 @@
 
 Contents:
 
-* [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-* [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
-* [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
-* [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
-* [Installing directly on cloud9](#installing-on-cloud9)
+- [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+- [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
+- [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
+- [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
+- [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
-* Ubuntu 20.04 Focal, 18.04 Bionic
-* Debian 10 Buster, 11 Bullseye (beta)
-* CentOS 7 (beta)
-* Fedora 33 and 34 (beta)
-* RHEL 7 (beta)
+- Ubuntu 20.04 Focal, 18.04 Bionic
+- Debian 10 Buster, 11 Bullseye (beta)
+- CentOS 7 (beta)
+- Fedora 33 and 34 (beta)
+- RHEL 7 (beta)
 
 You can just run the Zulip provision script on your machine.
 
@@ -28,7 +28,7 @@ the
 
 :::{warning}
 There is no supported uninstallation process with this
-method.  If you want that, use the Vagrant environment, where you can
+method. If you want that, use the Vagrant environment, where you can
 just do `vagrant destroy` to clean up the development environment.
 :::
 
@@ -63,7 +63,7 @@ the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
 installation method described here.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
-[here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+   [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
 
 1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
    Store.
@@ -91,6 +91,7 @@ installation method described here.
 1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
    You will run into permission issues if you run `provision` from `zulip`
    in a Windows mounted disk.
+
    ```bash
    cd ~  # or cd /home/USERNAME
    ```
@@ -130,7 +131,7 @@ installation method described here.
 1. [Visual Studio Code Remote - WSL](https://code.visualstudio.com/docs/remote/wsl) is
    recommended for editing files when developing with WSL.
 
-1. You're done!  You can pick up the [documentation on using the
+1. You're done! You can pick up the [documentation on using the
    Zulip development
    environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
@@ -250,11 +251,11 @@ expected.
 
 1. If you get the error `Hyper-V could not initialize memory`, this is
    likely because your system has insufficient free memory to start
-   the virtual machine.  You can generally work around this error by
-   closing all other running programs and running `vagrant up
-   --provider=hyperv` again. You can reopen the other programs after
-   the provisioning is completed. If it still isn't enough, try
-   restarting your system and running the command again.
+   the virtual machine. You can generally work around this error by
+   closing all other running programs and running
+   `vagrant up --provider=hyperv` again. You can reopen the other
+   programs after the provisioning is completed. If it still isn't
+   enough, try restarting your system and running the command again.
 
 2. Be patient the first time you run `./tools/run-dev.py`.
 
@@ -273,7 +274,7 @@ these platforms reliably and easily, so we no longer maintain manual
 installation instructions for these platforms.
 
 If `tools/provision` doesn't yet support a newer release of Debian or
-Ubuntu that you're using, we'd love to add support for it.  It's
+Ubuntu that you're using, we'd love to add support for it. It's
 likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
@@ -288,20 +289,21 @@ that lets you write, run, and debug your code with just a browser. It
 includes a code editor, debugger, and terminal.
 
 This section documents how to set up the Zulip development environment
-in a Cloud9 workspace.  If you don't have an existing Cloud9 account,
+in a Cloud9 workspace. If you don't have an existing Cloud9 account,
 you can sign up [here](https://aws.amazon.com/cloud9/).
 
-* Create a Workspace, and select the blank template.
-* Resize the workspace to be 1GB of memory and 4GB of disk
+- Create a Workspace, and select the blank template.
+- Resize the workspace to be 1GB of memory and 4GB of disk
   space. (This is under free limit for both the old Cloud9 and the AWS
   Free Tier).
-* Clone the zulip repo: `git clone --config pull.rebase
-  https://github.com/<your-username>/zulip.git`
-* Restart rabbitmq-server since its broken on Cloud9: `sudo service
-  rabbitmq-server restart`.
-* And run provision `cd zulip && ./tools/provision`, once this is done.
-* Activate the Zulip virtual environment by `source
-  /srv/zulip-py3-venv/bin/activate` or by opening a new terminal.
+- Clone the zulip repo:
+  `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
+- Restart rabbitmq-server since its broken on Cloud9:
+  `sudo service rabbitmq-server restart`.
+- And run provision `cd zulip && ./tools/provision`, once this is done.
+- Activate the Zulip virtual environment by
+  `source /srv/zulip-py3-venv/bin/activate` or by opening a new
+  terminal.
 
 #### Install zulip-cloud9
 
@@ -309,7 +311,7 @@ There's a NPM package, `zulip-cloud9`, that provides a wrapper around
 the Zulip development server for use in the Cloud9 environment.
 
 Note: `npm i -g zulip-cloud9` does not work in zulip's virtual
-environment.  Although by default, any packages installed in workspace
+environment. Although by default, any packages installed in workspace
 folder (i.e. the top level folder) are added to `$PATH`.
 
 ```bash
@@ -322,7 +324,7 @@ If you get error of the form `bash: cannot find command zulip-dev`,
 you need to start a new terminal.
 
 Your development server would be running at
-`https://<workspace-name>-<username>.c9users.io` on port 8080.  You
+`https://<workspace-name>-<username>.c9users.io` on port 8080. You
 dont need to add `:8080` to your URL, since the Cloud9 proxy should
 automatically forward the connection. You might want to visit
 [zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's

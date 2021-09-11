@@ -9,7 +9,11 @@
 
 <p>
     {% if realm_creation %}
-        {% trans %}You've created the new Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
+        {% if is_demo_org %}
+            {% trans %}You've created a demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations <a href="https://zulip.com/help/demo-organizations">here</a>!{% endtrans %}
+        {% else %}
+            {% trans %}You've created the new Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
+        {% endif %}
     {% else %}
         {% trans %}You've joined the Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
     {% endif %}

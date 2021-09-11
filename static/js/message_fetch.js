@@ -447,6 +447,12 @@ export function initialize(home_view_loaded) {
         cont: load_more,
     });
 
+    if (page_params.is_spectator) {
+        // Since spectators never have old unreads, we can skip the
+        // hacky fetch below for them (which would just waste resources).
+        return;
+    }
+
     // In addition to the algorithm above, which is designed to ensure
     // that we fetch all message history eventually starting with the
     // first unread message, we also need to ensure that the Recent

@@ -7,6 +7,13 @@ export const state = {
     hash_before_overlay: null,
     old_hash: window.location.hash,
     changing_hash: false,
+    // If the spectator's hash changes to a restricted hash, then we store the old hash
+    // so that we can take user back to the allowed hash.
+    // TODO: Store #narrow old hashes. Currently they are not stored here since, the #narrow
+    // hashes are changed without calling `hashchanged` in many ways.
+    spectator_old_hash: hash_util.is_spectator_compatible(window.location.hash)
+        ? window.location.hash
+        : "#",
 };
 
 export function clear_for_testing() {
@@ -72,4 +79,8 @@ export function update_hash_internally_if_required(hash) {
     if (window.location.hash !== hash) {
         update(hash);
     }
+}
+
+export function return_to_web_public_hash() {
+    window.location.hash = state.spectator_old_hash;
 }

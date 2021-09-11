@@ -1,13 +1,12 @@
-PostgreSQL database details
-=========================
+# PostgreSQL database details
 
 Starting with Zulip 3.0, Zulip supports a range of PostgreSQL
-versions.  PostgreSQL 13 is the current default for new installations;
+versions. PostgreSQL 13 is the current default for new installations;
 PostgreSQL 10, 11, and 12 are all supported.
 
 Previous versions of Zulip used whatever version of PostgreSQL was
 included with the base operating system (E.g. PostgreSQL 12 on Ubuntu
-Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial).  We recommend
+Focal, 10 on Ubuntu Bionic, and 9.6 on Ubuntu Xenial). We recommend
 that installations currently using older PostgreSQL releases [upgrade
 to PostgreSQL 13][upgrade-postgresql], as we may drop support for
 older PostgreSQL in a future release.
@@ -32,21 +31,21 @@ called "zulip" in your database server. You can configure these
 options in `/etc/zulip/settings.py` (the below descriptions are from the
 PostgreSQL documentation):
 
-* `REMOTE_POSTGRES_HOST`: Name or IP address of the remote host
-* `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server,
+- `REMOTE_POSTGRES_HOST`: Name or IP address of the remote host
+- `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server,
   different options you can use are:
-  * disable: I don't care about security, and I don't want to pay the
+  - disable: I don't care about security, and I don't want to pay the
     overhead of encryption.
-  * allow: I don't care about security, but I will pay the overhead of
+  - allow: I don't care about security, but I will pay the overhead of
     encryption if the server insists on it.
-  * prefer: I don't care about encryption, but I wish to pay the
+  - prefer: I don't care about encryption, but I wish to pay the
     overhead of encryption if the server supports it.
-  * require: I want my data to be encrypted, and I accept the
+  - require: I want my data to be encrypted, and I accept the
     overhead. I trust that the network will make sure I always connect
     to the server I want.
-  * verify-ca: I want my data encrypted, and I accept the overhead. I
+  - verify-ca: I want my data encrypted, and I accept the overhead. I
     want to be sure that I connect to a server that I trust.
-  * verify-full: I want my data encrypted, and I accept the
+  - verify-full: I want my data encrypted, and I accept the
     overhead. I want to be sure that I connect to a server I trust,
     and that it's the one I specify.
 
@@ -84,14 +83,15 @@ which shows the currently running backends and their activity. This is
 similar to the pg_top output, with the added advantage of showing the
 complete query, which can be valuable in debugging.
 
-To stop a runaway query, you can run `SELECT pg_cancel_backend(pid
-int)` or `SELECT pg_terminate_backend(pid int)` as the 'postgres'
-user. The former cancels the backend's current query and the latter
-terminates the backend process. They are implemented by sending SIGINT
-and SIGTERM to the processes, respectively.  We recommend against
-sending a PostgreSQL process SIGKILL. Doing so will cause the database
-to kill all current connections, roll back any pending transactions,
-and enter recovery mode.
+To stop a runaway query, you can run
+`SELECT pg_cancel_backend(pid int)` or
+`SELECT pg_terminate_backend(pid int)` as the 'postgres' user. The
+former cancels the backend's current query and the latter terminates
+the backend process. They are implemented by sending SIGINT and
+SIGTERM to the processes, respectively. We recommend against sending
+a PostgreSQL process SIGKILL. Doing so will cause the database to kill
+all current connections, roll back any pending transactions, and enter
+recovery mode.
 
 #### Stopping the Zulip PostgreSQL database
 
@@ -139,13 +139,12 @@ stop PostgreSQL and restart it using pg_ctlcluster after you've debugged
 with this approach, since it does bypass some of the work that
 pg_ctlcluster does.
 
-
 #### PostgreSQL vacuuming alerts
 
 The `autovac_freeze` PostgreSQL alert from `check_postgres` is
-particularly important.  This alert indicates that the age (in terms
+particularly important. This alert indicates that the age (in terms
 of number of transactions) of the oldest transaction id (XID) is
-getting close to the `autovacuum_freeze_max_age` setting.  When the
+getting close to the `autovacuum_freeze_max_age` setting. When the
 oldest XID hits that age, PostgreSQL will force a VACUUM operation,
 which can often lead to sudden downtime until the operation finishes.
 If it did not do this and the age of the oldest XID reached 2 billion,

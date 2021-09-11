@@ -12,15 +12,19 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
 from django.contrib.auth.views import logout_then_login as django_logout_then_login
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.forms import Form
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse
 from django.urls import reverse
+from django.utils.html import escape
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from jinja2.utils import Markup as mark_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -54,7 +58,7 @@ from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
@@ -358,7 +362,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     return response
 
@@ -670,13 +674,22 @@ def redirect_to_deactivation_notice() -> HttpResponse:
 
 
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
-    for key in ("email", "already_registered", "is_deactivated"):
+    for key in ("email", "already_registered"):
         try:
             context[key] = request.GET[key]
         except KeyError:
             pass
 
-    context["deactivated_account_error"] = DEACTIVATED_ACCOUNT_ERROR
+    deactivated_email = request.GET.get("is_deactivated")
+    if deactivated_email is None:
+        return
+    try:
+        validate_email(deactivated_email)
+        context["deactivated_account_error"] = mark_safe(
+            DEACTIVATED_ACCOUNT_ERROR.format(username=escape(deactivated_email))
+        )
+    except ValidationError:
+        logging.info("Invalid email in is_deactivated param to login page: %s", deactivated_email)
 
 
 class TwoFactorLoginView(BaseTwoFactorLoginView):
@@ -731,6 +744,9 @@ def login_page(
     next: str = REQ(default="/"),
     **kwargs: Any,
 ) -> HttpResponse:
+    if settings.SOCIAL_AUTH_SUBDOMAIN == get_subdomain(request):
+        return social_auth_subdomain_login_page(request)
+
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
     # logged-in app.
@@ -787,11 +803,23 @@ def login_page(
         # context_data attribute. This attribute doesn't exist otherwise. It is
         # added in SimpleTemplateResponse class, which is a derived class of
         # HttpResponse. See django.template.response.SimpleTemplateResponse,
-        # https://github.com/django/django/blob/master/django/template/response.py#L19.
+        # https://github.com/django/django/blob/2.0/django/template/response.py#L19
         update_login_page_context(request, template_response.context_data)
 
     assert isinstance(template_response, HttpResponse)
     return template_response
+
+
+def social_auth_subdomain_login_page(request: HttpRequest) -> HttpResponse:
+    origin_subdomain = request.session.get("subdomain")
+    if origin_subdomain is not None:
+        try:
+            origin_realm = get_realm(origin_subdomain)
+            return HttpResponseRedirect(origin_realm.uri)
+        except Realm.DoesNotExist:
+            pass
+
+    return render(request, "zerver/auth_subdomain.html", status=400)
 
 
 def start_two_factor_auth(
@@ -866,7 +894,7 @@ def api_fetch_api_key(
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    get_request_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

@@ -16,6 +16,7 @@ Organization administrators can
 1. Click **View edit history**.
 
 !!! warn ""
+
     You will only see **View edit history** in the dropdown menu if
     the message has been edited and message edit history is on.
 

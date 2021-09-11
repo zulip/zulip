@@ -528,7 +528,7 @@ prose_style_rules: List["Rule"] = [
     {
         "pattern": "[oO]rganisation",  # exclude usage in hrefs/divs
         "description": "Organization is spelled with a z",
-        "exclude_line": {("docs/translating/french.md", "* organization - **organisation**")},
+        "exclude_line": {("docs/translating/french.md", "- organization - **organisation**")},
     },
     {"pattern": "!!! warning", "description": "!!! warning is invalid; it's spelled '!!! warn'"},
     {"pattern": "Terms of service", "description": "The S in Terms of Service is capitalized"},
@@ -896,6 +896,9 @@ help_markdown_rules = RuleList(
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",
+            # Keycloak uses the term realm as well.
+            # Additionally, we allow -realm- as that appears in /api/ doc URLs.
+            "exclude_pattern": "(-realm-|[kK]eycloak)",
         },
     ],
     length_exclude=markdown_docs_length_exclude,

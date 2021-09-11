@@ -628,6 +628,7 @@ Output:
         key: Optional[str] = None,
         realm_type: Optional[int] = Realm.ORG_TYPES["business"]["id"],
         enable_marketing_emails: Optional[bool] = True,
+        is_demo_organization: Optional[bool] = False,
         **kwargs: Any,
     ) -> HttpResponse:
         """
@@ -652,6 +653,7 @@ Output:
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
             "enable_marketing_emails": enable_marketing_emails,
+            "is_demo_organization": is_demo_organization,
         }
         if password is not None:
             payload["password"] = password

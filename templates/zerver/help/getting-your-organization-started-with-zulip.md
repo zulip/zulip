@@ -73,7 +73,7 @@ Zulip integrates directly with dozens of products, and hundreds more through
 The [integrations page](/integrations) has instructions for integrating with
 each product.
 
-## Familiarize yourself with Zulip’s featureset
+## Familiarize yourself with Zulip’s feature set
 
 As the administrator of your Zulip organization, you'll be the initial
 expert teaching other users how to use Zulip.

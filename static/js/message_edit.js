@@ -37,7 +37,6 @@ import * as upload from "./upload";
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
-let stream_widget;
 const currently_echoing_messages = new Map();
 export const RESOLVED_TOPIC_PREFIX = "✔ ";
 
@@ -352,6 +351,7 @@ function create_copy_to_clipboard_handler(row, source, message_id) {
 }
 
 function edit_message(row, raw_content) {
+    let stream_widget;
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
     condense.hide_message_condenser(row);
@@ -807,7 +807,8 @@ export function save_message_row_edit(row) {
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
         if (can_edit_stream) {
-            new_stream_id = Number.parseInt(stream_widget.value(), 10);
+            const dropdown_list_widget_value_elem = $(`#id_select_move_stream_${message_id}`);
+            new_stream_id = Number.parseInt(dropdown_list_widget_value_elem.data("value"), 10);
             stream_changed = new_stream_id !== old_stream_id;
         }
     }

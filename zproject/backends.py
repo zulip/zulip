@@ -31,7 +31,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -71,8 +71,9 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
@@ -169,6 +170,10 @@ def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:
 
 
 def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, Any]] = None) -> bool:
+    if user_profile.realm.deactivated:
+        if return_data is not None:
+            return_data["inactive_realm"] = True
+        return False
     if not user_profile.is_active:
         if return_data is not None:
             if user_profile.is_mirror_dummy:
@@ -176,10 +181,6 @@ def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, An
                 return_data["is_mirror_dummy"] = True
             return_data["inactive_user"] = True
             return_data["inactive_user_id"] = user_profile.id
-        return False
-    if user_profile.realm.deactivated:
-        if return_data is not None:
-            return_data["inactive_realm"] = True
         return False
 
     return True
@@ -251,7 +252,7 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
 
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
 
     return any(
         isinstance(r.entity, RateLimitedAuthenticationByUsername)
@@ -270,7 +271,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
 
     request = args[1]
     username = kwargs["username"]
-    if get_request_notes(request).client is None or not client_is_exempt_from_rate_limiting(
+    if RequestNotes.get_notes(request).client is None or not client_is_exempt_from_rate_limiting(
         request
     ):
         # Django cycles through enabled authentication backends until one succeeds,
@@ -434,13 +435,11 @@ def check_ldap_config() -> None:
         assert settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
 
 
-def find_ldap_users_by_email(email: str) -> Optional[List[_LDAPUser]]:
+def find_ldap_users_by_email(email: str) -> List[_LDAPUser]:
     """
-    Returns list of _LDAPUsers matching the email search,
-    or None if no matches are found.
+    Returns list of _LDAPUsers matching the email search
     """
-    email_search = LDAPReverseEmailSearch(LDAPBackend(), email)
-    return email_search.search_for_users(should_populate=False)
+    return LDAPReverseEmailSearch().search_for_users(email)
 
 
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
@@ -467,6 +466,46 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
 
 
 ldap_logger = logging.getLogger("zulip.ldap")
+
+
+class LDAPReverseEmailSearch(_LDAPUser):
+    """
+    This class is a workaround - we want to use
+    django-auth-ldap to query the ldap directory for
+    users with the specified email address, but it doesn't
+    provide an API for that or an isolated class for handling
+    the connection. Because connection-handling is tightly integrated
+    into the _LDAPUser class, we have to make this strange inheritance here,
+    in order to be able to comfortably have an ldap connection and make search
+    queries.
+
+    We may be able to get rid of this in the future if we can get
+    https://github.com/django-auth-ldap/django-auth-ldap/pull/150 merged upstream.
+    """
+
+    def __init__(self) -> None:
+        # Superclass __init__ requires a username argument - it doesn't actually
+        # impact anything for us in this class, given its very limited use
+        # for only making a search query, so we pass an empty string.
+        super().__init__(LDAPBackend(), username="")
+
+    def search_for_users(self, email: str) -> List[_LDAPUser]:
+        search = settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
+        USERNAME_ATTR = settings.AUTH_LDAP_USERNAME_ATTR
+
+        results = search.execute(self.connection, {"email": email})
+
+        ldap_users = []
+        for result in results:
+            user_dn, user_attrs = result
+            username = user_attrs[USERNAME_ATTR][0]
+            ldap_user = _LDAPUser(self.backend, username=username)
+            ldap_user._user_dn = user_dn
+            ldap_user._user_attrs = user_attrs
+
+            ldap_users.append(ldap_user)
+
+        return ldap_users
 
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
@@ -544,7 +583,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             # We can use find_ldap_users_by_email
             if is_valid_email(username):
                 email_search_result = find_ldap_users_by_email(username)
-                if email_search_result is None:
+                if not email_search_result:
                     result = username
                 elif len(email_search_result) == 1:
                     return email_search_result[0]._username
@@ -1308,11 +1347,11 @@ def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 
-def redirect_deactivated_user_to_login(realm: Realm) -> HttpResponseRedirect:
+def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = realm.uri + login_url + "?is_deactivated=true"
+    redirect_url = add_query_to_redirect_url(realm.uri + login_url, f"is_deactivated={email}")
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1521,18 +1560,17 @@ def social_auth_finish(
         return HttpResponseRedirect(reverse("find_account"))
 
     realm = Realm.objects.get(id=return_data["realm_id"])
+    if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
+        # Redirect to login page. We can't send to registration
+        # workflow with these errors. We will redirect to login page.
+        return redirect_to_login(realm)
     if inactive_user:
         backend.logger.info(
             "Failed login attempt for deactivated account: %s@%s",
             return_data["inactive_user_id"],
             return_data["realm_string_id"],
         )
-        return redirect_deactivated_user_to_login(realm)
-
-    if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
-        # Redirect to login page. We can't send to registration
-        # workflow with these errors. We will redirect to login page.
-        return redirect_to_login(realm)
+        return redirect_deactivated_user_to_login(realm, return_data["validated_email"])
 
     if invalid_email:
         # In case of invalid email, we will end up on registration page.

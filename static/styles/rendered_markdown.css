@@ -45,18 +45,47 @@
         border-top: 1px solid hsl(0, 0%, 87%);
     }
 
-    /* Headings: We need to make sure our headings are less prominent than our sender names styling. */
+    /* Headings */
     h1,
     h2,
     h3,
     h4,
     h5,
     h6 {
-        font-size: 14px;
         font-weight: 600;
         line-height: 1.4;
+        /* No margin-top is important to make messages that start with a heading
+           avoid a weird blank area at the top of a message. */
         margin-top: 0;
         margin-bottom: 5px;
+    }
+
+    /* We use a modest progression of heading sizes to make them stand out
+       from normal next but avoid taking up too much space. */
+    h1 {
+        font-size: 1.4em;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+
+    h3 {
+        font-size: 1.2em;
+    }
+
+    h4 {
+        font-size: 1.1em;
+    }
+
+    h5 {
+        font-size: 1em;
+        text-decoration: underline;
+    }
+
+    h6 {
+        font-size: 1em;
+        font-weight: normal;
         text-decoration: underline;
     }
 

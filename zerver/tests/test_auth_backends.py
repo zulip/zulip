@@ -168,7 +168,10 @@ class AuthBackendTest(ZulipTestCase):
         if isinstance(backend, SocialAuthMixin):
             # Returns a redirect to login page with an error.
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, user_profile.realm.uri + "/login/?is_deactivated=true")
+            self.assertEqual(
+                result.url,
+                f"{user_profile.realm.uri}/login/?is_deactivated={user_profile.delivery_email}",
+            )
         else:
             # Just takes you back to the login page treating as
             # invalid auth; this is correct because the form will
@@ -1098,7 +1101,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 account_data_dict, expect_choose_email_screen=True, subdomain="zulip"
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, user_profile.realm.uri + "/login/?is_deactivated=true")
+            self.assertEqual(
+                result.url,
+                f"{user_profile.realm.uri}/login/?is_deactivated={user_profile.delivery_email}",
+            )
         self.assertEqual(
             m.output,
             [
@@ -1107,7 +1113,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 )
             ],
         )
-        # TODO: verify whether we provide a clear error message
+
+        result = self.client_get(result.url)
+        self.assert_in_success_response(
+            [f"Your account {user_profile.delivery_email} has been deactivated."], result
+        )
 
     def test_social_auth_invalid_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1460,7 +1470,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [])
+        do_invite_users(iago, [email], [], invite_expires_in_days=2)
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1510,7 +1520,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None
         multiuse_object_key = multiuse_confirmation.confirmation_key
@@ -1750,11 +1763,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         email = self.nonreg_email("alice")
         name = "Alice Jones"
 
-        do_invite_users(iago, [email], [], invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"])
-        expired_date = timezone_now() - datetime.timedelta(
-            days=settings.INVITATION_LINK_VALIDITY_DAYS + 1
+        invite_expires_in_days = 2
+        do_invite_users(
+            iago,
+            [email],
+            [],
+            invite_expires_in_days=invite_expires_in_days,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
-        PreregistrationUser.objects.filter(email=email).update(invited_at=expired_date)
+        now = timezone_now() + datetime.timedelta(days=invite_expires_in_days + 1)
 
         subdomain = "zulip"
         realm = get_realm("zulip")
@@ -1762,9 +1779,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.social_auth_test(
             account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
         )
-        self.stage_two_of_registration(
-            result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
-        )
+        with mock.patch("zerver.models.timezone_now", return_value=now):
+            self.stage_two_of_registration(
+                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+            )
 
         # The invitation is expired, so the user should be created as normal member only.
         created_user = get_user_by_delivery_email(email, realm)
@@ -4036,7 +4054,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        create_confirmation_link(multiuse_obj, Confirmation.MULTIUSE_INVITE)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None
         multiuse_object_key = multiuse_confirmation.confirmation_key
@@ -6292,12 +6313,13 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         email = self.example_email("hamlet")
         user = PreregistrationUser(email=email)
         user.save()
+        create_confirmation_link(user, Confirmation.USER_REGISTRATION)
 
         with mock.patch("zerver.views.auth.HomepageForm", return_value=Form()):
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)
             result = maybe_send_to_registration(request, email, is_signup=True)
             self.assertEqual(result.status_code, 302)
-            confirmation = Confirmation.objects.all().first()
+            confirmation = Confirmation.objects.all().last()
             assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result.url)

@@ -109,12 +109,13 @@ logger = logging.getLogger(__name__)
 
 
 class WorkerTimeoutException(Exception):
-    def __init__(self, limit: int, event_count: int) -> None:
+    def __init__(self, queue_name: str, limit: int, event_count: int) -> None:
+        self.queue_name = queue_name
         self.limit = limit
         self.event_count = event_count
 
     def __str__(self) -> str:
-        return f"Timed out after {self.limit * self.event_count} seconds processing {self.event_count} events"
+        return f"Timed out in {self.queue_name} after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
 
 class InterruptConsumeException(Exception):
@@ -350,7 +351,7 @@ class QueueProcessingWorker(ABC):
     def timer_expired(
         self, limit: int, events: List[Dict[str, Any]], signal: int, frame: FrameType
     ) -> None:
-        raise WorkerTimeoutException(limit, len(events))
+        raise WorkerTimeoutException(self.queue_name, limit, len(events))
 
     def _handle_consume_exception(self, events: List[Dict[str, Any]], exception: Exception) -> None:
         if isinstance(exception, InterruptConsumeException):
@@ -369,9 +370,7 @@ class QueueProcessingWorker(ABC):
             if isinstance(exception, WorkerTimeoutException):
                 with sentry_sdk.push_scope() as scope:
                     scope.fingerprint = ["worker-timeout", self.queue_name]
-                    logging.exception(
-                        "%s in queue %s", str(exception), self.queue_name, stack_info=True
-                    )
+                    logging.exception(exception, stack_info=True)
             else:
                 logging.exception(
                     "Problem handling data on queue %s", self.queue_name, stack_info=True
@@ -431,8 +430,9 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 @assign_queue("invites")
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data: Mapping[str, Any]) -> None:
+        invite_expires_in_days = data["invite_expires_in_days"]
         invitee = filter_to_valid_prereg_users(
-            PreregistrationUser.objects.filter(id=data["prereg_id"])
+            PreregistrationUser.objects.filter(id=data["prereg_id"]), invite_expires_in_days
         ).first()
         if invitee is None:
             # The invitation could have been revoked
@@ -446,10 +446,13 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             email_language = data["email_language"]
         else:
             email_language = referrer.realm.default_language
-        activate_url = do_send_confirmation_email(invitee, referrer, email_language)
+
+        activate_url = do_send_confirmation_email(
+            invitee, referrer, email_language, invite_expires_in_days
+        )
 
         # queue invitation reminder
-        if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
+        if invite_expires_in_days >= 4:
             context = common_context(referrer)
             context.update(
                 activate_url=activate_url,
@@ -464,7 +467,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=email_language,
                 context=context,
-                delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2),
+                delay=datetime.timedelta(days=invite_expires_in_days - 2),
             )
 
 
@@ -509,7 +512,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
                 # event["client_id"] directly.
                 #
                 # TODO/compatibility: We can delete this once it is no
-                # longer possible to directly upgrade from 2.1 to master.
+                # longer possible to directly upgrade from 2.1 to main.
                 if event["client"] not in self.client_id_map:
                     client = get_client(event["client"])
                     self.client_id_map[event["client"]] = client.id
@@ -838,7 +841,8 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         event = events[0]
 
         logging.warning(
-            "Timed out after %s seconds while fetching URLs for message %s: %s",
+            "Timed out in %s after %s seconds while fetching URLs for message %s: %s",
+            self.queue_name,
             limit,
             event["message_id"],
             event["urls"],

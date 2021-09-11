@@ -20,7 +20,7 @@ branches, with a star next to the current branch:
 ```console
 $ git branch
 * issue-demo
-  master
+  main
 ```
 
 To see even more information about your branches, including remote branches,
@@ -29,11 +29,11 @@ use `git branch -vva`:
 ```console
 $ git branch -vva
 * issue-123                 517468b troubleshooting tip about provisioning
-  master                    f0eaee6 [origin/master] bug: Fix traceback in get_missed_message_token_from_address().
-  remotes/origin/HEAD       -> origin/master
+  main                      f0eaee6 [origin/main] bug: Fix traceback in get_missed_message_token_from_address().
+  remotes/origin/HEAD       -> origin/main
   remotes/origin/issue-1234 4aeccb7 Another test commit, with longer message.
-  remotes/origin/master     f0eaee6 bug: Fix traceback in get_missed_message_token_from_address().
-  remotes/upstream/master   dbeab6a Optimize checks of test database state by moving into Python.
+  remotes/origin/main       f0eaee6 bug: Fix traceback in get_missed_message_token_from_address().
+  remotes/upstream/main     dbeab6a Optimize checks of test database state by moving into Python.
 ```
 
 You can also configure [Bash][gitbook-other-envs-bash] and
@@ -46,9 +46,9 @@ from Zulip's main repositories.
 
 **Note about git pull**: You might be used to using `git pull` on other
 projects. With Zulip, because we don't use merge commits, you'll want to avoid
-it. Rather than using `git pull`, which by default is a shortcut for `git fetch
-&& git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you should use `git fetch`
-and then `git rebase`.
+it. Rather than using `git pull`, which by default is a shortcut for
+`git fetch && git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you
+should use `git fetch` and then `git rebase`.
 
 First, [fetch][gitbook-fetch] changes from Zulip's upstream repository you
 configured in the step above:
@@ -57,37 +57,37 @@ configured in the step above:
 $ git fetch upstream
 ```
 
-Next, check out your `master` branch and [rebase][gitbook-git-rebase] it on top
-of `upstream/master`:
+Next, check out your `main` branch and [rebase][gitbook-git-rebase] it on top
+of `upstream/main`:
 
 ```console
-$ git checkout master
-Switched to branch 'master'
+$ git checkout main
+Switched to branch 'main'
 
-$ git rebase upstream/master
+$ git rebase upstream/main
 ```
 
-This will rollback any changes you've made to master, update it from
-`upstream/master`, and then re-apply your changes. Rebasing keeps the commit
+This will rollback any changes you've made to `main`, update it from
+`upstream/main`, and then re-apply your changes. Rebasing keeps the commit
 history clean and readable.
 
 When you're ready, [push your changes][github-help-push] to your remote fork.
-Make sure you're in branch `master` and then run `git push`:
+Make sure you're in branch `main` and then run `git push`:
 
 ```console
-$ git checkout master
-$ git push origin master
+$ git checkout main
+$ git push origin main
 ```
 
 You can keep any branch up to date using this method. If you're working on a
 feature branch (see next section), which we recommend, you would change the
-command slightly, using the name of your `feature-branch` rather than `master`:
+command slightly, using the name of your `feature-branch` rather than `main`:
 
 ```console
 $ git checkout feature-branch
 Switched to branch 'feature-branch'
 
-$ git rebase upstream/master
+$ git rebase upstream/main
 
 $ git push origin feature-branch
 ```
@@ -99,25 +99,25 @@ feature. Recall from [how Git is different][how-git-is-different] that
 **Git is designed for lightweight branching and merging.** You can and should
 create as many branches as you'd like.
 
-First, make sure your master branch is up-to-date with Zulip upstream ([see
+First, make sure your `main` branch is up-to-date with Zulip upstream ([see
 how][zulip-git-guide-up-to-date]).
 
-Next, from your master branch, create a new tracking branch, providing a
+Next, from your `main` branch, create a new tracking branch, providing a
 descriptive name for your feature branch:
 
 ```console
-$ git checkout master
-Switched to branch 'master'
+$ git checkout main
+Switched to branch 'main'
 
 $ git checkout -b issue-1755-fail2ban
 Switched to a new branch 'issue-1755-fail2ban'
 ```
 
 Alternatively, you can create a new branch explicitly based off
-`upstream/master`:
+`upstream/main`:
 
 ```console
-$ git checkout -b issue-1755-fail2ban upstream/master
+$ git checkout -b issue-1755-fail2ban upstream/main
 Switched to a new branch 'issue-1755-fail2ban'
 ```
 
@@ -135,7 +135,7 @@ Recall that files tracked with Git have possible three states:
 committed, modified, and staged.
 
 To prepare a commit, first add the files with changes that you want
-to include in your commit to your staging area. You *add* both new files and
+to include in your commit to your staging area. You _add_ both new files and
 existing ones. You can also remove files from staging when necessary.
 
 ### Get status of working directory
@@ -166,9 +166,10 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 ### Stage additions with git add
 
-To add changes to your staging area, use `git add <filename>`. Because `git
-add` is all about staging the changes you want to commit, you use it to add
-*new files* as well as *files with changes* to your staging area.
+To add changes to your staging area, use `git add <filename>`. Because
+`git add` is all about staging the changes you want to commit, you use
+it to add _new files_ as well as _files with changes_ to your staging
+area.
 
 Continuing our example from above, after we run `git add newfile.py`, we'll see
 the following from `git status`:
@@ -186,7 +187,6 @@ view changes to files you haven't yet staged, just use `git diff`.
 
 If you want to add all changes in the working directory, use `git add -A`
 ([documentation][gitbook-add]).
-
 
 You can also stage changes using your graphical Git client.
 
@@ -317,13 +317,13 @@ testing in a more production-like environment.
 
 The final paragraph indicates that this commit addresses and fixes issue #1755.
 When you submit your pull request, GitHub will detect and link this reference
-to the appropriate issue. Once your commit is merged into zulip/master, GitHub
+to the appropriate issue. Once your commit is merged into `upstream/main`, GitHub
 will automatically close the referenced issue. See [Closing issues via commit
 messages][github-help-closing-issues] for details.
 
 Note in particular that GitHub's regular expressions for this feature
 are sloppy, so phrases like `Partially fixes #1234` will automatically
-close the issue.  Phrases like `Fixes part of #1234` are a good
+close the issue. Phrases like `Fixes part of #1234` are a good
 alternative.
 
 Make as many commits as you need to to address the issue or implement your feature.
@@ -335,7 +335,7 @@ This ensures your work is backed up should something happen to your local
 machine and allows others to follow your progress. It also allows you to
 [work from multiple computers][self-multiple-computers] without losing work.
 
-Pushing to a feature branch is just like pushing to master:
+Pushing to a feature branch is just like pushing to `main`:
 
 ```console
 $ git push origin <branch-name>
@@ -376,7 +376,7 @@ $ git log --all --graph --oneline --decorate
 * 985116b docs: Add graphic client recs to Git Guide.
 * 3c40103 docs: Add stubs for remaining Git Guide sections.
 * fc2c01e docs: Add git guide quickstart.
-| * f0eaee6 (upstream/master) bug: Fix traceback in get_missed_message_token_from_address().
+| * f0eaee6 (upstream/main) bug: Fix traceback in get_missed_message_token_from_address().
 ```
 
 Alternatively, use your graphical client to view the history for your feature branch.

@@ -35,6 +35,10 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
     USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
+    # Note that this was renamed to USER_SETTING_CHANGED sometime
+    # after this migration; we preserve the original name here to
+    # highlight that as of this migration, only notification settings
+    # had RealmAuditLog entries for changes.
     USER_NOTIFICATION_SETTINGS_CHANGED = 132
     REALM_PROPERTY_CHANGED = 207
     SUBSCRIPTION_PROPERTY_CHANGED = 304

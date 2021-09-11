@@ -210,9 +210,11 @@ from zerver.models import (
     RealmEmoji,
     RealmFilter,
     RealmPlayground,
+    RealmUserDefault,
     Recipient,
     ScheduledEmail,
     ScheduledMessage,
+    ScheduledMessageNotificationEmail,
     Service,
     Stream,
     SubMessage,
@@ -1008,6 +1010,44 @@ def do_set_realm_signup_notifications_stream(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def do_set_realm_user_default_setting(
+    realm_user_default: RealmUserDefault,
+    name: str,
+    value: Any,
+    *,
+    acting_user: Optional[UserProfile],
+) -> None:
+    old_value = getattr(realm_user_default, name)
+    realm = realm_user_default.realm
+    event_time = timezone_now()
+
+    with transaction.atomic(savepoint=False):
+        setattr(realm_user_default, name, value)
+        realm_user_default.save(update_fields=[name])
+
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: value,
+                    "property": name,
+                }
+            ).decode(),
+        )
+
+    event = dict(
+        type="realm_user_settings_defaults",
+        op="update",
+        property=name,
+        value=value,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
+
+
 def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
@@ -1096,7 +1136,7 @@ def do_change_realm_subdomain(
     # deactivated. We are creating a deactivated realm using old subdomain and setting
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
-    placeholder_realm = do_create_realm(old_subdomain, "placeholder-realm")
+    placeholder_realm = do_create_realm(old_subdomain, realm.name)
     do_deactivate_realm(placeholder_realm, acting_user=None)
     do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
@@ -4934,6 +4974,8 @@ def do_create_realm(
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: Optional[bool] = False,
 ) -> Realm:
+    if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
+        raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
     if not server_initialized():
@@ -4964,13 +5006,15 @@ def do_create_realm(
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
             realm.demo_organization_scheduled_deletion_date = (
-                realm.date_created + datetime.timedelta(days=30)
+                realm.date_created + datetime.timedelta(days=settings.DEMO_ORG_DEADLINE_DAYS)
             )
         realm.save()
 
         RealmAuditLog.objects.create(
             realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
         )
+
+        RealmUserDefault.objects.create(realm=realm)
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
@@ -5021,75 +5065,70 @@ def do_create_realm(
     return realm
 
 
-def do_change_notification_settings(
+def update_scheduled_email_notifications_time(
+    user_profile: UserProfile, old_batching_period: int, new_batching_period: int
+) -> None:
+    existing_scheduled_emails = ScheduledMessageNotificationEmail.objects.filter(
+        user_profile=user_profile
+    )
+
+    scheduled_timestamp_change = datetime.timedelta(
+        seconds=new_batching_period
+    ) - datetime.timedelta(seconds=old_batching_period)
+
+    existing_scheduled_emails.update(
+        scheduled_timestamp=F("scheduled_timestamp") + scheduled_timestamp_change
+    )
+
+
+def do_change_user_setting(
     user_profile: UserProfile,
-    name: str,
-    value: Union[bool, int, str],
+    setting_name: str,
+    setting_value: Union[bool, str, int],
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
-    """Takes in a UserProfile object, the name of a global notification
-    preference to update, and the value to update to
-    """
-
-    old_value = getattr(user_profile, name)
-    notification_setting_type = UserProfile.notification_setting_types[name]
-    assert isinstance(
-        value, notification_setting_type
-    ), f"Cannot update {name}: {value} is not an instance of {notification_setting_type}"
-
-    setattr(user_profile, name, value)
-
-    # Disabling digest emails should clear a user's email queue
-    if name == "enable_digest_emails" and not value:
-        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
-
-    user_profile.save(update_fields=[name])
-    event = {
-        "type": "user_settings",
-        "op": "update",
-        "property": name,
-        "value": value,
-    }
+    old_value = getattr(user_profile, setting_name)
     event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        event_type=RealmAuditLog.USER_NOTIFICATION_SETTINGS_CHANGED,
-        event_time=event_time,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                "property": name,
-            }
-        ).decode(),
-    )
 
-    send_event(user_profile.realm, event, [user_profile.id])
-
-    # This legacy event format is for backwards-compatiblity with
-    # clients that don't support the new user_settings event type.
-    legacy_event = {
-        "type": "update_global_notifications",
-        "user": user_profile.email,
-        "notification_name": name,
-        "setting": value,
-    }
-    send_event(user_profile.realm, legacy_event, [user_profile.id])
-
-
-def do_set_user_display_setting(
-    user_profile: UserProfile, setting_name: str, setting_value: Union[bool, str, int]
-) -> None:
     if setting_name == "timezone":
         assert isinstance(setting_value, str)
     else:
         property_type = UserProfile.property_types[setting_name]
         assert isinstance(setting_value, property_type)
     setattr(user_profile, setting_name, setting_value)
+
+    # TODO: Move these database actions into a transaction.atomic block.
     user_profile.save(update_fields=[setting_name])
+
+    if setting_name in UserProfile.notification_setting_types:
+        # Prior to all personal settings being managed by property_types,
+        # these were only created for notification settings.
+        #
+        # TODO: Start creating these for all settings, and do a
+        # backfilled=True migration.
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            event_type=RealmAuditLog.USER_SETTING_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            modified_user=user_profile,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: setting_value,
+                    "property": setting_name,
+                }
+            ).decode(),
+        )
+    # Disabling digest emails should clear a user's email queue
+    if setting_name == "enable_digest_emails" and not setting_value:
+        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
+
+    if setting_name == "email_notifications_batching_period_seconds":
+        assert isinstance(old_value, int)
+        assert isinstance(setting_value, int)
+        update_scheduled_email_notifications_time(user_profile, old_value, setting_value)
 
     event = {
         "type": "user_settings",
@@ -5103,19 +5142,33 @@ def do_set_user_display_setting(
 
     send_event(user_profile.realm, event, [user_profile.id])
 
-    # This legacy event format is for backwards-compatiblity with
-    # clients that don't support the new user_settings event type.
-    legacy_event = {
-        "type": "update_display_settings",
-        "user": user_profile.email,
-        "setting_name": setting_name,
-        "setting": setting_value,
-    }
-    if setting_name == "default_language":
-        assert isinstance(setting_value, str)
-        legacy_event["language_name"] = get_language_name(setting_value)
+    if setting_name in UserProfile.notification_settings_legacy:
+        # This legacy event format is for backwards-compatiblity with
+        # clients that don't support the new user_settings event type.
+        # We only send this for settings added before Feature level 89.
+        legacy_event = {
+            "type": "update_global_notifications",
+            "user": user_profile.email,
+            "notification_name": setting_name,
+            "setting": setting_value,
+        }
+        send_event(user_profile.realm, legacy_event, [user_profile.id])
 
-    send_event(user_profile.realm, legacy_event, [user_profile.id])
+    if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
+        # This legacy event format is for backwards-compatiblity with
+        # clients that don't support the new user_settings event type.
+        # We only send this for settings added before Feature level 89.
+        legacy_event = {
+            "type": "update_display_settings",
+            "user": user_profile.email,
+            "setting_name": setting_name,
+            "setting": setting_value,
+        }
+        if setting_name == "default_language":
+            assert isinstance(setting_value, str)
+            legacy_event["language_name"] = get_language_name(setting_value)
+
+        send_event(user_profile.realm, legacy_event, [user_profile.id])
 
     # Updates to the timezone display setting are sent to all users
     if setting_name == "timezone":
@@ -6812,12 +6865,17 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
 
 
 def do_send_confirmation_email(
-    invitee: PreregistrationUser, referrer: UserProfile, email_language: str
+    invitee: PreregistrationUser,
+    referrer: UserProfile,
+    email_language: str,
+    invite_expires_in_days: Optional[int] = None,
 ) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
     """
-    activation_url = create_confirmation_link(invitee, Confirmation.INVITATION)
+    activation_url = create_confirmation_link(
+        invitee, Confirmation.INVITATION, validity_in_days=invite_expires_in_days
+    )
     context = {
         "referrer_full_name": referrer.full_name,
         "referrer_email": referrer.delivery_email,
@@ -6900,6 +6958,8 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
+    *,
+    invite_expires_in_days: int,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
     num_invites = len(invitee_emails)
@@ -6994,6 +7054,7 @@ def do_invite_users(
             "prereg_id": prereg_user.id,
             "referrer_id": user_profile.id,
             "email_language": user_profile.realm.default_language,
+            "invite_expires_in_days": invite_expires_in_days,
         }
         queue_json_publish("invites", event)
 
@@ -7023,11 +7084,13 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
     invites = []
 
     for invitee in prereg_users:
+        expiry_date = invitee.confirmation.get().expiry_date
         invites.append(
             dict(
                 email=invitee.email,
                 invited_by_user_id=invitee.referred_by.id,
                 invited=datetime_to_timestamp(invitee.invited_at),
+                expiry_date=datetime_to_timestamp(expiry_date),
                 id=invitee.id,
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
@@ -7038,11 +7101,8 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
         # We do not return multiuse invites to non-admin users.
         return invites
 
-    lowest_datetime = timezone_now() - datetime.timedelta(
-        days=settings.INVITATION_LINK_VALIDITY_DAYS
-    )
     multiuse_confirmation_objs = Confirmation.objects.filter(
-        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE, date_sent__gte=lowest_datetime
+        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE, expiry_date__gte=timezone_now()
     )
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
@@ -7051,6 +7111,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
             dict(
                 invited_by_user_id=invite.referred_by.id,
                 invited=datetime_to_timestamp(confirmation_obj.date_sent),
+                expiry_date=datetime_to_timestamp(confirmation_obj.expiry_date),
                 id=invite.id,
                 link_url=confirmation_url(
                     confirmation_obj.confirmation_key,
@@ -7065,7 +7126,10 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
 
 def do_create_multiuse_invite_link(
-    referred_by: UserProfile, invited_as: int, streams: Sequence[Stream] = []
+    referred_by: UserProfile,
+    invited_as: int,
+    invite_expires_in_days: int,
+    streams: Sequence[Stream] = [],
 ) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
@@ -7074,7 +7138,9 @@ def do_create_multiuse_invite_link(
     invite.invited_as = invited_as
     invite.save()
     notify_invites_changed(referred_by)
-    return create_confirmation_link(invite, Confirmation.MULTIUSE_INVITE)
+    return create_confirmation_link(
+        invite, Confirmation.MULTIUSE_INVITE, validity_in_days=invite_expires_in_days
+    )
 
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
@@ -7107,6 +7173,10 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
+    invite_expires_in_days = (
+        prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
+    ).days
+    prereg_user.confirmation.clear()
 
     do_increment_logging_stat(
         prereg_user.realm, COUNT_STATS["invites_sent::day"], None, prereg_user.invited_at
@@ -7118,6 +7188,7 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
         "prereg_id": prereg_user.id,
         "referrer_id": prereg_user.referred_by.id,
         "email_language": prereg_user.referred_by.realm.default_language,
+        "invite_expires_in_days": invite_expires_in_days,
     }
     queue_json_publish("invites", event)
 

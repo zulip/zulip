@@ -1,7 +1,7 @@
 # Shell tips
 
-The *shell* is a **command line interpreter**. To use it you can open a
-*terminal* (sometimes called a *console*). This is how most terminal windows
+The _shell_ is a **command line interpreter**. To use it you can open a
+_terminal_ (sometimes called a _console_). This is how most terminal windows
 look like:
 
 ![An example shell window](../images/shell-screenshot.png)
@@ -26,12 +26,12 @@ awaiting new orders. The prompt can contain useful information, let's look
 at `(venv)john@laptop:~$`:
 
 - `(venv)` informs the user that they're currently in a virtual environment
-(more on [Python virtual
+  (more on [Python virtual
   environments](https://docs.python-guide.org/dev/virtualenvs/))
 - the `john` before `@` is the username
 - the `laptop` is the host machine name
 - the `~` after the colon informs the user they're currently in the home
-folder of the user `john`
+  folder of the user `john`
 
 You shouldn't type the prompt or the text preceding it, since it isn't a
 part of the commands.
@@ -89,7 +89,7 @@ shell that the following command must be run as the root - a user that by
 default has access to all commands and files on a Unix operating system (i.e.
 a user with administrator privileges). That's why you may be asked for a
 password in those cases: the system verifies you have permission to act as
-the *root* user.
+the _root_ user.
 
 In case you were wondering, the name `sudo` comes from **s**uper **u**ser
 **do**.
@@ -211,9 +211,9 @@ $ cd /home/john/notes
 Here, the command is `cd`, and the first (and only) argument is
 `/home/john/notes`:
 
-- `cd` - *command*: changes your current directory.
+- `cd` - _command_: changes your current directory.
 
-- `/home/john/notes` - *argument*: the directory where you want to go.
+- `/home/john/notes` - _argument_: the directory where you want to go.
 
 In each command the arguments are specified in different ways, and have
 different meanings.
@@ -232,13 +232,13 @@ In this case, we're saying: "Bash, use the app `nano` to open the file
 `todo.txt`, enabling mouse support, and saving the backup files to
 `/home/john/backups`". The different parts are:
 
-- `nano` - *command*: program that allows editing text easily.
+- `nano` - _command_: program that allows editing text easily.
 
-- `-C` - *argument*: needs you to indicate where the backups should be stored,
+- `-C` - _argument_: needs you to indicate where the backups should be stored,
   and thus you have to add an additional argument after it, to specify the
   directory (`/home/john/backups` in the example).
 
-- `--mouse` - *argument*: is just an option you set, `nano` doesn't need
+- `--mouse` - _argument_: is just an option you set, `nano` doesn't need
   anything else to make it work. Thus, there isn't any extra argument for that.
 
 Note that the `todo.txt` is the file we want to open! It has nothing to do with
@@ -300,11 +300,11 @@ $ /usr/bin/env python3 ./my_program.py
 
 The purpose of `/usr/bin/env` in our shebangs is as a way to locate
 the `python3` program in your current environment, the same one the
-shell would use if you ran `python3 my_program.py`.  You may see
+shell would use if you ran `python3 my_program.py`. You may see
 Python scripts outside of Zulip with a shebang like
 `#!/usr/bin/python3`; but because of the way Python virtualenvs work,
 this has the effect of running the script outside of any currently
-activated virtualenv.  We use `/usr/bin/env` to keep our scripts
+activated virtualenv. We use `/usr/bin/env` to keep our scripts
 running inside the virtualenv where we've installed all our
 dependencies.
 

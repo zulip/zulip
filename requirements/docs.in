@@ -8,8 +8,8 @@
 # See requirements/README.md for more detail.
 
 # Needed to build RTD docs
-sphinx<4  # https://github.com/readthedocs/sphinx_rtd_theme/issues/1159
-sphinx-rtd-theme
+sphinx
+sphinx-rtd-theme>=1.0.0rc1  # https://github.com/readthedocs/sphinx_rtd_theme/issues/1159
 
 # Needed to build Markdown docs
 myst-parser

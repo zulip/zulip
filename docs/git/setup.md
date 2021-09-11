@@ -15,14 +15,14 @@ You'll also need a GitHub account, which you can sign up for
 [here][github-join].
 
 We highly recommend you create an SSH key if you don't already have
-one and [add it to your GitHub account][github-help-add-ssh-key].  If
+one and [add it to your GitHub account][github-help-add-ssh-key]. If
 you don't, you'll have to type your GitHub username and password every
 time you interact with GitHub, which is usually several times a day.
 
 We also highly recommend the following:
 
 - [Configure Git][gitbook-config] with your name and email and
-  [aliases][gitbook-aliases] for commands you'll use often.  We
+  [aliases][gitbook-aliases] for commands you'll use often. We
   recommend using your full name (not just your first name), since
   that's what we'll use to give credit to your work in places like the
   Zulip release notes.

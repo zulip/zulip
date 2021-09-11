@@ -9,17 +9,17 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
-from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.engine import Connection, RowProxy
+from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
     ClauseElement,
     ColumnElement,
-    FromClause,
     Select,
+    Selectable,
     alias,
     and_,
     column,
+    func,
     join,
     literal,
     literal_column,
@@ -29,15 +29,15 @@ from sqlalchemy.sql import (
     table,
     union_all,
 )
-from sqlalchemy.types import Boolean, Integer, Text
+from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
-from zerver.lib.narrow import is_web_public_compatible, is_web_public_narrow
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.narrow import is_spectator_compatible, is_web_public_narrow
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -106,28 +106,22 @@ TS_STOP = "</ts-match>"
 
 
 def ts_locs_array(
-    config: "ColumnElement[str]",
-    text: "ColumnElement[str]",
-    tsquery: "ColumnElement[object]",
-) -> "ColumnElement[List[List[int]]]":
+    config: "ColumnElement[Text]",
+    text: "ColumnElement[Text]",
+    tsquery: "ColumnElement[Any]",
+) -> "ColumnElement[ARRAY[Integer]]":
     options = f"HighlightAll = TRUE, StartSel = {TS_START}, StopSel = {TS_STOP}"
-    delimited = func.ts_headline(config, text, tsquery, options)
-    parts = func.unnest(func.string_to_array(delimited, TS_START)).alias()
-    part = column(parts.name, Text)
-    part_len = func.length(part) - len(TS_STOP)
-    match_pos = func.sum(part_len).over(rows=(None, -1)) + len(TS_STOP)
-    match_len = func.strpos(part, TS_STOP) - 1
-    ret = func.array(
-        select(
-            [
-                postgresql.array([match_pos, match_len]),  # type: ignore[call-overload] # https://github.com/dropbox/sqlalchemy-stubs/issues/188
-            ]
-        )
-        .select_from(parts)
-        .offset(1)
-        .as_scalar(),
+    delimited = func.ts_headline(config, text, tsquery, options, type_=Text)
+    part = func.unnest(
+        func.string_to_array(delimited, TS_START, type_=ARRAY(Text)), type_=Text
+    ).column_valued()
+    part_len = func.length(part, type_=Integer) - len(TS_STOP)
+    match_pos = func.sum(part_len, type_=Integer).over(rows=(None, -1)) + len(TS_STOP)
+    match_len = func.strpos(part, TS_STOP, type_=Integer) - 1
+    return func.array(
+        select([postgresql.array([match_pos, match_len])]).offset(1).scalar_subquery(),
+        type_=ARRAY(Integer),
     )
-    return ret
 
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
@@ -156,7 +150,7 @@ class NarrowBuilder:
     def __init__(
         self,
         user_profile: Optional[UserProfile],
-        msg_id_column: "ColumnElement[int]",
+        msg_id_column: "ColumnElement[Integer]",
         realm: Realm,
         is_web_public_query: bool = False,
     ) -> None:
@@ -512,7 +506,7 @@ class NarrowBuilder:
     ) -> Select:
         match_positions_character = func.pgroonga_match_positions_character
         query_extract_keywords = func.pgroonga_query_extract_keywords
-        operand_escaped = func.escape_html(operand)
+        operand_escaped = func.escape_html(operand, type_=Text)
         keywords = query_extract_keywords(operand_escaped)
         query = query.column(
             match_positions_character(column("rendered_content", Text), keywords).label(
@@ -520,11 +514,11 @@ class NarrowBuilder:
             )
         )
         query = query.column(
-            match_positions_character(func.escape_html(topic_column_sa()), keywords).label(
-                "topic_matches"
-            )
+            match_positions_character(
+                func.escape_html(topic_column_sa(), type_=Text), keywords
+            ).label("topic_matches")
         )
-        condition = column("search_pgroonga").op("&@~")(operand_escaped)
+        condition = column("search_pgroonga", Text).op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(
@@ -533,13 +527,15 @@ class NarrowBuilder:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         query = query.column(
             ts_locs_array(
-                literal("zulip.english_us_search"), column("rendered_content", Text), tsquery
+                literal("zulip.english_us_search", Text), column("rendered_content", Text), tsquery
             ).label("content_matches")
         )
         # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
         query = query.column(
             ts_locs_array(
-                literal("zulip.english_us_search"), func.escape_html(topic_column_sa()), tsquery
+                literal("zulip.english_us_search", Text),
+                func.escape_html(topic_column_sa(), type_=Text),
+                tsquery,
             ).label("topic_matches")
         )
 
@@ -551,7 +547,9 @@ class NarrowBuilder:
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
                 term = "%" + connection.ops.prep_for_like_query(term) + "%"
-                cond = or_(column("content", Text).ilike(term), topic_column_sa().ilike(term))
+                cond: ClauseElement = or_(
+                    column("content", Text).ilike(term), topic_column_sa().ilike(term)
+                )
                 query = query.where(maybe_negate(cond))
 
         cond = column("search_tsvector", postgresql.TSVECTOR).op("@@")(tsquery)
@@ -733,7 +731,7 @@ def get_stream_from_narrow_access_unchecked(
 def exclude_muting_conditions(
     user_profile: UserProfile, narrow: OptionalNarrowListT
 ) -> List[ClauseElement]:
-    conditions = []
+    conditions: List[ClauseElement] = []
     stream_id = None
     try:
         # Note: It is okay here to not check access to stream
@@ -777,20 +775,19 @@ def exclude_muting_conditions(
 
 def get_base_query_for_search(
     user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
-) -> Tuple[Select, "ColumnElement[int]"]:
+) -> Tuple[Select, "ColumnElement[Integer]"]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
         query = select([column("id", Integer).label("message_id")], None, table("zerver_message"))
-        inner_msg_id_col: ColumnElement[int]
-        inner_msg_id_col = literal_column("zerver_message.id", Integer)  # type: ignore[assignment] # https://github.com/dropbox/sqlalchemy-stubs/pull/189
+        inner_msg_id_col = literal_column("zerver_message.id", Integer)
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
     if need_message:
         query = select(
-            [column("message_id"), column("flags", Integer)],
-            column("user_profile_id") == literal(user_profile.id),
+            [column("message_id", Integer), column("flags", Integer)],
+            column("user_profile_id", Integer) == literal(user_profile.id),
             join(
                 table("zerver_usermessage"),
                 table("zerver_message"),
@@ -802,8 +799,8 @@ def get_base_query_for_search(
         return (query, inner_msg_id_col)
 
     query = select(
-        [column("message_id"), column("flags", Integer)],
-        column("user_profile_id") == literal(user_profile.id),
+        [column("message_id", Integer), column("flags", Integer)],
+        column("user_profile_id", Integer) == literal(user_profile.id),
         table("zerver_usermessage"),
     )
     inner_msg_id_col = column("message_id", Integer)
@@ -812,7 +809,7 @@ def get_base_query_for_search(
 
 def add_narrow_conditions(
     user_profile: Optional[UserProfile],
-    inner_msg_id_col: "ColumnElement[int]",
+    inner_msg_id_col: "ColumnElement[Integer]",
     query: Select,
     narrow: OptionalNarrowListT,
     is_web_public_query: bool,
@@ -971,7 +968,7 @@ def get_messages_backend(
         if not is_web_public_narrow(narrow):
             raise MissingAuthenticationError()
         assert narrow is not None
-        if not is_web_public_compatible(narrow):
+        if not is_spectator_compatible(narrow):
             raise MissingAuthenticationError()
 
         realm = get_valid_realm_from_request(request)
@@ -1019,7 +1016,7 @@ def get_messages_backend(
         need_message = True
         need_user_message = True
 
-    query: FromClause
+    query: Selectable
     query, inner_msg_id_col = get_base_query_for_search(
         user_profile=user_profile,
         need_message=need_message,
@@ -1043,7 +1040,7 @@ def get_messages_backend(
                 verbose_operators.append("is:" + term["operand"])
             else:
                 verbose_operators.append(term["operator"])
-        log_data = get_request_notes(request).log_data
+        log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
@@ -1176,9 +1173,9 @@ def limit_query_to_range(
     anchor: int,
     anchored_to_left: bool,
     anchored_to_right: bool,
-    id_col: "ColumnElement[int]",
+    id_col: "ColumnElement[Integer]",
     first_visible_message_id: int,
-) -> FromClause:
+) -> Selectable:
     """
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
@@ -1251,7 +1248,7 @@ def limit_query_to_range(
 
 
 def post_process_limited_query(
-    rows: Sequence[Union[RowProxy, Sequence[Any]]],
+    rows: Sequence[Union[Row, Sequence[Any]]],
     num_before: int,
     num_after: int,
     anchor: int,
@@ -1268,7 +1265,7 @@ def post_process_limited_query(
     # that the clients will know that they got complete results.
 
     if first_visible_message_id > 0:
-        visible_rows: Sequence[Union[RowProxy, Sequence[Any]]] = [
+        visible_rows: Sequence[Union[Row, Sequence[Any]]] = [
             r for r in rows if r[0] >= first_visible_message_id
         ]
     else:

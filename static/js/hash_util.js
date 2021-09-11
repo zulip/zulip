@@ -270,3 +270,45 @@ export function active_stream() {
 export function is_create_new_stream_narrow() {
     return window.location.hash === "#streams/new";
 }
+
+export const allowed_web_public_narrows = [
+    "streams",
+    "stream",
+    "topic",
+    "sender",
+    "has",
+    "search",
+    "near",
+    "id",
+];
+
+export function is_spectator_compatible(hash) {
+    // Defines which views are supported for spectators.
+    // This implementation should agree with the similar function in zerver/lib/narrow.py.
+    const web_public_allowed_hashes = [
+        "",
+        "narrow", // full #narrow hash handled in narrow.is_spectator_compatible
+        "recent_topics",
+        "keyboard-shortcuts",
+        "message-formatting",
+        "search-operators",
+        "all_messages",
+        "about-zulip",
+    ];
+
+    const main_hash = get_hash_category(hash);
+
+    if (main_hash === "narrow") {
+        const hash_section = get_hash_section(hash);
+        if (!allowed_web_public_narrows.includes(hash_section)) {
+            return false;
+        }
+        return true;
+    }
+
+    return web_public_allowed_hashes.includes(main_hash);
+}
+
+export function current_hash_as_next() {
+    return `next=/${window.location.hash}`;
+}

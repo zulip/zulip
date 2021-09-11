@@ -22,7 +22,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
             return None
     from django.conf import settings
 
-    from zerver.lib.request import get_current_request, get_request_notes
+    from zerver.lib.request import RequestNotes, get_current_request
     from zerver.models import get_user_profile_by_id
 
     with capture_internal_exceptions():
@@ -47,7 +47,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
 
         request = get_current_request()
         if request:
-            request_notes = get_request_notes(request)
+            request_notes = RequestNotes.get_notes(request)
             if request_notes.client is not None:
                 event["tags"]["client"] = request_notes.client.name
             if request_notes.realm is not None:

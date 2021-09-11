@@ -1,7 +1,7 @@
 # Format your messages
 
 [//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
-[//]: # (Requires some additional fiddling for the LaTeX picture, inline code block, and maybe a few others.)
+[//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
 
 Zulip uses a variant of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
@@ -107,7 +107,7 @@ def fib(n):
 
 ![Markdown code](/static/images/help/markdown-code.png)
 
-You can also use `~~~` to start codeblocks, or just indent the code 4 or more spaces.
+You can also use `~~~` to start code blocks, or just indent the code 4 or more spaces.
 
 See the main [code blocks article](/help/code-blocks) for details on
 [syntax highlighting](/help/code-blocks#language-tagging), [code

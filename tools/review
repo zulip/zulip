@@ -33,21 +33,21 @@ def check_git_pristine() -> None:
         exit("Git is not pristine:\n" + output)
 
 
-def ensure_on_clean_master() -> None:
+def ensure_on_clean_main() -> None:
     branch = get_git_branch()
-    if branch != "master":
+    if branch != "main":
         exit(f"You are still on a feature branch: {branch}")
     check_git_pristine()
-    run(["git", "fetch", "upstream", "master"])
-    run(["git", "rebase", "upstream/master"])
+    run(["git", "fetch", "upstream", "main"])
+    run(["git", "rebase", "upstream/main"])
 
 
 def create_pull_branch(pull_id: int) -> None:
     run(["git", "fetch", "upstream", f"pull/{pull_id}/head"])
     run(["git", "checkout", "-B", f"review-{pull_id}", "FETCH_HEAD"])
-    run(["git", "rebase", "upstream/master"])
-    run(["git", "log", "upstream/master..", "--oneline"])
-    run(["git", "diff", "upstream/master..", "--name-status"])
+    run(["git", "rebase", "upstream/main"])
+    run(["git", "log", "upstream/main..", "--oneline"])
+    run(["git", "diff", "upstream/main..", "--name-status"])
 
     print()
     print(f"PR: {pull_id}")
@@ -60,7 +60,7 @@ def review_pr() -> None:
     except Exception:
         exit("please provide an integer pull request id")
 
-    ensure_on_clean_master()
+    ensure_on_clean_main()
     create_pull_branch(pull_id)
 
 

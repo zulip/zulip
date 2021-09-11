@@ -30,7 +30,7 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
-from zerver.lib.create_user import copy_user_settings
+from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
@@ -1168,7 +1168,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         source_user_profile = self.example_user("hamlet")
         target_user_profile = self.example_user("iago")
 
-        copy_user_settings(source_user_profile, target_user_profile)
+        copy_default_settings(source_user_profile, target_user_profile)
 
         source_path_id = avatar_disk_path(source_user_profile)
         target_path_id = avatar_disk_path(target_user_profile)
@@ -1900,7 +1900,7 @@ class S3Test(ZulipTestCase):
         source_user_profile = self.example_user("hamlet")
         target_user_profile = self.example_user("othello")
 
-        copy_user_settings(source_user_profile, target_user_profile)
+        copy_default_settings(source_user_profile, target_user_profile)
 
         source_path_id = user_avatar_path(source_user_profile)
         target_path_id = user_avatar_path(target_user_profile)

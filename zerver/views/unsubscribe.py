@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
 from zerver.context_processors import common_context
-from zerver.lib.actions import do_change_notification_settings
+from zerver.lib.actions import do_change_user_setting
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.models import ScheduledEmail, UserProfile
 
@@ -33,7 +33,7 @@ def process_unsubscribe(
 
 
 def do_missedmessage_unsubscribe(user_profile: UserProfile) -> None:
-    do_change_notification_settings(
+    do_change_user_setting(
         user_profile, "enable_offline_email_notifications", False, acting_user=user_profile
     )
 
@@ -43,21 +43,15 @@ def do_welcome_unsubscribe(user_profile: UserProfile) -> None:
 
 
 def do_digest_unsubscribe(user_profile: UserProfile) -> None:
-    do_change_notification_settings(
-        user_profile, "enable_digest_emails", False, acting_user=user_profile
-    )
+    do_change_user_setting(user_profile, "enable_digest_emails", False, acting_user=user_profile)
 
 
 def do_login_unsubscribe(user_profile: UserProfile) -> None:
-    do_change_notification_settings(
-        user_profile, "enable_login_emails", False, acting_user=user_profile
-    )
+    do_change_user_setting(user_profile, "enable_login_emails", False, acting_user=user_profile)
 
 
 def do_marketing_unsubscribe(user_profile: UserProfile) -> None:
-    do_change_notification_settings(
-        user_profile, "enable_marketing_emails", False, acting_user=user_profile
-    )
+    do_change_user_setting(user_profile, "enable_marketing_emails", False, acting_user=user_profile)
 
 
 # The keys are part of the URL for the unsubscribe link and must be valid

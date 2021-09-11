@@ -84,7 +84,7 @@ valid session cookie) before providing the view for this route, or
 redirects the browser to a login page. This is used in the root path
 (`/`) of the website for the web client. If a request comes from a
 browser without a valid session cookie, they are redirected to a login
-page.  It is a small fork of Django's
+page. It is a small fork of Django's
 [login_required][login-required-link], adding a few extra checks
 specific to Zulip.
 
@@ -98,23 +98,22 @@ def home(request: HttpRequest) -> HttpResponse:
 ### Writing a template
 
 Templates for the main website are found in
-[templates/zerver/app](https://github.com/zulip/zulip/tree/master/templates/zerver/app).
-
+[templates/zerver/app](https://github.com/zulip/zulip/tree/main/templates/zerver/app).
 
 ## Writing API REST endpoints
 
 These are code-parseable views that take x-www-form-urlencoded or JSON
-request bodies, and return JSON-string responses.  Almost all Zulip
+request bodies, and return JSON-string responses. Almost all Zulip
 view code is in the implementations of API REST endpoints.
 
 The REST API does authentication of the user through `rest_dispatch`,
 which is documented in detail at
-[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py).
 This method will authenticate the user either through a session token
 from a cookie on the browser, or from a base64 encoded `email:api-key`
 string given via HTTP basic auth for API clients.
 
-``` py
+```py
 >>> import requests
 >>> r = requests.get('https://api.github.com/user', auth=('hello@example.com', '0123456789abcdeFGHIJKLmnopQRSTUV'))
 >>> r.status_code
@@ -124,29 +123,29 @@ string given via HTTP basic auth for API clients.
 ### Request variables
 
 Most API views will have some arguments that are passed as part of the
-request to control the behavior of the view.  In any well-engineered
+request to control the behavior of the view. In any well-engineered
 view, you need to write code to parse and validate that the arguments
-exist and have the correct form.  For many applications, this leads to
+exist and have the correct form. For many applications, this leads to
 one of several bad outcomes:
 
-* The code isn't written, so arguments aren't validated, leading to
+- The code isn't written, so arguments aren't validated, leading to
   bugs and confusing error messages for users of the API.
-* Every function starts with a long list of semi-redundant validation
+- Every function starts with a long list of semi-redundant validation
   code, usually with highly inconsistent error messages.
-* Every view function comes with another function that does the
+- Every view function comes with another function that does the
   validation that has the problems from the last bullet point.
 
 In Zulip, we solve this problem with a the special decorator called
 `has_request_variables` which allows a developer to declare the
 arguments a view function takes and validate their types all within
-the `def` line of the function.  We like this framework because we
+the `def` line of the function. We like this framework because we
 have found it makes the validation code compact, readable, and
 conveniently located in the same place as the method it is validating
 arguments for.
 
 Here's an example:
 
-``` py
+```py
 from zerver.decorator import require_realm_admin
 from zerver.lib.request import has_request_variables, REQ
 
@@ -158,11 +157,11 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
 ```
 
 You will notice the special `REQ()` in the keyword arguments to
-`create_user_backend`.  `has_request_variables` parses the declared
+`create_user_backend`. `has_request_variables` parses the declared
 keyword arguments of the decorated function, and for each that has an
 instance of `REQ` as the default value, it extracts the HTTP parameter
 with that name from the request, parses it as JSON, and passes it to
-the function.  It will return an nicely JSON formatted HTTP 400 error
+the function. It will return an nicely JSON formatted HTTP 400 error
 in the event that an argument is missing, doesn't parse as JSON, or
 otherwise is invalid.
 
@@ -174,39 +173,38 @@ the inner decorator.
 
 The implementation of `has_request_variables` is documented in detail
 in
-[zerver/lib/request.py](https://github.com/zulip/zulip/blob/master/zerver/lib/request.py))
+[zerver/lib/request.py](https://github.com/zulip/zulip/blob/main/zerver/lib/request.py))
 
 REQ also helps us with request variable validation. For example:
 
-* `msg_ids = REQ(json_validator=check_list(check_int))` will check
+- `msg_ids = REQ(json_validator=check_list(check_int))` will check
   that the `msg_ids` HTTP parameter is a list of integers, marshalled
   as JSON, and pass it into the function as the `msg_ids` Python
   keyword argument.
 
-* `streams_raw = REQ("subscriptions",
-  json_validator=check_list(check_string))` will check that the
-  "subscriptions" HTTP parameter is a list of strings, marshalled as
-  JSON, and pass it into the function with the Python keyword argument
-  `streams_raw`.
+- `streams_raw = REQ("subscriptions", json_validator=check_list(check_string))`
+  will check that the "subscriptions" HTTP parameter is a list of
+  strings, marshalled as JSON, and pass it into the function with the
+  Python keyword argument `streams_raw`.
 
-* `message_id=REQ(converter=to_non_negative_int)` will check that the
+- `message_id=REQ(converter=to_non_negative_int)` will check that the
   `message_id` HTTP parameter is a string containing a non-negative
   integer (`converter` differs from `json_validator` in that it does
   not automatically marshall the input from JSON).
 
-* Since there is no need to JSON-encode strings, usually simply
-  `my_string=REQ()` is correct.  One can pass e.g.
+- Since there is no need to JSON-encode strings, usually simply
+  `my_string=REQ()` is correct. One can pass e.g.
   `str_validator=check_string_in(...)` where one wants to run a
   validator on the value of a string.
 
 See
-[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
+[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/main/zerver/lib/validator.py)
 for more validators and their documentation.
 
 ### Deciding which HTTP verb to use
 
 When writing a new API view, you should writing a view to do just one
-type of thing.  Usually that's either a read or write operation.
+type of thing. Usually that's either a read or write operation.
 
 If you're reading data, GET is the best option. Other read-only verbs
 are HEAD, which should be used for testing if a resource is available to
@@ -214,7 +212,7 @@ be read with GET, without the expense of the full GET. OPTIONS is also
 read-only, and used by clients to determine which HTTP verbs are
 available for a given path. This isn't something you need to write, as
 it happens automatically in the implementation of `rest_dispatch`--see
-[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py)
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py)
 for more.
 
 If you're creating new data, try to figure out if the thing you are
@@ -233,7 +231,7 @@ If you're removing data, use DELETE.
 
 When writing a new API endpoint, with the exception of things like
 sending messages, requests should be safe to repeat, without impacting
-the state of the server. This is *idempotency*.
+the state of the server. This is _idempotency_.
 
 You will often want to return an error if a request to change
 something would do nothing because the state is already as desired, to
@@ -244,22 +242,22 @@ change the server more than once or cause unwanted side effects.
 ### Making changes to the database
 
 If the view does any modification to the database, that change is done
-in a helper function in `zerver/lib/actions.py`.  Those functions are
+in a helper function in `zerver/lib/actions.py`. Those functions are
 responsible for doing a complete update to the state of the server,
 which often entails both updating the database and sending any events
-to notify clients about the state change.  When possible, we prefer to
+to notify clients about the state change. When possible, we prefer to
 design a clean boundary between the view function and the actions
 function is such that all user input validation happens in the view
 code (i.e. all 400 type errors are thrown there), and the actions code
 is responsible for atomically executing the change (this is usually
 signalled by having the actions function have a name starting with
-`do_`.  So in most cases, errors in an actions function will be the
+`do_`. So in most cases, errors in an actions function will be the
 result of an operational problem (e.g. lost connection to the
-database) and lead to a 500 error.  If an actions function is
+database) and lead to a 500 error. If an actions function is
 responsible for validation as well, it should have a name starting
 with `check_`.
 
-For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/master/zerver/views/realm.py):
+For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/main/zerver/views/realm.py):
 
 ```py
 @require_realm_admin
@@ -284,7 +282,7 @@ Zulip realm).
 
 You should always use `channel.<method>` to make an `HTTP <method>` call
 to the Zulip JSON API. As an example, in
-[static/js/admin.js](https://github.com/zulip/zulip/blob/master/static/js/admin.js)
+[static/js/admin.js](https://github.com/zulip/zulip/blob/main/static/js/admin.js)
 
 ```js
 var url = "/json/realm";
@@ -344,7 +342,7 @@ If the webhook does not have an option to provide a bot email, use the
 `webhook_view` decorator, to fill in the `user_profile` and
 `request.client` fields of a request:
 
-``` py
+```py
 @webhook_view('PagerDuty')
 @has_request_variables
 def api_pagerduty_webhook(request, user_profile,
@@ -352,6 +350,7 @@ def api_pagerduty_webhook(request, user_profile,
                           stream=REQ(default='pagerduty'),
                           topic=REQ(default=None)):
 ```
+
 `request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
 in this example and it will be passed to `check_send_stream_message`. For
 more information, see [Clients in Zulip](../subsystems/client.md).

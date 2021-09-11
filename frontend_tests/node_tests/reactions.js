@@ -44,6 +44,9 @@ const emoji_picker = mock_esm("../../static/js/emoji_picker", {
 });
 const message_lists = mock_esm("../../static/js/message_lists");
 const message_store = mock_esm("../../static/js/message_store");
+const spectators = mock_esm("../../static/js/spectators", {
+    login_to_access() {},
+});
 
 message_lists.current = {
     selected_message() {
@@ -907,15 +910,23 @@ test("process_reaction_click", ({override}) => {
         emoji_name: "smile",
         emoji_code: "1f642",
     };
-    {
-        const stub = make_stub();
-        channel.del = stub.f;
-        reactions.process_reaction_click(message.id, "unicode_emoji,1f642");
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("args").args;
-        assert.equal(args.url, "/json/messages/1001/reactions");
-        assert.deepEqual(args.data, expected_reaction_info);
-    }
+
+    // Test spectator cannot react.
+    page_params.is_spectator = true;
+    let stub = make_stub();
+    spectators.login_to_access = stub.f;
+    reactions.process_reaction_click(message.id, "unicode_emoji,1f642");
+    let args = stub.get_args("args").args;
+    assert.equal(args, undefined);
+
+    page_params.is_spectator = false;
+    stub = make_stub();
+    channel.del = stub.f;
+    reactions.process_reaction_click(message.id, "unicode_emoji,1f642");
+    assert.equal(stub.num_calls, 1);
+    args = stub.get_args("args").args;
+    assert.equal(args.url, "/json/messages/1001/reactions");
+    assert.deepEqual(args.data, expected_reaction_info);
 });
 
 test("warnings", () => {

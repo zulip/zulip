@@ -1,10 +1,10 @@
-# Code blocks
+# Code spans and blocks
 
-Zulip supports the standard [Markdown syntax][markdown] for code
-blocks:
+Zulip supports the standard [Markdown syntax][markdown] for inline
+code spans and code blocks:
 
 ~~~
-Inline: `let x = 5`
+Inline code span: `let x = 5`
 
 Code block:
 ```
@@ -24,7 +24,7 @@ Sending the above message in Zulip will render like this:
 
 ![Markdown code](/static/images/help/markdown-code.png)
 
-You can also use `~~~` to start codeblocks, or just indent the code 4 or more
+You can also use `~~~` to start code blocks, or just indent the code 4 or more
 spaces.
 
 A widget in the upper-right corner of code blocks allows you to easily

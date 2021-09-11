@@ -1,0 +1,25 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/500art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">Authentication subdomain</h1>
+                    <p>
+                        It appears you ended up here by accident. This site
+                        is meant to be an intermediate step in the authentication process
+                        and shouldn't be accessed manually. If you came here directly,
+                        you probably got the address wrong. If you got stuck here while trying
+                        to log in, this is most likely a server bug or misconfiguration.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

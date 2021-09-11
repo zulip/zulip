@@ -2,7 +2,7 @@
 
 Zulip is early in the process of migrating our codebase to use
 [TypeScript](https://www.typescriptlang.org/), the leading static type
-system for JavaScript.  It works as an extension of the ES6 JavaScript
+system for JavaScript. It works as an extension of the ES6 JavaScript
 standard, and provides similar benefits to our use of
 [the mypy static type system for Python](../testing/mypy.md).
 
@@ -15,7 +15,7 @@ discussion and very much subject to change.
 
 A typical piece of TypeScript code looks like this:
 
-``` ts
+```ts
 setdefault(key: K, value: V): V {
     const mapping = this._items[this._munge(key)];
     if (mapping === undefined) {
@@ -27,13 +27,12 @@ setdefault(key: K, value: V): V {
 
 The following resources are valuable for learning TypeScript:
 
-* The main documentation on [TypeScript syntax][typescript-handbook].
-
+- The main documentation on [TypeScript syntax][typescript-handbook].
 
 ## Type checking
 
 TypeScript types are checked by the TypeScript compiler, `tsc`, which
-is run as part of our [lint checks](linters.md).  You can run the
+is run as part of our [lint checks](linters.md). You can run the
 compiler yourself with `tools/run-tsc`, which will check all the
 TypeScript files once, or `tools/run-tsc --watch`, which will
 continually recheck the files as you edit them.
@@ -41,19 +40,19 @@ continually recheck the files as you edit them.
 ## Linting and style
 
 We use the Eslint plugin for TypeScript to lint TypeScript code, just
-like we do for JavaScript.  Our long-term goal is to use an idiomatic
+like we do for JavaScript. Our long-term goal is to use an idiomatic
 TypeScript style for our TypeScript codebase.
 
 However, because we are migrating an established JavaScript codebase,
 we plan to start with a style that is closer to the existing
 JavaScript code, so that we can easily migrate individual modules
-without too much code churn.  A few examples:
+without too much code churn. A few examples:
 
-* TypeScript generally prefers explicit `return undefined;`, whereas
+- TypeScript generally prefers explicit `return undefined;`, whereas
   our existing JavasScript style uses just `return;`.
-* With TypeScript, we expect to make heavy use of `let` and `const`
+- With TypeScript, we expect to make heavy use of `let` and `const`
   rather than `var`.
-* With TypeScript/ES6, we may no longer need to use `_.each()` as our
+- With TypeScript/ES6, we may no longer need to use `_.each()` as our
   recommended way to do loop iteration.
 
 For each of the details, we will either want to bulk-migrate the
@@ -71,28 +70,28 @@ converts them from JS to TS.
 Our plan is to order which modules we migrate carefully, starting with
 those that:
 
-* Appear frequently as reverse dependencies of other modules
-  (e.g. `people.js`).  These are most valuable to do first because
+- Appear frequently as reverse dependencies of other modules
+  (e.g. `people.js`). These are most valuable to do first because
   then we have types on the data being interacted with by other
   modules when we migrate those.
-* Don't have large open pull requests (to avoid merge conflicts); one
+- Don't have large open pull requests (to avoid merge conflicts); one
   can scan for these using [TinglingGit](https://github.com/zulip/TinglingGit).
-* Have good unit test coverage, which limits the risk of breaking
-  correctness through refactoring.  Use `tools/test-js-with-node
-  --coverage` to get a coverage report.
+- Have good unit test coverage, which limits the risk of breaking
+  correctness through refactoring. Use
+  `tools/test-js-with-node --coverage` to get a coverage report.
 
 When migrating a module, we want to be especially thoughtful about
 putting together a commit structure that makes mistakes unlikely and
-the changes easy to verify.  E.g.:
+the changes easy to verify. E.g.:
 
-* First a commit that just converts the language to TypeScript adding
-  types.  The result may potentially have some violations of the
-  long-term style we want (e.g. not using `const`).  Depending on how
+- First a commit that just converts the language to TypeScript adding
+  types. The result may potentially have some violations of the
+  long-term style we want (e.g. not using `const`). Depending on how
   we're handling linting, we set some override eslint rules at the top
   of the module at this stage so CI still passes.
-* Then a commit just migrating use of `var` to `const/let` without
+- Then a commit just migrating use of `var` to `const/let` without
   other changes (other than removing any relevant linter overrides).
-* Etc.
+- Etc.
 
 With this approach, we should be able to produce a bunch of really
 simple commits that can be merged the same day they're written without

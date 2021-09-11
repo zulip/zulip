@@ -3,34 +3,30 @@
 Fetch contributors data from GitHub using their API, convert it to structured
 JSON data for the /team page contributors section.
 """
+import argparse
+import json
+import logging
 import os
 import sys
+import unicodedata
+from datetime import date
+from typing import Dict, List, Optional, Union
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
 
 setup_path()
-
-import argparse
-import logging
-from datetime import date
-from random import randrange
-from time import sleep
-from typing import Dict, List, Optional, Union
-
-from typing_extensions import TypedDict
-
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+
 import django
+from django.conf import settings
+from requests.packages.urllib3.util.retry import Retry
+from typing_extensions import TypedDict
 
 django.setup()
 
-import json
-
-import requests
-from django.conf import settings
-
 from zerver.lib.avatar_hash import gravatar_hash
+from zerver.lib.github import GithubSession
 from zproject.config import get_secret
 
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), "duplicate_commits.json")
@@ -60,7 +56,6 @@ logger = logging.getLogger("zulip.fetch_contributors_json")
 
 def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     contributors: List[Contributor] = []
-    retry_attempts = 0
     page_index = 1
 
     api_link = f"https://api.github.com/repos/zulip/{repo_name}/contributors"
@@ -72,25 +67,33 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     if personal_access_token is not None:
         headers = {"Authorization": f"token {personal_access_token}"}
 
+    Retry.BACKOFF_MAX = 64
+    retry = Retry(
+        total=max_retries,
+        backoff_factor=2.0,
+        status_forcelist=set(
+            [
+                403,  # Github does unauth rate-limiting via 403's
+                429,  # The formal rate-limiting response code
+                502,  # Bad gateway
+                503,  # Service unavailable
+            ]
+        ),
+    )
+    session = GithubSession(max_retries=retry)
     while True:
-        response: requests.Response = requests.get(
-            api_link, {**api_data, "page": f"{page_index}"}, verify=certificates, headers=headers
+        response = session.get(
+            api_link,
+            params={**api_data, "page": f"{page_index}"},
+            verify=certificates,
+            headers=headers,
         )
-        if response.status_code == 200:
-            data = response.json()
-            if len(data) == 0:
-                return contributors
-            contributors.extend(data)
-            retry_attempts = 0
-            page_index += 1
-        else:
-            retry_attempts += 1
-            if retry_attempts > args.max_retries:
-                logger.warning("Failed retries fetching contributors data from GitHub.")
-                sys.exit(1)
-
-            sleep_time = randrange(0, min(64, 2 ** retry_attempts))
-            sleep(sleep_time)
+        response.raise_for_status()
+        data = response.json()
+        if len(data) == 0:
+            return contributors
+        contributors.extend(data)
+        page_index += 1
 
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
@@ -145,7 +148,9 @@ def update_contributor_data_file() -> None:
 
                 name = contributor.get("name")
                 if name is not None:
-                    contributor_username_to_data[username]["name"] = name
+                    contributor_username_to_data[username]["name"] = unicodedata.normalize(
+                        "NFC", name
+                    )
 
     # remove duplicate contributions count
     # find commits at the time of split and subtract from zulip-server

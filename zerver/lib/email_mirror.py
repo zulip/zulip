@@ -17,6 +17,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.email_mirror_helpers import (
     ZulipEmailForwardError,
+    ZulipEmailForwardUserError,
     decode_email_address,
     get_email_gateway_message_string_from_address,
 )
@@ -146,12 +147,12 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
             - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS),
         )
     except MissedMessageEmailAddress.DoesNotExist:
-        raise ZulipEmailForwardError("Missed message address expired or doesn't exist.")
+        raise ZulipEmailForwardUserError("Missed message address expired or doesn't exist.")
 
     if not mm_address.is_usable():
         # Technical, this also checks whether the event is expired,
         # but that case is excluded by the logic above.
-        raise ZulipEmailForwardError("Missed message address out of uses.")
+        raise ZulipEmailForwardUserError("Missed message address out of uses.")
 
     return mm_address
 
@@ -197,10 +198,6 @@ def construct_zulip_body(
 
 
 ## Sending the Zulip ##
-
-
-class ZulipEmailForwardUserError(ZulipEmailForwardError):
-    pass
 
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
@@ -495,7 +492,7 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> Non
             process_stream_message(to, message)
     except ZulipEmailForwardUserError as e:
         # TODO: notify sender of error, retry if appropriate.
-        logger.warning(e.args[0])
+        logger.info(e.args[0])
     except ZulipEmailForwardError as e:
         log_and_report(message, e.args[0], to)
 
