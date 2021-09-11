@@ -441,13 +441,20 @@ export const email_notifications_batching_period_values = [
     },
 ];
 
-const email_notification_settings = [
-    "enable_digest_emails",
-    "enable_login_emails",
+const email_message_notification_settings = [
     "message_content_in_email_notifications",
     "realm_name_in_notifications",
+];
+
+const other_email_settings = [
+    "enable_digest_emails",
+    "enable_login_emails",
     "enable_marketing_emails",
 ];
+
+const email_notification_settings = other_email_settings.concat(
+    email_message_notification_settings,
+);
 
 const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
@@ -503,7 +510,8 @@ export interface AllNotifications {
     settings: {
         desktop_notification_settings: string[];
         mobile_notification_settings: string[];
-        email_notification_settings: string[];
+        email_message_notification_settings: string[];
+        other_email_settings: string[];
     };
     show_push_notifications_tooltip: {
         push_notifications: boolean;
@@ -527,7 +535,8 @@ export const all_notifications = (): AllNotifications => ({
     settings: {
         desktop_notification_settings,
         mobile_notification_settings,
-        email_notification_settings,
+        email_message_notification_settings,
+        other_email_settings,
     },
     show_push_notifications_tooltip: {
         push_notifications: !page_params.realm_push_notifications_enabled,

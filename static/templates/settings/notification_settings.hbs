@@ -102,9 +102,9 @@
         {{/each}}
     </div>
 
-    <div class="email_notifications m-10 inline-block subsection-parent">
+    <div class="email_message_notifications m-10 inline-block subsection-parent">
 
-        <h3 class="inline-block">{{t "Email" }}</h3>
+        <h3 class="inline-block">{{t "Email message notifications" }}</h3>
         <div class="alert-notification"></div>
 
         <label for="email_notifications_batching_period">
@@ -119,13 +119,25 @@
             </select>
         </div>
 
-        {{#each notification_settings.email_notification_settings}}
+        {{#each notification_settings.email_message_notification_settings}}
         {{> settings_checkbox
           setting_name=this
           is_checked=(lookup ../user_settings this)
           label=(lookup ../settings_label this)
           prefix=../prefix}}
         {{/each}}
+    </div>
 
+    <div class="other_email_notifications m-10 inline-block subsection-parent">
+
+        <h3 class="inline-block">{{t "Other emails" }}</h3>
+        <div class="alert-notification"></div>
+        {{#each notification_settings.other_email_settings}}
+        {{> settings_checkbox
+          setting_name=this
+          is_checked=(lookup ../user_settings this)
+          label=(lookup ../settings_label this)
+          prefix=../prefix}}
+        {{/each}}
     </div>
 </form>
