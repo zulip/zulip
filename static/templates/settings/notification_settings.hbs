@@ -44,12 +44,10 @@
         </table>
     </div>
 
-    <div class="other_notifications m-10 inline-block subsection-parent">
+    <div class="desktop_notifications m-10 inline-block subsection-parent">
 
-        <h3 class="inline-block">{{t "Other notification settings" }}</h3>
-        <div class="alert-notification other-notify-settings-status"></div>
-
-        <h5>{{t "Desktop message notifications" }}</h5>
+        <h3 class="inline-block">{{t "Desktop message notifications" }}</h3>
+        <div class="alert-notification"></div>
 
         <p><a class="send_test_notification">{{t "Test desktop notification" }}</a></p>
 
@@ -87,8 +85,12 @@
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
         </div>
+    </div>
 
-        <h5>{{t "Mobile message notifications" }}</h5>
+    <div class="mobile_notifications m-10 inline-block subsection-parent">
+
+        <h3 class="inline-block">{{t "Mobile message notifications" }}</h3>
+        <div class="alert-notification"></div>
 
         {{#each notification_settings.mobile_notification_settings}}
         {{> settings_checkbox
@@ -98,8 +100,12 @@
           show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)
           prefix=../prefix}}
         {{/each}}
+    </div>
 
-        <h5>{{t "Email" }}</h5>
+    <div class="email_notifications m-10 inline-block subsection-parent">
+
+        <h3 class="inline-block">{{t "Email" }}</h3>
+        <div class="alert-notification"></div>
 
         <label for="email_notifications_batching_period">
             {{t "Batching period for email notifications" }}
