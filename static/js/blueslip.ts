@@ -165,7 +165,7 @@ function report_error(
 }
 
 class BlueslipError extends Error {
-    name = "BlueslipError";
+    override name = "BlueslipError";
     more_info?: unknown;
     constructor(msg: string, more_info?: unknown) {
         super(msg);
