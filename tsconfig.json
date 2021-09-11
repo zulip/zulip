@@ -24,6 +24,7 @@
         "strict": true,
         "forceConsistentCasingInFileNames": true,
         "isolatedModules": true,
+        "noImplicitOverride": true,
 
         /* Additional checks */
         "noUnusedLocals": true,
