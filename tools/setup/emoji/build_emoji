@@ -248,10 +248,10 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         emojiset: str, emoji_data: List[Dict[str, Any]], alt_name: Optional[str] = None
     ) -> None:
         # `alt_name` is an optional parameter that we use to avoid duplicating below
-        # code. It is only used while setting up google-blob emojiset as it is just
+        # code. It is only used while setting up google-blob emoji set as it is just
         # a wrapper for an older version of emoji-datasource package due to which we
         # need to use 'google' at some places in this code. It has no meaning for other
-        # emojisets and is just equivalent to `emojiset`.
+        # emoji sets and is just equivalent to `emojiset`.
         alt_name = alt_name or emojiset
 
         # Copy individual emoji images from npm packages.
@@ -274,7 +274,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         for f in os.listdir(zulip_image):
             shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
 
-        # We hardcode octopus emoji image to Google emojiset's old
+        # We hardcode octopus emoji image to Google emoji set's old
         # "cute octopus" image. Copy it to the emoji farms.
         input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, "1f419.png")
         output_img_file = os.path.join(cache_path, "images-" + emojiset + "-64", "1f419.png")
@@ -282,11 +282,11 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name)
 
-    # Set up standard emojisets.
+    # Set up standard emoji sets.
     for emojiset in ["google", "twitter"]:
         setup_emoji_farm(emojiset, emoji_data)
 
-    # Set up old Google "blobs" emojiset.
+    # Set up old Google "blobs" emoji set.
     GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(
         NODE_MODULES_PATH, "emoji-datasource-google-blob", "emoji.json"
     )
@@ -355,7 +355,7 @@ def dump_emojis(cache_path: str) -> None:
         emoji_map = orjson.loads(emoji_map_file.read())
 
     # `emoji.json` or any other data file can be sourced from any of the supported
-    # emojiset packages, they all contain the same data files.
+    # emoji set packages, they all contain the same data files.
     EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
     with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
         emoji_data = orjson.loads(emoji_data_file.read())

@@ -1,7 +1,10 @@
 from disposable_email_domains import blacklist
+from django.conf import settings
 
 
 def is_reserved_subdomain(subdomain: str) -> bool:
+    if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
+        return True
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True
     if subdomain[-1] == "s" and subdomain[:-1] in ZULIP_RESERVED_SUBDOMAINS:
@@ -43,6 +46,8 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "testing",
     "nagios",
     "nginx",
+    "mg",
+    "front-mail",
     # website pages
     "server",
     "client",

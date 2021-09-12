@@ -8,40 +8,40 @@ GitHub Actions and debugging issues with it.
 ## Goals
 
 The overall goal of our CI is to avoid regressions and minimize the
-total time spent debugging Zulip.  We do that by trying to catch as
+total time spent debugging Zulip. We do that by trying to catch as
 many possible future bugs as possible, while minimizing both latency
 and false positives, both of which can waste a lot of developer time.
 There are a few implications of this overall goal:
 
-* If a test is failing nondeterministically in CI, we consider that to
-be an urgent problem.
-* If the tests become a lot slower, that is also an urgent problem.
-* Everything we do in CI should also have a way to run it quickly
-(under 1 minute, preferably under 3 seconds), in order to iterate fast
-in development. Except when working on the CI configuration itself, a
-developer should never have to repeatedly wait 10 minutes for a full CI
-run to iteratively debug something.
+- If a test is failing nondeterministically in CI, we consider that to
+  be an urgent problem.
+- If the tests become a lot slower, that is also an urgent problem.
+- Everything we do in CI should also have a way to run it quickly
+  (under 1 minute, preferably under 3 seconds), in order to iterate fast
+  in development. Except when working on the CI configuration itself, a
+  developer should never have to repeatedly wait 10 minutes for a full CI
+  run to iteratively debug something.
 
 ## GitHub Actions
 
 ### Useful debugging tips and tools
 
-* GitHub Actions stores timestamps for every line in the logs. They
-are hidden by default; you can see them by toggling the `Show
-timestamps` option in the menu on any job's log page.  (You can get
-this sort of timestamp in a development environment by piping output
-to `ts`).
+- GitHub Actions stores timestamps for every line in the logs. They
+  are hidden by default; you can see them by toggling the
+  `Show timestamps` option in the menu on any job's log page. (You can
+  get this sort of timestamp in a development environment by piping
+  output to `ts`).
 
-* GitHub Actions runs on every branch you push on your Zulip fork.
-This is helpful when debugging something complicated.
+- GitHub Actions runs on every branch you push on your Zulip fork.
+  This is helpful when debugging something complicated.
 
-* You can also ssh into a container to debug failures.  SSHing into
-the containers can be helpful, especially in rare cases where the
-tests are passing in your computer but failing in the CI. There are
-various
-[Actions](https://github.com/marketplace?type=actions&query=debug+ssh)
-available on GitHub Marketplace to help you SSH into a container. Use
-whichever you find easiest to set up.
+- You can also ssh into a container to debug failures. SSHing into
+  the containers can be helpful, especially in rare cases where the
+  tests are passing in your computer but failing in the CI. There are
+  various
+  [Actions](https://github.com/marketplace?type=actions&query=debug+ssh)
+  available on GitHub Marketplace to help you SSH into a container. Use
+  whichever you find easiest to set up.
 
 ### Suites
 
@@ -103,11 +103,11 @@ running `tools/ci/build-docker-images`; see instructions at the top of
 
 An important element of making GitHub Actions perform effectively is caching
 between jobs the various caches that live under `/srv/` in a Zulip
-development or production environment.  In particular, we cache the
+development or production environment. In particular, we cache the
 following:
 
-* Python virtualenvs
-* node_modules directories
+- Python virtualenvs
+- node_modules directories
 
 This has a huge impact on the performance of running tests in GitHub Actions
 CI; without these caches, the average test time would be several times
@@ -117,7 +117,7 @@ We have designed these caches carefully (they are also used in
 production and the Zulip development environment) to ensure that each
 is named by a hash of its dependencies and ubuntu distribution name,
 so Zulip should always be using the same version of dependencies it
-would have used had the cache not existed.  In practice, bugs are
+would have used had the cache not existed. In practice, bugs are
 always possible, so be mindful of this possibility.
 
 A consequence of this caching is that test jobs for branches which

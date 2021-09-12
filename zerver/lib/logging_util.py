@@ -276,9 +276,9 @@ class ZulipWebhookFormatter(ZulipFormatter):
                 )
 
         header_message = header_text if header_text else None
-        from zerver.lib.request import get_request_notes
+        from zerver.lib.request import RequestNotes
 
-        client = get_request_notes(request).client
+        client = RequestNotes.get_notes(request).client
         assert client is not None
 
         setattr(record, "user", f"{request.user.delivery_email} ({request.user.realm.string_id})")

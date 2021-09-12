@@ -1,6 +1,7 @@
 # Message a stream by email
 
 !!! tip ""
+
     This feature is not available on self-hosted Zulip servers where
     the [incoming email gateway][email-gateway] has not been
     configured by a system administrator.

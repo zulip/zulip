@@ -71,8 +71,9 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
@@ -169,6 +170,10 @@ def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:
 
 
 def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, Any]] = None) -> bool:
+    if user_profile.realm.deactivated:
+        if return_data is not None:
+            return_data["inactive_realm"] = True
+        return False
     if not user_profile.is_active:
         if return_data is not None:
             if user_profile.is_mirror_dummy:
@@ -176,10 +181,6 @@ def is_user_active(user_profile: UserProfile, return_data: Optional[Dict[str, An
                 return_data["is_mirror_dummy"] = True
             return_data["inactive_user"] = True
             return_data["inactive_user_id"] = user_profile.id
-        return False
-    if user_profile.realm.deactivated:
-        if return_data is not None:
-            return_data["inactive_realm"] = True
         return False
 
     return True
@@ -251,7 +252,7 @@ def rate_limit_authentication_by_username(request: HttpRequest, username: str) -
 
 
 def auth_rate_limiting_already_applied(request: HttpRequest) -> bool:
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
 
     return any(
         isinstance(r.entity, RateLimitedAuthenticationByUsername)
@@ -270,7 +271,7 @@ def rate_limit_auth(auth_func: AuthFuncT, *args: Any, **kwargs: Any) -> Optional
 
     request = args[1]
     username = kwargs["username"]
-    if get_request_notes(request).client is None or not client_is_exempt_from_rate_limiting(
+    if RequestNotes.get_notes(request).client is None or not client_is_exempt_from_rate_limiting(
         request
     ):
         # Django cycles through enabled authentication backends until one succeeds,
@@ -1346,11 +1347,11 @@ def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
     return HttpResponseRedirect(redirect_url)
 
 
-def redirect_deactivated_user_to_login(realm: Realm) -> HttpResponseRedirect:
+def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponseRedirect:
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = realm.uri + login_url + "?is_deactivated=true"
+    redirect_url = add_query_to_redirect_url(realm.uri + login_url, f"is_deactivated={email}")
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1559,18 +1560,17 @@ def social_auth_finish(
         return HttpResponseRedirect(reverse("find_account"))
 
     realm = Realm.objects.get(id=return_data["realm_id"])
+    if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
+        # Redirect to login page. We can't send to registration
+        # workflow with these errors. We will redirect to login page.
+        return redirect_to_login(realm)
     if inactive_user:
         backend.logger.info(
             "Failed login attempt for deactivated account: %s@%s",
             return_data["inactive_user_id"],
             return_data["realm_string_id"],
         )
-        return redirect_deactivated_user_to_login(realm)
-
-    if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
-        # Redirect to login page. We can't send to registration
-        # workflow with these errors. We will redirect to login page.
-        return redirect_to_login(realm)
+        return redirect_deactivated_user_to_login(realm, return_data["validated_email"])
 
     if invalid_email:
         # In case of invalid email, we will end up on registration page.

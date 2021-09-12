@@ -1,6 +1,7 @@
 import json
 from typing import Any, Dict, Optional
 
+import requests
 from pyoembed import PyOembedException, oEmbed
 
 
@@ -9,7 +10,7 @@ def get_oembed_data(
 ) -> Optional[Dict[str, Any]]:
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
-    except (PyOembedException, json.decoder.JSONDecodeError):
+    except (PyOembedException, json.decoder.JSONDecodeError, requests.exceptions.ConnectionError):
         return None
 
     oembed_resource_type = data.get("type", "")

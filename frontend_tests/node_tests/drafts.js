@@ -32,7 +32,12 @@ mock_esm("../../static/js/stream_data", {
     get_color() {
         return "#FFFFFF";
     },
+    get_sub(stream_name) {
+        assert.equal(stream_name, "stream");
+        return {stream_id: 30};
+    },
 });
+const sub_store = mock_esm("../../static/js/sub_store");
 user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
@@ -55,6 +60,7 @@ const compose_args_for_legacy_draft = {
 
 const draft_1 = {
     stream: "stream",
+    stream_id: 30,
     topic: "topic",
     type: "stream",
     content: "Test stream message",
@@ -214,6 +220,7 @@ test("format_drafts", ({override, mock_template}) => {
         topic: "topic",
         type: "stream",
         content: "Test stream message",
+        stream_id: 30,
         updatedAt: feb12().getTime(),
     };
     const draft_2 = {
@@ -249,7 +256,7 @@ test("format_drafts", ({override, mock_template}) => {
         {
             draft_id: "id1",
             is_stream: true,
-            stream: "stream",
+            stream_name: "stream",
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
@@ -280,7 +287,7 @@ test("format_drafts", ({override, mock_template}) => {
         {
             draft_id: "id3",
             is_stream: true,
-            stream: "stream 2",
+            stream_name: "stream 2",
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
@@ -300,6 +307,11 @@ test("format_drafts", ({override, mock_template}) => {
     const stub_render_now = timerender.render_now;
     override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
+    sub_store.get = function (stream_id) {
+        assert.equal(stream_id, 30);
+        return {name: "stream"};
+    };
+
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and sorting of drafts
         assert.deepEqual(data.drafts, expected);
@@ -310,6 +322,19 @@ test("format_drafts", ({override, mock_template}) => {
     override(drafts, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
+    drafts.launch();
+
+    $.clear_all_elements();
+    $.create("#drafts_table .draft-row", {children: []});
+    $("#draft_overlay").css = () => {};
+
+    sub_store.get = function (stream_id) {
+        assert.equal(stream_id, 30);
+        return {name: "stream-rename"};
+    };
+
+    expected[0].stream_name = "stream-rename";
+
     drafts.launch();
     timerender.__Rewire__("render_now", stub_render_now);
 });

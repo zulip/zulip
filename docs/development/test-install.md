@@ -1,22 +1,23 @@
 # Testing the installer
 
 Zulip's install process is tested as part of [its continuous
-integrations suite][CI], but that only tests the most common
+integrations suite][ci], but that only tests the most common
 configurations; when making changes to more complicated [installation
 options][installer-docs], Zulip provides tooling to repeatedly test
 the installation process in a clean environment each time.
 
-[CI]: https://github.com/zulip/zulip/actions/workflows/production-suite.yml?query=branch%3Amaster
+[ci]: https://github.com/zulip/zulip/actions/workflows/production-suite.yml?query=branch%3Amain
 [installer-docs]: ../production/install.md
 
 ## Configuring
 
 Using the test installer framework requires a Linux operating system;
-it will not work on WSL, for instance.  It requires at least 3G of
+it will not work on WSL, for instance. It requires at least 3G of
 RAM, in order to accommodate the VMs and the steps which build the
 release assets.
 
 To begin, install the LXC toolchain:
+
 ```bash
 sudo apt-get install lxc lxc-utils
 ```
@@ -32,6 +33,7 @@ You only need to do this step once per time you work on a set of
 changes, to refresh the package that the installer uses. The installer
 doesn't work cleanly out of a source checkout; it wants a release
 checkout, so we build a tarball of one of those first:
+
 ```bash
 ./tools/build-release-tarball test-installer
 ```
@@ -43,9 +45,10 @@ as the last step; for example,
 Next, unpack that file into a local directory; we will make any
 changes we want in our source checkout and copy them into this
 directory. The test installer needs the release directory to be named
-`zulip-server`, so we rename it and move it appropriately.  In the
+`zulip-server`, so we rename it and move it appropriately. In the
 first line, you'll need to substitute the actual path that you got for
 the tarball, above:
+
 ```bash
 tar xzf /tmp/tmp.fepqqNBWxp/zulip-server-test-installer.tar.gz
 mkdir zulip-test-installer
@@ -65,6 +68,7 @@ into the installer.
 
 For example, to test an install onto Ubuntu 20.04 "Focal", we might
 call:
+
 ```bash
 sudo ./tools/test-install/install \
   -r focal \
@@ -82,6 +86,7 @@ take a while.
 Regardless of if the install succeeds or fails, it will stay running
 so you can inspect it. You can see all of the containers which are
 running, and their randomly-generated names, by running:
+
 ```bash
 sudo lxc-ls -f
 ```
@@ -90,6 +95,7 @@ sudo lxc-ls -f
 
 After using `lxc-ls` to list containers, you can choose one of them
 and connect to its terminal:
+
 ```bash
 sudo lxc-attach --clear-env -n zulip-install-focal-PUvff
 ```
@@ -98,16 +104,16 @@ sudo lxc-attach --clear-env -n zulip-install-focal-PUvff
 
 To destroy all containers (but leave the base containers, which speed
 up the initial install):
+
 ```bash
 sudo ./tools/test-install/destroy-all -f
 ```
 
 To destroy just one container:
+
 ```bash
 sudo lxc-destroy -f -n zulip-install-focal-PUvff
 ```
-
-
 
 ### Iterating on the installer
 
@@ -115,6 +121,7 @@ Iterate on the installer by making changes to your source tree,
 copying them into the release directory, and re-running the installer,
 which will start up a new container. Here, we update just the
 `scripts` and `puppet` directories of the release directory:
+
 ```bash
 rsync -az scripts puppet zulip-test-installer/zulip-server/
 

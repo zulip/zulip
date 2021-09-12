@@ -14,7 +14,7 @@ from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd
@@ -192,7 +192,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         needs_tutorial=needs_tutorial,
     )
 
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
 

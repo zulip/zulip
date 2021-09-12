@@ -19,6 +19,7 @@ change who is allowed to add bots.
 {end_tabs}
 
 !!! warn ""
+
     These settings only affect new bots. Existing bots will not be
     deactivated.
 

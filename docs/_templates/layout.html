@@ -2,7 +2,7 @@
 
 {% block sidebartitle %}
     {%- if logo and theme_logo_only %}
-        <a href="{{ pathto(master_doc) }}">
+        <a href="{{ pathto(root_doc) }}">
             <img src="{{ pathto('_static/' + logo, 1) }}" class="logo" alt="{{ _('Logo') }}"/>
         </a>
     {%- endif %}

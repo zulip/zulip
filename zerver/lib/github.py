@@ -1,17 +1,24 @@
 import json
 import logging
+from typing import Any
 
 import requests
 
 from zerver.lib.cache import cache_with_key
+from zerver.lib.outgoing_http import OutgoingSession
 
 logger = logging.getLogger(__name__)
+
+
+class GithubSession(OutgoingSession):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(role="github", timeout=5, **kwargs)
 
 
 def get_latest_github_release_version_for_repo(repo: str) -> str:
     api_url = f"https://api.github.com/repos/zulip/{repo}/releases/latest"
     try:
-        return requests.get(api_url).json()["tag_name"]
+        return GithubSession().get(api_url).json()["tag_name"]
     except (requests.RequestException, json.JSONDecodeError, KeyError):
         logger.exception(
             "Unable to fetch the latest release version from GitHub %s", api_url, stack_info=True
@@ -21,7 +28,7 @@ def get_latest_github_release_version_for_repo(repo: str) -> str:
 
 def verify_release_download_link(link: str) -> bool:
     try:
-        requests.head(link).raise_for_status()
+        GithubSession().head(link).raise_for_status()
         return True
     except requests.RequestException:
         logger.error("App download link is broken %s", link)

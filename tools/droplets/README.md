@@ -52,14 +52,15 @@ Now you're ready to use the script.
 
 `create.py` takes two arguments
 
-* GitHub username
-* Tags (Optional argument)
+- GitHub username
+- Tags (Optional argument)
 
 ```
 $ python3 create.py <username>
 $ python3 create.py <username> --tags <tag>
 $ python3 create.py <username> --tags <tag1> <tag2> <tag3>
 ```
+
 Assigning tags to droplets like `GCI` can be later useful for
 listing all the droplets created during GCI.
 [Tags](https://www.digitalocean.com/community/tutorials/how-to-tag-digitalocean-droplets)
@@ -75,6 +76,7 @@ user. If you want to recreate a droplet for a user you can pass the
 ```
 $ python3 create.py <username> --recreate
 ```
+
 This will destroy the old droplet and create a new droplet for
 the user.
 
@@ -127,7 +129,7 @@ Rough steps:
    probably have to be logged in in the Zulip organization view, rather than
    via your personal account.
 1. `ssh zulipdev@base.zulipdev.org`
-1. `git pull upstream master`
+1. `git pull upstream main`
 1. `tools/provision`
 1. `git clean -f`, in case things were added/removed from `.gitignore`.
 1. `tools/run-dev.py`, let it run to completion, and then Ctrl-C (to clear
@@ -138,8 +140,8 @@ Rough steps:
    and shut down the droplet.
 1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
 1. Wait for several minutes.
-1. Do something like `curl -X GET -H "Content-Type: application/json"
-   -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
+1. Do something like
+   `curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
    (maybe with a different page number, and replace your API_KEY).
 1. Replace `template_id` in `create.py` in this directory with the
    appropriate `id`.
@@ -147,6 +149,7 @@ Rough steps:
 1. Open a PR with the updated template_id in zulip/zulip!
 
 ## Creating a new base image
+
 Creating a new base image happens rarely since updating the base image is good enough most of the time.
 Check out https://chat.zulip.org/#narrow/stream/3-backend/topic/new.20base.20dev.20droplet to view the
 discussion when we attempted to do upgrade last time.
@@ -161,7 +164,7 @@ Rough steps:
    key of `base.zulipdev.org` during this step.
 1. Create a user called `zulipdev` and add it to the `sudo` group.
 1. Make sudo of `zulipdev` user passwordless by including
-   `zulipdev ALL=(ALL) NOPASSWD:ALL` in  `/etc/sudoers.d/90-cloud-init-users`
+   `zulipdev ALL=(ALL) NOPASSWD:ALL` in `/etc/sudoers.d/90-cloud-init-users`
 1. Copy the `authorized_keys` file of `root` user to the `.ssh` directory of `zulipdev` user
 1. Switch to `zulipdev` user and set the permissions for the `.ssh` folder to `700` and
    `.ssh/authorized_keys` to `600`.
@@ -181,8 +184,8 @@ Rough steps:
 1. `> ~/.bash_history && history -c && sudo shutdown -h now`
 1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
 1. Wait for several minutes.
-1. Do something like `curl -X GET -H "Content-Type: application/json"
-   -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
+1. Do something like
+   `curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
    (maybe with a different page number, and replace your API_KEY).
 1. Replace `template_id` in `create.py` in this directory with the
    appropriate `id`.
@@ -210,7 +213,6 @@ They can remove your SSH keys by running:
 ```
 $ python3 ~/zulip/tools/droplets/add_mentor.py <your username> --remove
 ```
-
 
 # Creating a production droplet
 

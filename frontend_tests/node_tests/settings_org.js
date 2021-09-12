@@ -737,13 +737,13 @@ test("test get_organization_settings_options", () => {
             key: "by_full_members",
             order: 3,
             code: 3,
-            description: $t({defaultMessage: "Admins and full members"}),
+            description: $t({defaultMessage: "Admins, moderators and full members"}),
         },
         {
             key: "by_members",
             order: 4,
             code: 1,
-            description: $t({defaultMessage: "Admins and members"}),
+            description: $t({defaultMessage: "Admins, moderators and members"}),
         },
     ];
     assert.deepEqual(sorted_common_policy_values, expected_common_policy_values);
@@ -759,12 +759,12 @@ test("test get_sorted_options_list", () => {
         by_members: {
             order: 2,
             code: 1,
-            description: $t({defaultMessage: "Admins and members"}),
+            description: $t({defaultMessage: "Admins, moderators and members"}),
         },
         by_full_members: {
             order: 1,
             code: 3,
-            description: $t({defaultMessage: "Admins and full members"}),
+            description: $t({defaultMessage: "Admins, moderators and full members"}),
         },
     };
     let expected_option_values = [
@@ -772,13 +772,13 @@ test("test get_sorted_options_list", () => {
             key: "by_full_members",
             order: 1,
             code: 3,
-            description: $t({defaultMessage: "Admins and full members"}),
+            description: $t({defaultMessage: "Admins, moderators and full members"}),
         },
         {
             key: "by_members",
             order: 2,
             code: 1,
-            description: $t({defaultMessage: "Admins and members"}),
+            description: $t({defaultMessage: "Admins, moderators and members"}),
         },
         {
             key: "by_admins_only",
@@ -796,11 +796,11 @@ test("test get_sorted_options_list", () => {
         },
         by_members: {
             code: 2,
-            description: $t({defaultMessage: "Admins and members"}),
+            description: $t({defaultMessage: "Admins, moderators and members"}),
         },
         by_full_members: {
             code: 3,
-            description: $t({defaultMessage: "Admins and full members"}),
+            description: $t({defaultMessage: "Admins, moderators and full members"}),
         },
     };
     expected_option_values = [
@@ -812,12 +812,12 @@ test("test get_sorted_options_list", () => {
         {
             key: "by_full_members",
             code: 3,
-            description: $t({defaultMessage: "Admins and full members"}),
+            description: $t({defaultMessage: "Admins, moderators and full members"}),
         },
         {
             key: "by_members",
             code: 2,
-            description: $t({defaultMessage: "Admins and members"}),
+            description: $t({defaultMessage: "Admins, moderators and members"}),
         },
     ];
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);

@@ -11,7 +11,6 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
@@ -185,7 +184,7 @@ export function create_message_object() {
 export function clear_compose_box() {
     $("#compose-textarea").val("").trigger("focus");
     compose_validate.check_overflow_text();
-    drafts.delete_active_draft();
+    $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop("disabled", false);

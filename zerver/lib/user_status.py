@@ -6,6 +6,26 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import UserStatus
 
 
+def format_user_status(row: Dict[str, Any]) -> Dict[str, Any]:
+    away = row["status"] == UserStatus.AWAY
+    status_text = row["status_text"]
+    emoji_name = row["emoji_name"]
+    emoji_code = row["emoji_code"]
+    reaction_type = row["reaction_type"]
+
+    dct = {}
+    if away:
+        dct["away"] = away
+    if status_text:
+        dct["status_text"] = status_text
+    if emoji_name:
+        dct["emoji_name"] = emoji_name
+        dct["emoji_code"] = emoji_code
+        dct["reaction_type"] = reaction_type
+
+    return dct
+
+
 def get_user_info_dict(realm_id: int) -> Dict[str, Dict[str, Any]]:
     rows = (
         UserStatus.objects.filter(
@@ -31,24 +51,8 @@ def get_user_info_dict(realm_id: int) -> Dict[str, Dict[str, Any]]:
 
     user_dict: Dict[str, Dict[str, Any]] = {}
     for row in rows:
-        away = row["status"] == UserStatus.AWAY
-        status_text = row["status_text"]
         user_id = row["user_profile_id"]
-        emoji_name = row["emoji_name"]
-        emoji_code = row["emoji_code"]
-        reaction_type = row["reaction_type"]
-
-        dct = {}
-        if away:
-            dct["away"] = away
-        if status_text:
-            dct["status_text"] = status_text
-        if emoji_name:
-            dct["emoji_name"] = emoji_name
-            dct["emoji_code"] = emoji_code
-            dct["reaction_type"] = reaction_type
-
-        user_dict[str(user_id)] = dct
+        user_dict[str(user_id)] = format_user_status(row)
 
     return user_dict
 

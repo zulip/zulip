@@ -8,13 +8,13 @@ Zulip is a modern internet application, many Chinese translations are
 borrowed from the popular Web software, such as WeiBo, WeChat, QQ
 Mail etc. that most Chinese users are familiar with.
 
-Zulip的文风比较口语化，考虑到大多数中国用户的习惯，翻译时的语言习惯稍
-微正式了一点，但也尽量避免刻板。Zulip是一款时尚的互联网应用，翻译时也
-借鉴了中国用户熟悉的微博、微信、QQ邮箱等软件的用语习惯，以期贴近用户。
+Zulip 的文风比较口语化，考虑到大多数中国用户的习惯，翻译时的语言习惯稍
+微正式了一点，但也尽量避免刻板。Zulip 是一款时尚的互联网应用，翻译时也
+借鉴了中国用户熟悉的微博、微信、QQ 邮箱等软件的用语习惯，以期贴近用户。
 
 ## Terms(术语)
 
-* Message - **消息**
+- Message - **消息**
 
 "Message" can be literally translated as "消息" and "信息", both
 OK. Here "消息" is chosen for translation. For example, "Stream
@@ -23,12 +23,12 @@ translated as "私信". The domestic WeiBo, WeChat also keep in line
 with the habit. "Starred Message" is similar to "Star Mail (星标邮件)"
 feature in QQ Mail, so it is translated into "星标消息".
 
-Message可直译为“消息”、“信息”等，两者皆可，这里统一选用“消息”。例如，
+Message 可直译为“消息”、“信息”等，两者皆可，这里统一选用“消息”。例如，
 “Stream Message”译作“频道消息”；但“Private Message”又译为“私信"，与国
-内微博、微信的使用习惯保持一致。“Starred Message”类似于QQ邮箱中的“星标
+内微博、微信的使用习惯保持一致。“Starred Message”类似于 QQ 邮箱中的“星标
 邮件”功能，这里也借鉴翻译为“星标消息”。
 
-* Stream - **频道**
+- Stream - **频道**
 
 There were several other optional translations, e.g. "群组(Group)", "
 主题(Subject)", and "栏目(Column)". The "频道(Channel)" is in use now,
@@ -41,15 +41,15 @@ group. However, "讨论组" has one more Chinese character than "频道
 (Channel)".
 
 曾经使用的翻译有“群组”、“主题”、“版块”，还有“栏目”。现在选择的“频道”灵
-感来源于Ingress游戏中的聊天“Channel”。因为“Stream”可以“新建/删除
+感来源于 Ingress 游戏中的聊天“Channel”。因为“Stream”可以“新建/删除
 （Create/Delete）”、也可以“订阅/退订（Subscribe/Unsubscribe）”，
 “Stream”内部还可以发起“话题（Topic）讨论。“Stream”还有一个备选方案，就
-是“讨论组”，字多一个，稍微有点啰嗦。主要参考自以前QQ的“讨论组”，在QQ中
+是“讨论组”，字多一个，稍微有点啰嗦。主要参考自以前 QQ 的“讨论组”，在 QQ 中
 是一种临时的群组。
 
-* Topic - **话题**
+- Topic - **话题**
 
-* Invite-Only/Public Stream - **私有/公开频道**
+- Invite-Only/Public Stream - **私有/公开频道**
 
 "Invite-Only Stream" requires users must be invited explicitly to
 subscribe, which assures a high privacy. Other users cannot perceive
@@ -60,25 +60,25 @@ read, it is translated sense to sense as "私有频道(Private Stream)"。
 Stream”具有非常好的私密性，用户在没有订阅时是不能感知这类频道的存在的。
 直译读起来有点拗口，因此选择译为“私有频道”。
 
-* Bot - **机器人**
+- Bot - **机器人**
 
-* Integration - **应用整合**
+- Integration - **应用整合**
 
 "Integration" is literally translated as "集成" or "整合". It means
 integrating Zulip production with other applications and services. For
 integrity in Chinese expression, it is translated as "应用整合
 (Application Integration)".
 
-“Integration”原意为“集成”与“整合”，这里表示将其它的应用或者服务与Zulip
+“Integration”原意为“集成”与“整合”，这里表示将其它的应用或者服务与 Zulip
 实现整合。为表达意思完整，补充翻译为“应用整合”。
 
-* Notification - **通知**
+- Notification - **通知**
 
-* Alert Word - **提示词**
+- Alert Word - **提示词**
 
 ## Phrases(习惯用语)
 
-* Subscribe/Unsubscribe - **订阅/退订**
+- Subscribe/Unsubscribe - **订阅/退订**
 
 The perfect tense subscribed/unsubscribed is translated as "已订阅/已
 退订". Sometimes "Join" is used to express the same meanings as
@@ -87,7 +87,7 @@ The perfect tense subscribed/unsubscribed is translated as "已订阅/已
 完成时态译为“已订阅（Subscribed）”和“已退订（Unsubscribed）”。有时，
 “Join”也会用来表达与“Subscribe”相同的意思，也一并翻译为“订阅”。
 
-* Narrow to ... - **筛选**
+- Narrow to ... - **筛选**
 
 "Narrow to" is translated as "筛选(Filter by)" for now, based on two considerations:
 
@@ -108,23 +108,23 @@ readability considerations.
 1. 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ...”的含
    义为“使...缩小范围”，两者有一定共通性。
 
-2. “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如Microsoft
-   Excel中的“筛选”功能。
+2. “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如 Microsoft
+   Excel 中的“筛选”功能。
 
 另外，在搜索功能的语境中，“Narrow to ...”没有翻译为“筛选”，而翻译为“搜
 索”，这是出于可读性的考虑。
 
-* Mute/Unmute - **开启/关闭免打扰**
+- Mute/Unmute - **开启/关闭免打扰**
 
 "Mute" is mostly translated as "静音(Silent)", which is common in TV
-set.  Such a translation is not appropriate for Zulip. "开启/关闭免打
+set. Such a translation is not appropriate for Zulip. "开启/关闭免打
 扰(Turn off/on Notification)" is a sense to sense translation, which
 is also borrowed from the WeChat.
 
-“Mute”常见的中文翻译为“静音”，在电视设备中常见，用在Zulip中并不太合适。
+“Mute”常见的中文翻译为“静音”，在电视设备中常见，用在 Zulip 中并不太合适。
 这里取意译，与大家常用的微信（WeChat）中“消息免打扰”用语习惯一致。
 
-* Deactivate/Reactivate - **禁用/启用(帐户)，关闭/激活(社区)**
+- Deactivate/Reactivate - **禁用/启用(帐户)，关闭/激活(社区)**
 
 When applied to a user account, translated as "禁用/启用
 (Disable/Enable)", for example, "Deactivated users" to "禁用的用户";
@@ -135,19 +135,19 @@ example "Your realm has been deactivated." to "您的社区已关闭".
 为“禁用的用户”；当应用于“社区”（Realm）时，选择翻译为“关闭/激活”，如
 “Your realm has been deactivated.”翻译为“您的社区已关闭”。
 
-* Invalid - **不正确**
+- Invalid - **不正确**
 
 "Invalid" is mainly used in exception information, which is uncommon
 for general users. Other translations "错误(Error)", "非法(Illegal)",
 "不合法(Invalid)" are all ok. Generally, it is translated as "不正确
 (Incorrect)" for consistency. For example, "Invalid API key" is
-translated as "API码不正确".
+translated as "API 码不正确".
 
 “Invalid”大部分用于一些异常信息，这些信息普通用户应该很少见到。可选翻
 译有“错误”、“非法”、“不合法”；为保持一致的习惯，这里统一翻译为“不正确”。
-例如“Invalid API key”翻译为“API码不正确”。
+例如“Invalid API key”翻译为“API 码不正确”。
 
-* I want - **开启**
+- I want - **开启**
 
 Mainly used in the settings page, literally translated as "I want to
 ...", which is colloquial and inappropriate in Chinese expression. It
@@ -157,7 +157,7 @@ is translated sense to sense as "开启(Turn on some options)".
 译过于口语化，并不合乎中文的使用习惯。因此这里取意译，翻译为“开启（某
 某功能选项）”。
 
-* User/People/Person - **用户**
+- User/People/Person - **用户**
 
 All translated as "用户(User)".
 
@@ -165,14 +165,14 @@ All translated as "用户(User)".
 
 ## Others(其它)
 
-* You/Your - **您/您的**
+- You/Your - **您/您的**
 
 It is translated as 您/您的(You/Your) rather than "你/你的(You/Your)",
 so as to express respect to the user.
 
 出于尊重用户的目的，翻译为敬语“您/您的”，而不翻译为“你/你的”。
 
-* We - **我们（或不翻）**
+- We - **我们（或不翻）**
 
 "We" is generally translated as the first person "我们(We)", while in
 formal Chinese, extensive use of "We" is relatively rare. So in many
@@ -186,7 +186,7 @@ resend.)".
 翻译：“Still no email? We can resend it” 译为 “仍然没有收到邮件？点击
 重新发送”。
 
-* The Exclamation/Dot - (一般省略)
+- The Exclamation/Dot - (一般省略)
 
 The exclamation appears in many places in Zulip. The tone that the
 exclamation expresses should be stronger in Chinese than in
@@ -196,6 +196,6 @@ the dot in Chinese (。) often has a bad effect on page layout. It is
 recommended to omit the dot, just leave empty at the end of the
 sentence or paragraph.
 
-感叹号在Zulip中出现非常多，可能英文中感叹号的语气比中文中略轻一点。在
+感叹号在 Zulip 中出现非常多，可能英文中感叹号的语气比中文中略轻一点。在
 中文翻译建议省略大部分的感叹号。另外，句号在中文排版中比较影响美观，因
 此也一般建议省略不翻。句末留空即可。

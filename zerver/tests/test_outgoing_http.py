@@ -4,6 +4,7 @@ from unittest import mock
 
 import requests
 import responses
+from requests.packages.urllib3.util.retry import Retry
 
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.test_classes import ZulipTestCase
@@ -89,3 +90,25 @@ class TestOutgoingHttp(ZulipTestCase):
             OutgoingSession(role="testing", timeout=17).get("http://example.com/", timeout=42)
             self.assert_length(mock_requests.calls, 1)
             self.assertEqual(mock_requests.calls[0].request.headers["X-Timeout"], 42)
+
+    def test_retries(self) -> None:
+        # Responses doesn't support testing the low-level retry
+        # functionality, so we can't test the retry itself easily. :(
+        # https://github.com/getsentry/responses/issues/135
+
+        # Defaults to no retries
+        session = requests.Session()
+        self.assertEqual(session.adapters["http://"].max_retries.total, 0)
+        self.assertEqual(session.adapters["https://"].max_retries.total, 0)
+
+        session = OutgoingSession(role="testing", timeout=1)
+        self.assertEqual(session.adapters["http://"].max_retries.total, 0)
+        self.assertEqual(session.adapters["https://"].max_retries.total, 0)
+
+        session = OutgoingSession(role="testing", timeout=1, max_retries=2)
+        self.assertEqual(session.adapters["http://"].max_retries.total, 2)
+        self.assertEqual(session.adapters["https://"].max_retries.total, 2)
+
+        session = OutgoingSession(role="testing", timeout=1, max_retries=Retry(total=5))
+        self.assertEqual(session.adapters["http://"].max_retries.total, 5)
+        self.assertEqual(session.adapters["https://"].max_retries.total, 5)

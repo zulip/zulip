@@ -1,7 +1,7 @@
 # Clients in Zulip
 
 `zerver.models.Client` is Zulip's analogue of the HTTP User-Agent
-header (and is populated from User-Agent).  It exists for use in
+header (and is populated from User-Agent). It exists for use in
 analytics and other places to provide human-readable summary data
 about "which Zulip client" was used for an operation (e.g. was it the
 Android app, the desktop app, or a bot?).
@@ -19,7 +19,7 @@ A `Client` is used to sort messages into client categories such as
 
 Generally, integrations in Zulip should declare a unique User-Agent,
 so that it's easy to figure out which integration is involved when
-debugging an issue.  For incoming webhook integrations, we do that
+debugging an issue. For incoming webhook integrations, we do that
 convenentialy via the auth decorators (as we will describe shortly);
 other integrations generally should set the first User-Agent element
 on their HTTP requests to something of the form

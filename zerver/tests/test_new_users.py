@@ -9,7 +9,7 @@ from django.core import mail
 from django.test import override_settings
 
 from corporate.lib.stripe import get_latest_seat_count
-from zerver.lib.actions import do_change_notification_settings, notify_new_user
+from zerver.lib.actions import do_change_user_setting, notify_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -109,13 +109,13 @@ class SendLoginEmailTest(ZulipTestCase):
         user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
         user.save()
 
-        do_change_notification_settings(user, "enable_login_emails", False, acting_user=None)
+        do_change_user_setting(user, "enable_login_emails", False, acting_user=None)
         self.assertFalse(user.enable_login_emails)
         with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
             self.login_user(user)
         self.assert_length(mail.outbox, 0)
 
-        do_change_notification_settings(user, "enable_login_emails", True, acting_user=None)
+        do_change_user_setting(user, "enable_login_emails", True, acting_user=None)
         self.assertTrue(user.enable_login_emails)
         with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
             self.login_user(user)

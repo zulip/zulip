@@ -22,7 +22,7 @@ priority.
   [excluded from mobile push notifications][redact-content],
   to avoid displaying message content on locked mobile screens, and to
   comply with strict compliance policies such as the USA’s HIPAA standards.
-- Zulip operates a HackerOne bug bounty program to reward hackers for
+- Zulip operates a HackerOne disclosure program to reward hackers for
   finding and responsibly reporting security vulnerabilities in Zulip.  Our
   [completely open source codebase](https://github.com/zulip/zulip) means
   that HackerOne’s white-hat hackers can audit Zulip for potential security

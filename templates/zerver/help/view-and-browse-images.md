@@ -16,6 +16,7 @@ In the image viewer, you can:
 Exit the image viewer by clicking anywhere outside the image.
 
 !!! keyboard_tip ""
+
     Use `v` to **open** the image viewer. Use `Z` and `z`
     zoom in and out of the image. Use `v` or `Esc` to **close**.
 

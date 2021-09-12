@@ -1,6 +1,7 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_parser from "./message_parser";
@@ -1004,5 +1005,17 @@ export class Filter {
 
     static describe(operators) {
         return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
+    }
+
+    static is_spectator_compatible(ops) {
+        for (const op of ops) {
+            if (op.operand === undefined) {
+                return false;
+            }
+            if (!hash_util.allowed_web_public_narrows.includes(op.operator)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

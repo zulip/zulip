@@ -24,6 +24,7 @@ from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
@@ -207,7 +208,7 @@ class Realm(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
     # User-visible display name and description used on e.g. the organization homepage
-    name: Optional[str] = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True)
+    name: str = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description: str = models.TextField(default="")
 
     # A short, identifier-like name for the organization.  Used in subdomains;
@@ -1310,7 +1311,7 @@ class UserBaseSettings(models.Model):
         default=DEMOTE_STREAMS_AUTOMATIC
     )
 
-    # Emojisets
+    # Emoji sets
     GOOGLE_EMOJISET = "google"
     GOOGLE_BLOB_EMOJISET = "google-blob"
     TEXT_EMOJISET = "text"
@@ -1322,7 +1323,7 @@ class UserBaseSettings(models.Model):
         (TEXT_EMOJISET, "Plain text"),
     )
     emojiset: str = models.CharField(
-        default=GOOGLE_BLOB_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
+        default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
     )
 
     ### Notifications settings. ###
@@ -1349,6 +1350,11 @@ class UserBaseSettings(models.Model):
     DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
     DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
     DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
+    DESKTOP_ICON_COUNT_DISPLAY_CHOICES = [
+        DESKTOP_ICON_COUNT_DISPLAY_MESSAGES,
+        DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE,
+        DESKTOP_ICON_COUNT_DISPLAY_NONE,
+    ]
     desktop_icon_count_display: int = models.PositiveSmallIntegerField(
         default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
     )
@@ -1362,8 +1368,7 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
-    # Define the types of the various automatically managed properties
-    property_types = dict(
+    display_settings_legacy = dict(
         color_scheme=int,
         default_language=str,
         default_view=str,
@@ -1380,7 +1385,7 @@ class UserBaseSettings(models.Model):
         twenty_four_hour_time=bool,
     )
 
-    notification_setting_types = dict(
+    notification_settings_legacy = dict(
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
@@ -1403,8 +1408,21 @@ class UserBaseSettings(models.Model):
         presence_enabled=bool,
     )
 
+    notification_setting_types = {
+        **notification_settings_legacy
+    }  # Add new notifications settings here.
+
+    # Define the types of the various automatically managed properties
+    property_types = {**display_settings_legacy, **notification_setting_types}
+
     class Meta:
         abstract = True
+
+    @staticmethod
+    def emojiset_choices() -> List[Dict[str, str]]:
+        return [
+            dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES
+        ]
 
 
 class RealmUserDefault(UserBaseSettings):
@@ -1704,6 +1722,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def is_realm_owner(self) -> bool:
         return self.role == UserProfile.ROLE_REALM_OWNER
 
+    @is_realm_owner.setter
+    def is_realm_owner(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_REALM_OWNER
+        elif self.role == UserProfile.ROLE_REALM_OWNER:
+            # We need to be careful to not accidentally change
+            # ROLE_GUEST to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
+
     @property
     def is_guest(self) -> bool:
         return self.role == UserProfile.ROLE_GUEST
@@ -1720,6 +1747,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     @property
     def is_moderator(self) -> bool:
         return self.role == UserProfile.ROLE_MODERATOR
+
+    @is_moderator.setter
+    def is_moderator(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_MODERATOR
+        elif self.role == UserProfile.ROLE_MODERATOR:
+            # We need to be careful to not accidentally change
+            # ROLE_GUEST to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
 
     @property
     def is_incoming_webhook(self) -> bool:
@@ -1740,12 +1776,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         if settings.EMBEDDED_BOTS_ENABLED:
             allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
         return allowed_bot_types
-
-    @staticmethod
-    def emojiset_choices() -> List[Dict[str, str]]:
-        return [
-            dict(key=emojiset[0], text=emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES
-        ]
 
     def email_address_is_realm_public(self) -> bool:
         if self.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
@@ -1889,6 +1919,7 @@ class PreregistrationUser(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     email: str = models.EmailField()
 
+    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_user")
     # If the pre-registration process provides a suggested full name for this user,
     # store it here to use it to prepopulate the full name field in the registration form:
     full_name: Optional[str] = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
@@ -1923,14 +1954,19 @@ class PreregistrationUser(models.Model):
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
 
 
-def filter_to_valid_prereg_users(query: QuerySet) -> QuerySet:
-    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
+def filter_to_valid_prereg_users(
+    query: QuerySet,
+    invite_expires_in_days: Optional[int] = None,
+) -> QuerySet:
     active_value = confirmation_settings.STATUS_ACTIVE
     revoked_value = confirmation_settings.STATUS_REVOKED
-    lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
-    return query.exclude(status__in=[active_value, revoked_value]).filter(
-        invited_at__gte=lowest_datetime
-    )
+
+    query = query.exclude(status__in=[active_value, revoked_value])
+    if invite_expires_in_days:
+        lowest_datetime = timezone_now() - datetime.timedelta(days=invite_expires_in_days)
+        return query.filter(invited_at__gte=lowest_datetime)
+    else:
+        return query.filter(confirmation__expiry_date__gte=timezone_now())
 
 
 class MultiuseInvite(models.Model):
@@ -3269,6 +3305,11 @@ class UserActivityInterval(models.Model):
     start: datetime.datetime = models.DateTimeField("start time", db_index=True)
     end: datetime.datetime = models.DateTimeField("end time", db_index=True)
 
+    class Meta:
+        index_together = [
+            ("user_profile", "end"),
+        ]
+
 
 class UserPresence(models.Model):
     """A record from the last time we heard from a given user on a given client.
@@ -3587,7 +3628,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
     USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
-    USER_NOTIFICATION_SETTINGS_CHANGED = 132
+    USER_SETTING_CHANGED = 132
     USER_DIGEST_EMAIL_CREATED = 133
 
     REALM_DEACTIVATED = 201
@@ -3605,6 +3646,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_SPONSORSHIP_PENDING_STATUS_CHANGED = 213
     REALM_SUBDOMAIN_CHANGED = 214
     REALM_CREATED = 215
+    REALM_DEFAULT_USER_SETTINGS_CHANGED = 216
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302

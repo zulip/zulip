@@ -112,6 +112,7 @@ def run() -> None:
         ["yaml"],
         description="Validates our OpenAPI/Swagger API documentation "
         "(zerver/openapi/zulip.yaml) ",
+        fix_arg="--fix",
     )
     linter_config.external_linter(
         "shellcheck",
@@ -166,7 +167,7 @@ def run() -> None:
     linter_config.external_linter(
         "prettier",
         ["node_modules/.bin/prettier", "--check", "--loglevel=warn"],
-        ["css", "flow", "js", "json", "ts", "yaml", "yml"],
+        ["css", "flow", "js", "json", "md", "ts", "yaml", "yml"],
         fix_arg=["--write"],
         description="Formats CSS, JavaScript, YAML",
     )

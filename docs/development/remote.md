@@ -16,10 +16,10 @@ need to.
 
 The best way to connect to your server is using the command line tool `ssh`.
 
-* On macOS and Linux/UNIX, `ssh` is a part of Terminal.
-* On Windows, `ssh` comes with [Bash for Git][git-bash].
+- On macOS and Linux/UNIX, `ssh` is a part of Terminal.
+- On Windows, `ssh` comes with [Bash for Git][git-bash].
 
-Open *Terminal* or *Bash for Git*, and connect with the following:
+Open _Terminal_ or _Bash for Git_, and connect with the following:
 
 ```console
 $ ssh username@host
@@ -32,19 +32,20 @@ networks.
 ## Setting up user accounts
 
 You will need a non-root user account with sudo privileges to set up
-the Zulip development environment.  If you have one already, continue
+the Zulip development environment. If you have one already, continue
 to the next section.
 
 You can create a new user with sudo privileges by running the
 following commands as root:
-* You can create a `zulipdev` user by running the command `adduser
-zulipdev`. Run through the prompts to assign a password and user
-information.  (You can pick any username you like for this user
-account.)
-* You can add the user to the sudo group by running the command
-`usermod -aG sudo zulipdev`.
-* Finally, you can switch to the user by running the command `su -
-zulipdev` (or just log in to that user using `ssh`).
+
+- You can create a `zulipdev` user by running the command
+  `adduser zulipdev`. Run through the prompts to assign a password and
+  user information. (You can pick any username you like for this user
+  account.)
+- You can add the user to the sudo group by running the command
+  `usermod -aG sudo zulipdev`.
+- Finally, you can switch to the user by running the command
+  `su - zulipdev` (or just log in to that user using `ssh`).
 
 ## Setting up the development environment
 
@@ -93,7 +94,7 @@ developing on your laptop).
 To properly secure your remote development environment, you can
 [port forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding)
 using ssh instead of running the development environment on an exposed
-interface.  For example, if you're running Zulip on a remote server
+interface. For example, if you're running Zulip on a remote server
 such as a DigitalOcean Droplet or an AWS EC2 instance, you can set up
 port-forwarding to access Zulip by running the following command in
 your terminal:
@@ -112,10 +113,10 @@ environment][rtd-using-dev-env].
 
 To see changes on your remote development server, you need to do one of the following:
 
-* [Edit locally](#editing-locally): Clone Zulip code to your computer and
+- [Edit locally](#editing-locally): Clone Zulip code to your computer and
   then use your favorite editor to make changes. When you want to see changes
   on your remote Zulip development instance, sync with Git.
-* [Edit remotely](#editing-remotely): Edit code directly on your remote
+- [Edit remotely](#editing-remotely): Edit code directly on your remote
   Zulip development instance using a [Web-based IDE](#web-based-ide) (recommended for
   beginners) or a [command line editor](#command-line-editors), or a
   [desktop IDE](#desktop-gui-editors) using a plugin to sync your
@@ -126,12 +127,12 @@ To see changes on your remote development server, you need to do one of the foll
 If you want to edit code locally install your favorite text editor. If you
 don't have a favorite, here are some suggestions:
 
-* [atom](https://atom.io/)
-* [emacs](https://www.gnu.org/software/emacs/)
-* [vim](https://www.vim.org/)
-* [spacemacs](https://github.com/syl20bnr/spacemacs)
-* [sublime](https://www.sublimetext.com/)
-* [PyCharm](https://www.jetbrains.com/pycharm/)
+- [atom](https://atom.io/)
+- [emacs](https://www.gnu.org/software/emacs/)
+- [vim](https://www.vim.org/)
+- [spacemacs](https://github.com/syl20bnr/spacemacs)
+- [sublime](https://www.sublimetext.com/)
+- [PyCharm](https://www.jetbrains.com/pycharm/)
 
 Next, follow our [Git and GitHub guide](../git/index.md) to clone and configure
 your fork of zulip on your local computer.
@@ -149,7 +150,7 @@ guide][rtd-git-guide]. In brief, the steps are as follows.
 
 On your **local computer**:
 
-1. Open *Terminal* (macOS/Linux) or *Git for BASH*.
+1. Open _Terminal_ (macOS/Linux) or _Git for BASH_.
 2. Change directory to where you cloned Zulip (e.g. `cd zulip`).
 3. Use `git add` and `git commit` to stage and commit your changes (if you
    haven't already).
@@ -160,7 +161,7 @@ Be sure to replace `branchname` with the name of your actual feature branch.
 Once `git push` has completed successfully, you are ready to fetch the commits
 from your remote development instance:
 
-1. In *Terminal* or *Git BASH*, connect to your remote development
+1. In _Terminal_ or _Git BASH_, connect to your remote development
    instance with `ssh user@host`.
 2. Change to the zulip directory (e.g., `cd zulip`).
 3. Fetch new commits from GitHub with `git fetch origin`.
@@ -172,10 +173,10 @@ from your remote development instance:
 There are a few good ways to edit code in your remote development
 environment:
 
-* With a command-line editor like vim or emacs run over SSH.
-* With a desktop GUI editor like VS Code or Atom and a plugin for
+- With a command-line editor like vim or emacs run over SSH.
+- With a desktop GUI editor like VS Code or Atom and a plugin for
   syncing your changes to the remote server.
-* With a web-based IDE like CodeAnywhere.
+- With a web-based IDE like CodeAnywhere.
 
 We document these options below; we recommend using whatever editor
 you prefer for development in general.
@@ -193,12 +194,13 @@ Similar packages/extensions exist for other popular code editors as
 well; contributions of precise documentation for them are welcome!
 
 - [VSCode Remote - SSH][vscode-remote-ssh]: Lets you use Visual Studio
-Code against a remote repository with a similar user experience to
-developing locally.
+  Code against a remote repository with a similar user experience to
+  developing locally.
 
 [vscode-remote-ssh]: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh
 
 - [rmate](https://github.com/textmate/rmate) for TextMate + VS Code:
+
 1. Install the extension
    [Remote VSCode](https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode).
 2. On your remote machine, run:
@@ -226,20 +228,20 @@ a command line text editor on the remote machine.
 
 Two editors often available by default on Linux systems are:
 
-* **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
+- **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
   features useful for programming, such as syntax highlighting, so we only
   recommended it for quick edits to things like configuration files. Launch by
-  running command `nano <filename>`. Exit by pressing *Ctrl-X*.
+  running command `nano <filename>`. Exit by pressing _Ctrl-X_.
 
-* **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
-  to learn. Launch by running `vim <filename>`. Quit Vim by pressing *Esc*,
-  typing `:q`, and then pressing *Enter*. Vim comes with a program to learn it
+- **[Vim](https://www.vim.org/)**: A very powerful editor that can take a while
+  to learn. Launch by running `vim <filename>`. Quit Vim by pressing _Esc_,
+  typing `:q`, and then pressing _Enter_. Vim comes with a program to learn it
   called `vimtutor` (just run that command to start it).
 
 Other options include:
 
-* [emacs](https://www.gnu.org/software/emacs/)
-* [spacemacs](https://github.com/syl20bnr/spacemacs)
+- [emacs](https://www.gnu.org/software/emacs/)
+- [spacemacs](https://github.com/syl20bnr/spacemacs)
 
 ##### Web-based IDE
 
@@ -250,12 +252,12 @@ started working quickly, we recommend web-based IDE
 To set up Codeanywhere for Zulip:
 
 1. Create a [Codeanywhere][codeanywhere] account and log in.
-2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
+2. Create a new **SFTP-SSH** project. Use _Public key_ for authentication.
 3. Click **GET YOUR PUBLIC KEY** to get the new public key that
    Codeanywhere generates when you create a new project. Add this public key to
    `~/.ssh/authorized_keys` on your remote development instance.
 4. Once you've added the new public key to your remote development instance, click
-   *CONNECT*.
+   _CONNECT_.
 
 Now your workspace should look similar this:
 ![Codeanywhere workspace][img-ca-workspace]
@@ -264,9 +266,9 @@ Now your workspace should look similar this:
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub guide][rtd-git-guide]
-* [Using the development environment][rtd-using-dev-env]
-* [Testing][rtd-testing]
+- [Git & GitHub guide][rtd-git-guide]
+- [Using the development environment][rtd-using-dev-env]
+- [Testing][rtd-testing]
 
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
 [install-vagrant]: ../development/setup-vagrant.md
@@ -282,7 +284,7 @@ Next, read the following to learn more about developing for Zulip:
 
 For some applications (e.g. developing an OAuth2 integration for
 Facebook), you may need your Zulip development to have a valid SSL
-certificate.  While `run-dev.py` doesn't support that, you can do this
+certificate. While `run-dev.py` doesn't support that, you can do this
 with an `nginx` reverse proxy sitting in front of `run-dev.py.`.
 
 The following instructions assume you have a Zulip Droplet working and
@@ -290,30 +292,31 @@ that the user is `zulipdev`; edit accordingly if the situation is
 different.
 
 1. First, get an SSL certificate; you can use
-    [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
-    by running the following commands as root:
-    ```bash
-    # apt install -y crudini
-    mkdir -p /var/lib/zulip/certbot-webroot/
-    # if nginx running this will fail and you need to run `service nginx stop`
-    /home/zulipdev/zulip/scripts/setup/setup-certbot \
-      hostname.example.com --no-zulip-conf \
-      --email=username@example.com --method=standalone
-    ```
+   [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
+   by running the following commands as root:
+
+   ```bash
+   # apt install -y crudini
+   mkdir -p /var/lib/zulip/certbot-webroot/
+   # if nginx running this will fail and you need to run `service nginx stop`
+   /home/zulipdev/zulip/scripts/setup/setup-certbot \
+     hostname.example.com --no-zulip-conf \
+     --email=username@example.com --method=standalone
+   ```
 
 1. Install nginx configuration:
 
-    ```bash
-    apt install -y nginx-full
-    cp -a /home/zulipdev/zulip/tools/droplets/zulipdev /etc/nginx/sites-available/
-    ln -nsf /etc/nginx/sites-available/zulipdev /etc/nginx/sites-enabled/
-    nginx -t  # Verifies your nginx configuration
-    service nginx reload  # Actually enabled your nginx configuration
-    ```
+   ```bash
+   apt install -y nginx-full
+   cp -a /home/zulipdev/zulip/tools/droplets/zulipdev /etc/nginx/sites-available/
+   ln -nsf /etc/nginx/sites-available/zulipdev /etc/nginx/sites-enabled/
+   nginx -t  # Verifies your nginx configuration
+   service nginx reload  # Actually enabled your nginx configuration
+   ```
 
-1. Edit `zproject/dev_settings.py` to set `EXTERNAL_URI_SCHEME =
-   "https://"`, so that URLs served by the development environment
-   will be HTTPS.
+1. Edit `zproject/dev_settings.py` to set
+   `EXTERNAL_URI_SCHEME = "https://"`, so that URLs served by the
+   development environment will be HTTPS.
 
 1. Start the Zulip development environment with the following command:
    ```bash

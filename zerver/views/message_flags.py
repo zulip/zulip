@@ -9,7 +9,7 @@ from zerver.lib.actions import (
     do_update_message_flags,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.topic import user_message_exists_for_topic
@@ -35,7 +35,7 @@ def update_message_flags(
     operation: str = REQ("op"),
     flag: str = REQ(),
 ) -> HttpResponse:
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
     assert request_notes.client is not None
     assert request_notes.log_data is not None
 
@@ -50,7 +50,7 @@ def update_message_flags(
 
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
     assert request_notes.client is not None
     count = do_mark_all_as_read(user_profile, request_notes.client)
 
@@ -69,7 +69,7 @@ def mark_stream_as_read(
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
 
     log_data_str = f"[{count} updated]"
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = log_data_str
 
@@ -98,7 +98,7 @@ def mark_topic_as_read(
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id, topic_name)
 
     log_data_str = f"[{count} updated]"
-    log_data = get_request_notes(request).log_data
+    log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = log_data_str
 

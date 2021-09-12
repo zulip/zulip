@@ -557,9 +557,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         for prop in UserProfile.property_types:
             self.assertNotIn(prop, result)
             self.assertIn(prop, result["user_settings"])
-        for prop in UserProfile.notification_setting_types:
-            self.assertNotIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
 
         result = fetch_initial_state_data(
             user_profile=hamlet,
@@ -567,9 +564,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("user_settings", result)
         for prop in UserProfile.property_types:
-            self.assertIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
-        for prop in UserProfile.notification_setting_types:
             self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 
@@ -1007,7 +1001,7 @@ class FetchQueriesTest(ZulipTestCase):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
-        self.assert_length(queries, 34)
+        self.assert_length(queries, 35)
 
         expected_counts = dict(
             alert_words=1,
@@ -1031,6 +1025,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_playgrounds=1,
             realm_user=3,
             realm_user_groups=2,
+            realm_user_settings_defaults=1,
             recent_private_conversations=1,
             starred_messages=1,
             stream=2,

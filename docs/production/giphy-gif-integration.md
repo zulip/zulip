@@ -17,12 +17,12 @@ To enable this integration, you need to get a production API key from
 1. Choose **SDK** as product type and click **Next Step**.
 
 1. Enter a name and a description for your app and click on **Create
-   New App**.  The hostname for your Zulip server is a fine name.
+   New App**. The hostname for your Zulip server is a fine name.
 
 1. You will receive a beta API key.
 
 1. Apply for a production API key by following the steps mentioned by
-   GIPHY on the same page.  Note that when submitting a screenshot to
+   GIPHY on the same page. Note that when submitting a screenshot to
    request a production API key, GIPHY expects the screenshot to show
    the full page (including URL).
 
@@ -40,12 +40,10 @@ follows:
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
-Congratulations!  You've configured the GIPHY integration for your
-Zulip server.  Your users can now use the integration as described in
-[the help center article][help-center-giphy].  (A browser reload may
+Congratulations! You've configured the GIPHY integration for your
+Zulip server. Your users can now use the integration as described in
+[the help center article][help-center-giphy]. (A browser reload may
 be required).
-
-
 
 [help-center-giphy]: https://zulip.com/help/animated-gifs-from-giphy
 [giphy-dashboard]: https://developers.giphy.com/dashboard/

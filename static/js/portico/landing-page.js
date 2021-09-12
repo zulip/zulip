@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as google_analytics from "./google-analytics";
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
 
@@ -92,15 +91,6 @@ const apps_events = function () {
         return result;
     }
 
-    function get_path_from_version() {
-        return "/apps/" + version;
-    }
-
-    function update_path() {
-        const next_path = get_path_from_version();
-        history.pushState(version, "", next_path);
-    }
-
     const update_page = function () {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
@@ -131,28 +121,8 @@ const apps_events = function () {
         $download_mac_arm64.toggle(version === "mac");
     };
 
-    $(window).on("popstate", () => {
-        version = get_version_from_path();
-        update_page();
-        $("body").animate({scrollTop: 0}, 200);
-        google_analytics.config({page_path: window.location.pathname});
-    });
-
-    $(".apps a .icon").on("click", (e) => {
-        const next_version = $(e.target).closest("a").attr("href").replace("/apps/", "");
-        version = next_version;
-
-        update_path();
-        update_page();
-        $("body").animate({scrollTop: 0}, 200);
-        google_analytics.config({page_path: window.location.pathname});
-
-        return false;
-    });
-
     // init
     version = get_version_from_path();
-    history.replaceState(version, "", get_path_from_version());
     update_page();
 };
 

@@ -1,7 +1,6 @@
 import asyncio
 import base64
 import datetime
-import itertools
 import re
 import uuid
 from contextlib import contextmanager
@@ -750,11 +749,11 @@ class PushNotificationTest(BouncerTestCase):
         return message
 
     @contextmanager
-    def mock_apns(self) -> Iterator[mock.MagicMock]:
-        mock_apns = mock.Mock()
+    def mock_apns(self) -> Iterator[APNsContext]:
+        apns_context = APNsContext(apns=mock.Mock(), loop=asyncio.new_event_loop())
         with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
-            mock_get.return_value = APNsContext(apns=mock_apns, loop=asyncio.new_event_loop())
-            yield mock_apns
+            mock_get.return_value = apns_context
+            yield apns_context
 
     def setup_apns_tokens(self) -> None:
         self.tokens = ["aaaa", "bbbb"]
@@ -826,7 +825,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as mock_apns, self.assertLogs(
+        ) as mock_gcm, self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
             apns_devices = [
@@ -840,8 +839,10 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
             result = mock.Mock()
             result.is_successful = True
-            mock_apns.send_notification.return_value = asyncio.Future()
-            mock_apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
+            )
+            apns_context.apns.send_notification.return_value.set_result(result)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 self.assertIn(
@@ -874,7 +875,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as mock_apns, self.assertLogs(
+        ) as mock_gcm, self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
             apns_devices = [
@@ -889,8 +890,10 @@ class HandlePushNotificationTest(PushNotificationTest):
             result = mock.Mock()
             result.is_successful = False
             result.description = "Unregistered"
-            mock_apns.send_notification.return_value = asyncio.Future()
-            mock_apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
+            )
+            apns_context.apns.send_notification.return_value.set_result(result)
             handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 self.assertIn(
@@ -1353,68 +1356,16 @@ class TestAPNs(PushNotificationTest):
 
     def test_success(self) -> None:
         self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, self.assertLogs(
+        with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
             result = mock.Mock()
             result.is_successful = True
-            mock_apns.send_notification.return_value = asyncio.Future()
-            mock_apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
+            )
+            apns_context.apns.send_notification.return_value.set_result(result)
             self.send()
-            for device in self.devices():
-                self.assertIn(
-                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
-                    logger.output,
-                )
-
-    def test_http_retry(self) -> None:
-        import aioapns
-
-        self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, self.assertLogs(
-            "zerver.lib.push_notifications", level="INFO"
-        ) as logger:
-            exception: asyncio.Future[object] = asyncio.Future()
-            exception.set_exception(aioapns.exceptions.ConnectionError())
-            result = mock.Mock()
-            result.is_successful = True
-            future: asyncio.Future[object] = asyncio.Future()
-            future.set_result(result)
-            mock_apns.send_notification.side_effect = itertools.chain(
-                [exception], itertools.repeat(future)
-            )
-            self.send()
-            self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
-                logger.output,
-            )
-            for device in self.devices():
-                self.assertIn(
-                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
-                    logger.output,
-                )
-
-    def test_http_retry_closed(self) -> None:
-        import aioapns
-
-        self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, self.assertLogs(
-            "zerver.lib.push_notifications", level="INFO"
-        ) as logger:
-            exception: asyncio.Future[object] = asyncio.Future()
-            exception.set_exception(aioapns.exceptions.ConnectionClosed())
-            result = mock.Mock()
-            result.is_successful = True
-            future: asyncio.Future[object] = asyncio.Future()
-            future.set_result(result)
-            mock_apns.send_notification.side_effect = itertools.chain(
-                [exception], itertools.repeat(future)
-            )
-            self.send()
-            self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionClosed sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionClosed",
-                logger.output,
-            )
             for device in self.devices():
                 self.assertIn(
                     f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
@@ -1425,25 +1376,37 @@ class TestAPNs(PushNotificationTest):
         import aioapns
 
         self.setup_apns_tokens()
-        with self.mock_apns() as mock_apns, self.assertLogs(
+        with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            exception: asyncio.Future[object] = asyncio.Future()
-            exception.set_exception(aioapns.exceptions.ConnectionError())
-            mock_apns.send_notification.side_effect = iter([exception] * 5)
-
-            self.send(devices=self.devices()[0:1])
-            self.assert_length(
-                [log_record for log_record in logger.records if log_record.levelname == "WARNING"],
-                5,
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
             )
+            apns_context.apns.send_notification.return_value.set_exception(
+                aioapns.exceptions.ConnectionError()
+            )
+            self.send(devices=self.devices()[0:1])
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user {self.user_profile.id} to device {self.devices()[0].token}: HTTP error, retries exhausted",
+                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
                 logger.output,
             )
-            self.assert_length(
-                [log_record for log_record in logger.records if log_record.levelname == "INFO"],
-                1,
+
+    def test_internal_server_error(self) -> None:
+        self.setup_apns_tokens()
+        with self.mock_apns() as apns_context, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
+            result = mock.Mock()
+            result.is_successful = False
+            result.description = "InternalServerError"
+            apns_context.apns.send_notification.return_value = asyncio.Future(
+                loop=apns_context.loop
+            )
+            apns_context.apns.send_notification.return_value.set_result(result)
+            self.send(devices=self.devices()[0:1])
+            self.assertIn(
+                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user {self.user_profile.id} to device {self.devices()[0].token}: InternalServerError",
+                logger.output,
             )
 
     def test_modernize_apns_payload(self) -> None:
@@ -1504,8 +1467,9 @@ class TestGetAPNsPayload(PushNotificationTest):
             "Content of personal message",
         )
         message = Message.objects.get(id=message_id)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         expected = {
             "alert": {
                 "title": "King Hamlet",
@@ -1538,8 +1502,9 @@ class TestGetAPNsPayload(PushNotificationTest):
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         expected = {
             "alert": {
                 "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
@@ -1571,9 +1536,7 @@ class TestGetAPNsPayload(PushNotificationTest):
     def test_get_message_payload_apns_stream_message(self) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.STREAM_PUSH
-        message.stream_name = "Verona"
-        payload = get_message_payload_apns(self.sender, message)
+        payload = get_message_payload_apns(self.sender, message, NotificationTriggers.STREAM_PUSH)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1603,9 +1566,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.MENTION
-        message.stream_name = "Verona"
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(user_profile, message, NotificationTriggers.MENTION)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1636,9 +1597,9 @@ class TestGetAPNsPayload(PushNotificationTest):
         user_group = create_user_group("test_user_group", [user_profile], get_realm("zulip"))
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.MENTION
-        message.stream_name = "Verona"
-        payload = get_message_payload_apns(user_profile, message, user_group.id, user_group.name)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.MENTION, user_group.id, user_group.name
+        )
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1670,9 +1631,9 @@ class TestGetAPNsPayload(PushNotificationTest):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.WILDCARD_MENTION
-        message.stream_name = "Verona"
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.WILDCARD_MENTION
+        )
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1705,8 +1666,9 @@ class TestGetAPNsPayload(PushNotificationTest):
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
-        payload = get_message_payload_apns(user_profile, message)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         expected = {
             "alert": {
                 "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
@@ -1749,11 +1711,10 @@ class TestGetGCMPayload(PushNotificationTest):
         message.content = "a" * 210
         message.rendered_content = "a" * 210
         message.save()
-        message.trigger = trigger
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, mentioned_user_group_id, mentioned_user_group_name
+            hamlet, message, trigger, mentioned_user_group_id, mentioned_user_group_name
         )
         expected_payload = {
             "user_id": hamlet.id,
@@ -1808,9 +1769,10 @@ class TestGetGCMPayload(PushNotificationTest):
 
     def test_get_message_payload_gcm_private_message(self) -> None:
         message = self.get_message(Recipient.PERSONAL, 1)
-        message.trigger = NotificationTriggers.PRIVATE_MESSAGE
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, NotificationTriggers.PRIVATE_MESSAGE
+        )
         self.assertDictEqual(
             payload,
             {
@@ -1841,10 +1803,10 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_stream_notifications(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.STREAM_PUSH
-        message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, NotificationTriggers.STREAM_PUSH
+        )
         self.assertDictEqual(
             payload,
             {
@@ -1878,10 +1840,10 @@ class TestGetGCMPayload(PushNotificationTest):
     def test_get_message_payload_gcm_redacted_content(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id)
-        message.trigger = NotificationTriggers.STREAM_PUSH
-        message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = get_message_payload_gcm(
+            hamlet, message, NotificationTriggers.STREAM_PUSH
+        )
         self.assertDictEqual(
             payload,
             {

@@ -29,7 +29,7 @@ There are three main components:
 
 The next several sections will dive into the details of these components.
 
-## The *Count database tables
+## The \*Count database tables
 
 The Zulip analytics system is built around collecting time series data in a
 set of database tables. Each of these tables has the following fields:
@@ -76,7 +76,7 @@ by the system and with what data.
 ## The FillState table
 
 The default Zulip production configuration runs a cron job once an hour that
-updates the *Count tables for each of the CountStats in the COUNT_STATS
+updates the \*Count tables for each of the CountStats in the COUNT_STATS
 dictionary. The FillState table simply keeps track of the last end_time that
 we successfully updated each stat. It also enables the analytics system to
 recover from errors (by retrying) and to monitor that the cron job is
@@ -103,18 +103,18 @@ There are a few important principles that we use to make the system
 efficient:
 
 - Not repeating work to keep things up to date (via FillState)
-- Storing data in the *Count tables to avoid our endpoints hitting the core
+- Storing data in the \*Count tables to avoid our endpoints hitting the core
   Message/UserMessage tables is key, because some queries could take minutes
   to calculate. This allows any expensive operations to run offline, and
   then the endpoints to server data to users can be fast.
 - Doing expensive operations inside the database, rather than fetching data
   to Python and then sending it back to the database (which can be far
-  slower if there's a lot of data involved).  The Django ORM currently
+  slower if there's a lot of data involved). The Django ORM currently
   doesn't support the "insert into .. select" type SQL query that's needed
   for this, which is why we use raw database queries (which we usually avoid
   in Zulip) rather than the ORM.
 - Aggregating where possible to avoid unnecessary queries against the
-  Message and UserMessage tables.  E.g. rather than querying the Message
+  Message and UserMessage tables. E.g. rather than querying the Message
   table both to generate sent message counts for each realm and again for
   each user, we just query for each user, and then add up the numbers for
   the users to get the totals for the realm.
@@ -129,25 +129,25 @@ There are a few types of automated tests that are important for this sort of
 system:
 
 - Most important: Tests for the code path that actually populates data into
-  the analytics tables.  These are most important, because it can be very
+  the analytics tables. These are most important, because it can be very
   expensive to fix bugs in the logic that generates these tables (one
   basically needs to regenerate all of history for those tables), and these
-  bugs are hard to discover.  It's worth taking the time to think about
+  bugs are hard to discover. It's worth taking the time to think about
   interesting corner cases and add them to the test suite.
 - Tests for the backend views code logic for extracting data from the
   database and serving it to clients.
 
-For manual backend testing, it sometimes can be valuable to use `./manage.py
-dbshell` to inspect the tables manually to check that things look right; but
-usually anything you feel the need to check manually, you should add some
-sort of assertion for to the backend analytics tests, to make sure it stays
-that way as we refactor.
+For manual backend testing, it sometimes can be valuable to use
+`./manage.py dbshell` to inspect the tables manually to check that
+things look right; but usually anything you feel the need to check
+manually, you should add some sort of assertion for to the backend
+analytics tests, to make sure it stays that way as we refactor.
 
 ## LoggingCountStats
 
 The system discussed above is designed primarily around the technical
 problem of showing useful analytics about things where the raw data is
-already stored in the database (e.g. Message, UserMessage).  This is great
+already stored in the database (e.g. Message, UserMessage). This is great
 because we can always backfill that data to the beginning of time, but of
 course sometimes one wants to do analytics on things that aren't worth
 storing every data point for (e.g. activity data, request performance
@@ -161,10 +161,10 @@ statistics, etc.). There is currently a reference implementation of a
 The main testing approach for the /stats page UI is manual testing.
 For most UI testing, you can visit `/stats/realm/analytics` while
 logged in as Iago (this is the server administrator view of stats for
-a given realm).  The only piece that you can't test here is the "Me"
-buttons, which won't have any data.  For those, you can instead log in
+a given realm). The only piece that you can't test here is the "Me"
+buttons, which won't have any data. For those, you can instead log in
 as the `shylock@analytics.ds` in the `analytics` realm and visit
-`/stats` there (which is only a bit more work).  Note that the
+`/stats` there (which is only a bit more work). Note that the
 `analytics` realm is a shell with no streams, so you'll only want to
 use it for testing the graphs.
 
@@ -221,9 +221,9 @@ Tips and tricks:
 ### /activity page
 
 - There's a somewhat less developed /activity page, for server
-  administrators, showing data on all the realms on a server.  To
+  administrators, showing data on all the realms on a server. To
   access it, you need to have the `is_staff` bit set on your
-  UserProfile object.  You can set it using `manage.py shell` and
-  editing the UserProfile object directly.  A great future project is
+  UserProfile object. You can set it using `manage.py shell` and
+  editing the UserProfile object directly. A great future project is
   to clean up that page's data sources, and make this a documented
   interface.

@@ -27,7 +27,6 @@ const fake_now = 555;
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
-const drafts = mock_esm("../../static/js/drafts");
 const giphy = mock_esm("../../static/js/giphy");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
@@ -110,8 +109,6 @@ function initialize_handlers({override}) {
 }
 
 test_ui("send_message_success", ({override}) => {
-    override(drafts, "delete_active_draft", () => {});
-
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
@@ -139,7 +136,6 @@ test_ui("send_message_success", ({override}) => {
 test_ui("send_message", ({override}) => {
     MockDate.set(new Date(fake_now * 1000));
 
-    override(drafts, "delete_active_draft", () => {});
     override(sent_messages, "start_tracking_message", () => {});
 
     // This is the common setup stuff for all of the four tests.

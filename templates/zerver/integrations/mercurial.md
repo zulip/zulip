@@ -8,7 +8,7 @@ Then:
 
 1.  {!download-python-bindings.md!}
 
-2.  Edit the `hg/.hgrc` configuration file for this master Mercurial
+2.  Edit the `hg/.hgrc` configuration file for this default Mercurial
 repository and add the following sections, using the credentials for
 your Mercurial bot and setting the appropriate path to the integration
 hook if it installs in a different location on this system:
@@ -42,7 +42,7 @@ The Mercurial integration also supports:
 
 If you’ve set up your repository to be [browsable via the web][1],
 add a `web_url` configuration option to the `zulip` section of your
-master `.hg/hgrc` to get changelog and revision links in your Zulip
+default `.hg/hgrc` to get changelog and revision links in your Zulip
 notifications:
 
     [zulip]
@@ -59,7 +59,7 @@ notifications:
 By default, this integration will send Zulip notifications for
 changegroup events for all branches. If you’d prefer to only receive
 Zulip notifications for specified branches, add a `branches`
-configuration option to the `zulip` section of your master `.hg/hgrc`,
+configuration option to the `zulip` section of your default `.hg/hgrc`,
 containing a comma-separated list of the branches that should produce
 notifications:
 
@@ -67,11 +67,11 @@ notifications:
     email = "hg-bot@example.com"
     api_key = "0123456789abcdefg"
     stream = "commits"
-    branches = "prod,master"
+    branches = "prod,default"
 
 You can also exclude branches that you don’t want to cause
 notifications. To do so, add an `ignore_branches` configuration option
-to the `zulip` section of your master `.hg/hgrc`, containing a
+to the `zulip` section of your default `.hg/hgrc`, containing a
 comma-separated list of the branches that should be ignored:
 
     [zulip]

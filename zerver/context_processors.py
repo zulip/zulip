@@ -17,7 +17,7 @@ from version import (
 from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
-from zerver.lib.request import get_request_notes
+from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, UserProfile, get_realm
@@ -50,7 +50,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
     if not request_notes.has_fetched_realm:
@@ -59,7 +59,7 @@ def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
         # need to do duplicate queries on the same realm while
         # processing a single request.
         subdomain = get_subdomain(request)
-        request_notes = get_request_notes(request)
+        request_notes = RequestNotes.get_notes(request)
         try:
             request_notes.realm = get_realm(subdomain)
         except Realm.DoesNotExist:
@@ -169,7 +169,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,
-        "platform": get_request_notes(request).client_name,
+        "platform": RequestNotes.get_notes(request).client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
         "default_page_params": default_page_params,

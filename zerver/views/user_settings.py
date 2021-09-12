@@ -21,11 +21,10 @@ from zerver.decorator import human_users_only
 from zerver.lib.actions import (
     check_change_full_name,
     do_change_avatar_fields,
-    do_change_notification_settings,
     do_change_password,
     do_change_user_delivery_email,
+    do_change_user_setting,
     do_regenerate_api_key,
-    do_set_user_display_setting,
     do_start_email_change_process,
     get_available_notification_sounds,
 )
@@ -88,6 +87,36 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
 default_view_options = ["recent_topics", "all_messages"]
+
+
+def check_settings_values(
+    notification_sound: Optional[str],
+    email_notifications_batching_period_seconds: Optional[int],
+    default_language: Optional[str] = None,
+) -> None:
+    # We can't use REQ for this widget because
+    # get_available_language_codes requires provisioning to be
+    # complete.
+    if default_language is not None and default_language not in get_available_language_codes():
+        raise JsonableError(_("Invalid default_language"))
+
+    if (
+        notification_sound is not None
+        and notification_sound not in get_available_notification_sounds()
+        and notification_sound != "none"
+    ):
+        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
+
+    if email_notifications_batching_period_seconds is not None and (
+        email_notifications_batching_period_seconds <= 0
+        or email_notifications_batching_period_seconds > 7 * 24 * 60 * 60
+    ):
+        # We set a limit of one week for the batching period
+        raise JsonableError(
+            _("Invalid email batching period: {} seconds").format(
+                email_notifications_batching_period_seconds
+            )
+        )
 
 
 @human_users_only
@@ -154,33 +183,20 @@ def json_change_settings(
     pm_content_in_desktop_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
-    desktop_icon_count_display: Optional[int] = REQ(json_validator=check_int, default=None),
+    desktop_icon_count_display: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
+    ),
     realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
-    # We can't use REQ for this widget because
-    # get_available_language_codes requires provisioning to be
-    # complete.
-    if default_language is not None and default_language not in get_available_language_codes():
-        raise JsonableError(_("Invalid default_language"))
-
     if (
-        notification_sound is not None
-        and notification_sound not in get_available_notification_sounds()
-        and notification_sound != "none"
+        default_language is not None
+        or notification_sound is not None
+        or email_notifications_batching_period_seconds is not None
     ):
-        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
-
-    if email_notifications_batching_period_seconds is not None and (
-        email_notifications_batching_period_seconds <= 0
-        or email_notifications_batching_period_seconds > 7 * 24 * 60 * 60
-    ):
-        # We set a limit of one week for the batching period
-        raise JsonableError(
-            _("Invalid email batching period: {} seconds").format(
-                email_notifications_batching_period_seconds
-            )
+        check_settings_values(
+            notification_sound, email_notifications_batching_period_seconds, default_language
         )
 
     if new_password != "":
@@ -262,23 +278,15 @@ def json_change_settings(
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     for k, v in list(request_settings.items()):
         if v is not None and getattr(user_profile, k) != v:
-            do_set_user_display_setting(user_profile, k, v)
-
-    req_vars = {
-        k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types
-    }
-
-    for k, v in list(req_vars.items()):
-        if v is not None and getattr(user_profile, k) != v:
-            do_change_notification_settings(user_profile, k, v, acting_user=user_profile)
+            do_change_user_setting(user_profile, k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
-        do_set_user_display_setting(user_profile, "timezone", timezone)
+        do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
 
     # TODO: Do this more generally.
-    from zerver.lib.request import get_request_notes
+    from zerver.lib.request import RequestNotes
 
-    request_notes = get_request_notes(request)
+    request_notes = RequestNotes.get_notes(request)
     for req_var in request.POST:
         if req_var not in request_notes.processed_parameters:
             request_notes.ignored_parameters.add(req_var)

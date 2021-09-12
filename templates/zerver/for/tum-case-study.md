@@ -63,11 +63,11 @@ self-hosted to comply with European laws about protecting student
 data,” Robert says. “Zulip has been extremely stable and requires no
 maintenance beyond installing updates.”
 
-When questions arise, Robert stops by the Zulip developer community to
-ask for advice. “Right before exams, we had over 1000 students online
-at once, and I was worried that the CPU usage was high. The community
-investigated my problem immediately, and a couple of days later they
-shared a patch that resolved it.” This patch to improve performance at
+When questions arise, Robert stops by the Zulip developer community to ask for
+advice. “Right before exams, we had over 1000 students online at once, and I
+was worried that the CPU usage was high. The community investigated my
+problem immediately, and a couple of days later they [shared a patch]
+[czo-patch-thread] that resolved it.” This patch to improve performance at
 scale was released to all users as part of [Zulip 4.0][zulip-4-blog].
 
 Since then, Robert has built several Zulip customizations for the
@@ -85,4 +85,5 @@ and [research](/for/research)!
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
 [chat-zulip-org]: /developer-community/
+[czo-patch-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Tornado.20performance/near/1111686
 [zulip-4-blog]: https://blog.zulip.com/2021/05/13/zulip-4-0-released/

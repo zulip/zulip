@@ -221,7 +221,7 @@ Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
  - Debian 10 "buster"
- - Debian 11 "bullseye" (beta)
+ - Debian 11 "bullseye"
  - Ubuntu 18.04 LTS "bionic"
  - Ubuntu 20.04 LTS "focal"
 
@@ -397,8 +397,7 @@ id -u zulip &>/dev/null || useradd -m zulip --home-dir /home/zulip
 if [ -n "$NO_OVERWRITE_SETTINGS" ] && [ -e "/etc/zulip/zulip.conf" ]; then
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
         --write-catalog-summary \
-        --classfile=/var/lib/puppet/classes.txt \
-        >/dev/null
+        --classfile=/var/lib/puppet/classes.txt
 else
     # Write out more than we need, and remove sections that are not
     # applicable to the classes that are actually necessary.
@@ -421,8 +420,7 @@ EOF
 
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
         --write-catalog-summary \
-        --classfile=/var/lib/puppet/classes.txt \
-        >/dev/null
+        --classfile=/var/lib/puppet/classes.txt
 
     # We only need the PostgreSQL version setting on database hosts; but
     # we don't know if this is a database host until we have the catalog summary.

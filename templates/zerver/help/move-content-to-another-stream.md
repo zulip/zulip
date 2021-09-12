@@ -35,6 +35,7 @@ destination streams.
 
 
 !!! warn ""
+
     **Note**: When a topic is moved to a private stream with protected history,
               messages in the topic will be visible to all the subscribers.
 
@@ -73,6 +74,7 @@ option.
 
 
 !!! warn ""
+
     **Note**: You cannot edit content of a message while changing its stream.
 
 {end_tabs}

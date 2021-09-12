@@ -19,7 +19,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import render_markdown
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
@@ -53,7 +53,7 @@ def create_mirrored_message_users(
         for email in recipients:
             referenced_users.add(email.lower())
 
-    client = get_request_notes(request).client
+    client = RequestNotes.get_notes(request).client
     assert client is not None
 
     if client.name == "zephyr_mirror":
@@ -226,7 +226,7 @@ def send_message_backend(
     # `yes` to accepting `true` like all of our normal booleans.
     forged = forged_str is not None and forged_str in ["yes", "true"]
 
-    client = get_request_notes(request).client
+    client = RequestNotes.get_notes(request).client
     assert client is not None
     can_forge_sender = user_profile.can_forge_sender
     if forged and not can_forge_sender:
@@ -330,7 +330,7 @@ def render_message_backend(
     message = Message()
     message.sender = user_profile
     message.content = content
-    client = get_request_notes(request).client
+    client = RequestNotes.get_notes(request).client
     assert client is not None
     message.sending_client = client
 

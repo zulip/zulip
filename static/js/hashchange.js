@@ -21,6 +21,7 @@ import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
@@ -312,9 +313,15 @@ function do_hashchange_overlay(old_hash) {
 }
 
 function hashchanged(from_reload, e) {
+    const current_hash = window.location.hash;
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
 
     const was_internal_change = browser_history.save_old_hash();
+
+    const is_hash_web_public_compatible = hash_util.is_spectator_compatible(current_hash);
+    if (is_hash_web_public_compatible) {
+        browser_history.state.spectator_old_hash = current_hash;
+    }
 
     if (was_internal_change) {
         return undefined;
@@ -327,7 +334,12 @@ function hashchanged(from_reload, e) {
         return undefined;
     }
 
-    if (hash_util.is_overlay_hash(window.location.hash)) {
+    if (page_params.is_spectator && !is_hash_web_public_compatible) {
+        spectators.login_to_access();
+        return undefined;
+    }
+
+    if (hash_util.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;

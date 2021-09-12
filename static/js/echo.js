@@ -4,6 +4,7 @@ import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
+import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
@@ -235,6 +236,11 @@ export function try_deliver_locally(message_request) {
         return undefined;
     }
 
+    // Only saving in draft for locally echoed message
+    // This draft will be cleared after successfull message
+    const draft_id = drafts.update_draft();
+    message_request.draft_id = draft_id;
+
     const message = insert_local_message(message_request, local_id_float);
     return message;
 }
@@ -330,6 +336,11 @@ export function reify_message_id(local_id, server_id) {
 
     message.id = server_id;
     message.locally_echoed = false;
+
+    if (message.draft_id) {
+        // Delete the draft if message was locally echoed
+        drafts.draft_model.deleteDraft(message.draft_id);
+    }
 
     const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 

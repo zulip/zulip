@@ -1366,24 +1366,46 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         user = self.create_user(email="first@domain.tld")
         stream, _ = self.create_stream_with_recipient()
-        do_invite_users(user, ["user1@domain.tld", "user2@domain.tld"], [stream])
+
+        invite_expires_in_days = 2
+        do_invite_users(
+            user,
+            ["user1@domain.tld", "user2@domain.tld"],
+            [stream],
+            invite_expires_in_days=invite_expires_in_days,
+        )
         assertInviteCountEquals(2)
 
         # We currently send emails when re-inviting users that haven't
         # turned into accounts, so count them towards the total
-        do_invite_users(user, ["user1@domain.tld", "user2@domain.tld"], [stream])
+        do_invite_users(
+            user,
+            ["user1@domain.tld", "user2@domain.tld"],
+            [stream],
+            invite_expires_in_days=invite_expires_in_days,
+        )
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
         try:
-            do_invite_users(user, ["user3@domain.tld", "malformed"], [stream])
+            do_invite_users(
+                user,
+                ["user3@domain.tld", "malformed"],
+                [stream],
+                invite_expires_in_days=invite_expires_in_days,
+            )
         except InvitationError:
             pass
         assertInviteCountEquals(4)
 
         # Test inviting existing users
         try:
-            do_invite_users(user, ["first@domain.tld", "user4@domain.tld"], [stream])
+            do_invite_users(
+                user,
+                ["first@domain.tld", "user4@domain.tld"],
+                [stream],
+                invite_expires_in_days=invite_expires_in_days,
+            )
         except InvitationError:
             pass
         assertInviteCountEquals(5)

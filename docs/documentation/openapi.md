@@ -1,14 +1,14 @@
 # OpenAPI configuration
 
-[OpenAPI][openapi-spec] is a popular format for describing an API.  An
+[OpenAPI][openapi-spec] is a popular format for describing an API. An
 OpenAPI file can be used by various tools to generate documentation
 for the API or even basic client-side bindings for dozens of
 programming languages.
 
-Zulip's API is described in `zerver/openapi/zulip.yaml`.  Our aim is
+Zulip's API is described in `zerver/openapi/zulip.yaml`. Our aim is
 for that file to fully describe every endpoint in the Zulip API, and
 for the Zulip test suite to fail should the API every change without a
-corresponding adjustment to the documentation.  In particular,
+corresponding adjustment to the documentation. In particular,
 essentially all content in Zulip's [REST API
 documentation](../documentation/api.md) is generated from our OpenAPI
 file.
@@ -40,6 +40,7 @@ types of authentication, and configure other settings. Once defined,
 information in this section rarely changes.
 
 For example, the `swagger` and `info` objects look like this:
+
 ```yaml
 # Basic Swagger UI info
 openapi: 3.0.1
@@ -116,7 +117,7 @@ The
 [Definitions Object](https://swagger.io/specification/#definitionsObject)
 contains schemas referenced by other objects. For example,
 `MessageResponse`, the response from the `/messages` endpoint,
-contains three required parameters.  Two are strings, and one is an
+contains three required parameters. Two are strings, and one is an
 integer.
 
 ```yaml
@@ -144,14 +145,14 @@ You can find more examples, including GET requests and nested objects, in
 We're collecting decisions we've made on how our Swagger YAML files
 should be organized here:
 
-* Use shared definitions and YAML anchors to avoid duplicating content
+- Use shared definitions and YAML anchors to avoid duplicating content
   where possible.
 
 ## Tips for working with YAML:
 
 You can edit YAML files in any text editor. Indentation defines
 blocks, so whitespace is important (as it is in Python.) TAB
-characters are not permitted.  If your editor has an option to replace
+characters are not permitted. If your editor has an option to replace
 tabs with spaces, this is helpful.
 
 You can also use the
@@ -169,15 +170,15 @@ correct.
 
 ### Formatting help:
 
-* Comments begin with a # character.
+- Comments begin with a # character.
 
-* Descriptions do not need to be in quotes, and may use common
+- Descriptions do not need to be in quotes, and may use common
   Markdown format options like inline code \` (backtick) and `#`
   headings.
 
-* A single `|` (pipe) character begins a multi-line description on the
-  next line.  Single spaced lines (one newline at the end of each) are
-  joined. Use an extra blank line for a paragraph break.  We prefer
+- A single `|` (pipe) character begins a multi-line description on the
+  next line. Single spaced lines (one newline at the end of each) are
+  joined. Use an extra blank line for a paragraph break. We prefer
   to use this format for all descriptions because it doesn't require
   extra effort to expand.
 

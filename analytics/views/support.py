@@ -14,7 +14,7 @@ from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from confirmation.models import Confirmation, _properties, confirmation_url
+from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_ACTIVE
 from zerver.decorator import require_server_admin
 from zerver.forms import check_subdomain_available
@@ -73,8 +73,7 @@ def get_confirmations(
         content_object = confirmation.content_object
 
         type = confirmation.type
-        days_to_activate = _properties[type].validity_in_days
-        expiry_date = confirmation.date_sent + timedelta(days=days_to_activate)
+        expiry_date = confirmation.expiry_date
 
         assert content_object is not None
         if hasattr(content_object, "status"):

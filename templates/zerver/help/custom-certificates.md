@@ -108,4 +108,4 @@ server. You'll need to get a certificate file (should end in `.crt` or
 
 
 
-[linux]: https://chromium.googlesource.com/chromium/src.git/+/master/docs/linux/cert_management.md
+[linux]: https://chromium.googlesource.com/chromium/src.git/+/main/docs/linux/cert_management.md

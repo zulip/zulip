@@ -25,7 +25,7 @@ from zerver.lib.actions import (
     get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
-from zerver.lib.create_user import copy_user_settings
+from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import (
@@ -54,6 +54,7 @@ from zerver.models import (
     PreregistrationUser,
     Realm,
     RealmDomain,
+    RealmUserDefault,
     Recipient,
     ScheduledEmail,
     Stream,
@@ -95,6 +96,14 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(user_profile.is_guest, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
+        user_profile.is_realm_owner = False
+        self.assertEqual(user_profile.is_realm_owner, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        user_profile.is_moderator = False
+        self.assertEqual(user_profile.is_moderator, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+
         user_profile.is_realm_admin = False
         self.assertEqual(user_profile.is_realm_admin, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
@@ -109,6 +118,22 @@ class PermissionTest(ZulipTestCase):
 
         user_profile.is_guest = False
         self.assertEqual(user_profile.is_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
+        user_profile.is_realm_owner = True
+        self.assertEqual(user_profile.is_realm_owner, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_OWNER)
+
+        user_profile.is_realm_owner = False
+        self.assertEqual(user_profile.is_realm_owner, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
+        user_profile.is_moderator = True
+        self.assertEqual(user_profile.is_moderator, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MODERATOR)
+
+        user_profile.is_moderator = False
+        self.assertEqual(user_profile.is_moderator, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
 
     def test_get_admin_users(self) -> None:
@@ -749,10 +774,12 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
+        invite_expires_in_days = 4
         do_invite_users(
             user_profile=self.example_user("hamlet"),
             invitee_emails=["fred@zulip.com"],
             streams=streams,
+            invite_expires_in_days=invite_expires_in_days,
         )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
@@ -771,7 +798,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 82)
+        self.assert_length(queries, 84)
         self.assert_length(cache_tries, 27)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
@@ -1127,7 +1154,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertIsNone(get_source_profile("iago@zulip.com", 0))
         self.assertIsNone(get_source_profile("iago@zulip.com", lear_realm_id))
 
-    def test_copy_user_settings(self) -> None:
+    def test_copy_default_settings_from_another_user(self) -> None:
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -1150,7 +1177,7 @@ class UserProfileTest(ZulipTestCase):
 
         UserHotspot.objects.filter(user=cordelia).delete()
         UserHotspot.objects.filter(user=iago).delete()
-        hotspots_completed = ["intro_reply", "intro_streams", "intro_topics"]
+        hotspots_completed = {"intro_reply", "intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
@@ -1160,7 +1187,7 @@ class UserProfileTest(ZulipTestCase):
         # introducing the user to clients.
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=0):
-            copy_user_settings(cordelia, iago)
+            copy_default_settings(cordelia, iago)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
         self.assertEqual(iago.full_name, "Cordelia, Lear's daughter")
@@ -1173,7 +1200,7 @@ class UserProfileTest(ZulipTestCase):
 
         self.assertEqual(iago.emojiset, "twitter")
         self.assertEqual(cordelia.emojiset, "twitter")
-        self.assertEqual(hamlet.emojiset, "google-blob")
+        self.assertEqual(hamlet.emojiset, "google")
 
         self.assertEqual(iago.timezone, "America/Phoenix")
         self.assertEqual(cordelia.timezone, "America/Phoenix")
@@ -1195,8 +1222,36 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.enter_sends, False)
         self.assertEqual(hamlet.enter_sends, True)
 
-        hotspots = list(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
+        hotspots = set(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
         self.assertEqual(hotspots, hotspots_completed)
+
+    def test_copy_default_settings_from_realm_user_default(self) -> None:
+        cordelia = self.example_user("cordelia")
+        realm = get_realm("zulip")
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+
+        realm_user_default.default_view = "recent_topics"
+        realm_user_default.emojiset = "twitter"
+        realm_user_default.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
+        realm_user_default.enable_offline_email_notifications = False
+        realm_user_default.enable_stream_push_notifications = True
+        realm_user_default.enter_sends = True
+        realm_user_default.save()
+
+        # Check that we didn't send an realm_user update events to
+        # users; this work is happening before the user account is
+        # created, so any changes will be reflected in the "add" event
+        # introducing the user to clients.
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
+            copy_default_settings(realm_user_default, cordelia)
+
+        self.assertEqual(cordelia.default_view, "recent_topics")
+        self.assertEqual(cordelia.emojiset, "twitter")
+        self.assertEqual(cordelia.color_scheme, UserProfile.COLOR_SCHEME_LIGHT)
+        self.assertEqual(cordelia.enable_offline_email_notifications, False)
+        self.assertEqual(cordelia.enable_stream_push_notifications, True)
+        self.assertEqual(cordelia.enter_sends, True)
 
     def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
         realm = get_realm("zulip")

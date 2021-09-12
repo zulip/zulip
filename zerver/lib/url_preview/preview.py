@@ -8,6 +8,7 @@ from django.utils.encoding import smart_str
 
 from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
@@ -36,6 +37,11 @@ HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
 TIMEOUT = 15
 
 
+class PreviewSession(OutgoingSession):
+    def __init__(self) -> None:
+        super().__init__(role="preview", timeout=TIMEOUT, headers=HEADERS)
+
+
 def is_link(url: str) -> Optional[Match[str]]:
     return link_regex.match(smart_str(url))
 
@@ -51,7 +57,7 @@ def guess_mimetype_from_content(response: requests.Response) -> str:
 
 def valid_content_type(url: str) -> bool:
     try:
-        response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
+        response = PreviewSession().get(url, stream=True)
     except requests.RequestException:
         return False
 
@@ -94,7 +100,7 @@ def get_link_embed_data(
     if data.get("oembed"):
         return data
 
-    response = requests.get(mark_sanitized(url), stream=True, headers=HEADERS, timeout=TIMEOUT)
+    response = PreviewSession().get(mark_sanitized(url), stream=True)
     if response.ok:
         og_data = OpenGraphParser(
             response.content, response.headers.get("Content-Type")

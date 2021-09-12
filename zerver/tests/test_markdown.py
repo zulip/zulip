@@ -13,10 +13,10 @@ from markdown import Markdown
 from zerver.lib.actions import (
     change_user_is_active,
     do_add_alert_words,
+    do_change_user_setting,
     do_create_realm,
     do_remove_realm_emoji,
     do_set_realm_property,
-    do_set_user_display_setting,
 )
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
@@ -436,7 +436,9 @@ class MarkdownTest(ZulipTestCase):
                 if test.get("translate_emoticons", False):
                     # Create a userprofile and send message with it.
                     user_profile = self.example_user("othello")
-                    do_set_user_display_setting(user_profile, "translate_emoticons", True)
+                    do_change_user_setting(
+                        user_profile, "translate_emoticons", True, acting_user=None
+                    )
                     msg = Message(sender=user_profile, sending_client=get_client("test"))
                     rendering_result = render_markdown(msg, test["input"])
                     converted = rendering_result.rendered_content
@@ -837,12 +839,12 @@ class MarkdownTest(ZulipTestCase):
 
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
-        msg = "Test: https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"
+        msg = "Test: https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"
         converted = markdown_convert_wrapper(msg)
 
         self.assertEqual(
             converted,
-            '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>',
+            '<p>Test: <a href="https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmain%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmain%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>',
         )
 
         msg = "Test: https://developer.github.com/assets/images/hero-circuit-bg.png"
@@ -1219,7 +1221,7 @@ class MarkdownTest(ZulipTestCase):
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user("othello")
-        do_set_user_display_setting(user_profile, "translate_emoticons", False)
+        do_change_user_setting(user_profile, "translate_emoticons", False, acting_user=None)
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = ":)"
@@ -2395,6 +2397,28 @@ class MarkdownTest(ZulipTestCase):
         assert_silent_mention("> @_*backend*")
         assert_silent_mention("```quote\n@*backend*\n```")
         assert_silent_mention("```quote\n@_*backend*\n```")
+
+    def test_system_user_group_mention(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        moderators_group = create_user_group(
+            "Moderators", [iago, shiva], get_realm("zulip"), is_system_group=True
+        )
+        content = "@*Moderators* @**King Hamlet** test message"
+
+        # Owner cannot mention a system user group.
+        msg = Message(sender=desdemona, sending_client=get_client("test"))
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
+        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
+
+        # Admin belonging to user group also cannot mention a system user group.
+        msg = Message(sender=iago, sending_client=get_client("test"))
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
+        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
 
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))

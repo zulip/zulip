@@ -60,7 +60,7 @@ function setup_settings_label() {
             defaultMessage: "Send email notifications for new logins to my account",
         }),
         enable_marketing_emails: $t({
-            defaultMessage: "Send me occasional marketing emails about Zulip (a few times a year)",
+            defaultMessage: "Send me Zulip's low-traffic newsletter (a few emails a year)",
         }),
         message_content_in_email_notifications: $t({
             defaultMessage: "Include message content in message notification emails",
@@ -115,6 +115,8 @@ export function build_page() {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications().general_settings,
         notification_settings: settings_config.all_notifications().settings,
+        email_notifications_batching_period_values:
+            settings_config.email_notifications_batching_period_values,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications().show_push_notifications_tooltip,

@@ -1178,7 +1178,7 @@ def get_server_settings(client: Client) -> None:
 def update_settings(client: Client) -> None:
 
     # {code_example|start}
-    # Enable push notifications even when online and change emojiset
+    # Enable push notifications even when online and change emoji set
     request = {
         "enable_offline_push_notifications": True,
         "enable_online_push_notifications": True,

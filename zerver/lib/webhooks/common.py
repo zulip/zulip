@@ -14,7 +14,7 @@ from zerver.lib.actions import (
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
-from zerver.lib.request import REQ, get_request_notes, has_request_variables
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.validator import check_list, check_string
@@ -107,7 +107,7 @@ def check_send_webhook_message(
         ):
             return
 
-    client = get_request_notes(request).client
+    client = RequestNotes.get_notes(request).client
     assert client is not None
     if stream is None:
         assert user_profile.bot_owner is not None

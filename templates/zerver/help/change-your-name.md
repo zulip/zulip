@@ -18,6 +18,7 @@ is useful when users' names are managed via LDAP or another data source.
 {end_tabs}
 
 !!! warn ""
+
     **Note:** If you are unable to edit the full name field, check
     that your organization allows name changes. Follow the steps at
     [prevent users from changing their names](/help/restrict-name-and-email-changes)

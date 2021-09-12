@@ -53,6 +53,7 @@ from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import MentionData, get_stream_name_info
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
@@ -64,6 +65,34 @@ from zerver.lib.url_preview import preview as link_preview
 from zerver.models import Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
+
+
+# Taken from
+# https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+html_safelisted_schemes = (
+    "bitcoin",
+    "geo",
+    "im",
+    "irc",
+    "ircs",
+    "magnet",
+    "mailto",
+    "matrix",
+    "mms",
+    "news",
+    "nntp",
+    "openpgp4fpr",
+    "sip",
+    "sms",
+    "smsto",
+    "ssh",
+    "tel",
+    "urn",
+    "webcal",
+    "wtai",
+    "xmpp",
+)
+allowed_schemes = ("http", "https", "ftp", "file") + html_safelisted_schemes
 
 
 def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
@@ -468,12 +497,17 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
     return res
 
 
+class OpenGraphSession(OutgoingSession):
+    def __init__(self) -> None:
+        super().__init__(role="markdown", timeout=1)
+
+
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     og = {"image": None, "title": None, "desc": None}
 
     try:
-        with requests.get(
-            url, headers={"Accept": "text/html,application/xhtml+xml"}, stream=True, timeout=1
+        with OpenGraphSession().get(
+            url, headers={"Accept": "text/html,application/xhtml+xml"}, stream=True
         ) as res:
             if res.status_code != requests.codes.ok:
                 return None
@@ -561,7 +595,7 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
         # Let upstream's implementation do its job as it is, we'll
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
-        # an inline code block.
+        # an inline code span.
         el, start, end = ret = super().handleMatch(m, data)
         if el is not None and m.group(3):
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
@@ -708,8 +742,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # See https://github.com/zulip/zulip/issues/4658 for more information
         parsed_url = urllib.parse.urlparse(url)
         if parsed_url.netloc == "github.com" or parsed_url.netloc.endswith(".github.com"):
-            # https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png ->
-            # https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png
+            # https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png ->
+            # https://raw.githubusercontent.com/zulip/zulip/main/static/images/logo/zulip-icon-128x128.png
             split_path = parsed_url.path.split("/")
             if len(split_path) > 3 and split_path[3] == "blob":
                 return urllib.parse.urljoin(
@@ -1475,7 +1509,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if db_data is not None:
             active_realm_emoji = db_data["active_realm_emoji"]
 
-        if self.md.zulip_message and name in active_realm_emoji:
+        if name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
         elif name == "zulip":
             return make_realm_emoji(
@@ -1531,17 +1565,11 @@ def sanitize_url(url: str) -> Optional[str]:
     if not scheme:
         return sanitize_url("http://" + url)
 
-    locless_schemes = ["mailto", "news", "file", "bitcoin", "sms", "tel"]
-    if netloc == "" and scheme not in locless_schemes:
-        # This fails regardless of anything else.
-        # Return immediately to save additional processing
-        return None
-
     # Upstream code will accept a URL like javascript://foo because it
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
-    # on the safe side, we whitelist the scheme.
-    if scheme not in ("http", "https", "ftp", "mailto", "file", "bitcoin", "sms", "tel"):
+    # on the safe side, we allow a fixed set of schemes.
+    if scheme not in allowed_schemes:
         return None
 
     # Upstream code scans path, parameters, and query for colon characters
@@ -1783,7 +1811,7 @@ class UserMentionPattern(CompiledInlineProcessor):
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data = self.md.zulip_db_data
-        if self.md.zulip_message and db_data is not None:
+        if db_data is not None:
             wildcard = mention.user_mention_matches_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
@@ -1838,7 +1866,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         silent = m.group("silent") == "_"
         db_data = self.md.zulip_db_data
 
-        if self.md.zulip_message and db_data is not None:
+        if db_data is not None:
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
                 if not silent:
@@ -1876,24 +1904,22 @@ class StreamPattern(CompiledInlineProcessor):
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
-        if self.md.zulip_message:
-            stream = self.find_stream_by_name(name)
-            if stream is None:
-                return None, None, None
-            el = Element("a")
-            el.set("class", "stream")
-            el.set("data-stream-id", str(stream["id"]))
-            # TODO: We should quite possibly not be specifying the
-            # href here and instead having the browser auto-add the
-            # href when it processes a message with one of these, to
-            # provide more clarity to API clients.
-            # Also do the same for StreamTopicPattern.
-            stream_url = encode_stream(stream["id"], name)
-            el.set("href", f"/#narrow/stream/{stream_url}")
-            text = f"#{name}"
-            el.text = markdown.util.AtomicString(text)
-            return el, m.start(), m.end()
-        return None, None, None
+        stream = self.find_stream_by_name(name)
+        if stream is None:
+            return None, None, None
+        el = Element("a")
+        el.set("class", "stream")
+        el.set("data-stream-id", str(stream["id"]))
+        # TODO: We should quite possibly not be specifying the
+        # href here and instead having the browser auto-add the
+        # href when it processes a message with one of these, to
+        # provide more clarity to API clients.
+        # Also do the same for StreamTopicPattern.
+        stream_url = encode_stream(stream["id"], name)
+        el.set("href", f"/#narrow/stream/{stream_url}")
+        text = f"#{name}"
+        el.text = markdown.util.AtomicString(text)
+        return el, m.start(), m.end()
 
 
 class StreamTopicPattern(CompiledInlineProcessor):
@@ -1910,21 +1936,19 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
-        if self.md.zulip_message:
-            stream = self.find_stream_by_name(stream_name)
-            if stream is None or topic_name is None:
-                return None, None, None
-            el = Element("a")
-            el.set("class", "stream-topic")
-            el.set("data-stream-id", str(stream["id"]))
-            stream_url = encode_stream(stream["id"], stream_name)
-            topic_url = hash_util_encode(topic_name)
-            link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
-            el.set("href", link)
-            text = f"#{stream_name} > {topic_name}"
-            el.text = markdown.util.AtomicString(text)
-            return el, m.start(), m.end()
-        return None, None, None
+        stream = self.find_stream_by_name(stream_name)
+        if stream is None or topic_name is None:
+            return None, None, None
+        el = Element("a")
+        el.set("class", "stream-topic")
+        el.set("data-stream-id", str(stream["id"]))
+        stream_url = encode_stream(stream["id"], stream_name)
+        topic_url = hash_util_encode(topic_name)
+        link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
+        el.set("href", link)
+        text = f"#{stream_name} > {topic_name}"
+        el.text = markdown.util.AtomicString(text)
+        return el, m.start(), m.end()
 
 
 def possible_linked_stream_names(content: str) -> Set[str]:
@@ -1966,7 +1990,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
 
     def run(self, lines: List[str]) -> List[str]:
         db_data = self.md.zulip_db_data
-        if self.md.zulip_message and db_data is not None:
+        if db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
             #

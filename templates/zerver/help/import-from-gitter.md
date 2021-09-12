@@ -21,6 +21,7 @@ First, export your data from Gitter.
    Zulip.
 
     !!! warn ""
+
         **Note:** You'll need a Gitter API token to export data. You can get this
         token by following the instructions in the "**Getting Started**" section of the
         [Gitter documentation](https://developer.gitter.im/docs/).

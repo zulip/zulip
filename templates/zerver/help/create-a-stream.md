@@ -22,6 +22,7 @@ first.
 1. Fill out the requested info, and click **Create**.
 
 !!! warn ""
+
     **Note**: You will only see the **Create stream** button if you have
     permission to create streams.
 

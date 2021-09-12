@@ -84,6 +84,7 @@ EXEMPT_FILES = {
     "static/js/loading.ts",
     "static/js/local_message.js",
     "static/js/localstorage.js",
+    "static/js/spectators.js",
     "static/js/message_edit.js",
     "static/js/message_edit_history.js",
     "static/js/message_events.js",
@@ -191,8 +192,27 @@ parser = argparse.ArgumentParser(USAGE)
 parser.add_argument("--coverage", action="store_true", help="Get coverage report")
 add_provision_check_override_param(parser)
 parser.add_argument("args", nargs=argparse.REMAINDER)
+parser.add_argument(
+    "--parallel",
+    dest="parallel",
+    action="store",
+    type=int,
+    # Since process startup time is a significant portion of total
+    # runtime, so rather than doing os.cpu_count, we just do a fixed 4
+    # processes by default.
+    default=4,
+    help="Specify the number of processes to run the "
+    "tests in. Default is the number of logical CPUs",
+)
 options = parser.parse_args()
 individual_files = options.args
+parallel = options.parallel
+
+if options.coverage and parallel > 1:
+    parallel = 1
+    print(
+        BOLDRED + "You cannot use --coverage with parallel tests. Running in serial mode.\n" + ENDC
+    )
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
@@ -252,11 +272,30 @@ def run_tests_via_node_js() -> int:
     # after making sure tests will pass.
     node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
     if individual_files:
+        # If we passed a specific set of tests, run in serial mode.
+        global parallel
+        parallel = 1
         files = individual_files
     else:
         files = sorted(glob.glob(os.path.join(ROOT_DIR, "frontend_tests/node_tests/*.js")))
 
-    node_tests_cmd += clean_files(files)
+    test_files = clean_files(files)
+
+    print("Starting node tests...")
+
+    # If we got this far, we can run the tests!
+    ret = 0
+    if parallel > 1:
+        sub_tests = [test_files[i::parallel] for i in range(parallel)]
+        parallel_processes = [subprocess.Popen(node_tests_cmd + sub_test) for sub_test in sub_tests]
+
+        for process in parallel_processes:
+            status_code = process.wait()
+            if status_code != 0:
+                ret = status_code
+        return ret
+
+    node_tests_cmd += test_files
     if options.coverage:
         coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
 
@@ -271,9 +310,6 @@ def run_tests_via_node_js() -> int:
         # Run the index.js test runner, which runs all the other tests.
         command = node_tests_cmd
 
-    print("Starting node tests...")
-
-    # If we got this far, we can run the tests!
     try:
         ret = subprocess.check_call(command)
     except OSError:

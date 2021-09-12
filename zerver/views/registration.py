@@ -38,9 +38,9 @@ from zerver.lib.actions import (
     do_activate_mirror_dummy_user,
     do_change_full_name,
     do_change_password,
+    do_change_user_setting,
     do_create_realm,
     do_create_user,
-    do_set_user_display_setting,
     lookup_default_stream_groups,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
@@ -420,7 +420,7 @@ def accounts_register(
             do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
-            do_set_user_display_setting(user_profile, "timezone", timezone)
+            do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
             # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
@@ -552,18 +552,23 @@ def prepare_activation_url(
 
 
 def send_confirm_registration_email(
-    email: str, activation_url: str, language: str, realm: Optional[Realm] = None
+    email: str,
+    activation_url: str,
+    *,
+    realm: Optional[Realm] = None,
+    request: Optional[HttpRequest] = None,
 ) -> None:
     send_email(
         "zerver/emails/confirm_registration",
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
-        language=language,
+        language=request.LANGUAGE_CODE if request is not None else None,
         context={
             "create_realm": (realm is None),
             "activate_url": activation_url,
         },
         realm=realm,
+        request=request,
     )
 
 
@@ -621,7 +626,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 return HttpResponseRedirect(activation_url)
 
             try:
-                send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
+                send_confirm_registration_email(email, activation_url, request=request)
             except EmailNotDeliveredException:
                 logging.error("Error in create_realm")
                 return HttpResponseRedirect("/config-error/smtp")
@@ -674,9 +679,7 @@ def accounts_home(
                 email, request, streams=streams_to_subscribe, invited_as=invited_as
             )
             try:
-                send_confirm_registration_email(
-                    email, activation_url, request.LANGUAGE_CODE, realm=realm
-                )
+                send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredException:
                 logging.error("Error in accounts_home")
                 return HttpResponseRedirect("/config-error/smtp")
@@ -752,6 +755,7 @@ def find_account(
                     to_user_ids=[user.id],
                     context=context,
                     from_address=FromAddress.SUPPORT,
+                    request=request,
                 )
 
             # Note: Show all the emails in the result otherwise this

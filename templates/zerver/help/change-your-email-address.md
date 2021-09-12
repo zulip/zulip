@@ -21,6 +21,7 @@ Organization administrators can
 {end_tabs}
 
 !!! warn ""
+
     **Note:** If you are unable to click on the button with your email address, check
     that your organization allows email changes. Follow the steps at
     [prevent users from changing their names](/help/restrict-name-and-email-changes)

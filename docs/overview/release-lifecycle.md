@@ -4,20 +4,20 @@ This page details the release lifecycle for the Zulip server and
 client-apps, well as our policies around backwards-compatibility and
 security support policies. In short:
 
-* We recommend always running the latest releases of the Zulip clients
+- We recommend always running the latest releases of the Zulip clients
   and servers. Server upgrades are designed to Just Work; mobile and
   desktop client apps update automatically.
-* The server and client apps are backwards and forwards compatible
+- The server and client apps are backwards and forwards compatible
   across a wide range of versions. So while it's important to upgrade
   the server to get security updates, bug fixes, and new features, the
   mobile and desktop apps will continue working for at least 18 months
   if you don't do so.
-* New server releases are announced via the low-traffic
+- New server releases are announced via the low-traffic
   [zulip-announce email
   list](https://groups.google.com/forum/#!forum/zulip-announce). We
   highly recommend subscribing so that you are notified about new
   security releases.
-* Zulip Cloud runs the branch that will become the next major
+- Zulip Cloud runs the branch that will become the next major
   server/web app release, so it is always "newer" than the latest
   stable release.
 
@@ -28,16 +28,16 @@ server repository][zulip-server].
 
 ### Stable releases
 
-* Zulip Server **stable releases**, such as Zulip 4.5.
+- Zulip Server **stable releases**, such as Zulip 4.5.
   Organizations self-hosting Zulip primarily use stable releases.
-* The numbering scheme is simple: the first digit indicates the major
-  release series (which we'll refer to as "4.x").  (Before Zulip 3.0,
+- The numbering scheme is simple: the first digit indicates the major
+  release series (which we'll refer to as "4.x"). (Before Zulip 3.0,
   Zulip versions had another digit, e.g. 1.9.2 was a bug fix release
   in the Zulip 1.9.x major release series).
-* [New major releases][blog-major-releases], like Zulip 4.0, are
+- [New major releases][blog-major-releases], like Zulip 4.0, are
   published every 3-6 months, and contain hundreds of features, bug
   fixes, and improvements to Zulip's internals.
-* New maintenance releases, like 4.3, are published roughly once a
+- New maintenance releases, like 4.3, are published roughly once a
   month. Maintenance releases are designed to have no risky changes
   and be easy to reverse, to minimize stress for administrators. When
   upgrading to a new major release series, We recommend always
@@ -45,7 +45,7 @@ server repository][zulip-server].
   you use the latest version of the upgrade code.
 
 Starting with Zulip 4.0, the Zulip web app displays the current server
-version in the gear menu.  With older releases, the server version is
+version in the gear menu. With older releases, the server version is
 available [via the API](https://zulip.com/api/get-server-settings).
 
 This ReadTheDocs documentation has a widget in the lower-left corner
@@ -60,25 +60,25 @@ the Zulip server itself (E.g. `https://zulip.example.com/help/`).
 Many Zulip servers run versions from Git that have not been published
 in a stable release.
 
-* [Zulip Cloud](https://zulip.com) essentially runs the master
-  branch. It is usually a few days behind master (with some
+- [Zulip Cloud](https://zulip.com) essentially runs the `main`
+  branch. It is usually a few days behind `main` (with some
   cherry-picked bug fixes), but can fall up to 2 weeks behind when
   major UI or internals changes mean we'd like to bake changes longer
   on chat.zulip.org before exposing them to the full Zulip Cloud
   userbase.
-* [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
-  Zulip development community, is upgraded to master several times
-  every week.  We also often "test deploy" changes not yet in master
+- [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
+  Zulip development community, is upgraded to `main` several times
+  every week. We also often "test deploy" changes not yet in `main`
   to chat.zulip.org to facilitate design feedback.
-* We maintain Git branches with names like `4.x` containing backported
-  commits from master that we plan to include in the next maintenance
-  release.  Self hosters can [upgrade][upgrade-from-git] to these
+- We maintain Git branches with names like `4.x` containing backported
+  commits from `main` that we plan to include in the next maintenance
+  release. Self hosters can [upgrade][upgrade-from-git] to these
   stable release branches to get bug fixes staged for the next stable
   release (which is very useful when you reported a bug whose fix we
   choose to backport). We support these branches as though they were a
   stable release.
-* Self-hosters who want new features not yet present in a major
-  release can [upgrade to master][upgrading-to-master] or run [a fork
+- Self-hosters who want new features not yet present in a major
+  release can [upgrade to `main`][upgrading-to-main] or run [a fork
   of Zulip][fork-zulip].
 
 ### Compatibility and upgrading
@@ -89,15 +89,15 @@ for self-hosters, has no regressions, and that the [Zulip upgrade
 process](../production/upgrade-or-modify.md) Just Works.
 
 The Zulip server and clients apps are all carefully engineered to
-ensure compatibility with old versions.  In particular:
+ensure compatibility with old versions. In particular:
 
-* The Zulip mobile and desktop apps maintain backwards-compatibility
-  code to support any Zulip server since 2.1.0.  (They may also work
+- The Zulip mobile and desktop apps maintain backwards-compatibility
+  code to support any Zulip server since 2.1.0. (They may also work
   with older versions, with a degraded experience).
-* Zulip maintains an [API changelog](https://zulip.com/api/changelog)
+- Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
   developers to do this correctly.
-* The Zulip server preserves backwards-compatibility in its API to
+- The Zulip server preserves backwards-compatibility in its API to
   support versions of the mobile and desktop apps released in roughly
   the last year. Because these clients auto-update, generally there
   are only a handful of active clients left by the time we desupport a
@@ -117,7 +117,7 @@ bug fix release, transparently documenting the issue(s) using the
 industry-standard [CVE advisory process](https://cve.mitre.org/).
 
 When new security releases are published, we simultaneously publish
-the fixes to the `master` and stable release branches (E.g. `4.x`), so
+the fixes to the `main` and stable release branches (E.g. `4.x`), so
 that anyone using those branches can immediately upgrade as well.
 
 See also our [security model][security-model] documentation.
@@ -130,9 +130,9 @@ Starting with Zulip 4.0, the Zulip web app will display a banner
 warning users of a server running a Zulip release that is more than 18
 months old. We do this for a few reasons:
 
-* It is unlikely that a server of that age is not vulnerable to
+- It is unlikely that a server of that age is not vulnerable to
   a security bug in Zulip or one of its dependencies.
-* The Zulip mobile and desktop apps are only guaranteed to support
+- The Zulip mobile and desktop apps are only guaranteed to support
   server versions less than 18 months old.
 
 The nag will appear only to organization administrators starting a
@@ -147,7 +147,7 @@ You can adjust the deadline for your installation by setting e.g.
 
 For platforms we support, like Debian and Ubuntu, Zulip aims to
 support all versions of the upstream operating systems that are fully
-supported by the vendor.  We document how to correctly [upgrade the
+supported by the vendor. We document how to correctly [upgrade the
 operating system][os-upgrade] for a Zulip server, including how to
 correctly chain upgrades when the latest Zulip release no longer
 supports your OS.
@@ -163,11 +163,11 @@ releases, and do not support them in production.
 The Zulip server project uses several GitHub labels to structure
 communication within the project about priorities:
 
-* The [high priority][label-high] label tags issues that we consider
+- The [high priority][label-high] label tags issues that we consider
   important. This label is meant to be a determination of importance
   that can be done quickly and then used as an input to planning
   processes.
-* The [release goal][label-release-goal] label is used for work that
+- The [release goal][label-release-goal] label is used for work that
   we hope to include in the next major release. The related [post
   release][label-post-release] label is used to track work we want to
   focus on shortly after the next major release.
@@ -177,7 +177,7 @@ aggregate, just as important as the big things. Most resolved issues
 do not have any of these priority labels.
 
 We welcome participation from our user community in influencing the
-Zulip roadmap.  If a bug or missing feature is causing significant
+Zulip roadmap. If a bug or missing feature is causing significant
 pain for you, we'd love to hear from you, either in
 [chat.zulip.org](https://zulip.com/developer-community/) or on the relevant
 GitHub issue. Please an include an explanation of your use case: such
@@ -192,12 +192,12 @@ Zulip's client apps officially support all Zulip server versions (and
 Git commits) released in the previous 18 months, matching the behavior
 of our [upgrade nag](#upgrade-nag).
 
-* The Zulip mobile apps release new versions from the development
+- The Zulip mobile apps release new versions from the development
   branch frequently (usually every couple weeks). Except when fixing a
   critical bug, releases are first published to our [beta
   channels][mobile-beta].
 
-* The Zulip desktop apps are implemented in [Electron][electron], the
+- The Zulip desktop apps are implemented in [Electron][electron], the
   browser-based desktop application framework used by essentially all
   modern chat applications. The Zulip UI in these apps is served from
   the Zulip server (and thus can vary between tabs when it is
@@ -227,19 +227,13 @@ core community, like the Python and JavaScript bindings, are released
 independently as needed.
 
 [electron]: https://www.electronjs.org/
-[upgrading-to-master]: ../production/upgrade-or-modify.html#upgrading-to-master
+[upgrading-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
 [os-upgrade]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
 [chat-zulip-org]: https://zulip.com/developer-community/
 [fork-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
 [zulip-server]: https://github.com/zulip/zulip
-
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
-
-[label-blocker]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
-[label-high]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
-[label-release-goal]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22release+goal%22
-[label-post-release]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22post+release%22
+[label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
+[label-high]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
+[label-release-goal]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22release+goal%22
+[label-post-release]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22post+release%22

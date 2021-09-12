@@ -1,5 +1,6 @@
 import random
 import re
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import List, Optional, Sequence
 from unittest import mock
@@ -11,9 +12,10 @@ import orjson
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.actions import do_change_notification_settings, do_change_user_role
+from zerver.lib.actions import do_change_user_role, do_change_user_setting
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     fix_emojis,
@@ -21,7 +23,7 @@ from zerver.lib.email_notifications import (
     handle_missedmessage_emails,
     relative_to_full_url,
 )
-from zerver.lib.send_email import FromAddress, send_custom_email
+from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import create_user_group
 from zerver.models import ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
@@ -299,6 +301,43 @@ class TestFollowupEmails(ZulipTestCase):
         self.assert_length(scheduled_emails, 1)
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["template_prefix"], "zerver/emails/followup_day1")
+
+    def test_followup_emails_for_regular_realms(self) -> None:
+        cordelia = self.example_user("cordelia")
+        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+        scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
+        self.assertEqual(
+            orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+
+        deliver_scheduled_emails(scheduled_email)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        message = outbox[0]
+        self.assertIn("You've created the new Zulip organization", message.body)
+        self.assertNotIn("demo org", message.body)
+
+    def test_followup_emails_for_demo_realms(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(
+            days=30
+        )
+        cordelia.realm.save()
+        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+        scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
+        self.assertEqual(
+            orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
+        )
+
+        deliver_scheduled_emails(scheduled_email)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        message = outbox[0]
+        self.assertIn("You've created a demo Zulip organization", message.body)
 
 
 class TestMissedMessages(ZulipTestCase):
@@ -825,33 +864,6 @@ class TestMissedMessages(ZulipTestCase):
         for text in expected_email_include:
             self.assertIn(text, self.normalize_string(mail.outbox[0].body))
 
-    def test_system_user_group_mention_sends_email(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), is_system_group=True
-        )
-        user_group_mentioned_message_id = self.send_stream_message(
-            othello, "Denmark", "@*hamlet_and_cordelia*"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {
-                    "message_id": user_group_mentioned_message_id,
-                    "trigger": "mentioned",
-                    "mentioned_user_group_id": hamlet_and_cordelia.id,
-                },
-            ],
-        )
-        self.assertIn(
-            "Othello, the Moor of Venice: @*hamlet_and_cordelia* -- ",
-            self.normalize_string(mail.outbox[0].body),
-        )
-
     def test_realm_name_in_notifications(self) -> None:
         # Test with realm_name_in_notifications for hamlet disabled.
         self._realm_name_in_missed_message_email_subject(False)
@@ -867,7 +879,7 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_message_content_disabled_in_missed_message_notifications(self) -> None:
         # Test when user disabled message content in email notifications.
-        do_change_notification_settings(
+        do_change_user_setting(
             self.example_user("hamlet"),
             "message_content_in_email_notifications",
             False,
@@ -980,14 +992,14 @@ class TestMissedMessages(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(False, show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", False, acting_user=None
         )
         mail.outbox = []
@@ -1001,7 +1013,7 @@ class TestMissedMessages(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
@@ -1009,7 +1021,7 @@ class TestMissedMessages(ZulipTestCase):
             False, show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_notification_settings(
+        do_change_user_setting(
             user, "message_content_in_email_notifications", False, acting_user=None
         )
         mail.outbox = []

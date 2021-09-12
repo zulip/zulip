@@ -25,6 +25,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
+import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
@@ -214,6 +215,11 @@ export function update_placeholder_text() {
 }
 
 export function start(msg_type, opts) {
+    if (page_params.is_spectator) {
+        spectators.login_to_access();
+        return;
+    }
+
     autosize_message_content();
 
     if (reload_state.is_in_progress()) {

@@ -569,6 +569,10 @@ def handle_missedmessage_emails(
         # Never email bot users.
         return
 
+    if not user_profile.enable_offline_email_notifications:
+        # BUG: Investigate why it's possible to get here.
+        return  # nocoverage
+
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be
     # in the ArchivedMessage table, not the Message table.
@@ -678,6 +682,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
+        is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
     if user.is_realm_admin:
         context["getting_started_link"] = (

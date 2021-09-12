@@ -15,6 +15,7 @@ trackers, documentation, or other external tools.
 {end_tabs}
 
 !!! warn ""
+
     This works for all views, including searches.
     All URLs in Zulip are designed to be shareable.
 

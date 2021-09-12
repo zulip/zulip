@@ -6,30 +6,30 @@ the Zulip UI in their preferred language.
 
 This article aims to teach Zulip contributors enough about
 internationalization and Zulip's tools for it so that they can make
-correct decisions about how to tag strings for translation.  A few
+correct decisions about how to tag strings for translation. A few
 principles are important in how we think about internationalization:
 
-* Our goal is for **all end-user facing strings** in Zulip to be
+- Our goal is for **all end-user facing strings** in Zulip to be
   tagged for translation in both [HTML templates](#html-templates) and
-  code, and our linters attempt to enforce this.  There are some
+  code, and our linters attempt to enforce this. There are some
   exceptions: we don't tag strings in Zulip's landing pages
   (e.g. /features) and other documentation (e.g. /help) for
   translation at this time (though we do aim for those pages to be
   usable with tools like Google Translate).
-* Translating all the strings in Zulip for a language and maintaining
+- Translating all the strings in Zulip for a language and maintaining
   that translation is a lot of work, and that work scales with the
-  number of strings tagged for translation in Zulip.  For this reason,
+  number of strings tagged for translation in Zulip. For this reason,
   we put significant effort into only tagging for translation content
   that will actually be displayed to users, and minimizing unnecessary
   user-facing strings in the product.
-* In order for a translated user experience to be good, every UI
+- In order for a translated user experience to be good, every UI
   element needs to be built in a way that supports i18n.
-* This is more about string consistency in general, but we have a
+- This is more about string consistency in general, but we have a
   "Sentence case" [capitalization
   policy](../translating/translating.html#capitalization) that we enforce using linters
   that check all strings tagged for translation in Zulip.
 
-This article aims to provide a brief introduction.  We recommend the
+This article aims to provide a brief introduction. We recommend the
 [EdX i18n guide][edx-i18n] as a great resource for learning more about
 internationalization in general; we agree with essentially all of
 their style guidelines.
@@ -41,24 +41,24 @@ their style guidelines.
 There are a few critical details about human language that are important
 to understand when implementing an internationalized application:
 
-* **Punctuation** varies between languages (e.g. Japanese doesn't use
-  `.`s at the end of sentences).  This means that you should always
+- **Punctuation** varies between languages (e.g. Japanese doesn't use
+  `.`s at the end of sentences). This means that you should always
   include end-of-sentence symbols like `.` and `?` inside the
   to-be-translated strings, so that translators can correctly
   translate the content.
-* **Word order** varies between languages (e.g. some languages put
-  subjects before verbs, others the other way around).  This means
+- **Word order** varies between languages (e.g. some languages put
+  subjects before verbs, others the other way around). This means
   that **concatenating translateable strings** produces broken results
   (more details with examples are below).
-* The **width of the string needed to express something** varies
+- The **width of the string needed to express something** varies
   dramatically between languages; this means you can't just hardcode a
   button or widget to look great for English and expect it to work in
-  all languages.  German is a good test case, as it has a lot of long
+  all languages. German is a good test case, as it has a lot of long
   words, as is Japanese (as character-based languages use a lot less
   width).
-* This is more about how i18n tooling works, but in code, the
+- This is more about how i18n tooling works, but in code, the
   translation function must be passed the string to translate, not a
-  variable containing the target string.  Otherwise, the parsers that
+  variable containing the target string. Otherwise, the parsers that
   extract the strings in a project to send to translators will not
   find your string.
 
@@ -77,10 +77,10 @@ The end-to-end tooling process for translations in Zulip is as follows.
    [frontend](#frontend-translations) translations for details on
    this).
 
-2. Translation resource files are created using the `./manage.py
-   makemessages` command. This command will create, for each language,
-   a resource file called `translations.json` for the frontend strings
-   and `django.po` for the backend strings.
+2. Translation resource files are created using the
+   `./manage.py makemessages` command. This command will create, for
+   each language, a resource file called `translations.json` for the
+   frontend strings and `django.po` for the backend strings.
 
    The `makemessages` command is idempotent in that:
 
@@ -96,7 +96,7 @@ The end-to-end tooling process for translations in Zulip is as follows.
    `./tools/i18n/push-translations` command (which invokes a Transifex
    API tool, `tx push`, internally).
 
-4. Translators translate the strings in the Transifex UI.  (In theory,
+4. Translators translate the strings in the Transifex UI. (In theory,
    it's possible to translate locally and then do `tx push`, but
    because our workflow is to sync translation data from Transifex to
    Zulip, making changes to translations in Zulip risks having the
@@ -145,8 +145,8 @@ can use the `_()` function in the templates like this:
 
 If a piece of text contains both a literal string component and variables,
 you can use a block translation, which makes use of placeholders to
-help translators to translate an entire sentence.  To translate a
-block, Jinja2 uses the [trans][] tag.  So rather than writing
+help translators to translate an entire sentence. To translate a
+block, Jinja2 uses the [trans][] tag. So rather than writing
 something ugly and confusing for translators like this:
 
 ```jinja
@@ -169,7 +169,7 @@ which can be imported as follows:
 from django.utils.translation import gettext as _
 ```
 
-Zulip expects all the error messages to be translatable as well.  To
+Zulip expects all the error messages to be translatable as well. To
 ensure this, the error message passed to `JsonableError`
 should always be a literal string enclosed by `_()`
 function, e.g.:
@@ -239,8 +239,8 @@ $("#foo").html(
 
 The only HTML tags allowed directly in translated strings are the
 simple HTML tags enumerated in `default_html_elements`
-(`static/js/i18n.js`) with no attributes.  This helps to avoid
-exposing HTML details to translators.  If you need to include more
+(`static/js/i18n.js`) with no attributes. This helps to avoid
+exposing HTML details to translators. If you need to include more
 complex markup such as a link, you can define a custom HTML tag
 locally to the translation:
 
@@ -254,7 +254,7 @@ $t_html(
 ### Handlebars templates
 
 For translations in Handlebars templates we also use FormatJS, through two
-Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
+Handlebars [helpers][] that Zulip registers. The syntax for simple strings is:
 
 ```html+handlebars
 {{t 'English text' }}
@@ -271,6 +271,7 @@ If you are passing a translated string to a Handlebars partial, you can use:
 The syntax for block strings or strings containing variables is:
 
 <!-- The html+handlebars lexer fails to lex the single braces. -->
+
 ```text
 {{#tr}}
     Block of English text.
@@ -281,8 +282,8 @@ The syntax for block strings or strings containing variables is:
 {{/tr}}
 ```
 
-Just like in JavaScript code, variables are enclosed in *single*
-braces (rather than the usual Handlebars double braces).  Unlike in
+Just like in JavaScript code, variables are enclosed in _single_
+braces (rather than the usual Handlebars double braces). Unlike in
 JavaScript code, variables are automatically escaped by our Handlebars
 helper.
 
@@ -291,11 +292,11 @@ Handlebars expressions like `{{variable}}` or blocks like
 translated block, because they don't work properly with translation.
 The Handlebars expression would be evaluated before the string is
 processed by FormatJS, so that the string to be translated wouldn't be
-constant.  We have a linter to enforce that translated blocks don't
+constant. We have a linter to enforce that translated blocks don't
 contain handlebars.
 
 Restrictions on including HTML tags in translated strings are the same
-as in JavaScript.  You can insert more complex markup using a local
+as in JavaScript. You can insert more complex markup using a local
 custom HTML tag like this:
 
 ```html+handlebars
@@ -330,13 +331,12 @@ hostname = https://www.transifex.com
 This basically identifies you as a Transifex user, so you can access your
 organizations from the command line.
 
-
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[FormatJS]: https://formatjs.io/
-[ICU MessageFormat]: https://formatjs.io/docs/intl-messageformat
+[formatjs]: https://formatjs.io/
+[icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
-[Transifex]: https://transifex.com
+[transifex]: https://transifex.com
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
 [html-templates]: ../subsystems/html-css.html#html-templates

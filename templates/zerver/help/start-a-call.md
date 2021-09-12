@@ -14,6 +14,7 @@ compose box.
 1. Click on the link in the message to start or join the call.
 
 !!! tip ""
+
     You can replace "Click to join video call" with anything you want.
 
 {end_tabs}
@@ -31,6 +32,7 @@ supported by zulip are:
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
 
 !!! tip ""
+
     It is also possible to disable the video call button for your organization by
     setting the provider to "None".
 

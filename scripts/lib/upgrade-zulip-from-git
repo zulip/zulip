@@ -81,7 +81,9 @@ try:
         )
 
     logging.info("Fetching the latest commits")
-    subprocess.check_call(["git", "fetch", "-q", "--tags", "--all"], preexec_fn=su_to_zulip)
+    subprocess.check_call(
+        ["git", "fetch", "--prune", "--quiet", "--tags", "--all"], preexec_fn=su_to_zulip
+    )
 
     # Generate the deployment directory via git worktree from our local repository.
     subprocess.check_call(

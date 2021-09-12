@@ -29,7 +29,8 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
             raise JsonableError(_("Operator {} not supported.").format(operator))
 
 
-def is_web_public_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
+def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
+    # This implementation should agree with the similar function in static/js/hash_utl.js.
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:

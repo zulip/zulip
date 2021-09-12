@@ -8,12 +8,13 @@ There are two types of documents: articles about specific features, and a
 handful of longer guides.
 
 The feature articles serve a few different purposes:
-* Feature discovery, for someone browsing the `/help` page, and looking at
+
+- Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
-* Public documentation of our featureset, for someone googling "can zulip do .."
-* Canned responses to support questions; if someone emails a Zulip admin
+- Public documentation of our feature set, for someone googling "can zulip do .."
+- Canned responses to support questions; if someone emails a Zulip admin
   asking "how do I change my name", they can reply with a link to the doc.
-* Feature explanations for new Zulip users and admins, especially for
+- Feature explanations for new Zulip users and admins, especially for
   organization settings.
 
 This system is designed to make writing and maintaining such documentation
@@ -29,7 +30,7 @@ ReadTheDocs, since Zulip supports running a server completely disconnected
 from the Internet, and we'd like the documentation to be available in that
 environment.
 
- The source for this user documentation is the Markdown files under
+The source for this user documentation is the Markdown files under
 `templates/zerver/help/` in the
 [main Zulip server repository](https://github.com/zulip/zulip). The file
 `foo.md` is automatically rendered by the `render_markdown_path` function in
@@ -40,7 +41,7 @@ are usually linked from `static/images/help/`.
 
 This means that you can contribute to the Zulip user documentation by just
 adding to or editing the collection of Markdown files under
-`templates/zerver/help`.  If you have the Zulip development environment
+`templates/zerver/help`. If you have the Zulip development environment
 set up, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
 rendered.
@@ -52,22 +53,22 @@ experience with.
 
 Tips for adding a new article:
 
-* Find an existing article in the same section of the help documentation,
+- Find an existing article in the same section of the help documentation,
   and copy the format, wording, style, etc as closely as you can.
 
-* If the feature exists in other team chat products, check out their
+- If the feature exists in other team chat products, check out their
   documentation for inspiration.
 
-* Fewer words is better than more. Many Zulip users have English as a second
+- Fewer words is better than more. Many Zulip users have English as a second
   language.
 
-* Try to put yourself in the shoes of a new Zulip user. What would you want
+- Try to put yourself in the shoes of a new Zulip user. What would you want
   to know?
 
-* The goal of user-facing documentation is not to be comprehensive. The goal
+- The goal of user-facing documentation is not to be comprehensive. The goal
   is to give the right bits of information for the intended audience.
 
-* Real estate in the left sidebar is somewhat precious. Minor features
+- Real estate in the left sidebar is somewhat precious. Minor features
   should rarely get their own article.
 
 An anti-pattern is trying to make up for bad UX by adding user
@@ -98,24 +99,24 @@ allows .." rather than "we also allow ..". `You` is ok and used liberally.
 Zulip's Markdown processor allows you to include several special features in
 your documentation to help improve its readability:
 
-* Since raw HTML is supported in Markdown, you can include arbitrary
-HTML/CSS in your documentation as needed.
-* Code blocks allow you to highlight syntax, similar to Zulip's own Markdown.
-* Anchor tags can be used to link to headers in other documents.
-* [Images](#images) of Zulip UI can be added to documentation.
-* Inline [icons](#icons) used to refer to features in the Zulip UI.
-* You can utilize [macros](#macros) to limit repeated content in the
-documentation.
-* You can create special highlight warning blocks using
-[tips and warnings](#tips-and-warnings).
-* You can create tabs using [Markdown tab switcher](#tab-switcher).
+- Since raw HTML is supported in Markdown, you can include arbitrary
+  HTML/CSS in your documentation as needed.
+- Code blocks allow you to highlight syntax, similar to Zulip's own Markdown.
+- Anchor tags can be used to link to headers in other documents.
+- [Images](#images) of Zulip UI can be added to documentation.
+- Inline [icons](#icons) used to refer to features in the Zulip UI.
+- You can utilize [macros](#macros) to limit repeated content in the
+  documentation.
+- You can create special highlight warning blocks using
+  [tips and warnings](#tips-and-warnings).
+- You can create tabs using [Markdown tab switcher](#tab-switcher).
 
 ### Images
 
 Images and screenshots should be included in user documentation only
 if they will help guide the user in how to do something (e.g. if the
 image will make it much clearer which element on the page the user
-should interact with).  For instance, an image of an element should
+should interact with). For instance, an image of an element should
 not be included if the element the user needs to interact with is the
 only thing on the page, but images can be included to show the end
 result of an interaction with the UI.
@@ -126,8 +127,8 @@ instructions for something simple look long and complicated.
 
 When taking screenshots, the image should never include the whole
 Zulip browser window in a screenshot; instead, it should only show
-relevant parts of the app.  In addition, the screenshot should always
-come *after* the text that describes it, never before.
+relevant parts of the app. In addition, the screenshot should always
+come _after_ the text that describes it, never before.
 
 Images are often a part of a numbered step and must be indented four
 spaces to be formatted correctly.
@@ -141,40 +142,40 @@ base class `icon-vector` and have dropped support for it. We now only support
 icons from [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) which
 make use of `fa` as a base class.
 
-* cog (<i class="fa fa-cog"></i>) icon — `cog (<i
-class="fa fa-cog"></i>) icon`
-* down chevron (<i class="fa fa-chevron-down"></i>) icon —
-`down chevron (<i class="fa fa-chevron-down"></i>) icon`
-* eye (<i class="fa fa-eye"></i>) icon — `eye (<i
-class="fa fa-eye"></i>) icon`
-* file (<i class="fa fa-file-code-o"></i>) icon — `file (<i
-class="fa fa-file-code-o"></i>) icon`
-* filled star (<i class="fa fa-star"></i>) icon —
-`filled star (<i class="fa fa-star"></i>) icon`
-* formatting (<i class="fa fa-font"></i>) icon —
-`formatting (<i class="fa fa-font"></i>) icon`
-* menu (<i class="fa fa-bars"></i>) icon — `menu (<i
-class="fa fa-bars"></i>) icon`
-* overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
-`overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
-* paperclip (<i class="fa fa-paperclip"></i>) icon —
-`paperclip (<i class="fa fa-paperclip"></i>) icon`
-* pencil (<i class="fa fa-pencil"></i>) icon —
-`pencil (<i class="fa fa-pencil"></i>) icon`
-* pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
-`pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon`
-* plus (<i class="fa fa-plus"></i>) icon —
-`plus (<i class="fa fa-plus"></i>) icon`
-* smiley face (<i class="fa fa-smile-o"></i>) icon —
-`smiley face (<i class="fa fa-smile-o"></i>) icon`
-* star (<i class="fa fa-star-o"></i>) icon —
-`star (<i class="fa fa-star-o"></i>) icon`
-* trash (<i class="fa fa-trash-o"></i>) icon —
-`trash (<i class="fa fa-trash-o"></i>) icon`
-* video-camera (<i class="fa fa-video-camera"></i>) icon —
-`video-camera (<i class="fa fa-video-camera"></i>) icon`
-* x (<i class="fa fa-times"></i>) icon —
-`x (<i class="fa fa-times"></i>) icon`
+- cog (<i class="fa fa-cog"></i>) icon —
+  `cog (<i class="fa fa-cog"></i>) icon`
+- down chevron (<i class="fa fa-chevron-down"></i>) icon —
+  `down chevron (<i class="fa fa-chevron-down"></i>) icon`
+- eye (<i class="fa fa-eye"></i>) icon —
+  `eye (<i class="fa fa-eye"></i>) icon`
+- file (<i class="fa fa-file-code-o"></i>) icon —
+  `file (<i class="fa fa-file-code-o"></i>) icon`
+- filled star (<i class="fa fa-star"></i>) icon —
+  `filled star (<i class="fa fa-star"></i>) icon`
+- formatting (<i class="fa fa-font"></i>) icon —
+  `formatting (<i class="fa fa-font"></i>) icon`
+- menu (<i class="fa fa-bars"></i>) icon —
+  `menu (<i class="fa fa-bars"></i>) icon`
+- overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
+  `overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
+- paperclip (<i class="fa fa-paperclip"></i>) icon —
+  `paperclip (<i class="fa fa-paperclip"></i>) icon`
+- pencil (<i class="fa fa-pencil"></i>) icon —
+  `pencil (<i class="fa fa-pencil"></i>) icon`
+- pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
+  `pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon`
+- plus (<i class="fa fa-plus"></i>) icon —
+  `plus (<i class="fa fa-plus"></i>) icon`
+- smiley face (<i class="fa fa-smile-o"></i>) icon —
+  `smiley face (<i class="fa fa-smile-o"></i>) icon`
+- star (<i class="fa fa-star-o"></i>) icon —
+  `star (<i class="fa fa-star-o"></i>) icon`
+- trash (<i class="fa fa-trash-o"></i>) icon —
+  `trash (<i class="fa fa-trash-o"></i>) icon`
+- video-camera (<i class="fa fa-video-camera"></i>) icon —
+  `video-camera (<i class="fa fa-video-camera"></i>) icon`
+- x (<i class="fa fa-times"></i>) icon —
+  `x (<i class="fa fa-times"></i>) icon`
 
 ### Macros
 
@@ -186,22 +187,22 @@ The source for macros is the Markdown files under
 `templates/zerver/help/include` in the
 [main Zulip server repository](https://github.com/zulip/zulip).
 
-* **Administrator only feature** `{!admin-only.md!}`: Notes that the feature
+- **Administrator only feature** `{!admin-only.md!}`: Notes that the feature
   is only available to organization administrators.
 
-* **Message actions** `{!message-actions.md!}`: First step to navigating to
+- **Message actions** `{!message-actions.md!}`: First step to navigating to
   the on-hover message actions.
 
-* **Message actions menu** `{!message-actions-menu.md!}`: Navigate to the
+- **Message actions menu** `{!message-actions-menu.md!}`: Navigate to the
   message actions menu.
 
-* **Save changes** `{!save-changes.md!}`: Save changes after modifying
+- **Save changes** `{!save-changes.md!}`: Save changes after modifying
   organization settings.
 
-* **Stream actions** `{!stream-actions.md!}`: Navigate to the stream actions
+- **Stream actions** `{!stream-actions.md!}`: Navigate to the stream actions
   menu from the left sidebar.
 
-* **Start composing** `{!start-composing.md!}`: Open the compose box.
+- **Start composing** `{!start-composing.md!}`: Open the compose box.
 
 ### Tips and warnings
 
@@ -212,6 +213,7 @@ users.
 
 ```md
 !!! tip ""
+
     If you've forgotten your password, see the
     [Change your password](/help/change-your-password) page for
     instructions on how to reset it.
@@ -222,6 +224,7 @@ Tips are more common than warnings.
 
 ```md
 !!! warn ""
+
     **Note:** If you attempt to input a nonexistent stream name, an error
     message will appear.
 ```
@@ -230,12 +233,12 @@ All tips/warnings should appear inside tip/warning blocks. There
 should be only one tip/warning inside each block, and they usually
 should be formatted as a continuation of a numbered step.
 
-###  Tab switcher
+### Tab switcher
 
 Our Markdown processor supports easily creating a tab switcher widget
 design to easily show the instructions for different
 [platforms](https://zulip.com/help/logging-out) in user docs,
-languages in API docs, etc.  To create a tab switcher, write:
+languages in API docs, etc. To create a tab switcher, write:
 
 ```md
 {start_tabs}
@@ -252,7 +255,7 @@ The tab identifiers (e.g. `desktop-web` above) and their mappings to
 the tabs' labels are declared in
 [zerver/lib/markdown/tabbed_sections.py][tabbed-sections-code].
 
-[tabbed-sections-code]: https://github.com/zulip/zulip/blob/master/zerver/lib/markdown/tabbed_sections.py
+[tabbed-sections-code]: https://github.com/zulip/zulip/blob/main/zerver/lib/markdown/tabbed_sections.py
 
 This widget can also be used just to create a nice box around a set of
 instructions

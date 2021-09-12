@@ -44,6 +44,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -57,6 +58,7 @@ from zerver.models import (
     Draft,
     Message,
     Realm,
+    RealmUserDefault,
     Stream,
     UserMessage,
     UserProfile,
@@ -321,6 +323,25 @@ def fetch_initial_state_data(
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
+        if realm.demo_organization_scheduled_deletion_date is not None:
+            state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
+                realm.demo_organization_scheduled_deletion_date
+            )
+
+    if want("realm_user_settings_defaults"):
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        state["realm_user_settings_defaults"] = {}
+        for property_name in RealmUserDefault.property_types:
+            state["realm_user_settings_defaults"][property_name] = getattr(
+                realm_user_default, property_name
+            )
+
+        state["realm_user_settings_defaults"][
+            "emojiset_choices"
+        ] = RealmUserDefault.emojiset_choices()
+        state["realm_user_settings_defaults"][
+            "available_notification_sounds"
+        ] = get_available_notification_sounds()
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -515,13 +536,13 @@ def fetch_initial_state_data(
         state["stop_words"] = read_stop_words()
 
     if want("update_display_settings") and not user_settings_object:
-        for prop in UserProfile.property_types:
+        for prop in UserProfile.display_settings_legacy:
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
         state["timezone"] = settings_user.timezone
 
     if want("update_global_notifications") and not user_settings_object:
-        for notification in UserProfile.notification_setting_types:
+        for notification in UserProfile.notification_settings_legacy:
             state[notification] = getattr(settings_user, notification)
         state["available_notification_sounds"] = get_available_notification_sounds()
 
@@ -530,8 +551,6 @@ def fetch_initial_state_data(
 
         for prop in UserProfile.property_types:
             state["user_settings"][prop] = getattr(settings_user, prop)
-        for notification in UserProfile.notification_setting_types:
-            state["user_settings"][notification] = getattr(settings_user, notification)
 
         state["user_settings"]["emojiset_choices"] = UserProfile.emojiset_choices()
         state["user_settings"]["timezone"] = settings_user.timezone
@@ -925,6 +944,11 @@ def apply_event(
             pass
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
+    elif event["type"] == "realm_user_settings_defaults":
+        if event["op"] == "update":
+            state["realm_user_settings_defaults"][event["property"]] = event["value"]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "subscription":
         if event["op"] == "add":
             added_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
@@ -1112,20 +1136,16 @@ def apply_event(
         state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
         if event["setting_name"] != "timezone":
-            assert event["setting_name"] in UserProfile.property_types
+            assert event["setting_name"] in UserProfile.display_settings_legacy
         state[event["setting_name"]] = event["setting"]
     elif event["type"] == "update_global_notifications":
-        assert event["notification_name"] in UserProfile.notification_setting_types
+        assert event["notification_name"] in UserProfile.notification_settings_legacy
         state[event["notification_name"]] = event["setting"]
     elif event["type"] == "user_settings":
-        # timezone setting is not included in property_types or
-        # notification_setting_types dicts, because this setting
-        # is not a part of UserBaseSettings class.
+        # timezone setting is not included in property_types dict because
+        # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
-            assert (
-                event["property"] in UserProfile.property_types
-                or event["property"] in UserProfile.notification_setting_types
-            )
+            assert event["property"] in UserProfile.property_types
         state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":

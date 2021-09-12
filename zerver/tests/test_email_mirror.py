@@ -733,10 +733,10 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assertLogs(logger_name, level="WARNING") as m:
+        with self.assertLogs(logger_name, level="INFO") as m:
             process_message(incoming_valid_message)
         self.assertEqual(
-            m.output, [f"WARNING:{logger_name}:Email has no nonempty body sections; ignoring."]
+            m.output, [f"INFO:{logger_name}:Email has no nonempty body sections; ignoring."]
         )
 
     def test_receive_stream_email_messages_no_textual_body(self) -> None:
@@ -761,13 +761,13 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assertLogs(logger_name, level="WARNING") as m:
+        with self.assertLogs(logger_name, level="INFO") as m:
             process_message(incoming_valid_message)
         self.assertEqual(
             m.output,
             [
                 f"WARNING:{logger_name}:Content types: ['multipart/mixed', 'image/png']",
-                f"WARNING:{logger_name}:Unable to find plaintext or HTML message body",
+                f"INFO:{logger_name}:Unable to find plaintext or HTML message body",
             ],
         )
 
