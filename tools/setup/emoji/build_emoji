@@ -60,13 +60,6 @@ span.emoji
     overflow: hidden;
 }}
 
-.emoji-1f419
-{{
-    background-image: url(../emoji/images-google-64/1f419.png) !important;
-    background-position: 0% 0% !important;
-    background-size: contain !important;
-}}
-
 {emoji_positions}
 """
 
@@ -309,12 +302,6 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         zulip_image = os.path.join(ZULIP_PATH, "static", "assets", "zulip-emoji")
         for f in os.listdir(zulip_image):
             shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
-
-        # We hardcode octopus emoji image to Google emoji set's old
-        # "cute octopus" image. Copy it to the emoji farms.
-        input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, "1f419.png")
-        output_img_file = os.path.join(cache_path, "images-" + emojiset + "-64", "1f419.png")
-        shutil.copyfile(input_img_file, output_img_file)
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name, fallback_emoji_data)
 
