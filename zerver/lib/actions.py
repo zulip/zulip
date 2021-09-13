@@ -4991,6 +4991,36 @@ def do_change_stream_message_retention_days(
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 
+def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
+    """This function implements overrides for the default configuration
+    for new organizations when the administrator selected specific
+    organization types.
+
+    This substantially simplifies our /help/ advice for folks setting
+    up new organizations of these types.
+    """
+
+    # Custom configuration for educational organizations.  The present
+    # defaults are designed for a single class, not a department or
+    # larger institution, since those are more common.
+    if (
+        realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
+        or realm.org_type == Realm.ORG_TYPES["education"]["id"]
+    ):
+        # Limit email address visibility and user creation to administrators.
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
+        # Restrict public stream creation to staff, but allow private
+        # streams (useful for study groups, etc.).
+        realm.create_public_stream_policy = Realm.POLICY_ADMINS_ONLY
+        # Don't allow members (students) to manage user groups or
+        # stream subscriptions.
+        realm.user_group_edit_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.invite_to_stream_policy = Realm.POLICY_MODERATORS_ONLY
+        # Allow moderators (TAs?) to move topics between streams.
+        realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
+
+
 def do_create_realm(
     string_id: str,
     name: str,
@@ -5038,6 +5068,8 @@ def do_create_realm(
             realm.demo_organization_scheduled_deletion_date = (
                 realm.date_created + datetime.timedelta(days=settings.DEMO_ORG_DEADLINE_DAYS)
             )
+
+        set_realm_permissions_based_on_org_type(realm)
         realm.save()
 
         RealmAuditLog.objects.create(

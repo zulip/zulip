@@ -64,6 +64,34 @@ class RealmTest(ZulipTestCase):
             with self.assertRaises(AssertionError):
                 do_create_realm("zulipauth", "Test Realm")
 
+    def test_permission_for_education_non_profit_organization(self) -> None:
+        realm = do_create_realm(
+            "test_education_non_profit",
+            "education_org_name",
+            org_type=Realm.ORG_TYPES["education_nonprofit"]["id"],
+        )
+
+        self.assertEqual(realm.create_public_stream_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(realm.create_private_stream_policy, Realm.POLICY_MEMBERS_ONLY)
+        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(realm.move_messages_between_streams_policy, Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.user_group_edit_policy, Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
+
+    def test_permission_for_education_for_profit_organization(self) -> None:
+        realm = do_create_realm(
+            "test_education_for_profit",
+            "education_org_name",
+            org_type=Realm.ORG_TYPES["education"]["id"],
+        )
+
+        self.assertEqual(realm.create_public_stream_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(realm.create_private_stream_policy, Realm.POLICY_MEMBERS_ONLY)
+        self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
+        self.assertEqual(realm.move_messages_between_streams_policy, Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.user_group_edit_policy, Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
+
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
