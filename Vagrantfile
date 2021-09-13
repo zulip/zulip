@@ -1,45 +1,8 @@
 # -*- mode: ruby -*-
 
-VAGRANTFILE_API_VERSION = "2"
+Vagrant.require_version ">= 2.2.6"
 
-if Vagrant::VERSION == "1.8.7"
-  path = `command -v curl`
-  if path.include?("/opt/vagrant/embedded/bin/curl")
-    puts "In Vagrant 1.8.7, curl is broken. Please use the latest Vagrant."
-    puts "See https://github.com/mitchellh/vagrant/issues/7997 for details."
-    exit
-  end
-end
-
-# Workaround: Vagrant removed the atlas.hashicorp.com to
-# vagrantcloud.com redirect in February 2018. The value of
-# DEFAULT_SERVER_URL in Vagrant versions less than 1.9.3 is
-# atlas.hashicorp.com, which means that removal broke the fetching and
-# updating of boxes (since the old URL doesn't work).  See
-# https://github.com/hashicorp/vagrant/issues/9442
-if Vagrant::DEFAULT_SERVER_URL == "atlas.hashicorp.com"
-  Vagrant::DEFAULT_SERVER_URL.replace("https://vagrantcloud.com")
-end
-
-# Monkey patch https://github.com/hashicorp/vagrant/pull/10879 so we
-# can fall back to another provider if docker is not installed.
-begin
-  require Vagrant.source_root.join("plugins", "providers", "docker", "provider")
-rescue LoadError
-else
-  VagrantPlugins::DockerProvider::Provider.class_eval do
-    method(:usable?).owner == singleton_class or def self.usable?(raise_error = false)
-      VagrantPlugins::DockerProvider::Driver.new.execute("docker", "version")
-      true
-    rescue Vagrant::Errors::CommandUnavailable, VagrantPlugins::DockerProvider::Errors::ExecuteError
-      raise if raise_error
-      return false
-    end
-  end
-end
-
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-
+Vagrant.configure("2") do |config|
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
   http_proxy = https_proxy = no_proxy = nil
