@@ -421,13 +421,13 @@ class PlansPageTest(ZulipTestCase):
 
     def test_CTA_text_by_plan_type(self) -> None:
         sign_up_now = "Create organization"
-        buy_standard = "Buy Standard"
+        upgrade_to_standard = "Upgrade to Standard"
         current_plan = "Current plan"
         sponsorship_pending = "Sponsorship pending"
 
         # Root domain
         result = self.client_get("/plans/", subdomain="")
-        self.assert_in_success_response([sign_up_now, buy_standard], result)
+        self.assert_in_success_response([sign_up_now, upgrade_to_standard], result)
         self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
         realm = get_realm("zulip")
@@ -448,20 +448,20 @@ class PlansPageTest(ZulipTestCase):
 
         # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assert_in_success_response([sign_up_now, buy_standard], result)
+        self.assert_in_success_response([sign_up_now, upgrade_to_standard], result)
         self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assert_in_success_response([current_plan, buy_standard], result)
+        self.assert_in_success_response([current_plan, upgrade_to_standard], result)
         self.assert_not_in_success_response([sign_up_now, sponsorship_pending], result)
 
         with self.settings(FREE_TRIAL_DAYS=60):
             result = self.client_get("/plans/", subdomain="zulip")
             self.assert_in_success_response([current_plan, "Start 60 day free trial"], result)
             self.assert_not_in_success_response(
-                [sign_up_now, sponsorship_pending, buy_standard], result
+                [sign_up_now, sponsorship_pending, upgrade_to_standard], result
             )
 
         realm.plan_type = Realm.STANDARD_FREE
@@ -469,7 +469,7 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
         self.assert_not_in_success_response(
-            [sign_up_now, buy_standard, sponsorship_pending], result
+            [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
         realm.plan_type = Realm.STANDARD
@@ -477,7 +477,7 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
         self.assert_not_in_success_response(
-            [sign_up_now, buy_standard, sponsorship_pending], result
+            [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
@@ -491,7 +491,7 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan (free trial)"], result)
         self.assert_not_in_success_response(
-            [sign_up_now, buy_standard, sponsorship_pending], result
+            [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
         realm.plan_type = Realm.LIMITED
@@ -502,7 +502,7 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
         self.assert_in_success_response([current_plan, sponsorship_pending], result)
-        self.assert_not_in_success_response([sign_up_now, buy_standard], result)
+        self.assert_not_in_success_response([sign_up_now, upgrade_to_standard], result)
 
 
 class AppsPageTest(ZulipTestCase):
