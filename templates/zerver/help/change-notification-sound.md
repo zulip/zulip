@@ -8,7 +8,7 @@ You can change the sound Zulip uses for audible desktop notifications.
 
 {settings_tab|notifications}
 
-1. Under **Other notification settings**, configure
+1. Under **Desktop message notifications**, configure
    **Notification sound**.
 
 {end_tabs}

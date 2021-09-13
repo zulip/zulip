@@ -11,7 +11,7 @@ configured to send mobile notifications even when you're online.
 
 {settings_tab|notifications}
 
-1. Under **Other notification settings**, enable
+1. Under **Mobile message notifications**, enable
    **Send mobile notifications even if I'm online**.
 
 {end_tabs}
