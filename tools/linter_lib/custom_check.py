@@ -38,6 +38,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
     "zerver/tests/test_message_topics.py",
+    # This is actually email subjects
+    "zerver/lib/email_mirror_server.py",
 }
 
 shebang_rules: list["Rule"] = [

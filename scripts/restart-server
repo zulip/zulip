@@ -110,6 +110,8 @@ if has_application_server():
     # the restart is fine, as clients will transparently retry.
     workers.append("zulip-tus")
 
+    workers.extend(list_supervisor_processes(["zulip-email-server"]))
+
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 
