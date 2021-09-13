@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 104**
+
+* [`PATCH /realm`]: Added `string_id` parameter for changing an
+  organization's subdomain. Currently, this is only allowed for
+  changing changing a demo organization to a normal one.
+
 **Feature level 103**
 
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`

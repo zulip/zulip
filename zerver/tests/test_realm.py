@@ -171,6 +171,37 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
 
+    def test_realm_convert_demo_realm(self) -> None:
+        data = dict(string_id="coolrealm")
+
+        self.login("iago")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login("desdemona")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Must be a demo organization.")
+
+        data = dict(string_id="lear")
+        self.login("desdemona")
+        realm = get_realm("zulip")
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
+            days=30
+        )
+        realm.save()
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Subdomain unavailable. Please choose a different one.")
+
+        # Now try to change the string_id to something available.
+        data = dict(string_id="coolrealm")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_success(result)
+        json = orjson.loads(result.content)
+        self.assertEqual(json["realm_uri"], "http://coolrealm.testserver")
+        realm = get_realm("coolrealm")
+        self.assertIsNone(realm.demo_organization_scheduled_deletion_date)
+        self.assertEqual(realm.string_id, data["string_id"])
+
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
         data = dict(name=new_name)

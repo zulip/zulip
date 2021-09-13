@@ -1116,10 +1116,21 @@ def do_reactivate_realm(realm: Realm) -> None:
 def do_change_realm_subdomain(
     realm: Realm, new_subdomain: str, *, acting_user: Optional[UserProfile]
 ) -> None:
+    """Changing a realm's subdomain is a highly disruptive operation,
+    because all existing clients will need to be updated to point to
+    the new URL.  Further, requests to fetch data frmo existing event
+    queues will fail with an authentication error when this change
+    happens (because the old subdomain is no longer associated with
+    the realm), making it hard for us to provide a graceful update
+    experience for clients.
+    """
     old_subdomain = realm.subdomain
     old_uri = realm.uri
+    # If the realm had been a demo organization scheduled for
+    # deleting, clear that state.
+    realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
-    realm.save(update_fields=["string_id"])
+    realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
