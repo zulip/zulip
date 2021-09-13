@@ -1052,7 +1052,7 @@ export function register_click_handlers() {
         // message in the current message list (and
         // compose_actions.respond_to_message doesn't take a message
         // argument).
-        compose_actions.quote_and_reply({trigger: "popover respond"});
+        compose_actions.quote_selected_text_and_reply({trigger: "popover respond"});
         hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();

@@ -897,7 +897,7 @@ export function process_hotkey(e, hotkey) {
             condense.toggle_collapse(msg);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
-            compose_actions.quote_and_reply({trigger: "hotkey"});
+            compose_actions.quote_selected_text_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
             const row = message_lists.current.get_row(msg.id);

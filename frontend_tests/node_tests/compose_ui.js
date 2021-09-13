@@ -340,8 +340,10 @@ run_test("quote_and_reply", ({override}) => {
         $("#compose-textarea").trigger("blur");
     }
 
+    const opts = {};
+
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
-    compose_actions.quote_and_reply();
+    compose_actions.quote_and_reply(opts);
     assert.equal(get_compose_content_with_caret(), "hello \n[Quoting…]\n%there");
 
     success_function({
@@ -357,7 +359,7 @@ run_test("quote_and_reply", ({override}) => {
     // If the caret is initially positioned at 0, it should not
     // add a newline before the quoted message.
     set_compose_content_with_caret("%hello there");
-    compose_actions.quote_and_reply();
+    compose_actions.quote_and_reply(opts);
     assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%hello there");
 
     success_function({
@@ -380,7 +382,7 @@ run_test("quote_and_reply", ({override}) => {
     // If the compose-box is close, or open with no content while
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
-    compose_actions.quote_and_reply();
+    compose_actions.quote_and_reply(opts);
     assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%");
 
     success_function({
@@ -398,7 +400,7 @@ run_test("quote_and_reply", ({override}) => {
     // newlines), the compose-box should re-open and thus the quoted
     // message should start from the beginning of compose-box.
     set_compose_content_with_caret("  \n\n \n %");
-    compose_actions.quote_and_reply();
+    compose_actions.quote_and_reply(opts);
     assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%");
 
     success_function({

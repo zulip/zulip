@@ -12,6 +12,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as copy_and_paste from "./copy_and_paste";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -460,8 +461,13 @@ export function on_topic_narrow() {
 
 export function quote_and_reply(opts) {
     const textarea = $("#compose-textarea");
-    const message_id = message_lists.current.selected_id();
-    const message = message_lists.current.selected_message();
+    let message_id = message_lists.current.selected_id();
+    let message = message_lists.current.selected_message();
+
+    if (opts.start_message_id) {
+        message_id = opts.start_message_id;
+        message = message_lists.current.get(message_id);
+    }
 
     if (compose_state.has_message_content()) {
         // The user already started typing a message,
@@ -485,7 +491,7 @@ export function quote_and_reply(opts) {
 
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
-    function replace_content(message) {
+    function replace_content(message, msg_content) {
         // Final message looks like:
         //     @_**Iago|5** [said](link to message):
         //     ```quote
@@ -499,16 +505,21 @@ export function quote_and_reply(opts) {
             },
         );
         content += "\n";
-        const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        const fence = fenced_code.get_unused_fence(msg_content);
+        content += `${fence}quote\n${msg_content}\n${fence}`;
         compose_ui.replace_syntax("[Quoting…]", content, textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
         // Update textarea caret to point to the new line after quoted message.
         textarea.caret(prev_caret + content.length + 1);
     }
 
-    if (message && message.raw_content) {
-        replace_content(message);
+    if (message && opts.selected_text !== undefined) {
+        // The copied text is plain text, therefore, the quoted text
+        // is not stylized as well.
+        replace_content(message, opts.selected_text);
+        return;
+    } else if (message && message.raw_content) {
+        replace_content(message, message.raw_content);
         return;
     }
 
@@ -517,9 +528,26 @@ export function quote_and_reply(opts) {
         idempotent: true,
         success(data) {
             message.raw_content = data.raw_content;
-            replace_content(message);
+            replace_content(message, message.raw_content);
         },
     });
+}
+
+export function quote_selected_text_and_reply(opts) {
+    const selected_text = window.getSelection().toString();
+
+    if (selected_text !== "") {
+        const analysis = copy_and_paste.analyze_selection(window.getSelection());
+
+        if (!analysis.skip_same_td_check && analysis.start_id === analysis.end_id) {
+            // Quote the selected text iff a single message's text is selected.
+            // Otherwise, just quote the selected message.
+            opts.selected_text = selected_text.trim();
+            opts.start_message_id = analysis.start_id;
+        }
+    }
+
+    quote_and_reply(opts);
 }
 
 export function on_narrow(opts) {
