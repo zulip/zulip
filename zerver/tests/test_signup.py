@@ -3628,7 +3628,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], f"{realm.uri}/")
 
         # Verify that we successfully logged in.
-        user_profile = get_user(email, realm)
+        user_profile = get_user_by_delivery_email(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
         return user_profile
 
