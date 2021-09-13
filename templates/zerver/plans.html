@@ -86,11 +86,11 @@
                                         </div>
                                     </div>
                                     {% if not realm %}
-                                    <a href="/new" class="button green">
+                                    <a href="/upgrade" class="button green">
                                         {% if free_trial_days %}
                                         Start {{ free_trial_days }} day free trial
                                         {% else %}
-                                        Buy Standard
+                                        Upgrade to Standard
                                         {% endif %}
                                     </a>
                                     {% elif realm.plan_type in [realm.STANDARD, realm.STANDARD_FREE] %}
@@ -110,7 +110,7 @@
                                         {% if free_trial_days %}
                                         Start {{ free_trial_days }} day free trial
                                         {% else %}
-                                        Buy Standard
+                                        Upgrade to Standard
                                         {% endif %}
                                     </a>
                                     {% endif %}
