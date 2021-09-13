@@ -9,7 +9,7 @@ name of the organization in the subject line of your message notification emails
 
 {settings_tab|notifications}
 
-1. Under **Other notification settings**, select
+1. Under **Email message notifications**, select
    **Include organization name in subject of message notification emails**.
 
 {end_tabs}
@@ -28,7 +28,7 @@ being sent through your email.
 
 {settings_tab|notifications}
 
-1. Under **Other notification settings**, toggle
+1. Under **Email message notifications**, toggle
    **Include message content in message notification emails**.
 
 {end_tabs}

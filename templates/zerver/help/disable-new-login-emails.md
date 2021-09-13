@@ -19,7 +19,7 @@ feel excessive.
 
 {settings_tab|notifications}
 
-1. Under **Other notification settings**, toggle
+1. Under **Other emails**, toggle
    **Send email notifications for new logins to my account**.
 
 {end_tabs}
