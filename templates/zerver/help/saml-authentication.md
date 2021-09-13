@@ -17,7 +17,7 @@ how to configure these SAML providers to work with Zulip.
    [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
    Specify:
      * `https://auth.zulipchat.com/complete/saml/` for the "Single sign on URL"`.
-     * `https://zulip.com` for the "Audience URI (SP Entity ID)".
+     * `https://zulipchat.com` for the "Audience URI (SP Entity ID)".
      * Skip "Default RelayState".
      * Skip "Name ID format".
      * Set 'Email` for "Application username format".
@@ -48,7 +48,7 @@ how to configure these SAML providers to work with Zulip.
 
 1. Go to the "Configuration" section:
     * Leave the `RelayState` field empty.
-    * Set `https://zulip.com` as the Audience.
+    * Set `https://zulipchat.com` as the Audience.
     * Set `https://auth.zulipchat.com/complete/saml/` as the Recipient, ACS URL
       and ACS URL Validator.
 
@@ -84,7 +84,7 @@ how to configure these SAML providers to work with Zulip.
 
 1. In the "Basic SAML Configuration" section:
 
-    * Set "Identifier (Entity ID)" to be `https://zulip.com`.
+    * Set "Identifier (Entity ID)" to be `https://zulipchat.com`.
     * Check the "Default" box - this is necessary for IdP-initiated sign on to work.
     * Set `https://auth.zulipchat.com/complete/saml/` as the "Reply URL (Assertion Consumer Service URL)".
     * Optional: If you want to set up IdP-initiated sign on, enter
@@ -120,7 +120,7 @@ how to configure these SAML providers to work with Zulip.
    is `https://keycloak.example.com` and your Keycloak realm is `master` (which
    is the default name for a Keycloak realm).
 1. In Keycloak, register a new Client for your Zulip organization:
-    * Client-ID: `https://auth.zulipchat.com`
+    * Client-ID: `https://zulipchat.com`
     * Client Protocol: `saml`
     * Client SAML Endpoint: leave this field empty
 1. In the `Settings` tab for your new Keycloak client, set the following properties:
