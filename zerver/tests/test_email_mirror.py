@@ -1,23 +1,36 @@
+import asyncio
 import base64
 import email.parser
 import email.policy
 import os
 import subprocess
 from collections.abc import Callable, Mapping
+from contextlib import suppress
+from datetime import timedelta
 from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
+from smtplib import SMTPException, SMTPSenderRefused
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import orjson
+import time_machine
+from aiosmtpd.smtp import SMTP
+from asgiref.sync import sync_to_async
 from django.conf import settings
+from django.core import mail
+from django.core.mail.backends.locmem import EmailBackend
+from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.email_mirror import (
+    RateLimitedRealmMirror,
     create_missed_message_address,
     filter_footer,
+    generate_missed_message_token,
     get_missed_message_token_from_address,
     is_forwarded,
     is_missed_message_address,
@@ -34,6 +47,7 @@ from zerver.lib.email_mirror_helpers import (
     get_channel_email_token,
     get_email_gateway_message_string_from_address,
 )
+from zerver.lib.email_mirror_server import ZulipMessageHandler, send_to_postmaster
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
@@ -2072,3 +2086,383 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
             redacted_message = redact_email_address(error_message)
             self.assertEqual(redacted_message, expected_message)
+
+
+class TestEmailMirrorServer(ZulipTestCase):
+    def test_send_postmaster(self) -> None:
+        email = EmailMessage()
+        email.set_content("Hello postmaster!")
+        email["Subject"] = "This goes to the postmaster"
+        email["From"] = "bogus@example.com"
+        email["To"] = "postmaster"
+        send_to_postmaster(email)
+
+        self.assert_length(mail.outbox, 1)
+        self.assertEqual(mail.outbox[0].subject, "Mail to postmaster: This goes to the postmaster")
+        self.assertEqual(mail.outbox[0].body, "")
+        self.assert_length(mail.outbox[0].attachments, 1)
+
+    def test_send_postmaster_failure(self) -> None:
+        email = EmailMessage()
+        email.set_content("Hello postmaster!")
+        email["Subject"] = "This goes to the postmaster"
+        email["From"] = "bogus@example.com"
+        email["To"] = "postmaster"
+        with (
+            mock.patch.object(EmailBackend, "send_messages", side_effect=SMTPException("moose")),
+            self.assertLogs("zerver.lib.email_mirror", "ERROR") as error_log,
+        ):
+            send_to_postmaster(email)
+            self.assert_length(error_log.output, 1)
+            self.assertEqual(
+                error_log.output[0].splitlines()[0],
+                "ERROR:zerver.lib.email_mirror:Error sending bounce email to ['desdemona+admin@zulip.com']: moose",
+            )
+
+        with (
+            mock.patch.object(
+                EmailBackend,
+                "send_messages",
+                side_effect=SMTPSenderRefused(
+                    530, b"5.5.1 Authentication required", "noreply@testserver"
+                ),
+            ),
+            self.assertLogs("zerver.lib.email_mirror", "ERROR") as error_log,
+        ):
+            send_to_postmaster(email)
+            self.assert_length(error_log.output, 1)
+            self.assertEqual(
+                error_log.output[0].splitlines()[0],
+                (
+                    "ERROR:zerver.lib.email_mirror:Error sending bounce email to ['desdemona+admin@zulip.com']"
+                    " with error code 530: b'5.5.1 Authentication required'"
+                ),
+            )
+
+    async def handler_response(self, commands: list[str]) -> list[str]:
+        responses: list[bytes] = []
+        transport = mock.Mock()
+        transport.get_extra_info.return_value = "other-host:1234"
+        transport.write = responses.append
+
+        protocol = SMTP(
+            handler=ZulipMessageHandler(),
+            hostname="testhost",
+            ident="Zulip 1.2.3",
+        )
+        protocol.connection_made(transport)
+
+        protocol.data_received(b"".join([c.encode() + b"\r\n" for c in commands]))
+
+        with suppress(asyncio.CancelledError):
+            assert protocol._handler_coroutine
+            await protocol._handler_coroutine
+
+        return [r.decode() for r in responses]
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_error(self) -> None:
+        with (
+            mock.patch.object(
+                ZulipMessageHandler, "handle_RCPT", side_effect=Exception("Some bug")
+            ) as m,
+            self.assertLogs("zerver.lib.email_mirror", level="WARNING") as error_logs,
+        ):
+            self.assertEqual(
+                await self.handler_response(
+                    [
+                        "HELO localhost",
+                        "MAIL FROM: <test@example.com>",
+                        "RCPT TO: <bogus@other.example.com>",
+                        "QUIT",
+                    ]
+                ),
+                [
+                    "220 testhost Zulip 1.2.3\r\n",
+                    "250 testhost\r\n",
+                    "250 OK\r\n",
+                    "500 Server error\r\n",
+                    "221 Bye\r\n",
+                ],
+            )
+            m.assert_called_once()
+            self.assert_length(error_logs.output, 1)
+            self.assertTrue("Exception: Some bug" in error_logs.output[0])
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_invalid_domain(self) -> None:
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    "RCPT TO: <bogus@other.example.com>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.1.1 Bad destination mailbox address: Address not recognized by gateway.\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_invalid_recipient(self) -> None:
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    "RCPT TO: <bogus@zulip.example.com>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.1.1 Bad destination mailbox address: Bad stream token from email recipient bogus@zulip.example.com\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_postmaster(self) -> None:
+        for postmaster_email in ("postmaster", "postmaster@zulip.example.com"):
+            self.assertEqual(
+                await self.handler_response(
+                    [
+                        "HELO localhost",
+                        "MAIL FROM: <test@example.com>",
+                        f"RCPT TO: <{postmaster_email}>",
+                        "DATA",
+                        "From: test@example.com",
+                        f"To: {postmaster_email}",
+                        "Subject: Email the postmaster",
+                        "",
+                        "Some body!",
+                        ".",
+                        "QUIT",
+                    ]
+                ),
+                [
+                    "220 testhost Zulip 1.2.3\r\n",
+                    "250 testhost\r\n",
+                    "250 OK\r\n",
+                    "250 Continue\r\n",
+                    "354 End data with <CR><LF>.<CR><LF>\r\n",
+                    "250 OK\r\n",
+                    "221 Bye\r\n",
+                ],
+            )
+
+            self.assert_length(mail.outbox, 1)
+            mail.outbox = []
+
+    @override_settings(
+        EMAIL_GATEWAY_PATTERN="%s@zulip.example.com", RATE_LIMITING_MIRROR_REALM_RULES=[(10, 2)]
+    )
+    async def test_handler_stream_rate_limiting(self) -> None:
+        stream_name = "some str"
+        realm = await sync_to_async(lambda: get_realm("zulip"))()
+        stream = await sync_to_async(lambda: ensure_stream(realm, stream_name, acting_user=None))()
+        hamlet = await sync_to_async(lambda: self.example_user("hamlet"))()
+        email_token = await sync_to_async(
+            lambda: get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        )()
+        email_address = encode_email_address(stream.name, email_token)
+        RateLimitedRealmMirror(realm).clear_history()
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            for i in (1, 2):
+                with mock.patch(
+                    "zerver.lib.email_mirror_server.queue_json_publish_rollback_unsafe"
+                ) as m:
+                    await self.handler_response(
+                        [
+                            "HELO localhost",
+                            "MAIL FROM: <test@example.com>",
+                            f"RCPT TO: <{email_address}>",
+                            "DATA",
+                            f"From: {hamlet.delivery_email}",
+                            f"To: {email_address}",
+                            "Subject: Stream message",
+                            "",
+                            "Some body!",
+                            ".",
+                            "QUIT",
+                        ]
+                    )
+                    m.assert_called_once()
+            self.assertEqual(
+                await self.handler_response(
+                    [
+                        "HELO localhost",
+                        "MAIL FROM: <test@example.com>",
+                        f"RCPT TO: <{email_address}>",
+                        "QUIT",
+                    ]
+                ),
+                [
+                    "220 testhost Zulip 1.2.3\r\n",
+                    "250 testhost\r\n",
+                    "250 OK\r\n",
+                    "550 4.7.0 Rate-limited due to too many emails on this realm.\r\n",
+                    "221 Bye\r\n",
+                ],
+            )
+        with (
+            time_machine.travel(now + timedelta(hours=1), tick=False),
+            mock.patch("zerver.lib.email_mirror_server.queue_json_publish_rollback_unsafe") as m,
+        ):
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <{email_address}>",
+                    "DATA",
+                    f"From: {hamlet.delivery_email}",
+                    f"To: {email_address}",
+                    "Subject: Stream message",
+                    "",
+                    "Some body!",
+                    ".",
+                    "QUIT",
+                ]
+            )
+            m.assert_called_once()
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_invalid_missedmessage(self) -> None:
+        email_address = settings.EMAIL_GATEWAY_PATTERN % (generate_missed_message_token(),)
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <{email_address}>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.1.1 Bad destination mailbox address: Zulip notification reply address is invalid.\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_missedmessage(self) -> None:
+        othello = await sync_to_async(lambda: self.example_user("othello"))()
+        usermessage = await sync_to_async(lambda: most_recent_usermessage(othello))()
+        mm_address = await sync_to_async(
+            lambda: create_missed_message_address(othello, usermessage.message)
+        )()
+        with mock.patch("zerver.lib.email_mirror_server.queue_json_publish_rollback_unsafe") as m:
+            self.assertEqual(
+                await self.handler_response(
+                    [
+                        "HELO localhost",
+                        "MAIL FROM: <test@example.com>",
+                        f"RCPT TO: <{mm_address}>",
+                        "DATA",
+                        f"From: {othello.delivery_email}",
+                        f"To: {mm_address}",
+                        "Subject: Missed-message reply",
+                        "",
+                        "Some body!",
+                        ".",
+                        "QUIT",
+                    ]
+                ),
+                [
+                    "220 testhost Zulip 1.2.3\r\n",
+                    "250 testhost\r\n",
+                    "250 OK\r\n",
+                    "250 Continue\r\n",
+                    "354 End data with <CR><LF>.<CR><LF>\r\n",
+                    "250 OK\r\n",
+                    "221 Bye\r\n",
+                ],
+            )
+            message_lines = (
+                f"From: {othello.delivery_email}",
+                f"To: {mm_address}",
+                "Subject: Missed-message reply",
+                "X-Peer: other-host:1234",
+                "X-MailFrom: test@example.com",
+                f"X-RcptTo: {mm_address}",
+                "",
+                "Some body!",
+            )
+            m.assert_called_once_with(
+                "email_mirror",
+                {
+                    "rcpt_to": mm_address,
+                    "msg_base64": base64.b64encode(
+                        b"".join([line.encode() + b"\n" for line in message_lines])
+                    ).decode(),
+                },
+            )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_stream(self) -> None:
+        stream_name = "some str"
+        realm = await sync_to_async(lambda: get_realm("zulip"))()
+        stream = await sync_to_async(lambda: ensure_stream(realm, stream_name, acting_user=None))()
+        hamlet = await sync_to_async(lambda: self.example_user("hamlet"))()
+        email_token = await sync_to_async(
+            lambda: get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        )()
+        email_address = encode_email_address(stream.name, email_token)
+        with mock.patch("zerver.lib.email_mirror_server.queue_json_publish_rollback_unsafe") as m:
+            self.assertEqual(
+                await self.handler_response(
+                    [
+                        "HELO localhost",
+                        "MAIL FROM: <test@example.com>",
+                        f"RCPT TO: <{email_address}>",
+                        "DATA",
+                        f"From: {hamlet.delivery_email}",
+                        f"To: {email_address}",
+                        "Subject: Stream message",
+                        "",
+                        "Some body!",
+                        ".",
+                        "QUIT",
+                    ]
+                ),
+                [
+                    "220 testhost Zulip 1.2.3\r\n",
+                    "250 testhost\r\n",
+                    "250 OK\r\n",
+                    "250 Continue\r\n",
+                    "354 End data with <CR><LF>.<CR><LF>\r\n",
+                    "250 OK\r\n",
+                    "221 Bye\r\n",
+                ],
+            )
+            message_lines = (
+                f"From: {hamlet.delivery_email}",
+                f"To: {email_address}",
+                "Subject: Stream message",
+                "X-Peer: other-host:1234",
+                "X-MailFrom: test@example.com",
+                f"X-RcptTo: {email_address}",
+                "",
+                "Some body!",
+            )
+            m.assert_called_once_with(
+                "email_mirror",
+                {
+                    "rcpt_to": email_address,
+                    "msg_base64": base64.b64encode(
+                        b"".join([line.encode() + b"\n" for line in message_lines])
+                    ).decode(),
+                },
+            )

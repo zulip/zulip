@@ -967,6 +967,9 @@ LOGGING: dict[str, Any] = {
             "handlers": ["scim_file", "errors_file"],
             "propagate": False,
         },
+        "mail.log": {
+            "level": "WARNING",
+        },
         "pyvips": {
             "level": "ERROR",
             "handlers": ["console", "errors_file"],

@@ -4,10 +4,9 @@ for forwarding emails into Zulip.
 https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
 The email gateway supports two major modes of operation: An email
-server (using postfix) where the email address configured in
-EMAIL_GATEWAY_PATTERN delivers emails directly to Zulip, and this, a
-cron job that connects to an IMAP inbox (which receives the emails)
-periodically.
+server where the email address configured in EMAIL_GATEWAY_PATTERN
+delivers emails directly to Zulip, and this, a cron job that connects
+to an IMAP inbox (which receives the emails) periodically.
 
 Run this in a cron job every N minutes if you have configured Zulip to
 poll an external IMAP mailbox for messages. The script will then
