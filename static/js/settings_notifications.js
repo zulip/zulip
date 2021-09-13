@@ -124,7 +124,9 @@ export function set_up() {
         }
     });
 
-    const email_notifications_batching_period_dropdown = $("#email_notifications_batching_period");
+    const email_notifications_batching_period_dropdown = container.find(
+        ".setting_email_notifications_batching_period_seconds",
+    );
     email_notifications_batching_period_dropdown.val(
         user_settings.email_notifications_batching_period_seconds,
     );
