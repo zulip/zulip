@@ -717,6 +717,7 @@ DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
 ANALYTICS_LOCK_DIR = zulip_path("/home/zulip/deployments/analytics-lock-dir")
 WEBHOOK_LOG_PATH = zulip_path("/var/log/zulip/webhooks_errors.log")
+WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_anomalous_payloads.log")
 WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupported_events.log")
 SOFT_DEACTIVATION_LOG_PATH = zulip_path("/var/log/zulip/soft_deactivation.log")
 TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
@@ -848,6 +849,12 @@ LOGGING: Dict[str, Any] = {
             "class": "logging.handlers.WatchedFileHandler",
             "formatter": "webhook_request_data",
             "filename": WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH,
+        },
+        "webhook_anomalous_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.WatchedFileHandler",
+            "formatter": "webhook_request_data",
+            "filename": WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH,
         },
     },
     "loggers": {
@@ -1001,6 +1008,11 @@ LOGGING: Dict[str, Any] = {
         "zulip.zerver.webhooks.unsupported": {
             "level": "DEBUG",
             "handlers": ["webhook_unsupported_file"],
+            "propagate": False,
+        },
+        "zulip.zerver.webhooks.anomalous": {
+            "level": "DEBUG",
+            "handlers": ["webhook_anomalous_file"],
             "propagate": False,
         },
     },

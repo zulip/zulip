@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import log_exception_to_webhook_logger, webhook_view
+from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -45,9 +45,8 @@ class Helper:
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
-        log_exception_to_webhook_logger(
+        log_unsupported_webhook_event(
             summary=summary,
-            unsupported_event=True,
         )
 
 

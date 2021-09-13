@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import log_exception_to_webhook_logger, webhook_view
+from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -477,11 +477,10 @@ def get_user_info(dct: Dict[str, Any]) -> str:
     if "nickname" in dct:
         return dct["nickname"]
 
-    log_exception_to_webhook_logger(
+    # We call this an unsupported_event, even though we
+    # are technically still sending a message.
+    log_unsupported_webhook_event(
         summary="Could not find display_name/nickname field",
-        # We call this an unsupported_event, even though we
-        # are technically still sending a message.
-        unsupported_event=True,
     )
 
     return "Unknown user"
