@@ -3625,7 +3625,7 @@ class UserSignUpTest(InviteUserBase):
 
         # Verify that we were served a redirect to the app.
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://lear.testserver/")
+        self.assertEqual(result["Location"], f"{realm.uri}/")
 
         # Verify that we successfully logged in.
         user_profile = get_user(email, realm)
