@@ -51,6 +51,7 @@ if has_application_server():
     services.append("zulip-workers:*")
     services.append("zulip-tus")
     services.append("zulip-katex")
+    services.append("zulip-email-server")
     if has_application_server(once=True):
         # These used to be included in "zulip-workers:*"; we may be
         # stopping an older version of Zulip, which has not applied
