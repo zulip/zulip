@@ -2,12 +2,12 @@
     {{#if invite_only}}
     <li>
         {{#tr}}
-        This is a <b>private stream</b>. Only people who have been invited can access its content, but any member of the stream can invite others.
+        This is a <b>private stream</b>. Only people who have been invited can access its content, but any subscriber can invite others.
         {{/tr}}
     </li>
     <li>
-        {{#if history_public_to_subscribers}}{{t 'New members can view complete message history.' }}
-        {{else}}{{t 'New members can only see messages sent after they join.' }}
+        {{#if history_public_to_subscribers}}{{t 'New subscribers can view complete message history.' }}
+        {{else}}{{t 'New subscribers can only see messages sent after they join.' }}
         {{/if}}
     </li>
     {{else if is_web_public}}
@@ -19,7 +19,8 @@
     {{else}}
     <li>
         {{#tr}}
-        This is a <b>public stream</b>. Any member of the organization can join without an invitation.
+        This is a <b>public stream</b>. Any member of the organization can join without an invitation
+        or view content sent to this stream.
         {{/tr}}
     </li>
     {{/if}}
@@ -31,7 +32,7 @@
         {{else if (eq stream_post_policy stream_post_policy_values.non_new_members.code)}}
         {{t 'Only organization full members can post.'}}
         {{else}}
-        {{t 'All stream members can post.'}}
+        {{t 'All stream subscribers can post.'}}
         {{/if}}
     </li>
     {{#if message_retention_text}}

@@ -108,7 +108,7 @@ export const stream_privacy_policy_values = {
         name: $t({defaultMessage: "Public"}),
         description: $t({
             defaultMessage:
-                "Anyone can join; anyone can view complete message history without joining",
+                "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining",
         }),
     },
     private_with_public_history: {
@@ -116,7 +116,7 @@ export const stream_privacy_policy_values = {
         name: $t({defaultMessage: "Private, shared history"}),
         description: $t({
             defaultMessage:
-                "Must be invited by a member; new members can view complete message history; hidden from non-administrator users",
+                "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users",
         }),
     },
     private: {
@@ -124,7 +124,7 @@ export const stream_privacy_policy_values = {
         name: $t({defaultMessage: "Private, protected history"}),
         description: $t({
             defaultMessage:
-                "Must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users",
+                "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
         }),
     },
 };
@@ -135,7 +135,7 @@ if (page_params.development_environment) {
         name: $t({defaultMessage: "Web public"}),
         description: $t({
             defaultMessage:
-                "Anyone can join; anyone on the Internet can view complete message history without creating an account",
+                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
         }),
     };
 }
