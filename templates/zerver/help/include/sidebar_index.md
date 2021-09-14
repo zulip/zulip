@@ -1,11 +1,21 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-* [Streams and topics](/help/streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Using Zulip via email](/help/using-zulip-via-email)
 
 # Using Zulip
+
+## Getting started
+* [Set up your account](/help/set-up-your-account)
+* [Streams and topics](/help/streams-and-topics)
+* [Finding a topic to read](/help/finding-a-topic-to-read)
+* [Reading topics](/help/reading-topics)
+* [Reading private messages (PMs)](/help/reading-pms)
+* [Starting a new topic](/help/starting-a-new-topic)
+* [Starting a new private thread](/help/starting-a-new-private-thread)
+* [Replying to messages](/help/replying-to-messages)
+* [Messaging tips & tricks](/help/messaging-tips)
 
 ## Account basics
 * [Change your name](/help/change-your-name)
@@ -44,6 +54,7 @@
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
+* [Recent topics](/help/recent-topics)
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View and browse images](/help/view-and-browse-images)

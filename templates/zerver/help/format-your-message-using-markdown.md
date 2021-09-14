@@ -278,3 +278,4 @@ A summary of the formatting syntax is available in-app.
 ## Related articles
 
 * [Create a poll](/help/create-a-poll)
+* [Messaging tips & tricks](/help/messaging-tips)

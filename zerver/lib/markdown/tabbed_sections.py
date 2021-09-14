@@ -66,6 +66,10 @@ TAB_DISPLAY_NAMES = {
     "desktop-app": "Desktop app",
     "system-proxy-settings": "System proxy settings",
     "custom-proxy-settings": "Custom proxy settings",
+    "stream": "From a stream view",
+    "not-stream": "From other views",
+    "via-recent-topics": "Via recent topics",
+    "via-left-sidebar": "Via left sidebar",
 }
 
 
