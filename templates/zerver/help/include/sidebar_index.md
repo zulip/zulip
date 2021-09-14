@@ -1,7 +1,7 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-* [Streams and topics](/help/about-streams-and-topics)
+* [Streams and topics](/help/streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Using Zulip via email](/help/using-zulip-via-email)
 
@@ -61,7 +61,7 @@
 * [Private messages](/help/private-messages)
 
 ## Streams & topics
-* [About streams and topics](/help/about-streams-and-topics)
+* [Streams and topics](/help/streams-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)

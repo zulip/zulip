@@ -52,7 +52,7 @@ Zulip’s topics are life-changing, but it can take a bit of time for everyone
 to learn how to use them effectively. It helps a lot if there are at least a
 few people who understand the conversation model at the beginning.
 
-* Read our [guide to streams and topics](/help/about-streams-and-topics),
+* Read our [guide to streams and topics](/help/streams-and-topics),
   and send it out to a few people who you think would be good stewards of
   the organization.
 

@@ -761,6 +761,12 @@ urls += [
         "help/configure-missed-message-emails",
         RedirectView.as_view(url="/help/configure-message-notification-emails", permanent=True),
     ),
+    # This redirect is particularly important, because the old URL
+    # appears in links from Welcome Bot messages.
+    path(
+        "help/about-streams-and-topics",
+        RedirectView.as_view(url="/help/streams-and-topics", permanent=True),
+    ),
     path(
         "help/community-topic-edits",
         RedirectView.as_view(url="/help/configure-who-can-edit-topics", permanent=True),

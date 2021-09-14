@@ -1,7 +1,7 @@
 # Reading strategies
 
 Zulip works a little bit differently than other chat platforms. Read
-[streams and topics](/help/about-streams-and-topics) if you're not yet
+[streams and topics](/help/streams-and-topics) if you're not yet
 familiar with Zulip's topics, and [why Zulip](/why-zulip) if you're
 curious why we built Zulip the way we did.
 

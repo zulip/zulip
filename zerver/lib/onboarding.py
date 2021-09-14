@@ -159,7 +159,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
         _("Topics are a lightweight tool to keep conversations organized.")
         + " "
         + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
-    ).format(about_topics_help_url="/help/about-streams-and-topics")
+    ).format(about_topics_help_url="/help/streams-and-topics")
 
     content_of_swimming_turtles_topic = (
         _(

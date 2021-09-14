@@ -472,6 +472,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "help/change-the-topic-of-a-message",
             "help/configure-missed-message-emails",
             "help/community-topic-edits",
+            "help/about-streams-and-topics",
             "help/delete-a-stream",
             "for/working-groups-and-communities/",
             "help/only-allow-admins-to-add-emoji",

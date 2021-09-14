@@ -11,7 +11,7 @@ conversations instead.
 
 Note that group PMs are not the same as [user groups](/help/user-groups) or private
 streams. PMs and group PMs do not have
-[topics](/help/about-streams-and-topics), and do not appear in your list of
+[topics](/help/streams-and-topics), and do not appear in your list of
 streams.
 
 ### Send a PM or group PM

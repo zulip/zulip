@@ -6,7 +6,7 @@ service again.
 
 ## Understand
 
-Read our [guide to streams and topics](/help/about-streams-and-topics) to familiarize
+Read our [guide to streams and topics](/help/streams-and-topics) to familiarize
 yourself with Zulip's conversation model.
 
 If this is your first time using Zulip, we recommend starting with the web

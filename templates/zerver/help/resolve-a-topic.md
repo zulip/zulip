@@ -1,6 +1,6 @@
 # Resolve a topic
 
-Zulip's [topics](/help/about-streams-and-topics) are very
+Zulip's [topics](/help/streams-and-topics) are very
 helpful for customer support, answering questions, investigating
 issues and production errors, and other workflows.
 
