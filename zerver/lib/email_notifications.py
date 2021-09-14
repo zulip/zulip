@@ -61,26 +61,30 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
             if elem.get("title") is not None:
                 elem.set("title", link)
 
-    # Inline images can't be displayed in the emails as the request
-    # from the mail server can't be authenticated because it has no
-    # user_profile object linked to it. So we scrub the inline image
-    # container.
-    inline_image_containers = fragment.find_class("message_inline_image")
-    for container in inline_image_containers:
-        container.drop_tree()
-
-    # The previous block handles most inline images, but for messages
-    # where the entire Markdown input was just the URL of an image
-    # (i.e. the entire body is a message_inline_image object), the
-    # entire message body will be that image element; here, we need a
-    # more drastic edit to the content.
-    if fragment.get("class") == "message_inline_image":
-        image_link = fragment.find("a").get("href")
-        image_title = fragment.find("a").get("title")
+    # Because we were parsed with fragment_fromstring, we are
+    # guaranteed there is a top-level <div>, and the original
+    # top-level contents are within that.
+    if len(fragment) == 1 and fragment[0].get("class") == "message_inline_image":
+        # The next block handles most inline images, but for messages
+        # where the entire Markdown input was just the URL of an image
+        # (i.e. the entire body is a message_inline_image object), the
+        # entire message body will be that image element; here, we need a
+        # more drastic edit to the content.
+        inner = fragment[0]
+        image_link = inner.find("a").get("href")
+        image_title = inner.find("a").get("title")
         title_attr = {} if image_title is None else {"title": image_title}
-        fragment.clear()
-        fragment.tag = "p"
-        fragment.append(E.A(image_link, href=image_link, target="_blank", **title_attr))
+        inner.clear()
+        inner.tag = "p"
+        inner.append(E.A(image_link, href=image_link, target="_blank", **title_attr))
+    else:
+        # Inline images can't be displayed in the emails as the request
+        # from the mail server can't be authenticated because it has no
+        # user_profile object linked to it. So we scrub the inline image
+        # container.
+        inline_image_containers = fragment.find_class("message_inline_image")
+        for container in inline_image_containers:
+            container.drop_tree()
 
     fragment.make_links_absolute(base_url)
 
