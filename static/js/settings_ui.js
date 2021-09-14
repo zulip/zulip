@@ -37,7 +37,7 @@ export function do_settings_change(
     const spinner = $(status_element).expectOne();
     spinner.fadeTo(0, 1);
     loading.make_indicator(spinner, {text: strings.saving});
-    const remove_after = sticky ? null : 1000;
+    const remove_after = sticky ? undefined : 1000;
     const appear_after = 500;
 
     request_method({
