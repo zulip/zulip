@@ -137,7 +137,7 @@
         {{#each notification_settings.other_email_settings}}
         {{> settings_checkbox
           setting_name=this
-          is_checked=(lookup ../user_settings this)
+          is_checked=(lookup ../settings_object this)
           label=(lookup ../settings_label this)
           prefix=../prefix}}
         {{/each}}
