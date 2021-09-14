@@ -449,6 +449,17 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {
     ## set this to True to enable signing of SAMLRequests using the
     ## private key.
     "authnRequestsSigned": False,
+    ## If you'd like the Zulip server to request that the IdP limit user identity
+    ## verification to a specific set of authentication contexts, you can do this
+    ## by changing the requestedAuthnContext parameter to a list of specific
+    ## Authentication Context Classes that you want to include in the AuthnContext. E.g.:
+    ##
+    # "requestedAuthnContext": ["urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
+    #                           "urn:oasis:names:tc:SAML:2.0:ac:classes:X509"],
+    ##
+    ## For details on this, see https://github.com/onelogin/python3-saml#settings
+    ## and https://docs.oasis-open.org/security/saml/v2.0/saml-authn-context-2.0-os.pdf
+    "requestedAuthnContext": False,
 }
 
 ## These SAML settings you likely won't need to modify.
