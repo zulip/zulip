@@ -636,7 +636,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
             + "*"
         )
 
-    elem = lxml.html.fromstring(rendered_content)
+    elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     plain_text = process(elem)
     return plain_text
 
