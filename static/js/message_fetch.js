@@ -240,6 +240,28 @@ export function load_messages(opts) {
     data.client_gravatar = true;
     data = handle_operators_supporting_id_based_api(data);
 
+    if (page_params.is_spectator) {
+        // This is a bit of a hack; ideally we'd unify this logic in
+        // some way with the above logic, and not need to do JSON
+        // parsing/stringifying here.
+        const web_public_narrow = {negated: false, operator: "streams", operand: "web-public"};
+
+        if (!data.narrow) {
+            /* For the "All messages" feed, this will be the only operator. */
+            data.narrow = JSON.stringify([web_public_narrow]);
+        } else {
+            // Otherwise, we append the operator.  This logic is not
+            // ideal in that in theory an existing `streams:` operator
+            // could be present, but not in a useful way.  We don't
+            // attempt to validate the narrow is compatible with
+            // spectators here; the server will return an error if
+            // appropriate.
+            data.narrow = JSON.parse(data.narrow);
+            data.narrow.push(web_public_narrow);
+            data.narrow = JSON.stringify(data.narrow);
+        }
+    }
+
     channel.get({
         url: "/json/messages",
         data,
