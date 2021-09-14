@@ -1257,7 +1257,7 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_relative_to_full_url(self) -> None:
         def convert(test_data: str) -> str:
-            fragment = lxml.html.fromstring(test_data)
+            fragment = lxml.html.fragment_fromstring(test_data, create_parent=True)
             relative_to_full_url(fragment, "http://example.com")
             return lxml.html.tostring(fragment, encoding="unicode")
 
@@ -1287,7 +1287,9 @@ class TestMissedMessages(ZulipTestCase):
         # A path similar to our emoji path, but not in a link:
         test_data = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
         actual_output = convert(test_data)
-        expected_output = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
+        expected_output = (
+            "<div><p>Check out the file at: '/static/generated/emoji/images/emoji/'</p></div>"
+        )
         self.assertEqual(actual_output, expected_output)
 
         # An uploaded file
@@ -1295,8 +1297,8 @@ class TestMissedMessages(ZulipTestCase):
         test_data = test_data.format(realm_id=zephyr_realm.id)
         actual_output = convert(test_data)
         expected_output = (
-            '<a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">'
-            + "/user_uploads/{realm_id}/1f/some_random_value</a>"
+            '<div><a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">'
+            + "/user_uploads/{realm_id}/1f/some_random_value</a></div>"
         )
         expected_output = expected_output.format(realm_id=zephyr_realm.id)
         self.assertEqual(actual_output, expected_output)
@@ -1304,7 +1306,7 @@ class TestMissedMessages(ZulipTestCase):
         # A profile picture like syntax, but not actually in an HTML tag
         test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
         actual_output = convert(test_data)
-        expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
+        expected_output = '<div><p>Set src="/avatar/username@example.com?s=30"</p></div>'
         self.assertEqual(actual_output, expected_output)
 
         # A narrow URL which begins with a '#'.
@@ -1314,8 +1316,8 @@ class TestMissedMessages(ZulipTestCase):
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142" '
-            + 'title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
+            '<div><p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142" '
+            + 'title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p></div>'
         )
         self.assertEqual(actual_output, expected_output)
 
@@ -1345,9 +1347,9 @@ class TestMissedMessages(ZulipTestCase):
         )
         actual_output = convert(test_data)
         expected_output = (
-            '<p><a href="https://www.google.com/images/srpr/logo4w.png" '
+            '<div><p><a href="https://www.google.com/images/srpr/logo4w.png" '
             + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + "https://www.google.com/images/srpr/logo4w.png</a></p>"
+            + "https://www.google.com/images/srpr/logo4w.png</a></p></div>"
         )
         self.assertEqual(actual_output, expected_output)
 
