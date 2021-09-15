@@ -774,7 +774,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                     "unit_amount": plan.price_per_license,
                     "quantity": ledger_entry.licenses,
                 }
-            description = "Zulip Standard - renewal"
+            description = f"{plan.name} - renewal"
         elif licenses_base is not None and ledger_entry.licenses != licenses_base:
             assert plan.price_per_license and ledger_entry is not None
             last_ledger_entry_renewal = (
@@ -834,7 +834,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             collection_method=collection_method,
             customer=plan.customer.stripe_customer_id,
             days_until_due=days_until_due,
-            statement_descriptor="Zulip Standard",
+            statement_descriptor=plan.name,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
