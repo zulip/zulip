@@ -1532,6 +1532,7 @@ div.focused_table {
 
 #message_edit_topic {
     margin: 0 5px 5px 0;
+    width: auto;
 }
 
 .message_edit_header {
@@ -1555,8 +1556,7 @@ div.focused_table {
 }
 
 .message_edit_topic_propagate {
-    display: inline-block;
-    width: 300px;
+    width: auto;
     margin-bottom: 5px !important;
     max-width: 100%;
 }
@@ -2589,8 +2589,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-radius: 1px 4px 4px 1px !important;
     }
 
+    .dropdown-list-widget,
     .stream_header_colorblock {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     textarea {
