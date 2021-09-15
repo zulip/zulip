@@ -5440,8 +5440,13 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("cordeliA@zulip.com", content)
         from django.core.mail import outbox
 
-        # 3 = 1 + 2 -- Cordelia gets an email each for the "zulip" and "lear" realms.
-        self.assert_length(outbox, 3)
+        self.assert_length(outbox, 2)
+        iago_message = outbox[1]
+        cordelia_message = outbox[0]
+        self.assertIn("Zulip Dev", iago_message.body)
+        self.assertNotIn("Lear & Co", iago_message.body)
+        self.assertIn("Zulip Dev", cordelia_message.body)
+        self.assertIn("Lear & Co", cordelia_message.body)
 
     def test_find_team_ignore_invalid_email(self) -> None:
         result = self.client_post(
