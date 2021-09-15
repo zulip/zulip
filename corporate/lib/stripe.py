@@ -230,6 +230,12 @@ class InvalidBillingSchedule(Exception):
         super().__init__(self.message)
 
 
+class InvalidTier(Exception):
+    def __init__(self, tier: int) -> None:
+        self.message = f"Unknown tier: {tier}"
+        super().__init__(self.message)
+
+
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: object, **kwargs: object) -> object:
@@ -480,16 +486,25 @@ def calculate_discounted_price_per_license(
 def get_price_per_license(
     tier: int, billing_schedule: int, discount: Optional[Decimal] = None
 ) -> int:
-    # TODO use variables to account for Zulip Plus
-    assert tier == CustomerPlan.STANDARD
-
     price_per_license: Optional[int] = None
-    if billing_schedule == CustomerPlan.ANNUAL:
-        price_per_license = 8000
-    elif billing_schedule == CustomerPlan.MONTHLY:
-        price_per_license = 800
-    else:  # nocoverage
-        raise InvalidBillingSchedule(billing_schedule)
+
+    if tier == CustomerPlan.STANDARD:
+        if billing_schedule == CustomerPlan.ANNUAL:
+            price_per_license = 8000
+        elif billing_schedule == CustomerPlan.MONTHLY:
+            price_per_license = 800
+        else:  # nocoverage
+            raise InvalidBillingSchedule(billing_schedule)
+    elif tier == CustomerPlan.PLUS:
+        if billing_schedule == CustomerPlan.ANNUAL:
+            price_per_license = 16000
+        elif billing_schedule == CustomerPlan.MONTHLY:
+            price_per_license = 1600
+        else:  # nocoverage
+            raise InvalidBillingSchedule(billing_schedule)
+    else:
+        raise InvalidTier(tier)
+
     if discount is not None:
         price_per_license = calculate_discounted_price_per_license(price_per_license, discount)
     return price_per_license

@@ -38,6 +38,7 @@ from corporate.lib.stripe import (
     MIN_INVOICED_LICENSES,
     BillingError,
     InvalidBillingSchedule,
+    InvalidTier,
     StripeCardError,
     add_months,
     approve_sponsorship,
@@ -3225,11 +3226,18 @@ class BillingHelpersTest(ZulipTestCase):
             400,
         )
 
-        with self.assertRaises(AssertionError):
-            get_price_per_license(CustomerPlan.PLUS, CustomerPlan.MONTHLY)
+        self.assertEqual(get_price_per_license(CustomerPlan.PLUS, CustomerPlan.ANNUAL), 16000)
+        self.assertEqual(get_price_per_license(CustomerPlan.PLUS, CustomerPlan.MONTHLY), 1600)
+        self.assertEqual(
+            get_price_per_license(CustomerPlan.PLUS, CustomerPlan.MONTHLY, discount=Decimal(50)),
+            800,
+        )
 
         with self.assertRaisesRegex(InvalidBillingSchedule, "Unknown billing_schedule: 1000"):
             get_price_per_license(CustomerPlan.STANDARD, 1000)
+
+        with self.assertRaisesRegex(InvalidTier, "Unknown tier: 10"):
+            get_price_per_license(CustomerPlan.ENTERPRISE, CustomerPlan.ANNUAL)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:
         user = self.example_user("hamlet")
