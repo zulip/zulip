@@ -3176,11 +3176,11 @@ class BillingHelpersTest(ZulipTestCase):
             ((False, CustomerPlan.MONTHLY, 87.15), (anchor, month_later, month_later, 102)),
         ]
         with patch("corporate.lib.stripe.timezone_now", return_value=anchor):
-            for (automanage_licenses, discount, free_trial), output in test_cases:
+            for (automanage_licenses, billing_schedule, discount), output in test_cases:
                 output_ = compute_plan_parameters(
                     automanage_licenses,
-                    discount,
-                    None if free_trial is None else Decimal(free_trial),
+                    billing_schedule,
+                    None if discount is None else Decimal(discount),
                 )
                 self.assertEqual(output_, output)
 
