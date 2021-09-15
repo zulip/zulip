@@ -184,3 +184,6 @@ pyuca
 
 # Handle connection retries with exponential backoff
 backoff
+
+# Non-backtracking regular expressions
+google-re2
