@@ -408,6 +408,7 @@ def make_end_of_cycle_updates_if_needed(
 
             discount = plan.customer.default_discount or plan.discount
             _, _, _, price_per_license = compute_plan_parameters(
+                tier=plan.tier,
                 automanage_licenses=plan.automanage_licenses,
                 billing_schedule=CustomerPlan.ANNUAL,
                 discount=plan.discount,
@@ -495,6 +496,7 @@ def get_price_per_license(
 
 
 def compute_plan_parameters(
+    tier: int,
     automanage_licenses: bool,
     billing_schedule: int,
     discount: Optional[Decimal],
@@ -511,7 +513,7 @@ def compute_plan_parameters(
     else:  # nocoverage
         raise InvalidBillingSchedule(billing_schedule)
 
-    price_per_license = get_price_per_license(CustomerPlan.STANDARD, billing_schedule, discount)
+    price_per_license = get_price_per_license(tier, billing_schedule, discount)
 
     next_invoice_date = period_end
     if automanage_licenses:
@@ -568,7 +570,11 @@ def process_initial_upgrade(
         period_end,
         price_per_license,
     ) = compute_plan_parameters(
-        automanage_licenses, billing_schedule, customer.default_discount, free_trial
+        CustomerPlan.STANDARD,
+        automanage_licenses,
+        billing_schedule,
+        customer.default_discount,
+        free_trial,
     )
     # The main design constraint in this function is that if you upgrade with a credit card, and the
     # charge fails, everything should be rolled back as if nothing had happened. This is because we
