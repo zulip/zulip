@@ -274,6 +274,13 @@ ecdsa==0.17.0 \
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
     # via python-twitter
+google-re2==0.2.20210901 \
+    --hash=sha256:028bb86b1612cbd7947e7493a92f1dc33c8b95b31a57017c392811650b62bf5d \
+    --hash=sha256:10020ad49a6217534c5b82543ca4ee56c3317981afb68a8c737c212f222564f5 \
+    --hash=sha256:542b9b18f01d06375ffab6a0e2ed809e3de7ddedde3382b6d24a98aced57c7a5 \
+    --hash=sha256:676fa9ee54e3fb70f290526fc0f4d78d1e5a4add701b5547494eaf7c68c72247 \
+    --hash=sha256:a1175c7e5b5ad12462279184099b7b95f72b25fab4d141289224c7a3ffdc4a06
+    # via -r requirements/common.in
 greenlet==1.1.1 \
     --hash=sha256:04e1849c88aa56584d4a0a6e36af5ec7cc37993fdc1fda72b56aa1394a92ded3 \
     --hash=sha256:05e72db813c28906cdc59bd0da7c325d9b82aa0b0543014059c34c8c4ad20e16 \
