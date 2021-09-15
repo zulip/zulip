@@ -417,6 +417,41 @@ export const user_role_values = {
     },
 };
 
+export const expires_in_values = {
+    // Backend support for this configuration is not available yet.
+    // hour: {
+    //     value: 1,
+    //     description: $t({defaultMessage: "1 hour"}),
+    //     default: false,
+    // },
+    day: {
+        value: 1,
+        description: $t({defaultMessage: "1 day"}),
+        default: false,
+    },
+    threeDays: {
+        value: 3,
+        description: $t({defaultMessage: "3 days"}),
+        default: false,
+    },
+    tenDays: {
+        value: 10,
+        description: $t({defaultMessage: "10 days"}),
+        default: true,
+    },
+    thirtyDays: {
+        value: 30,
+        description: $t({defaultMessage: "30 days"}),
+        default: false,
+    },
+    // Backend support for this configuration is not available yet.
+    // never: {
+    //     value: "never",
+    //     description: $t({defaultMessage: "Never expires"}),
+    //     default: false,
+    // }
+};
+
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
