@@ -444,6 +444,8 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
     },
 }
 
+# More complete documentation of the configurable security settings
+# are available in the "security" part of https://github.com/onelogin/python3-saml#settings.
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {
     ## If you've set up the optional private and public server keys,
     ## set this to True to enable signing of SAMLRequests using the
@@ -457,7 +459,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {
     # "requestedAuthnContext": ["urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
     #                           "urn:oasis:names:tc:SAML:2.0:ac:classes:X509"],
     ##
-    ## For details on this, see https://github.com/onelogin/python3-saml#settings
+    ## For details on this, see the aforementioned python3-saml documentation
     ## and https://docs.oasis-open.org/security/saml/v2.0/saml-authn-context-2.0-os.pdf
     "requestedAuthnContext": False,
 }
