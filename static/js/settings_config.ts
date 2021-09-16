@@ -478,7 +478,7 @@ const other_notification_settings = desktop_notification_settings.concat(
     ["desktop_icon_count_display"],
     mobile_notification_settings,
     email_notification_settings,
-    ["email_notifications_batching_period"],
+    ["email_notifications_batching_period_seconds"],
     ["notification_sound"],
 );
 

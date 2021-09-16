@@ -149,8 +149,12 @@ export function update_page() {
         } else if (setting === "desktop_icon_count_display") {
             update_desktop_icon_count_display();
             continue;
-        } else if (setting === "notification_sound") {
-            container.find(".setting_notification_sound").val(user_settings.notification_sound);
+        } else if (
+            setting === "notification_sound" ||
+            setting === "email_notifications_batching_period_seconds"
+        ) {
+            container.find(`.setting_${CSS.escape(setting)}`).val(user_settings[setting]);
+            continue;
         }
 
         container.find(`.${CSS.escape(setting)}`).prop("checked", user_settings[setting]);
