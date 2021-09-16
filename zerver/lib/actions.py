@@ -4625,7 +4625,11 @@ def do_change_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    if plan_type == Realm.STANDARD:
+    if plan_type == Realm.PLUS:
+        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        realm.message_visibility_limit = None
+        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
+    elif plan_type == Realm.STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD

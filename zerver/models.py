@@ -540,6 +540,7 @@ class Realm(models.Model):
     LIMITED = 2
     STANDARD = 3
     STANDARD_FREE = 4
+    PLUS = 10
     plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
