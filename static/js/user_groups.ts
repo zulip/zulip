@@ -7,6 +7,7 @@ type UserGroup = {
     id: number;
     name: string;
     members: Set<number>;
+    is_system_group: boolean;
 };
 
 // The members field is a number array which we convert
@@ -33,6 +34,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         id: user_group_raw.id,
         name: user_group_raw.name,
         members: new Set(user_group_raw.members),
+        is_system_group: user_group_raw.is_system_group,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -71,7 +73,8 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
 }
 
 export function get_realm_user_groups(): UserGroup[] {
-    return Array.from(user_group_by_id_dict.values()).sort((a, b) => a.id - b.id);
+    const user_groups = Array.from(user_group_by_id_dict.values()).sort((a, b) => a.id - b.id);
+    return user_groups.filter((group) => !group.is_system_group);
 }
 
 export function is_member_of(user_group_id: number, user_id: number): boolean {

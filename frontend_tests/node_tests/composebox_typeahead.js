@@ -257,6 +257,7 @@ const hamletcharacters = {
     id: 1,
     description: "Characters of Hamlet",
     members: new Set([100, 104]),
+    is_system_group: false,
 };
 
 const backend = {
@@ -264,6 +265,7 @@ const backend = {
     id: 2,
     description: "Backend team",
     members: new Set([]),
+    is_system_group: false,
 };
 
 const call_center = {
@@ -271,6 +273,7 @@ const call_center = {
     id: 3,
     description: "folks working in support",
     members: new Set([]),
+    is_system_group: false,
 };
 
 const make_emoji = (emoji_dict) => ({
