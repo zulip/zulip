@@ -14,6 +14,7 @@ run_test("user_groups", () => {
         name: "Students",
         id: 0,
         members: new Set([1, 2]),
+        is_system_group: false,
     };
 
     const params = {};
@@ -29,11 +30,13 @@ run_test("user_groups", () => {
         description: "foo",
         id: 1,
         members: new Set([3]),
+        is_system_group: false,
     };
     const all = {
         name: "Everyone",
         id: 2,
         members: new Set([1, 2, 3]),
+        is_system_group: false,
     };
 
     user_groups.add(admins);
