@@ -194,14 +194,14 @@ run of `manage.py sync_ldap_user_data`.
 
 #### Synchronizing avatars
 
-Starting with Zulip 2.0, Zulip supports syncing LDAP / Active
+Zulip supports syncing LDAP / Active
 Directory profile pictures (usually available in the `thumbnailPhoto`
 or `jpegPhoto` attribute in LDAP) by configuring the `avatar` key in
 `AUTH_LDAP_USER_ATTR_MAP`.
 
 #### Synchronizing custom profile fields
 
-Starting with Zulip 2.0, Zulip supports syncing
+Zulip supports syncing
 [custom profile fields][custom-profile-fields] from LDAP / Active
 Directory. To configure this, you first need to
 [configure some custom profile fields][custom-profile-fields] for your
@@ -214,7 +214,7 @@ to the `AUTH_LDAP_USER_ATTR_MAP`.
 
 #### Automatically deactivating users with Active Directory
 
-Starting with Zulip 2.0, Zulip supports synchronizing the
+Zulip supports synchronizing the
 disabled/deactivated status of users from Active Directory. You can
 configure this by uncommenting the sample line
 `"userAccountControl": "userAccountControl",` in
@@ -236,7 +236,7 @@ for details on the various `userAccountControl` flags.
 
 #### Deactivating non-matching users
 
-Starting with Zulip 2.0, Zulip supports automatically deactivating
+Zulip supports automatically deactivating
 users if they are not found by the `AUTH_LDAP_USER_SEARCH` query
 (either because the user is no longer in LDAP/Active Directory, or
 because the user no longer matches the query). This feature is
