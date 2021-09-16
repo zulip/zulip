@@ -587,6 +587,30 @@ div.overlay {
     margin-right: 8px;
 }
 
+.demo-organization-warning {
+    position: relative;
+    display: block;
+    background-color: hsl(4deg 35% 90%);
+    border: 1px solid hsl(3deg 57% 33% / 40%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(4deg 58% 33%);
+
+    a {
+        text-decoration: none;
+    }
+
+    .convert-demo-organization-button {
+        &:focus {
+            outline: 1px solid hsl(200deg 100% 25%);
+            outline-offset: 0;
+        }
+    }
+}
+
 /* We are mostly consistent in how we style
    unread counts, except for starred messages.
    This is the common section.

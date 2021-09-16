@@ -628,6 +628,12 @@ input[type="checkbox"] {
     }
 }
 
+#convert-demo-organization-form {
+    .domain_label {
+        display: inline-block;
+    }
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
