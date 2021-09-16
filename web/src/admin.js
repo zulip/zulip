@@ -4,6 +4,7 @@ import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
 import * as bot_data from "./bot_data";
+import * as demo_organizations_ui from "./demo_organizations_ui";
 import {$t, get_language_name, language_list} from "./i18n";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
@@ -231,6 +232,11 @@ export function build_page() {
     settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
     settings_invites.update_invite_user_panel();
     insert_tip_box();
+
+    if (page_params.demo_organization_scheduled_deletion_date && page_params.is_admin) {
+        demo_organizations_ui.insert_demo_organization_warning();
+        demo_organizations_ui.handle_demo_organization_conversion();
+    }
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 
