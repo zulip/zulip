@@ -365,16 +365,17 @@ async function test_notifications_section(page: Page): Promise<void> {
     // At the beginning, "PMs, mentions, and alerts"(checkbox name=enable_sounds) audio will be on
     // and "Streams"(checkbox name=enable_stream_audible_notifications) audio will be off by default.
 
-    const notification_sound_enabled = ".setting_notification_sound:enabled";
+    const notification_sound_enabled =
+        "#user-notification-settings .setting_notification_sound:enabled";
     await page.waitForSelector(notification_sound_enabled, {visible: true});
 
-    await common.fill_form(page, ".notification-settings-form", {
+    await common.fill_form(page, "#user-notification-settings .notification-settings-form", {
         enable_stream_audible_notifications: true,
         enable_sounds: false,
     });
     await page.waitForSelector(notification_sound_enabled, {visible: true});
 
-    await common.fill_form(page, ".notification-settings-form", {
+    await common.fill_form(page, "#user-notification-settings .notification-settings-form", {
         enable_stream_audible_notifications: true,
     });
     /*
