@@ -822,11 +822,14 @@ td.pointer {
     opacity: 0.5;
     line-height: 0px;
     text-align: right;
-    width: 45px;
+    padding-left: 5px;
+    width: 40px;
     position: absolute;
     left: 0;
     top: 16px;
     user-select: none;
+    white-space: nowrap;
+    overflow-x: clip;
 }
 
 .message_time {
