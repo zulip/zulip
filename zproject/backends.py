@@ -477,6 +477,23 @@ def check_ldap_config() -> None:
         # Email search needs to be configured in this case.
         assert settings.AUTH_LDAP_USERNAME_ATTR and settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
 
+    # These two are alternatives approaches to deactivating users based on an ldap attribute
+    # and thus don't make sense to have enabled together.
+    assert not (
+        settings.AUTH_LDAP_USER_ATTR_MAP.get("userAccountControl")
+        and settings.AUTH_LDAP_USER_ATTR_MAP.get("deactivated")
+    )
+
+
+def ldap_should_sync_active_status() -> bool:
+    if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:
+        return True
+
+    if "deactivated" in settings.AUTH_LDAP_USER_ATTR_MAP:
+        return True
+
+    return False
+
 
 def find_ldap_users_by_email(email: str) -> List[_LDAPUser]:
     """
@@ -715,15 +732,30 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             else:
                 logging.warning("Could not parse %s field for user %s", avatar_attr_name, user.id)
 
-    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:
-        """Implements the userAccountControl check for whether a user has been
-        disabled in an Active Directory server being integrated with
-        Zulip via LDAP."""
-        account_control_value = ldap_user.attrs[
-            settings.AUTH_LDAP_USER_ATTR_MAP["userAccountControl"]
-        ][0]
-        ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
-        return ldap_disabled
+    def is_user_disabled_in_ldap(self, ldap_user: _LDAPUser) -> bool:
+        """Implements checks for whether a user has been
+        disabled in the LDAP server being integrated with
+        Zulip."""
+        if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            account_control_value = ldap_user.attrs[
+                settings.AUTH_LDAP_USER_ATTR_MAP["userAccountControl"]
+            ][0]
+            return bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
+
+        assert "deactivated" in settings.AUTH_LDAP_USER_ATTR_MAP
+        attr_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP["deactivated"]][0]
+
+        # In the LDAP specification, a Boolean attribute should be
+        # *exactly* either "TRUE" or "FALSE". However,
+        # https://www.freeipa.org/page/V4/User_Life-Cycle_Management suggests
+        # that FreeIPA at least documents using Yes/No for booleans.
+        true_values = ["TRUE", "YES"]
+        false_values = ["FALSE", "NO"]
+        attr_value_upper = attr_value.upper()
+        assert (
+            attr_value_upper in true_values or attr_value_upper in false_values
+        ), f"Invalid value '{attr_value}' in the LDAP attribute mapped to deactivated"
+        return attr_value_upper in true_values
 
     def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
         # org_membership takes priority over AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL.
@@ -881,8 +913,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
             raise ZulipLDAPException("User not allowed to access realm")
 
-        if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
-            ldap_disabled = self.is_account_control_disabled_user(ldap_user)
+        if ldap_should_sync_active_status():  # nocoverage
+            ldap_disabled = self.is_user_disabled_in_ldap(ldap_user)
             if ldap_disabled:
                 # Treat disabled users as deactivated in Zulip.
                 return_data["inactive_user"] = True
@@ -1012,8 +1044,8 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         user = get_user_by_delivery_email(username, ldap_user.realm)
         built = False
         # Synchronise the UserProfile with its LDAP attributes:
-        if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:
-            user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
+        if ldap_should_sync_active_status():
+            user_disabled_in_ldap = self.is_user_disabled_in_ldap(ldap_user)
             if user_disabled_in_ldap:
                 if user.is_active:
                     ldap_logger.info(

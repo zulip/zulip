@@ -239,6 +239,9 @@ AUTH_LDAP_USER_ATTR_MAP = {
     ## who are disabled in LDAP/Active Directory (and reactivate users who are not).
     ## See docs for usage details and precise semantics.
     # "userAccountControl": "userAccountControl",
+    ## Alternatively, you can map "deactivated" to a boolean attribute
+    ## that is "TRUE" for deactivated users and "FALSE" otherwise.
+    # "deactivated": "nsAccountLock",
     ## Restrict access to organizations using an LDAP attribute.
     ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#restricting-ldap-user-access-to-specific-organizations
     # "org_membership": "department",

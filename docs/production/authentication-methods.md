@@ -212,17 +212,23 @@ corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
 
-#### Automatically deactivating users with Active Directory
+#### Automatically deactivating users
 
 Zulip supports synchronizing the
-disabled/deactivated status of users from Active Directory. You can
-configure this by uncommenting the sample line
+disabled/deactivated status of users. If you're using Active Directory,
+you can configure this by uncommenting the sample line
 `"userAccountControl": "userAccountControl",` in
 `AUTH_LDAP_USER_ATTR_MAP` (and restarting the Zulip server). Zulip
 will then treat users that are disabled via the "Disable Account"
 feature in Active Directory as deactivated in Zulip.
 
-Users disabled in active directory will be immediately unable to log in
+If you're using a different LDAP server which uses a boolean attribute
+which is `TRUE` or `YES` for users that should be deactivated and `FALSE`
+or `NO` otherwise. You can configure a mapping for `deactivated` in
+`AUTH_LDAP_USER_ATTR_MAP`. For example, `"deactivated": "nsAccountLock",` is a correct mapping for a
+[FreeIPA](https://www.freeipa.org/) LDAP database.
+
+Disabled users will be immediately unable to log in
 to Zulip, since Zulip queries the LDAP/Active Directory server on
 every login attempt. The user will be fully deactivated the next time
 your `manage.py sync_ldap_user_data` cron job runs (at which point
