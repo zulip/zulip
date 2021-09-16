@@ -40,7 +40,7 @@ from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
 )
-from zerver.lib.emoji import name_to_codepoint
+from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.upload import resize_logo, sanitize_name
 from zerver.models import (
@@ -60,6 +60,35 @@ DMMembersT = Dict[str, Tuple[str, str]]
 SlackToZulipRecipientT = Dict[str, int]
 # Generic type for SlackBotEmail class
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
+
+# Initialize iamcal emoji data, because Slack seems to use emoji naming from iamcal.
+# According to https://emojipedia.org/slack/, Slack's emoji shortcodes are
+# derived from https://github.com/iamcal/emoji-data.
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")
+EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
+with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
+    emoji_data = orjson.loads(emoji_data_file.read())
+
+
+def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
+    # This function is identical with the function with the same name at
+    # tools/setup/emoji/emoji_setup_utils.py.
+    # This function is unlikely to be changed, unless iamcal changes their data
+    # structure.
+    emoji_code = emoji_dict.get("non_qualified") or emoji_dict["unified"]
+    return emoji_code.lower()
+
+
+# Build the translation dict from Slack emoji name to codepoint.
+slack_emoji_name_to_codepoint: Dict[str, str] = {}
+for emoji_dict in emoji_data:
+    short_name = emoji_dict["short_name"]
+    emoji_code = get_emoji_code(emoji_dict)
+    slack_emoji_name_to_codepoint[short_name] = emoji_code
+    for sn in emoji_dict["short_names"]:
+        if sn != short_name:
+            slack_emoji_name_to_codepoint[sn] = emoji_code
 
 
 class SlackBotEmail:
@@ -1088,13 +1117,21 @@ def build_reactions(
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
         emoji_name = slack_reaction["name"]
-        if emoji_name in name_to_codepoint:
-            emoji_code = name_to_codepoint[emoji_name]
+        if emoji_name in slack_emoji_name_to_codepoint:
+            emoji_code = slack_emoji_name_to_codepoint[emoji_name]
+            try:
+                zulip_emoji_name = codepoint_to_name[emoji_code]
+            except KeyError:
+                print(f"WARN: Emoji found in iamcal but not Zulip: {emoji_name}")
+                continue
+            # Convert Slack emoji name to Zulip emoji name.
+            emoji_name = zulip_emoji_name
             reaction_type = Reaction.UNICODE_EMOJI
         elif emoji_name in realmemoji:
             emoji_code = realmemoji[emoji_name]
             reaction_type = Reaction.REALM_EMOJI
         else:
+            print(f"WARN: Emoji not found in iamcal: {emoji_name}")
             continue
 
         for slack_user_id in slack_reaction["users"]:

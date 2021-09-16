@@ -39,6 +39,7 @@ from zerver.data_import.slack import (
     get_subscription,
     get_user_timezone,
     process_message_files,
+    slack_emoji_name_to_codepoint,
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
@@ -1252,3 +1253,9 @@ class SlackImporter(ZulipTestCase):
             SlackBotEmail.get_email({"first_name": "Other Name", "bot_id": "other"}, "example.com"),
             "othername-bot@example.com",
         )
+
+    def test_slack_emoji_name_to_codepoint(self) -> None:
+        self.assertEqual(slack_emoji_name_to_codepoint["thinking_face"], "1f914")
+        self.assertEqual(slack_emoji_name_to_codepoint["tophat"], "1f3a9")
+        self.assertEqual(slack_emoji_name_to_codepoint["dog2"], "1f415")
+        self.assertEqual(slack_emoji_name_to_codepoint["dog"], "1f436")
