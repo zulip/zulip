@@ -149,7 +149,7 @@ export function set_up(container, settings_object, for_realm_settings) {
     }
 }
 
-export function update_page(container, settings_object) {
+export function update_page(container, settings_object, for_realm_settings) {
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
@@ -159,7 +159,7 @@ export function update_page(container, settings_object) {
             // we should just leave the checkbox always off.
             continue;
         } else if (setting === "desktop_icon_count_display") {
-            update_desktop_icon_count_display(container, settings_object);
+            update_desktop_icon_count_display(container, settings_object, for_realm_settings);
             continue;
         } else if (
             setting === "notification_sound" ||

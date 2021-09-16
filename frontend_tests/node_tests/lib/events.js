@@ -525,6 +525,13 @@ exports.fixtures = {
         value: "google",
     },
 
+    realm_user_settings_defaults__notification_sound: {
+        type: "realm_user_settings_defaults",
+        op: "update",
+        property: "notification_sound",
+        value: "ding",
+    },
+
     restart: {
         type: "restart",
         zulip_version: "4.0-dev+git",

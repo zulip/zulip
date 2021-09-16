@@ -384,6 +384,9 @@ function update_dependent_subsettings(property_name) {
             settings_notifications.set_enable_digest_emails_visibility(
                 $("#user-notification-settings"),
             );
+            settings_notifications.set_enable_digest_emails_visibility(
+                $("#realm-user-default-settings"),
+            );
             set_digest_emails_weekday_visibility();
             break;
     }

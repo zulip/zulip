@@ -97,7 +97,7 @@ export function initialize() {
     );
 }
 
-function update_notification_sound_source(container_elem, settings_object) {
+export function update_notification_sound_source(container_elem, settings_object) {
     const notification_sound = settings_object.notification_sound;
     const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
     container_elem

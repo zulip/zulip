@@ -55,7 +55,11 @@ export function update_property(stream_id, property, value, other_values) {
         case "email_notifications":
         case "wildcard_mentions_notify":
             update_stream_setting(sub, value, property);
-            settings_notifications.update_page($("#user-notification-settings"), user_settings);
+            settings_notifications.update_page(
+                $("#user-notification-settings"),
+                user_settings,
+                false,
+            );
             break;
         case "name":
             stream_settings_ui.update_stream_name(sub, value);

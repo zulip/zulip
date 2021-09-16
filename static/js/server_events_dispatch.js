@@ -401,11 +401,22 @@ export function dispatch_normal_event(event) {
             const container_elem = $("#realm-user-default-settings");
             if (display_settings_list.includes(event.property)) {
                 settings_display.update_page(container_elem, realm_user_settings_defaults);
+            } else if (settings_config.all_notification_settings.includes(event.property)) {
+                settings_notifications.update_page(
+                    container_elem,
+                    realm_user_settings_defaults,
+                    true,
+                );
             }
 
             if (event.property === "emojiset") {
                 settings_display.report_emojiset_change(
                     container_elem,
+                    realm_user_settings_defaults,
+                );
+            } else if (event.property === "notification_sound") {
+                notifications.update_notification_sound_source(
+                    $("#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
                 );
             }
@@ -576,7 +587,11 @@ export function dispatch_normal_event(event) {
         case "user_settings": {
             if (settings_config.all_notification_settings.includes(event.property)) {
                 notifications.handle_global_notification_updates(event.property, event.value);
-                settings_notifications.update_page($("#user-notification-settings"), user_settings);
+                settings_notifications.update_page(
+                    $("#user-notification-settings"),
+                    user_settings,
+                    false,
+                );
                 // TODO: This should also do a refresh of the stream_edit UI
                 // if it's currently displayed, possibly reusing some code
                 // from stream_events.js
