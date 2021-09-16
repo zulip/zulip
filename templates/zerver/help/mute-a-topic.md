@@ -38,7 +38,7 @@ Follow the same procedure to unmute the topic.
 
 Follow the same procedure to unmute the topic.
 
-### See your list of muted topics
+## Browse previously muted topics
 
 {start_tabs}
 
