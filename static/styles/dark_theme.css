@@ -19,6 +19,10 @@ body.dark-theme {
         @extend .placeholder;
     }
 
+    .demo-org-warning:hover {
+        color: hsl(0, 0%, 20%);
+    }
+
     a:hover {
         color: hsl(200, 79%, 66%);
     }

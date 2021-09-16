@@ -9,6 +9,28 @@ label {
     .fa-question-circle-o {
         left: 2px;
     }
+
+    &.domain_label {
+        display: inline-block;
+    }
+
+    &.realm_string_id,
+    &.demo_org_form_email {
+        margin-bottom: 10px;
+    }
+}
+
+#convert-demo-org-form {
+    #help-text {
+        width: 100%;
+        max-width: none;
+        margin: 8px 0;
+        text-align: left;
+        color: hsl(0, 0%, 47%);
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.2;
+    }
 }
 
 label,
@@ -58,6 +80,13 @@ h3,
 .settings-section-title {
     .fa-question-circle-o {
         left: 5px;
+    }
+}
+
+#demo-org-conversion-dialog-widget {
+    #dialog_error {
+        width: unset !important;
+        height: unset !important;
     }
 }
 

@@ -1,9 +1,14 @@
 import $ from "jquery";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
+import render_convert_demo_org_form from "../templates/settings/convert_demo_org_form.hbs";
+import render_demo_org_warning from "../templates/settings/demo_org_warning.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
+import * as channel from "./channel";
+import * as dialog_widget from "./dialog_widget";
 import {$t, get_language_name, language_list} from "./i18n";
+import {get_demo_organization_deadline_days_remaining} from "./navbar_alerts";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
@@ -15,6 +20,7 @@ import * as settings_org from "./settings_org";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import * as settings_ui from "./settings_ui";
 
 const admin_settings_label = {
     // Organization profile
@@ -83,6 +89,55 @@ function get_realm_level_notification_settings(options) {
     options.notification_settings = all_notifications_settings.settings;
     options.show_push_notifications_tooltip =
         all_notifications_settings.show_push_notifications_tooltip;
+}
+
+function insert_demo_org_warning() {
+    const days_remaining = get_demo_organization_deadline_days_remaining();
+    const rendered_demo_org_warning = render_demo_org_warning({
+        is_demo_org: page_params.demo_organization_scheduled_deletion_date,
+        is_owner: page_params.is_owner,
+        days_remaining,
+    });
+    $(".organization-box").find(".settings-section").prepend(rendered_demo_org_warning);
+}
+
+function handle_demo_org_conversion() {
+    $(".demo-org-warning").on("click", () => {
+        const parts = new URL(page_params.realm_uri).hostname.split(".");
+        const subdomain = parts[0];
+        const domain = parts[1].concat(".", parts[2]);
+        const html_body = render_convert_demo_org_form({
+            realm_subdomain: subdomain,
+            realm_domain: domain,
+            email: page_params.email,
+        });
+
+        function submit_subdomain() {
+            const string_id = $("#demo-org-conversion-dialog-widget")
+                .find("#convert-demo-org-form")
+                .find("input[name='string_id']");
+            const data = {
+                string_id: string_id.val(),
+            };
+            const opts = {
+                success_continuation(data) {
+                    window.location.href = data.realm_uri;
+                },
+            };
+            const status_field = $("#demo-org-conversion-dialog-widget")
+                .find("#dialog_error")
+                .expectOne();
+            settings_ui.do_settings_change(channel.patch, "/json/realm", data, status_field, opts);
+        }
+
+        dialog_widget.launch({
+            html_heading: $t({defaultMessage: "Make organization permanent"}),
+            html_body,
+            on_click: submit_subdomain,
+            html_submit_button: $t({defaultMessage: "Make organization permanent"}),
+            id: "demo-org-conversion-dialog-widget",
+        });
+    });
 }
 
 export function build_page() {
@@ -202,6 +257,11 @@ export function build_page() {
 
     settings_bots.update_bot_settings_tip();
     insert_tip_box();
+
+    if (page_params.demo_organization_scheduled_deletion_date) {
+        insert_demo_org_warning();
+        handle_demo_org_conversion();
+    }
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);

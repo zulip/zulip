@@ -546,6 +546,41 @@ div.overlay {
     content: "\f0a2";
 }
 
+.demo-org-warning {
+    position: relative;
+    display: block;
+    background-color: hsl(360, 100%, 93%);
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(0, 0%, 40%);
+
+    a {
+        text-decoration: none;
+    }
+
+    &::before {
+        display: inline;
+        margin-right: 8px;
+
+        font-family: FontAwesome;
+        font-weight: 600;
+        content: "\f071";
+    }
+
+    &:hover {
+        color: hsl(0, 0%, 20%);
+        border: 1px solid hsl(0, 0%, 65%);
+        box-shadow: 0 0 4px hsla(199, 79%, 56%, 0.2);
+        cursor: pointer;
+
+        text-decoration: none;
+    }
+}
+
 /* We are mostly consistent in how we style
    unread counts, except for starred messages.
    This is the common section.

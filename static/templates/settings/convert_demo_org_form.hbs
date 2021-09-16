@@ -1,0 +1,33 @@
+<div id="convert-demo-org-form">
+    {{#unless email}}
+    <form class="form-horizontal email-form">
+        <div class="input-group new_email_container">
+            <label class="demo_org_form_email" for="email"><b>{{t 'Email' }}</b></label>
+            <input type="text"
+              class="email required"
+              placeholder="{{t 'Enter your email address' }}"
+              id="email"
+              name="email"
+              autofocus
+              required />
+        </div>
+    </form>
+    {{/unless}}
+
+    {{#if email}}
+    <p>You can convert this demo organization to a permanent Zulip organization. All users and message history will be preserved.</p>
+    <form class="form-horizontal subdomain-setting">
+        <div class="input-group new_subdomain_container">
+            <label class="realm_string_id" for="string_id"><b>{{t "Organization URL" }}</b></label>
+            <input type="text"
+              autocomplete="off"
+              name="string_id"
+              placeholder="{{t 'subdomain' }}"
+              value="{{ realm_subdomain }}"
+              required />
+            <label for="string_id" class="domain_label">.{{ realm_domain }}</label>
+            <div id="help-text">The URL users will use to access the new organization.</div>
+        </div>
+    </form>
+    {{/if}}
+</div>

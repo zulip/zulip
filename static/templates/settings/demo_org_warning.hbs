@@ -1,0 +1,12 @@
+{{#if is_demo_org }}
+<div class='demo-org-warning'>
+    {{#tr}}
+    This demo organization will be automatically deleted in {days_remaining} days.&nbsp;
+    {{/tr}}
+    {{#if is_owner }}
+        {{#tr}}
+        Convert to make permanent.
+        {{/tr}}
+    {{/if}}
+</div>
+{{/if}}

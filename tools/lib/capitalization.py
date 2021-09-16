@@ -65,6 +65,7 @@ IGNORED_PHRASES = [
     r"keyword",
     r"streamname",
     r"user@example\.com",
+    r"subdomain",
     # Fragments of larger strings
     (r"your subscriptions on your Streams page"),
     r"Add global time<br />Everyone sees global times in their own time zone\.",
