@@ -45,33 +45,11 @@ $("body").ready(() => {
 function setup_settings_label() {
     settings_label = {
         // settings_notification
-        enable_online_push_notifications: $t({
-            defaultMessage: "Send mobile notifications even if I'm online (useful for testing)",
-        }),
-        pm_content_in_desktop_notifications: $t({
-            defaultMessage: "Include content of private messages in desktop notifications",
-        }),
-        desktop_icon_count_display: $t({
-            defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
-        }),
-        enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
-        enable_login_emails: $t({
-            defaultMessage: "Send email notifications for new logins to my account",
-        }),
-        enable_marketing_emails: $t({
-            defaultMessage: "Send me Zulip's low-traffic newsletter (a few emails a year)",
-        }),
-        message_content_in_email_notifications: $t({
-            defaultMessage: "Include message content in message notification emails",
-        }),
-        realm_name_in_notifications: $t({
-            defaultMessage: "Include organization name in subject of message notification emails",
-        }),
         presence_enabled: $t({
             defaultMessage: "Display my availability to other users when online",
         }),
 
-        // display settings
+        ...settings_config.notification_settings_labels,
         ...settings_config.display_settings_labels,
     };
 }

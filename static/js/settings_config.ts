@@ -372,9 +372,9 @@ export const display_settings_labels = {
     ),
 };
 
-export const realm_user_settings_defaults_labels = {
+export const notification_settings_labels = {
     enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if user is online (useful for testing)",
+        defaultMessage: "Send mobile notifications even if I'm online (useful for testing)",
     }),
     pm_content_in_desktop_notifications: $t({
         defaultMessage: "Include content of private messages in desktop notifications",
@@ -382,9 +382,12 @@ export const realm_user_settings_defaults_labels = {
     desktop_icon_count_display: $t({
         defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
     }),
-    enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
+    enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
     enable_login_emails: $t({
-        defaultMessage: "Send email notifications for new logins to the account",
+        defaultMessage: "Send email notifications for new logins to my account",
+    }),
+    enable_marketing_emails: $t({
+        defaultMessage: "Send me Zulip's low-traffic newsletter (a few emails a year)",
     }),
     message_content_in_email_notifications: $t({
         defaultMessage: "Include message content in message notification emails",
@@ -392,7 +395,20 @@ export const realm_user_settings_defaults_labels = {
     realm_name_in_notifications: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
+};
+
+export const realm_user_settings_defaults_labels = {
+    ...notification_settings_labels,
     ...display_settings_labels,
+
+    /* Overrides to remove "I" from labels for the realm-level versions of these labels. */
+    enable_online_push_notifications: $t({
+        defaultMessage: "Send mobile notifications even if user is online (useful for testing)",
+    }),
+    enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
+    enable_login_emails: $t({
+        defaultMessage: "Send email notifications for new logins to the account",
+    }),
 };
 
 // NOTIFICATIONS
