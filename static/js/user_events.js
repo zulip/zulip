@@ -18,6 +18,7 @@ import * as settings_config from "./settings_config";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_org from "./settings_org";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
 
@@ -86,6 +87,7 @@ export const update_person = function update(person) {
             settings_org.maybe_disable_widgets();
             settings_profile_fields.maybe_disable_widgets();
             settings_streams.maybe_disable_widgets();
+            settings_realm_user_settings_defaults.maybe_disable_widgets();
         }
 
         if (

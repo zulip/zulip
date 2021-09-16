@@ -37,6 +37,9 @@ mock_esm("../../static/js/settings_org", {
 mock_esm("../../static/js/settings_profile_fields", {
     maybe_disable_widgets() {},
 });
+mock_esm("../../static/js/settings_realm_user_settings_defaults", {
+    maybe_disable_widgets() {},
+});
 mock_esm("../../static/js/settings_streams", {
     maybe_disable_widgets() {},
 });
