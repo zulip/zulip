@@ -3,8 +3,7 @@ import $ from "jquery";
 import render_favicon_svg from "../templates/favicon.svg.hbs";
 
 import * as blueslip from "./blueslip";
-
-import favicon_font_url from "!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans/TTF/SourceSans3-Bold.ttf";
+import favicon_font_url from "./favicon_font_url!=!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans/TTF/SourceSans3-Bold.ttf";
 
 let favicon_state;
 
