@@ -5877,7 +5877,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             ["WARNING:django_auth_ldap:Name too short! while authenticating hamlet"],
         )
 
-    def test_deactivate_user(self) -> None:
+    def test_deactivate_user_with_useraccountcontrol_attr(self) -> None:
         self.change_ldap_user_attr("hamlet", "userAccountControl", "2")
 
         with self.settings(
@@ -5890,6 +5890,50 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             info_logs.output,
             [
                 "INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP."
+            ],
+        )
+
+    def test_deactivate_reactivate_user_with_deactivated_attr(self) -> None:
+        self.change_ldap_user_attr("hamlet", "someCustomAttr", "TRUE")
+
+        with self.settings(
+            AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
+        ), self.assertLogs("zulip.ldap") as info_logs:
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        hamlet = self.example_user("hamlet")
+        self.assertFalse(hamlet.is_active)
+        self.assertEqual(
+            info_logs.output,
+            [
+                "INFO:zulip.ldap:Deactivating user hamlet@zulip.com because they are disabled in LDAP."
+            ],
+        )
+
+        self.change_ldap_user_attr("hamlet", "someCustomAttr", "FALSE")
+        with self.settings(
+            AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
+        ), self.assertLogs("zulip.ldap") as info_logs:
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        hamlet.refresh_from_db()
+        self.assertTrue(hamlet.is_active)
+        self.assertEqual(
+            info_logs.output,
+            [
+                "INFO:zulip.ldap:Reactivating user hamlet@zulip.com because they are not disabled in LDAP."
+            ],
+        )
+
+        self.change_ldap_user_attr("hamlet", "someCustomAttr", "YESSS")
+        with self.settings(
+            AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
+        ), self.assertLogs("django_auth_ldap") as ldap_logs, self.assertRaises(AssertionError):
+            self.perform_ldap_sync(self.example_user("hamlet"))
+        hamlet.refresh_from_db()
+        self.assertTrue(hamlet.is_active)
+        self.assertEqual(
+            ldap_logs.output,
+            [
+                "WARNING:django_auth_ldap:Invalid value 'YESSS' in the LDAP attribute mapped to deactivated while authenticating hamlet"
             ],
         )
 
