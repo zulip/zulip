@@ -754,7 +754,16 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
 
+        # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
+        do_change_plan_type(user.realm, Realm.PLUS, acting_user=None)
+        user.save(update_fields=["role", "is_billing_admin"])
+        with self.settings(CORPORATE_ENABLED=True):
+            billing_info = get_billing_info(user)
+        self.assertTrue(billing_info.show_billing)
+        self.assertFalse(billing_info.show_plans)
+
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
+        do_change_plan_type(user.realm, Realm.STANDARD, acting_user=None)
         user.is_billing_admin = False
         user.save(update_fields=["is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):

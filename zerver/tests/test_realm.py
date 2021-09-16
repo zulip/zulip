@@ -699,6 +699,12 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
         do_change_plan_type(realm, Realm.LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLUS, acting_user=iago)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.PLUS)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
         do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=iago)
         self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
