@@ -6,10 +6,10 @@ Organization administrators can
 [restrict stream creation](/help/configure-who-can-create-streams) to
 admins only, moderators only or to members meeting a minimum account age.
 
-If you are an administrator setting up streams for the first time, we highly
-recommend reading our
-[guide to streams](/help/getting-your-organization-started-with-zulip#create-streams)
-first.
+If you are an administrator setting up streams for the first time, check out our
+[guide to setting up streams for a new organization][org-guide-new-streams].
+
+[org-guide-new-streams]: /help/getting-your-organization-started-with-zulip#create-streams
 
 ## Create a stream
 
