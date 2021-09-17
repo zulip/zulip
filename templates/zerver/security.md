@@ -53,7 +53,7 @@ priority.
 - Zulip also supports customizing whether non-admins can
   [create streams](/help/configure-who-can-create-streams),
   [invite to streams](/help/configure-who-can-invite-to-streams),
-  [add custom emoji](/help/configure-who-can-add-custom-emoji),
+  [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
   [edit or delete messages](/help/configure-message-editing-and-deletion),
   and more.

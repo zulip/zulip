@@ -18,7 +18,7 @@ Currently, the following actions support limiting access to full members.
 - [Adding users to streams](/help/configure-who-can-invite-to-streams)
 - [Restricting posting to a stream](/help/stream-sending-policy)
 - [Restricting inviting users to organization](/help/invite-new-users)
-- [Restricting adding custom emoji](/help/configure-who-can-add-custom-emoji)
+- [Restricting adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji)
 
 ### Set waiting period for new members
 
