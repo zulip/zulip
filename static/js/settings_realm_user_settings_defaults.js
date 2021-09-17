@@ -36,5 +36,18 @@ export function set_up() {
         );
     });
 
+    container.find(".enter_sends").on("change", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {enter_sends: container.find(".enter_sends").prop("checked")};
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/realm/user_settings_defaults",
+            data,
+            container.find(".other-setting-status").expectOne(),
+        );
+    });
+
     maybe_disable_widgets();
 }

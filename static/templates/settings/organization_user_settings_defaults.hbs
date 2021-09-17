@@ -16,4 +16,14 @@
           help_link="/help/status-and-availability"
           prefix="realm_"}}
     </div>
+
+    <div class="form-horizontal" class="other_settings">
+        <h3 class="inline-block">{{t "Other settings" }}</h3>
+        <div class="alert-notification other-setting-status"></div>
+        {{> settings_checkbox
+          setting_name="enter_sends"
+          is_checked=settings_object.enter_sends
+          label=settings_label.realm_enter_sends
+          prefix="realm_"}}
+    </div>
 </div>

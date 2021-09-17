@@ -411,6 +411,7 @@ export const realm_user_settings_defaults_labels = {
     }),
 
     realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
+    realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
 };
 
 // NOTIFICATIONS

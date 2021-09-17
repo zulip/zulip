@@ -118,6 +118,7 @@ IGNORED_PHRASES = [
     # SPECIAL CASES
     # Enter is usually capitalized
     r"Press Enter to send",
+    r"Send message on pressing Enter",
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
     # For consistency with "more topics"
