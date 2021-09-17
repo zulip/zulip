@@ -71,6 +71,6 @@ you send. The default is **Google modern**.
 
 ## Related articles
 
-* [Add custom emoji](/help/add-custom-emoji)
+* [Add custom emoji](/help/custom-emoji)
 * [Emoji reactions](/help/emoji-reactions)
 * [View emoji as text](/help/view-emoji-as-text)

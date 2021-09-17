@@ -170,7 +170,7 @@
 * [Delete a topic](/help/delete-a-topic)
 
 ## Organization settings
-* [Add custom emoji](/help/add-custom-emoji)
+* [Custom emoji](/help/custom-emoji)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Restrict topic editing](/help/configure-who-can-edit-topics)
 * [Require topics in stream messages](/help/require-topics)

@@ -2825,7 +2825,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when
-                                a [custom emoji](/help/add-custom-emoji) has been updated,
+                                a [custom emoji](/help/custom-emoji) has been updated,
                                 typically when a new emoji has been added or an old one
                                 has been deactivated. The event contains all custom emoji
                                 configured for the organization, not just the updated
@@ -6368,7 +6368,7 @@ paths:
 
             - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
               codepoint).
-            - `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+            - `realm_emoji`: [Custom emoji](/help/custom-emoji).
               (`emoji_code` will be its ID).
             - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
               namespace the `zulip` emoji.
@@ -14133,7 +14133,7 @@ components:
 
             - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
               codepoint).
-            - `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
+            - `realm_emoji`: [Custom emoji](/help/custom-emoji).
               (`emoji_code` will be its ID).
             - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
               namespace the `zulip` emoji.
@@ -15205,7 +15205,7 @@ components:
           namespace the `zulip` emoji.
 
         **Changes**: In Zulip 3.0 (feature level 2), this become
-        optional for [custom emoji](/help/add-custom-emoji);
+        optional for [custom emoji](/help/custom-emoji);
         previously, this endpoint assumed `unicode_emoji` if this
         parameter was not specified.
       schema:

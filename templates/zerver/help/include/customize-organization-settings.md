@@ -25,7 +25,7 @@ A few settings to highlight:
   linkifiers](/help/add-a-custom-linkifier) to make it easy to link to
   issues (e.g. just by typing #1234 for issue 1234).
 
-* [Add custom emoji](/help/add-custom-emoji), including your organization's logo.
+* [Add custom emoji](/help/custom-emoji), including your organization's logo.
 
 For many other settings, e.g. [message and topic editing
 permissions][topic-editing-permissions], you can experience how Zulip
