@@ -20,6 +20,8 @@ fill them out.
 
 ## Related articles
 
+* [Set up your account](/help/set-up-your-account)
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
+* [Change your profile picture](/help/change-your-profile-picture)
 * [View someone's profile](/help/view-someones-profile)
