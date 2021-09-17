@@ -11,6 +11,18 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 99**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  `PATCH /realm`: The `default_twenty_four_hour_time` parameter to
+  `PATCH /realm` has been replaced by the `twenty_four_hour_time` parameter
+  to `PATCH /realm/user_settings_defaults`, to match the new model for
+  user preference defaults settings.
+
+* [`POST /register`](/api/register-queue): Removed `realm_default_twenty_four_hour_time`
+  from the response object. This value is now available in the
+  `twenty_four_hour_time` field of the `realm_user_settings_default` object.
+
 **Feature level 98**
 
 * [`POST /subscribe`](/api/subscribe): Added `is_web_public` parameter

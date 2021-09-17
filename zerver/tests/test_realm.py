@@ -910,10 +910,10 @@ class RealmAPITest(ZulipTestCase):
         for prop in RealmUserDefault.property_types:
             # enable_marketing_emails setting is not actually used and thus cannot be updated
             # using this endpoint. It is included in notification_setting_types only for avoiding
-            # duplicate code. default_language and twenty_four_hour_time are currently present
-            # in Realm table also and thus are updated using '/realm' endpoint, but those
-            # will be removed in future and the settings in RealmUserDefault table will be used.
-            if prop in ["default_language", "twenty_four_hour_time", "enable_marketing_emails"]:
+            # duplicate code. default_language is currently present in Realm table also and thus
+            # is updated using '/realm' endpoint, but this will be removed in future and the
+            # settings in RealmUserDefault table will be used.
+            if prop in ["default_language", "enable_marketing_emails"]:
                 continue
             self.do_test_realm_default_setting_update_api(prop)
 

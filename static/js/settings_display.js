@@ -133,12 +133,12 @@ export function set_up(settings_panel) {
             e.stopPropagation();
             overlays.open_modal(language_modal_elem);
         });
-
-        container.find(".setting_twenty_four_hour_time").on("change", function () {
-            const data = {twenty_four_hour_time: this.value};
-            change_display_setting(data, settings_panel, ".time-settings-status");
-        });
     }
+
+    container.find(".setting_twenty_four_hour_time").on("change", function () {
+        const data = {twenty_four_hour_time: this.value};
+        change_display_setting(data, settings_panel, ".time-settings-status");
+    });
 
     container.find(".setting_demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};

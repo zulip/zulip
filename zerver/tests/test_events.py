@@ -2265,7 +2265,7 @@ class RealmPropertyActionTest(BaseAction):
 
     def test_change_realm_user_default_setting(self) -> None:
         for prop in RealmUserDefault.property_types:
-            if prop in ["default_language", "twenty_four_hour_time"]:
+            if prop == "default_language":
                 continue
             self.do_set_realm_user_default_setting_test(prop)
 

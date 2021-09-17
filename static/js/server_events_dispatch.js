@@ -193,7 +193,6 @@ export function dispatch_normal_event(event) {
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
-                default_twenty_four_hour_time: noop,
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
@@ -397,6 +396,7 @@ export function dispatch_normal_event(event) {
                 "left_side_userlist",
                 "translate_emoticons",
                 "starred_message_counts",
+                "twenty_four_hour_time",
             ];
 
             const container_elem = $("#realm-user-default-settings");

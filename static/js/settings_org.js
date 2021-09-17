@@ -179,10 +179,6 @@ function get_property_value(property_name) {
         return "no_restriction";
     }
 
-    if (property_name === "realm_default_twenty_four_hour_time") {
-        return JSON.stringify(page_params[property_name]);
-    }
-
     return page_params[property_name];
 }
 
@@ -866,13 +862,6 @@ export function build_page() {
                 data = {};
                 data.authentication_methods = JSON.stringify(get_auth_method_table_data());
                 break;
-            case "user_defaults": {
-                const realm_default_twenty_four_hour_time = $(
-                    "#id_realm_default_twenty_four_hour_time",
-                ).val();
-                data.default_twenty_four_hour_time = realm_default_twenty_four_hour_time;
-                break;
-            }
         }
         return data;
     }

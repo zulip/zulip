@@ -24,7 +24,6 @@ const admin_settings_label = {
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
-    realm_default_twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
@@ -88,7 +87,6 @@ export function build_page() {
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
-        realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
@@ -154,6 +152,7 @@ export function build_page() {
             realm_user_settings_defaults.enable_stream_audible_notifications,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
+        twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -182,13 +181,6 @@ export function build_page() {
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
-
-    // default_twenty_four_hour time is a boolean in the API but a
-    // dropdown, so we need to convert the value to a string for
-    // storage in the browser's DOM.
-    $("#id_realm_default_twenty_four_hour_time").val(
-        JSON.stringify(page_params.realm_default_twenty_four_hour_time),
-    );
 }
 
 export function launch(section) {

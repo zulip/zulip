@@ -119,7 +119,6 @@ class HomeTest(ZulipTestCase):
         "realm_default_language",
         "realm_default_stream_groups",
         "realm_default_streams",
-        "realm_default_twenty_four_hour_time",
         "realm_description",
         "realm_digest_emails_enabled",
         "realm_digest_weekday",

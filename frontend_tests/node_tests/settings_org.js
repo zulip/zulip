@@ -169,7 +169,6 @@ function test_submit_settings_form(override, submit_form) {
         realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
-        realm_default_twenty_four_hour_time: false,
         realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_create_stream_policy: settings_config.common_policy_values.by_members.code,
         realm_invite_to_realm_policy: settings_config.common_policy_values.by_members.code,
@@ -262,24 +261,16 @@ function test_submit_settings_form(override, submit_form) {
     realm_default_language_elem.val("en");
     realm_default_language_elem.attr("id", "id_realm_default_language");
     realm_default_language_elem.data = () => "string";
-    const realm_default_twenty_four_hour_time_elem = $("#id_realm_default_twenty_four_hour_time");
-    realm_default_twenty_four_hour_time_elem.val("true");
-    realm_default_twenty_four_hour_time_elem.attr("id", "id_realm_default_twenty_four_hour_time");
-    realm_default_twenty_four_hour_time_elem.data = () => "boolean";
 
     subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     subsection_elem.closest = () => subsection_elem;
-    subsection_elem.set_find_results(".prop-element", [
-        realm_default_language_elem,
-        realm_default_twenty_four_hour_time_elem,
-    ]);
+    subsection_elem.set_find_results(".prop-element", [realm_default_language_elem]);
 
     submit_form(ev);
     assert.ok(patched);
 
     expected_value = {
         default_language: "en",
-        default_twenty_four_hour_time: "true",
     };
     assert.deepEqual(data, expected_value);
 

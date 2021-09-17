@@ -44,6 +44,7 @@ from zerver.lib.actions import (
     do_get_user_invites,
     do_invite_users,
     do_set_realm_property,
+    do_set_realm_user_default_setting,
     get_default_streams_for_realm,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
@@ -89,6 +90,7 @@ from zerver.models import (
     PreregistrationUser,
     Realm,
     RealmAuditLog,
+    RealmUserDefault,
     Recipient,
     ScheduledEmail,
     Stream,
@@ -3714,7 +3716,10 @@ class UserSignUpTest(InviteUserBase):
         email = self.nonreg_email("newguy")
         password = "newpassword"
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_twenty_four_hour_time", True, acting_user=None)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        do_set_realm_user_default_setting(
+            realm_user_default, "twenty_four_hour_time", True, acting_user=None
+        )
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3731,7 +3736,10 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
-        self.assertEqual(user_profile.twenty_four_hour_time, realm.default_twenty_four_hour_time)
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        self.assertEqual(
+            user_profile.twenty_four_hour_time, realm_user_default.twenty_four_hour_time
+        )
 
     def test_signup_already_active(self) -> None:
         """

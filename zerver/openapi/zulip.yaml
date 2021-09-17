@@ -3894,6 +3894,9 @@ paths:
 
                                 [new-user-defaults]: /help/configure-default-new-user-settings
 
+                                See [PATCH /realm/user_settings_defaults](/api/update-realm-user-settings-defaults)
+                                for details on possible properties.
+
                                 **Changes**: New in Zulip 5.0 (feature level 95).
                               properties:
                                 id:
@@ -7832,6 +7835,17 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: twenty_four_hour_time
+          in: query
+          description: |
+            Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+            **Changes**: New in Zulip 5.0 (feature level 99).
+            Previously, this default was edited using the
+            `default_twenty_four_hour_time` parameter to the `PATCH /realm` endpoint.
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -10373,13 +10387,6 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The default UI language for new users joining this organization.
-                      realm_default_twenty_four_hour_time:
-                        type: boolean
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Whether new members of this organization will see times displayed in
-                          24-hour time (true) or 12-hour time (false).
                       realm_description:
                         type: string
                         description: |
@@ -11071,6 +11078,12 @@ paths:
                             type: boolean
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+                              **Changes**: New in Zulip 5.0 (feature level 99).
+                              This value was previously available as
+                              `realm_default_twenty_four_hour_time` in
+                              the top-level response object (only when `realm` was
+                              present in `fetch_event_types`).
                           dense_mode:
                             type: boolean
                             description: |

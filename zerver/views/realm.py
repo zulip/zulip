@@ -118,7 +118,6 @@ def update_realm(
     email_address_visibility: Optional[int] = REQ(
         json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
-    default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
@@ -350,6 +349,7 @@ def update_realm_user_settings_defaults(
     email_notifications_batching_period_seconds: Optional[int] = REQ(
         json_validator=check_int, default=None
     ),
+    twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

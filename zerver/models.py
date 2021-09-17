@@ -387,7 +387,6 @@ class Realm(models.Model):
     allow_edit_history: bool = models.BooleanField(default=True)
 
     # Defaults for new users
-    default_twenty_four_hour_time: bool = models.BooleanField(default=False)
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
@@ -606,7 +605,6 @@ class Realm(models.Model):
         invite_to_stream_policy=int,
         move_messages_between_streams_policy=int,
         default_language=str,
-        default_twenty_four_hour_time=bool,
         description=str,
         digest_emails_enabled=bool,
         disallow_disposable_email_addresses=bool,

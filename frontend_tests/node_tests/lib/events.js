@@ -254,13 +254,6 @@ exports.fixtures = {
         value: "javascript",
     },
 
-    realm__update__default_twenty_four_hour_time: {
-        type: "realm",
-        op: "update",
-        property: "default_twenty_four_hour_time",
-        value: false,
-    },
-
     realm__update__disallow_disposable_email_addresses: {
         type: "realm",
         op: "update",
