@@ -7,7 +7,7 @@
 
 # Do not invoke gitlint if commit message is empty
 if grep -q '^[^#]' "$1"; then
-    lint_cmd="cd ~/zulip && python -m gitlint.cli"
+    lint_cmd="cd ~/zulip && gitlint"
     if
         if [ -z "$VIRTUAL_ENV" ] && command -v vagrant >/dev/null && [ -e .vagrant ]; then
             ! vagrant ssh -c "$lint_cmd"
