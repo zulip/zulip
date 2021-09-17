@@ -177,7 +177,6 @@
 * [Restrict private messages](/help/restrict-private-messages)
 * [Restrict user group management](/help/restrict-user-group-management)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Change who can add custom emoji](/help/configure-who-can-add-custom-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)

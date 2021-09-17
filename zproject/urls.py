@@ -773,7 +773,15 @@ urls += [
     ),
     path(
         "help/only-allow-admins-to-add-emoji",
-        RedirectView.as_view(url="/help/configure-who-can-add-custom-emoji", permanent=True),
+        RedirectView.as_view(
+            url="/help/custom-emoji#change-who-can-add-custom-emoji", permanent=True
+        ),
+    ),
+    path(
+        "help/configure-who-can-add-custom-emoji",
+        RedirectView.as_view(
+            url="/help/custom-emoji#change-who-can-add-custom-emoji", permanent=True
+        ),
     ),
     path(
         "help/add-custom-emoji",

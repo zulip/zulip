@@ -1,10 +1,6 @@
 # Custom emoji
 
-By default, anyone other than guests can add custom emoji to a Zulip organization. Added emoji
-are available to all users.
-
-Organization administrators can also
-[change who can add custom emoji](/help/configure-who-can-add-custom-emoji).
+Any custom emoji an organization has uploaded are available to all users.
 
 ## Add custom emoji
 
@@ -55,6 +51,32 @@ Deleting an emoji will not affect any existing messages or emoji
 reactions. Anyone can delete custom emoji they added, and organization
 administrators can delete anyone's custom emoji.
 
+## Editing permissions
+
+By default, anyone other than guests can [add custom emoji](/help/custom-emoji) to the
+organization. However, you can restrict the permission to add custom emoji to other sets of
+roles:
+
+* Organization administrators
+* Organization administrators and moderators
+* Organization administrators and all members
+* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
+
+### Change who can add custom emoji
+
+{!admin-only.md!}
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+2. Under **Other permissions**, configure **Who can add custom emoji**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Related articles
 
-* [Change who can add custom emoji](/help/configure-who-can-add-custom-emoji)
+* [Emoji and emoticons](/help/emoji-and-emoticons)
+* [Emoji reactions](/help/emoji-reactions)
