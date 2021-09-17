@@ -235,18 +235,18 @@ ul.filters {
 
     li.muted_topic,
     li.out_of_home_view {
-        opacity: 0.25;
+        opacity: 0.5;
     }
 
     li.out_of_home_view {
         &:hover {
-            opacity: 0.6;
+            opacity: 0.75;
         }
 
         li.muted_topic {
             /* If stream is muted, this resets opacity of muted topics in muted
             stream to 1; since opacity is multiplied down through child
-            elements, this avoids an unreadable opacity of 0.25^2. */
+            elements, this avoids an unreadably low opacity. */
             opacity: 1;
         }
     }
