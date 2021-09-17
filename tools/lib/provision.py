@@ -130,6 +130,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     *COMMON_DEPENDENCIES,
     "redis-server",
     "hunspell-en-us",
+    "gitlint",
     "puppet-lint",
     "default-jre-headless",  # Required by vnu-jar
     # Puppeteer dependencies from here
