@@ -18,6 +18,17 @@
 * [Replying to messages](/help/replying-to-messages)
 * [Messaging tips & tricks](/help/messaging-tips)
 
+## Setting up your organization
+* [Trying out Zulip](/help/trying-out-zulip)
+* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
+* [Create your organization profile](/help/create-your-organization-profile)
+* [Customize organization settings](/help/customize-organization-settings)
+* [Create streams](/help/create-streams)
+* [Customize settings for new users](/help/customize-settings-for-new-users)
+* [Invite users to join](/help/invite-users-to-join)
+* [Set up integrations](/help/set-up-integrations)
+
 ## Account basics
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
@@ -124,7 +135,6 @@
 
 ## Organization basics
 * [Review your organization's settings](/help/review-your-organization-settings)
-* [Create your organization profile](/help/create-your-organization-profile)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)

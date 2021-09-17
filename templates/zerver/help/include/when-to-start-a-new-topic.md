@@ -1,4 +1,4 @@
-To get the full benefits of Zulip's topic model, When starting a new
+To get the full benefits of Zulip's topic model, when starting a new
 conversation, you should start a new topic!
 
 Starting a topic is like a lighter weight version of giving your email a subject.
