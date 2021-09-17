@@ -694,7 +694,7 @@ export function set_up() {
             channel.patch,
             "/json/settings",
             data,
-            $(".privacy-setting-status").expectOne(),
+            $("#account-settings .privacy-setting-status").expectOne(),
         );
     });
 }
