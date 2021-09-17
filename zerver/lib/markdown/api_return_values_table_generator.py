@@ -7,6 +7,7 @@ import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
 from zerver.openapi.openapi import check_deprecated_consistency, get_openapi_return_values
 
 from .api_arguments_table_generator import generate_data_type
@@ -20,7 +21,9 @@ class MarkdownReturnValuesTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
-            APIReturnValuesTablePreprocessor(md, self.getConfigs()), "generate_return_values", 510
+            APIReturnValuesTablePreprocessor(md, self.getConfigs()),
+            "generate_return_values",
+            PREPROCESSOR_PRIORITES["generate_return_values"],
         )
 
 

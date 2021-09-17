@@ -8,6 +8,7 @@ from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
 from zerver.openapi.openapi import (
     check_deprecated_consistency,
     get_openapi_parameters,
@@ -30,7 +31,9 @@ class MarkdownArgumentsTableGenerator(Extension):
 
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
-            APIArgumentsTablePreprocessor(md, self.getConfigs()), "generate_api_arguments", 505
+            APIArgumentsTablePreprocessor(md, self.getConfigs()),
+            "generate_api_arguments",
+            PREPROCESSOR_PRIORITES["generate_api_arguments"],
         )
 
 

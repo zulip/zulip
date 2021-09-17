@@ -5,6 +5,8 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+
 # There is a lot of duplicated code between this file and
 # help_relative_links.py. So if you're making a change here consider making
 # it there as well.
@@ -104,7 +106,7 @@ class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
-        md.preprocessors.register(Setting(), "setting", 515)
+        md.preprocessors.register(Setting(), "setting", PREPROCESSOR_PRIORITES["setting"])
 
 
 relative_settings_links: Optional[bool] = None

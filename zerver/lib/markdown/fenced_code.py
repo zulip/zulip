@@ -88,6 +88,7 @@ from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
 
 from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
 from zerver.lib.tex import render_tex
 
 # Global vars
@@ -162,7 +163,9 @@ class FencedCodeExtension(Extension):
         processor = FencedBlockPreprocessor(
             md, run_content_validators=self.config["run_content_validators"][0]
         )
-        md.preprocessors.register(processor, "fenced_code_block", 25)
+        md.preprocessors.register(
+            processor, "fenced_code_block", PREPROCESSOR_PRIORITES["fenced_code_block"]
+        )
 
 
 class ZulipBaseHandler:
