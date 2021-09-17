@@ -5,6 +5,8 @@ import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
 TAB_CONTENT_REGEX = re.compile(r"^\{tab\|\s*(.+?)\s*\}$")
@@ -76,7 +78,9 @@ TAB_DISPLAY_NAMES = {
 class TabbedSectionsGenerator(Extension):
     def extendMarkdown(self, md: markdown.Markdown) -> None:
         md.preprocessors.register(
-            TabbedSectionsPreprocessor(md, self.getConfigs()), "tabbed_sections", -500
+            TabbedSectionsPreprocessor(md, self.getConfigs()),
+            "tabbed_sections",
+            PREPROCESSOR_PRIORITES["tabbed_sections"],
         )
 
 

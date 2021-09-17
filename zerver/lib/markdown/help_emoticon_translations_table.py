@@ -6,6 +6,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint
+from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
 
 REGEXP = re.compile(r"\{emoticon_translations\}")
 
@@ -40,7 +41,11 @@ class EmoticonTranslationsHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
-        md.preprocessors.register(EmoticonTranslation(), "emoticon_translations", -505)
+        md.preprocessors.register(
+            EmoticonTranslation(),
+            "emoticon_translations",
+            PREPROCESSOR_PRIORITES["emoticon_translations"],
+        )
 
 
 class EmoticonTranslation(Preprocessor):
