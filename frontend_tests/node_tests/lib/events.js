@@ -818,6 +818,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__presence_enabled: {
+        type: "user_settings",
+        op: "update",
+        property: "presence_enabled",
+        value: false,
+    },
+
     user_settings__starred_message_counts: {
         type: "user_settings",
         op: "update",

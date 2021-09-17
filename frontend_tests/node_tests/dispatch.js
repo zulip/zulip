@@ -802,6 +802,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.enter_sends, true);
 
+    event = event_fixtures.user_settings__presence_enabled;
+    user_settings.presence_enabled = true;
+    dispatch(event);
+    assert_same(user_settings.presence_enabled, false);
+
     {
         event = event_fixtures.user_settings__enable_stream_audible_notifications;
         const stub = make_stub();

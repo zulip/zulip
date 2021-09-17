@@ -701,6 +701,11 @@ export function dispatch_normal_event(event) {
                 compose.toggle_enter_sends_ui();
                 break;
             }
+            if (event.property === "presence_enabled") {
+                user_settings.presence_enabled = event.value;
+                $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
+                break;
+            }
             settings_display.update_page(container_elem, user_settings);
             break;
         }
