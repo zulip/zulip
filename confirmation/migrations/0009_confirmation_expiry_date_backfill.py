@@ -38,7 +38,8 @@ def set_expiry_date_for_existing_confirmations(
                 )
         Confirmation.objects.bulk_update(confirmations, ["expiry_date"])
 
-    BATCH_SIZE = 1000
+    # Because the ranges in this code are inclusive, subtracting 1 offers round numbers.
+    BATCH_SIZE = 1000 - 1
 
     first_id = Confirmation.objects.earliest("id").id
     last_id = Confirmation.objects.latest("id").id
@@ -46,6 +47,7 @@ def set_expiry_date_for_existing_confirmations(
     id_range_lower_bound = first_id
     id_range_upper_bound = first_id + BATCH_SIZE
     while id_range_lower_bound <= last_id:
+        print(f"Processed {id_range_lower_bound} / {last_id}")
         backfill_confirmations_between(id_range_lower_bound, id_range_upper_bound)
         id_range_lower_bound = id_range_upper_bound + 1
         id_range_upper_bound = id_range_lower_bound + BATCH_SIZE

@@ -31,7 +31,9 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Upgrade notes for 5.0
 
-- None yet.
+- This release contains a migration, `0009_confirmation_expiry_date_backfill`,
+  that can take several minutes to run on a server with millions of
+  messages of history.
 
 #### Full feature changelog
 
