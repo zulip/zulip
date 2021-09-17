@@ -107,6 +107,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             self.handler.make_request(
                 test_url,
                 event,
+                othello.realm,
             )
             session.post.assert_called_once()
             self.assertEqual(session.post.call_args[0], (test_url,))
@@ -150,6 +151,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 class TestSlackOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
+        self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         self.stream_message_event = {
             "command": "@**test**",
             "user_profile_id": 12,
@@ -187,7 +189,9 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         }
 
         service_class = get_service_interface_class(SLACK_INTERFACE)
-        self.handler = service_class(token="abcdef", user_profile=None, service_name="test-service")
+        self.handler = service_class(
+            token="abcdef", user_profile=self.bot_user, service_name="test-service"
+        )
 
     def test_make_request_stream_message(self) -> None:
         test_url = "https://example.com/example"
@@ -195,22 +199,24 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             self.handler.make_request(
                 test_url,
                 self.stream_message_event,
+                self.bot_user.realm,
             )
             session.post.assert_called_once()
             self.assertEqual(session.post.call_args[0], (test_url,))
             request_data = session.post.call_args[1]["data"]
 
         self.assertEqual(request_data[0][1], "abcdef")  # token
-        self.assertEqual(request_data[1][1], "zulip")  # team_id
-        self.assertEqual(request_data[2][1], "zulip.com")  # team_domain
-        self.assertEqual(request_data[3][1], "123")  # channel_id
+        self.assertEqual(request_data[1][1], "T2")  # team_id
+        self.assertEqual(request_data[2][1], "zulip.testserver")  # team_domain
+        self.assertEqual(request_data[3][1], "C123")  # channel_id
         self.assertEqual(request_data[4][1], "integrations")  # channel_name
-        self.assertEqual(request_data[5][1], 123456)  # timestamp
-        self.assertEqual(request_data[6][1], 21)  # user_id
-        self.assertEqual(request_data[7][1], "Sample User")  # user_name
-        self.assertEqual(request_data[8][1], "@**test**")  # text
-        self.assertEqual(request_data[9][1], "mention")  # trigger_word
-        self.assertEqual(request_data[10][1], 12)  # user_profile_id
+        self.assertEqual(request_data[5][1], 123456)  # thread_id
+        self.assertEqual(request_data[6][1], 123456)  # timestamp
+        self.assertEqual(request_data[7][1], "U21")  # user_id
+        self.assertEqual(request_data[8][1], "Sample User")  # user_name
+        self.assertEqual(request_data[9][1], "@**test**")  # text
+        self.assertEqual(request_data[10][1], "mention")  # trigger_word
+        self.assertEqual(request_data[11][1], 12)  # user_profile_id
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
@@ -219,6 +225,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             response = self.handler.make_request(
                 test_url,
                 self.private_message_event,
+                self.bot_user.realm,
             )
             session.post.assert_not_called()
         self.assertIsNone(response)

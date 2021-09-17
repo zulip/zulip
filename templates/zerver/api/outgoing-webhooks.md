@@ -116,19 +116,23 @@ Here's how we fill in the fields that a Slack-format webhook expects:
         </tr>
         <tr>
             <td><code>team_id</code></td>
-            <td>String ID of the Zulip organization</td>
+            <td>ID of the Zulip organization prefixed by "T".</td>
         </tr>
         <tr>
             <td><code>team_domain</code></td>
-            <td>Domain of the Zulip organization</td>
+            <td>Hostname of the Zulip organization</td>
         </tr>
         <tr>
             <td><code>channel_id</code></td>
-            <td>Stream ID</td>
+            <td>Stream ID prefixed by "C"</td>
         </tr>
         <tr>
             <td><code>channel_name</code></td>
             <td>Stream name</td>
+        </tr>
+        <tr>
+            <td><code>thread_ts</code></td>
+            <td>Timestamp for when message was sent</td>
         </tr>
         <tr>
             <td><code>timestamp</code></td>
@@ -136,7 +140,7 @@ Here's how we fill in the fields that a Slack-format webhook expects:
         </tr>
         <tr>
             <td><code>user_id</code></td>
-            <td>ID of the user who sent the message</td>
+            <td>ID of the user who sent the message prefixed by "U"</td>
         </tr>
         <tr>
             <td><code>user_name</code></td>
@@ -161,13 +165,14 @@ The above data is posted as list of tuples (not JSON), here's an example:
 
 ```
 [('token', 'v9fpCdldZIej2bco3uoUvGp06PowKFOf'),
- ('team_id', 'zulip'),
- ('team_domain', 'zulip.com'),
- ('channel_id', '123'),
+ ('team_id', 'T1512'),
+ ('team_domain', 'zulip.example.com'),
+ ('channel_id', 'C123'),
  ('channel_name', 'integrations'),
+ ('thread_ts', 1532078950),
  ('timestamp', 1532078950),
- ('user_id', 21),
- ('user_name', 'Sample User'),
+ ('user_id', 'U21'),
+ ('user_name', 'Full Name'),
  ('text', '@**test**'),
  ('trigger_word', 'mention'),
  ('service_id', 27)]
