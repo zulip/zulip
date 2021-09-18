@@ -1683,7 +1683,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def get_role_name(self) -> str:
         return self.ROLE_ID_TO_NAME_MAP[self.role]
 
-    @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
         user_data = {

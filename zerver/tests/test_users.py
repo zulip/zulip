@@ -614,7 +614,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
 
         cordelia = self.example_user("cordelia")
-        for field_dict in cordelia.profile_data:
+        for field_dict in cordelia.profile_data():
             with self.subTest(field_name=field_dict["name"]):
                 self.assertEqual(field_dict["value"], fields[field_dict["name"]])
 
@@ -690,7 +690,7 @@ class PermissionTest(ZulipTestCase):
             {"profile_data": orjson.dumps(empty_profile_data).decode()},
         )
         self.assert_json_success(result)
-        for field_dict in cordelia.profile_data:
+        for field_dict in cordelia.profile_data():
             with self.subTest(field_name=field_dict["name"]):
                 self.assertEqual(field_dict["value"], None)
 
@@ -722,7 +722,7 @@ class PermissionTest(ZulipTestCase):
             f"/json/users/{cordelia.id}", {"profile_data": orjson.dumps(new_profile_data).decode()}
         )
         self.assert_json_success(result)
-        for field_dict in cordelia.profile_data:
+        for field_dict in cordelia.profile_data():
             with self.subTest(field_name=field_dict["name"]):
                 self.assertEqual(field_dict["value"], new_fields[str(field_dict["name"])])
 

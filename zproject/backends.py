@@ -1339,7 +1339,7 @@ def sync_user_profile_custom_fields(
         fields_by_var_name[var_name] = field
 
     existing_values = {}
-    for data in user_profile.profile_data:
+    for data in user_profile.profile_data():
         var_name = "_".join(data["name"].lower().split(" "))
         existing_values[var_name] = data["value"]
 
