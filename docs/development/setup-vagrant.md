@@ -4,9 +4,9 @@ This section guides first-time contributors through installing the
 Zulip development environment on Windows, macOS, Ubuntu and Debian.
 
 The recommended method for installing the Zulip development environment is to use
-Vagrant with VirtualBox on Windows and macOS, and Vagrant with Docker on
-Ubuntu. This method creates a virtual machine (for Windows and macOS)
-or a Linux container (for Ubuntu) inside which the Zulip server and
+Vagrant with VirtualBox on Windows, and Vagrant with Docker on
+macOS and Ubuntu. This method creates a virtual machine (for Windows)
+or a Linux container (for macOS and Ubuntu) inside which the Zulip server and
 all related services will run.
 
 Contents:
@@ -81,23 +81,10 @@ Jump to:
 
 #### macOS
 
-##### Intel
-
 1. Install [Vagrant][vagrant-dl] (latest).
-2. Install [VirtualBox][vbox-dl] (latest).
-
-(For a non-free option, but better performance, you can also use [VMware
-Fusion][vmware-fusion-dl] with the [VMware Fusion Vagrant
-plugin][vagrant-vmware-fusion-dl] or [Parallels Desktop][parallels-desktop-dl] as
-a provider for Vagrant.)
+2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
-
-##### Apple Silicon
-
-The setup for Apple Silicon (e.g. M1) Macs is very similar to that [for Intel
-above](#intel), except that VirtualBox is not supported. Instead you can use [Docker for
-Mac](https://docs.docker.com/docker-for-mac/install/).
 
 #### Ubuntu
 
@@ -285,12 +272,12 @@ Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`:
 
 ```bash
-# On Windows or macOS (Intel):
+# On Windows:
 cd zulip
 vagrant plugin install vagrant-vbguest
 vagrant up --provider=virtualbox
 
-# On Linux or macOS (Apple Silicon):
+# On macOS or Linux:
 cd zulip
 vagrant up --provider=docker
 ```
@@ -1054,9 +1041,6 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[vmware-fusion-dl]: https://www.vmware.com/products/fusion.html
-[vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
-[parallels-desktop-dl]: https://www.parallels.com/products/desktop/
 [install-advanced]: ../development/setup-advanced.md
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
