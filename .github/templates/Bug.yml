@@ -1,0 +1,31 @@
+name: Bug🐛
+description: Please report the bug here.
+title: "[BUG]: Your new suggestion's brief description goes here"
+labels: [Bug, needs discussion, feedback wanted]
+assignees:
+  - unassigned
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filling the Bug report, We'll fix it ASAP.
+  - type: input
+    attributes:
+      label: Bug report❌
+      description: Can you please elaborate  here?
+      placeholder: Tell us what you found.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Which part of the project is this bug related to?
+      description: Details of the bug
+      placeholder: Tell us more!
+    validations:
+      required: true
+  - type: textarea
+    id: multimedia
+    attributes:
+      label: Further Details
+      description: Please give us the image/video (if applicable)
+      placeholder: Please upload your multimedia(screenshots and video) here

@@ -1,0 +1,31 @@
+name: Feature💡
+description: Suggest us a new feature🌤
+title: "[Feature]: Your new suggestion's brief description goes here"
+labels: [feature]
+assignees:
+  - unassigned
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filling this form, We'll implement the feature .
+  - type: input
+    attributes:
+      label: Feature
+      description: Can you please elaborate your Feature here?
+      placeholder: Tell us what you wish to see.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is your idea related to?
+      description: Give us a brief description.
+      placeholder: Tell us more
+    validations:
+      required: true
+  - type: textarea
+    id: multimedia
+    attributes:
+      label: Further Details
+      description: Please give us the image/video (if applicable)
+      placeholder: Please upload your multimedia(screenshots and video) here
