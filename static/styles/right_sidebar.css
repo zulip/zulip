@@ -225,6 +225,11 @@
     }
 }
 
+#user_search_section input {
+    padding-right: 20px;
+    width: calc(100% - 43px);
+}
+
 @media (width < $md_min) {
     #user_search_section .user-list-filter {
         /* input should be 100% - 6px padding x2 - 1px border x2. */

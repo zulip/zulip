@@ -532,10 +532,13 @@ li.expanded_private_message {
     padding-left: $far_left_gutter_size;
     cursor: pointer;
     margin-top: 3px;
+    input {
+        padding-right: 20px;
+    }
 }
 
 .stream-list-filter {
-    width: 236px;
+    width: 216px;
 }
 
 .topic-list-filter {

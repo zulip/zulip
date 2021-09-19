@@ -108,6 +108,7 @@
 
         #recent_topics_search {
             flex-grow: 1;
+            padding-right: 20px;
         }
 
         .clear_search_button {
