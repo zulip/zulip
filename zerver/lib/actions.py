@@ -7727,11 +7727,8 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
 def notify_user_update_custom_profile_data(
     user_profile: UserProfile, field: Dict[str, Union[int, str, List[int], None]]
 ) -> None:
-    data = dict(id=field["id"])
-    if field["type"] == CustomProfileField.USER:
-        data["value"] = orjson.dumps(field["value"]).decode()
-    else:
-        data["value"] = field["value"]
+    data = dict(id=field["id"], value=field["value"])
+
     if field["rendered_value"]:
         data["rendered_value"] = field["rendered_value"]
     payload = dict(user_id=user_profile.id, custom_profile_field=data)
@@ -7756,7 +7753,7 @@ def do_update_user_custom_profile_data_if_changed(
                 # to a string for the comparison in this if.
                 continue
 
-            field_value.value = custom_profile_field["value"]
+            field_value.value = str(custom_profile_field["value"])
             if field_value.field.is_renderable():
                 field_value.rendered_value = render_stream_description(
                     str(custom_profile_field["value"])
