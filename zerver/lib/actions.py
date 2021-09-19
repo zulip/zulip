@@ -7746,17 +7746,24 @@ def do_update_user_custom_profile_data_if_changed(
                 user_profile=user_profile, field_id=custom_profile_field["id"]
             )
 
-            if not created and field_value.value == str(custom_profile_field["value"]):
+            # field_value.value is a TextField() so we need to have field["value"]
+            # in string form to correctly make comparisons and assignments.
+            if isinstance(custom_profile_field["value"], str):
+                custom_profile_field_value_string = custom_profile_field["value"]
+            else:
+                custom_profile_field_value_string = orjson.dumps(
+                    custom_profile_field["value"]
+                ).decode()
+
+            if not created and field_value.value == custom_profile_field_value_string:
                 # If the field value isn't actually being changed to a different one,
                 # we have nothing to do here for this field.
-                # Note: field_value.value is a TextField() so we need to cast field['value']
-                # to a string for the comparison in this if.
                 continue
 
-            field_value.value = str(custom_profile_field["value"])
+            field_value.value = custom_profile_field_value_string
             if field_value.field.is_renderable():
                 field_value.rendered_value = render_stream_description(
-                    str(custom_profile_field["value"])
+                    custom_profile_field_value_string
                 )
                 field_value.save(update_fields=["value", "rendered_value"])
             else:
