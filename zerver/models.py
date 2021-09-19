@@ -1,4 +1,3 @@
-import ast
 import datetime
 import re
 import secrets
@@ -20,6 +19,7 @@ from typing import (
 )
 
 import django.contrib.auth
+import orjson
 from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
@@ -3878,7 +3878,7 @@ class CustomProfileField(models.Model):
         (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, gettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, gettext_lazy("Person picker"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
