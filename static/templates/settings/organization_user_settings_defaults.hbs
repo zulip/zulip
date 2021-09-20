@@ -1,6 +1,10 @@
 <div id="realm-user-default-settings" class="settings-section" data-name="organization-level-user-defaults">
     <div class="tip">
-        {{t "Configure the default personal preference settings for new users joining your organization." }}
+        {{#tr}}
+            Configure the <z-link>default personal preference settings</z-link>
+            for new users joining your organization.
+            {{#*inline "z-link"}}<a href="/help/configure-default-new-user-settings" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+        {{/tr}}
     </div>
     {{> display_settings prefix="realm_" for_realm_settings=true}}
 

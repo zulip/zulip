@@ -46,6 +46,11 @@ link_mapping = {
         "Organization permissions",
         "/#organization/organization-permissions",
     ],
+    "default-user-settings": [
+        "Manage organization",
+        "Default user settings",
+        "/#organization/organization-level-user-defaults",
+    ],
     "emoji-settings": ["Manage organization", "Custom emoji", "/#organization/emoji-settings"],
     "auth-methods": [
         "Manage organization",

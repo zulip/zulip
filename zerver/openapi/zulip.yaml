@@ -3889,8 +3889,10 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                default settings for new users of the organization
-                                (realm) have changed.
+                                [default settings for new users][new-user-defaults]
+                                of the organization (realm) have changed.
+
+                                [new-user-defaults]: /help/configure-default-new-user-settings
 
                                 **Changes**: New in Zulip 5.0 (feature level 95).
                               properties:
@@ -7524,9 +7526,9 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Change the the default/initial values of
-        [personal preference settings](/api/update-settings) for new users
-        created in the organization.
+        Change the [default values of settings][new-user-defaults] for new users
+        joining the organization. Essentially all
+        [personal preference settings](/api/update-settings) are supported.
 
         `PATCH {{ api_url }}/v1/realm/user_settings_defaults`
 
@@ -7541,6 +7543,8 @@ paths:
         settings for existing users in any way.
 
         **Changes**: New in Zulip 5.0 (feature level 96).
+
+        [new-user-defaults]: /help/configure-default-new-user-settings
       x-curl-examples-parameters:
         oneOf:
           - type: include

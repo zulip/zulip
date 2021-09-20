@@ -146,6 +146,7 @@
 * [Allow anyone to join](/help/allow-anyone-to-join-without-an-invitation)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Add custom profile fields](/help/add-custom-profile-fields)
+* [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Set default language for new users](/help/change-the-default-language-for-your-organization)
 * [User groups](/help/user-groups)
 * [Restrict visibility of email addresses](/help/restrict-visibility-of-email-addresses)
