@@ -18,8 +18,8 @@ organizations, and other groups of people who share a common pursuit.
 The Zulip core developers have decades of combined experience leading
 and growing open source communities, and we use Zulip to fashion the
 day-to-day experience of being a part of our project. No other chat
-product comes close to Zulip in facilitating contributor engagement,
-facilitating inclusion, and making efficient use of everyone’s time.
+product comes close to Zulip in facilitating contributor engagement and
+inclusion, and making efficient use of everyone’s time.
 
 &nbsp;
 
