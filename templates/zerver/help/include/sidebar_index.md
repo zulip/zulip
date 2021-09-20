@@ -114,7 +114,7 @@
 * [Disable new login emails](/help/disable-new-login-emails)
 * [Change notification sound](/help/change-notification-sound)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
-* [Test mobile notifications](/help/test-mobile-notifications)
+* [Mobile notifications](/help/test-mobile-notifications)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
