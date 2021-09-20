@@ -665,15 +665,23 @@ function change_stream_privacy(e) {
     let invite_only;
     let history_public_to_subscribers;
 
-    if (privacy_setting === stream_data.stream_privacy_policy_values.public.code) {
-        invite_only = false;
-        history_public_to_subscribers = true;
-    } else if (privacy_setting === stream_data.stream_privacy_policy_values.private.code) {
-        invite_only = true;
-        history_public_to_subscribers = false;
-    } else {
-        invite_only = true;
-        history_public_to_subscribers = true;
+    switch (privacy_setting) {
+        case stream_data.stream_privacy_policy_values.public.code: {
+            invite_only = false;
+            history_public_to_subscribers = true;
+
+            break;
+        }
+        case stream_data.stream_privacy_policy_values.private.code: {
+            invite_only = true;
+            history_public_to_subscribers = false;
+
+            break;
+        }
+        default: {
+            invite_only = true;
+            history_public_to_subscribers = true;
+        }
     }
 
     if (
