@@ -140,10 +140,6 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
 
 
 def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> datetime:
-    if plan.is_free_trial():
-        assert plan.next_invoice_date is not None  # for mypy
-        return plan.next_invoice_date
-
     months_per_period = {
         CustomerPlan.ANNUAL: 12,
         CustomerPlan.MONTHLY: 1,
@@ -379,7 +375,13 @@ def make_end_of_cycle_updates_if_needed(
     )
     assert last_ledger_renewal is not None
     last_renewal = last_ledger_renewal.event_time
-    next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
+
+    if plan.is_free_trial():
+        assert plan.next_invoice_date is not None
+        next_billing_cycle = plan.next_invoice_date
+    else:
+        next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
+
     if next_billing_cycle <= event_time and last_ledger_entry is not None:
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
         assert licenses_at_next_renewal is not None
@@ -393,8 +395,7 @@ def make_end_of_cycle_updates_if_needed(
             )
         if plan.is_free_trial():
             plan.invoiced_through = last_ledger_entry
-            assert plan.next_invoice_date is not None
-            plan.billing_cycle_anchor = plan.next_invoice_date.replace(microsecond=0)
+            plan.billing_cycle_anchor = next_billing_cycle.replace(microsecond=0)
             plan.status = CustomerPlan.ACTIVE
             plan.save(update_fields=["invoiced_through", "billing_cycle_anchor", "status"])
             return None, LicenseLedger.objects.create(
