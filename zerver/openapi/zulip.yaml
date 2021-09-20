@@ -219,7 +219,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's set of configured
-                                [alert words](/help/add-an-alert-word) have changed.
+                                [alert words](/help/pm-mention-alert-notifications#alert-words) have changed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -5111,7 +5111,7 @@ paths:
                         <td><code>has_alert_word</code></td>
                         <td>
                             Whether the message contains any of the current user's
-                            <a href="/help/add-an-alert-word">configured alert words</a>.
+                            <a href="/help/pm-mention-alert-notifications#alert-words">configured alert words</a>.
                             Cannot be changed by the user directly, but
                             can change if the message is edited to add/remove
                             one of the current user's alert words.
@@ -8773,7 +8773,7 @@ paths:
                         description: |
                           Present if `alert_words` is present in `fetch_event_types`.
 
-                          An array of strings, each an [alert word](/help/add-an-alert-word)
+                          An array of strings, each an [alert word](/help/pm-mention-alert-notifications#alert-words)
                           that the current user has configured.
                         items:
                           type: string

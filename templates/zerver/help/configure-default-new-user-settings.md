@@ -18,7 +18,7 @@ preference settings, including the following:
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
 * Notification settings, including:
     * [What types of messages trigger notifications][default-notifications]
-    * [Configurations for email notifications](/help/configure-message-notification-emails)
+    * [Configurations for email notifications](/help/email-notifications)
 
 [default-notifications]: /help/stream-notifications#set-default-notifications-for-all-streams
 

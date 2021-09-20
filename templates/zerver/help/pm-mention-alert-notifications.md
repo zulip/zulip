@@ -1,14 +1,16 @@
 # PMs, mentions, and alerts
 
 You can configure desktop, mobile, and email notifications for
-[private messages](/help/private-messages), [mentions](/help/mention-a-user-or-group), and
-[alert words](/help/add-an-alert-word).
+[private messages](/help/private-messages),
+[mentions](/help/mention-a-user-or-group), and [alert
+words](#alert-words).
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Toggle the notification settings under **Private messages, @-mentions, and alert words**.
+1. Toggle the notification settings under **Private messages,
+   @-mentions, and alert words**.
 
 {end_tabs}
 
@@ -39,7 +41,27 @@ streams in your [Stream settings](/help/stream-notifications), and
 administrators can [restrict use of wildcard
 mentions](/help/restrict-wildcard-mentions) in large streams.
 
+## Alert words
+
+Zulip lets you to specify **alert words or phrases** that notify you whenever
+the alert word is included in a message. Alert words are case-insensitive.
+
+### Add an alert word or phrase
+
+{start_tabs}
+
+{settings_tab|alert-words}
+
+1. Add a word or phrase.
+
+1. Click **Add alert word**.
+
+{end_tabs}
+
 ## Related articles
 
-* [Add an alert word](/help/add-an-alert-word)
+* [Desktop notifications](/help/desktop-notifications)
+* [Email notifications](/help/email-notifications)
+* [Mobile notifications](/help/mobile-notifications)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
+* [Stream notifications](/help/stream-notifications)

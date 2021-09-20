@@ -22,5 +22,5 @@ being sent through the email system.
 
 ## Related articles
 
-* [Hide message content in emails](/help/configure-message-notification-emails#hide-message-content),
+* [Hide message content in emails](/help/email-notifications#hide-message-content),
   as an individual.
