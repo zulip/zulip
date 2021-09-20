@@ -1,4 +1,26 @@
-# Troubleshooting desktop notifications
+# Desktop notifications
+
+Zulip offers visual and audible desktop notifications. You can customize whether [stream messages](/help/stream-notifications), [private messages](/help/pm-mention-alert-notifications) and [mentions][notifications-wildcard-mentions] trigger
+desktop notifications.
+
+## Change notification sound
+
+You can change the sound Zulip uses for audible desktop notifications.
+
+### Change notification sound
+
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Under **Desktop message notifications**, configure
+   **Notification sound**.
+
+{end_tabs}
+
+You can select "None" to completely disable audible desktop notifications in Zulip.
+
+## Troubleshooting desktop notifications
 
 First, make sure you have enabled
 [desktop notifications for PMs](/help/pm-mention-alert-notifications) or for the
@@ -73,3 +95,9 @@ Alternate instructions:
 3. Configure the notification style that you would like Zulip to use.
 
 {end_tabs}
+
+## Related articles
+* [Stream notifications](/help/stream-notifications)
+* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [Email notifications](/help/configure-message-notification-emails)
+* [Mobile notifications](/help/test-mobile-notifications)
