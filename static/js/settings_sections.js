@@ -1,5 +1,3 @@
-import $ from "jquery";
-
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
@@ -20,7 +18,6 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
 import * as settings_users from "./settings_users";
-import {user_settings} from "./user_settings";
 
 const load_func_dict = new Map(); // group -> function
 const loaded_groups = new Set();
@@ -58,7 +55,7 @@ export function initialize() {
         settings_display.set_up(settings_display.user_settings_panel);
     });
     load_func_dict.set("notifications", () => {
-        settings_notifications.set_up($("#user-notification-settings"), user_settings);
+        settings_notifications.set_up(settings_notifications.user_settings_panel);
     });
     load_func_dict.set("your-bots", settings_bots.set_up);
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);

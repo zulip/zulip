@@ -23,7 +23,7 @@ export function maybe_disable_widgets() {
 export function set_up() {
     const container = $(realm_default_settings_panel.container);
     settings_display.set_up(realm_default_settings_panel);
-    settings_notifications.set_up(container, realm_user_settings_defaults, true);
+    settings_notifications.set_up(realm_default_settings_panel);
 
     container.find(".presence_enabled").on("change", (e) => {
         e.preventDefault();
@@ -58,5 +58,7 @@ export function initialize() {
     realm_default_settings_panel.container = "#realm-user-default-settings";
     realm_default_settings_panel.settings_object = realm_user_settings_defaults;
     realm_default_settings_panel.patch_url = "/json/realm/user_settings_defaults";
+    realm_default_settings_panel.notification_sound_elem =
+        "#realm-default-notification-sound-audio";
     realm_default_settings_panel.for_realm_settings = true;
 }

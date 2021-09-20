@@ -14,6 +14,8 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 
+export const user_settings_panel = {};
+
 function rerender_ui() {
     const unmatched_streams_table = $("#stream-specific-notify-table");
     if (unmatched_streams_table.length === 0) {
@@ -52,11 +54,13 @@ function change_notification_setting(setting, value, status_element, url) {
     settings_ui.do_settings_change(channel.patch, url, data, status_element);
 }
 
-function update_desktop_icon_count_display(container, settings_object, for_realm_settings) {
+function update_desktop_icon_count_display(settings_panel) {
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
     container
         .find(".setting_desktop_icon_count_display")
         .val(settings_object.desktop_icon_count_display);
-    if (!for_realm_settings) {
+    if (!settings_panel.for_realm_settings) {
         unread_ui.update_unread_counts();
     }
 }
@@ -78,13 +82,12 @@ export function set_enable_marketing_emails_visibility() {
     }
 }
 
-export function set_up(container, settings_object, for_realm_settings) {
-    let patch_url = "/json/settings";
-    let notification_sound_elem = $("#user-notification-sound-audio");
-    if (for_realm_settings) {
-        patch_url = "/json/realm/user_settings_defaults";
-        notification_sound_elem = $("#realm-default-notification-sound-audio");
-    }
+export function set_up(settings_panel) {
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
+    const patch_url = settings_panel.patch_url;
+    const notification_sound_elem = $(settings_panel.notification_sound_elem);
+    const for_realm_settings = settings_panel.for_realm_settings;
 
     container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
@@ -103,7 +106,7 @@ export function set_up(container, settings_object, for_realm_settings) {
         );
     });
 
-    update_desktop_icon_count_display(container, settings_object, for_realm_settings);
+    update_desktop_icon_count_display(settings_panel);
 
     if (!for_realm_settings) {
         container.find(".send_test_notification").on("click", () => {
@@ -149,7 +152,9 @@ export function set_up(container, settings_object, for_realm_settings) {
     }
 }
 
-export function update_page(container, settings_object, for_realm_settings) {
+export function update_page(settings_panel) {
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
     for (const setting of settings_config.all_notification_settings) {
         if (
             setting === "enable_offline_push_notifications" &&
@@ -159,7 +164,7 @@ export function update_page(container, settings_object, for_realm_settings) {
             // we should just leave the checkbox always off.
             continue;
         } else if (setting === "desktop_icon_count_display") {
-            update_desktop_icon_count_display(container, settings_object, for_realm_settings);
+            update_desktop_icon_count_display(settings_panel);
             continue;
         } else if (
             setting === "notification_sound" ||
@@ -172,4 +177,12 @@ export function update_page(container, settings_object, for_realm_settings) {
         container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
     }
     rerender_ui();
+}
+
+export function initialize() {
+    user_settings_panel.container = "#user-notification-settings";
+    user_settings_panel.settings_object = user_settings;
+    user_settings_panel.patch_url = "/json/settings";
+    user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
+    user_settings_panel.for_realm_settings = false;
 }

@@ -406,9 +406,7 @@ export function dispatch_normal_event(event) {
                 );
             } else if (settings_config.all_notification_settings.includes(event.property)) {
                 settings_notifications.update_page(
-                    container_elem,
-                    realm_user_settings_defaults,
-                    true,
+                    settings_realm_user_settings_defaults.realm_default_settings_panel,
                 );
             } else {
                 container_elem
@@ -594,11 +592,7 @@ export function dispatch_normal_event(event) {
         case "user_settings": {
             if (settings_config.all_notification_settings.includes(event.property)) {
                 notifications.handle_global_notification_updates(event.property, event.value);
-                settings_notifications.update_page(
-                    $("#user-notification-settings"),
-                    user_settings,
-                    false,
-                );
+                settings_notifications.update_page(settings_notifications.user_settings_panel);
                 // TODO: This should also do a refresh of the stream_edit UI
                 // if it's currently displayed, possibly reusing some code
                 // from stream_events.js
