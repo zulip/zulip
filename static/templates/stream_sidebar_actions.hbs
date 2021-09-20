@@ -20,7 +20,7 @@
             {{t "Stream settings" }}
         </a>
     </li>
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="pin_to_top">
             <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
             {{#if stream.pin_to_top}}
@@ -30,13 +30,13 @@
             {{/if}}
         </a>
     </li>
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="mark_stream_as_read">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
         </a>
     </li>
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="toggle_stream_muted">
             {{#if stream.is_muted}}
             <i class="fa fa-bell" aria-hidden="true"></i>
@@ -53,13 +53,13 @@
             {{t "New topic" }}
         </a>
     </li>
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="popover_sub_unsub_button" data-name="{{stream.name}}">
             <i class='fa fa-envelope' aria-hidden="true"></i>
             {{t "Unsubscribe" }}
         </a>
     </li>
-    <li>
+    <li class="hidden-for-spectators">
         <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
         <a tabindex="0" class="choose_stream_color">
             <i class="fa fa-eyedropper" aria-hidden="true"></i>

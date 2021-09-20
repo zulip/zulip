@@ -8,31 +8,31 @@
             view is a Bootstrap nav tab, even though we don't show the tab
             anymore --}}
             <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
-            <li role="presentation">
+            <li class="hidden-for-spectators" role="presentation">
                 <a href="#streams/subscribed" role="menuitem">
                     <i class="fa fa-exchange" aria-hidden="true"></i> {{t 'Manage streams' }}
                 </a>
             </li>
-            <li role="presentation">
+            <li class="hidden-for-spectators" role="presentation">
                 <a href="#settings" role="menuitem">
                     <i class="fa fa-wrench" aria-hidden="true"></i> {{t 'Personal settings' }}
                 </a>
             </li>
-            <li class="admin-menu-item" role="presentation">
+            <li class="admin-menu-item hidden-for-spectators" role="presentation">
                 <a href="#organization" role="menuitem">
                     <i class="fa fa-bolt" aria-hidden="true"></i>
                     <span>{{t 'Manage organization' }}</span>
                 </a>
             </li>
             {{#unless is_guest}}
-            <li role="presentation">
+            <li class="hidden-for-spectators" role="presentation">
                 <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-bar-chart" aria-hidden="true"></i>
                     <span>{{t 'Usage statistics' }}</span>
                 </a>
             </li>
             {{/unless}}
-            <li class="divider" role="presentation"></li>
+            <li class="divider hidden-for-spectators" role="presentation"></li>
             <li role="presentation">
                 <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-question-circle" aria-hidden="true"></i> {{t 'Help center' }}

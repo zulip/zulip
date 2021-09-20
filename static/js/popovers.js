@@ -479,10 +479,9 @@ export function toggle_actions_popover(element, id) {
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
         const should_display_edit_and_view_source =
-            (message.content !== "<p>(deleted)</p>" ||
-                editability === message_edit.editability_types.FULL ||
-                editability === message_edit.editability_types.TOPIC_ONLY) &&
-            not_spectator;
+            message.content !== "<p>(deleted)</p>" ||
+            editability === message_edit.editability_types.FULL ||
+            editability === message_edit.editability_types.TOPIC_ONLY;
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 

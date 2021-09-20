@@ -9,14 +9,14 @@
     <hr />
 
     {{#unless topic_muted}}
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
             {{t "Mute topic"}}
         </a>
     </li>
     {{else}}
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell" aria-hidden="true"></i>
             {{t "Unmute topic"}}
@@ -25,7 +25,7 @@
     {{/unless}}
 
     {{#if has_starred_messages}}
-    <li>
+    <li class="hidden-for-spectators">
         <a href="#" class="sidebar-popover-unstar-all-in-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-star-o" aria-hidden="true"></i>
             {{#tr}}Unstar all messages in topic{{/tr}}
@@ -33,7 +33,7 @@
     </li>
     {{/if}}
 
-    <li>
+    <li class="hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
