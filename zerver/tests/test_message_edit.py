@@ -9,8 +9,10 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    do_change_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
+    do_deactivate_stream,
     do_delete_messages,
     do_set_realm_property,
     do_update_message,
@@ -310,6 +312,78 @@ class EditMessageTest(EditMessageTestCase):
         self.login("othello")
         result = self.client_get("/json/messages/" + str(msg_id))
         self.assert_json_error(result, "Invalid message(s)")
+
+    def test_fetch_raw_message_spectator(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(user_profile, web_public_stream.name)
+
+        web_public_stream_msg_id = self.send_stream_message(
+            user_profile, web_public_stream.name, content="web-public message"
+        )
+
+        non_web_public_stream = self.make_stream("non-web-public-stream")
+        non_web_public_stream_msg_id = self.send_stream_message(
+            user_profile, non_web_public_stream.name, content="non web-public message"
+        )
+
+        # Generate a private message to use in verification.
+        private_message_id = self.send_personal_message(user_profile, user_profile)
+
+        invalid_message_id = private_message_id + 1000
+
+        self.logout()
+
+        # Confirm WEB_PUBLIC_STREAMS_ENABLED is enforced.
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify success with web-public stream and default SELF_HOSTED plan type.
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+
+        # Verify LIMITED plan type does not allow web-public access.
+        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify works with STANDARD_FREE plan type too.
+        do_change_plan_type(user_profile.realm, Realm.STANDARD_FREE, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+
+        # Verify private messages are rejected.
+        result = self.client_get("/json/messages/" + str(private_message_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify an actual public stream is required.
+        result = self.client_get("/json/messages/" + str(non_web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify invalid message IDs are rejected with the same error message.
+        result = self.client_get("/json/messages/" + str(invalid_message_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify deactivated streams are rejected.  This may change in the future.
+        do_deactivate_stream(web_public_stream, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
 
     def test_fetch_raw_message_stream_wrong_realm(self) -> None:
         user_profile = self.example_user("hamlet")

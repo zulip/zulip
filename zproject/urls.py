@@ -324,7 +324,7 @@ v1_api_and_json_patterns = [
     ),
     rest_path(
         "messages/<int:message_id>",
-        GET=json_fetch_raw_message,
+        GET=(json_fetch_raw_message, {"allow_anonymous_user_web"}),
         PATCH=update_message_backend,
         DELETE=delete_message_backend,
     ),
