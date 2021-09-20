@@ -113,9 +113,14 @@ def billing_home(
             seat_count = get_latest_seat_count(user.realm)
 
             # Should do this in javascript, using the user's timezone
-            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
-                dt=start_of_next_billing_cycle(plan, now)
-            )
+            if plan.is_free_trial():
+                assert plan.next_invoice_date is not None
+                renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+            else:
+                renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
+                    dt=start_of_next_billing_cycle(plan, now)
+                )
+
             renewal_cents = renewal_amount(plan, now)
             charge_automatically = plan.charge_automatically
             assert customer.stripe_customer_id is not None  # for mypy
