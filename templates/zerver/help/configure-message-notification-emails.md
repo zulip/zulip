@@ -1,4 +1,6 @@
-# Configure message notification emails
+# Email notifications
+
+## Message notification emails
 
 Zulip can be configured to send message notification emails for [PMs
 and mentions](/help/pm-mention-alert-notifications), as well as
@@ -11,7 +13,7 @@ has not configured the [incoming email gateway][incoming-email-gateway].
 
 [incoming-email-gateway]: https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
-## Delay before sending emails
+### Delay before sending emails
 
 To reduce the number of emails you receive, Zulip
 delays sending message notification emails for a configurable period
@@ -41,7 +43,7 @@ To configure the delay for message notification emails:
 {end_tabs}
 
 
-## Include organization name in subject line
+### Include organization name in subject line
 
 If you belong to multiple Zulip organizations, it can be helpful to have the
 name of the organization in the subject line of your message notification emails.
@@ -56,7 +58,7 @@ name of the organization in the subject line of your message notification emails
 {end_tabs}
 
 
-## Hide message content
+### Hide message content
 
 For security or compliance reasons, you may want to hide the content of your
 Zulip messages from your email. Organization admins can do this at an
@@ -72,6 +74,46 @@ being sent through your email.
 
 1. Under **Email message notifications**, toggle
    **Include message content in message notification emails**.
+
+{end_tabs}
+
+## New login emails
+
+By default, Zulip sends an email whenever you log in to Zulip. These emails
+help you protect your account; if you see a login email at a time or from a
+device you don't recognize, you should
+[change your password](/help/change-your-password) right away.
+
+In typical usage, these emails are sent infrequently, since all Zulip apps
+(web, mobile, desktop, and terminal) keep you logged in to any organization
+you've interacted with in the last 1-2 weeks.
+
+However, there are situations (usually due to corporate security policy) in
+which you may have to log in every day, and where getting login emails can
+feel excessive.
+
+### Disable new login emails
+
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Under **Other emails**, toggle
+   **Send email notifications for new logins to my account**.
+
+{end_tabs}
+
+## Low-traffic newsletter
+Zulip sends out a low-traffic newsletter (expect 2-4 emails a year) announcing  major changes in Zulip.
+
+### Managing your newsletter subscription
+
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Under **Other emails**, toggle
+   **Send me Zulip's low-traffic newsletter (a few emails a year)**.
 
 {end_tabs}
 

@@ -110,8 +110,7 @@
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
 * [Mute a user](/help/mute-a-user)
-* [Message notification emails](/help/configure-message-notification-emails)
-* [Disable new login emails](/help/disable-new-login-emails)
+* [Email notifications](/help/configure-message-notification-emails)
 * [Desktop notifications](/help/desktop-notifications)
 * [Mobile notifications](/help/test-mobile-notifications)
 
