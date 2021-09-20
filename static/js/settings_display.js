@@ -14,13 +14,16 @@ const meta = {
     loaded: false,
 };
 
+export const user_settings_panel = {};
+
 export let user_default_language_name;
 
 export function set_default_language_name(name) {
     user_default_language_name = name;
 }
 
-function change_display_setting(data, container, url, status_element, success_msg_html, sticky) {
+function change_display_setting(data, settings_panel, status_element, success_msg_html, sticky) {
+    const container = $(settings_panel.container);
     const $status_el = container.find(`${status_element}`);
     const status_is_sticky = $status_el.data("is_sticky");
     const display_message_html = status_is_sticky
@@ -35,16 +38,18 @@ function change_display_setting(data, container, url, status_element, success_ms
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
-    settings_ui.do_settings_change(channel.patch, url, data, $status_el, opts);
+    settings_ui.do_settings_change(channel.patch, settings_panel.patch_url, data, $status_el, opts);
 }
 
-export function set_up(container, settings_object, for_realm_settings) {
+export function set_up(settings_panel) {
     meta.loaded = true;
-    let language_modal_elem = "#user_default_language_modal";
-    let patch_url = "/json/settings";
-    if (for_realm_settings) {
-        language_modal_elem = "#realm_default_language_modal";
-        patch_url = "/json/realm/user_settings_defaults";
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
+    const patch_url = settings_panel.patch_url;
+    const for_realm_settings = settings_panel.for_realm_settings;
+    let language_modal_elem;
+    if (!for_realm_settings) {
+        language_modal_elem = settings_panel.language_modal_elem;
     }
 
     container.find(".display-settings-status").hide();
@@ -76,8 +81,7 @@ export function set_up(container, settings_object, for_realm_settings) {
             if (["left_side_userlist"].includes(setting)) {
                 change_display_setting(
                     data,
-                    container,
-                    patch_url,
+                    settings_panel,
                     ".display-settings-status",
                     $t_html(
                         {
@@ -89,7 +93,7 @@ export function set_up(container, settings_object, for_realm_settings) {
                     true,
                 );
             } else {
-                change_display_setting(data, container, patch_url, ".display-settings-status");
+                change_display_setting(data, settings_panel, ".display-settings-status");
             }
         });
     }
@@ -111,8 +115,7 @@ export function set_up(container, settings_object, for_realm_settings) {
 
                 change_display_setting(
                     data,
-                    container,
-                    patch_url,
+                    settings_panel,
                     ".language-settings-status",
                     $t_html(
                         {
@@ -133,23 +136,23 @@ export function set_up(container, settings_object, for_realm_settings) {
 
         container.find(".setting_twenty_four_hour_time").on("change", function () {
             const data = {twenty_four_hour_time: this.value};
-            change_display_setting(data, container, patch_url, ".time-settings-status");
+            change_display_setting(data, settings_panel, ".time-settings-status");
         });
     }
 
     container.find(".setting_demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, container, patch_url, ".display-settings-status");
+        change_display_setting(data, settings_panel, ".display-settings-status");
     });
 
     container.find(".setting_color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
-        change_display_setting(data, container, patch_url, ".display-settings-status");
+        change_display_setting(data, settings_panel, ".display-settings-status");
     });
 
     container.find(".setting_default_view").on("change", function () {
         const data = {default_view: this.value};
-        change_display_setting(data, container, patch_url, ".display-settings-status");
+        change_display_setting(data, settings_panel, ".display-settings-status");
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -181,20 +184,20 @@ export function set_up(container, settings_object, for_realm_settings) {
 
     container.find(".translate_emoticons").on("change", function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, container, patch_url, ".emoji-settings-status");
+        change_display_setting(data, settings_panel, ".emoji-settings-status");
     });
 }
 
-export async function report_emojiset_change(container, settings_object) {
+export async function report_emojiset_change(settings_panel) {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    await emojisets.select(settings_object.emojiset);
+    await emojisets.select(settings_panel.settings_object.emojiset);
 
-    const spinner = container.find(".emoji-settings-status");
+    const spinner = $(settings_panel.container).find(".emoji-settings-status");
     if (spinner.length) {
         loading.destroy_indicator(spinner);
         ui_report.success(
@@ -206,8 +209,10 @@ export async function report_emojiset_change(container, settings_object) {
     }
 }
 
-export function update_page(container, settings_object) {
+export function update_page(settings_panel) {
     const default_language_name = user_default_language_name;
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
 
     container.find(".left_side_userlist").prop("checked", settings_object.left_side_userlist);
     container.find(".default_language_name").text(default_language_name);
@@ -225,4 +230,10 @@ export function update_page(container, settings_object) {
 export function initialize() {
     const user_language_name = get_language_name(user_settings.default_language);
     set_default_language_name(user_language_name);
+
+    user_settings_panel.container = "#user-display-settings";
+    user_settings_panel.settings_object = user_settings;
+    user_settings_panel.patch_url = "/json/settings";
+    user_settings_panel.language_modal_elem = "#user_default_language_modal";
+    user_settings_panel.for_realm_settings = false;
 }

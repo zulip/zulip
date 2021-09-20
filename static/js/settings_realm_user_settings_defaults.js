@@ -7,6 +7,8 @@ import * as settings_display from "./settings_display";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_ui from "./settings_ui";
 
+export const realm_default_settings_panel = {};
+
 export function maybe_disable_widgets() {
     if (!page_params.is_admin) {
         $(".organization-box [data-name='organization-level-user-defaults']")
@@ -19,8 +21,8 @@ export function maybe_disable_widgets() {
     }
 }
 export function set_up() {
-    const container = $("#realm-user-default-settings");
-    settings_display.set_up(container, realm_user_settings_defaults, true);
+    const container = $(realm_default_settings_panel.container);
+    settings_display.set_up(realm_default_settings_panel);
     settings_notifications.set_up(container, realm_user_settings_defaults, true);
 
     container.find(".presence_enabled").on("change", (e) => {
@@ -50,4 +52,11 @@ export function set_up() {
     });
 
     maybe_disable_widgets();
+}
+
+export function initialize() {
+    realm_default_settings_panel.container = "#realm-user-default-settings";
+    realm_default_settings_panel.settings_object = realm_user_settings_defaults;
+    realm_default_settings_panel.patch_url = "/json/realm/user_settings_defaults";
+    realm_default_settings_panel.for_realm_settings = true;
 }

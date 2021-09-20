@@ -55,7 +55,7 @@ export function initialize() {
     // personal
     load_func_dict.set("your-account", settings_account.set_up);
     load_func_dict.set("display-settings", () => {
-        settings_display.set_up($("#user-display-settings"), user_settings, false);
+        settings_display.set_up(settings_display.user_settings_panel);
     });
     load_func_dict.set("notifications", () => {
         settings_notifications.set_up($("#user-notification-settings"), user_settings);

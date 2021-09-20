@@ -51,6 +51,7 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
 import * as settings_users from "./settings_users";
@@ -400,7 +401,9 @@ export function dispatch_normal_event(event) {
 
             const container_elem = $("#realm-user-default-settings");
             if (display_settings_list.includes(event.property)) {
-                settings_display.update_page(container_elem, realm_user_settings_defaults);
+                settings_display.update_page(
+                    settings_realm_user_settings_defaults.realm_default_settings_panel,
+                );
             } else if (settings_config.all_notification_settings.includes(event.property)) {
                 settings_notifications.update_page(
                     container_elem,
@@ -415,8 +418,7 @@ export function dispatch_normal_event(event) {
 
             if (event.property === "emojiset") {
                 settings_display.report_emojiset_change(
-                    container_elem,
-                    realm_user_settings_defaults,
+                    settings_realm_user_settings_defaults.realm_default_settings_panel,
                 );
             } else if (event.property === "notification_sound") {
                 notifications.update_notification_sound_source(
@@ -620,7 +622,6 @@ export function dispatch_normal_event(event) {
                 "starred_message_counts",
             ];
 
-            const container_elem = $("#user-display-settings");
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -685,7 +686,7 @@ export function dispatch_normal_event(event) {
                 // reload.
             }
             if (event.property === "emojiset") {
-                settings_display.report_emojiset_change(container_elem, user_settings);
+                settings_display.report_emojiset_change(settings_display.user_settings_panel);
 
                 // Rerender the whole message list UI
                 message_lists.home.rerender();
@@ -706,7 +707,7 @@ export function dispatch_normal_event(event) {
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
                 break;
             }
-            settings_display.update_page(container_elem, user_settings);
+            settings_display.update_page(settings_display.user_settings_panel);
             break;
         }
 

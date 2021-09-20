@@ -70,6 +70,7 @@ import * as settings from "./settings";
 import * as settings_data from "./settings_data";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
@@ -602,6 +603,7 @@ export function initialize_everything() {
     giphy.initialize();
     presence.initialize(presence_params);
     settings_display.initialize();
+    settings_realm_user_settings_defaults.initialize();
     settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
