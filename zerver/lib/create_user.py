@@ -4,7 +4,6 @@ import orjson
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.hotspots import copy_hotspots
 from zerver.lib.upload import copy_avatar
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -54,8 +53,6 @@ def copy_default_settings(
             acting_user=target_profile,
         )
         copy_avatar(settings_source, target_profile)
-
-    copy_hotspots(settings_source, target_profile)
 
 
 def get_display_email_address(user_profile: UserProfile) -> str:

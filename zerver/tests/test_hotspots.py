@@ -1,4 +1,4 @@
-from zerver.lib.actions import do_create_user, do_mark_hotspot_as_read
+from zerver.lib.actions import do_create_realm, do_create_user, do_mark_hotspot_as_read
 from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserHotspot, UserProfile, get_realm
@@ -40,6 +40,77 @@ class TestGetNextHotspots(ZulipTestCase):
     def test_tutorial_disabled(self) -> None:
         with self.settings(TUTORIAL_ENABLED=False):
             self.assertEqual(get_next_hotspots(self.user), [])
+
+    def test_three_users_with_same_email_all_done(self) -> None:
+        for hotspot in ALL_HOTSPOTS:
+            do_mark_hotspot_as_read(self.user, hotspot)
+
+        self.assertEqual(get_next_hotspots(self.user), [])
+
+        user_in_red = do_create_user(
+            self.user.delivery_email,
+            "password",
+            do_create_realm("red", "red"),
+            "user",
+            acting_user=None,
+        )
+
+        user_in_blue = do_create_user(
+            self.user.delivery_email,
+            "password",
+            do_create_realm("blue", "blue"),
+            "user",
+            acting_user=None,
+        )
+
+        self.assertEqual(get_next_hotspots(user_in_red), [])
+        self.assertEqual(get_next_hotspots(user_in_blue), [])
+
+    def test_three_users_with_same_email_some_done_some_not(self) -> None:
+        for hotspot in ["intro_reply", "intro_streams"]:
+            do_mark_hotspot_as_read(self.user, hotspot)
+
+        hotspots = get_next_hotspots(self.user)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_topics")
+
+        user_in_red = do_create_user(
+            self.user.delivery_email,
+            "password",
+            do_create_realm("red", "red"),
+            "user",
+            acting_user=None,
+        )
+
+        user_in_blue = do_create_user(
+            self.user.delivery_email,
+            "password",
+            do_create_realm("blue", "blue"),
+            "user",
+            acting_user=None,
+        )
+
+        hotspots = get_next_hotspots(user_in_red)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_topics")
+
+        hotspots = get_next_hotspots(user_in_blue)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_topics")
+
+        do_mark_hotspot_as_read(user_in_red, "intro_topics")
+
+        hotspots = get_next_hotspots(self.user)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_gear")
+
+        hotspots = get_next_hotspots(user_in_red)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_gear")
+
+        hotspots = get_next_hotspots(user_in_blue)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_gear")
 
 
 class TestHotspots(ZulipTestCase):

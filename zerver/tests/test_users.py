@@ -1175,12 +1175,6 @@ class UserProfileTest(ZulipTestCase):
         with get_test_image_file("img.png") as image_file:
             upload_avatar_image(image_file, cordelia, cordelia)
 
-        UserHotspot.objects.filter(user=cordelia).delete()
-        UserHotspot.objects.filter(user=iago).delete()
-        hotspots_completed = {"intro_reply", "intro_streams", "intro_topics"}
-        for hotspot in hotspots_completed:
-            UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
-
         # Check that we didn't send an realm_user update events to
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
@@ -1223,7 +1217,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(hamlet.enter_sends, True)
 
         hotspots = set(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
-        self.assertEqual(hotspots, hotspots_completed)
+        self.assertEqual(hotspots, set())
 
     def test_copy_default_settings_from_realm_user_default(self) -> None:
         cordelia = self.example_user("cordelia")
