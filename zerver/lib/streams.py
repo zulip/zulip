@@ -665,13 +665,15 @@ def list_to_streams(
             # Guest users case will not be handled here as it will be
             # handled by the decorator in add_subscriptions_backend.
             raise JsonableError(_("Insufficient permission"))
-        elif not autocreate:
+
+        if not autocreate:
             raise JsonableError(
                 _("Stream(s) ({}) do not exist").format(
                     ", ".join(stream_dict["name"] for stream_dict in missing_stream_dicts),
                 )
             )
-        elif message_retention_days_not_none:
+
+        if message_retention_days_not_none:
             if not user_profile.is_realm_owner:
                 raise OrganizationOwnerRequired()
 
