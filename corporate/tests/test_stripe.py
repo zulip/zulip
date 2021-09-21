@@ -50,6 +50,7 @@ from corporate.lib.stripe import (
     downgrade_small_realms_behind_on_payments_as_needed,
     get_discount_for_realm,
     get_latest_seat_count,
+    get_plan_renewal_or_end_date,
     get_price_per_license,
     get_realms_to_default_discount_dict,
     invoice_plan,
@@ -62,6 +63,7 @@ from corporate.lib.stripe import (
     sign_string,
     stripe_customer_has_credit_card_as_default_source,
     stripe_get_customer,
+    switch_realm_from_standard_to_plus_plan,
     unsign_string,
     update_billing_method_of_current_plan,
     update_license_ledger_for_automanaged_plan,
@@ -297,6 +299,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
         "Charge.list",
         "Coupon.create",
         "Customer.create",
+        "Customer.create_balance_transaction",
         "Customer.retrieve",
         "Customer.save",
         "Invoice.create",
@@ -2977,6 +2980,44 @@ class StripeTest(StripeTestCase):
                     email_found = True
             self.assertEqual(row.email_expected_to_be_sent, email_found)
 
+    @mock_stripe()
+    def test_switch_realm_from_standard_to_plus_plan(self, *mock: Mock) -> None:
+        realm = get_realm("zulip")
+
+        # Test upgrading to Plus when realm has no Standard subscription
+        with self.assertRaises(BillingError) as billing_context:
+            switch_realm_from_standard_to_plus_plan(realm)
+        self.assertEqual(
+            "Organization does not have an active Standard plan",
+            billing_context.exception.error_description,
+        )
+
+        plan, ledger = self.subscribe_realm_to_manual_license_management_plan(
+            realm, 9, 9, CustomerPlan.MONTHLY
+        )
+        # Test upgrading to Plus when realm has no stripe_customer_id
+        with self.assertRaises(BillingError) as billing_context:
+            switch_realm_from_standard_to_plus_plan(realm)
+        self.assertEqual(
+            "Organization missing Stripe customer.", billing_context.exception.error_description
+        )
+
+        plan.customer.stripe_customer_id = "cus_12345"
+        plan.customer.save(update_fields=["stripe_customer_id"])
+        plan.price_per_license = get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY)
+        plan.automanage_licenses = True
+        plan.invoiced_through = ledger
+        plan.save(update_fields=["price_per_license", "automanage_licenses", "invoiced_through"])
+
+        switch_realm_from_standard_to_plus_plan(realm)
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, CustomerPlan.ENDED)
+        plus_plan = get_current_plan_by_realm(realm)
+        assert plus_plan is not None
+        self.assertEqual(plus_plan.tier, CustomerPlan.PLUS)
+        self.assertEqual(LicenseLedger.objects.filter(plan=plus_plan).count(), 1)
+
     def test_update_billing_method_of_current_plan(self) -> None:
         realm = get_realm("zulip")
         customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
@@ -3238,6 +3279,28 @@ class BillingHelpersTest(ZulipTestCase):
 
         with self.assertRaisesRegex(InvalidTier, "Unknown tier: 10"):
             get_price_per_license(CustomerPlan.ENTERPRISE, CustomerPlan.ANNUAL)
+
+    def test_get_plan_renewal_or_end_date(self) -> None:
+        realm = get_realm("zulip")
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_12345")
+        billing_cycle_anchor = timezone_now()
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            status=CustomerPlan.ACTIVE,
+            billing_cycle_anchor=billing_cycle_anchor,
+            billing_schedule=CustomerPlan.MONTHLY,
+            tier=CustomerPlan.STANDARD,
+        )
+        renewal_date = get_plan_renewal_or_end_date(plan, billing_cycle_anchor)
+        self.assertEqual(renewal_date, add_months(billing_cycle_anchor, 1))
+
+        # When the plan ends 2 days before the start of the next billing cycle,
+        # the function should return the end_date.
+        plan_end_date = add_months(billing_cycle_anchor, 1) - timedelta(days=2)
+        plan.end_date = plan_end_date
+        plan.save(update_fields=["end_date"])
+        renewal_date = get_plan_renewal_or_end_date(plan, billing_cycle_anchor)
+        self.assertEqual(renewal_date, plan_end_date)
 
     def test_update_or_create_stripe_customer_logic(self) -> None:
         user = self.example_user("hamlet")

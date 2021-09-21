@@ -85,6 +85,7 @@ class CustomerPlan(models.Model):
     invoiced_through: Optional["LicenseLedger"] = models.ForeignKey(
         "LicenseLedger", null=True, on_delete=CASCADE, related_name="+"
     )
+    end_date: Optional[datetime.datetime] = models.DateTimeField(null=True)
 
     DONE = 1
     STARTED = 2
@@ -103,6 +104,7 @@ class CustomerPlan(models.Model):
     DOWNGRADE_AT_END_OF_CYCLE = 2
     FREE_TRIAL = 3
     SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4
+    SWITCH_NOW_FROM_STANDARD_TO_PLUS = 5
     # "Live" plans should have a value < LIVE_STATUS_THRESHOLD.
     # There should be at most one live plan per customer.
     LIVE_STATUS_THRESHOLD = 10

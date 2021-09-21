@@ -1,0 +1,16 @@
+{
+    "id": "cbtxn_1JkZzGHSaWXyvFpKI1U7dskx",
+    "object": "customer_balance_transaction",
+    "amount": -7200,
+    "created": 1634241190,
+    "credit_note": null,
+    "currency": "usd",
+    "customer": "cus_12345",
+    "description": "Credit from early termination of Standard plan",
+    "ending_balance": -7200,
+    "invoice": null,
+    "livemode": false,
+    "metadata": {
+    },
+    "type": "adjustment"
+}
