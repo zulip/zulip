@@ -14,6 +14,9 @@ ExtendedValidator = Callable[[str, str, object], str]
 RealmUserValidator = Callable[[int, object, bool], List[int]]
 
 
+ProfileDataElementValue = Union[str, List[int]]
+
+
 class ProfileDataElementBase(TypedDict):
     id: int
     name: str
@@ -24,13 +27,13 @@ class ProfileDataElementBase(TypedDict):
 
 
 class ProfileDataElement(ProfileDataElementBase):
-    value: str
+    value: ProfileDataElementValue
     rendered_value: Optional[str]
 
 
 ProfileData = List[ProfileDataElement]
 
-FieldElement = Tuple[int, Promise, Validator[Union[int, str, List[int]]], Callable[[Any], Any], str]
+FieldElement = Tuple[int, Promise, Validator[ProfileDataElementValue], Callable[[Any], Any], str]
 ExtendedFieldElement = Tuple[int, Promise, ExtendedValidator, Callable[[Any], Any], str]
 UserFieldElement = Tuple[int, Promise, RealmUserValidator, Callable[[Any], Any], str]
 

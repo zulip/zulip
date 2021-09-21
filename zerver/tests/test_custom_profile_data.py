@@ -566,7 +566,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_error_update_invalid_value(
             field_name, "1909-3-5", f"{field_name} is not a date"
         )
-        self.assert_error_update_invalid_value(field_name, 123, f"{field_name} is not a string")
+        self.assert_error_update_invalid_value(field_name, [123], f"{field_name} is not a string")
 
     def test_update_invalid_url(self) -> None:
         field_name = "Favorite website"
