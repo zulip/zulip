@@ -360,7 +360,12 @@ class ZephyrMessageAlreadySentException(Exception):
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ["errors", "sent_invitations", "license_limit_reached"]
+    data_fields = [
+        "errors",
+        "sent_invitations",
+        "license_limit_reached",
+        "daily_limit_reached",
+    ]
 
     def __init__(
         self,
@@ -368,11 +373,13 @@ class InvitationError(JsonableError):
         errors: List[Tuple[str, str, bool]],
         sent_invitations: bool,
         license_limit_reached: bool = False,
+        daily_limit_reached: bool = False,
     ) -> None:
         self._msg: str = msg
         self.errors: List[Tuple[str, str, bool]] = errors
         self.sent_invitations: bool = sent_invitations
         self.license_limit_reached: bool = license_limit_reached
+        self.daily_limit_reached: bool = daily_limit_reached
 
 
 class AccessDeniedError(JsonableError):
