@@ -5,7 +5,11 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
-from zerver.lib.exceptions import JsonableError, StreamAdministratorRequired
+from zerver.lib.exceptions import (
+    JsonableError,
+    OrganizationOwnerRequired,
+    StreamAdministratorRequired,
+)
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import (
@@ -669,7 +673,8 @@ def list_to_streams(
             )
         elif message_retention_days_not_none:
             if not user_profile.is_realm_owner:
-                raise JsonableError(_("User cannot create stream with this settings."))
+                raise OrganizationOwnerRequired()
+
             user_profile.realm.ensure_not_on_limited_plan()
 
         # We already filtered out existing streams, so dup_streams

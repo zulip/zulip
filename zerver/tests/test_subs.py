@@ -1291,7 +1291,7 @@ class StreamAdminTest(ZulipTestCase):
                 "message_retention_days": 10,
             }
         ]
-        with self.assertRaisesRegex(JsonableError, "User cannot create stream with this settings."):
+        with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
             list_to_streams(streams_raw, admin, autocreate=True)
 
         streams_raw = [
@@ -1300,7 +1300,7 @@ class StreamAdminTest(ZulipTestCase):
                 "message_retention_days": -1,
             }
         ]
-        with self.assertRaisesRegex(JsonableError, "User cannot create stream with this settings."):
+        with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
             list_to_streams(streams_raw, admin, autocreate=True)
 
         streams_raw = [
