@@ -7021,16 +7021,19 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     """Discourage using invitation emails as a vector for carrying spam."""
     msg = _(
-        "You do not have enough remaining invites for today. "
-        "Please contact {email} to have your limit raised. "
-        "No invitations were sent."
-    ).format(email=settings.ZULIP_ADMINISTRATOR)
+        "To protect users, Zulip limits the number of invitations you can send in one day. Because you have reached the limit, no invitations were sent."
+    )
     if not settings.OPEN_REALM_CREATION:
         return
 
     recent_invites = estimate_recent_invites([realm], days=1)
     if num_invitees + recent_invites > realm.max_invites:
-        raise InvitationError(msg, [], sent_invitations=False)
+        raise InvitationError(
+            msg,
+            [],
+            sent_invitations=False,
+            daily_limit_reached=True,
+        )
 
     default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
     newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
@@ -7053,7 +7056,12 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     for days, count in settings.INVITES_NEW_REALM_LIMIT_DAYS:
         recent_invites = estimate_recent_invites(new_realms, days=days)
         if num_invitees + recent_invites > count:
-            raise InvitationError(msg, [], sent_invitations=False)
+            raise InvitationError(
+                msg,
+                [],
+                sent_invitations=False,
+                daily_limit_reached=True,
+            )
 
 
 def do_invite_users(

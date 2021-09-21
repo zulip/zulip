@@ -1,4 +1,11 @@
 <p id="invitation_error_message">{{ error_message }}</p>
+{{#if daily_limit_reached}}
+    {{#tr}}
+        Please <z-link-support>contact support</z-link-support> for an exception or <z-link-invite-help>add users with a reusable invite link</z-link-invite-help>.
+        {{#*inline "z-link-support"}}<a href="https://zulip.com/help/contact-support">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-link-invite-help"}}<a href="https://zulip.com/help/invite-new-users#send-invitations">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+{{/if}}
 <ul>
     {{#each error_list}}
     <li>{{this}}</li>
