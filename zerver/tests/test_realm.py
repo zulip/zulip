@@ -741,23 +741,40 @@ class RealmTest(ZulipTestCase):
         rome = Stream.objects.get(name="Rome")
         self.assertEqual(rome.is_web_public, True)
         self.assertEqual(realm.has_web_public_streams(), True)
+        self.assertEqual(realm.web_public_streams_enabled(), True)
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertEqual(realm.has_web_public_streams(), False)
+            self.assertEqual(realm.web_public_streams_enabled(), False)
 
         # Convert Rome to a public stream
         rome.is_web_public = False
         rome.save()
         self.assertEqual(Stream.objects.filter(realm=realm, is_web_public=True).count(), 0)
+        self.assertEqual(realm.web_public_streams_enabled(), True)
         self.assertEqual(realm.has_web_public_streams(), False)
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertEqual(realm.web_public_streams_enabled(), False)
+            self.assertEqual(realm.has_web_public_streams(), False)
 
         # Restore state
         rome.is_web_public = True
         rome.save()
         self.assertEqual(Stream.objects.filter(realm=realm, is_web_public=True).count(), 1)
         self.assertEqual(realm.has_web_public_streams(), True)
+        self.assertEqual(realm.web_public_streams_enabled(), True)
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertEqual(realm.web_public_streams_enabled(), False)
+            self.assertEqual(realm.has_web_public_streams(), False)
 
         realm.plan_type = Realm.LIMITED
         realm.save()
         self.assertEqual(Stream.objects.filter(realm=realm, is_web_public=True).count(), 1)
+        self.assertEqual(realm.web_public_streams_enabled(), False)
         self.assertEqual(realm.has_web_public_streams(), False)
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertEqual(realm.web_public_streams_enabled(), False)
+            self.assertEqual(realm.has_web_public_streams(), False)
 
 
 class RealmAPITest(ZulipTestCase):

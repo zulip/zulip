@@ -262,6 +262,9 @@ EXTERNAL_URI_SCHEME = "https://"
 # Whether anyone can create a new organization on the Zulip server.
 OPEN_REALM_CREATION = False
 
+# Whether it's possible to create web-public streams on this server.
+WEB_PUBLIC_STREAMS_ENABLED = False
+
 # Setting for where the system bot users are.  Likely has no
 # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
 SYSTEM_ONLY_REALMS = {"zulip"}

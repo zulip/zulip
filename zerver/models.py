@@ -852,15 +852,27 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
+    def web_public_streams_enabled(self) -> bool:
+        if not settings.WEB_PUBLIC_STREAMS_ENABLED:
+            # To help protect against accidentally web-public streams in
+            # self-hosted servers, we require the feature to be enabled at
+            # the server level before it is available to users.
+            return False
+
+        if self.plan_type == Realm.LIMITED:
+            # In Zulip Cloud, we also require a paid or sponsored
+            # plan, to protect against the spam/abuse attacks that
+            # target every open Internet service that can host files.
+            return False
+
+        return True
+
     def has_web_public_streams(self) -> bool:
         """
         If any of the streams in the realm is web
         public, then the realm is web public.
         """
-        if self.plan_type == Realm.LIMITED:
-            # We don't enable web public streams feature
-            # for realms on LIMITED plan to avoid spamming
-            # behaviour.
+        if not self.web_public_streams_enabled():
             return False
 
         return Stream.objects.filter(realm=self, is_web_public=True).exists()
