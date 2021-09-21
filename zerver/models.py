@@ -76,6 +76,7 @@ from zerver.lib.types import (
     LinkifierDict,
     ProfileData,
     ProfileDataElementBase,
+    ProfileDataElementValue,
     RealmUserValidator,
     UserFieldElement,
     Validator,
@@ -3904,7 +3905,7 @@ class CustomProfileField(models.Model):
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
-    FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {
+    FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
     }
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {

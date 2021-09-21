@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -20,6 +20,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import ProfileDataElementValue
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -310,8 +311,8 @@ def get_all_api_keys(user_profile: UserProfile) -> List[str]:
 
 
 def validate_user_custom_profile_field(
-    realm_id: int, field: CustomProfileField, value: Union[int, str, List[int]]
-) -> Union[int, str, List[int]]:
+    realm_id: int, field: CustomProfileField, value: ProfileDataElementValue
+) -> ProfileDataElementValue:
     validators = CustomProfileField.FIELD_VALIDATORS
     field_type = field.field_type
     var_name = f"{field.name}"
@@ -332,7 +333,7 @@ def validate_user_custom_profile_field(
 
 
 def validate_user_custom_profile_data(
-    realm_id: int, profile_data: List[Dict[str, Union[int, str, List[int]]]]
+    realm_id: int, profile_data: List[Dict[str, Union[int, ProfileDataElementValue]]]
 ) -> None:
     # This function validate all custom field values according to their field type.
     for item in profile_data:
@@ -343,7 +344,9 @@ def validate_user_custom_profile_data(
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
         try:
-            validate_user_custom_profile_field(realm_id, field, item["value"])
+            validate_user_custom_profile_field(
+                realm_id, field, cast(ProfileDataElementValue, item["value"])
+            )
         except ValidationError as error:
             raise JsonableError(error.message)
 

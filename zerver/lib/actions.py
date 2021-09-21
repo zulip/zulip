@@ -169,7 +169,7 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
-from zerver.lib.types import ProfileFieldData
+from zerver.lib.types import ProfileDataElementValue, ProfileFieldData
 from zerver.lib.upload import (
     claim_attachment,
     delete_avatar_image,
@@ -7738,7 +7738,7 @@ def notify_user_update_custom_profile_data(
 
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
-    data: List[Dict[str, Union[int, str, List[int]]]],
+    data: List[Dict[str, Union[int, ProfileDataElementValue]]],
 ) -> None:
     with transaction.atomic():
         for custom_profile_field in data:

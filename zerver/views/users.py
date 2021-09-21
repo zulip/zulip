@@ -38,7 +38,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
-from zerver.lib.types import Validator
+from zerver.lib.types import ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import add_query_arg_to_redirect_url
 from zerver.lib.users import (
@@ -141,14 +141,16 @@ def reactivate_user_backend(
     return json_success()
 
 
-check_profile_data: Validator[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = check_list(
+check_profile_data: Validator[
+    List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]
+] = check_list(
     check_dict_only(
         [
             ("id", check_int),
             (
                 "value",
                 check_none_or(
-                    check_union([check_int, check_string, check_list(check_int)]),
+                    check_union([check_string, check_list(check_int)]),
                 ),
             ),
         ]
@@ -168,7 +170,7 @@ def update_user_backend(
             UserProfile.ROLE_TYPES,
         ),
     ),
-    profile_data: Optional[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = REQ(
+    profile_data: Optional[List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]] = REQ(
         default=None,
         json_validator=check_profile_data,
     ),
