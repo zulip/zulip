@@ -376,12 +376,11 @@ def make_end_of_cycle_updates_if_needed(
     assert last_ledger_renewal is not None
     last_renewal = last_ledger_renewal.event_time
 
-    if plan.is_free_trial():
+    if plan.is_free_trial() or plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
         assert plan.next_invoice_date is not None
         next_billing_cycle = plan.next_invoice_date
     else:
         next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
-
     if next_billing_cycle <= event_time and last_ledger_entry is not None:
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
         assert licenses_at_next_renewal is not None
@@ -456,6 +455,47 @@ def make_end_of_cycle_updates_if_needed(
                 ).decode(),
             )
             return new_plan, new_plan_ledger_entry
+
+        if plan.status == CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS:
+            standard_plan = plan
+            standard_plan.end_date = next_billing_cycle
+            standard_plan.status = CustomerPlan.ENDED
+            standard_plan.save(update_fields=["status", "end_date"])
+
+            (_, _, _, plus_plan_price_per_license) = compute_plan_parameters(
+                CustomerPlan.PLUS,
+                standard_plan.automanage_licenses,
+                standard_plan.billing_schedule,
+                standard_plan.customer.default_discount,
+            )
+            plus_plan_billing_cycle_anchor = standard_plan.end_date.replace(microsecond=0)
+
+            plus_plan = CustomerPlan.objects.create(
+                customer=standard_plan.customer,
+                status=CustomerPlan.ACTIVE,
+                automanage_licenses=standard_plan.automanage_licenses,
+                charge_automatically=standard_plan.charge_automatically,
+                price_per_license=plus_plan_price_per_license,
+                discount=standard_plan.customer.default_discount,
+                billing_schedule=standard_plan.billing_schedule,
+                tier=CustomerPlan.PLUS,
+                billing_cycle_anchor=plus_plan_billing_cycle_anchor,
+                invoicing_status=CustomerPlan.INITIAL_INVOICE_TO_BE_SENT,
+                next_invoice_date=plus_plan_billing_cycle_anchor,
+            )
+
+            standard_plan_last_ledger = (
+                LicenseLedger.objects.filter(plan=standard_plan).order_by("id").last()
+            )
+            licenses_for_plus_plan = standard_plan_last_ledger.licenses_at_next_renewal
+            plus_plan_ledger_entry = LicenseLedger.objects.create(
+                plan=plus_plan,
+                is_renewal=True,
+                event_time=plus_plan_billing_cycle_anchor,
+                licenses=licenses_for_plus_plan,
+                licenses_at_next_renewal=licenses_for_plus_plan,
+            )
+            return plus_plan, plus_plan_ledger_entry
 
         if plan.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
             process_downgrade(plan)
@@ -743,6 +783,14 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
     update_license_ledger_for_automanaged_plan(realm, plan, event_time)
 
 
+def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> datetime:
+    billing_period_end = start_of_next_billing_cycle(plan, event_time)
+
+    if plan.end_date is not None and plan.end_date < billing_period_end:
+        return plan.end_date
+    return billing_period_end
+
+
 def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
@@ -777,7 +825,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                 }
             description = f"{plan.name} - renewal"
         elif licenses_base is not None and ledger_entry.licenses != licenses_base:
-            assert plan.price_per_license and ledger_entry is not None
+            assert plan.price_per_license
             last_ledger_entry_renewal = (
                 LicenseLedger.objects.filter(
                     plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
@@ -787,16 +835,18 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             )
             assert last_ledger_entry_renewal is not None
             last_renewal = last_ledger_entry_renewal.event_time
-            period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
-            proration_fraction = (period_end - ledger_entry.event_time) / (
-                period_end - last_renewal
+            billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
+            plan_renewal_or_end_date = get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
+            proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
+                billing_period_end - last_renewal
             )
             price_args = {
                 "unit_amount": int(plan.price_per_license * proration_fraction + 0.5),
                 "quantity": ledger_entry.licenses - licenses_base,
             }
             description = "Additional license ({} - {})".format(
-                ledger_entry.event_time.strftime("%b %-d, %Y"), period_end.strftime("%b %-d, %Y")
+                ledger_entry.event_time.strftime("%b %-d, %Y"),
+                plan_renewal_or_end_date.strftime("%b %-d, %Y"),
             )
 
         if price_args:
@@ -811,7 +861,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                 period={
                     "start": datetime_to_timestamp(ledger_entry.event_time),
                     "end": datetime_to_timestamp(
-                        start_of_next_billing_cycle(plan, ledger_entry.event_time)
+                        get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
                     ),
                 },
                 idempotency_key=get_idempotency_key(ledger_entry),
@@ -1069,6 +1119,52 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
         else:
             if customer_has_last_n_invoices_open(customer, 1):
                 void_all_open_invoices(realm)
+
+
+def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
+    standard_plan = get_current_plan_by_realm(realm)
+
+    if (
+        not standard_plan
+        or standard_plan.status != CustomerPlan.ACTIVE
+        or standard_plan.tier != CustomerPlan.STANDARD
+    ):
+        raise BillingError("Organization does not have an active Standard plan")
+
+    if not standard_plan.customer.stripe_customer_id:
+        raise BillingError("Organization missing Stripe customer.")
+
+    plan_switch_time = timezone_now()
+
+    standard_plan.status = CustomerPlan.SWITCH_NOW_FROM_STANDARD_TO_PLUS
+    standard_plan.next_invoice_date = plan_switch_time
+    standard_plan.save(update_fields=["status", "next_invoice_date"])
+
+    standard_plan_next_renewal_date = start_of_next_billing_cycle(standard_plan, plan_switch_time)
+
+    standard_plan_last_renewal_ledger = (
+        LicenseLedger.objects.filter(is_renewal=True, plan=standard_plan).order_by("id").last()
+    )
+    standard_plan_last_renewal_amount = (
+        standard_plan_last_renewal_ledger.licenses * standard_plan.price_per_license
+    )
+    standard_plan_last_renewal_date = standard_plan_last_renewal_ledger.event_time
+    unused_proration_fraction = 1 - (plan_switch_time - standard_plan_last_renewal_date) / (
+        standard_plan_next_renewal_date - standard_plan_last_renewal_date
+    )
+    amount_to_credit_back_to_realm = math.ceil(
+        standard_plan_last_renewal_amount * unused_proration_fraction
+    )
+    stripe.Customer.create_balance_transaction(
+        standard_plan.customer.stripe_customer_id,
+        amount=-1 * amount_to_credit_back_to_realm,
+        currency="usd",
+        description="Credit from early termination of Standard plan",
+    )
+    invoice_plan(standard_plan, plan_switch_time)
+    plus_plan = get_current_plan_by_realm(realm)
+    assert plus_plan is not None  # for mypy
+    invoice_plan(plus_plan, plan_switch_time)
 
 
 def update_billing_method_of_current_plan(
