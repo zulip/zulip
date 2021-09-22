@@ -496,7 +496,7 @@ class CommonUtils {
         );
     }
 
-    async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
+    async run_test_async(test_function: (page: Page) => Promise<void>): Promise<void> {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.
         const browser = await this.ensure_browser();
@@ -601,6 +601,13 @@ class CommonUtils {
             await console_ready;
             await browser.close();
         }
+    }
+
+    run_test(test_function: (page: Page) => Promise<void>): void {
+        this.run_test_async(test_function).catch((error) => {
+            console.error(error);
+            process.exit(1);
+        });
     }
 }
 

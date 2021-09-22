@@ -85,7 +85,7 @@ function report_error(
     if (page_params.development_environment) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
-        blueslip_stacktrace.display_stacktrace(msg, stack);
+        void blueslip_stacktrace.display_stacktrace(msg, stack);
     }
 
     const key = ":" + msg + stack;
@@ -108,7 +108,7 @@ function report_error(
     //
     // Important: We don't use channel.js here so that exceptions
     // always make it to the server even if reload_state.is_in_progress.
-    $.ajax({
+    void $.ajax({
         type: "POST",
         url: "/json/report/error",
         dataType: "json",
