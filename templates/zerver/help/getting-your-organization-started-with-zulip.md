@@ -123,4 +123,4 @@ users at once, [notifying](/help/pm-mention-alert-notifications) them about a me
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Streams and topics](/help/streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
-* [Using Zulip for a class](/help/using-zulip-for-a-class)
+* [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
