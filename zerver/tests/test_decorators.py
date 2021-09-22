@@ -1263,7 +1263,7 @@ class InactiveUserTest(ZulipTestCase):
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",)):
             self.assertFalse(form.is_valid())
             self.assertIn(
-                "Your account {} has been deactivated".format(user_profile.delivery_email),
+                f"Your account {user_profile.delivery_email} has been deactivated",
                 str(form.errors),
             )
 
