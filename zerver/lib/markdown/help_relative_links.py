@@ -19,7 +19,7 @@ gear_info = {
     # name is what the item is called in the gear menu: `Select **name**.`
     # link is used for relative links: `Select [name](link).`
     "manage-streams": ["Manage streams", "/#streams/subscribed"],
-    "settings": ["Personal Settings", "/#settings/profile"],
+    "settings": ["Personal Settings (🕘)", "/#settings/profile"],
     "manage-organization": ["Manage organization", "/#organization/organization-profile"],
     "integrations": ["Integrations", "/integrations"],
     "stats": ["Usage statistics", "/stats"],
