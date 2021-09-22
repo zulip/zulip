@@ -16,28 +16,9 @@ if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
 
-function pad(num: number, width: number): string {
-    return num.toString().padStart(width, "0");
-}
-
 function make_logger_func(name: "debug" | "log" | "info" | "warn" | "error") {
     return function Logger_func(this: Logger, ...args: unknown[]) {
-        const now = new Date();
-        const date_str =
-            now.getUTCFullYear() +
-            "-" +
-            pad(now.getUTCMonth() + 1, 2) +
-            "-" +
-            pad(now.getUTCDate(), 2) +
-            " " +
-            pad(now.getUTCHours(), 2) +
-            ":" +
-            pad(now.getUTCMinutes(), 2) +
-            ":" +
-            pad(now.getUTCSeconds(), 2) +
-            "." +
-            pad(now.getUTCMilliseconds(), 3) +
-            " UTC";
+        const date_str = new Date().toISOString();
 
         const str_args = args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x));
 
