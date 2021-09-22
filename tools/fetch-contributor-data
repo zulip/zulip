@@ -71,14 +71,12 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     retry = Retry(
         total=max_retries,
         backoff_factor=2.0,
-        status_forcelist=set(
-            [
-                403,  # Github does unauth rate-limiting via 403's
-                429,  # The formal rate-limiting response code
-                502,  # Bad gateway
-                503,  # Service unavailable
-            ]
-        ),
+        status_forcelist={
+            403,  # Github does unauth rate-limiting via 403's
+            429,  # The formal rate-limiting response code
+            502,  # Bad gateway
+            503,  # Service unavailable
+        },
     )
     session = GithubSession(max_retries=retry)
     while True:
