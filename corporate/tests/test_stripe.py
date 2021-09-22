@@ -2622,7 +2622,7 @@ class StripeTest(StripeTestCase):
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
                 self.assert_json_success(result)
-                self.assertRegexpMatches(
+                self.assertRegex(
                     m.output[0],
                     r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
                 )
@@ -2644,7 +2644,7 @@ class StripeTest(StripeTestCase):
                     "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
                 )
                 self.assert_json_success(result)
-                self.assertRegexpMatches(
+                self.assertRegex(
                     m.output[0],
                     r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 4",
                 )
