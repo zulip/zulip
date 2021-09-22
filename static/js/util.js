@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+import {$t} from "./i18n";
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -298,7 +300,14 @@ export function clean_user_content_links(html) {
         let title;
         let legacy_title;
         if (url.origin === window.location.origin && url.pathname.startsWith("/user_uploads/")) {
-            title = legacy_title = url.pathname.slice(url.pathname.lastIndexOf("/") + 1);
+            // We add the word "download" to make clear what will
+            // happen when clicking the file.  This is particularly
+            // important in the desktop app, where hovering a URL does
+            // not display the URL like it does in the web app.
+            title = legacy_title = $t(
+                {defaultMessage: "Download {filename}"},
+                {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
+            );
         } else {
             title = url;
             legacy_title = href;
