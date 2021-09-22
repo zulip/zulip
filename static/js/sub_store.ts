@@ -62,7 +62,7 @@ export function validate_stream_ids(stream_ids: number[]): number[] {
     }
 
     if (bad_ids.length > 0) {
-        blueslip.warn(`We have untracked stream_ids: ${bad_ids}`);
+        blueslip.warn(`We have untracked stream_ids: ${bad_ids.toString()}`);
     }
 
     return good_ids;
