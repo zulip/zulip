@@ -167,7 +167,7 @@ export function exception_msg(
     if (ex.fileName !== undefined) {
         message += " at " + ex.fileName;
         if (ex.lineNumber !== undefined) {
-            message += ":" + ex.lineNumber;
+            message += `:${ex.lineNumber}`;
         }
     }
     return message;

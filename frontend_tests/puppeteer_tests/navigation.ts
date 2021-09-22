@@ -62,7 +62,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 
 async function test_reload_hash(page: Page): Promise<void> {
     const initial_page_load_time = await page.evaluate(() => zulip_test.page_params.page_load_time);
-    console.log("initial load time: " + initial_page_load_time);
+    console.log(`initial load time: ${initial_page_load_time}`);
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
