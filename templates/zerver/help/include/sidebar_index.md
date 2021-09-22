@@ -27,6 +27,7 @@
 * [Create streams](/help/create-streams)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)
+* [Create user groups](/help/create-user-groups)
 * [Set up integrations](/help/set-up-integrations)
 
 ## Account basics

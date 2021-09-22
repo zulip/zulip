@@ -10,6 +10,9 @@
 
 {!how-to-invite-users-to-join.md!}
 
+!!! tip ""
+    You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
+
 ## Related articles
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)

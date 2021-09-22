@@ -99,6 +99,18 @@ stream](/help/create-a-stream#stream-options).
 
 {!how-to-invite-users-to-join.md!}
 
+!!! tip ""
+    You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
+
+## Create user groups
+
+User groups allow you to [mention](/help/mention-a-user-or-group) multiple
+users at once, [notifying](/help/pm-mention-alert-notifications) them about a message. For example, you may choose to create user groups for teams in your organization.
+
+### How to create a user group
+
+{!how-to-create-a-user-group.md!}
+
 ## Set up integrations
 
 {!set-up-integrations.md!}
