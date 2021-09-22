@@ -203,7 +203,7 @@ function render_date_span(
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
 export function render_date(time: Date, time_above: Date | undefined, today: Date): JQuery {
-    const className = "timerender" + next_timerender_id;
+    const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time, today);
     let node = $("<span />").attr("class", className);

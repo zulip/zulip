@@ -49,7 +49,7 @@ export function remove(user_group: UserGroup): void {
 export function get_user_group_from_id(group_id: number): UserGroup {
     const user_group = user_group_by_id_dict.get(group_id);
     if (!user_group) {
-        throw new Error("Unknown group_id in get_user_group_from_id: " + group_id);
+        throw new Error(`Unknown group_id in get_user_group_from_id: ${group_id}`);
     }
     return user_group;
 }
@@ -80,7 +80,7 @@ export function get_realm_user_groups(): UserGroup[] {
 export function is_member_of(user_group_id: number, user_id: number): boolean {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
-        blueslip.error("Could not find user group with ID " + user_group_id);
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
         return false;
     }
     return user_group.members.has(user_id);
@@ -89,7 +89,7 @@ export function is_member_of(user_group_id: number, user_id: number): boolean {
 export function add_members(user_group_id: number, user_ids: number[]): void {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
-        blueslip.error("Could not find user group with ID " + user_group_id);
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
         return;
     }
 
@@ -101,7 +101,7 @@ export function add_members(user_group_id: number, user_ids: number[]): void {
 export function remove_members(user_group_id: number, user_ids: number[]): void {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
-        blueslip.error("Could not find user group with ID " + user_group_id);
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
         return;
     }
 
