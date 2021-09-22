@@ -25,7 +25,7 @@ export const intl = createIntl(
     cache,
 );
 
-export const $t = intl.formatMessage;
+export const $t = intl.formatMessage.bind(intl);
 
 export const default_html_elements = Object.fromEntries(
     ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
