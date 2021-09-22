@@ -306,56 +306,22 @@ export function stringify_time(time: number | Date): string {
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
-export const absolute_time = (function () {
-    const MONTHS = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ];
+export function absolute_time(timestamp: number, today = new Date()): string {
+    const date = new Date(timestamp);
+    const is_older_year = today.getFullYear() - date.getFullYear() > 0;
+    const H_24 = user_settings.twenty_four_hour_time;
 
-    const fmt_time = function (date: Date, H_24: boolean): string {
-        const payload = {
-            hours: date.getHours(),
-            minutes: date.getMinutes(),
-            is_pm: false,
-        };
-
-        if (payload.hours > 12 && !H_24) {
-            payload.hours -= 12;
-            payload.is_pm = true;
-        }
-
-        let str = ("0" + payload.hours).slice(-2) + ":" + ("0" + payload.minutes).slice(-2);
-
-        if (!H_24) {
-            str += payload.is_pm ? " PM" : " AM";
-        }
-
-        return str;
-    };
-
-    return function (timestamp: number, today = new Date()): string {
-        const date = new Date(timestamp);
-        const is_older_year = today.getFullYear() - date.getFullYear() > 0;
-        const H_24 = user_settings.twenty_four_hour_time;
-        let str = MONTHS[date.getMonth()] + " " + date.getDate();
-        // include year if message date is from a previous year
-        if (is_older_year) {
-            str += ", " + date.getFullYear();
-        }
-        str += " " + fmt_time(date, H_24);
-        return str;
-    };
-})();
+    return format(
+        date,
+        is_older_year
+            ? H_24
+                ? "MMM d, yyyy HH:mm"
+                : "MMM d, yyyy hh:mm a"
+            : H_24
+            ? "MMM d HH:mm"
+            : "MMM d hh:mm a",
+    );
+}
 
 export function get_full_datetime(time: Date): string {
     const time_options: Intl.DateTimeFormatOptions = {timeStyle: "medium"};
