@@ -14,10 +14,11 @@ If your entire organization speaks a language other than English, an administrat
 {start_tabs}
 
 {settings_tab|display-settings}
+1. Click on the gear (⚙) icon in the upper right corner of the web or desktop app.
 
-2. Under **Language settings**, click the button next to **Default language**.
+2. Under **Language settings**🌐, click the button next to **Default language**.🗂
 
-3. Click on a language.
+3. Click on a language.🌍
 
 4. Click **Reload**.
 
