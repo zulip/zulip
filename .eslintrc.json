@@ -133,7 +133,10 @@
         },
         {
             "files": ["**/*.ts"],
-            "extends": ["plugin:@typescript-eslint/recommended", "plugin:import/typescript"],
+            "extends": [
+                "plugin:@typescript-eslint/recommended-requiring-type-checking",
+                "plugin:import/typescript"
+            ],
             "parserOptions": {
                 "project": "tsconfig.json"
             },
@@ -148,7 +151,6 @@
                 "no-use-before-define": "off",
 
                 "@typescript-eslint/array-type": "error",
-                "@typescript-eslint/await-thenable": "error",
                 "@typescript-eslint/consistent-type-assertions": "error",
                 "@typescript-eslint/consistent-type-imports": "error",
                 "@typescript-eslint/explicit-function-return-type": [
@@ -162,12 +164,14 @@
                 "@typescript-eslint/no-non-null-assertion": "off",
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
-                "@typescript-eslint/no-unnecessary-type-assertion": "error",
                 "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-use-before-define": "error",
                 "@typescript-eslint/no-useless-constructor": "error",
                 "@typescript-eslint/prefer-includes": "error",
-                "@typescript-eslint/prefer-regexp-exec": "error",
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
                 "@typescript-eslint/unified-signatures": "error",
