@@ -247,18 +247,19 @@ reasoning here.
   these checked-in versions of dependencies and instead use versions
   managed by the npm repositories.
 
-## Node and Yarn
+## Node.js and Yarn
 
-These are installed by `scripts/lib/install-node` (which in turn uses
-the standard third-party `nvm` installer to download `node` and pin
-its version) and `scripts/lib/install-yarn`.
+Node.js is installed by `scripts/lib/install-node` to
+`/srv/zulip-node` and symlinked to `/usr/local/bin/node`. Yarn is
+installed by `scripts/lib/install-yarn` to `/srv/zulip-yarn` and
+symlinked to `/usr/bin/yarn`.
 
-- `nvm` has its own system for installing each version of `node` at
-  its own path, which we use, though we install a `/usr/local/bin/node`
-  wrapper to access the desired version conveniently and efficiently
-  (`nvm` has a lot of startup overhead).
-- We install `yarn` at `/srv/zulip-yarn`. We don't do anything
-  special to try to manage multiple versions of `yarn`.
+We don't do anything special to try to manage multiple versions of
+Node.js or Yarn. (Previous versions of Zulip installed multiple
+versions of Node.js using the third-party `nvm` installer, but the
+current version no longer uses `nvm`; if it’s present in
+`/usr/local/nvm` where previous versions installed it, it will now be
+removed.)
 
 ## ShellCheck and shfmt
 

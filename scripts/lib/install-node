@@ -1,55 +1,39 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -euo pipefail
 
-node_version=14.17.6
-nvm_version=0.38.0
+version=14.17.6
+arch="$(uname -m)"
 
-# This is a fix for the fact that nvm uses $HOME to determine which
-# user account's home directory to ~/.config to.  Ideally, we'd have a
-# more systematic fix, like using `sudo -H` everywhere.
-export HOME=/root
+case $arch in
+    x86_64)
+        tarball="node-v$version-linux-x64.tar.xz"
+        sha256=3bbe4faf356738d88b45be222bf5e858330541ff16bd0d4cfad36540c331461b
+        ;;
 
-current_node_version="none"
-if node_wrapper_path="$(command -v node)"; then
-    current_node_version="$(node --version)"
-fi
+    aarch64)
+        tarball="node-v$version-linux-arm64.tar.xz"
+        sha256=9c4f3a651e03cd9b5bddd33a80e8be6a6eb15e518513e410bb0852a658699156
+        ;;
+esac
 
-if [ "$current_node_version" = "v$node_version" ] && [ -L "$node_wrapper_path" ]; then
-    echo "Node version $node_version is already installed."
-    exit 0
-fi
+check_version() {
+    out="$(node --version)" && [ "$out" = "v$version" ]
+}
 
-if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
-    export NVM_DIR=/usr/local/nvm
-    # shellcheck source=/dev/null
-    if ! [ -e "$NVM_DIR/nvm.sh" ] || {
-        . "$NVM_DIR/nvm.sh"
-        [ "$(nvm --version)" != "$nvm_version" ]
-    }; then
-        mkdir -p "$NVM_DIR"
-        curl_opts=(-fL)
-        if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
-            curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
-        fi
-        curl "${curl_opts[@]}" "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
-        # shellcheck source=/dev/null
-        . "$NVM_DIR/nvm.sh"
+if ! check_version; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl_opts=(-fLO)
+    if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
+        curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
     fi
-
-    # Tell NVM that we don't want it messing around with $PATH; we'll
-    # adjust which npm to use by symlinks below.
-    nvm alias default system
-
-    nvm install "$node_version"
-    NODE_BIN="$(nvm which $node_version)"
-
-    # Fix messed-up uid=500 and group write bits produced by nvm
-    n=${NODE_BIN%/bin/node}
-    chown -R root:root "$n"
-    chmod -R go-w "$n"
-
-    # Install node symlink to /usr/local/bin
-    ln -nsf "$NODE_BIN" /usr/local/bin/node
-    ln -nsf "$(dirname "$NODE_BIN")/npm" /usr/local/bin/npm
-    ln -nsf "$(dirname "$NODE_BIN")/npx" /usr/local/bin/npx
+    curl "${curl_opts[@]}" "https://nodejs.org/dist/v$version/$tarball"
+    sha256sum -c <<<"$sha256 $tarball"
+    rm -rf /srv/zulip-node
+    mkdir -p /srv/zulip-node
+    tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
+    ln -sf /srv/zulip-node/bin/{node,npm,npx} /usr/local/bin
+    rm -rf /usr/local/nvm
+    check_version
 fi
