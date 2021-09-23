@@ -182,6 +182,14 @@ export function create_message_object() {
 }
 
 export function clear_compose_box() {
+    /* Before clearing the compose box, we reset it to the
+     * default/normal size. Note that for locally echoed messages, we
+     * will have already done this action before echoing the message
+     * to avoid the compose box triggering "new message out of view"
+     * notifications incorrectly. */
+    if (compose_ui.is_full_size()) {
+        compose_ui.make_compose_box_original_size();
+    }
     $("#compose-textarea").val("").trigger("focus");
     compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
