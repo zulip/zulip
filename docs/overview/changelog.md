@@ -117,6 +117,38 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+### 4.6 -- 2021-09-23
+
+- Documented official support for Debian 11 Bullseye, now that it is
+  officially released by Debian upstream.
+- Fixed installation on Debian 10 Buster. Upstream infrastructure had
+  broken the Python `virtualenv` tool on this platform, which we've
+  worked around for this release.
+- Zulip releases are now distributed from https://download.zulip.com/server/,
+  replacing the old `www.zulip.org` server.
+- Added support for LDAP synchronization of the `is_realm_owner` and
+  `is_moderator` flags.
+- `upgrade-zulip-from-git` now uses `git fetch --prune`; this ensures
+  `upgrade-zulip-from-git master` with return an error rather than
+  using a stale cached version of the `master` branch, which was
+  renamed to `main` this month.
+- Added a new `reset_authentication_attempt_count` management command
+  to allow sysadmins to manually reset authentication rate limits.
+- Fixed a bug that caused the `upgrade-postgresql` tool to
+  incorrectly remove `supervisord` configuration for `process-fts-updates`.
+- Fixed a rare migration bug when upgrading from Zulip versions 2.1 and older.
+- Fixed a subtle bug where the left sidebar would show both old and
+  new names for some topics that had been renamed.
+- Fixed incoming email gateway support for configurations
+  with the `http_only` setting enabled.
+- Fixed issues where Zulip's outgoing webhook, with the
+  Slack-compatible interface, had a different format from Slack's
+  documented interface.
+- The installation and upgrade documentations now show the latest
+  release's version number.
+- Backported many improvements to the ReadTheDocs documentation.
+- Updated translation data from Transifex.
+
 ### 4.5 -- 2021-07-25
 
 - Added a tool to fix potential database corruption caused by host OS
