@@ -18,8 +18,8 @@
 # Султонбек Ахмедов <nyfe@bk.ru>, 2021
 # Pavel Borisov <pashamba@gmail.com>, 2021
 # Alex Morozov <morozov@podmoskovie.info>, 2021
-# Roman Bannack <apxwn@yandex.ru>, 2021
 # Sergey Korablin <s.korablin@gmail.com>, 2021
+# Roman Bannack <apxwn@yandex.ru>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -28,7 +28,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Sergey Korablin <s.korablin@gmail.com>, 2021\n"
+"Last-Translator: Roman Bannack <apxwn@yandex.ru>, 2021\n"
 "Language-Team: Russian (https://www.transifex.com/zulip/teams/53893/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -81,7 +81,7 @@ msgstr "Неверные параметры"
 #: corporate/lib/stripe.py:175
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "Что-то пошло не так. Пожалуйста, обратитесь к {email}."
+msgstr "Что-то пошло не так. Пожалуйста, свяжитесь с {email}."
 
 #: corporate/lib/stripe.py:176
 msgid "Something went wrong. Please reload the page."
@@ -256,7 +256,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"            Настоящим сообщением подтверждается изменения адреса электронной почты вашей учетной записи Zulip\n"
+"            Настоящим сообщением подтверждается изменение адреса электронной почты вашей учетной записи Zulip\n"
 "            с %(old_email_html_tag)s на %(new_email_html_tag)s\n"
 "            "
 
@@ -533,7 +533,7 @@ msgstr ""
 
 #: templates/zerver/app/home.html:33
 msgid "Nothing's been sent here yet!"
-msgstr "Сюда еще никто не написал!"
+msgstr "Сюда еще никто не писал!"
 
 #: templates/zerver/app/home.html:36
 msgid ""
@@ -744,28 +744,28 @@ msgstr "Создать ссылку для приглашения"
 
 #: templates/zerver/app/invite_user.html:33
 msgid "User(s) join as"
-msgstr "Пользователь/-и присоединяются как"
+msgstr "Пользователь(-и) присоединяются в качестве"
 
 #: templates/zerver/app/invite_user.html:40
 msgid "Guests"
-msgstr "Гости"
+msgstr "Гостей"
 
 #: templates/zerver/app/invite_user.html:41
 msgid "Members"
-msgstr "Участники"
+msgstr "Участников"
 
 #: templates/zerver/app/invite_user.html:43
 #: templates/zerver/development/dev_login.html:40
 msgid "Moderators"
-msgstr "Модераторы"
+msgstr "Модераторов"
 
 #: templates/zerver/app/invite_user.html:44
 msgid "Organization administrators"
-msgstr "Администраторы организации"
+msgstr "Администраторов организации"
 
 #: templates/zerver/app/invite_user.html:47
 msgid "Organization owners"
-msgstr "Владельцы организации"
+msgstr "Владельцев организации"
 
 #: templates/zerver/app/invite_user.html:53
 msgid "Streams they should join"
@@ -797,7 +797,7 @@ msgstr "Ответить на сообщение"
 #: templates/zerver/app/keyboard_shortcuts.html:16
 #: templates/zerver/app/keyboard_shortcuts.html:126
 msgid "New stream message"
-msgstr "Новое сообщение"
+msgstr "Новое сообщение в канале"
 
 #: templates/zerver/app/keyboard_shortcuts.html:20
 #: templates/zerver/app/keyboard_shortcuts.html:130

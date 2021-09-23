@@ -4,13 +4,13 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Tim Abbott <tabbott@kandralabs.com>, 2021
 # yusuf <yusuf.aydemir@pisilinux.org>, 2021
 # Onur Temiz <onurmain@gmail.com>, 2021
 # Cihan Alkan <cihanalk@gmail.com>, 2021
-# Oktay Altunergil, 2021
 # Gokdeniz.Kucukali, 2021
 # Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021
+# Oktay Altunergil, 2021
+# Tim Abbott <tabbott@kandralabs.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -19,7 +19,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2021\n"
 "Language-Team: Turkish (https://www.transifex.com/zulip/teams/53893/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -103,8 +103,8 @@ msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
 msgstr ""
-"{} daha fazla lisansa sahip faturalar bu sayfadan işlenemez. Bu yükseltmeyi "
-"tamamlamak için lütfen {} ile iletişime geçiniz."
+"{} adetten fazla lisansa sahip faturalar bu sayfadan işlenemez. Bu "
+"yükseltmeyi tamamlamak için lütfen {} ile iletişime geçiniz."
 
 #: corporate/views.py:109
 msgid "No payment method on file"
@@ -217,7 +217,7 @@ msgstr "Alıcı türüne göre gönderilen iletiler"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
-msgstr "Zaman içinde okunan mesajlar"
+msgstr "Zaman içinde okunan iletiler"
 
 #: templates/analytics/stats.html:124
 msgid "Last update"
@@ -353,7 +353,7 @@ msgstr "Diğer"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
-msgstr "yada alternatif olarak yedekleme telefonlarınızdan birini kullanınız:"
+msgstr "veya alternatif olarak yedekleme telefonlarınızdan birini kullanınız:"
 
 #: templates/two_factor/_wizard_forms.html:37
 msgid "As a last resort, you can use a backup token:"
@@ -676,7 +676,7 @@ msgstr "Durum belirle"
 
 #: templates/zerver/app/index.html:153
 msgid "Status message"
-msgstr "Durum mesajı"
+msgstr "Durum iletisi"
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
@@ -716,7 +716,7 @@ msgstr "Bir veya daha fazla e-posta adresi..."
 
 #: templates/zerver/app/invite_user.html:20
 msgid "or"
-msgstr "yada"
+msgstr "veya"
 
 #: templates/zerver/app/invite_user.html:20
 #: templates/zerver/app/invite_user.html:26
@@ -885,39 +885,39 @@ msgstr "Yeni satır ekle"
 
 #: templates/zerver/app/keyboard_shortcuts.html:155
 msgid "Narrowing"
-msgstr "Odaklama"
+msgstr "Süzme"
 
 #: templates/zerver/app/keyboard_shortcuts.html:159
 msgid "Narrow to stream"
-msgstr "Akışa daralt"
+msgstr "Kanala süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:163
 msgid "Narrow to topic or PM conversation"
-msgstr "Konuya veya özel mesaja daralt"
+msgstr "Konuya veya özel iletiye süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:167
 msgid "Narrow to all private messages"
-msgstr "Tüm şahsi iletilere odakla"
+msgstr "Tüm şahsi iletilere süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:171
 msgid "Narrow to next unread topic"
-msgstr "Bir sonraki okunmamış konuya odakla"
+msgstr "Bir sonraki okunmamış konuya süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:175
 msgid "Narrow to next unread private message"
-msgstr "Sonraki okunmamış özel iletiye odaklan"
+msgstr "Sonraki okunmamış özel iletiye süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:179
 msgid "Cycle between stream narrows"
-msgstr "Kanal odaklamaları arasında geçiş yap"
+msgstr "Kanal süzmeleri arasında geçiş yap"
 
 #: templates/zerver/app/keyboard_shortcuts.html:183
 msgid "Narrow to all unmuted messages"
-msgstr "Sesi kısılmamış tüm iletilere odakla"
+msgstr "Sesi kısılmamış tüm iletilere süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:187
 msgid "Narrow to current compose box recipient"
-msgstr "Güncel ileti alıcılarına daralt"
+msgstr "Güncel ileti alıcılarına süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:196
 msgid "Message actions"
@@ -1264,7 +1264,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"Hoşgeldin! <span class=\"bankruptcy_unread_count\">%(count)s</span>adet okunmamış mesajın var.\n"
+"Hoşgeldin! <span class=\"bankruptcy_unread_count\">%(count)s</span>adet okunmamış iletin var.\n"
 "Hepsini okundu işaretlemek ister misin?"
 
 #: templates/zerver/app/navbar_alerts.html:68
@@ -1307,27 +1307,27 @@ msgstr "Efekt"
 
 #: templates/zerver/app/search_operators.html:13
 msgid "Narrow to messages on stream"
-msgstr "Kanaldaki iletilere odakla"
+msgstr "Kanaldaki iletilere süz"
 
 #: templates/zerver/app/search_operators.html:17
 msgid "Narrow to messages with topic"
-msgstr "Konulu ilerilere odakla"
+msgstr "Konulu ilerilere süz"
 
 #: templates/zerver/app/search_operators.html:21
 msgid "Narrow to private messages with"
-msgstr "Kişi ile kişisel iletilere odakla"
+msgstr "Kişi ile kişisel iletilere süz"
 
 #: templates/zerver/app/search_operators.html:25
 msgid "Narrow to group private messages with"
-msgstr "Grup kişisel iletilerine odakla"
+msgstr "Grup kişisel iletilerine süz"
 
 #: templates/zerver/app/search_operators.html:29
 msgid "Narrow to messages sent by"
-msgstr "Gönderene göre odakla"
+msgstr "Gönderene göre süz"
 
 #: templates/zerver/app/search_operators.html:33
 msgid "Narrow to messages sent by you."
-msgstr "Sizin tarafınızdan gönderilen iletilere odakla."
+msgstr "Sizin tarafınızdan gönderilen iletilere süz."
 
 #: templates/zerver/app/search_operators.html:37
 msgid "Center the view around message ID"
@@ -1335,7 +1335,7 @@ msgstr "Görüntüyü ileti IDsi üzerine merkezle"
 
 #: templates/zerver/app/search_operators.html:41
 msgid "Narrow to just message ID"
-msgstr "Sadece ileti IDsine odakla."
+msgstr "Sadece ileti IDsine süz."
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
@@ -1343,35 +1343,35 @@ msgstr "Organizasyon içinde tüm açık kanallarda arama yap"
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
-msgstr "Uyarı kelimeleri bulunana iletilere odakla."
+msgstr "Uyarı kelimeleri bulunana iletilere süz."
 
 #: templates/zerver/app/search_operators.html:53
 msgid "Narrow to messages that mention you."
-msgstr "Sizi anan iletilere odaklanın."
+msgstr "Sizi anan iletilere süzün."
 
 #: templates/zerver/app/search_operators.html:57
 msgid "Narrow to private messages."
-msgstr "Kişisel iletilere odakla."
+msgstr "Kişisel iletilere süz."
 
 #: templates/zerver/app/search_operators.html:61
 msgid "Narrow to starred messages."
-msgstr "Yıldızı iletilere odakla."
+msgstr "Yıldızı iletilere süz."
 
 #: templates/zerver/app/search_operators.html:65
 msgid "Narrow to unread messages."
-msgstr "Okunmamış iletilere odakla."
+msgstr "Okunmamış iletilere süz."
 
 #: templates/zerver/app/search_operators.html:69
 msgid "Narrow to messages containing links."
-msgstr "Bağlantı barındıran iletilere odakla."
+msgstr "Bağlantı barındıran iletilere süz."
 
 #: templates/zerver/app/search_operators.html:73
 msgid "Narrow to messages containing images."
-msgstr "Resim barındıran iletilere odakla."
+msgstr "Resim barındıran iletilere süz."
 
 #: templates/zerver/app/search_operators.html:77
 msgid "Narrow to messages containing uploads."
-msgstr "Yükleme barındıran iletilere odakla."
+msgstr "Yükleme barındıran iletilere süz."
 
 #: templates/zerver/app/search_operators.html:81
 msgid ""
@@ -1679,7 +1679,7 @@ msgstr "Bu pencereyi kapatabilirsiniz."
 
 #: templates/zerver/desktop_redirect.html:16
 msgid "Or, continue in your browser."
-msgstr "yada, tarayıcı içinden devam edin."
+msgstr "veya, tarayıcı içinden devam edin."
 
 #: templates/zerver/development/dev_login.html:22
 msgid "Owners"
@@ -1716,8 +1716,8 @@ msgid ""
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
 msgstr ""
-"%(realm_uri)süzerinde bulunan Zulip hesabınızın email adresini "
-"%(old_email)s, %(new_email)semail adresine değiştirme isteiğini aldık. "
+"%(realm_uri)süzerinde bulunan Zulip hesabınızın e-posta adresini "
+"%(old_email)s, %(new_email)se-posta adresine değiştirme isteiğini aldık. "
 "Onaylamak için lütfen aşağıdaki linke tıklayınız:"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:12
@@ -1824,12 +1824,12 @@ msgstr "Buraya tıklayarak Zulip'e giriş yap ve yakala."
 #: templates/zerver/emails/followup_day2.source.html:33
 #: templates/zerver/emails/notify_new_login.source.html:46
 msgid "Manage email preferences"
-msgstr "Email ayarlarını yönet"
+msgstr "E-posta ayarlarını yönet"
 
 #: templates/zerver/emails/compiled/digest.html:41
 #: templates/zerver/emails/digest.source.html:40
 msgid "Unsubscribe from digest emails"
-msgstr "Haberdar emaillerinden çık"
+msgstr "Haberdar e-postalarından çık"
 
 #: templates/zerver/emails/compiled/email_base_default.html:90
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.txt:31
@@ -1854,7 +1854,7 @@ msgstr ""
 #: templates/zerver/emails/find_team.txt:8
 #, python-format
 msgid "The email address associated with your account is %(email)s."
-msgstr "Hesabınız ile ilişkili email adresi %(email)s."
+msgstr "Hesabınız ile ilişkili e-posta adresi %(email)s."
 
 #: templates/zerver/emails/compiled/find_team.html:23
 #: templates/zerver/emails/find_team.source.html:22
@@ -1863,8 +1863,8 @@ msgid ""
 "If you have trouble logging in, please contact Zulip support by replying to "
 "this email."
 msgstr ""
-"Eğer giriş yapmakta sorun yaşıyorsanız, lütfen bu emaile cevap vererek Zulip"
-" desteği ile iletişim kurunuz."
+"Eğer giriş yapmakta sorun yaşıyorsanız, lütfen bu e-postaya cevap vererek "
+"Zulip desteği ile iletişim kurunuz."
 
 #: templates/zerver/emails/compiled/find_team.html:25
 #: templates/zerver/emails/find_team.source.html:24
@@ -2025,7 +2025,7 @@ msgid ""
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em—you can always edit the message later!"
 msgstr ""
-"Konular email konu başlıklarına benzer. En büyük farkı ise gerçekten çok "
+"Konular e-posta konu başlıklarına benzer. En büyük farkı ise gerçekten çok "
 "kısa ve hafif yüklü olmasıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok "
 "düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
 
@@ -2058,7 +2058,7 @@ msgid ""
 "to you, and ignore the ones that aren't!"
 msgstr ""
 "Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece"
-" kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan geriye "
+" kılar(e-postalarda konu başlığı olmadığını düşünün!), ve sonradan geriye "
 "baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni "
 "ilgilendiren konulara odaklan ve gerisini boşver!"
 
@@ -2079,7 +2079,7 @@ msgstr "Teşekkürler,"
 #: templates/zerver/emails/compiled/followup_day2.html:35
 #: templates/zerver/emails/followup_day2.source.html:34
 msgid "Unsubscribe from welcome emails"
-msgstr "karşılama emailleri aboneliğinden çık"
+msgstr "karşılama e-postaları aboneliğinden çık"
 
 #: templates/zerver/emails/compiled/invitation.html:10
 #: templates/zerver/emails/invitation.source.html:9
@@ -2145,10 +2145,10 @@ msgid ""
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
 msgstr ""
-"Bu email mesaj iletisini içermez çünkü organizasyonunuz <a "
+"Bu e-posta ileti iletisini içermez çünkü organizasyonunuz <a "
 "class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
-"style=\"color:#15c; text-decoration:underline\">email bildirimlerinde mesaj "
-"iletileri</a> özelliğini devre dışı bırakmıştır."
+"style=\"color:#15c; text-decoration:underline\">e-posta bildirimlerinde "
+"ileti iletileri</a> özelliğini devre dışı bırakmıştır."
 
 #: templates/zerver/emails/compiled/missed_message.html:20
 #, python-format
@@ -2158,10 +2158,10 @@ msgid ""
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
 msgstr ""
-"Bu email iletisini içermez çünkü <a class=\"content_disabled_help_link\" "
+"Bu e-posta iletisini içermez çünkü <a class=\"content_disabled_help_link\" "
 "href=\"%(alert_notif_url)s\" style=\"color:#15c; text-"
-"decoration:underline\"> email bildirimlerinde mesaj iletileri</a> özelliğini"
-" devre dışı bıraktınız."
+"decoration:underline\"> e-posta bildirimlerinde ileti iletileri</a> "
+"özelliğini devre dışı bıraktınız."
 
 #: templates/zerver/emails/compiled/missed_message.html:30
 #: templates/zerver/emails/missed_message.source.html:29
@@ -2176,7 +2176,7 @@ msgstr "Bunu aldınız çünkü %(realm_name)s içinde etiketlendiniz."
 msgid ""
 "You are receiving this because you have email notifications enabled for this"
 " stream."
-msgstr "Bunu alıyorsunuz çünkü bu kanal için email bildirim etkin."
+msgstr "Bunu alıyorsunuz çünkü bu kanal için e-posta bildirim etkin."
 
 #: templates/zerver/emails/compiled/missed_message.html:35
 #, python-format
@@ -2186,10 +2186,10 @@ msgid ""
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
 msgstr ""
-"Bu emaile direk olarak cevap verin, <a href=\"%(narrow_url)s\" "
+"Bu e-postaya direk olarak cevap verin, <a href=\"%(narrow_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">Zulip içinde göster</a>, "
 "veya <a href=\"%(notif_url)s\" style=\"color:#15c; text-"
-"decoration:underline\">email ayarlarını yönet</a>."
+"decoration:underline\">e-posta ayarlarını yönet</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:37
 #, python-format
@@ -2201,8 +2201,8 @@ msgid ""
 msgstr ""
 "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">Zulip içinde göster</a>, veya <a "
-"href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email"
-" ayarlarını yönet</a>."
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">e-posta ayarlarını yönet</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:39
 #, python-format
@@ -2214,8 +2214,8 @@ msgid ""
 msgstr ""
 "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">Zulip içinde cevapla</a>, veya <a "
-"href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email"
-" ayarlarını yönet</a>."
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">e-posta ayarlarını yönet</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:41
 #, python-format
@@ -2225,7 +2225,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"Bu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak üzere ayarlanmamış (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">yardım</a>)."
+"Bu e-postaya cevap vermeyin. Bu Zulip sunucusu gelen e-postaları almak üzere ayarlanmamış (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">yardım</a>)."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -2258,7 +2258,7 @@ msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
 msgstr ""
-"Organizasyon: %(organization_url)s Zaman: %(login_time)s Email: "
+"Organizasyon: %(organization_url)s Zaman: %(login_time)s E-posta: "
 "%(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
@@ -2278,7 +2278,7 @@ msgstr "Organizasyon: %(organization_link)s"
 #: templates/zerver/emails/notify_new_login.txt:5
 #, python-format
 msgid "Email: %(user_email)s"
-msgstr "Email: %(user_email)s"
+msgstr "E-posta: %(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.source.html:22
@@ -2317,8 +2317,8 @@ msgid ""
 msgstr ""
 "Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirildiğini "
 "düşünüyorsanız, lütfen <a href=\"%(reset_link)s\" style=\"color:#46aa8f; "
-"text-decoration:underline\">şifrenizi sıfırlayın</a> yada %(support_email)s "
-"adresinden bizimle iletişime geçin."
+"text-decoration:underline\">parolanızı sıfırlayın</a> veya %(support_email)s"
+" adresinden bizimle iletişime geçin."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.source.html:41
@@ -2340,12 +2340,12 @@ msgid ""
 "%(email)s on %(realm_uri)s."
 msgstr ""
 "Birileri (büyük ihtimalle siz) %(realm_uri)s üzerinde bulunan %(email)s "
-"Zulip hesabı için yeni bir şifre talep etti."
+"Zulip hesabı için yeni bir parola talep etti."
 
 #: templates/zerver/emails/compiled/password_reset.html:14
 #: templates/zerver/emails/password_reset.source.html:13
 msgid "Click the button below to reset your password."
-msgstr "Aşağıdaki butona tıklayarak şifrenizi sıfırlayınız."
+msgstr "Aşağıdaki butona tıklayarak parolanızı sıfırlayınız."
 
 #: templates/zerver/emails/compiled/password_reset.html:15
 #: templates/zerver/emails/password_reset.source.html:14
@@ -2384,7 +2384,7 @@ msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
 msgstr ""
-"Yukarıda ki organizasyon(lar) a giriş yapmayı deneyebilir veya şifrenizi "
+"Yukarıda ki organizasyon(lar) a giriş yapmayı deneyebilir veya parolanızı "
 "sıfırlayabilirsiniz."
 
 #: templates/zerver/emails/compiled/password_reset.html:40
@@ -2393,7 +2393,8 @@ msgstr ""
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
 msgstr ""
-"Eğer bu eylemi hatırlamıyorsanız, bu emaili güvenle göz ardı edebilirsiniz."
+"Eğer bu eylemi hatırlamıyorsanız, bu e-postayı güvenle göz ardı "
+"edebilirsiniz."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
@@ -2435,7 +2436,7 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_new_email.subject.txt:1
 msgid "Verify your new email address"
-msgstr "Yeni email adresini teyit et"
+msgstr "Yeni e-posta adresini teyit et"
 
 #: templates/zerver/emails/confirm_new_email.txt:9
 #, python-format
@@ -2488,7 +2489,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
 #: templates/zerver/emails/custom_email_base.pre.html:15
 msgid "Unsubscribe from marketing emails"
-msgstr "Pazarlama emailleri aboneliğinden çık"
+msgstr "Pazarlama e-postaları aboneliğinden çık"
 
 #: templates/zerver/emails/digest.subject.txt:1
 #, python-format
@@ -2503,11 +2504,11 @@ msgstr "Buraya tıklayarak Zulip'e giriş yap ve yakala: %(organization_uri)s."
 #: templates/zerver/emails/digest.txt:15
 #: templates/zerver/emails/followup_day2.txt:19
 msgid "Manage email preferences:"
-msgstr "Email ayarlarını yönet:"
+msgstr "E-posta ayarlarını yönet:"
 
 #: templates/zerver/emails/digest.txt:19
 msgid "Unsubscribe from digest emails:"
-msgstr "Haberdar emaillerinden çık:"
+msgstr "Haberdar e-postalarından çık:"
 
 #: templates/zerver/emails/find_team.subject.txt:1
 msgid "Your Zulip login page"
@@ -2636,7 +2637,7 @@ msgid ""
 "relevant to you, and ignore the ones that aren't!"
 msgstr ""
 "Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece"
-" kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan "
+" kılar(e-postalarda konu başlığı olmadığını düşünün!), ve sonradan "
 "away&mdash;read geriye baktığında konulara daha hızlı erişmeni ve bilgi "
 "almanı sağlar —sadece seni ilgilendiren konulara odaklan ve gerisini boşver!"
 
@@ -2650,7 +2651,7 @@ msgid ""
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em -- you can always edit the message later!"
 msgstr ""
-"Konular email konu başlıklarına benzer. En büyük farkı ise gerçekten çok "
+"Konular e-posta konu başlıklarına benzer. En büyük farkı ise gerçekten çok "
 "kısa ve hafif yüklü olmasıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok "
 "düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
 
@@ -2662,7 +2663,7 @@ msgid ""
 "relevant to you, and ignore the ones that aren't!"
 msgstr ""
 "Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece"
-" kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan geriye "
+" kılar(e-postalarda konu başlığı olmadığını düşünün!), ve sonradan geriye "
 "baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni "
 "ilgilendiren konulara odaklan ve gerisini boşver!"
 
@@ -2672,7 +2673,7 @@ msgstr "Şimdi bir dene:"
 
 #: templates/zerver/emails/followup_day2.txt:22
 msgid "Unsubscribe from welcome emails:"
-msgstr "Karşılama emailleri aboneliğinden çık :"
+msgstr "Karşılama e-postaları aboneliğinden çık :"
 
 #: templates/zerver/emails/invitation.source.html:12
 #, python-format
@@ -2745,9 +2746,9 @@ msgid ""
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
 msgstr ""
-"Bu email mesaj iletisini içermez çünkü organizasyonunuz <a "
-"class=\"content_disabled_help_link\" href=\"%(help_url)s\">email "
-"bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bırakmıştır."
+"Bu e-posta ileti iletisini içermez çünkü organizasyonunuz <a "
+"class=\"content_disabled_help_link\" href=\"%(help_url)s\">e-posta "
+"bildirimlerinde ileti iletileri</a> özelliğini devre dışı bırakmıştır."
 
 #: templates/zerver/emails/missed_message.source.html:19
 #, python-format
@@ -2756,9 +2757,9 @@ msgid ""
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
 msgstr ""
-"Bu email mesaj iletisini içermez çünkü  <a "
-"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">email "
-"bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bıraktınız."
+"Bu e-posta ileti iletisini içermez çünkü  <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">e-posta "
+"bildirimlerinde ileti iletileri</a> özelliğini devre dışı bıraktınız."
 
 #: templates/zerver/emails/missed_message.source.html:34
 #, python-format
@@ -2766,8 +2767,8 @@ msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
-"Bu emaile direk cevap verin, <a href=\"%(narrow_url)s\">Zulip içinde "
-"göster</a>, veya <a href=\"%(notif_url)s\">email ayarlarını yönet</a>."
+"Bu e-postaya direk cevap verin, <a href=\"%(narrow_url)s\">Zulip içinde "
+"göster</a>, veya <a href=\"%(notif_url)s\">e-posta ayarlarını yönet</a>."
 
 #: templates/zerver/emails/missed_message.source.html:36
 #, python-format
@@ -2776,7 +2777,7 @@ msgid ""
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
 "<a href=\"%(narrow_url)s\">Zulip içinde göster</a>, veya <a "
-"href=\"%(notif_url)s\">email ayarlarını yönet</a>."
+"href=\"%(notif_url)s\">e-posta ayarlarını yönet</a>."
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
@@ -2785,7 +2786,7 @@ msgid ""
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
 "<a href=\"%(narrow_url)s\">Zulip içinde yanıtla</a>, veya <a "
-"href=\"%(notif_url)s\">email ayarlarını yönet</a>."
+"href=\"%(notif_url)s\">e-posta ayarlarını yönet</a>."
 
 #: templates/zerver/emails/missed_message.source.html:40
 #, python-format
@@ -2795,7 +2796,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"Bu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak için ayarlanmadı (<a href=\"%(url)s\">yardım</a>)."
+"Bu e-postaya cevap vermeyin. Bu Zulip sunucusu gelen e-postaları almak için ayarlanmadı (<a href=\"%(url)s\">yardım</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -2805,11 +2806,11 @@ msgstr "%(huddle_display_name)s ile olan grup iletileri"
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
 msgid "PMs with %(sender_str)s"
-msgstr "%(sender_str)s ile Özel Mesajlar"
+msgstr "%(sender_str)s ile Özel İletiler"
 
 #: templates/zerver/emails/missed_message.subject.txt:7
 msgid "New messages"
-msgstr "Yeni mesajlar"
+msgstr "Yeni iletiler"
 
 #: templates/zerver/emails/missed_message.txt:11
 #, python-format
@@ -2819,7 +2820,7 @@ msgid ""
 "See %(hide_content_url)s for more details.\n"
 msgstr ""
 "\n"
-"Bu email mesaj iletisini içermez çünkü organizasyonunuz email bildirimlerinde mesaj iletileri özelliğini devre dışı bıraktı.\n"
+"Bu e-posta ileti iletisini içermez çünkü organizasyonunuz e-posta bildirimlerinde ileti iletileri özelliğini devre dışı bıraktı.\n"
 "Daha fazla detay için %(hide_content_url)s.\n"
 
 #: templates/zerver/emails/missed_message.txt:16
@@ -2830,12 +2831,12 @@ msgid ""
 "See %(alert_notif_url)s for more details.\n"
 msgstr ""
 "\n"
-"Bu email mesaj iletisini içermez çünkü email bildirimlerinde mesaj iletileri özelliğini devre dışı bıraktınız.\n"
+"Bu e-posta iletii içeriğini içermez çünkü e-posta bildirimlerinde ileti içeriği özelliğini devre dışı bıraktınız.\n"
 "Daha fazla detay için %(alert_notif_url)s.\n"
 
 #: templates/zerver/emails/missed_message.txt:31
 msgid "Reply to this email directly, or view it in Zulip:"
-msgstr "Bu emaile direk olarak cevap verin, veya Zulip içinden bakın:"
+msgstr "Bu e-postaya direk olarak cevap verin, veya Zulip içinden bakın:"
 
 #: templates/zerver/emails/missed_message.txt:35
 msgid "View or reply in Zulip:"
@@ -2852,17 +2853,17 @@ msgid ""
 "incoming emails. Help:\n"
 msgstr ""
 "\n"
-"Bu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak için\n"
+"Bu e-postaya cevap vermeyin. Bu Zulip sunucusu gelen e-postaları almak için\n"
 "ayarlanmadı. Yardım:\n"
 
 #: templates/zerver/emails/missed_message.txt:50
 msgid "Manage email preferences: "
-msgstr "Email tercihlerini yönet:"
+msgstr "E-posta tercihlerini yönet:"
 
 #: templates/zerver/emails/notify_change_in_email.subject.txt:1
 #, python-format
 msgid "Zulip email changed for %(realm_name)s"
-msgstr "%(realm_name)s için Zulip email adresi değişti"
+msgstr "%(realm_name)s için Zulip e-posta adresi değişti"
 
 #: templates/zerver/emails/notify_change_in_email.txt:3
 #, python-format
@@ -2871,7 +2872,7 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"Bu email Zulip hesabına ilişkili mailinin %(new_email)sdeğişikliğine "
+"Bu e-posta Zulip hesabına ilişkili mailinin %(new_email)sdeğişikliğine "
 "bildirisidir. Eğer bunu siz talep etmediyseniz lütfen bizimle iletişime "
 "geçiniz <%(support_email)s>."
 
@@ -2883,8 +2884,8 @@ msgid ""
 "contact us immediately at %(support_email)s."
 msgstr ""
 "Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirilmiş "
-"olabileceğini düşünüyorsanız, lütfen<a href=\"%(reset_link)s\"> şifrenizi "
-"yenileyin</a> yada hemen %(support_email)s adresinden bizimle iletişime "
+"olabileceğini düşünüyorsanız, lütfen<a href=\"%(reset_link)s\"> parolanızı "
+"yenileyin</a> veya hemen %(support_email)s adresinden bizimle iletişime "
 "geçin."
 
 #: templates/zerver/emails/notify_new_login.subject.txt:1
@@ -2904,7 +2905,7 @@ msgid ""
 "If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
 msgstr ""
 "\n"
-"Eğer bu girişi hatırlamıyorsanız yada hesabınızın ele geçirilmiş olacağını düşünüyorsanız lütfen şifrenizi %(reset_link)s adresinden yenileyin yada %(support_email)s adresinden bizimle iletişime geçin."
+"Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirilmiş olacağını düşünüyorsanız lütfen parolanızı%(reset_link)s adresinden yenileyin veya %(support_email)s adresinden bizimle iletişime geçin."
 
 #: templates/zerver/emails/password_reset.source.html:19
 #, python-format
@@ -2915,16 +2916,17 @@ msgid ""
 msgstr ""
 "Daha önce %(organization_url)s organizasyonunda hesabınız vardı, ancak devre"
 " dışı bırakıldı. Hesabınızı <a href=\"%(help_link)s\">yeniden "
-"etkinleştirmek</a> için bir kuruluş yöneticisiyle iletişime geçebilirsiniz."
+"etkinleştirmek</a> için bir organizason yöneticisiyle iletişime "
+"geçebilirsiniz."
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
 msgid "Password reset request for %(realm_name)s"
-msgstr "%(realm_name)s için şifre sıfırlama talebi"
+msgstr "%(realm_name)s için parola sıfırlama talebi"
 
 #: templates/zerver/emails/password_reset.txt:4
 msgid "Click the link below to reset your password."
-msgstr "Aşağıda ki linke tıklayarak şifreni sıfırla"
+msgstr "Aşağıda ki linke tıklayarak parolanı sıfırla"
 
 #: templates/zerver/emails/password_reset.txt:8
 #, python-format
@@ -3060,7 +3062,7 @@ msgstr "Zulipteki salı gecesi akşam yemeği konusu"
 
 #: templates/zerver/hello.html:109
 msgid "The Tuesday night catering topic in Zulip - compose box"
-msgstr "Zulipteki salı gecesi akşam yemeği konusu - mesaj yazma kutusu"
+msgstr "Zulipteki salı gecesi akşam yemeği konusu - ileti yazma kutusu"
 
 #: templates/zerver/hello.html:116 templates/zerver/hello.html:118
 msgid "The Tuesday night catering topic in Slack"
@@ -3445,14 +3447,15 @@ msgstr "Tam isim"
 
 #: templates/zerver/register.html:156
 msgid "Enter your LDAP/Active Directory password."
-msgstr "LDAP/Active Directory şifreni gir."
+msgstr "LDAP/Active Directory parolanı gir."
 
 #: templates/zerver/register.html:170
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
 msgstr ""
-"Bu, mobil uygulamalar ve bir şifre gerektiren diğer araçlar için kullanılır."
+"Bu, mobil uygulamalar ve bir parola gerektiren diğer araçlar için "
+"kullanılır."
 
 #: templates/zerver/register.html:178
 msgid "Password strength"
@@ -3472,7 +3475,7 @@ msgstr "Sıfırlama linki gönder"
 
 #: templates/zerver/reset_confirm.html:11
 msgid "Set a new password."
-msgstr "Yeni bir şifre belirleyin."
+msgstr "Yeni bir parola belirleyin."
 
 #: templates/zerver/reset_confirm.html:48
 msgid "Confirm password"
@@ -3499,7 +3502,7 @@ msgstr "Password sıfırlama gönderildi!"
 #: templates/zerver/reset_emailed.html:13
 msgid "Check your email in a few minutes to finish the process."
 msgstr ""
-"Bir kaç dakika içersinde işlemi sonlandırmak için emailini kontrol et."
+"Bir kaç dakika içersinde işlemi sonlandırmak için e-postanı kontrol et."
 
 #: templates/zerver/social_auth_select_email.html:6
 msgid ""
@@ -3518,7 +3521,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"GitHub hesabınızda da onaylanmamış email\n"
+"GitHub hesabınızda da onaylanmamış e-posta\n"
 "bulunmaktadır."
 
 #: templates/zerver/social_auth_select_email.html:69
@@ -3591,7 +3594,7 @@ msgid ""
 "                    "
 msgstr ""
 "\n"
-"Zulip %(subscription_type)s email listesinden başarılı bir şekilde çıktınız."
+"Zulip %(subscription_type)s e-posta listesinden başarılı bir şekilde çıktınız."
 
 #: templates/zerver/unsubscribe_success.html:21
 #, python-format
@@ -3745,7 +3748,7 @@ msgstr "Lütfen gercek e-posta adresinizi kullanın."
 #: zerver/forms.py:205
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr ""
-"+ işareti içeren email adreslerine bu organizasyonda izin verilmemektedir."
+"+ işareti içeren e-posta adreslerine bu organizasyonda izin verilmemektedir."
 
 #: zerver/forms.py:226
 msgid "New password"
@@ -3753,7 +3756,7 @@ msgstr "Yeni parola"
 
 #: zerver/forms.py:233
 msgid "New password confirmation"
-msgstr "Yeni şifre onayı"
+msgstr "Yeni parola onayı"
 
 #: zerver/forms.py:449
 msgid "Token"
@@ -3829,7 +3832,8 @@ msgstr "Alıcılar için geçersiz veri tipi"
 #: zerver/lib/actions.py:2581 zerver/lib/actions.py:2589
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr ""
-"Alıcılar listesi email veya kullanıcı ID içerebilir ama ikisi birden olamaz."
+"Alıcılar listesi e-posta veya kullanıcı ID içerebilir ama ikisi birden "
+"olamaz."
 
 #: zerver/lib/actions.py:2687
 msgid "Reminders can only be set for streams."
@@ -3866,7 +3870,7 @@ msgstr "Konu boş olamaz"
 
 #: zerver/lib/actions.py:2805
 msgid "Message must be a stream message"
-msgstr "Mesaj bir kanal mesajı olmalıdır"
+msgstr "İleti bir kanal iletisi olmalıdır"
 
 #: zerver/lib/actions.py:2807
 msgid "You don't have permission to move this message"
@@ -3876,7 +3880,7 @@ msgstr "Bu iletiyi taşımak için yetkiniz yok"
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
-msgstr "Bu mesajı ilgili kanal erişimi olmadığından taşıyamazsınız"
+msgstr "Bu iletiyi ilgili kanala erişiminiz olmadığından taşıyamazsınız"
 
 #: zerver/lib/actions.py:2817
 msgid "Cannot change message content while changing stream"
@@ -4157,7 +4161,7 @@ msgstr "Sizin alanınız dışında."
 
 #: zerver/lib/email_validation.py:110 zerver/views/users.py:594
 msgid "Email addresses containing + are not allowed."
-msgstr "+ işareti içeren email adreslerine izin verilmemektedir."
+msgstr "+ işareti içeren e-posta adreslerine izin verilmemektedir."
 
 #: zerver/lib/email_validation.py:155
 msgid "Reserved for system bots."
@@ -4227,7 +4231,7 @@ msgstr "Olay sırası atanamadı"
 #: zerver/lib/exceptions.py:157
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
-msgstr "'{stream}' akışı  mevcut değil"
+msgstr "'{stream}' kanalı  mevcut değil"
 
 #: zerver/lib/exceptions.py:169
 #, python-brace-format
@@ -4492,8 +4496,8 @@ msgid ""
 "Feel free to continue using this space to practice your new messaging "
 "skills. Or, try clicking on some of the stream names to your left!"
 msgstr ""
-"Yeni mesajlaşma kabiliyetlerinizi çalışmak için bu alanı kullanmaktan "
-"çekinmeyin. Yada, sol taraftaki kanal isimlerinden birine tıklayın!"
+"Yeni iletişım kaabiliyetlerinizi denemek için bu alanı kullanmaktan "
+"çekinmeyin. Veya, sol taraftaki kanal isimlerinden birine tıklayın!"
 
 #: zerver/lib/onboarding.py:125
 msgid ""
@@ -5085,11 +5089,11 @@ msgstr "Bu organizasyon devre dışıdır."
 
 #: zerver/views/auth.py:830
 msgid "Password auth is disabled in your team."
-msgstr "Takımınızdaki şifre yetkilendirmesi devre dışı."
+msgstr "Takımınızdaki parola yetkilendirmesi devre dışı."
 
 #: zerver/views/auth.py:836 zproject/backends.py:422
 msgid "You need to reset your password."
-msgstr "Şifrenizi sıfırlamanız gerekiyor."
+msgstr "Parolanızı sıfırlamanız gerekiyor."
 
 #: zerver/views/auth.py:842 zerver/views/auth.py:937
 msgid "Your username or password is incorrect."
@@ -5201,7 +5205,7 @@ msgstr "İleti zaten silinmiş"
 #: zerver/views/message_fetch.py:90
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
-msgstr "Geçersiz odaklama operatörü: {desc}"
+msgstr "Geçersiz süzme operatörü: {desc}"
 
 #: zerver/views/message_fetch.py:910
 msgid "Missing 'anchor' argument."
@@ -5474,7 +5478,7 @@ msgstr "{} kanal idsine abone olunamadı"
 
 #: zerver/views/submessage.py:26
 msgid "Invalid json for submessage"
-msgstr "Bilgi mesajı için geçersiz JSON"
+msgstr "Alt ileti için geçersiz JSON"
 
 #: zerver/views/thumbnail.py:32 zerver/views/upload.py:97
 msgid "<p>You are not authorized to view this file.</p>"
@@ -5532,7 +5536,7 @@ msgstr "Lütfen tüm alanları doldurun."
 
 #: zerver/views/user_settings.py:106
 msgid "Your Zulip password is managed in LDAP"
-msgstr "Zulip şifren LDAP tarafından yönetilmektedir"
+msgstr "Zulip parolan LDAP tarafından yönetilmektedir"
 
 #: zerver/views/user_settings.py:116
 msgid "Wrong password!"
@@ -5544,7 +5548,7 @@ msgstr "Çok fazla kez deniyorsunuz! Lütfen {} sonra tekrar deneyin."
 
 #: zerver/views/user_settings.py:127
 msgid "New password is too weak!"
-msgstr "Yeni şifre zayıf!"
+msgstr "Yeni parola zayıf!"
 
 #: zerver/views/user_settings.py:168
 msgid "Check your email for a confirmation link. "
@@ -5617,7 +5621,7 @@ msgstr ""
 
 #: zerver/views/users.py:598
 msgid "Email '{}' already in use"
-msgstr "'{}' emaili kullanılıyor"
+msgstr "'{}' e-postayı kullanılıyor"
 
 #: zerver/views/video_calls.py:39
 msgid "Invalid Zoom access token"

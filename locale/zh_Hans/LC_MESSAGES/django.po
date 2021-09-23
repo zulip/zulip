@@ -11,6 +11,7 @@
 # longjiang li <cqlilon@live.com>, 2021
 # LIU Lin <2671362312@qq.com>, 2021
 # 张建春 <zhang.jianchun1@gmail.com>, 2021
+# 奇遇 科技 <dev@qiyutech.tech>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -19,7 +20,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: 张建春 <zhang.jianchun1@gmail.com>, 2021\n"
+"Last-Translator: 奇遇 科技 <dev@qiyutech.tech>, 2021\n"
 "Language-Team: Chinese Simplified (https://www.transifex.com/zulip/teams/53893/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -111,11 +112,11 @@ msgstr ""
 #: corporate/views.py:120
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "未知的付款方式。请联系{email}。"
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr ""
+msgstr "组织创建24小时后方可查阅完整分析数据。"
 
 #: templates/analytics/stats.html:15
 #, python-format
@@ -208,7 +209,7 @@ msgstr "由收件人类型发送的消息"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
-msgstr ""
+msgstr "信息读取时间"
 
 #: templates/analytics/stats.html:124
 msgid "Last update"
@@ -239,7 +240,7 @@ msgstr ""
 
 #: templates/confirmation/link_does_not_exist.html:9
 msgid "Whoops. We couldn't find your confirmation link in the system."
-msgstr ""
+msgstr "糟糕，我们在系统找不到您的确认链接。"
 
 #: templates/confirmation/link_does_not_exist.html:11
 #: templates/confirmation/link_malformed.html:12
@@ -256,11 +257,11 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:11
 msgid "Please contact your organization administrator for a new link."
-msgstr ""
+msgstr "请联系您的社群管理员以获取新链接。"
 
 #: templates/confirmation/link_malformed.html:9
 msgid "Whoops. The confirmation link is malformed."
-msgstr ""
+msgstr "糟糕，这个确认链接格式错误。"
 
 #: templates/confirmation/link_malformed.html:10
 msgid ""
@@ -311,19 +312,19 @@ msgstr "大多数控制"
 
 #: templates/corporate/upgrade.html:228
 msgid "Open source"
-msgstr ""
+msgstr "开源"
 
 #: templates/corporate/upgrade.html:229
 msgid "Academic research"
-msgstr ""
+msgstr "学术研究"
 
 #: templates/corporate/upgrade.html:230
 msgid "Education"
-msgstr ""
+msgstr "教育"
 
 #: templates/corporate/upgrade.html:231
 msgid "Non-Profit"
-msgstr ""
+msgstr "非盈利"
 
 #: templates/corporate/upgrade.html:232
 msgid "Event (hackathons, conferences, etc.)"
@@ -363,6 +364,8 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"我同意 <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">服务条款</a>."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -440,11 +443,11 @@ msgstr "删除消息"
 
 #: templates/zerver/app/delete_message.html:13
 msgid "Are you sure you want to permanently delete this message?"
-msgstr ""
+msgstr "您确认要彻底删除这条消息？"
 
 #: templates/zerver/app/delete_message.html:14
 msgid "Deleting a message removes it for everyone."
-msgstr ""
+msgstr "删除消息后所有人都无法看到。"
 
 #: templates/zerver/app/delete_message.html:19
 #: templates/zerver/app/index.html:167
@@ -454,7 +457,7 @@ msgstr "取消"
 
 #: templates/zerver/app/delete_message.html:20
 msgid "Confirm"
-msgstr ""
+msgstr "确认"
 
 #: templates/zerver/app/deprecation_notice.html:6
 msgid "Deprecation notice"
@@ -635,31 +638,31 @@ msgstr "立即连接"
 
 #: templates/zerver/app/index.html:147
 msgid "Set a status"
-msgstr ""
+msgstr "设置状态"
 
 #: templates/zerver/app/index.html:153
 msgid "Status message"
-msgstr ""
+msgstr "状态信息"
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "会议中"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "通勤中"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "病假中"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "度假中"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "远程工作中"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -701,7 +704,7 @@ msgstr "成员"
 #: templates/zerver/app/invite_user.html:43
 #: templates/zerver/development/dev_login.html:40
 msgid "Moderators"
-msgstr ""
+msgstr "版主"
 
 #: templates/zerver/app/invite_user.html:44
 msgid "Organization administrators"
@@ -709,7 +712,7 @@ msgstr "社群管理员"
 
 #: templates/zerver/app/invite_user.html:47
 msgid "Organization owners"
-msgstr ""
+msgstr "社群拥有者"
 
 #: templates/zerver/app/invite_user.html:53
 msgid "Streams they should join"
@@ -788,7 +791,7 @@ msgstr "显示键盘快捷键"
 
 #: templates/zerver/app/keyboard_shortcuts.html:56
 msgid "Go to default view"
-msgstr ""
+msgstr "前往默认页面"
 
 #: templates/zerver/app/keyboard_shortcuts.html:65
 msgid "Navigation"
@@ -922,15 +925,15 @@ msgstr "切换主题静音"
 #: templates/zerver/app/left_sidebar.html:51
 #: templates/zerver/app/left_sidebar.html:57
 msgid "Recent topics"
-msgstr ""
+msgstr "最新主题"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "View recent topics"
-msgstr ""
+msgstr "查看最新主题"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
-msgstr ""
+msgstr "过滤主题"
 
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "Drafts"
@@ -1011,11 +1014,11 @@ msgstr "订阅，添加或配置频道"
 
 #: templates/zerver/app/left_sidebar.html:73
 msgid "Back to streams"
-msgstr ""
+msgstr "返回频道"
 
 #: templates/zerver/app/left_sidebar.html:80
 msgid "Subscribe to more streams"
-msgstr ""
+msgstr "订阅更多频道"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1078,7 +1081,7 @@ msgstr "管理社群"
 
 #: templates/zerver/app/navbar.html:83
 msgid "Usage statistics"
-msgstr ""
+msgstr "使用统计"
 
 #: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
 msgid "Help center"
@@ -1099,7 +1102,7 @@ msgstr "关于Zulip"
 
 #: templates/zerver/app/navbar.html:117
 msgid "Contact support"
-msgstr ""
+msgstr "客户支持"
 
 #: templates/zerver/app/navbar.html:124
 msgid "Desktop & mobile apps"
@@ -1115,7 +1118,7 @@ msgstr "API 文档"
 
 #: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
-msgstr ""
+msgstr "支持 Zulip"
 
 #: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
@@ -1196,15 +1199,15 @@ msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:50
 msgid "This Zulip server is running an old version and should be upgraded."
-msgstr ""
+msgstr "建议升级 Zulip 服务器到最新版。"
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
-msgstr ""
+msgstr "了解更多"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
-msgstr ""
+msgstr "关闭一周"
 
 #: templates/zerver/app/navbar_alerts.html:64
 #, python-format
@@ -1213,6 +1216,9 @@ msgid ""
 "            Welcome back!  You have <span class=\"bankruptcy_unread_count\">%(count)s</span> unread messages.  Do you want to mark them all as read?\n"
 "            "
 msgstr ""
+"\n"
+"            欢迎回来!  您有 <span class=\"bankruptcy_unread_count\">%(count)s</span> 条未读消息.  是否全部标记为已读?\n"
+"            "
 
 #: templates/zerver/app/navbar_alerts.html:68
 msgid "Yes, please!"
@@ -1228,6 +1234,9 @@ msgid ""
 "        Marking all messages as read…\n"
 "        "
 msgstr ""
+"\n"
+"        全部信息标记为已读…\n"
+"        "
 
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
@@ -1446,7 +1455,7 @@ msgstr "验证方式"
 
 #: templates/zerver/app/settings_overlay.html:95
 msgid "Only organization owners can edit these settings."
-msgstr ""
+msgstr "只有社群拥有者才能编辑这些设置。"
 
 #: templates/zerver/app/settings_overlay.html:110
 msgid "Deactivated users"
@@ -1474,11 +1483,11 @@ msgstr "邀请"
 
 #: templates/zerver/app/settings_overlay.html:163
 msgid "Data exports"
-msgstr ""
+msgstr "数据导出"
 
 #: templates/zerver/app/settings_overlay.html:169
 msgid "Show more"
-msgstr ""
+msgstr "显示更多"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -1566,7 +1575,7 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html:7
 msgid "Finish desktop login"
-msgstr ""
+msgstr "完成桌面版登录"
 
 #: templates/zerver/desktop_login.html:10
 msgid ""
@@ -2607,7 +2616,7 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:7
 msgid "New messages"
-msgstr ""
+msgstr "新消息"
 
 #: templates/zerver/emails/missed_message.txt:11
 #, python-format
@@ -2870,7 +2879,7 @@ msgstr "Zendesk logo"
 
 #: templates/zerver/hello.html:428
 msgid "Jira logo"
-msgstr ""
+msgstr "Jira logo"
 
 #: templates/zerver/hello.html:435
 msgid "Sentry logo"
@@ -4136,7 +4145,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:85
 msgid "The most important shortcut is `r` to reply."
-msgstr ""
+msgstr "使用快捷键 `r` 回复消息."
 
 #: zerver/lib/onboarding.py:87
 msgid "Practice sending a few messages by replying to this conversation."
@@ -4150,7 +4159,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:107
 msgid "Congratulations on your first reply!"
-msgstr ""
+msgstr "祝贺您完成了第一次回复！"
 
 #: zerver/lib/onboarding.py:112
 msgid ""
@@ -5187,7 +5196,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:127
 msgid "New password is too weak!"
-msgstr ""
+msgstr "新密码太弱！"
 
 #: zerver/views/user_settings.py:168
 msgid "Check your email for a confirmation link. "
@@ -5195,11 +5204,11 @@ msgstr "在你的邮件中检查激活链接。"
 
 #: zerver/views/user_settings.py:218
 msgid "Invalid default_language"
-msgstr ""
+msgstr "无效的默认语言"
 
 #: zerver/views/user_settings.py:278
 msgid "Invalid notification sound '{}'"
-msgstr ""
+msgstr "无效的通知音效 '{}'"
 
 #: zerver/views/user_settings.py:294
 msgid "You must upload exactly one avatar."
@@ -5247,7 +5256,7 @@ msgstr "用户名已被占用"
 #: zerver/views/users.py:587
 #, python-brace-format
 msgid "Email '{email}' not allowed in this organization"
-msgstr ""
+msgstr "电子邮箱 '{email}' 不允许在此社群使用"
 
 #: zerver/views/users.py:592
 msgid "Disposable email addresses are not allowed in this organization"
@@ -5255,11 +5264,11 @@ msgstr "本社群不允许使用一次性电子邮件地址"
 
 #: zerver/views/users.py:598
 msgid "Email '{}' already in use"
-msgstr ""
+msgstr "电子邮件“{}”已被使用"
 
 #: zerver/views/video_calls.py:39
 msgid "Invalid Zoom access token"
-msgstr ""
+msgstr "无效的 Zoom 访问令牌"
 
 #: zerver/views/video_calls.py:44
 msgid "Zoom credentials have not been configured"
