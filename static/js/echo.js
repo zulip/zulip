@@ -4,6 +4,7 @@ import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
+import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
@@ -240,6 +241,18 @@ export function try_deliver_locally(message_request) {
     // This draft will be cleared after successfull message
     const draft_id = drafts.update_draft();
     message_request.draft_id = draft_id;
+
+    // Now that we've committed to delivering the message locally, we
+    // shrink the compose-box if it is in the full-screen state. This
+    // would have happened anyway in clear_compose_box, however, we
+    // need to this operation before inserting the local message into
+    // the feed. Otherwise, the out-of-view notification will be
+    // always triggered on the top of compose-box, regardless of
+    // whether the message would be visible after shrinking compose,
+    // because compose occludes the whole screen.
+    if (compose_ui.is_full_size()) {
+        compose_ui.make_compose_box_original_size();
+    }
 
     const message = insert_local_message(message_request, local_id_float);
     return message;
