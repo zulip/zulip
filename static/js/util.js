@@ -298,7 +298,8 @@ export function clean_user_content_links(html) {
         let title;
         let legacy_title;
         if (url.origin === window.location.origin && url.pathname.startsWith("/user_uploads/")) {
-            title = legacy_title = url.pathname.slice(url.pathname.lastIndexOf("/") + 1);
+            title = legacy_title =
+                "Download " + url.pathname.slice(url.pathname.lastIndexOf("/") + 1) + "...";
         } else {
             title = url;
             legacy_title = href;
