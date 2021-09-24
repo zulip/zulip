@@ -531,7 +531,7 @@ modified version of Zulip, please be responsible about communicating
 that fact:
 
 - Ideally, you'd reproduce the issue in an unmodified version (e.g. on
-  [chat.zulip.org](https://zulip.com/developer-community/) or
+  [The Zulip developer community](https://zulip.com/developer-community/) or
   [zulip.com](https://zulip.com)).
 - Where that is difficult or you think it's very unlikely your changes
   are related to the issue, just mention your changes in the issue report.
